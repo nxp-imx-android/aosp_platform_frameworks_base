@@ -1042,6 +1042,31 @@ public class ComplicationLayoutEngineTest extends SysuiTestCase {
         verify(mLayout, never()).removeView(firstViewInfo.view);
     }
 
+    /**
+     * Ensures removal after detach doesn't cause the view to be removed from its parent
+     */
+    @Test
+    public void testNoViewGroupRemovalPostDestroy() {
+        final ComplicationLayoutEngine engine = createComplicationLayoutEngine();
+        final ViewInfo firstViewInfo = new ViewInfo(
+                new ComplicationLayoutParams(
+                        100,
+                        100,
+                        ComplicationLayoutParams.POSITION_TOP
+                                | ComplicationLayoutParams.POSITION_END,
+                        ComplicationLayoutParams.DIRECTION_DOWN,
+                        0),
+                Complication.CATEGORY_STANDARD,
+                mLayout);
+
+        engine.addComplication(firstViewInfo.id, firstViewInfo.view, firstViewInfo.lp,
+                firstViewInfo.category);
+        Mockito.clearInvocations(mLayout, firstViewInfo.view);
+        engine.onDestroyed();
+        engine.removeComplication(firstViewInfo.id);
+        verify(mLayout, never()).removeView(firstViewInfo.view);
+    }
+
     @Test
     public void testGetViews() {
         final ComplicationLayoutEngine engine = createComplicationLayoutEngine();

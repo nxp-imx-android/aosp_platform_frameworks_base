@@ -15,40 +15,30 @@
  */
 package com.android.wm.shell.common
 
-import android.graphics.Bitmap
 import android.graphics.Rect
-import android.graphics.drawable.BitmapDrawable
 import android.testing.AndroidTestingRunner
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
-import android.view.SurfaceControlViewHost
-import android.view.WindowlessWindowManager
-import com.android.wm.shell.R
+import com.android.dx.mockito.inline.extended.ExtendedMockito
+import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
-import com.android.wm.shell.shared.R as sharedR
-import com.android.wm.shell.windowdecor.WindowDecoration
-import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
-import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestCoroutineScheduler
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
+import com.android.wm.shell.shared.R
+import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
-import org.mockito.kotlin.spy
-import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.quality.Strictness
 
 /**
  * Tests for [MultiDisplayDragMoveIndicatorSurface].
@@ -59,117 +49,54 @@ import org.mockito.kotlin.whenever
 class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
     private lateinit var display: Display
     private val taskInfo = TestRunningTaskInfoBuilder().build()
-    private val mockSurfaceControlBuilderFactory =
-        mock<MultiDisplayDragMoveIndicatorSurface.Factory.SurfaceControlBuilderFactory>()
-    private val spyVeilSurfaceControlBuilder = spy<SurfaceControl.Builder>()
-    private val spyBackgroundSurfaceControlBuilder = spy<SurfaceControl.Builder>()
-    private val spyIconSurfaceControlBuilder = spy<SurfaceControl.Builder>()
-    private val mockVeilSurface = mock<SurfaceControl>()
-    private val mockBackgroundSurface = mock<SurfaceControl>()
-    private val mockIconSurface = mock<SurfaceControl>()
+    private val windowDecoration = mock<DesktopModeWindowDecoration>()
+    private val mockSurface = mock<SurfaceControl>()
     private val mockTransaction = mock<SurfaceControl.Transaction>()
     private val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
-    private val mockAppIcon = mock<Bitmap>()
-    private val mockTaskResourceLoader = mock<WindowDecorTaskResourceLoader>()
-    private val mockSurfaceControlViewHost = mock<SurfaceControlViewHost>()
-    private val mockSurfaceControlViewHostFactory =
-        mock<WindowDecoration.SurfaceControlViewHostFactory>()
 
-    private val testScheduler = TestCoroutineScheduler()
-    private val testDispatcher = StandardTestDispatcher(testScheduler)
-    private val testScope = TestScope(testDispatcher)
-
+    private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var dragIndicatorSurface: MultiDisplayDragMoveIndicatorSurface
 
     @Before
     fun setUp() {
+        mockitoSession =
+            ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .mockStatic(SurfaceControl::class.java)
+                .startMocking()
+
         display = mContext.display
         whenever(
                 mContext.orCreateTestableResources.resources.getDimensionPixelSize(
-                    sharedR.dimen.desktop_windowing_freeform_rounded_corner_radius
+                    R.dimen.desktop_windowing_freeform_rounded_corner_radius
                 )
             )
             .thenReturn(CORNER_RADIUS)
-        whenever(
-                mContext.orCreateTestableResources.resources.getDimensionPixelSize(
-                    R.dimen.desktop_mode_resize_veil_icon_size
-                )
-            )
-            .thenReturn(ICON_SIZE)
-
-        val displayId = display.displayId
-        whenever(
-                mockSurfaceControlBuilderFactory.create(
-                    eq("Drag indicator veil of Task=${taskInfo.taskId} Display=$displayId")
-                )
-            )
-            .thenReturn(spyVeilSurfaceControlBuilder)
-        whenever(
-                mockSurfaceControlBuilderFactory.create(
-                    eq("Drag indicator background of Task=${taskInfo.taskId} Display=$displayId")
-                )
-            )
-            .thenReturn(spyBackgroundSurfaceControlBuilder)
-        whenever(
-                mockSurfaceControlBuilderFactory.create(
-                    eq("Drag indicator icon of Task=${taskInfo.taskId} Display=$displayId")
-                )
-            )
-            .thenReturn(spyIconSurfaceControlBuilder)
-
-        doReturn(mockVeilSurface).whenever(spyVeilSurfaceControlBuilder).build()
-        doReturn(mockBackgroundSurface).whenever(spyBackgroundSurfaceControlBuilder).build()
-        doReturn(mockIconSurface).whenever(spyIconSurfaceControlBuilder).build()
-
-        whenever(mockSurfaceControlViewHostFactory.create(any(), any(), any(), any()))
-            .thenReturn(mockSurfaceControlViewHost)
-        whenever(mockTaskResourceLoader.getVeilIcon(eq(taskInfo))).thenReturn(mockAppIcon)
 
         whenever(mockTransaction.remove(any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setCrop(any(), any())).thenReturn(mockTransaction)
-        whenever(mockTransaction.setCornerRadius(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setCornerRadius(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.show(any())).thenReturn(mockTransaction)
         whenever(mockTransaction.hide(any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setColor(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setLayer(any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
+        whenever(SurfaceControl.mirrorSurface(any())).thenReturn(mockSurface)
 
         dragIndicatorSurface =
-            MultiDisplayDragMoveIndicatorSurface(
-                mContext,
-                taskInfo,
-                display,
-                mockSurfaceControlBuilderFactory,
-                mockTaskResourceLoader,
-                testDispatcher,
-                testScope,
-                mockSurfaceControlViewHostFactory,
-            )
+            MultiDisplayDragMoveIndicatorSurface(mContext, mock<SurfaceControl>())
     }
 
-    @Test
-    fun init_createsVeilSurfaceWithCorrectProperties() =
-        runTest(testDispatcher) {
-            verify(mockSurfaceControlBuilderFactory, times(3)).create(any())
-            verify(spyVeilSurfaceControlBuilder).build()
-            verify(spyBackgroundSurfaceControlBuilder).build()
-            verify(spyIconSurfaceControlBuilder).build()
-            verify(mockSurfaceControlViewHostFactory)
-                .create(eq(mContext), eq(display), any<WindowlessWindowManager>(), any())
-            verify(mockTaskResourceLoader).getVeilIcon(eq(taskInfo))
-            assertThat((dragIndicatorSurface.iconView.drawable as BitmapDrawable).bitmap)
-                .isEqualTo(mockAppIcon)
-        }
+    @After
+    fun tearDown() {
+        mockitoSession.finishMocking()
+    }
 
     @Test
     fun dispose_removesVeil() {
         dragIndicatorSurface.dispose(mockTransaction)
 
-        verify(mockSurfaceControlViewHost).release()
-        verify(mockTransaction).remove(eq(mockVeilSurface))
-        verify(mockTransaction).remove(eq(mockBackgroundSurface))
-        verify(mockTransaction).remove(eq(mockIconSurface))
+        verify(mockTransaction).remove(eq(mockSurface))
     }
 
     @Test
@@ -184,9 +111,6 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
 
     @Test
     fun show_reparentsSetsCropShowsSetsColorAppliesTransaction() {
-        val expectedX = BOUNDS.left + BOUNDS.width().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-        val expectedY = BOUNDS.top + BOUNDS.height().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-
         dragIndicatorSurface.show(
             mockTransaction,
             taskInfo,
@@ -194,24 +118,21 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             DEFAULT_DISPLAY,
             BOUNDS,
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+            SCALE,
         )
 
         verify(mockRootTaskDisplayAreaOrganizer)
-            .reparentToDisplayArea(eq(DEFAULT_DISPLAY), eq(mockVeilSurface), eq(mockTransaction))
-        verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(BOUNDS))
-        verify(mockTransaction).setCornerRadius(eq(mockVeilSurface), eq(CORNER_RADIUS.toFloat()))
-        verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
-        verify(mockTransaction).show(eq(mockVeilSurface))
-        verify(mockTransaction).show(eq(mockBackgroundSurface))
-        verify(mockTransaction).show(eq(mockIconSurface))
+            .reparentToDisplayArea(eq(DEFAULT_DISPLAY), eq(mockSurface), eq(mockTransaction))
+        verify(mockTransaction).setCornerRadius(eq(mockSurface), eq(CORNER_RADIUS.toFloat()))
+        verify(mockTransaction)
+            .setPosition(eq(mockSurface), eq(BOUNDS.left.toFloat()), eq(BOUNDS.top.toFloat()))
+        verify(mockTransaction).show(eq(mockSurface))
+        verify(mockTransaction).setScale(eq(mockSurface), eq(SCALE), eq(SCALE))
         verify(mockTransaction).apply()
     }
 
     @Test
     fun relayout_whenVisibleAndDoesntChangeVisibility_setsCropAndPosition() {
-        val expectedX = NEW_BOUNDS.left + NEW_BOUNDS.width().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-        val expectedY = NEW_BOUNDS.top + NEW_BOUNDS.height().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-
         dragIndicatorSurface.show(
             mockTransaction,
             taskInfo,
@@ -219,6 +140,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             DEFAULT_DISPLAY,
             BOUNDS,
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+            SCALE,
         )
         clearInvocations(mockTransaction)
 
@@ -228,15 +150,16 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
         )
 
-        verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(NEW_BOUNDS))
-        verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
+        verify(mockTransaction)
+            .setPosition(
+                eq(mockSurface),
+                eq(NEW_BOUNDS.left.toFloat()),
+                eq(NEW_BOUNDS.top.toFloat()),
+            )
     }
 
     @Test
     fun relayout_whenVisibleAndShouldBeInvisible_setsCropAndPosition() {
-        val expectedX = NEW_BOUNDS.left + NEW_BOUNDS.width().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-        val expectedY = NEW_BOUNDS.top + NEW_BOUNDS.height().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-
         dragIndicatorSurface.show(
             mockTransaction,
             taskInfo,
@@ -244,6 +167,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             DEFAULT_DISPLAY,
             BOUNDS,
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+            SCALE,
         )
         clearInvocations(mockTransaction)
         dragIndicatorSurface.relayout(
@@ -252,23 +176,28 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE,
         )
 
-        verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(NEW_BOUNDS))
-        verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
+        verify(mockTransaction)
+            .setPosition(
+                eq(mockSurface),
+                eq(NEW_BOUNDS.left.toFloat()),
+                eq(NEW_BOUNDS.top.toFloat()),
+            )
     }
 
     @Test
     fun relayout_whenInvisibleAndShouldBeVisible_setsCropAndPosition() {
-        val expectedX = NEW_BOUNDS.left + NEW_BOUNDS.width().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-        val expectedY = NEW_BOUNDS.top + NEW_BOUNDS.height().toFloat() / 2 - ICON_SIZE.toFloat() / 2
-
         dragIndicatorSurface.relayout(
             NEW_BOUNDS,
             mockTransaction,
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
         )
 
-        verify(mockTransaction).setCrop(eq(mockVeilSurface), eq(NEW_BOUNDS))
-        verify(mockTransaction).setPosition(eq(mockIconSurface), eq(expectedX), eq(expectedY))
+        verify(mockTransaction)
+            .setPosition(
+                eq(mockSurface),
+                eq(NEW_BOUNDS.left.toFloat()),
+                eq(NEW_BOUNDS.top.toFloat()),
+            )
     }
 
     @Test
@@ -279,7 +208,6 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             MultiDisplayDragMoveIndicatorSurface.Visibility.INVISIBLE,
         )
 
-        verify(mockTransaction, never()).setCrop(any(), any())
         verify(mockTransaction, never()).setPosition(any(), any(), any())
     }
 
@@ -292,6 +220,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             DEFAULT_DISPLAY,
             BOUNDS,
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
+            SCALE,
         )
         clearInvocations(mockTransaction)
         dragIndicatorSurface.relayout(
@@ -300,8 +229,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             MultiDisplayDragMoveIndicatorSurface.Visibility.TRANSLUCENT,
         )
 
-        verify(mockTransaction).setAlpha(eq(mockVeilSurface), eq(ALPHA_FOR_TRANSLUCENT))
-        verify(mockTransaction).setAlpha(eq(mockIconSurface), eq(ALPHA_FOR_TRANSLUCENT))
+        verify(mockTransaction).setAlpha(eq(mockSurface), eq(ALPHA_FOR_TRANSLUCENT))
     }
 
     @Test
@@ -313,6 +241,7 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             DEFAULT_DISPLAY,
             BOUNDS,
             MultiDisplayDragMoveIndicatorSurface.Visibility.TRANSLUCENT,
+            SCALE,
         )
         clearInvocations(mockTransaction)
         dragIndicatorSurface.relayout(
@@ -321,13 +250,12 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             MultiDisplayDragMoveIndicatorSurface.Visibility.VISIBLE,
         )
 
-        verify(mockTransaction).setAlpha(eq(mockVeilSurface), eq(ALPHA_FOR_VISIBLE))
-        verify(mockTransaction).setAlpha(eq(mockIconSurface), eq(ALPHA_FOR_VISIBLE))
+        verify(mockTransaction).setAlpha(eq(mockSurface), eq(ALPHA_FOR_VISIBLE))
     }
 
     companion object {
         private const val CORNER_RADIUS = 32
-        private const val ICON_SIZE = 48
+        private const val SCALE = 1.5f
         private val BOUNDS = Rect(10, 20, 100, 200)
         private val NEW_BOUNDS = Rect(50, 50, 150, 250)
         private val ALPHA_FOR_TRANSLUCENT = 0.7f

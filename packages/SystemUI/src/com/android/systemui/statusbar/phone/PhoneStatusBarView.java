@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.phone;
 
-import static android.view.Display.DEFAULT_DISPLAY;
-
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -43,8 +41,8 @@ import com.android.systemui.Gefingerpoken;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress;
 import com.android.systemui.shade.StatusBarLongPressGestureDetector;
-import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
+import com.android.systemui.statusbar.phone.PhoneStatusBarViewController.PhoneStatusBarViewInteractionsGate;
 import com.android.systemui.statusbar.phone.userswitcher.StatusBarUserSwitcherContainer;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.user.ui.binder.StatusBarUserChipViewBinder;
@@ -57,8 +55,6 @@ public class PhoneStatusBarView extends FrameLayout {
     private static final String TAG = "PhoneStatusBarView";
     private final StatusBarWindowControllerStore mStatusBarWindowControllerStore;
 
-    private final boolean mShouldAllowInteractions;
-
     private int mRotationOrientation = -1;
     @Nullable
     private View mCutoutSpace;
@@ -69,6 +65,8 @@ public class PhoneStatusBarView extends FrameLayout {
     private int mStatusBarHeight;
     @Nullable
     private Gefingerpoken mTouchEventHandler;
+    @Nullable
+    private PhoneStatusBarViewInteractionsGate mInteractionGate;
     @Nullable
     private HasCornerCutoutFetcher mHasCornerCutoutFetcher;
     @Nullable
@@ -85,10 +83,6 @@ public class PhoneStatusBarView extends FrameLayout {
     public PhoneStatusBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mStatusBarWindowControllerStore = Dependency.get(StatusBarWindowControllerStore.class);
-        // With the StatusBarConnectedDisplays changes, status bar elements are only interactive
-        // if touch is on default display or the shade window can change displays.
-        mShouldAllowInteractions = !StatusBarConnectedDisplays.isEnabled()
-                || mContext.getDisplayId() == DEFAULT_DISPLAY || ShadeWindowGoesAround.isEnabled();
     }
 
     void setLongPressGestureDetector(
@@ -100,6 +94,10 @@ public class PhoneStatusBarView extends FrameLayout {
 
     void setTouchEventHandler(Gefingerpoken handler) {
         mTouchEventHandler = handler;
+    }
+
+    void setInteractionGate(PhoneStatusBarViewInteractionsGate gate) {
+        mInteractionGate = gate;
     }
 
     void setHasCornerCutoutFetcher(@NonNull HasCornerCutoutFetcher cornerCutoutFetcher) {
@@ -216,17 +214,30 @@ public class PhoneStatusBarView extends FrameLayout {
         return false;
     }
 
-    /** Whether this status bar and its elements should be interactable. */
-    public boolean shouldAllowInteractions() {
-        return mShouldAllowInteractions;
+    @Override
+    public boolean dispatchHoverEvent(MotionEvent event) {
+        if (mInteractionGate != null && !mInteractionGate.shouldAllowInteractions()) {
+            // Consume the event to prevent any calls to #onHoverEvent on status bar view or its
+            // components, essentially making the status bar and its children completely
+            // non-interactive.
+            return true;
+        }
+        return super.dispatchHoverEvent(event);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (mInteractionGate != null && !mInteractionGate.shouldAllowInteractions()) {
+            // Consume the event to prevent any calls to #onTouchEvent on status bar view or its
+            // components, essentially making the status bar and its children completely
+            // non-interactive.
+            return true;
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (!shouldAllowInteractions()) {
-            return false;
-        }
-
         if (ShadeExpandsOnStatusBarLongPress.isEnabled()
                 && mStatusBarLongPressGestureDetector != null) {
             mStatusBarLongPressGestureDetector.handleTouch(event);

@@ -274,6 +274,8 @@ class ActivityStarter {
     private static final int MOVE_TO_FRONT_AVOID_PI_ONLY_CREATOR_ALLOWS = 1;
     // Avoid a task move to front because of all other legacy reasons.
     private static final int MOVE_TO_FRONT_AVOID_LEGACY = 2;
+    // Avoid a task move to front because it was requested from a visible multiple window.
+    private static final int MOVE_TO_FRONT_AVOID_VISIBLE_MULTI_WINDOW = 3;
     private @MoveToFrontCode int mCanMoveToFrontCode = MOVE_TO_FRONT_ALLOWED;
     private boolean mFrozeTaskList;
     private boolean mTransientLaunch;
@@ -1982,6 +1984,14 @@ class ActivityStarter {
                     && r.mTransitionController.isTransientHide(targetTask)) {
                 mCanMoveToFrontCode = MOVE_TO_FRONT_AVOID_LEGACY;
             }
+            // To prevent interruption of the user's current focus, if a launch request
+            // originates from activities within the same visible task, the task should not be
+            // moved to the front, or an unfocused Task could be moved to top unexpectedly.
+            if (com.android.window.flags.Flags.fixMovingUnfocusedTask() && !avoidMoveToFront()
+                    && sourceRecord != null && sourceRecord.getTask() == targetTask
+                    && targetTask.isVisible() && targetTask.inMultiWindowMode()) {
+                mCanMoveToFrontCode = MOVE_TO_FRONT_AVOID_VISIBLE_MULTI_WINDOW;
+            }
             // If the activity is started by sending a pending intent and only its creator has the
             // privilege to allow BAL (its sender does not), avoid move it to the front. Only do
             // this when it is not a new task and not already been marked as avoid move to front.
@@ -2816,13 +2826,18 @@ class ActivityStarter {
             mTargetRootTask = Task.fromWindowContainerToken(mOptions.getLaunchRootTask());
 
             if (inTaskFragment == null) {
-                inTaskFragment = TaskFragment.fromTaskFragmentToken(
-                        mOptions.getLaunchTaskFragmentToken(), mService);
-                if (inTaskFragment != null && inTaskFragment.isEmbeddedTaskFragmentInPip()) {
-                    // Do not start activity in TaskFragment in a PIP Task.
-                    Slog.w(TAG, "Can not start activity in TaskFragment in PIP: "
-                            + inTaskFragment);
-                    inTaskFragment = null;
+                final IBinder launchTfToken = mOptions.getLaunchTaskFragmentToken();
+                if (launchTfToken != null) {
+                    inTaskFragment = TaskFragment.fromTaskFragmentToken(launchTfToken, mService);
+                    if (inTaskFragment == null) {
+                        Slog.e(TAG, "Can not find requested launch TaskFragment: "
+                                + launchTfToken);
+                    } else if (inTaskFragment.isEmbeddedTaskFragmentInPip()) {
+                        // Do not start activity in TaskFragment in a PIP Task.
+                        Slog.w(TAG, "Can not start activity in TaskFragment in PIP: "
+                                + inTaskFragment);
+                        inTaskFragment = null;
+                    }
                 }
             }
         }

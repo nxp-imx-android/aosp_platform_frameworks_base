@@ -122,4 +122,4 @@ per-file *ApplicationSharedMemory* = file:/PERFORMANCE_OWNERS
 per-file *PropertyInvalidatedCache* = file:/PERFORMANCE_OWNERS
 
 # MessageQueue
-per-file *MessageQueue* = mfasheh@google.com, shayba@google.com
+per-file *MessageQueue* = file:/MESSAGE_QUEUE_OWNERS

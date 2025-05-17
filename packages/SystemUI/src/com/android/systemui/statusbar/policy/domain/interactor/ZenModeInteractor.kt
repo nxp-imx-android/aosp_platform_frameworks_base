@@ -161,7 +161,16 @@ constructor(
             .distinctUntilChanged()
     }
 
-    suspend fun getActiveModes() = buildActiveZenModes(zenModeRepository.getModes())
+    suspend fun getActiveModes(): ActiveZenModes {
+        if (android.app.Flags.modesUiTileReactivatesLast()) {
+            Log.wtfStack(
+                TAG,
+                "getActiveModes shouldn't be called with modes_ui_tile_reactivates_last",
+            )
+        }
+
+        return buildActiveZenModes(zenModeRepository.getModes())
+    }
 
     private suspend fun buildActiveZenModes(modes: List<ZenMode>): ActiveZenModes {
         val activeModesList =
@@ -206,6 +215,7 @@ constructor(
                         )
                         null
                     }
+
                     ZEN_DURATION_FOREVER -> null
                     else -> Duration.ofMinutes(zenDuration.toLong())
                 }

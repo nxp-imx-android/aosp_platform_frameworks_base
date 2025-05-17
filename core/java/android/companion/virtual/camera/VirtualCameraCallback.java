@@ -16,10 +16,14 @@
 
 package android.companion.virtual.camera;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.SystemApi;
+import android.companion.virtualdevice.flags.Flags;
 import android.graphics.ImageFormat;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.view.Surface;
 
 import java.util.concurrent.Executor;
@@ -35,8 +39,26 @@ import java.util.concurrent.Executor;
 public interface VirtualCameraCallback {
 
     /**
+     * Called when the client application calls
+     * {@link android.hardware.camera2.CameraManager#openCamera}. This is the earliest signal that
+     * this camera will be used. At this point, no stream is opened yet, nor any configuration took
+     * place. The owner of the virtual camera can use this as signal to prepare the camera and
+     * reduce latency for when
+     * {@link android.hardware.camera2.CameraDevice#createCaptureSession(SessionConfiguration)} is
+     * called and before
+     * {@link CameraCaptureSession.StateCallback#onConfigured(CameraCaptureSession)}
+     * is called.
+     */
+    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_ON_OPEN)
+    default void onOpenCamera() {
+    }
+
+    /**
      * Called when one of the requested stream has been configured by the virtual camera service and
      * is ready to receive data onto its {@link Surface}
+     * <p>
+     * This corresponds to the client calling
+     * {@link android.hardware.camera2.CameraDevice#createCaptureSession(SessionConfiguration)}
      *
      * @param streamId The id of the configured stream
      * @param surface The surface to write data into for this stream

@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.toMediumWeight
 import com.android.settingslib.spa.framework.util.annotatedStringResource
+import com.android.settingslib.spa.widget.ui.SettingsIntro
 
 /** The widget model for [TopIntroPreference] widget. */
 interface TopIntroPreferenceModel {
@@ -74,9 +75,8 @@ fun TopIntroPreference(model: TopIntroPreferenceModel) {
                     )
                     .animateContentSize()
         ) {
-            Text(
+            SettingsIntro(
                 text = model.text,
-                style = MaterialTheme.typography.bodyLarge,
                 maxLines = if (expanded) MAX_LINE else MIN_LINE,
             )
             if (expanded) TopIntroAnnotatedText(model.labelText)

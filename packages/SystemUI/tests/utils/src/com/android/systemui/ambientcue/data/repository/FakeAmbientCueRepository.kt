@@ -29,12 +29,22 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val _actions = MutableStateFlow(emptyList<ActionModel>())
     override val actions: StateFlow<List<ActionModel>> = _actions.asStateFlow()
 
-    override val isVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    private val _isRootViewAttached: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val isRootViewAttached: StateFlow<Boolean> = _isRootViewAttached.asStateFlow()
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     private val _globallyFocusedTaskId = MutableStateFlow(0)
     override val globallyFocusedTaskId: StateFlow<Int> = _globallyFocusedTaskId.asStateFlow()
+
+    private val targetTaskId: MutableStateFlow<Int> = MutableStateFlow(0)
+    override val isDeactivated: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    private val _isTaskBarVisible = MutableStateFlow(false)
+    override val isTaskBarVisible: StateFlow<Boolean> = _isTaskBarVisible.asStateFlow()
+
+    private val _isGestureNav = MutableStateFlow(false)
+    override val isGestureNav: StateFlow<Boolean> = _isGestureNav.asStateFlow()
 
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
@@ -42,5 +52,21 @@ class FakeAmbientCueRepository : AmbientCueRepository {
 
     fun setGloballyFocusedTaskId(taskId: Int) {
         _globallyFocusedTaskId.update { taskId }
+    }
+
+    fun updateRootViewAttached() {
+        _isRootViewAttached.update {
+            actions.value.isNotEmpty() &&
+                !isDeactivated.value &&
+                targetTaskId.value == globallyFocusedTaskId.value
+        }
+    }
+
+    fun setTaskBarVisible(visible: Boolean) {
+        _isTaskBarVisible.update { visible }
+    }
+
+    fun setIsGestureNav(isGestureNav: Boolean) {
+        _isGestureNav.update { isGestureNav }
     }
 }

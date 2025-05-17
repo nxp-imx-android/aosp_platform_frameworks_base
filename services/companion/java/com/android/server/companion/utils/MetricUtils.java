@@ -66,6 +66,7 @@ import static com.android.server.companion.utils.PackageUtils.PACKAGE_NOT_FOUND;
 import static com.android.server.companion.utils.PackageUtils.getUidFromPackageName;
 
 
+import android.companion.AssociationInfo;
 import android.content.Context;
 
 import java.util.Map;
@@ -143,21 +144,27 @@ public final class MetricUtils {
     /**
      * Log association creation
      */
-    public static void logCreateAssociation(String profile) {
+    public static void logCreateAssociation(AssociationInfo ai, Context context) {
+        int uid = getUidFromPackageName(ai.getUserId(), context, ai.getPackageName());
+
         write(CDM_ASSOCIATION_ACTION,
                 CDM_ASSOCIATION_ACTION__ACTION__CREATED,
-                ASSOCIATION_ACTION_DEVICE_PROFILE.get(
-                        profile == null ? DEVICE_PROFILE_NULL : profile));
+                ASSOCIATION_ACTION_DEVICE_PROFILE.get(ai.getDeviceProfile() == null
+                        ? DEVICE_PROFILE_NULL : ai.getDeviceProfile()),
+                uid);
     }
 
     /**
      * Log association removal
      */
-    public static void logRemoveAssociation(String profile) {
+    public static void logRemoveAssociation(AssociationInfo ai, Context context) {
+        int uid = getUidFromPackageName(ai.getUserId(), context, ai.getPackageName());
+
         write(CDM_ASSOCIATION_ACTION,
                 CDM_ASSOCIATION_ACTION__ACTION__REMOVED,
-                ASSOCIATION_ACTION_DEVICE_PROFILE.get(
-                        profile == null ? DEVICE_PROFILE_NULL : profile));
+                ASSOCIATION_ACTION_DEVICE_PROFILE.get(ai.getDeviceProfile() == null
+                        ? DEVICE_PROFILE_NULL : ai.getDeviceProfile()),
+                uid);
     }
 
     /**

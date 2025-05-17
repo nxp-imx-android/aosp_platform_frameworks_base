@@ -26,7 +26,7 @@ import java.io.IOException;
  * message subclasses to support serialization and deserialization as part of
  * {@link TaskContinuityMessage}.
  */
-interface TaskContinuityMessageData {
+public interface TaskContinuityMessageData {
 
     /**
      * Writes this object to a proto output stream.

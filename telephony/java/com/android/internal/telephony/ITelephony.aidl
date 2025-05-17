@@ -3226,12 +3226,14 @@ interface ITelephony {
      * This API can be used by only CTS to override the satellite access allowed state for
      * a list of subscription IDs.
      *
+     * @param reset {@code true} mean the overridden configs should not be used, {@code false}
+     *              otherwise.
      * @param subIdListStr The string representation of the list of subscription IDs,
      *                     which are numbers separated by comma.
      * @return {@code true} if the satellite access allowed state is set successfully,
      * {@code false} otherwise.
      */
-    boolean setSatelliteAccessAllowedForSubscriptions(in String subIdListStr);
+    boolean setSatelliteAccessAllowedForSubscriptions(in boolean reset, in String subIdListStr);
 
     /**
      * This API can be used by only CTS to override satellite TN scanning support.

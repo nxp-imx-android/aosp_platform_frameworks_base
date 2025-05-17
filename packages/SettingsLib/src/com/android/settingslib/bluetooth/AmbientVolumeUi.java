@@ -19,6 +19,7 @@ package com.android.settingslib.bluetooth;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_LEFT;
 import static com.android.settingslib.bluetooth.HearingAidInfo.DeviceSide.SIDE_RIGHT;
 
+import android.bluetooth.AudioInputControl;
 import android.bluetooth.BluetoothDevice;
 
 import androidx.annotation.NonNull;
@@ -105,19 +106,8 @@ public interface AmbientVolumeUi {
     /** @return if the UI is in expanded mode. */
     boolean isControlExpanded();
 
-    /**
-     * Sets if the UI is capable to mute the ambient of the remote device.
-     *
-     * <p> If the value is {@code false}, it implies the remote device ambient will always be
-     * unmute and can not be mute from the UI
-     */
-    void setMutable(boolean mutable);
-
     /** @return if the UI is capable to mute the ambient of remote device. */
     boolean isMutable();
-
-    /** Sets if the UI shows mute state. */
-    void setMuted(boolean muted);
 
     /** @return if the UI shows mute state */
     boolean isMuted();
@@ -149,7 +139,7 @@ public interface AmbientVolumeUi {
     void setSliderEnabled(int side, boolean enabled);
 
     /**
-     * Sets the slider value.
+     * Sets the slider's value.
      *
      * @param side the side of the slider
      * @param value the ambient value
@@ -164,6 +154,22 @@ public interface AmbientVolumeUi {
      * @param max the maximum ambient value
      */
     void setSliderRange(int side, int min, int max);
+
+    /**
+     * Sets the slider's mute state.
+     *
+     * @param side the side of the slider
+     * @param muteState the mute state, see {@link AudioInputControl.Mute}
+     */
+    void setSliderMuteState(int side, int muteState);
+
+    /**
+     * Gets the slider's mute state.
+     *
+     * @param side the side of the slider
+     * @return the mute state, see {@link AudioInputControl.Mute}
+     */
+    int getSliderMuteState(int side);
 
     /** Updates the UI according to current state. */
     void updateLayout();

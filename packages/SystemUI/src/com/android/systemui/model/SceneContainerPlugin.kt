@@ -42,6 +42,9 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * A plugin for [SysUiState] that provides overrides for certain state flags that must be pulled
  * from the scene framework when that framework is enabled.
+ *
+ * Note that those flags only apply to the display id containing the shade window, as defined by
+ * [com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor.displayId]
  */
 interface SceneContainerPlugin {
     /**

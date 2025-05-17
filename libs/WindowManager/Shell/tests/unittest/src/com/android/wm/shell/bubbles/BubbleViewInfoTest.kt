@@ -33,6 +33,7 @@ import com.android.launcher3.icons.BubbleIconFactory
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayImeController
@@ -57,6 +58,7 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.Optional
 import java.util.concurrent.Executor
 
 /** Tests for loading / inflating views & icons for a bubble. */
@@ -74,6 +76,7 @@ class BubbleViewInfoTest : ShellTestCase() {
     private lateinit var bubbleStackView: BubbleStackView
     private lateinit var bubbleBarLayerView: BubbleBarLayerView
     private lateinit var bubblePositioner: BubblePositioner
+    private lateinit var bubbleAppInfoProvider: PackageManagerBubbleAppInfoProvider
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
         BubbleTaskView(mock<TaskView>(), mock<Executor>())
@@ -117,6 +120,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bgExecutor
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }
+        bubbleAppInfoProvider = PackageManagerBubbleAppInfoProvider()
 
         bubbleController =
             BubbleController(
@@ -151,6 +155,8 @@ class BubbleViewInfoTest : ShellTestCase() {
                 mock<IWindowManager>(),
                 BubbleResizabilityChecker(),
                 mock<HomeIntentProvider>(),
+                bubbleAppInfoProvider,
+                { Optional.empty() },
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)
@@ -179,6 +185,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubbleStackView,
                 iconFactory,
                 bubble,
+                bubbleAppInfoProvider,
                 false /* skipInflation */
             )
         assertThat(info!!).isNotNull()
@@ -205,6 +212,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubbleBarLayerView,
                 iconFactory,
                 bubble,
+                bubbleAppInfoProvider,
                 false /* skipInflation */
             )
         assertThat(info!!).isNotNull()
@@ -239,6 +247,7 @@ class BubbleViewInfoTest : ShellTestCase() {
                 bubbleBarLayerView,
                 iconFactory,
                 bubble,
+                bubbleAppInfoProvider,
                 true /* skipInflation */
             )
         assertThat(info).isNotNull()

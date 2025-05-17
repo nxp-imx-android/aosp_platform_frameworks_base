@@ -46,6 +46,7 @@ constructor(
         initAttributes(context, attrs, defStyleAttr)
 
         isSelectable = false
+        isPersistent = false
     }
 
     private fun initAttributes(context: Context, attrs: AttributeSet?, defStyleAttr: Int) {

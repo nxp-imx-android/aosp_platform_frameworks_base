@@ -17,6 +17,7 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.pm.UserInfo
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -24,11 +25,15 @@ import com.android.systemui.authentication.data.repository.fakeAuthenticationRep
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.coroutines.collectValues
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.inputmethod.domain.interactor.inputMethodInteractor
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.collectValues
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
@@ -43,31 +48,26 @@ import com.google.common.truth.Truth.assertThat
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
-    private val authenticationInteractor by lazy { kosmos.authenticationInteractor }
-    private val sceneInteractor by lazy { kosmos.sceneInteractor }
-    private val bouncerInteractor by lazy { kosmos.bouncerInteractor }
-    private val selectedUserInteractor by lazy { kosmos.selectedUserInteractor }
-    private val inputMethodInteractor by lazy { kosmos.inputMethodInteractor }
     private val isInputEnabled = MutableStateFlow(true)
+    private val onIntentionalUserInputMock: () -> Unit = mock()
 
     private val underTest by lazy {
         kosmos.passwordBouncerViewModelFactory.create(
             isInputEnabled = isInputEnabled,
-            onIntentionalUserInput = {},
+            onIntentionalUserInput = onIntentionalUserInputMock,
         )
     }
 
@@ -75,54 +75,56 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
     fun setUp() {
         overrideResource(R.string.keyguard_enter_your_password, ENTER_YOUR_PASSWORD)
         overrideResource(R.string.kg_wrong_password, WRONG_PASSWORD)
-        underTest.activateIn(testScope)
+        underTest.activateIn(kosmos.testScope)
     }
 
     @Test
     fun onShown() =
-        testScope.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
             lockDeviceAndOpenPasswordBouncer()
 
-            assertThat(password).isEmpty()
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
             assertThat(currentOverlays).contains(Overlays.Bouncer)
             assertThat(underTest.authenticationMethod).isEqualTo(AuthenticationMethodModel.Password)
         }
 
     @Test
     fun onHidden_resetsPasswordInputAndMessage() =
-        testScope.runTest {
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
             lockDeviceAndOpenPasswordBouncer()
 
-            underTest.onPasswordInputChanged("password")
-            assertThat(password).isNotEmpty()
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
+            assertThat(underTest.textFieldState.text.toString()).isNotEmpty()
 
             underTest.onHidden()
-            assertThat(password).isEmpty()
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
         }
 
     @Test
     fun onPasswordInputChanged() =
-        testScope.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
             lockDeviceAndOpenPasswordBouncer()
 
-            underTest.onPasswordInputChanged("password")
+            verify(onIntentionalUserInputMock, never()).invoke()
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
 
-            assertThat(password).isEqualTo("password")
+            runCurrent()
+
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("password")
+            verify(onIntentionalUserInputMock, times(1)).invoke()
             assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
     fun onAuthenticateKeyPressed_whenCorrect() =
-        testScope.runTest {
-            val authResult by collectLastValue(authenticationInteractor.onAuthenticationResult)
+        kosmos.runTest {
+            val authResult by
+                collectLastValue(kosmos.authenticationInteractor.onAuthenticationResult)
             lockDeviceAndOpenPasswordBouncer()
 
-            underTest.onPasswordInputChanged("password")
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
             underTest.onAuthenticateKeyPressed()
 
             assertThat(authResult).isTrue()
@@ -130,20 +132,21 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun onAuthenticateKeyPressed_whenWrong() =
-        testScope.runTest {
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
+            val authResult by
+                collectLastValue(kosmos.authenticationInteractor.onAuthenticationResult)
             lockDeviceAndOpenPasswordBouncer()
 
-            underTest.onPasswordInputChanged("wrong")
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("wrong")
             underTest.onAuthenticateKeyPressed()
 
-            assertThat(password).isEmpty()
+            assertThat(authResult).isFalse()
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
         }
 
     @Test
     fun onAuthenticateKeyPressed_whenEmpty() =
-        testScope.runTest {
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.Password
             )
@@ -153,24 +156,24 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
             underTest.onAuthenticateKeyPressed()
 
-            assertThat(password).isEmpty()
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
         }
 
     @Test
     fun onAuthenticateKeyPressed_correctAfterWrong() =
-        testScope.runTest {
-            val authResult by collectLastValue(authenticationInteractor.onAuthenticationResult)
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
+            val authResult by
+                collectLastValue(kosmos.authenticationInteractor.onAuthenticationResult)
             lockDeviceAndOpenPasswordBouncer()
 
             // Enter the wrong password:
-            underTest.onPasswordInputChanged("wrong")
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("wrong")
             underTest.onAuthenticateKeyPressed()
-            assertThat(password).isEqualTo("")
             assertThat(authResult).isFalse()
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
 
             // Enter the correct password:
-            underTest.onPasswordInputChanged("password")
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
 
             underTest.onAuthenticateKeyPressed()
 
@@ -179,14 +182,13 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun onShown_againAfterSceneChange_resetsPassword() =
-        testScope.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            val password by collectLastValue(underTest.password)
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
             lockDeviceAndOpenPasswordBouncer()
 
             // The user types a password.
-            underTest.onPasswordInputChanged("password")
-            assertThat(password).isEqualTo("password")
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
+            assertThat(underTest.textFieldState.text.toString()).isEqualTo("password")
 
             // The user doesn't confirm the password, but navigates back to the lockscreen instead.
             hideBouncer()
@@ -195,14 +197,14 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             showBouncer()
 
             // Ensure the previously-entered password is not shown.
-            assertThat(password).isEmpty()
+            assertThat(underTest.textFieldState.text.toString()).isEmpty()
             assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test
     fun onImeDismissed() =
-        testScope.runTest {
-            val events by collectValues(bouncerInteractor.onImeHiddenByUser)
+        kosmos.runTest {
+            val events by collectValues(kosmos.bouncerInteractor.onImeHiddenByUser)
             assertThat(events).isEmpty()
 
             underTest.onImeDismissed()
@@ -211,14 +213,14 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun isTextFieldFocusRequested_initiallyTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isTextFieldFocusRequested by collectLastValue(underTest.isTextFieldFocusRequested)
             assertThat(isTextFieldFocusRequested).isTrue()
         }
 
     @Test
     fun isTextFieldFocusRequested_focusGained_becomesFalse() =
-        testScope.runTest {
+        kosmos.runTest {
             val isTextFieldFocusRequested by collectLastValue(underTest.isTextFieldFocusRequested)
 
             underTest.onTextFieldFocusChanged(isFocused = true)
@@ -228,7 +230,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun isTextFieldFocusRequested_focusLost_becomesTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isTextFieldFocusRequested by collectLastValue(underTest.isTextFieldFocusRequested)
             underTest.onTextFieldFocusChanged(isFocused = true)
 
@@ -239,7 +241,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun isTextFieldFocusRequested_focusLostWhileLockedOut_staysFalse() =
-        testScope.runTest {
+        kosmos.runTest {
             val isTextFieldFocusRequested by collectLastValue(underTest.isTextFieldFocusRequested)
             underTest.onTextFieldFocusChanged(isFocused = true)
             setLockout(true)
@@ -251,7 +253,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun isTextFieldFocusRequested_lockoutCountdownEnds_becomesTrue() =
-        testScope.runTest {
+        kosmos.runTest {
             val isTextFieldFocusRequested by collectLastValue(underTest.isTextFieldFocusRequested)
             underTest.onTextFieldFocusChanged(isFocused = true)
             setLockout(true)
@@ -264,8 +266,8 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun isImeSwitcherButtonVisible() =
-        testScope.runTest {
-            val selectedUserId by collectLastValue(selectedUserInteractor.selectedUser)
+        kosmos.runTest {
+            val selectedUserId by collectLastValue(kosmos.selectedUserInteractor.selectedUser)
             selectUser(USER_INFOS.first())
 
             enableInputMethodsForUser(checkNotNull(selectedUserId))
@@ -281,7 +283,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             selectUser(USER_INFOS.last())
 
             assertThat(
-                    inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(
+                    kosmos.inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(
                         checkNotNull(selectedUserId)
                     )
                 )
@@ -296,7 +298,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun onImeSwitcherButtonClicked() =
-        testScope.runTest {
+        kosmos.runTest {
             val displayId = 7
             assertThat(kosmos.fakeInputMethodRepository.inputMethodPickerShownDisplayId)
                 .isNotEqualTo(displayId)
@@ -310,8 +312,9 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
 
     @Test
     fun afterSuccessfulAuthentication_focusIsNotRequested() =
-        testScope.runTest {
-            val authResult by collectLastValue(authenticationInteractor.onAuthenticationResult)
+        kosmos.runTest {
+            val authResult by
+                collectLastValue(kosmos.authenticationInteractor.onAuthenticationResult)
             val textInputFocusRequested by collectLastValue(underTest.isTextFieldFocusRequested)
             lockDeviceAndOpenPasswordBouncer()
 
@@ -330,7 +333,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             assertThat(textInputFocusRequested).isFalse()
 
             // authenticate successfully.
-            underTest.onPasswordInputChanged("password")
+            underTest.textFieldState.setTextAndPlaceCursorAtEnd("password")
             underTest.onAuthenticateKeyPressed()
             runCurrent()
 
@@ -343,31 +346,31 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             assertThat(textInputFocusRequested).isFalse()
         }
 
-    private fun TestScope.showBouncer() {
-        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-        sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+    private fun Kosmos.showBouncer() {
+        val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
+        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
         runCurrent()
 
         assertThat(currentOverlays).contains(Overlays.Bouncer)
     }
 
-    private fun TestScope.hideBouncer() {
-        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-        sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
+    private fun Kosmos.hideBouncer() {
+        val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
+        kosmos.sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")
         underTest.onHidden()
         runCurrent()
 
         assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
     }
 
-    private fun TestScope.lockDeviceAndOpenPasswordBouncer() {
+    private fun Kosmos.lockDeviceAndOpenPasswordBouncer() {
         kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
             AuthenticationMethodModel.Password
         )
         showBouncer()
     }
 
-    private suspend fun TestScope.setLockout(isLockedOut: Boolean, failedAttemptCount: Int = 5) {
+    private suspend fun Kosmos.setLockout(isLockedOut: Boolean, failedAttemptCount: Int = 5) {
         if (isLockedOut) {
             repeat(failedAttemptCount) {
                 kosmos.fakeAuthenticationRepository.reportAuthenticationAttempt(false)
@@ -383,7 +386,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
         runCurrent()
     }
 
-    private fun TestScope.selectUser(userInfo: UserInfo) {
+    private fun Kosmos.selectUser(userInfo: UserInfo) {
         kosmos.fakeUserRepository.selectedUser.value =
             SelectedUserModel(
                 userInfo = userInfo,
@@ -398,7 +401,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
             createInputMethodWithSubtypes(auxiliarySubtypes = 0, nonAuxiliarySubtypes = 0),
             createInputMethodWithSubtypes(auxiliarySubtypes = 0, nonAuxiliarySubtypes = 1),
         )
-        assertThat(inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(userId)).isTrue()
+        assertThat(kosmos.inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(userId)).isTrue()
     }
 
     private fun createInputMethodWithSubtypes(

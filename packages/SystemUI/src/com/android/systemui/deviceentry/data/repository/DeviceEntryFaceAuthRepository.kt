@@ -113,8 +113,11 @@ interface DeviceEntryFaceAuthRepository {
     /** Current state of whether face authentication is running. */
     val isAuthRunning: StateFlow<Boolean>
 
+    /** Current state of whether face detection is running. */
+    val isDetectRunning: StateFlow<Boolean>
+
     /** Whether bypass is currently enabled */
-    val isBypassEnabled: Flow<Boolean>
+    val isBypassEnabled: StateFlow<Boolean>
 
     /** Set whether face authentication should be locked out or not */
     fun setLockedOut(isLockedOut: Boolean)
@@ -197,6 +200,9 @@ constructor(
     override val isAuthRunning: StateFlow<Boolean>
         get() = _isAuthRunning
 
+    private val _isDetectRunning = MutableStateFlow(false)
+    override val isDetectRunning: StateFlow<Boolean> = _isDetectRunning
+
     private val keyguardSessionId: InstanceId?
         get() = sessionTracker.getSessionId(StatusBarManager.SESSION_KEYGUARD)
 
@@ -209,20 +215,25 @@ constructor(
 
     private var cancellationInProgress = MutableStateFlow(false)
 
-    override val isBypassEnabled: Flow<Boolean> =
-        keyguardBypassController?.let {
-            conflatedCallbackFlow {
-                val callback =
-                    object : KeyguardBypassController.OnBypassStateChangedListener {
-                        override fun onBypassStateChanged(isEnabled: Boolean) {
-                            trySendWithFailureLogging(isEnabled, TAG, "BypassStateChanged")
+    override val isBypassEnabled: StateFlow<Boolean> =
+        (keyguardBypassController?.let {
+                conflatedCallbackFlow {
+                    val callback =
+                        object : KeyguardBypassController.OnBypassStateChangedListener {
+                            override fun onBypassStateChanged(isEnabled: Boolean) {
+                                trySendWithFailureLogging(isEnabled, TAG, "BypassStateChanged")
+                            }
                         }
-                    }
-                it.registerOnBypassStateChangedListener(callback)
-                trySendWithFailureLogging(it.bypassEnabled, TAG, "BypassStateChanged")
-                awaitClose { it.unregisterOnBypassStateChangedListener(callback) }
-            }
-        } ?: flowOf(false)
+                    it.registerOnBypassStateChangedListener(callback)
+                    trySendWithFailureLogging(it.bypassEnabled, TAG, "BypassStateChanged")
+                    awaitClose { it.unregisterOnBypassStateChangedListener(callback) }
+                }
+            } ?: flowOf(false))
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = keyguardBypassController?.isBypassEnabled() ?: false,
+            )
 
     override fun setLockedOut(isLockedOut: Boolean) {
         _isLockedOut.value = isLockedOut
@@ -397,14 +408,15 @@ constructor(
                         .map { it.isTransitioning(to = Scenes.Gone) || it.isIdle(Scenes.Gone) }
                         .isFalse()
                 } else {
-                    (keyguardTransitionInteractor.isFinishedIn(KeyguardState.GONE)
-                        .or(
-                            keyguardTransitionInteractor.isInTransition(
-                                Edge.create(to = Scenes.Gone),
-                                Edge.create(to = KeyguardState.GONE)
-                            )
-                        )
-                    ).isFalse()
+                    (keyguardTransitionInteractor
+                            .isFinishedIn(KeyguardState.GONE)
+                            .or(
+                                keyguardTransitionInteractor.isInTransition(
+                                    Edge.create(to = Scenes.Gone),
+                                    Edge.create(to = KeyguardState.GONE),
+                                )
+                            ))
+                        .isFalse()
                 },
                 "keyguardNotGoneOrTransitioningToGone",
             ),
@@ -552,6 +564,7 @@ constructor(
 
     private val detectionCallback =
         FaceManager.FaceDetectionCallback { sensorId, userId, isStrong ->
+            _isDetectRunning.value = false
             faceAuthLogger.faceDetected()
             _detectionStatus.value = FaceDetectionStatus(sensorId, userId, isStrong)
         }
@@ -669,6 +682,7 @@ constructor(
             return
         }
         withContext(mainDispatcher) {
+            _isDetectRunning.value = true
             // We always want to invoke face detect in the main thread.
             faceAuthLogger.faceDetectionStarted()
             detectCancellationSignal?.cancel()
@@ -688,12 +702,13 @@ constructor(
         get() = userRepository.getSelectedUserInfo().id
 
     private fun cancelDetection() {
+        _isDetectRunning.value = false
         detectCancellationSignal?.cancel()
         detectCancellationSignal = null
     }
 
     override fun cancel() {
-        if (authCancellationSignal == null) return
+        if (authCancellationSignal == null && detectCancellationSignal == null) return
 
         authCancellationSignal?.cancel()
         cancelNotReceivedHandlerJob?.cancel()
@@ -711,6 +726,7 @@ constructor(
             }
         cancellationInProgress.value = true
         _isAuthRunning.value = false
+        _isDetectRunning.value = false
     }
 
     companion object {

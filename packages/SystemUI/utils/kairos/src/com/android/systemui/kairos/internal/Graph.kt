@@ -16,7 +16,9 @@
 
 package com.android.systemui.kairos.internal
 
+import androidx.collection.MutableScatterSet
 import com.android.systemui.kairos.internal.util.Bag
+import com.android.systemui.kairos.internal.util.fastForEach
 import java.util.TreeMap
 
 /**
@@ -340,10 +342,10 @@ internal class DepthTracker {
  */
 internal class DownstreamSet {
 
-    val outputs = HashSet<Output<*>>()
-    val stateWriters = mutableListOf<StateSource<*>>()
-    val muxMovers = HashSet<MuxDeferredNode<*, *, *>>()
-    val nodes = HashSet<SchedulableNode>()
+    val outputs = MutableScatterSet<Output<*>>(initialCapacity = 0)
+    val stateWriters = ArrayList<StateSource<*>>(/* initialCapacity= */ 0)
+    val muxMovers = MutableScatterSet<MuxDeferredNode<*, *, *>>(initialCapacity = 0)
+    val nodes = MutableScatterSet<SchedulableNode>(initialCapacity = 0)
 
     fun add(schedulable: Schedulable) {
         when (schedulable) {
@@ -364,9 +366,7 @@ internal class DownstreamSet {
     }
 
     fun adjustDirectUpstream(scheduler: Scheduler, oldDepth: Int, newDepth: Int) {
-        for (node in nodes) {
-            node.adjustDirectUpstream(scheduler, oldDepth, newDepth)
-        }
+        nodes.forEach { node -> node.adjustDirectUpstream(scheduler, oldDepth, newDepth) }
     }
 
     fun moveIndirectUpstreamToDirect(
@@ -375,7 +375,7 @@ internal class DownstreamSet {
         oldIndirectSet: Set<MuxDeferredNode<*, *, *>>,
         newDirectDepth: Int,
     ) {
-        for (node in nodes) {
+        nodes.forEach { node ->
             node.moveIndirectUpstreamToDirect(
                 scheduler,
                 oldIndirectDepth,
@@ -383,7 +383,7 @@ internal class DownstreamSet {
                 newDirectDepth,
             )
         }
-        for (mover in muxMovers) {
+        muxMovers.forEach { mover ->
             mover.moveIndirectPatchNodeToDirect(scheduler, oldIndirectDepth, oldIndirectSet)
         }
     }
@@ -395,10 +395,10 @@ internal class DownstreamSet {
         removals: Set<MuxDeferredNode<*, *, *>>,
         additions: Set<MuxDeferredNode<*, *, *>>,
     ) {
-        for (node in nodes) {
+        nodes.forEach { node ->
             node.adjustIndirectUpstream(scheduler, oldDepth, newDepth, removals, additions)
         }
-        for (mover in muxMovers) {
+        muxMovers.forEach { mover ->
             mover.adjustIndirectPatchNode(scheduler, oldDepth, newDepth, removals, additions)
         }
     }
@@ -409,7 +409,7 @@ internal class DownstreamSet {
         newIndirectDepth: Int,
         newIndirectSet: Set<MuxDeferredNode<*, *, *>>,
     ) {
-        for (node in nodes) {
+        nodes.forEach { node ->
             node.moveDirectUpstreamToIndirect(
                 scheduler,
                 oldDirectDepth,
@@ -417,7 +417,7 @@ internal class DownstreamSet {
                 newIndirectSet,
             )
         }
-        for (mover in muxMovers) {
+        muxMovers.forEach { mover ->
             mover.moveDirectPatchNodeToIndirect(scheduler, newIndirectDepth, newIndirectSet)
         }
     }
@@ -427,27 +427,17 @@ internal class DownstreamSet {
         depth: Int,
         indirectSet: Set<MuxDeferredNode<*, *, *>>,
     ) {
-        for (node in nodes) {
-            node.removeIndirectUpstream(scheduler, depth, indirectSet)
-        }
-        for (mover in muxMovers) {
-            mover.removeIndirectPatchNode(scheduler, depth, indirectSet)
-        }
-        for (output in outputs) {
-            output.kill()
-        }
+        nodes.forEach { node -> node.removeIndirectUpstream(scheduler, depth, indirectSet) }
+        muxMovers.forEach { mover -> mover.removeIndirectPatchNode(scheduler, depth, indirectSet) }
+        outputs.forEach { output -> output.kill() }
+        stateWriters.fastForEach { writer -> writer.kill() }
     }
 
     fun removeDirectUpstream(scheduler: Scheduler, depth: Int) {
-        for (node in nodes) {
-            node.removeDirectUpstream(scheduler, depth)
-        }
-        for (mover in muxMovers) {
-            mover.removeDirectPatchNode(scheduler)
-        }
-        for (output in outputs) {
-            output.kill()
-        }
+        nodes.forEach { node -> node.removeDirectUpstream(scheduler, depth) }
+        muxMovers.forEach { mover -> mover.removeDirectPatchNode(scheduler) }
+        outputs.forEach { output -> output.kill() }
+        stateWriters.fastForEach { writer -> writer.kill() }
     }
 
     fun clear() {
@@ -479,17 +469,9 @@ internal fun scheduleAll(
     downstreamSet: DownstreamSet,
     evalScope: EvalScope,
 ): Boolean {
-    for (node in downstreamSet.nodes) {
-        node.schedule(logIndent, evalScope)
-    }
-    for (mover in downstreamSet.muxMovers) {
-        mover.scheduleMover(logIndent, evalScope)
-    }
-    for (output in downstreamSet.outputs) {
-        output.schedule(logIndent, evalScope)
-    }
-    for (idx in downstreamSet.stateWriters.indices) {
-        evalScope.schedule(downstreamSet.stateWriters[idx])
-    }
+    downstreamSet.nodes.forEach { node -> node.schedule(logIndent, evalScope) }
+    downstreamSet.muxMovers.forEach { mover -> mover.scheduleMover(logIndent, evalScope) }
+    downstreamSet.outputs.forEach { output -> output.schedule(logIndent, evalScope) }
+    downstreamSet.stateWriters.fastForEach { writer -> writer.schedule(logIndent, evalScope) }
     return downstreamSet.isNotEmpty()
 }

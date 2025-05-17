@@ -95,4 +95,22 @@
         <item name="android:height">200px</item>
     </style>
 
+    <style name="ForceDarkAllowed" />
+    <style name="ForceDarkAllowed.Light">
+        <item name="android:isLightTheme">true</item>
+        <item name="android:forceDarkAllowed">true</item>
+    </style>
+    <style name="ForceDarkAllowed.Dark">
+        <item name="android:isLightTheme">false</item>
+        <item name="android:forceDarkAllowed">true</item>
+    </style>
+    <style name="ForceDarkAllowedFalse" />
+    <style name="ForceDarkAllowedFalse.Light">
+        <item name="android:isLightTheme">true</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+    <style name="ForceDarkAllowedFalse.Dark">
+        <item name="android:isLightTheme">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
 </resources>

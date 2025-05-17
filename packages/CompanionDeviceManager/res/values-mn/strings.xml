@@ -36,7 +36,8 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="DEVICE_NAME">%2$s</xliff:g>-н өмнөөс таны <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>-с апп болон системийн онцлог дамжуулах зөвшөөрлийг хүсэж байна"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <string name="title_computer" msgid="3214922337624458692">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>&lt;/strong&gt;-д таны утаснаас энэ мэдээлэлд хандахыг зөвшөөрнө үү"</string>
+    <!-- no translation found for title_computer (5040395223341777259) -->
+    <skip />
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> таны <xliff:g id="DEVICE_NAME">%2$s</xliff:g>-н өмнөөс <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>-н зураг, медиа, мэдэгдэлд хандах зөвшөөрлийг хүсэж байна"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;-д таны <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-н аппыг &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;-д дамжуулахыг зөвшөөрөх үү?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> аудио, зураг, төлбөрийн мэдээлэл, нууц үг, мессеж зэрэг <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> дээр харагдаж, тоглуулж буй аливаа зүйлд хандах эрхтэй болно.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> таныг энэ зөвшөөрөлд хандах эрхийг нь хасах хүртэл <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>-д апп дамжуулах боломжтой байх болно."</string>

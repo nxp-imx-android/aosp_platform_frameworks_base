@@ -40,6 +40,8 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.splitscreen.SplitScreen;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
 
@@ -109,7 +111,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                     animateOpenIntentWithRemoteAndPipOrDesktop(transition, info, startTransaction,
                             finishTransaction, finishCallback);
             case TYPE_UNFOLD ->
-                    animateUnfold(info, startTransaction, finishTransaction, finishCallback);
+                    animateUnfold(transition, info, startTransaction, finishTransaction,
+                            finishCallback);
             case TYPE_OPEN_IN_DESKTOP ->
                     animateOpenInDesktop(
                             transition, info, startTransaction, finishTransaction, finishCallback);
@@ -352,6 +355,23 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 transition);
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Animating a mixed transition for "
                 + "entering Bubbles while Split-Screen is foreground by %s", handler);
+
+        TransitionInfo.Change bubblingTask = getChangeForBubblingTask(info, bubbleTransitions);
+        // find previous split location for other task
+        @SplitScreen.StageType int topSplitStageToKeep = SplitScreen.STAGE_TYPE_UNDEFINED;
+        for (int i = info.getChanges().size() - 1; i >= 0; i--) {
+            TransitionInfo.Change change = info.getChanges().get(i);
+            if (change == bubblingTask) continue;
+            int prevStage = splitHandler.getSplitItemStage(change.getLastParent());
+            if (prevStage != SplitScreen.STAGE_TYPE_UNDEFINED) {
+                topSplitStageToKeep = prevStage;
+                break;
+            }
+        }
+        splitHandler.prepareDismissAnimation(topSplitStageToKeep,
+                SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_BUBBLE, info, startTransaction,
+                finishTransaction);
+
         // TODO(b/408328557): Migrate to checking transition token
         handler.startAnimation(transition, info, startTransaction, finishTransaction,
                 finishCallback);
@@ -366,21 +386,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull Transitions.TransitionFinishCallback finishCallback,
             @NonNull BubbleTransitions bubbleTransitions) {
         // Identify the task being launched into a bubble
-        TransitionInfo.Change bubblingTask = null;
-        for (int i = 0; i < info.getChanges().size(); i++) {
-            final TransitionInfo.Change chg = info.getChanges().get(i);
-            if (chg.getTaskInfo() != null
-                    && chg.getTaskInfo().getActivityType() == ACTIVITY_TYPE_STANDARD) {
-                if (!TransitionUtil.isOpeningMode(chg.getMode())
-                        && chg.getMode() != TRANSIT_CHANGE) {
-                    continue;
-                }
-                if (!bubbleTransitions.shouldBeAppBubble(chg.getTaskInfo())) {
-                    continue;
-                }
-                bubblingTask = chg;
-            }
-        }
+        TransitionInfo.Change bubblingTask = getChangeForBubblingTask(info, bubbleTransitions);
         if (bubblingTask == null) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " No bubbling task found");
             return false;
@@ -404,7 +410,27 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
         return true;
     }
 
+    private static @Nullable TransitionInfo.Change getChangeForBubblingTask(
+            @NonNull TransitionInfo info, BubbleTransitions bubbleTransitions) {
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change chg = info.getChanges().get(i);
+            if (chg.getTaskInfo() != null
+                    && chg.getTaskInfo().getActivityType() == ACTIVITY_TYPE_STANDARD) {
+                if (!TransitionUtil.isOpeningMode(chg.getMode())
+                        && chg.getMode() != TRANSIT_CHANGE) {
+                    continue;
+                }
+                if (!bubbleTransitions.shouldBeAppBubble(chg.getTaskInfo())) {
+                    continue;
+                }
+                return chg;
+            }
+        }
+        return null;
+    }
+
     private boolean animateUnfold(
+            @NonNull IBinder transition,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
@@ -416,6 +442,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             mInFlightSubAnimations--;
             if (mInFlightSubAnimations > 0) return;
             finishCallback.onTransitionFinished(wct);
+            mBubbleTransitions.notifyUnfoldTransitionFinished(transition);
         };
         mInFlightSubAnimations = 1;
         // Sync pip state.

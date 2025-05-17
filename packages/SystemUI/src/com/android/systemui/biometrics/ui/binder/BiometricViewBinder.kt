@@ -54,6 +54,8 @@ import com.android.systemui.biometrics.ui.viewmodel.PromptMessage
 import com.android.systemui.biometrics.ui.viewmodel.PromptSize
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
 import com.android.systemui.common.ui.view.onTouchListener
+import com.android.systemui.deviceentry.ui.binder.UdfpsAccessibilityOverlayBinder
+import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.VibratorHelper
@@ -103,7 +105,10 @@ object BiometricViewBinder {
         val descriptionView = view.requireViewById<TextView>(R.id.description)
         val customizedViewContainer =
             view.requireViewById<LinearLayout>(R.id.customized_view_container)
-        val udfpsGuidanceView = view.requireViewById<View>(R.id.panel)
+        val udfpsGuidanceView =
+            view.requireViewById<UdfpsAccessibilityOverlay>(
+                R.id.biometric_prompt_udfps_accessibility_overlay
+            )
 
         // set selected to enable marquee unless a screen reader is enabled
         titleView.isSelected =
@@ -185,6 +190,13 @@ object BiometricViewBinder {
             titleView.text = viewModel.title.first()
             subtitleView.text = viewModel.subtitle.first()
             descriptionView.text = viewModel.description.first()
+
+            if (modalities.hasUdfps) {
+                UdfpsAccessibilityOverlayBinder.bind(
+                    udfpsGuidanceView,
+                    viewModel.udfpsAccessibilityOverlayViewModel,
+                )
+            }
 
             BiometricCustomizedViewBinder.bind(
                 customizedViewContainer,
@@ -390,22 +402,6 @@ object BiometricViewBinder {
                         indicatorMessageView.isSelected =
                             !accessibilityManager.isEnabled ||
                                 !accessibilityManager.isTouchExplorationEnabled
-                    }
-                }
-
-                // Talkback directional guidance
-                udfpsGuidanceView.setOnHoverListener { _, event ->
-                    launch {
-                        viewModel.onAnnounceAccessibilityHint(
-                            event,
-                            accessibilityManager.isTouchExplorationEnabled,
-                        )
-                    }
-                    false
-                }
-                launch {
-                    viewModel.accessibilityHint.collect { message ->
-                        if (message.isNotBlank()) view.announceForAccessibility(message)
                     }
                 }
 

@@ -142,7 +142,10 @@ class DesktopTilingWindowDecoration(
         isDarkMode = isTaskInDarkMode(taskInfo)
         // Observe drag resizing to break tiling if a task is drag resized.
         desktopModeWindowDecoration.addDragResizeListener(this)
-        val callback = { initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp) }
+        val callback: () -> Unit = {
+            initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp)
+            moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
+        }
         updateDesktopRepository(taskInfo.taskId, snapPosition = position)
         if (isTiled) {
             val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
@@ -498,7 +501,8 @@ class DesktopTilingWindowDecoration(
     }
 
     private fun isMinimized(changeMode: Int, infoType: Int): Boolean {
-        return changeMode == TRANSIT_TO_BACK && infoType == TRANSIT_MINIMIZE
+        return changeMode == TRANSIT_TO_BACK &&
+            (infoType == TRANSIT_MINIMIZE || infoType == TRANSIT_OPEN)
     }
 
     private fun isEnteringPip(change: Change, transitType: Int): Boolean {

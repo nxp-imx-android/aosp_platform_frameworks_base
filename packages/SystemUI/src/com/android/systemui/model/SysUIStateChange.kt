@@ -94,4 +94,11 @@ class StateChange {
             )
         })"""
     }
+
+    companion object {
+        /** Creates a [StateChange] from a list of pairs. */
+        fun from(iterable: Iterable<Pair<Long, Boolean>>): StateChange {
+            return StateChange().apply { iterable.forEach { (bit, state) -> setFlag(bit, state) } }
+        }
+    }
 }

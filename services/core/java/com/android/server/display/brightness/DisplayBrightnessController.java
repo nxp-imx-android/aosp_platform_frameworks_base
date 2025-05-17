@@ -65,11 +65,11 @@ public final class DisplayBrightnessController {
     // mCurrentScreenBrightness is updated.
     private final Runnable mOnBrightnessChangeRunnable;
 
-    // The screen brightness that has changed but not taken effect yet. If this is different
-    // from the current screen brightness then this is coming from something other than us
-    // and should be considered a user interaction.
+    // The screen brightness that has changed but not taken effect yet. If after applying min
+    // and max constraints this is different from the current  screen brightness then this
+    // is coming from something other than us and should be considered a user interaction.
     @GuardedBy("mLock")
-    private float mPendingScreenBrightness;
+    private float mPendingUnthrottledScreenBrightness;
 
     // The last observed screen brightness, either set by us or by the settings app on
     // behalf of the user.
@@ -142,7 +142,7 @@ public final class DisplayBrightnessController {
         mDisplayId = displayId;
         // TODO: b/186428377 update brightness setting when display changes
         mBrightnessSetting = brightnessSetting;
-        mPendingScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+        mPendingUnthrottledScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
         mScreenBrightnessDefault = BrightnessUtils.clampAbsoluteBrightness(defaultScreenBrightness);
         mCurrentScreenBrightness = getScreenBrightnessSetting();
         mCurrentUnthrottledBrightness = mCurrentScreenBrightness;
@@ -267,10 +267,9 @@ public final class DisplayBrightnessController {
     public void setAndNotifyCurrentScreenBrightness(float brightnessValue) {
         final boolean hasBrightnessChanged;
         synchronized (mLock) {
-            float brightnessAdjusted = MathUtils
-                    .constrain(brightnessValue, mCurrentMinBrightness, mCurrentMaxBrightness);
+            float brightnessAdjusted = getBrightnessConstrainedLocked(brightnessValue);
             hasBrightnessChanged = (brightnessAdjusted != mCurrentScreenBrightness);
-            setCurrentScreenBrightnessLocked(brightnessAdjusted);
+            mCurrentScreenBrightness = brightnessAdjusted;
             mCurrentUnthrottledBrightness = brightnessValue;
         }
         if (hasBrightnessChanged) {
@@ -287,12 +286,10 @@ public final class DisplayBrightnessController {
         }
     }
 
-    /**
-     * Returns the screen brightness which has changed but has not taken any effect so far.
-     */
-    public float getPendingScreenBrightness() {
+    @VisibleForTesting
+    float getPendingScreenBrightness() {
         synchronized (mLock) {
-            return mPendingScreenBrightness;
+            return mPendingUnthrottledScreenBrightness;
         }
     }
 
@@ -302,8 +299,7 @@ public final class DisplayBrightnessController {
     public void handleSettingsChange() {
         float brightness = getScreenBrightnessSetting();
         synchronized (mLock) {
-            mPendingScreenBrightness = MathUtils.constrain(
-                    brightness, mCurrentMinBrightness, mCurrentMaxBrightness);
+            mPendingUnthrottledScreenBrightness = brightness;
         }
     }
 
@@ -353,13 +349,15 @@ public final class DisplayBrightnessController {
      * Returns the current screen brightnessSetting constrained by current min and max values
      */
     public float getScreenBrightnessSettingConstrained() {
-        float brightness = getScreenBrightnessSetting();
-        float maxBrightness, minBrightness;
-        synchronized (mLock) {
-            maxBrightness = mCurrentMaxBrightness;
-            minBrightness = mCurrentMinBrightness;
+        float brightness = mBrightnessSetting.getBrightness();
+        if (Float.isNaN(brightness)) {
+            brightness = mScreenBrightnessDefault;
         }
-        return MathUtils.constrain(brightness, minBrightness, maxBrightness);
+        float brightnessAdjusted;
+        synchronized (mLock) {
+            brightnessAdjusted = getBrightnessConstrainedLocked(brightness);
+        }
+        return brightnessAdjusted;
     }
 
     /**
@@ -397,7 +395,6 @@ public final class DisplayBrightnessController {
         float maxBrightness;
         synchronized (mLock) {
             maxBrightness = mCurrentMaxBrightness;
-            mCurrentUnthrottledBrightness = brightnessValue;
         }
         setBrightnessInternal(brightnessValue, maxBrightness);
     }
@@ -414,20 +411,33 @@ public final class DisplayBrightnessController {
      */
     public void updateScreenBrightnessSetting(float brightnessValue,
             float minBrightness, float maxBrightness) {
-        float adjustedBrightness = MathUtils
+        float constrainedBrightness = MathUtils
                 .constrain(brightnessValue, minBrightness, maxBrightness);
+        boolean constrainedBrightnessChanged = false;
+        boolean rawBrightnessChanged = false;
         synchronized (mLock) {
             mCurrentMaxBrightness = maxBrightness;
             mCurrentMinBrightness = minBrightness;
-            if (!BrightnessUtils.isValidBrightnessValue(adjustedBrightness)
-                    || adjustedBrightness == mCurrentScreenBrightness) {
+            if (!BrightnessUtils.isValidBrightnessValue(brightnessValue)) {
                 return;
             }
+            if (constrainedBrightness != mCurrentScreenBrightness) {
+                constrainedBrightnessChanged = true;
+            }
+            if (brightnessValue != mCurrentUnthrottledBrightness) {
+                rawBrightnessChanged = true;
+            }
+
+            mCurrentScreenBrightness = constrainedBrightness;
             mCurrentUnthrottledBrightness = brightnessValue;
-            setCurrentScreenBrightnessLocked(adjustedBrightness);
         }
-        notifyCurrentScreenBrightness();
-        setBrightnessInternal(brightnessValue, maxBrightness);
+
+        if (constrainedBrightnessChanged) {
+            notifyCurrentScreenBrightness();
+        }
+        if (rawBrightnessChanged) {
+            setBrightnessInternal(brightnessValue, maxBrightness);
+        }
     }
 
     /**
@@ -555,7 +565,8 @@ public final class DisplayBrightnessController {
         synchronized (mLock) {
             writer.println("  mCurrentMinBrightness=" + mCurrentMinBrightness);
             writer.println("  mCurrentMaxBrightness=" + mCurrentMaxBrightness);
-            writer.println("  mPendingScreenBrightness=" + mPendingScreenBrightness);
+            writer.println("  mPendingUnthrottledScreenBrightness="
+                    + mPendingUnthrottledScreenBrightness);
             writer.println("  mCurrentScreenBrightness=" + mCurrentScreenBrightness);
             writer.println("  mCurrentUnthrottledBrightness=" + mCurrentUnthrottledBrightness);
             writer.println("  mLastUserSetScreenBrightness="
@@ -578,18 +589,20 @@ public final class DisplayBrightnessController {
     boolean updateUserSetScreenBrightness() {
         mUserSetScreenBrightnessUpdated = false;
         synchronized (mLock) {
-            if (!BrightnessUtils.isValidBrightnessValue(mPendingScreenBrightness)) {
+            if (!BrightnessUtils.isValidBrightnessValue(mPendingUnthrottledScreenBrightness)) {
                 return false;
             }
-            if (mCurrentScreenBrightness == mPendingScreenBrightness) {
-                mPendingScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
-                setTemporaryBrightnessLocked(PowerManager.BRIGHTNESS_INVALID_FLOAT);
-                return false;
-            }
-            setCurrentScreenBrightnessLocked(mPendingScreenBrightness);
-            mLastUserSetScreenBrightness = mPendingScreenBrightness;
-            mPendingScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+            float pendingBrightnessConstrained = getBrightnessConstrainedLocked(
+                    mPendingUnthrottledScreenBrightness);
+            mCurrentUnthrottledBrightness = mPendingUnthrottledScreenBrightness;
+            mPendingUnthrottledScreenBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
             setTemporaryBrightnessLocked(PowerManager.BRIGHTNESS_INVALID_FLOAT);
+
+            if (mCurrentScreenBrightness == pendingBrightnessConstrained) {
+                return false;
+            }
+            mCurrentScreenBrightness = pendingBrightnessConstrained;
+            mLastUserSetScreenBrightness = pendingBrightnessConstrained;
         }
         notifyCurrentScreenBrightness();
         mUserSetScreenBrightnessUpdated = true;
@@ -677,13 +690,6 @@ public final class DisplayBrightnessController {
                 .setTemporaryScreenBrightness(temporaryBrightness);
     }
 
-    @GuardedBy("mLock")
-    private void setCurrentScreenBrightnessLocked(float brightnessValue) {
-        if (brightnessValue != mCurrentScreenBrightness) {
-            mCurrentScreenBrightness = brightnessValue;
-        }
-    }
-
     private void notifyCurrentScreenBrightness() {
         mBrightnessChangeExecutor.execute(mOnBrightnessChangeRunnable);
     }
@@ -737,5 +743,10 @@ public final class DisplayBrightnessController {
             DisplayManagerInternal.DisplayOffloadSession offloadSession) {
         return new StrategyExecutionRequest(displayPowerRequest, mCurrentUnthrottledBrightness,
                 mUserSetScreenBrightnessUpdated, mIsStylusBeingUsed, offloadSession);
+    }
+
+    @GuardedBy("mLock")
+    private float getBrightnessConstrainedLocked(float brightness) {
+        return MathUtils.constrain(brightness, mCurrentMinBrightness, mCurrentMaxBrightness);
     }
 }

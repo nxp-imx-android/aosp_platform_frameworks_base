@@ -33,6 +33,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
@@ -58,6 +59,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     private final WindowDecorViewModel mWindowDecorViewModel;
     private final Optional<TaskChangeListener> mTaskChangeListener;
     private final FocusTransitionObserver mFocusTransitionObserver;
+    private final DesksOrganizer mDesksOrganizer;
     private final Optional<DesksTransitionObserver> mDesksTransitionObserver;
     private final Optional<DesktopImeHandler> mDesktopImeHandler;
     private final Optional<DesktopBackNavTransitionObserver> mDesktopBackNavTransitionObserver;
@@ -75,6 +77,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
+            DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
@@ -84,6 +87,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         mWindowDecorViewModel = windowDecorViewModel;
         mTaskChangeListener = taskChangeListener;
         mFocusTransitionObserver = focusTransitionObserver;
+        mDesksOrganizer = desksOrganizer;
         mDesksTransitionObserver = desksTransitionObserver;
         mDesktopImeHandler = desktopImeHandler;
         mDesktopBackNavTransitionObserver = desktopBackNavTransitionObserver;
@@ -178,11 +182,17 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         }
     }
 
-    private static boolean shouldSkipChange(
+    private boolean shouldSkipChange(
             @NonNull TransitionInfo info,
             TransitionInfo.Change change,
             ArrayList<WindowContainerToken> taskParents) {
         if ((change.getFlags() & TransitionInfo.FLAG_IS_WALLPAPER) != 0) {
+            return true;
+        }
+
+        // Skip desk changes so that window decorations are not added to desk root tasks
+        if (DesktopExperienceFlags.ENABLE_NO_WINDOW_DECORATION_FOR_DESKS.isTrue()
+                && mDesksOrganizer.isDeskChange(change)) {
             return true;
         }
 
@@ -199,10 +209,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             // between tasks (hierarchically).
             taskParents.add(change.getParent());
         }
-        if (taskParents.contains(change.getContainer())) {
-            return true;
-        }
-        return false;
+        return taskParents.contains(change.getContainer());
     }
 
     private void onOpenTransitionReady(

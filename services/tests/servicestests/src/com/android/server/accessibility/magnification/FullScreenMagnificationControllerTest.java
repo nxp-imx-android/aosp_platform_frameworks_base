@@ -29,10 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -248,40 +245,6 @@ public class FullScreenMagnificationControllerTest {
 
         // Once for each display on unregister
         verify(mMockThumbnail, times(2)).hideThumbnail();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
-    public void testRegister_RegistersPointerMotionFilter() {
-        register(DISPLAY_0);
-
-        verify(mMockInputManager).registerAccessibilityPointerMotionFilter(
-                any(InputManagerInternal.AccessibilityPointerMotionFilter.class));
-
-        // If a filter is already registered, adding a display won't invoke another filter
-        // registration.
-        clearInvocations(mMockInputManager);
-        register(DISPLAY_1);
-        register(INVALID_DISPLAY);
-
-        verify(mMockInputManager, times(0)).registerAccessibilityPointerMotionFilter(
-                any(InputManagerInternal.AccessibilityPointerMotionFilter.class));
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
-    public void testUnregister_UnregistersPointerMotionFilter() {
-        register(DISPLAY_0);
-        register(DISPLAY_1);
-        clearInvocations(mMockInputManager);
-
-        mFullScreenMagnificationController.unregister(DISPLAY_1);
-        // There's still an active display. Don't unregister yet.
-        verify(mMockInputManager, times(0)).registerAccessibilityPointerMotionFilter(
-                nullable(InputManagerInternal.AccessibilityPointerMotionFilter.class));
-
-        mFullScreenMagnificationController.unregister(DISPLAY_0);
-        verify(mMockInputManager, times(1)).registerAccessibilityPointerMotionFilter(isNull());
     }
 
     @Test

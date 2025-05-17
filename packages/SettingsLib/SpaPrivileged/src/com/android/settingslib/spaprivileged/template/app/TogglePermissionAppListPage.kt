@@ -128,6 +128,7 @@ internal fun <T : AppRecord> TogglePermissionAppListModel<T>.TogglePermissionApp
                 restrictionsProviderFactory = restrictionsProviderFactory,
             )
         },
+        showSystemAppsInitially = showSystemAppsInitially,
         appList = appList,
     )
 }

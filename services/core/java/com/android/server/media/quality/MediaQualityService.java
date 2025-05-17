@@ -66,6 +66,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -109,6 +110,8 @@ public class MediaQualityService extends SystemService {
     private static final String SOUND_PROFILE_PREFERENCE = "sound_profile_preference";
     private static final String COMMA_DELIMITER = ",";
     private static final String DEFAULT_PICTURE_PROFILE_ID = "default_picture_profile_id";
+    private static final String STREAM_STATUS = "stream_status";
+    private static final String PREVIOUS_STREAM_STATUS = "previous_stream_status";
     private final Context mContext;
     private final MediaQualityDbHelper mMediaQualityDbHelper;
     private final BiMap<Long, String> mPictureProfileTempIdMap;
@@ -493,7 +496,13 @@ public class MediaQualityService extends SystemService {
                     -1
             );
             if (defaultPictureProfileId != -1) {
-                return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId);
+                PictureProfile currentDefaultPictureProfile =
+                        mHandleToPictureProfile.get(defaultPictureProfileId);
+                if (currentDefaultPictureProfile != null) {
+                    return currentDefaultPictureProfile;
+                } else {
+                    return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId);
+                }
             }
             return null;
         }
@@ -513,6 +522,7 @@ public class MediaQualityService extends SystemService {
                 return false;
             }
 
+            mPictureProfileForHal.add(longId);
             SharedPreferences.Editor editor = mPictureProfileSharedPreference.edit();
             editor.putLong(DEFAULT_PICTURE_PROFILE_ID, longId);
             editor.apply();
@@ -604,6 +614,14 @@ public class MediaQualityService extends SystemService {
                 Long value = null;
                 if (packageName != null) {
                     value = mPackageDefaultPictureProfileHandleMap.get(packageName);
+
+                    if (value == null) {
+                        Log.v(TAG,
+                                "Package default for " + packageName
+                                        + " fallback to global default.");
+                        value = getDefaultPictureProfile().getHandle().getId();
+                    }
+
                     if (value != null) {
                         mPictureProfileForHal.add(value);
                         mHalNotifier.notifyHalOnPictureProfileChange(value, null);
@@ -981,13 +999,6 @@ public class MediaQualityService extends SystemService {
 
         private boolean incomingPackageEqualsUidPackage(String incomingPackage, int uid) {
             return incomingPackage.equalsIgnoreCase(getPackageOfUid(uid));
-        }
-
-        private boolean hasGlobalPictureQualityServicePermission(int uid, int pid) {
-            return mContext.checkPermission(
-                           android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE, pid,
-                           uid)
-                    == PackageManager.PERMISSION_GRANTED;
         }
 
         private boolean hasGlobalSoundQualityServicePermission(int uid, int pid) {
@@ -1733,30 +1744,26 @@ public class MediaQualityService extends SystemService {
                 List<ParameterCapability> paramCaps, int uid, int pid) {
             UserState userState = getOrCreateUserState(UserHandle.USER_SYSTEM);
             int n = userState.mPictureProfileCallbacks.beginBroadcast();
-
             for (int i = 0; i < n; ++i) {
                 try {
                     IPictureProfileCallback callback = userState.mPictureProfileCallbacks
                             .getBroadcastItem(i);
                     Pair<Integer, Integer> pidUid = userState.mPictureProfileCallbackPidUidMap
                             .get(callback);
-
-                    if (pidUid.first == pid && pidUid.second == uid) {
+                    if ((pidUid.first == pid && pidUid.second == uid)
+                            || (hasGlobalPictureQualityServicePermission(
+                                    pidUid.first, pidUid.second)
+                            && profile.getProfileType() == PictureProfile.TYPE_SYSTEM)) {
                         if (mode == ProfileModes.ADD) {
-                            userState.mPictureProfileCallbacks.getBroadcastItem(i)
-                                    .onPictureProfileAdded(profileId, profile);
+                            callback.onPictureProfileAdded(profileId, profile);
                         } else if (mode == ProfileModes.UPDATE) {
-                            userState.mPictureProfileCallbacks.getBroadcastItem(i)
-                                    .onPictureProfileUpdated(profileId, profile);
+                            callback.onPictureProfileUpdated(profileId, profile);
                         } else if (mode == ProfileModes.REMOVE) {
-                            userState.mPictureProfileCallbacks.getBroadcastItem(i)
-                                    .onPictureProfileRemoved(profileId, profile);
+                            callback.onPictureProfileRemoved(profileId, profile);
                         } else if (mode == ProfileModes.ERROR) {
-                            userState.mPictureProfileCallbacks.getBroadcastItem(i)
-                                    .onError(profileId, errorCode);
+                            callback.onError(profileId, errorCode);
                         } else if (mode == ProfileModes.PARAMETER_CAPABILITY_CHANGED) {
-                            userState.mPictureProfileCallbacks.getBroadcastItem(i)
-                                    .onParameterCapabilitiesChanged(profileId, paramCaps);
+                            callback.onParameterCapabilitiesChanged(profileId, paramCaps);
                         }
                     }
                 } catch (RemoteException e) {
@@ -1768,9 +1775,9 @@ public class MediaQualityService extends SystemService {
                         Slog.e(TAG, "Failed to report removed picture profile to callback", e);
                     } else if (mode == ProfileModes.ERROR) {
                         Slog.e(TAG, "Failed to report picture profile error to callback", e);
-                    } else if (mode == ProfileModes.PARAMETER_CAPABILITY_CHANGED) {
-                        Slog.e(TAG, "Failed to report picture profile parameter capability change "
-                                + "to callback", e);
+                    } else {
+                        Slog.e(TAG, "Failed to report picture profile parameter capability"
+                                + " change to callback", e);
                     }
                 }
             }
@@ -1872,11 +1879,6 @@ public class MediaQualityService extends SystemService {
         private void notifyHalOnPictureProfileChange(Long dbId, PersistableBundle params) {
             // TODO: only notify HAL when the profile is active / being used
             if (mPpChangedListener != null) {
-                Long currentHandle = mCurrentPictureHandleToOriginal.getKey(dbId);
-                if (currentHandle != null) {
-                    // this handle maps to another current profile, skip
-                    return;
-                }
                 try {
                     Long idForHal = dbId;
                     Long originalHandle = mCurrentPictureHandleToOriginal.getValue(dbId);
@@ -2095,13 +2097,20 @@ public class MediaQualityService extends SystemService {
                             return;
                         }
                         PictureProfile current = list.get(0);
+                        PersistableBundle currentProfileParameters = current.getParameters();
+                        currentProfileParameters.putString(STREAM_STATUS, newStatus);
+                        // Add previous stream status information so that application can use this
+                        // flag to indicate that there is a onStreamStatusChange.
+                        currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
+                        mMqManagerNotifier.notifyOnPictureProfileUpdated(
+                                current.getProfileId(), current, Process.INVALID_UID,
+                                Process.INVALID_PID);
 
                         mPictureProfileForHal.add(profileHandle);
-                        PersistableBundle currentProfileParameters = current.getParameters();
-                        currentProfileParameters.putString("stream_status", newStatus);
+                        mPictureProfileForHal.add(current.getHandle().getId());
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
                                 currentProfileParameters);
                     } else {
@@ -2132,14 +2141,21 @@ public class MediaQualityService extends SystemService {
                             return;
                         }
                         PictureProfile current = list.get(0);
+                        PersistableBundle currentProfileParameters = current.getParameters();
+                        currentProfileParameters.putString(
+                                STREAM_STATUS, PictureProfile.STATUS_SDR);
+                        // Add previous stream status information so that application can use this
+                        // flag to indicate that there is a onStreamStatusChange.
+                        currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
+                        mMqManagerNotifier.notifyOnPictureProfileUpdated(
+                                current.getProfileId(), current, Process.INVALID_UID,
+                                Process.INVALID_PID);
 
+                        mPictureProfileForHal.add(current.getHandle().getId());
                         mPictureProfileForHal.add(profileHandle);
-                        PersistableBundle currentProfileParameters = current.getParameters();
-                        currentProfileParameters.putString(
-                                "stream_status", PictureProfile.STATUS_SDR);
                         mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
                                 currentProfileParameters);
                     }
@@ -2440,5 +2456,12 @@ public class MediaQualityService extends SystemService {
     private boolean isPackageDefaultPictureProfile(PictureProfile pp) {
         return pp != null && pp.getProfileType() == PictureProfile.TYPE_SYSTEM &&
                pp.getName().equals(PictureProfile.NAME_DEFAULT);
+    }
+
+    private boolean hasGlobalPictureQualityServicePermission(int uid, int pid) {
+        return mContext.checkPermission(
+                android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE, pid,
+                uid)
+                == PackageManager.PERMISSION_GRANTED;
     }
 }

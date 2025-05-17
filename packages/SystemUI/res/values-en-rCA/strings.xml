@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Allow"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Wireless debugging not allowed"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"The user currently signed in to this device can’t turn on wireless debugging. To use this feature, switch to an admin user."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"You can change this setting once logged in"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB port disabled"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"To protect your device from liquid or debris, the USB port is disabled and won’t detect any accessories.\n\nYou’ll be notified when it’s okay to use the USB port again."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB port enabled to detect chargers and accessories"</string>
@@ -870,6 +869,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Snoozed for <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# hour}=2{# hours}other{# hours}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minute}other{# minutes}}"</string>
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"to open demotion menu"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Battery Saver"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Button <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1154,6 +1154,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Exit edit mode"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Drag corner to resize"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Allow diagonal scrolling"</string>
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Follow typing"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Magnify keyboard"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Resize"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Change magnification type"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"End resizing"</string>
@@ -1280,6 +1282,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Connected speakers"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers &amp; Displays"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Suggested Devices"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Input"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Output"</string>

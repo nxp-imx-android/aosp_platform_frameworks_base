@@ -17,26 +17,30 @@
 package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
 import android.content.Context
-import android.view.View
 import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
+import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.domain.model.NotificationChipModel
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickListenerLegacy
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
-import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +48,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 /** A view model for status bar chips for promoted ongoing notifications. */
 @SysUISingleton
@@ -56,7 +59,9 @@ constructor(
     private val notifChipsInteractor: StatusBarNotificationChipsInteractor,
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     private val systemClock: SystemClock,
+    @StatusBarChipsLog private val logBuffer: LogBuffer,
 ) {
+    private val logger = Logger(logBuffer, "NotifChipVM".pad())
 
     /**
      * A flow that prunes the incoming [NotificationChipModel] instances to just the information
@@ -150,47 +155,34 @@ constructor(
                 )
             }
         val colors = ColorsModel.SystemThemed
-        val clickListener: () -> Unit = {
-            // The notification pipeline needs everything to run on the main thread, so keep
-            // this event on the main thread.
-            applicationScope.launch {
-                // TODO(b/364653005): Move accessibility focus to the HUN when chip is tapped.
-                notifChipsInteractor.onPromotedNotificationChipTapped(this@toActivityChipModel.key)
-            }
-        }
         // If the app that posted this notification is visible, we want to hide the chip
         // because information between the status bar chip and the app itself could be
         // out-of-sync (like a timer that's slightly off)
         val isHidden = this.isAppVisible
 
-        val isShowingHeadsUpFromChipTap =
-            headsUpState is TopPinnedState.Pinned &&
-                headsUpState.status == PinnedStatus.PinnedByUser &&
-                headsUpState.key == this.key
-
+        val isShowingHeadsUpFromChipTap = headsUpState.isShowingHeadsUpFromChipTap(this.key)
         val onClickListenerLegacy =
-            View.OnClickListener {
-                StatusBarChipsModernization.assertInLegacyMode()
-                clickListener.invoke()
-            }
+            createNotificationToggleClickListenerLegacy(
+                applicationScope = applicationScope,
+                notifChipsInteractor = notifChipsInteractor,
+                logger = logger,
+                notificationKey = this.key,
+            )
         val clickBehavior =
-            if (isShowingHeadsUpFromChipTap) {
-                OngoingActivityChipModel.ClickBehavior.HideHeadsUpNotification({
-                    /* check if */ StatusBarChipsModernization.isUnexpectedlyInLegacyMode()
-                    clickListener.invoke()
-                })
-            } else {
-                OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification({
-                    /* check if */ StatusBarChipsModernization.isUnexpectedlyInLegacyMode()
-                    clickListener.invoke()
-                })
-            }
+            createNotificationToggleClickBehavior(
+                applicationScope = applicationScope,
+                notifChipsInteractor = notifChipsInteractor,
+                logger = logger,
+                notificationKey = this.key,
+                isShowingHeadsUpFromChipTap = isShowingHeadsUpFromChipTap,
+            )
 
         val content: OngoingActivityChipModel.Content =
             when {
                 isShowingHeadsUpFromChipTap -> {
                     // If the user tapped this chip to show the HUN, we want to just show the icon
                     // because the HUN will show the rest of the information.
+                    // Similar behavior to [CallChipViewModel].
                     OngoingActivityChipModel.Content.IconOnly
                 }
                 text != null -> OngoingActivityChipModel.Content.Text(text = text)

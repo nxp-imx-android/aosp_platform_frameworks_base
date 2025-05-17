@@ -324,63 +324,53 @@
             </com.android.systemui.statusbar.notification.row.ButtonLinearLayout>
 
         </LinearLayout>
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <RelativeLayout
             android:id="@+id/bottom_buttons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@*android:dimen/notification_2025_margin"
             android:minHeight="@dimen/notification_2025_guts_button_size"
-            android:gravity="center_vertical">
+            android:layout_gravity="center_vertical"
+            android:theme="@style/Theme.SystemUI.Dialog"
+            >
 
-            <TextView
+            <Button
                 android:id="@+id/inline_dismiss"
                 android:text="@string/notification_inline_dismiss"
-                android:paddingEnd="@*android:dimen/notification_2025_margin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:paddingBottom="@*android:dimen/notification_2025_margin"
-                app:layout_constraintStart_toStartOf="parent"
+                android:layout_alignParentStart="true"
                 android:gravity="center"
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="200dp"
-                style="@style/TextAppearance.NotificationInfo.Button"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.Dialog.Button.BorderButton"
                 />
-            <TextView
+            <Button
                 android:id="@+id/turn_off_notifications"
                 android:text="@string/inline_turn_off_notifications"
-                android:paddingStart="@dimen/notification_importance_button_padding"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:paddingBottom="@*android:dimen/notification_2025_margin"
+                android:layout_toEndOf="@id/inline_dismiss"
                 android:gravity="center"
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="200dp"
-                app:layout_constraintEnd_toStartOf="@id/done"
-                style="@style/TextAppearance.NotificationInfo.Button"
+                style="@style/Widget.Dialog.Button.BorderButton"
                 />
-            <TextView
+            <Button
                 android:id="@+id/done"
-                android:text="@string/inline_ok_button"
+                android:text="@string/inline_done_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:paddingBottom="@*android:dimen/notification_2025_margin"
-                android:gravity="end|center_vertical"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_alignParentEnd="true"
+                android:gravity="center"
                 android:minWidth="@dimen/notification_2025_min_tap_target_size"
                 android:minHeight="@dimen/notification_2025_min_tap_target_size"
                 android:maxWidth="125dp"
-                style="@style/TextAppearance.NotificationInfo.Button"
+                style="@style/Widget.Dialog.Button"
                 />
-            <androidx.constraintlayout.helper.widget.Flow
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:constraint_referenced_ids="inline_dismiss,turn_off_notifications,done"
-                app:flow_wrapMode="chain"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </RelativeLayout>
     </LinearLayout>
 </com.android.systemui.statusbar.notification.row.NotificationInfo>

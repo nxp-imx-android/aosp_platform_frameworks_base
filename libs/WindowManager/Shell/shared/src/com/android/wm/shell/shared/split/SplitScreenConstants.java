@@ -218,6 +218,19 @@ public class SplitScreenConstants {
     }
 
     /**
+     * Convenience method to convert between the IntDef's to avoid some errors
+     * @return {@code -1} if splitScreenState does not have a valid/corresponding
+     *         PersistentSnapPosition
+     */
+    @PersistentSnapPosition
+    public static int splitStateToSnapPosition(@SplitScreenState int splitScreenState) {
+        return switch (splitScreenState) {
+            case NOT_IN_SPLIT, SNAP_TO_NONE, ANIMATING_OFFSCREEN_TAP -> -1;
+            default -> splitScreenState;
+        };
+    }
+
+    /**
      * Checks if the snapPosition in question is a {@link PersistentSnapPosition}.
      */
     public static boolean isPersistentSnapPosition(@SnapPosition int snapPosition) {

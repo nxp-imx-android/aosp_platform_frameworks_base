@@ -62,6 +62,10 @@ class BubbleTaskView(val taskView: TaskView, executor: Executor) {
             delegateListener?.onInitialized()
         }
 
+        override fun onSurfaceAlreadyCreated() {
+            delegateListener?.onSurfaceAlreadyCreated()
+        }
+
         override fun onReleased() {
             delegateListener?.onReleased()
         }

@@ -21,19 +21,11 @@ import android.app.role.OnRoleHoldersChangedListener
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.SharedPreferences
-import android.database.ContentObserver
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
 import android.os.Bundle
-import android.os.Handler
 import android.os.UserHandle
-import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS_DURATION_MS
-import android.util.DisplayUtils
-import android.view.DisplayInfo
-import android.view.KeyEvent
-import androidx.annotation.ArrayRes
-import androidx.annotation.DrawableRes
 import androidx.core.content.edit
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.assist.AssistManager
@@ -41,20 +33,21 @@ import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLoggin
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.res.R
 import com.android.systemui.shared.Flags
-import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornersInfo
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -70,7 +63,6 @@ constructor(
     private val globalSettings: GlobalSettings,
     private val userRepository: UserRepository,
     private val inputManager: InputManager,
-    @Background handler: Handler?,
     @Background coroutineContext: CoroutineContext,
     roleManager: RoleManager,
     @Background executor: Executor,
@@ -158,57 +150,8 @@ constructor(
             }
             .flowOn(coroutineContext)
 
-    private val isPowerButtonLongPressConfiguredToLaunchAssistantFlow: Flow<Boolean> =
-        conflatedCallbackFlow {
-                val observer =
-                    object : ContentObserver(handler) {
-                        override fun onChange(selfChange: Boolean) {
-                            trySendWithFailureLogging(
-                                getIsPowerButtonLongPressConfiguredToLaunchAssistant(),
-                                TAG,
-                                "updated isPowerButtonLongPressConfiguredToLaunchAssistantFlow",
-                            )
-                        }
-                    }
-                trySendWithFailureLogging(
-                    getIsPowerButtonLongPressConfiguredToLaunchAssistant(),
-                    TAG,
-                    "init isPowerButtonLongPressConfiguredToLaunchAssistantFlow",
-                )
-                globalSettings.registerContentObserverAsync(POWER_BUTTON_LONG_PRESS, observer)
-                awaitClose { globalSettings.unregisterContentObserverAsync(observer) }
-            }
-            .flowOn(coroutineContext)
-
-    // TODO(b/409229366): Cancel animation if second key is pressed later than initial wait
-    // TODO(b/414534881): Use a single signal "isOnAssistLaunchPath" in squeeze effect repo
-    @SuppressLint("MissingPermission") // required due to InputManager.KeyGestureEventListener
-    override val isPowerButtonDownInKeyCombination: Flow<Boolean> =
-        conflatedCallbackFlow {
-                val listener =
-                    InputManager.KeyGestureEventListener { event ->
-                        trySendWithFailureLogging(
-                            isPowerButtonInStartMultipleKeyGesture(event),
-                            TAG,
-                            "updated isPowerButtonDownInKeyCombination",
-                        )
-                    }
-                trySendWithFailureLogging(false, TAG, "init isPowerButtonDownInKeyCombination")
-                inputManager.registerKeyGestureEventListener(executor, listener)
-                awaitClose { inputManager.unregisterKeyGestureEventListener(listener) }
-            }
-            .flowOn(coroutineContext)
-            .distinctUntilChanged()
-
-    private fun isPowerButtonInStartMultipleKeyGesture(event: KeyGestureEvent): Boolean {
-        return event.action == KeyGestureEvent.ACTION_GESTURE_START &&
-            event.keycodes.size > 1 &&
-            event.keycodes.contains(KeyEvent.KEYCODE_POWER)
-    }
-
     override suspend fun getInvocationEffectInitialDelayMs(): Long {
         val duration = getLongPressPowerDurationFromSettings()
-        // TODO(b/408363187): adjust this difference for values lower than 500ms
         return if (duration > DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS) {
             DEFAULT_INITIAL_DELAY_MILLIS + (duration - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS)
         } else {
@@ -216,58 +159,13 @@ constructor(
         }
     }
 
-    override suspend fun getRoundedCornersInfo(): SqueezeEffectCornersInfo {
-        val displayInfo = DisplayInfo()
-        context.display.getDisplayInfo(displayInfo)
-        val displayIndex =
-            DisplayUtils.getDisplayUniqueIdConfigIndex(context.resources, displayInfo.uniqueId)
-        val maxResDisplayMode =
-            DisplayUtils.getMaximumResolutionDisplayMode(displayInfo.supportedModes)
-        val ratio =
-            if (maxResDisplayMode == null) {
-                1f
-            } else {
-                DisplayUtils.getPhysicalPixelDisplaySizeRatio(
-                    /*physicalWidth = */ maxResDisplayMode.physicalWidth,
-                    /*physicalHeight = */ maxResDisplayMode.physicalHeight,
-                    /*currentWidth = */ displayInfo.naturalWidth,
-                    /*currentHeight = */ displayInfo.naturalHeight,
-                )
-            }
-        return SqueezeEffectCornersInfo(
-            topResourceId =
-                getDrawableResource(
-                    displayIndex = displayIndex,
-                    arrayResId = R.array.config_roundedCornerTopDrawableArray,
-                    backupDrawableId = R.drawable.rounded_corner_top,
-                ),
-            bottomResourceId =
-                getDrawableResource(
-                    displayIndex = displayIndex,
-                    arrayResId = R.array.config_roundedCornerBottomDrawableArray,
-                    backupDrawableId = R.drawable.rounded_corner_bottom,
-                ),
-            physicalPixelDisplaySizeRatio = ratio,
-        )
-    }
-
-    @DrawableRes
-    private fun getDrawableResource(
-        displayIndex: Int,
-        @ArrayRes arrayResId: Int,
-        @DrawableRes backupDrawableId: Int,
-    ): Int {
-        val drawableResource: Int
-        context.resources.obtainTypedArray(arrayResId).let { array ->
-            drawableResource =
-                if (displayIndex >= 0 && displayIndex < array.length()) {
-                    array.getResourceId(displayIndex, backupDrawableId)
-                } else {
-                    backupDrawableId
-                }
-            array.recycle()
+    override suspend fun getInvocationEffectInwardsAnimationDurationMs(): Long {
+        val duration = getLongPressPowerDurationFromSettings()
+        return if (duration < DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS) {
+            DEFAULT_INWARD_EFFECT_DURATION - (DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS - duration)
+        } else {
+            DEFAULT_INWARD_EFFECT_DURATION.toLong()
         }
-        return drawableResource
     }
 
     private fun loadIsInvocationEffectEnabledByAssistant(): Boolean {
@@ -296,21 +194,12 @@ constructor(
         }
     }
 
-    override val isSqueezeEffectEnabled: Flow<Boolean> =
-        combine(
-            isPowerButtonLongPressConfiguredToLaunchAssistantFlow,
-            isInvocationEffectEnabledByAssistantFlow,
-        ) { prerequisites ->
-            prerequisites.all { it } && Flags.enableLppAssistInvocationEffect()
+    private val isSqueezeEffectEnabled: Flow<Boolean> =
+        isInvocationEffectEnabledByAssistantFlow.mapLatestConflated {
+            Flags.enableLppAssistInvocationEffect() && it
         }
 
-    private fun getIsPowerButtonLongPressConfiguredToLaunchAssistant() =
-        globalSettings.getInt(
-            POWER_BUTTON_LONG_PRESS,
-            context.resources.getInteger(
-                com.android.internal.R.integer.config_longPressOnPowerBehavior
-            ),
-        ) == 5 // 5 corresponds to launch assistant in PhoneWindowManager.java
+    override val isSqueezeEffectHapticEnabled = Flags.enableLppAssistInvocationHapticEffect()
 
     private fun getLongPressPowerDurationFromSettings() =
         globalSettings
@@ -346,6 +235,48 @@ constructor(
         }
     }
 
+    private val _isPowerButtonLongPressed = MutableStateFlow(false)
+    override val isPowerButtonLongPressed = _isPowerButtonLongPressed.asStateFlow()
+
+    private var isPowerButtonDownAndPowerKeySingleGestureActive = false
+
+    @SuppressLint("MissingPermission")
+    override val isEffectEnabledAndPowerButtonPressedAsSingleGesture: Flow<Boolean> =
+        conflatedCallbackFlow {
+                val listener =
+                    InputManager.KeyGestureEventListener { event ->
+                        updateIsPowerButtonDownAndSingleGestureActive(event)
+                        trySendWithFailureLogging(
+                            isPowerButtonDownAndPowerKeySingleGestureActive,
+                            TAG,
+                            "updated showInvocationEffect",
+                        )
+                    }
+                trySendWithFailureLogging(false, TAG, "init showInvocationEffect")
+                inputManager.registerKeyGestureEventListener(executor, listener)
+                awaitClose { inputManager.unregisterKeyGestureEventListener(listener) }
+            }
+            .combine(isSqueezeEffectEnabled) { downAndActive, enabled -> downAndActive && enabled }
+            .flowOn(coroutineContext)
+            .distinctUntilChanged()
+
+    private fun updateIsPowerButtonDownAndSingleGestureActive(event: KeyGestureEvent) {
+        _isPowerButtonLongPressed.value =
+            if (event.isGestureTypeAssistant()) {
+                event.isGestureComplete()
+            } else {
+                _isPowerButtonLongPressed.value && isPowerButtonDownAndPowerKeySingleGestureActive
+            }
+
+        isPowerButtonDownAndPowerKeySingleGestureActive =
+            if (isPowerButtonDownAndPowerKeySingleGestureActive) {
+                !(event.isGestureTypeAssistant() &&
+                    (event.isGestureCancelled() || event.isGestureComplete()))
+            } else {
+                event.isGestureTypeAssistant() && event.isGestureStart()
+            }
+    }
+
     companion object {
         private const val TAG = "SqueezeEffectRepository"
 
@@ -359,6 +290,8 @@ constructor(
          */
         @VisibleForTesting const val DEFAULT_INITIAL_DELAY_MILLIS = 150L
         @VisibleForTesting const val DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS = 500L
+        @VisibleForTesting const val DEFAULT_INWARD_EFFECT_DURATION = 800 // in milliseconds
+        const val DEFAULT_OUTWARD_EFFECT_DURATION = 333 // in milliseconds
 
         @VisibleForTesting
         const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"
@@ -384,3 +317,14 @@ private val UserRepository.selectedUserHandle
 
 private fun RoleManager.getCurrentAssistantFor(userHandle: UserHandle) =
     getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT, userHandle)?.firstOrNull() ?: ""
+
+private fun KeyGestureEvent.isGestureTypeAssistant() =
+    this.keyGestureType == KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT
+
+private fun KeyGestureEvent.isGestureComplete() =
+    this.action == KeyGestureEvent.ACTION_GESTURE_COMPLETE && !this.isCancelled
+
+private fun KeyGestureEvent.isGestureCancelled() =
+    this.action == KeyGestureEvent.ACTION_GESTURE_COMPLETE && this.isCancelled
+
+private fun KeyGestureEvent.isGestureStart() = this.action == KeyGestureEvent.ACTION_GESTURE_START

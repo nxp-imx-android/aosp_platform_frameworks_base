@@ -102,7 +102,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     private float mTranslation = 0;
 
     private boolean mMenuRowIntercepting;
-    private final long mLongPressTimeout;
+    private final int mLongPressTimeout;
     private boolean mLongPressSent;
     private final float[] mDownLocation = new float[2];
     private final Runnable mPerformLongPress = new Runnable() {
@@ -149,7 +149,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         mTouchSlopMultiplier = viewConfiguration.getAmbiguousGestureMultiplier();
 
         // Extra long-press!
-        mLongPressTimeout = (long) (ViewConfiguration.getLongPressTimeout() * 1.5f);
+        mLongPressTimeout =
+                (int) ((android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
+                        ? viewConfiguration.getLongPressTimeoutMillis()
+                        : ViewConfiguration.getLongPressTimeout()) * 1.5f);
 
         updateResourceProperties(resources);
         mFadeDependingOnAmountSwiped = resources.getBoolean(
@@ -429,7 +432,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
             boolean isDismissAll) {
         if (magneticNotificationSwipes()) {
             int direction = mCallback.getMagneticDetachDirection(animView);
-            velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
+            if (direction != 0) {
+                // If detached, modify the velocity to agree with the detaching direction
+                velocity = direction * Math.max(getMinDismissVelocity(), Math.abs(velocity));
+            }
         }
         final boolean canBeDismissed = mCallback.canChildBeDismissed(animView);
         float newPos;

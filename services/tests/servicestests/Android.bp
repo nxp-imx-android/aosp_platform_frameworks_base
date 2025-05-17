@@ -94,6 +94,7 @@ android_test {
         "net_flags_lib",
         "CtsVirtualDeviceCommonLib",
         "com_android_server_accessibility_flags_lib",
+        "desktop-test-lib",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
         default: [],
@@ -1058,4 +1059,14 @@ test_module_config {
         "device-tests",
     ],
     include_annotations: ["android.platform.test.annotations.Presubmit"],
+}
+
+test_module_config {
+    name: "FrameworksServicesTests_supervision",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.supervision"],
 }

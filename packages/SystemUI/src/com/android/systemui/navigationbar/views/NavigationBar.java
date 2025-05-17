@@ -230,6 +230,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
     private final DisplayTracker mDisplayTracker;
     private final RegionSamplingHelper mRegionSamplingHelper;
     private final int mNavColorSampleMargin;
+    private final int mLongPressTimeoutMillis;
     private EdgeBackGestureHandler mEdgeBackGestureHandler;
     private NavigationBarFrame mFrame;
     private MotionEvent mCurrentDownEvent;
@@ -343,7 +344,6 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
 
         @Override
         public void hide() {
-            clearTransient();
         }
     };
 
@@ -690,6 +690,10 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
         mView.setEdgeBackGestureHandler(mEdgeBackGestureHandler);
         mView.setDisplayTracker(mDisplayTracker);
         mNavBarMode = mNavigationModeController.addListener(mModeChangedListener);
+        mLongPressTimeoutMillis =
+                android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
+                        ? ViewConfiguration.get(context).getLongPressTimeoutMillis()
+                        : ViewConfiguration.getLongPressTimeout();
     }
 
     public NavigationBarView getView() {
@@ -1421,9 +1425,9 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
                         // If override timeout doesn't exist but override touch slop exists, we use
                         // system default long press duration
                         Log.d(TAG, "ACTION_DOWN default duration: "
-                                + ViewConfiguration.getLongPressTimeout());
+                                + mLongPressTimeoutMillis);
                         mHandler.postDelayed(mOnVariableDurationHomeLongClick,
-                                ViewConfiguration.getLongPressTimeout());
+                                mLongPressTimeoutMillis);
                     } else {
                         mHomeButtonLongPressDurationMs.ifPresent(longPressDuration -> {
                             Log.d(TAG, "ACTION_DOWN original duration: " + longPressDuration);

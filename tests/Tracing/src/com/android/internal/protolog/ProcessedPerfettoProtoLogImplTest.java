@@ -68,6 +68,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -951,6 +954,90 @@ public class ProcessedPerfettoProtoLogImplTest {
         sProtoLog.stopLoggingToLogcat(
                 new String[] { TestProtoLogGroup.TEST_GROUP.name() }, (msg) -> {});
         Truth.assertThat(TestProtoLogGroup.TEST_GROUP.isLogToLogcat()).isFalse();
+    }
+
+    @Test
+    public void processesAllPendingMessagesBeforeTraceStop()
+            throws IOException, InterruptedException {
+        // large number of messages to log to stress the queue
+        final int numMessages = 1000;
+        final CountDownLatch processingHasStartedLatch = new CountDownLatch(1);
+        final CountDownLatch allowProcessingToContinueLatch = new CountDownLatch(1);
+        final AtomicBoolean blockingTaskStartedExecution = new AtomicBoolean(false);
+
+        // Configure trace monitor to enable all log levels for the test data source.
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+        try {
+            traceMonitor.start();
+            assertTrue("ProtoLog should be enabled after starting the trace.",
+                    sProtoLog.isProtoEnabled());
+
+            // Submit a task that will block the executor queue.
+            sProtoLog.mBackgroundLoggingService.execute(() -> {
+                try {
+                    blockingTaskStartedExecution.set(true);
+                    processingHasStartedLatch.countDown(); // Signal that this task has started
+                    // Wait until the main test thread signals to continue
+                    if (!allowProcessingToContinueLatch.await(60, TimeUnit.SECONDS)) {
+                        // Fail fast if timeout occurs, to avoid test hanging indefinitely
+                        Truth.assertWithMessage(
+                                "Timeout waiting for allowProcessingToContinueLatch")
+                                .fail();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Blocking task was interrupted: " + e.getMessage());
+                }
+            });
+
+            // Wait for the blocking task to actually start executing on the background thread.
+            // This ensures it's at the head of the executor's queue before we add more tasks.
+            assertTrue("Blocking task did not start execution in time.",
+                    processingHasStartedLatch.await(5, TimeUnit.SECONDS));
+
+            // Now, submit all the log messages. They will be queued behind the blocking task.
+            for (int i = 0; i < numMessages; i++) {
+                sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 1,
+                        LogDataType.BOOLEAN, new Object[]{true});
+            }
+
+            // Assert that the blocking task is still active (i.e., waiting on the latch),
+            // which implies the subsequently submitted log messages are still queued.
+            assertTrue("Blocking task should have started execution.",
+                    blockingTaskStartedExecution.get());
+            Truth.assertWithMessage(
+                    "allowProcessingToContinueLatch should not have been counted down yet.")
+                    .that(allowProcessingToContinueLatch.getCount())
+                    .isEqualTo(1L);
+
+            // Allow the blocking task to complete. This will allow the executor
+            // to start processing the queued log messages.
+            allowProcessingToContinueLatch.countDown();
+
+            // Stop tracing immediately. The implementation should wait for the
+            // mBackgroundLoggingService to process all queued messages (including the
+            // now-unblocked first task and all subsequent log messages).
+        } finally {
+            // Ensure the latch is always counted down if an exception occurred before stop,
+            // or if the test is ending, to prevent the background thread from hanging.
+            if (allowProcessingToContinueLatch.getCount() > 0) {
+                allowProcessingToContinueLatch.countDown();
+            }
+            traceMonitor.stop(mWriter);
+        }
+
+        // Verify that all messages were written to the trace.
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ProtoLogTrace protolog = reader.readProtoLogTrace();
+
+        Truth.assertThat(protolog.messages).hasSize(numMessages);
+        for (int i = 0; i < numMessages; i++) {
+            Truth.assertThat(protolog.messages.get(i).getLevel()).isEqualTo(LogLevel.DEBUG);
+            Truth.assertThat(protolog.messages.get(i).getMessage())
+                    .isEqualTo("My Test Debug Log Message true");
+        }
     }
 
     private enum TestProtoLogGroup implements IProtoLogGroup {

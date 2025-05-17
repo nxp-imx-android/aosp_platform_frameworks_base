@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
-import android.app.Flags.FLAG_OPT_IN_RICH_ONGOING
 import android.app.Notification.FLAG_FOREGROUND_SERVICE
 import android.app.Notification.FLAG_ONGOING_EVENT
 import android.platform.test.annotations.DisableFlags
@@ -72,28 +71,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
-    fun orderedChipNotificationKeys_optInFlagOff_doesNotContainNonPromotedCalls() =
-        kosmos.runTest {
-            // GIVEN a non-promoted call and a promoted ongoing notification
-            val callEntry = buildOngoingCallEntry(promoted = false)
-            val ronEntry = buildPromotedOngoingEntry()
-            val otherEntry = buildNotificationEntry(tag = "other")
-
-            renderNotificationListInteractor.setRenderedList(
-                listOf(callEntry, ronEntry, otherEntry)
-            )
-
-            val orderedChipNotificationKeys by
-                collectLastValue(underTest.orderedChipNotificationKeys)
-
-            // THEN the call shouldn't be in the list
-            assertThat(orderedChipNotificationKeys).containsExactly(ronEntry.key)
-        }
-
-    @Test
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
-    fun orderedChipNotificationKeys_optInFlagOn_containsNonPromotedCalls() =
+    fun orderedChipNotificationKeys_containsNonPromotedCalls() =
         kosmos.runTest {
             // GIVEN a non-promoted call and a promoted ongoing notification
             val callEntry = buildOngoingCallEntry(promoted = false)
@@ -112,30 +90,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(FLAG_OPT_IN_RICH_ONGOING)
-    fun orderedChipNotificationKeys_containsPromotedCalls_optInFlagOff_callFirst() =
-        kosmos.runTest {
-            // GIVEN a promoted call and a promoted ongoing notification
-            val callEntry = buildOngoingCallEntry(promoted = true)
-            val ronEntry = buildPromotedOngoingEntry()
-            val otherEntry = buildNotificationEntry(tag = "other")
-
-            renderNotificationListInteractor.setRenderedList(
-                listOf(ronEntry, callEntry, otherEntry)
-            )
-
-            val orderedChipNotificationKeys by
-                collectLastValue(underTest.orderedChipNotificationKeys)
-
-            // THEN the order of the notification keys should be the call then the RON
-            assertThat(orderedChipNotificationKeys)
-                .containsExactly(callEntry.key, ronEntry.key)
-                .inOrder()
-        }
-
-    @Test
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
-    fun orderedChipNotificationKeys_containsPromotedCalls_optInFlagOn_callNotFirst() =
+    fun orderedChipNotificationKeys_containsPromotedCalls_callNotFirst() =
         kosmos.runTest {
             // GIVEN a promoted call and a promoted ongoing notification
             val callEntry = buildOngoingCallEntry(promoted = true)
@@ -631,7 +586,6 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
     // See OngoingActivityChipsWithNotifsViewModelTest#chips_screenRecordAndCallAndPromotedNotifs
     // test for the right ranking.
     @Test
-    @EnableFlags(FLAG_OPT_IN_RICH_ONGOING)
     fun orderedChipNotificationKeys_rankingIsCorrect() =
         kosmos.runTest {
             // Screen record

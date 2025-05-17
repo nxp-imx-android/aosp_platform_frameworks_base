@@ -48,7 +48,6 @@ import android.window.WindowContext;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.domain.interactor.CommunalInteractor;
@@ -546,21 +545,16 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private boolean isExpanded(NotificationShadeWindowState state) {
-        boolean visForBlur =  state.backgroundBlurRadius > 0;
-        if (Flags.bouncerUiRevamp() || Flags.disableBlurredShadeVisible()) {
-            visForBlur = false;
-        }
         boolean isExpanded = !state.forceWindowCollapsed && (state.isKeyguardShowingAndNotOccluded()
                 || state.panelVisible || state.keyguardFadingAway || state.bouncerShowing
                 || state.headsUpNotificationShowing
                 || state.scrimsVisibility != ScrimController.TRANSPARENT)
-                || visForBlur
                 || state.launchingActivityFromNotification;
         mLogger.logIsExpanded(isExpanded, state.forceWindowCollapsed,
                 state.isKeyguardShowingAndNotOccluded(), state.panelVisible,
                 state.keyguardFadingAway, state.bouncerShowing, state.headsUpNotificationShowing,
                 state.scrimsVisibility != ScrimController.TRANSPARENT,
-                visForBlur, state.launchingActivityFromNotification);
+                state.launchingActivityFromNotification);
         return isExpanded;
     }
 

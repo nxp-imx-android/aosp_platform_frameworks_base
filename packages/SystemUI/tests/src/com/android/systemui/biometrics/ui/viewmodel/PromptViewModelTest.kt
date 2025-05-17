@@ -24,7 +24,6 @@ import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Bitmap
-import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.hardware.biometrics.BiometricFingerprintConstants
@@ -66,7 +65,6 @@ import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.biometrics.shared.model.toSensorStrength
 import com.android.systemui.biometrics.shared.model.toSensorType
-import com.android.systemui.biometrics.udfpsUtils
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
@@ -1460,49 +1458,6 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         kosmos.promptViewModel.onSwitchToCredential()
 
         assertThat(size).isEqualTo(PromptSize.LARGE)
-    }
-
-    @Test
-    fun hint_for_talkback_guidance() = runGenericTest {
-        val hint by collectLastValue(kosmos.promptViewModel.accessibilityHint)
-
-        // Touches should fall outside of sensor area
-        whenever(kosmos.udfpsUtils.getTouchInNativeCoordinates(any(), any(), any()))
-            .thenReturn(Point(0, 0))
-        whenever(kosmos.udfpsUtils.onTouchOutsideOfSensorArea(any(), any(), any(), any(), any()))
-            .thenReturn("Direction")
-
-        kosmos.promptViewModel.onAnnounceAccessibilityHint(
-            obtainMotionEvent(MotionEvent.ACTION_HOVER_ENTER),
-            true,
-        )
-
-        if (testCase.modalities.hasUdfps) {
-            assertThat(hint?.isNotBlank()).isTrue()
-        } else {
-            assertThat(hint.isNullOrBlank()).isTrue()
-        }
-    }
-
-    @Test
-    fun no_hint_for_talkback_guidance_after_auth() = runGenericTest {
-        val hint by collectLastValue(kosmos.promptViewModel.accessibilityHint)
-
-        kosmos.promptViewModel.showAuthenticated(testCase.authenticatedModality, 0)
-        kosmos.promptViewModel.confirmAuthenticated()
-
-        // Touches should fall outside of sensor area
-        whenever(kosmos.udfpsUtils.getTouchInNativeCoordinates(any(), any(), any()))
-            .thenReturn(Point(0, 0))
-        whenever(kosmos.udfpsUtils.onTouchOutsideOfSensorArea(any(), any(), any(), any(), any()))
-            .thenReturn("Direction")
-
-        kosmos.promptViewModel.onAnnounceAccessibilityHint(
-            obtainMotionEvent(MotionEvent.ACTION_HOVER_ENTER),
-            true,
-        )
-
-        assertThat(hint.isNullOrBlank()).isTrue()
     }
 
     @Test

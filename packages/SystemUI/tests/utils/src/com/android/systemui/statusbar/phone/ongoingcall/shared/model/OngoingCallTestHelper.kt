@@ -28,6 +28,7 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
@@ -95,17 +96,7 @@ object OngoingCallTestHelper {
     ) {
         val actualPromotedContent =
             when (promotedContent) {
-                is PromotedContentInput.Default -> {
-                    if (Flags.optInRichOngoing()) {
-                        // With the opt-in flag, you only get a call chip if you do *not* have
-                        // promoted content
-                        null
-                    } else {
-                        // Without the opt-in flag, you only get a call chip if you *do* have
-                        // promoted content
-                        callPromotedContentBuilder(key).build()
-                    }
-                }
+                is PromotedContentInput.Default -> null
                 is PromotedContentInput.OverrideToNull -> null
                 is PromotedContentInput.OverrideToValue -> {
                     promotedContent.value

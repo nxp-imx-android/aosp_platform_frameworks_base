@@ -30,8 +30,9 @@ fun interface AppHandlePositionCallback {
      * that was passed in when adding this listener.
      * See [AppHandles.addListener]
      *
-     * @param handles The new map of [AppHandleIdentifier] objects key'd by displayId.
-     *                Never null, may be empty.
+     * @param handles The new map of [AppHandleIdentifier] objects key'd by taskId.
+     *                TODO(b/417194560): Make AppHandle key'd on both taskId and displayId.
+     *                The map is never null, may be empty.
      */
     fun onAppHandlesUpdated(handles: Map<Int, AppHandleIdentifier>)
 }

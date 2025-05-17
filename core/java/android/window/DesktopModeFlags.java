@@ -260,7 +260,7 @@ public enum DesktopModeFlags {
      *  Returns {@link ToggleOverride} from Settings.Global set by toggle.
      */
     private static ToggleOverride getToggleOverrideFromSystem() {
-        if (DesktopExperienceFlags.isDesktopExperienceDevOptionSupported()) {
+        if (Flags.showDesktopExperienceDevOption()) {
             if (DesktopExperienceFlags.getToggleOverride()) {
                 return ToggleOverride.OVERRIDE_ON;
             }

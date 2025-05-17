@@ -43,7 +43,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.systemui.DejankUtils.whitelistIpcs;
 import static com.android.systemui.Flags.notifyPowerManagerUserActivityBackground;
 import static com.android.systemui.Flags.simPinBouncerReset;
-import static com.android.systemui.Flags.translucentOccludingActivityFix;
 import static com.android.systemui.keyguard.ui.viewmodel.LockscreenToDreamingTransitionViewModel.DREAMING_ANIMATION_DURATION_MS;
 
 import android.animation.Animator;
@@ -1131,8 +1130,7 @@ public class KeyguardViewMediator implements CoreStartable,
                                 (int) (fullWidth - initialWidth) /* left */,
                                 fullWidth /* right */,
                                 mWindowCornerRadius, mWindowCornerRadius);
-                    } else if (translucentOccludingActivityFix()
-                            && mOccludingRemoteAnimationTarget != null
+                    } else if (mOccludingRemoteAnimationTarget != null
                             && mOccludingRemoteAnimationTarget.isTranslucent) {
                         // Animating in a transparent window looks really weird. Just let it be
                         // fullscreen and the app can do an internal animation if it wants to.
@@ -4146,22 +4144,12 @@ public class KeyguardViewMediator implements CoreStartable,
         mShowing = showing;
         mAodShowing = aodShowing;
 
-        if (KeyguardWmReorderAtmsCalls.isEnabled()) {
-            if (updateActivityLockScreenState) {
-                updateActivityLockScreenState(showing, aodShowing, reason);
-            }
-            if (notifyDefaultDisplayCallbacks) {
-                notifyDefaultDisplayCallbacks(showing);
-            }
-        } else {
-            if (notifyDefaultDisplayCallbacks) {
-                notifyDefaultDisplayCallbacks(showing);
-            }
-            if (updateActivityLockScreenState) {
-                updateActivityLockScreenState(showing, aodShowing, reason);
-            }
+        if (updateActivityLockScreenState) {
+            updateActivityLockScreenState(showing, aodShowing, reason);
         }
-
+        if (notifyDefaultDisplayCallbacks) {
+            notifyDefaultDisplayCallbacks(showing);
+        }
     }
 
     private void notifyDefaultDisplayCallbacks(boolean showing) {

@@ -20,27 +20,22 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.app.Instrumentation;
-import android.content.Context;
-import android.content.res.Resources;
 import android.os.Handler;
-import android.os.HandlerExecutor;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.ParcelFileDescriptor;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
-import android.test.mock.MockContext;
 import android.testing.DexmakerShareClassLoaderRule;
 import android.testing.LeakCheck;
 import android.testing.TestWithLooperRule;
 import android.testing.TestableLooper;
 import android.util.Log;
-import android.util.Singleton;
 
 import androidx.annotation.NonNull;
 import androidx.core.animation.AndroidXAnimatorIsolationRule;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import com.android.internal.protolog.ProtoLog;
@@ -62,7 +57,6 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 
 /**
@@ -125,49 +119,12 @@ public abstract class SysuiTestCase {
     @NonNull
     private SysuiTestableContext createTestableContext() {
         SysuiTestableContext context = new SysuiTestableContext(
-                getTestableContextBase(), getLeakCheck());
+                InstrumentationRegistry.getInstrumentation().getContext(), getLeakCheck());
         if (isRobolectricTest()) {
             // Manually associate a Display to context for Robolectric test. Similar to b/214297409
             return context.createDefaultDisplayContext();
         } else {
             return context;
-        }
-    }
-
-    @NonNull
-    private Context getTestableContextBase() {
-        if (isRavenwoodTest()) {
-            // TODO(b/292141694): build out Ravenwood support for Context
-            // Ravenwood doesn't yet provide a Context, but many SysUI tests assume one exists;
-            // so here we construct just enough of a Context to be useful; this will be replaced
-            // as more of the Ravenwood environment is built out
-            return new MockContext() {
-                @Override
-                public void setTheme(int resid) {
-                    // TODO(b/318393625): build out Ravenwood support for Resources
-                    // until then, ignored as no-op
-                }
-
-                @Override
-                public Resources getResources() {
-                    // TODO(b/318393625): build out Ravenwood support for Resources
-                    return Mockito.mock(Resources.class);
-                }
-
-                private Singleton<Executor> mMainExecutor = new Singleton<>() {
-                    @Override
-                    protected Executor create() {
-                        return new HandlerExecutor(new Handler(Looper.getMainLooper()));
-                    }
-                };
-
-                @Override
-                public Executor getMainExecutor() {
-                    return mMainExecutor.get();
-                }
-            };
-        } else {
-            return InstrumentationRegistry.getContext();
         }
     }
 
@@ -193,7 +150,7 @@ public abstract class SysuiTestCase {
     private SysuiTestDependency mSysuiDependency;
 
     static {
-        assertTempFilesAreCreatable();
+        waitUntilMockitoCanBeInitialized();
     }
 
     @Before
@@ -217,6 +174,16 @@ public abstract class SysuiTestCase {
             });
             InstrumentationRegistry.registerInstance(inst, InstrumentationRegistry.getArguments());
         }
+    }
+
+    /**
+     * Due to b/404544974, it is possible for a test process to start without access to its
+     * temp folder, and then gain access later.  Mockito cannot initialize (b/391948934) if the
+     * temp folder is not writeable, so calling this method allows a test not to proceed until
+     * mockito will be workable.
+     */
+    public static void waitUntilMockitoCanBeInitialized() {
+        assertTempFilesAreCreatable();
     }
 
     private static Boolean sCanCreateTempFiles = null;

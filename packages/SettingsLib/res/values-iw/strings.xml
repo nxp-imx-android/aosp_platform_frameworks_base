@@ -259,7 +259,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"‏הגדרות עבור שם נקודת גישה (APN) אינן זמינות עבור המשתמש הזה"</string>
     <string name="enable_adb" msgid="8072776357237289039">"‏ניפוי באגים ב-USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"‏מצב ניפוי באגים כאשר USB מחובר"</string>
-    <string name="clear_adb_keys" msgid="3010148733140369917">"‏ביטול הרשאות לניפוי ב-USB"</string>
+    <string name="clear_adb_keys" msgid="3010148733140369917">"‏ביטול הרשאות לניפוי באגים ב-USB"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"ניפוי באגים אלחוטי"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"‏מצב ניפוי באגים כשיש חיבור Wi-Fi"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"שגיאה"</string>
@@ -350,7 +350,7 @@
     <string name="select_usb_configuration_dialog_title" msgid="3579567144722589237">"‏יש לבחור תצורת USB"</string>
     <string name="allow_mock_location" msgid="2102650981552527884">"אפשרות של מיקומים מדומים"</string>
     <string name="allow_mock_location_summary" msgid="179780881081354579">"אפשרות של מיקומים מדומים"</string>
-    <string name="debug_view_attributes" msgid="3539609843984208216">"‏לאפשר את הבדיקה של מאפיינים של ה-View"</string>
+    <string name="debug_view_attributes" msgid="3539609843984208216">"אפשר לבדוק את מאפייני התצוגה"</string>
     <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"‏חבילת הגלישה תהיה פעילה תמיד, גם כשה-Wi‑Fi פעיל (למעבר מהיר בין רשתות)."</string>
     <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"אם השירות זמין, יש להשתמש בשיפור מהירות באמצעות חומרה לצורך שיתוף אינטרנט בין ניידים"</string>
     <string name="adb_warning_title" msgid="7708653449506485728">"‏לאפשר ניפוי באגים של USB?"</string>
@@ -360,8 +360,8 @@
     <string name="adb_keys_warning_message" msgid="2968555274488101220">"‏האם לבטל את הגישה לניפוי ב-USB מכל המחשבים שהענקת להם בעבר הרשאה?"</string>
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"האם להתיר הגדרות פיתוח?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"הגדרות אלה מיועדות לשימוש בפיתוח בלבד. הן עלולות לגרום למכשיר או לאפליקציות המותקנות בו לקרוס או לפעול באופן לא תקין."</string>
-    <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"‏אימות אפליקציות באמצעות USB"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"‏יש לבדוק אפליקציות שהותקנו באמצעות ADB/ADT לאיתור התנהגות מזיקה."</string>
+    <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"‏אימות אפליקציות שהותקנו מ-USB"</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"‏איתור התנהגות מזיקה של אפליקציות שהותקנו מ-ADB/ADT."</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"‏יוצגו מכשירי Bluetooth ללא שמות (כתובות MAC בלבד)"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"‏השבתה של תכונת עוצמת הקול המוחלטת ב-Bluetooth במקרה של בעיות בעוצמת הקול במכשירים מרוחקים, כגון עוצמת קול רמה מדי או חוסר שליטה ברמת העוצמה."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"‏הפעלת מקבץ הפיצ\'רים של Bluetooth Gabeldorsche."</string>
@@ -380,7 +380,7 @@
     <string name="select_application" msgid="2543228890535466325">"בחירת אפליקציה"</string>
     <string name="no_application" msgid="9038334538870247690">"אף אחת"</string>
     <string name="wait_for_debugger" msgid="7461199843335409809">"יש להמתין לכלי לניפוי באגים"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"האפליקציה שמתבצע בה ניקוי באגים ממתינה שהכלי לניפוי באגים יתחבר אליה לפני הריצה"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"האפליקציה שנבחרה לניפוי באגים תמתין שהכלי לניפוי באגים יתחבר אליה לפני ההרצה"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"קלט"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"שרטוט"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"עיבוד מואץ של חומרה"</string>
@@ -400,9 +400,9 @@
     <string name="show_screen_updates" msgid="2078782895825535494">"הצגת עדכונים על פני השטח"</string>
     <string name="show_screen_updates_summary" msgid="2126932969682087406">"הבהוב של כל שטחי החלון כשהם מתעדכנים"</string>
     <string name="show_hw_screen_updates" msgid="2021286231267747506">"הצגת עדכונים של התצוגה"</string>
-    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"הבזקת תצוגות בתוך חלונות בעת ציור"</string>
+    <string name="show_hw_screen_updates_summary" msgid="3539770072741435691">"תצוגות יהבהבו בחלון בכל פעם שהן מתעדכנות"</string>
     <string name="show_hw_layers_updates" msgid="5268370750002509767">"הצגת עדכונים של שכבות חומרה"</string>
-    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"הצגת הבהוב ירוק לשכבות חומרה כשהן מתעדכנות"</string>
+    <string name="show_hw_layers_updates_summary" msgid="5850955890493054618">"שכבות חומרה יהבהבו בירוק בכל פעם שהן מתעדכנות"</string>
     <string name="debug_hw_overdraw" msgid="8944851091008756796">"‏ניפוי באגים של ניצול יתר של ה-GPU"</string>
     <string name="disable_overlays" msgid="4206590799671557143">"‏השבתת שכבות-על של HW"</string>
     <string name="disable_overlays_summary" msgid="1954852414363338166">"‏תמיד להשתמש ב-GPU להרכבת מסך"</string>
@@ -434,7 +434,7 @@
     <string name="window_animation_scale_title" msgid="5236381298376812508">"מהירות אנימציית מעבר במסכים"</string>
     <string name="transition_animation_scale_title" msgid="1278477690695439337">"קנה מידה לאנימציית מעבר"</string>
     <string name="animator_duration_scale_title" msgid="7082913931326085176">"קנה מידה למשך זמן אנימציה"</string>
-    <string name="overlay_display_devices_title" msgid="5411894622334469607">"יצירת הדמיה של תצוגות משניות"</string>
+    <string name="overlay_display_devices_title" msgid="5411894622334469607">"הדמיית מסכי משנה"</string>
     <string name="shade_display_awareness_title" msgid="8000009404669495876">"מיקום לוח ההתראות"</string>
     <string name="debug_applications_category" msgid="5394089406638954196">"אפליקציות"</string>
     <string name="immediately_destroy_activities" msgid="1826287490705167403">"ללא שמירת פעילויות"</string>

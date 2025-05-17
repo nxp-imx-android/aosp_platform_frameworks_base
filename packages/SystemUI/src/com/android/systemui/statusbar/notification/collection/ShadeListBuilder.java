@@ -803,8 +803,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                 // maybe put bundle children back into their old parents (including moving back to
                 // top-level)
                 final List<ListEntry> bundleChildren = bundleEntry.getRawChildren();
-                final int bundleSize = bundleChildren.size();
-                for (int j = 0; j < bundleSize; j++) {
+                for (int j = 0; j < bundleChildren.size(); j++) {
                     final ListEntry child = bundleChildren.get(j);
                     if (maybeSuppressParentChange(child, topLevelList)) {
                         bundleChildren.remove(j);
@@ -814,8 +813,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
                         // maybe put group children back into their old parents (including moving
                         // back to top-level)
                         final List<NotificationEntry> groupChildren = groupEntry.getRawChildren();
-                        final int groupSize = groupChildren.size();
-                        for (int k = 0; k < groupSize; k++) {
+                        for (int k = 0; k < groupChildren.size(); k++) {
                             if (maybeSuppressParentChange(groupChildren.get(k), topLevelList)) {
                                 // child was put back into its previous parent, so we remove it from
                                 // this group

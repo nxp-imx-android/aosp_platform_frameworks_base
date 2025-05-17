@@ -5245,6 +5245,14 @@ public final class ProcessList {
                                 PlatformCompatCache.getInstance()
                                         .onApplicationInfoChanged(ai);
                             }
+                            // Service fields rarely matter, but if we're restarting an app's
+                            // service when it has no running activities, we're using these cached
+                            // ones, and they have to be up to date.
+                            for (int j = app.mServices.numberOfRunningServices() - 1; j >= 0; j--) {
+                                final ServiceRecord sr = app.mServices.getRunningServiceAt(j);
+                                sr.appInfo = ai;
+                                sr.serviceInfo.applicationInfo = ai;
+                            }
                             app.getThread().scheduleApplicationInfoChanged(ai);
                             targetProcesses.add(app.getWindowProcessController());
                         }

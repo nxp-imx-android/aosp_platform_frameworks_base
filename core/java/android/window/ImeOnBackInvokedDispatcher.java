@@ -194,7 +194,7 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
     private void unregisterReceivedCallback(
             int callbackId, @NonNull OnBackInvokedDispatcher receivingDispatcher) {
         if (!unregisterCallback(callbackId, receivingDispatcher)) {
-            Log.e(TAG, "Ime callback not found. Ignoring unregisterReceivedCallback. "
+            Log.w(TAG, "Ime callback not found. Ignoring unregisterReceivedCallback. "
                     + "callbackId: " + callbackId
                     + " remaining callbacks: " + mImeCallbacks.size());
         }

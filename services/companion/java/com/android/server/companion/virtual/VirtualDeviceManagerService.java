@@ -441,7 +441,7 @@ public class VirtualDeviceManagerService extends SystemService {
                     activityListener, soundEffectListener);
         }
 
-        @EnforcePermission(android.Manifest.permission.COMPUTER_CONTROL_ACCESS)
+        @EnforcePermission(android.Manifest.permission.ACCESS_COMPUTER_CONTROL)
         @Override // Binder call
         public IVirtualDevice createLocalVirtualDevice(
                 IBinder token,

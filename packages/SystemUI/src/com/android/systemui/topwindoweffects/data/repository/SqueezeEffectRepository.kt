@@ -16,15 +16,17 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
-import com.android.systemui.topwindoweffects.data.entity.SqueezeEffectCornersInfo
 import kotlinx.coroutines.flow.Flow
 
 interface SqueezeEffectRepository {
-    val isSqueezeEffectEnabled: Flow<Boolean>
 
-    val isPowerButtonDownInKeyCombination: Flow<Boolean>
+    val isSqueezeEffectHapticEnabled: Boolean
+
+    val isEffectEnabledAndPowerButtonPressedAsSingleGesture: Flow<Boolean>
+
+    val isPowerButtonLongPressed: Flow<Boolean>
 
     suspend fun getInvocationEffectInitialDelayMs(): Long
 
-    suspend fun getRoundedCornersInfo(): SqueezeEffectCornersInfo
+    suspend fun getInvocationEffectInwardsAnimationDurationMs(): Long
 }

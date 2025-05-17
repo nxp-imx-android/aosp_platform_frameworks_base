@@ -487,6 +487,8 @@ class BubbleControllerBubbleBarTest {
             mock<IWindowManager>(),
             BubbleResizabilityChecker(),
             HomeIntentProvider(context),
+            FakeBubbleAppInfoProvider(),
+            { Optional.empty() },
         )
     }
 

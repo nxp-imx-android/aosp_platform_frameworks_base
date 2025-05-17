@@ -16,33 +16,30 @@
 
 package com.android.systemui.dreams.data.repository
 
-import android.content.pm.UserInfo
 import android.content.res.Resources
 import android.provider.Settings
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dreams.shared.model.WhenToDream
-import com.android.systemui.util.kotlin.emitOnStart
-import com.android.systemui.util.settings.SecureSettings
-import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
+import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 
 interface DreamSettingsRepository {
     /** Returns when dreams are enabled. */
-    fun getDreamsEnabled(user: UserInfo): Flow<Boolean>
+    fun getDreamsEnabled(): Flow<Boolean>
 
     /**
-     * Returns a [WhenToDream] for the specified user, indicating what state the device should be in
-     * to trigger dreams.
+     * Returns a [WhenToDream] for the active user, indicating what state the device should be in to
+     * trigger dreams.
      */
-    fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream>
+    fun getWhenToDreamState(): Flow<WhenToDream>
 }
 
 @SysUISingleton
@@ -51,7 +48,7 @@ class DreamSettingsRepositoryImpl
 constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     @Main private val resources: Resources,
-    private val secureSettings: SecureSettings,
+    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
 ) : DreamSettingsRepository {
     private val dreamsEnabledByDefault by lazy {
         resources.getBoolean(com.android.internal.R.bool.config_dreamsEnabledByDefault)
@@ -69,67 +66,37 @@ constructor(
         resources.getBoolean(com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault)
     }
 
-    override fun getDreamsEnabled(user: UserInfo): Flow<Boolean> =
-        secureSettings
-            .observerFlow(userId = user.id, names = arrayOf(Settings.Secure.SCREENSAVER_ENABLED))
-            .emitOnStart()
-            .map {
-                secureSettings.getBoolForUser(
-                    Settings.Secure.SCREENSAVER_ENABLED,
-                    dreamsEnabledByDefault,
-                    user.id,
-                )
+    override fun getDreamsEnabled(): Flow<Boolean> =
+        userAwareSecureSettingsRepository
+            .boolSetting(Settings.Secure.SCREENSAVER_ENABLED, dreamsEnabledByDefault)
+            .flowOn(bgDispatcher)
+
+    private fun getWhenToDreamSetting(): Flow<WhenToDream> =
+        combine(
+                userAwareSecureSettingsRepository.boolSetting(
+                    Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
+                    dreamsActivatedOnSleepByDefault,
+                ),
+                userAwareSecureSettingsRepository.boolSetting(
+                    Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
+                    dreamsActivatedOnDockByDefault,
+                ),
+                userAwareSecureSettingsRepository.boolSetting(
+                    Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
+                    dreamsActivatedOnPosturedByDefault,
+                ),
+            ) { onSleep, onDock, onPostured ->
+                if (onSleep) WhenToDream.WHILE_CHARGING
+                else if (onDock) WhenToDream.WHILE_DOCKED
+                else if (onPostured) WhenToDream.WHILE_POSTURED else WhenToDream.NEVER
             }
             .flowOn(bgDispatcher)
 
-    private fun getWhenToDreamSetting(user: UserInfo): Flow<WhenToDream> =
-        secureSettings
-            .observerFlow(
-                userId = user.id,
-                names =
-                    arrayOf(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                    ),
-            )
-            .emitOnStart()
-            .map {
-                if (
-                    secureSettings.getBoolForUser(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                        dreamsActivatedOnSleepByDefault,
-                        user.id,
-                    )
-                ) {
-                    WhenToDream.WHILE_CHARGING
-                } else if (
-                    secureSettings.getBoolForUser(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
-                        dreamsActivatedOnDockByDefault,
-                        user.id,
-                    )
-                ) {
-                    WhenToDream.WHILE_DOCKED
-                } else if (
-                    secureSettings.getBoolForUser(
-                        Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                        dreamsActivatedOnPosturedByDefault,
-                        user.id,
-                    )
-                ) {
-                    WhenToDream.WHILE_POSTURED
-                } else {
-                    WhenToDream.NEVER
-                }
-            }
-            .flowOn(bgDispatcher)
-
-    override fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream> =
-        getDreamsEnabled(user)
+    override fun getWhenToDreamState(): Flow<WhenToDream> =
+        getDreamsEnabled()
             .flatMapLatestConflated { enabled ->
                 if (enabled) {
-                    getWhenToDreamSetting(user)
+                    getWhenToDreamSetting()
                 } else {
                     flowOf(WhenToDream.NEVER)
                 }

@@ -240,7 +240,6 @@ class ExpandableNotificationRowBuilder(
             )
         val promotedNotificationContentExtractor =
             PromotedNotificationContentExtractorImpl(
-                context,
                 kosmos.notificationIconStyleProvider,
                 kosmos.appIconProvider,
                 SkeletonImageTransform(context),

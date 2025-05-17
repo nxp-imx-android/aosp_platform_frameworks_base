@@ -83,7 +83,7 @@ class AppIdAppOpPolicy : BaseAppOpPolicy(AppIdAppOpPersistence()) {
         appId: Int,
         userId: Int,
         appOpName: String,
-        mode: Int
+        mode: Int,
     ): Boolean {
         if (userId !in newState.userStates) {
             Slog.e(LOG_TAG, "Unable to set app op mode for missing user $userId")
@@ -147,7 +147,7 @@ class AppIdAppOpPolicy : BaseAppOpPolicy(AppIdAppOpPersistence()) {
             userId: Int,
             appOpName: String,
             oldMode: Int,
-            newMode: Int
+            newMode: Int,
         )
 
         /**

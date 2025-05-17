@@ -97,7 +97,7 @@ class TransitionScopedMechanicsAdapterTest {
                     // Linearly animate from 10 down to 0
                     directionalMotionSpec(TestSpring, Mapping.Fixed(50.dp.toPx())) {
                         targetFromCurrent(breakpoint = 0f, to = 0f)
-                        constantValueFromCurrent(breakpoint = 1f)
+                        fixedValueFromCurrent(breakpoint = 1f)
                     }
                 )
             }
@@ -117,7 +117,7 @@ class TransitionScopedMechanicsAdapterTest {
                 MotionSpec(
                     // Use a spring to toggle 10f -> 0f at a progress of 0.5
                     directionalMotionSpec(TestSpring, Mapping.Fixed(50.dp.toPx())) {
-                        constantValue(breakpoint = 0.5f, value = 0f)
+                        fixedValue(breakpoint = 0.5f, value = 0f)
                     }
                 )
             }
@@ -141,7 +141,7 @@ class TransitionScopedMechanicsAdapterTest {
                         TestTransformation { _, _ ->
                             MotionSpec(
                                 directionalMotionSpec(TestSpring, Mapping.Fixed(50.dp.toPx())) {
-                                    constantValue(breakpoint = 0.3f, value = 0f)
+                                    fixedValue(breakpoint = 0.3f, value = 0f)
                                 }
                             )
                         }

@@ -24,8 +24,8 @@ import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH;
 import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_LOW;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NORMAL;
-import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
+import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
@@ -58,18 +58,16 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import android.annotation.NonNull;
 import android.app.Instrumentation;
 import android.app.UiModeManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.ForceDarkType;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Binder;
-import android.os.SystemProperties;
+import android.os.VibrationAttributes;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -92,6 +90,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.compatibility.common.util.ShellIdentityUtils;
 import com.android.compatibility.common.util.TestUtils;
 import com.android.cts.input.BlockingQueueEventVerifier;
+import com.android.frameworks.coretests.R;
 import com.android.window.flags.Flags;
 
 import org.hamcrest.Matcher;
@@ -169,8 +168,6 @@ public class ViewRootImplTest {
 
             var uiModeManager = sContext.getSystemService(UiModeManager.class);
             uiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
-
-            setForceDarkSysProp(false);
         });
         if (mView != null) {
             sInstrumentation.runOnMainSync(() -> {
@@ -501,7 +498,7 @@ public class ViewRootImplTest {
         ViewRootImpl viewRootImpl = new ViewRootImpl(sContext, display);
 
         boolean result = viewRootImpl.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK,
-                FLAG_IGNORE_GLOBAL_SETTING, 0 /* privFlags */);
+                VibrationAttributes.USAGE_UNKNOWN, FLAG_IGNORE_GLOBAL_SETTING, 0 /* privFlags */);
 
         assertThat(result).isFalse();
     }
@@ -1478,14 +1475,12 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void
-            determineForceDarkType_isLightThemeAndIsLightBackground_returnsForceInvertColorDark()
-            throws Exception {
+    public void determineForceDarkType_isLightTheme_returnsForceInvertColorDark() throws Exception {
         // Set up configurations for force invert color
         waitForSystemNightModeActivated(true);
         enableForceInvertColor(true);
 
-        setUpViewAttributes(/* isLightTheme= */ true, /* isLightBackground = */ true);
+        setUpViewAttributes(/* isLightTheme= */ true, /* isForceDarkAllowed= */ false);
 
         TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
                 () -> (mViewRootImpl.determineForceDarkType()
@@ -1494,43 +1489,12 @@ public class ViewRootImplTest {
 
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void
-            determineForceDarkType_isLightThemeAndNotLightBackground_returnsForceInvertColorDark()
-            throws Exception {
+    public void determineForceDarkType_notLightTheme_returnsNone() throws Exception {
         // Set up configurations for force invert color
         waitForSystemNightModeActivated(true);
         enableForceInvertColor(true);
 
-        setUpViewAttributes(/* isLightTheme= */ true, /* isLightBackground = */ false);
-
-        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
-                () -> (mViewRootImpl.determineForceDarkType()
-                        == ForceDarkType.FORCE_INVERT_COLOR_DARK));
-    }
-
-    @Test
-    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void determineForceDarkType_notLightThemeAndIsLightBackground_returnsNone()
-            throws Exception {
-        // Set up configurations for force invert color
-        waitForSystemNightModeActivated(true);
-        enableForceInvertColor(true);
-
-        setUpViewAttributes(/* isLightTheme= */ false, /* isLightBackground = */ true);
-
-        TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
-                () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
-    }
-
-    @Test
-    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
-    public void determineForceDarkType_notLightThemeAndNotLightBackground_returnsNone()
-            throws Exception {
-        // Set up configurations for force invert color
-        waitForSystemNightModeActivated(true);
-        enableForceInvertColor(true);
-
-        setUpViewAttributes(/* isLightTheme= */ false, /* isLightBackground = */ false);
+        setUpViewAttributes(/* isLightTheme= */ false, /* isForceDarkAllowed= */ false);
 
         TestUtils.waitUntil("Waiting for ForceDarkType to be ready",
                 () -> (mViewRootImpl.determineForceDarkType() == ForceDarkType.NONE));
@@ -1539,19 +1503,14 @@ public class ViewRootImplTest {
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
     public void forceInvertOffForceDarkOff_forceDarkModeDisabled() {
-        ShellIdentityUtils.invokeWithShellPermissions(() -> {
-            Settings.Secure.putInt(
-                    sContext.getContentResolver(),
-                    Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
-                    /* value= */ 0
-            );
+        // Set up configurations for force invert color
+        waitForSystemNightModeActivated(true);
+        enableForceInvertColor(false);
 
-            // TODO(b/297556388): figure out how to set this without getting blocked by SELinux
-            assumeTrue(setForceDarkSysProp(true));
-        });
-
-        sInstrumentation.runOnMainSync(() ->
-                mViewRootImpl.updateConfiguration(sContext.getDisplayNoVerify().getDisplayId()));
+        // Set up view attributes
+        setUpViewAttributes(
+                /* isLightTheme= */ false,
+                /* isForceDarkAllowed= */ false);
 
         assertThat(mViewRootImpl.determineForceDarkType()).isEqualTo(ForceDarkType.NONE);
     }
@@ -1559,18 +1518,29 @@ public class ViewRootImplTest {
     @Test
     @EnableFlags(FLAG_FORCE_INVERT_COLOR)
     public void forceInvertOffForceDarkOn_forceDarkModeEnabled() {
-        ShellIdentityUtils.invokeWithShellPermissions(() -> {
-            Settings.Secure.putInt(
-                    sContext.getContentResolver(),
-                    Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
-                    /* value= */ 0
-            );
+        // Set up configurations for force invert color
+        waitForSystemNightModeActivated(true);
+        enableForceInvertColor(false);
 
-            assumeTrue(setForceDarkSysProp(true));
-        });
+        // Set up view attributes
+        setUpViewAttributes(
+                /* isLightTheme= */ true,
+                /* isForceDarkAllowed= */ true);
 
-        sInstrumentation.runOnMainSync(() ->
-                mViewRootImpl.updateConfiguration(sContext.getDisplayNoVerify().getDisplayId()));
+        assertThat(mViewRootImpl.determineForceDarkType()).isEqualTo(ForceDarkType.FORCE_DARK);
+    }
+
+    @Test
+    @EnableFlags(FLAG_FORCE_INVERT_COLOR)
+    public void forceInvertOnForceDarkOn_forceDarkModeEnabled() {
+        // Set up configurations for force invert color
+        waitForSystemNightModeActivated(true);
+        enableForceInvertColor(true);
+
+        // Setup view attributes
+        setUpViewAttributes(
+                /* isLightTheme= */ true,
+                /* isForceDarkAllowed= */ true);
 
         assertThat(mViewRootImpl.determineForceDarkType()).isEqualTo(ForceDarkType.FORCE_DARK);
     }
@@ -1656,19 +1626,6 @@ public class ViewRootImplTest {
         assertThat(bounds.centerY()).isEqualTo(originalBounds.centerY());
         assertThat(bounds.width()).isAtLeast(strokeWidth * 2);
         assertThat(bounds.height()).isAtLeast(strokeWidth * 2);
-    }
-
-    private boolean setForceDarkSysProp(boolean isForceDarkEnabled) {
-        try {
-            SystemProperties.set(
-                    ThreadedRenderer.DEBUG_FORCE_DARK,
-                    Boolean.toString(isForceDarkEnabled)
-            );
-            return true;
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to set force_dark sysprop", e);
-            return false;
-        }
     }
 
     static class InputView extends View {
@@ -1797,10 +1754,23 @@ public class ViewRootImplTest {
         });
     }
 
-    private void setUpViewAttributes(boolean isLightTheme, boolean isLightBackground) {
+    private void setUpViewAttributes(boolean isLightTheme, boolean isForceDarkAllowed) {
         ShellIdentityUtils.invokeWithShellPermissions(() -> {
-            sContext.setTheme(isLightTheme ? android.R.style.Theme_DeviceDefault_Light
-                    : android.R.style.Theme_DeviceDefault);
+            int themeId;
+            if (isForceDarkAllowed) {
+                if (isLightTheme) {
+                    themeId = R.style.ForceDarkAllowed_Light;
+                } else {
+                    themeId = R.style.ForceDarkAllowed_Dark;
+                }
+            } else {
+                if (isLightTheme) {
+                    themeId = R.style.ForceDarkAllowedFalse_Light;
+                } else {
+                    themeId = R.style.ForceDarkAllowedFalse_Dark;
+                }
+            }
+            sContext.setTheme(themeId);
         });
 
         sInstrumentation.runOnMainSync(() -> {
@@ -1809,11 +1779,6 @@ public class ViewRootImplTest {
                     TYPE_APPLICATION_OVERLAY);
             layoutParams.token = new Binder();
             view.setLayoutParams(layoutParams);
-            if (isLightBackground) {
-                view.setBackgroundColor(Color.WHITE);
-            } else {
-                view.setBackgroundColor(Color.BLACK);
-            }
             mViewRootImpl.setView(view, layoutParams, /* panelParentView= */ null);
             mViewRootImpl.updateConfiguration(sContext.getDisplayNoVerify().getDisplayId());
         });

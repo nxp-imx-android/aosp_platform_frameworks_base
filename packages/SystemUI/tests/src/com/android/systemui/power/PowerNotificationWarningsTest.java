@@ -43,6 +43,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.testing.TestableLooper;
+import android.view.Window;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -97,6 +98,10 @@ public class PowerNotificationWarningsTest extends SysuiTestCase {
     @Mock
     private SystemUIDialog mSystemUIDialog;
 
+    @Mock
+    private Window mDialogWindow;
+
+    @Mock
     private BroadcastReceiver mReceiver;
 
     @Before
@@ -123,6 +128,7 @@ public class PowerNotificationWarningsTest extends SysuiTestCase {
         when(mUserTracker.getUserHandle()).thenReturn(
                 UserHandle.of(ActivityManager.getCurrentUser()));
         when(mSystemUIDialogFactory.create()).thenReturn(mSystemUIDialog);
+        when(mSystemUIDialog.getWindow()).thenReturn(mDialogWindow);
         mPowerNotificationWarnings = new PowerNotificationWarnings(
                 wrapper,
                 starter,
@@ -236,6 +242,7 @@ public class PowerNotificationWarningsTest extends SysuiTestCase {
         assertThat(mPowerNotificationWarnings.mUsbHighTempDialog).isNotNull();
 
         mPowerNotificationWarnings.mUsbHighTempDialog.dismiss();
+        waitForIdleSync(mContext.getMainThreadHandler());
     }
 
     @Test

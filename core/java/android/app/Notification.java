@@ -90,6 +90,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.text.BidiFormatter;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -3234,7 +3235,7 @@ public class Notification implements Parcelable
                 ApplicationInfo info = getApplicationInfo(context);
                 if (info != null) {
                     final PackageManager pm = context.getPackageManager();
-                    name = pm.getApplicationLabel(getApplicationInfo(context));
+                    name = pm.getApplicationLabel(info);
                 }
             }
             // If there's still nothing, ¯\_(ツ)_/¯
@@ -3245,6 +3246,52 @@ public class Notification implements Parcelable
         } finally {
             Trace.endSection();
         }
+    }
+
+    /**
+     * Get profile badge to be shown in the header (e.g. the briefcase icon for work profile).
+     *
+     * @param context the package context used to obtain the badge
+     * @hide
+     */
+    public static Bitmap getProfileBadge(Context context) {
+        Drawable badge = getProfileBadgeDrawable(context);
+        if (badge == null) {
+            return null;
+        }
+        final int size = context.getResources().getDimensionPixelSize(
+                Flags.notificationsRedesignTemplates()
+                        ? R.dimen.notification_2025_badge_size
+                        : R.dimen.notification_badge_size);
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        badge.setBounds(0, 0, size, size);
+        badge.draw(canvas);
+        return bitmap;
+    }
+
+    private static Drawable getProfileBadgeDrawable(Context context) {
+        if (context.getUserId() == UserHandle.USER_SYSTEM) {
+            // This user can never be a badged profile,
+            // and also includes USER_ALL system notifications.
+            return null;
+        }
+        // Note: This assumes that the current user can read the profile badge of the
+        // originating user.
+        DevicePolicyManager dpm = context.getSystemService(DevicePolicyManager.class);
+        return dpm.getResources().getDrawable(
+                getUpdatableProfileBadgeId(context), SOLID_COLORED, NOTIFICATION,
+                () -> getDefaultProfileBadgeDrawable(context));
+    }
+
+    private static String getUpdatableProfileBadgeId(Context context) {
+        return context.getSystemService(UserManager.class).isManagedProfile()
+                ? WORK_PROFILE_ICON : UNDEFINED;
+    }
+
+    private static Drawable getDefaultProfileBadgeDrawable(Context context) {
+        return context.getPackageManager().getUserBadgeForDensityNoBackground(
+                new UserHandle(context.getUserId()), 0);
     }
 
     /**
@@ -3307,7 +3354,7 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
-        if (Flags.optInRichOngoing()) {
+        if (Flags.uiRichOngoing()) {
             return hasRequestedPromotedOngoing()
                     && isOngoingEvent()
                     && hasTitle()
@@ -3425,6 +3472,39 @@ public class Notification implements Parcelable
         }
 
         return cs.toString();
+    }
+
+    @Nullable
+    private static CharSequence stripNonStyleSpans(@Nullable CharSequence text) {
+        if (text == null) return null;
+
+        if (text instanceof Spanned) {
+            Spanned ss = (Spanned) text;
+            Object[] spans = ss.getSpans(0, ss.length(), Object.class);
+            SpannableString outString = new SpannableString(ss.toString());
+            for (Object span : spans) {
+                final Object resultSpan;
+                if (span instanceof StyleSpan
+                        || span instanceof StrikethroughSpan
+                        || span instanceof UnderlineSpan) {
+                    resultSpan = span;
+                } else if (span instanceof TextAppearanceSpan) {
+                    final TextAppearanceSpan originalSpan = (TextAppearanceSpan) span;
+                    resultSpan = new TextAppearanceSpan(
+                            null,
+                            originalSpan.getTextStyle(),
+                            -1,
+                            null,
+                            null);
+                } else {
+                    continue;
+                }
+                outString.setSpan(resultSpan, ss.getSpanStart(span), ss.getSpanEnd(span),
+                        ss.getSpanFlags(span));
+            }
+            return outString;
+        }
+        return text;
     }
 
     private static CharSequence normalizeBigText(@Nullable CharSequence charSequence) {
@@ -5920,48 +6000,8 @@ public class Notification implements Parcelable
                     PorterDuff.Mode.SRC_ATOP);
         }
 
-        private Drawable getProfileBadgeDrawable() {
-            if (mContext.getUserId() == UserHandle.USER_SYSTEM) {
-                // This user can never be a badged profile,
-                // and also includes USER_ALL system notifications.
-                return null;
-            }
-            // Note: This assumes that the current user can read the profile badge of the
-            // originating user.
-            DevicePolicyManager dpm = mContext.getSystemService(DevicePolicyManager.class);
-            return dpm.getResources().getDrawable(
-                    getUpdatableProfileBadgeId(), SOLID_COLORED, NOTIFICATION,
-                    this::getDefaultProfileBadgeDrawable);
-        }
-
-        private String getUpdatableProfileBadgeId() {
-            return mContext.getSystemService(UserManager.class).isManagedProfile()
-                    ? WORK_PROFILE_ICON : UNDEFINED;
-        }
-
-        private Drawable getDefaultProfileBadgeDrawable() {
-            return mContext.getPackageManager().getUserBadgeForDensityNoBackground(
-                    new UserHandle(mContext.getUserId()), 0);
-        }
-
-        private Bitmap getProfileBadge() {
-            Drawable badge = getProfileBadgeDrawable();
-            if (badge == null) {
-                return null;
-            }
-            final int size = mContext.getResources().getDimensionPixelSize(
-                    Flags.notificationsRedesignTemplates()
-                            ? R.dimen.notification_2025_badge_size
-                            : R.dimen.notification_badge_size);
-            Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            badge.setBounds(0, 0, size, size);
-            badge.draw(canvas);
-            return bitmap;
-        }
-
         private void bindProfileBadge(RemoteViews contentView, StandardTemplateParams p) {
-            Bitmap profileBadge = getProfileBadge();
+            Bitmap profileBadge = Notification.getProfileBadge(mContext);
 
             if (profileBadge != null) {
                 contentView.setImageViewBitmap(R.id.profile_badge, profileBadge);
@@ -7156,10 +7196,6 @@ public class Notification implements Parcelable
                     savedBundle.getBoolean(EXTRA_SHOW_CHRONOMETER));
             publicExtras.putBoolean(EXTRA_CHRONOMETER_COUNT_DOWN,
                     savedBundle.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN));
-            if (mN.isPromotedOngoing() && !Flags.optInRichOngoing()) {
-                publicExtras.putBoolean(EXTRA_COLORIZED,
-                        savedBundle.getBoolean(EXTRA_COLORIZED));
-            }
             String appName = savedBundle.getString(EXTRA_SUBSTITUTE_APP_NAME);
             if (appName != null) {
                 publicExtras.putString(EXTRA_SUBSTITUTE_APP_NAME, appName);
@@ -7405,8 +7441,10 @@ public class Notification implements Parcelable
          */
         public CharSequence ensureColorSpanContrastOrStripStyling(CharSequence cs,
                 int buttonFillColor) {
-            // Ongoing promoted notifications are allowed to have styling.
-            if (Flags.cleanUpSpansAndNewLines()) {
+            if ( mN.isPromotedOngoing()) {
+                // RON keeps non style spans just like MessagingStyle
+                return stripNonStyleSpans(cs);
+            } else if (Flags.cleanUpSpansAndNewLines()) {
                 return stripStyling(cs);
             }
 
@@ -9018,7 +9056,7 @@ public class Notification implements Parcelable
             // Replace the text with the big text, but only if the big text is not empty.
             CharSequence bigTextText = mBuilder.processLegacyText(mBigText);
             // Ongoing promoted notifications are allowed to have styling.
-            if (Flags.cleanUpSpansAndNewLines()) {
+            if (!mBuilder.mN.isPromotedOngoing() && Flags.cleanUpSpansAndNewLines()) {
                 bigTextText = normalizeBigText(stripStyling(bigTextText));
             }
             if (!TextUtils.isEmpty(bigTextText)) {
@@ -10151,37 +10189,6 @@ public class Notification implements Parcelable
                 } else {
                     ensureColorContrast(backgroundColor);
                 }
-            }
-
-            private CharSequence stripNonStyleSpans(CharSequence text) {
-
-                if (text instanceof Spanned) {
-                    Spanned ss = (Spanned) text;
-                    Object[] spans = ss.getSpans(0, ss.length(), Object.class);
-                    SpannableStringBuilder builder = new SpannableStringBuilder(ss.toString());
-                    for (Object span : spans) {
-                        final Object resultSpan;
-                        if (span instanceof StyleSpan
-                                || span instanceof StrikethroughSpan
-                                || span instanceof UnderlineSpan) {
-                            resultSpan = span;
-                        } else if (span instanceof TextAppearanceSpan) {
-                            final TextAppearanceSpan originalSpan = (TextAppearanceSpan) span;
-                            resultSpan = new TextAppearanceSpan(
-                                    null,
-                                    originalSpan.getTextStyle(),
-                                    -1,
-                                    null,
-                                    null);
-                        } else {
-                            continue;
-                        }
-                        builder.setSpan(resultSpan, ss.getSpanStart(span), ss.getSpanEnd(span),
-                                ss.getSpanFlags(span));
-                    }
-                    return builder;
-                }
-                return text;
             }
 
             /**

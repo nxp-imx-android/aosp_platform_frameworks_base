@@ -34,6 +34,7 @@ import com.android.systemui.statusbar.AutoHideUiElement
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
+import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.phone.AutoHideController
 import com.android.systemui.statusbar.phone.CentralSurfaces
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions
@@ -71,6 +72,7 @@ constructor(
     @Assisted private val statusBarModeRepository: StatusBarModePerDisplayRepository,
     @Assisted private val statusBarInitializer: StatusBarInitializer,
     @Assisted private val statusBarWindowController: StatusBarWindowController,
+    @Assisted private val statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor,
     @Main private val mainContext: CoroutineContext,
     @Assisted private val autoHideController: AutoHideController,
     private val demoModeController: DemoModeController,
@@ -174,6 +176,7 @@ constructor(
         createAndAddWindow()
         setupPluginDependencies()
         setUpAutoHide()
+        statusBarIconRefreshInteractor.start()
     }
 
     private fun createAndAddWindow() {
@@ -226,9 +229,7 @@ constructor(
                     return statusBarModeRepository.isTransientShown.value
                 }
 
-                override fun hide() {
-                    statusBarModeRepository.clearTransient()
-                }
+                override fun hide() {}
             }
         )
     }
@@ -282,6 +283,7 @@ constructor(
     fun stop() {
         StatusBarConnectedDisplays.unsafeAssertInNewMode()
         dumpManager.unregisterDumpable(dumpableName)
+        statusBarIconRefreshInteractor.stop()
         startJob?.cancel()
         startJob = null
     }
@@ -295,6 +297,7 @@ constructor(
             statusBarModeRepository: StatusBarModePerDisplayRepository,
             statusBarInitializer: StatusBarInitializer,
             statusBarWindowController: StatusBarWindowController,
+            statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor,
             autoHideController: AutoHideController,
         ): StatusBarOrchestrator
     }

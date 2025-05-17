@@ -19,6 +19,7 @@ package android.window;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.StartingWindowRemovalInfo;
 
 /**
  * Implemented by WMShell to initiate and play transition animations.
@@ -63,4 +64,10 @@ oneway interface ITransitionPlayer {
      * @param request Information about this particular request.
      */
     void requestStartTransition(in IBinder transitionToken, in TransitionRequestInfo request);
+
+    /**
+     * Allows us to send a remove starting windo request to the transition binder, ensuring this
+     * request is invoked after onTransitionReady.
+     */
+    void removeStartingWindow(in StartingWindowRemovalInfo removalInfo);
 }

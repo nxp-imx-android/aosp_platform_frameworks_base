@@ -412,7 +412,7 @@
     <string name="qs_record_issue_dropdown_screenrecord" msgid="6396141928484257626">"螢幕錄影"</string>
     <string name="performance" msgid="6552785217174378320">"效能"</string>
     <string name="user_interface" msgid="3712869377953950887">"使用者介面"</string>
-    <string name="thermal" msgid="6758074791325414831">"熱成像"</string>
+    <string name="thermal" msgid="6758074791325414831">"散熱"</string>
     <string name="custom" msgid="3337456985275158299">"自訂"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"自訂追蹤記錄設定"</string>
     <string name="restore_default" msgid="5259420807486239755">"還原為預設值"</string>
@@ -684,8 +684,7 @@
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由 TrustAgent 維持解鎖狀態"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"驗證錯誤次數過多，裝置已鎖定"</string>
     <string name="keyguard_indication_after_adaptive_auth_lock" msgid="2323400645470712787">"裝置已鎖定\n驗證失敗"</string>
-    <!-- no translation found for keyguard_indication_after_watch_disconnected (8133476870585660478) -->
-    <skip />
+    <string name="keyguard_indication_after_watch_disconnected" msgid="8133476870585660478">"已由手錶鎖定"</string>
     <string name="zen_mode_and_condition" msgid="5043165189511223718">"<xliff:g id="ZEN_MODE">%1$s</xliff:g>。<xliff:g id="EXIT_CONDITION">%2$s</xliff:g>"</string>
     <string name="accessibility_volume_settings" msgid="1458961116951564784">"音效設定"</string>
     <string name="volume_odi_captions_tip" msgid="8825655463280990941">"自動產生媒體字幕"</string>
@@ -871,6 +870,8 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"已延後 <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# 小時}=2{# 小時}other{# 小時}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# 分鐘}other{# 分鐘}}"</string>
+    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"省電模式"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> 按鈕"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home 鍵"</string>
@@ -1009,8 +1010,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"你至少必須要有 <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> 個設定方塊"</string>
     <string name="qs_edit" msgid="5583565172803472437">"編輯"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"編輯設定方塊"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"調整快速設定方塊的大小"</string>
     <string name="tuner_time" msgid="2450785840990529997">"時間"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"顯示小時、分鐘和秒"</item>
@@ -1156,6 +1156,10 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"結束編輯模式"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"拖曳角落即可調整大小"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"允許沿對角線捲動"</string>
+    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
+    <skip />
+    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
+    <skip />
     <string name="accessibility_resize" msgid="5733759136600611551">"調整大小"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"變更放大類型"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"結束調整大小"</string>
@@ -1282,6 +1286,8 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"外接喇叭"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"喇叭和螢幕"</string>
+    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
+    <skip />
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"建議的裝置"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"輸入"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"輸出"</string>

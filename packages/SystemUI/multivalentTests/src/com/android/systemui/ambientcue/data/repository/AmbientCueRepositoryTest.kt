@@ -17,6 +17,7 @@
 package com.android.systemui.ambientcue.data.repository
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.PendingIntent
 import android.app.assist.ActivityId
 import android.app.smartspace.SmartspaceAction
 import android.app.smartspace.SmartspaceManager
@@ -27,25 +28,33 @@ import android.content.Intent
 import android.content.testableContext
 import android.os.Binder
 import android.os.Bundle
+import android.view.WindowManagerPolicyConstants
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.LauncherProxyService
+import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
+import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.DEBOUNCE_DELAY_MS
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ACTIVITY_ID
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_AUTOFILL_ID
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.navigationbar.NavigationModeController
+import com.android.systemui.navigationbar.NavigationModeController.ModeChangedListener
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.update
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -61,46 +70,99 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     private val smartSpaceSession = mock<SmartspaceSession>()
     private val autofillManager = mock<AutofillManager>()
     private val activityStarter = mock<ActivityStarter>()
+    private val launcherProxyService = mock<LauncherProxyService>()
+    private val navigationModeController = mock<NavigationModeController>()
     private val smartSpaceManager =
         mock<SmartspaceManager>() {
             on { createSmartspaceSession(any()) } doReturn smartSpaceSession
         }
     val onTargetsAvailableListenerCaptor = argumentCaptor<OnTargetsAvailableListener>()
+    val navigationModeChangeListenerCaptor = argumentCaptor<ModeChangedListener>()
+    val launcherProxyListenerCaptor = argumentCaptor<LauncherProxyListener>()
     private val underTest =
         AmbientCueRepositoryImpl(
             backgroundScope = kosmos.backgroundScope,
             smartSpaceManager = smartSpaceManager,
             autofillManager = autofillManager,
             activityStarter = activityStarter,
+            launcherProxyService = launcherProxyService,
+            navigationModeController = navigationModeController,
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
             focusdDisplayRepository = kosmos.fakeFocusedDisplayRepository,
         )
 
     @Test
-    fun isVisible_whenHasActions_true() =
+    fun isRootViewAttached_whenHasActionsAndNotDeactivatedAndTaskIdMatch_true() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
-            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(allTargets)
+
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
             advanceUntilIdle()
-            assertThat(isVisible).isTrue()
+
+            assertThat(isRootViewAttached).isTrue()
         }
 
     @Test
-    fun isVisible_whenNoActions_false() =
+    fun isRootViewAttached_whenNoActions_false() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
-            val isVisible by collectLastValue(underTest.isVisible)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(invalidTarget1))
             advanceUntilIdle()
-            assertThat(isVisible).isFalse()
+
+            assertThat(isRootViewAttached).isFalse()
+        }
+
+    @Test
+    fun isRootViewAttached_deactivated_false() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+
+            runCurrent()
+            underTest.isDeactivated.update { true }
+            runCurrent()
+
+            assertThat(isRootViewAttached).isFalse()
+        }
+
+    @Test
+    fun isRootViewAttached_taskIdNotMatch_false() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+
+            fakeFocusedDisplayRepository.setGlobalTask(
+                RunningTaskInfo().apply { taskId = TASK_ID_2 }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+
+            assertThat(isRootViewAttached).isFalse()
         }
 
     @Test
@@ -131,9 +193,9 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     fun globallyFocusedTaskId_whenFocusedTaskChange_taskIdUpdated() =
         kosmos.runTest {
             val globallyFocusedTaskId by collectLastValue(underTest.globallyFocusedTaskId)
-            runCurrent()
 
             fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
 
             assertThat(globallyFocusedTaskId).isEqualTo(TASK_ID)
         }
@@ -169,12 +231,83 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             verify(activityStarter).startActivity(launchIntent, false)
         }
 
+    @Test
+    fun action_performPendingIntent() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
+                listOf(pendingIntentTarget)
+            )
+
+            val action: ActionModel = actions!!.first()
+            action.onPerformAction()
+            runCurrent()
+            verify(pendingIntent).send(any<Bundle>())
+        }
+
+    @Test
+    fun targetTaskId_updatedWithAction() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val targetTaskId by collectLastValue(underTest.targetTaskId)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+
+            runCurrent()
+            assertThat(targetTaskId).isEqualTo(TASK_ID)
+        }
+
+    fun isGestureNav_propagatesFromNavigationModeController() =
+        kosmos.runTest {
+            val isGestureNav by collectLastValue(underTest.isGestureNav)
+            runCurrent()
+            verify(navigationModeController)
+                .addListener(navigationModeChangeListenerCaptor.capture())
+
+            navigationModeChangeListenerCaptor.firstValue.onNavigationModeChanged(
+                WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL
+            )
+            assertThat(isGestureNav).isTrue()
+
+            navigationModeChangeListenerCaptor.firstValue.onNavigationModeChanged(
+                WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON
+            )
+            assertThat(isGestureNav).isFalse()
+        }
+
+    @Test
+    fun isTaskBarVisible_propagatesFromLauncherProxyService() =
+        kosmos.runTest {
+            val isTaskBarVisible by collectLastValue(underTest.isTaskBarVisible)
+            runCurrent()
+            verify(launcherProxyService).addCallback(launcherProxyListenerCaptor.capture())
+
+            launcherProxyListenerCaptor.firstValue.onTaskbarStatusUpdated(false, false)
+            runCurrent()
+            assertThat(isTaskBarVisible).isFalse()
+
+            launcherProxyListenerCaptor.firstValue.onTaskbarStatusUpdated(true, false)
+            runCurrent()
+            assertThat(isTaskBarVisible).isTrue()
+
+            launcherProxyListenerCaptor.firstValue.onTaskbarStatusUpdated(true, true)
+            runCurrent()
+            assertThat(isTaskBarVisible).isFalse()
+        }
+
     companion object {
 
         private const val TITLE_1 = "title 1"
         private const val TITLE_2 = "title 2"
         private const val SUBTITLE_1 = "subtitle 1"
         private const val SUBTITLE_2 = "subtitle 2"
+        private const val TASK_ID = 1
+        private const val TASK_ID_2 = 2
         private val validTarget =
             mock<SmartspaceTarget> {
                 on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
@@ -190,7 +323,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             }
 
         private val autofillId = AutofillId(2)
-        private val activityId = ActivityId(1, Binder())
+        private val activityId = ActivityId(TASK_ID, Binder())
         private val autofillTarget =
             mock<SmartspaceTarget> {
                 on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
@@ -221,6 +354,19 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                     )
             }
 
+        private val pendingIntent = mock<PendingIntent>()
+        private val pendingIntentTarget =
+            mock<SmartspaceTarget> {
+                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
+                on { actionChips } doReturn
+                    listOf(
+                        SmartspaceAction.Builder("action1-id", "title 1")
+                            .setSubtitle("subtitle 1")
+                            .setPendingIntent(pendingIntent)
+                            .build()
+                    )
+            }
+
         private val invalidTarget1 =
             mock<SmartspaceTarget> {
                 on { smartspaceTargetId } doReturn "home"
@@ -229,7 +375,5 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             }
 
         private val allTargets = listOf(validTarget, invalidTarget1)
-
-        private const val TASK_ID = 1
     }
 }

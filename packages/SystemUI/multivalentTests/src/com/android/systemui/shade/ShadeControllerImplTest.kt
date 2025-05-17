@@ -24,6 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.statusbar.IStatusBarService
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.assist.AssistManager
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.LogBuffer
@@ -61,6 +62,7 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
+@DisableSceneContainer
 class ShadeControllerImplTest : SysuiTestCase() {
     private val executor = FakeExecutor(FakeSystemClock())
     private val kosmos = testKosmos()

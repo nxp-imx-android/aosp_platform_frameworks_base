@@ -29,12 +29,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.compose.modifiers.sysuiResTag
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBattery
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel.Companion.STATUS_BAR_BATTERY_HEIGHT
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 import kotlinx.coroutines.flow.Flow
 
 /** In cases where the battery needs to be bound to an existing android view */
@@ -43,7 +43,7 @@ object UnifiedBatteryViewBinder {
     @JvmStatic
     fun bind(
         view: ComposeView,
-        viewModelFactory: UnifiedBatteryViewModel.Factory,
+        viewModelFactory: BatteryViewModel.Factory,
         isAreaDark: Flow<IsAreaDark>,
     ) {
         view.repeatWhenAttached {
@@ -55,6 +55,10 @@ object UnifiedBatteryViewBinder {
                     )
                     setContent {
                         PlatformTheme {
+                            val viewModel =
+                                rememberViewModel(traceName = "UnifiedBattery") {
+                                    viewModelFactory.create()
+                                }
                             val isDark by
                                 isAreaDark.collectAsStateWithLifecycle(IsAreaDark { true })
                             val height =
@@ -64,7 +68,7 @@ object UnifiedBatteryViewBinder {
                                     Modifier.height(height)
                                         .wrapContentWidth()
                                         .sysuiResTag(BatteryViewModel.TEST_TAG),
-                                viewModelFactory = viewModelFactory,
+                                viewModel = viewModel,
                                 isDarkProvider = { isDark },
                             )
                         }

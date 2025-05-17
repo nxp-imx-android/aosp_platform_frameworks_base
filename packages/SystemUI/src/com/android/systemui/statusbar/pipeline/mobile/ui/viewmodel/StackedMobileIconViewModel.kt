@@ -24,6 +24,7 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.dagger.StackedMobileIconTableLog
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.DualSim
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.logDualSimDiff
@@ -42,6 +43,9 @@ interface StackedMobileIconViewModel {
     val dualSim: DualSim?
     val contentDescription: String?
     val networkTypeIcon: Icon.Resource?
+    /** [Context] to use when loading the [networkTypeIcon] */
+    val mobileContext: Context?
+    val roaming: Boolean
     val isIconVisible: Boolean
 }
 
@@ -52,6 +56,7 @@ constructor(
     mobileIconsViewModel: MobileIconsViewModel,
     @StackedMobileIconTableLog private val tableLogger: TableLogBuffer,
     @ShadeDisplayAware private val context: Context,
+    private val mobileContextProvider: MobileContextProvider,
 ) : ExclusiveActivatable(), StackedMobileIconViewModel {
     private val hydrator = Hydrator("StackedMobileIconViewModel")
 
@@ -128,6 +133,42 @@ constructor(
             initialValue = null,
         )
 
+    override val mobileContext: Context? by
+        hydrator.hydratedStateOf(
+            traceName = "mobileContext",
+            source =
+                flowIfIconIsVisible(
+                    iconViewModelFlow.map { viewModels ->
+                        // Get mobile context of primary connection
+                        viewModels.firstOrNull()?.let {
+                            mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                        }
+                    }
+                ),
+            initialValue = null,
+        )
+
+    override val roaming: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isRoaming",
+            source =
+                _isIconVisible.flatMapLatest { isVisible ->
+                    if (isVisible) {
+                            iconViewModelFlow.flatMapLatest { viewModels ->
+                                viewModels.firstOrNull()?.roaming ?: flowOf(false)
+                            }
+                        } else {
+                            flowOf(false)
+                        }
+                        .logDiffsForTable(
+                            tableLogBuffer = tableLogger,
+                            columnName = COL_ROAMING,
+                            initialValue = false,
+                        )
+                },
+            initialValue = false,
+        )
+
     override val isIconVisible: Boolean by
         hydrator.hydratedStateOf(
             traceName = "isIconVisible",
@@ -161,5 +202,6 @@ constructor(
 
     private companion object {
         const val COL_IS_ICON_VISIBLE = "isIconVisible"
+        const val COL_ROAMING = "roam"
     }
 }

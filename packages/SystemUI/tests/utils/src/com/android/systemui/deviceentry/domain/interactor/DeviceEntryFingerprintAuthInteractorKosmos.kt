@@ -24,7 +24,6 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 val Kosmos.deviceEntryFingerprintAuthInteractor by
     Kosmos.Fixture {
         DeviceEntryFingerprintAuthInteractor(
-            biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
             repository = deviceEntryFingerprintAuthRepository,
             fingerprintPropertyRepository = fingerprintPropertyRepository,
             applicationScope = applicationCoroutineScope,

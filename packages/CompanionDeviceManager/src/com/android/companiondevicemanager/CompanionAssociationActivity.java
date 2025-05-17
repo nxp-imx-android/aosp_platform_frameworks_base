@@ -121,6 +121,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     private ImageView mProfileIcon;
     // Present for self managed association only;
     private ImageView mDeviceIcon;
+    private CharSequence mDeviceName;
 
     // Only present for selfManaged devices.
     private ImageView mVendorHeaderImage;
@@ -296,6 +297,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mVendorHeaderButton = findViewById(R.id.vendor_header_button);
 
         mDeviceIcon = findViewById(R.id.device_icon);
+        mDeviceName = mRequest.getDisplayName();
 
         mTimeoutMessage = findViewById(R.id.timeout_message);
         mDeviceListRecyclerView = findViewById(R.id.device_list);
@@ -469,7 +471,6 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     private void initUiForSelfManagedAssociation() {
         Slog.d(TAG, "initUiForSelfManagedAssociation()");
 
-        final CharSequence deviceName = mRequest.getDisplayName();
         final String deviceProfile = mRequest.getDeviceProfile();
         final String packageName = mRequest.getPackageName();
         final int userId = mRequest.getUserId();
@@ -497,7 +498,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         }
 
         title = getHtmlFromResources(this, PROFILE_TITLES.get(deviceProfile), mAppLabel,
-                getString(R.string.device_type), deviceName);
+                getString(R.string.device_type), mDeviceName);
 
         if (deviceIcon != null) {
             mDeviceIcon.setImageIcon(deviceIcon);
@@ -507,7 +508,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         if (PROFILE_SUMMARIES.containsKey(deviceProfile)) {
             final int summaryResourceId = PROFILE_SUMMARIES.get(deviceProfile);
             final Spanned summary = getHtmlFromResources(this, summaryResourceId,
-                    mAppLabel, getString(R.string.device_type), deviceName);
+                    mAppLabel, getString(R.string.device_type), mDeviceName);
             mSummary.setText(summary);
         } else {
             mSummary.setVisibility(View.GONE);
@@ -741,6 +742,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             return;
         }
         mPermissionListAdapter.setPermissionType(perms);
+        mPermissionListAdapter.setAppLabel(mAppLabel);
+        mPermissionListAdapter.setDeviceName(mDeviceName);
         mPermissionListRecyclerView.setAdapter(mPermissionListAdapter);
         // Only attach the LinearLayoutManager if it's not already attached.
         if (mPermissionListRecyclerView.getLayoutManager() == null) {

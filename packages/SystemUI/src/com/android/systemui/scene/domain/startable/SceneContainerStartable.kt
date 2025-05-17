@@ -17,6 +17,7 @@
 package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
+import android.view.Display
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -33,6 +34,7 @@ import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.classifier.FalsingCollectorActual
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
@@ -48,8 +50,8 @@ import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVi
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SceneContainerPluginImpl
+import com.android.systemui.model.StateChange
 import com.android.systemui.model.SysUiState
-import com.android.systemui.model.updateFlags
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.plugins.FalsingManager.FalsingBeliefListener
 import com.android.systemui.power.domain.interactor.PowerInteractor
@@ -67,8 +69,10 @@ import com.android.systemui.scene.shared.logger.SceneLogger
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.VibratorHelper
@@ -122,7 +126,6 @@ constructor(
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val bouncerInteractor: BouncerInteractor,
     private val keyguardInteractor: KeyguardInteractor,
-    private val sysUiState: SysUiState,
     private val sceneLogger: SceneLogger,
     @FalsingCollectorActual private val falsingCollector: FalsingCollector,
     private val falsingManager: FalsingManager,
@@ -150,11 +153,20 @@ constructor(
     private val shadeModeInteractor: ShadeModeInteractor,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     private val trustInteractor: TrustInteractor,
+    private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
+    private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
 ) : CoreStartable {
     private val centralSurfaces: CentralSurfaces?
         get() = centralSurfacesOptLazy.get().getOrNull()
 
     private val authInteractionProperties = AuthInteractionProperties()
+
+    private val shadePendingDisplayId: Flow<Int> =
+        if (ShadeWindowGoesAround.isEnabled) {
+            shadeDisplaysInteractor.get().pendingDisplayId
+        } else {
+            flowOf(Display.DEFAULT_DISPLAY)
+        }
 
     override fun start() {
         if (SceneContainerFlag.isEnabled) {
@@ -759,24 +771,27 @@ constructor(
                         .distinctUntilChanged(),
                     sceneInteractor.isVisible,
                     occlusionInteractor.invisibleDueToOcclusion,
-                ) { idleState, isVisible, invisibleDueToOcclusion ->
-                    SceneContainerPlugin.SceneContainerPluginState(
-                        scene = idleState.currentScene,
-                        overlays = idleState.currentOverlays,
-                        isVisible = isVisible,
-                        invisibleDueToOcclusion = invisibleDueToOcclusion,
-                    )
+                    shadePendingDisplayId,
+                ) { idleState, isVisible, invisibleDueToOcclusion, displayId ->
+                    displayId to
+                        SceneContainerPlugin.SceneContainerPluginState(
+                            scene = idleState.currentScene,
+                            overlays = idleState.currentOverlays,
+                            invisibleDueToOcclusion = invisibleDueToOcclusion,
+                            isVisible = isVisible,
+                        )
                 }
-                .map { sceneContainerPluginState ->
-                    SceneContainerPluginImpl.EvaluatorByFlag.map { (flag, evaluator) ->
+                .map { (displayId, sceneContainerPluginState) ->
+                    displayId to
+                        SceneContainerPluginImpl.EvaluatorByFlag.map { (flag, evaluator) ->
                             flag to evaluator(sceneContainerPluginState)
                         }
-                        .toMap()
                 }
                 .distinctUntilChanged()
-                .collect { flags ->
-                    sysUiState.updateFlags(
-                        *(flags.entries.map { (key, value) -> key to value }).toTypedArray()
+                .collect { (displayId: Int, flagMap) ->
+                    sysuiStateInteractor.setFlagsExclusivelyToDisplay(
+                        targetDisplayId = displayId,
+                        stateChanges = StateChange.from(flagMap),
                     )
                 }
         }

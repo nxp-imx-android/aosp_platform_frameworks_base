@@ -281,6 +281,11 @@ public class DisplayManagerFlags {
             Flags::delayImplicitRrRegistrationUntilRrAccessed
     );
 
+    private final FlagState mHdrBrightnessSetting = new FlagState(
+            Flags.FLAG_HDR_BRIGHTNESS_SETTING,
+            Flags::hdrBrightnessSetting
+    );
+
     private final FlagState mDispatchDisplayModeWithVsyncOffsets = new FlagState(
             Flags.FLAG_ENABLE_ON_MODE_CHANGED_VSYNC_PHASE_OFFSET,
             Flags::enableOnModeChangedVsyncPhaseOffset
@@ -616,6 +621,10 @@ public class DisplayManagerFlags {
         return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
+    public boolean isHdrBrightnessSettingEnabled() {
+        return mHdrBrightnessSetting.isEnabled();
+    }
+
     public boolean isDispatchDisplayModeWithVsyncOffsetsEnabled() {
         return mDispatchDisplayModeWithVsyncOffsets.isEnabled();
     }
@@ -681,6 +690,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mCommittedStateSeparateEvent);
         pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
+        pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
     }

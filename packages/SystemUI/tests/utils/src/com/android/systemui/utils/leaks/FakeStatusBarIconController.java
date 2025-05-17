@@ -47,6 +47,10 @@ public class FakeStatusBarIconController extends BaseLeakChecker<IconManager>
     }
 
     @Override
+    public void refreshIconGroups(int displayId) {
+    }
+
+    @Override
     public void setIconFromTile(String slot, StatusBarIcon icon) {
 
     }

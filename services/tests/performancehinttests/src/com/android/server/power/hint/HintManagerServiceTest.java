@@ -70,7 +70,6 @@ import android.os.PerformanceHintManager;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.SessionCreationConfig;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -692,7 +691,6 @@ public class HintManagerServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_POWERHINT_THREAD_CLEANUP)
     public void testNoCleanupDeadThreadsForPrevPowerHalVersion() throws Exception {
         reset(mIPowerMock);
         when(mIPowerMock.getInterfaceVersion()).thenReturn(3);
@@ -730,7 +728,6 @@ public class HintManagerServiceTest {
 
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_POWERHINT_THREAD_CLEANUP)
     public void testCleanupDeadThreads() throws Exception {
         HintManagerService service = createService();
         IBinder token = new Binder();

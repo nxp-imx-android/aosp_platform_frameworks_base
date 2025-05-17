@@ -21,12 +21,14 @@ import com.android.systemui.kairos.internal.store.SingletonMapK
 import com.android.systemui.kairos.internal.store.asSingle
 import com.android.systemui.kairos.internal.store.singleOf
 import com.android.systemui.kairos.internal.util.LogIndent
+import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.kairos.internal.util.hashString
 import com.android.systemui.kairos.internal.util.logDuration
 import com.android.systemui.kairos.util.Maybe
 import com.android.systemui.kairos.util.Maybe.Absent
 import com.android.systemui.kairos.util.Maybe.Present
 import com.android.systemui.kairos.util.NameData
+import com.android.systemui.kairos.util.forceInit
 import com.android.systemui.kairos.util.plus
 
 internal class MuxPromptNode<W, K, V>(
@@ -97,8 +99,8 @@ internal class MuxPromptNode<W, K, V>(
         val severed = mutableListOf<NodeConnection<*>>()
 
         // remove and sever
-        for (idx in removes.indices) {
-            switchedIn.remove(removes[idx])?.let { branchNode: BranchNode ->
+        removes.forEach { k ->
+            switchedIn.remove(k)?.let { branchNode: BranchNode ->
                 val conn: NodeConnection<V> = branchNode.upstream
                 severed.add(conn)
                 conn.removeDownstream(downstream = branchNode.schedulable)
@@ -114,8 +116,7 @@ internal class MuxPromptNode<W, K, V>(
         }
 
         // add or replace
-        for (idx in adds.indices) {
-            val (k, newUpstream: EventsImpl<V>) = adds[idx]
+        adds.fastForEach { (k, newUpstream: EventsImpl<V>) ->
             // remove old and sever, if present
             switchedIn.remove(k)?.let { oldBranch: BranchNode ->
                 val conn: NodeConnection<V> = oldBranch.upstream
@@ -160,9 +161,7 @@ internal class MuxPromptNode<W, K, V>(
             }
         }
 
-        for (idx in severed.indices) {
-            severed[idx].scheduleDeactivationIfNeeded(evalScope)
-        }
+        severed.fastForEach { it.scheduleDeactivationIfNeeded(evalScope) }
 
         return needsReschedule
     }
@@ -338,6 +337,11 @@ private class MuxPromptActivator<W, K, V>(
     private val storeFactory: MutableMapK.Factory<W, K>,
     private val getPatches: EvalScope.() -> EventsImpl<Iterable<Map.Entry<K, Maybe<EventsImpl<V>>>>>,
 ) : MuxActivator<W, K, V> {
+
+    init {
+        nameData.forceInit()
+    }
+
     override fun activate(
         evalScope: EvalScope,
         lifecycle: MuxLifecycle<W, K, V>,

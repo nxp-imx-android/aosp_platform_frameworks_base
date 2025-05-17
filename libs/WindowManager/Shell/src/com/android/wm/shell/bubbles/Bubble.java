@@ -54,6 +54,7 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.ComponentUtils;
@@ -634,6 +635,7 @@ public class Bubble implements BubbleViewProvider {
         return (mMetadataShortcutId != null && !mMetadataShortcutId.isEmpty());
     }
 
+    @Nullable
     public BubbleTransitions.BubbleTransition getPreparingTransition() {
         return mPreparingTransition;
     }
@@ -718,6 +720,12 @@ public class Bubble implements BubbleViewProvider {
         mPreparingTransition = transit;
     }
 
+    /** Whether this bubble is currently converting to bubble bar. */
+    public boolean isConvertingToBar() {
+        return getPreparingTransition() != null
+                && getPreparingTransition().isConvertingBubbleToBar();
+    }
+
     /**
      * Sets whether this bubble is considered text changed. This method is purely for
      * testing.
@@ -747,6 +755,7 @@ public class Bubble implements BubbleViewProvider {
             @Nullable BubbleStackView stackView,
             @Nullable BubbleBarLayerView layerView,
             BubbleIconFactory iconFactory,
+            BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation) {
         ProtoLog.v(WM_SHELL_BUBBLES, "Inflate bubble key=%s", getKey());
         if (Flags.bubbleViewInfoExecutors()) {
@@ -761,6 +770,7 @@ public class Bubble implements BubbleViewProvider {
                     stackView,
                     layerView,
                     iconFactory,
+                    appInfoProvider,
                     skipInflation,
                     callback,
                     mMainExecutor,
@@ -1360,6 +1370,7 @@ public class Bubble implements BubbleViewProvider {
         pw.print("  autoExpand:    "); pw.println(shouldAutoExpand());
         pw.print("  isDismissable: "); pw.println(mIsDismissable);
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
+        pw.println("  preparingTransition null?: " + (mPreparingTransition == null));
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
         }

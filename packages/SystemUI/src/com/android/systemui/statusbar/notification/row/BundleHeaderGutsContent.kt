@@ -38,17 +38,19 @@ class BundleHeaderGutsContent(context: Context) : GutsContent {
     fun bindNotification(
         row: ExpandableNotificationRow,
         onSettingsClicked: () -> Unit = {},
-        onDoneClicked: () -> Unit = {},
         onDismissClicked: () -> Unit = {},
+        enableBundle: (type: Int, enable: Boolean) -> Unit,
     ) {
         val repository = (row.entryAdapter as BundleEntryAdapter).entry.bundleRepository
+
         val viewModel =
             BundleHeaderGutsViewModel(
                 titleText = repository.titleText,
                 bundleIcon = repository.bundleIcon,
                 summaryText = repository.summaryText,
+                disableBundle = { enableBundle(repository.bundleType, false) },
                 onSettingsClicked = onSettingsClicked,
-                onDoneClicked = onDoneClicked,
+                closeGuts = { gutsParent?.closeControls(composeView, true) },
                 onDismissClicked = onDismissClicked,
             )
 
@@ -64,7 +66,7 @@ class BundleHeaderGutsContent(context: Context) : GutsContent {
     }
 
     override fun setGutsParent(listener: NotificationGuts?) {
-        this.gutsParent = listener
+        gutsParent = listener
     }
 
     override fun getContentView(): View {

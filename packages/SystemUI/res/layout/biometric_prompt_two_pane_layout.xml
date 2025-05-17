@@ -31,6 +31,18 @@ android:layout_height="match_parent">
         app:layout_constraintLeft_toLeftOf="@+id/leftGuideline"
         app:layout_constraintTop_toTopOf="@+id/topGuideline" />
 
+    <com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
+        android:id="@+id/biometric_prompt_udfps_accessibility_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:accessibilityLiveRegion="assertive"
+        android:importantForAccessibility="no"
+        android:clickable="false"
+        app:layout_constraintBottom_toBottomOf="@id/panel"
+        app:layout_constraintEnd_toEndOf="@id/panel"
+        app:layout_constraintStart_toStartOf="@id/panel"
+        app:layout_constraintTop_toTopOf="@id/panel" />
+
     <com.android.systemui.biometrics.BiometricPromptLottieViewWrapper
         android:id="@+id/biometric_icon"
         android:layout_width="wrap_content"

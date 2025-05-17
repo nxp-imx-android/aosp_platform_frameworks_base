@@ -61,7 +61,7 @@ interface IUserManager {
     UserInfo getPrimaryUser();
     int getMainUserId();
     int getCommunalProfileId();
-    int getPreviousFullUserToEnterForeground();
+    int getPreviousUserToEnterForeground();
     List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying, boolean excludePreCreated);
     List<UserInfo> getProfiles(int userId, boolean enabledOnly);
     int[] getProfileIds(int userId, boolean enabledOnly);

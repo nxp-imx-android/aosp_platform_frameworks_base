@@ -29,7 +29,6 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.DisabledEdge;
@@ -59,7 +58,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Trace;
 import android.os.UserHandle;
-import android.util.IndentingPrintWriter;
 import android.util.Size;
 import android.view.Choreographer;
 import android.view.Display;
@@ -79,7 +77,6 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.SystemBarUtils;
-import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -126,7 +123,6 @@ import kotlin.jvm.functions.Function1;
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.MainCoroutineDispatcher;
 
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -447,11 +443,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean hasGlobalFocus, @NonNull Region displayExclusionRegion,
             boolean inSyncWithTransition) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
-        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: relayout of taskId=%d startT=%s finishT=%s "
-                + "applyStartTransactionOnDraw=%b "
-                + "shouldSetTaskVisibilityPositionAndCrop=%b hasGlobalFocus=%b taskVisible=%b",
-                TAG, taskInfo.taskId, startT.getId(), finishT.getId(), applyStartTransactionOnDraw,
-                shouldSetTaskVisibilityPositionAndCrop, hasGlobalFocus, taskInfo.isVisible);
 
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
             setCapturedLink(taskInfo.capturedLink, taskInfo.capturedLinkTimestamp);
@@ -1046,6 +1037,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             }
             controlsElement.mAlignment = RelayoutParams.OccludingCaptionElement.Alignment.END;
             relayoutParams.mOccludingCaptionElements.add(controlsElement);
+
+            relayoutParams.mInputFeatures |=
+                        WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE;
         } else if (isAppHandle && !DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             // The focused decor (fullscreen/split) does not need to handle input because input in
             // the App Handle is handled by the InputMonitor in DesktopModeWindowDecorViewModel.
@@ -1892,6 +1886,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+        // TODO (b/415631133): Update this to call on #relayout once b/415631133 is fixed
+        if (isAppHandle(mWindowDecorViewHolder)
+                && DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+            updateAppHandleViewHolder();
+        }
     }
 
     /**
@@ -1926,30 +1925,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return !animatingTaskResizeOrReposition && !inImmersiveAndRequesting;
     }
 
-    void dump(@NonNull PrintWriter originalWriter, @NonNull String prefix) {
-        final IndentingPrintWriter pw = new IndentingPrintWriter(originalWriter, "  ", prefix);
-        pw.println("DesktopModeWindowDecoration (task#" + mTaskInfo.taskId + ")");
-        pw.increaseIndent();
-        pw.println("mPositionInParent=" + mPositionInParent);
-        pw.println("windowingMode=" + windowingModeToString(mTaskInfo.getWindowingMode()));
-        pw.println("isFocused=" + isFocused());
-        pw.println("taskVisible=" + mTaskInfo.isVisible);
-        pw.println("mIsRecentsTransitionRunning=" + mIsRecentsTransitionRunning);
-        pw.println("mIsDragging=" + mIsDragging);
-        pw.println("mIsAppHeaderMaximizeButtonHovered=" + mIsAppHeaderMaximizeButtonHovered);
-        pw.println("mIsMaximizeMenuHovered=" + mIsMaximizeMenuHovered);
-        pw.println("mMinimumInstancesFound=" + mMinimumInstancesFound);
-        pw.println("mDisabledResizingEdge=" + mDisabledResizingEdge);
-        pw.println("mCapturedLink=" + mCapturedLink);
-        pw.println("mGenericLink=" + mGenericLink);
-        pw.println("mWebUri=" + mWebUri);
-        if (mRelayoutParams != null) {
-            mRelayoutParams.dump(pw, mContext);
-        }
-        pw.decreaseIndent();
-        if (mResult != null) {
-            mResult.dump(pw);
-        }
+    @Override
+    public String toString() {
+        return "{"
+                + "mPositionInParent=" + mPositionInParent + ", "
+                + "taskId=" + mTaskInfo.taskId + ", "
+                + "windowingMode=" + windowingModeToString(mTaskInfo.getWindowingMode()) + ", "
+                + "isFocused=" + isFocused()
+                + "}";
     }
 
     static class Factory {

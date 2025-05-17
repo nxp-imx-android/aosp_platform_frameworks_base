@@ -36,6 +36,7 @@ import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.primaryBouncerInteractor
+import com.android.systemui.camera.domain.interactor.cameraSensorPrivacyInteractor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeFaceWakeUpTriggersConfig
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
@@ -132,6 +133,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
                 trustManager,
                 { kosmos.sceneInteractor },
                 deviceEntryFaceAuthStatusInteractor,
+                kosmos.cameraSensorPrivacyInteractor,
             )
     }
 
@@ -189,11 +191,12 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun whenFaceIsLockedOutAnyAttemptsToTriggerFaceAuthMustProvideLockoutError() =
+    fun whenFaceIsLockedOutAndNonBypassAnyAttemptsToTriggerFaceAuthMustProvideLockoutError() =
         testScope.runTest {
             underTest.start()
             val authenticationStatus = collectLastValue(underTest.authenticationStatus)
             faceAuthRepository.setLockedOut(true)
+            kosmos.fakeDeviceEntryFaceAuthRepository.isBypassEnabled.value = false
 
             underTest.onDeviceLifted()
 
@@ -202,6 +205,19 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
                 .isEqualTo(BiometricFaceConstants.FACE_ERROR_LOCKOUT_PERMANENT)
             assertThat(outputValue.msg).isEqualTo("Face Unlock unavailable")
             assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
+        }
+
+    @Test
+    fun whenFaceIsLockedOutAndBypass_DetectRuns() =
+        testScope.runTest {
+            underTest.start()
+            val authenticationStatus = collectLastValue(underTest.authenticationStatus)
+            faceAuthRepository.setLockedOut(true)
+            kosmos.fakeDeviceEntryFaceAuthRepository.isBypassEnabled.value = true
+
+            underTest.onDeviceLifted()
+
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNotNull()
         }
 
     @Test

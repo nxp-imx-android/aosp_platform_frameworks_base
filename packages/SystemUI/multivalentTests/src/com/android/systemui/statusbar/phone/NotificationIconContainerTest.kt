@@ -15,10 +15,14 @@
  */
 package com.android.systemui.statusbar.phone
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.StatusBarIconView.STATE_DOT
@@ -26,6 +30,7 @@ import com.android.systemui.statusbar.StatusBarIconView.STATE_HIDDEN
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
@@ -37,6 +42,8 @@ import org.mockito.Mockito.`when` as whenever
 @RunWithLooper
 class NotificationIconContainerTest : SysuiTestCase() {
 
+    @get:Rule
+    val setFlagsRule = SetFlagsRule()
     private val iconContainer = NotificationIconContainer(context, /* attrs= */ null)
 
     @Test
@@ -174,7 +181,36 @@ class NotificationIconContainerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     fun calculateIconXTranslations_givenWidthNotEnoughForFourIcons_atCorrectXWithOverflowDot() {
+        iconContainer.setActualPaddingStart(0f)
+        iconContainer.setActualPaddingEnd(0f)
+        iconContainer.setActualLayoutWidth(35)
+        iconContainer.setIconSize(10)
+
+        val iconOne = mockStatusBarIcon()
+        val iconTwo = mockStatusBarIcon()
+        val iconThree = mockStatusBarIcon()
+        val iconFour = mockStatusBarIcon()
+
+        iconContainer.addView(iconOne)
+        iconContainer.addView(iconTwo)
+        iconContainer.addView(iconThree)
+        iconContainer.addView(iconFour)
+        assertEquals(4, iconContainer.childCount)
+
+        iconContainer.calculateIconXTranslations()
+        assertEquals(0f, iconContainer.getIconState(iconOne).xTranslation)
+        assertEquals(10f, iconContainer.getIconState(iconTwo).xTranslation)
+        assertEquals(STATE_HIDDEN, iconContainer.getIconState(iconThree).visibleState)
+        assertEquals(STATE_DOT, iconContainer.getIconState(iconFour).visibleState)
+        assertTrue(iconContainer.areIconsOverflowing())
+    }
+
+
+    @Test
+    @DisableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
+    fun calculateIconXTranslations_givenWidthNotEnoughForFourIcons_atCorrectXWithOverflowDotNonPhysical() {
         iconContainer.setActualPaddingStart(0f)
         iconContainer.setActualPaddingEnd(0f)
         iconContainer.setActualLayoutWidth(35)

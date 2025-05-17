@@ -756,6 +756,7 @@ class BubbleStackViewTest {
             bubbleStackView,
             null,
             iconFactory,
+            FakeBubbleAppInfoProvider(),
             false
         )
 

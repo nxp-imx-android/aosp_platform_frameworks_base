@@ -117,4 +117,13 @@ flag {
     }
 }
 
+flag {
+    name: "deviceidlejobcontroller_off_main_thread"
+    namespace: "backstage_power"
+    description: "Move the broadcast receiver in DeviceIdleJobController off the main thread."
+    bug: "414140833"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
 

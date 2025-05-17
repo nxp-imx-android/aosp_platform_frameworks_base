@@ -63,6 +63,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class LocalMediaManager implements BluetoothCallback {
     private static final String TAG = "LocalMediaManager";
     private static final int MAX_DISCONNECTED_DEVICE_NUM = 5;
+    private static final int MIN_DURATION_BETWEEN_SUGGESTION_REQUESTS_MILLIS = 5000;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({MediaDeviceState.STATE_CONNECTED,
@@ -111,6 +112,8 @@ public class LocalMediaManager implements BluetoothCallback {
 
     @VisibleForTesting
     BluetoothAdapter mBluetoothAdapter;
+
+    private long mLastSuggestionRequestTime = 0L;
 
     /**
      * Register to start receiving callbacks for MediaDevice events.
@@ -246,7 +249,19 @@ public class LocalMediaManager implements BluetoothCallback {
 
     /** Requests a suggestion from other routers. */
     public void requestDeviceSuggestion() {
-        mInfoMediaManager.requestDeviceSuggestion();
+        // Debounce multiple requests in a short duration
+        long currentRequestTime = System.currentTimeMillis();
+        if (currentRequestTime - mLastSuggestionRequestTime
+                > MIN_DURATION_BETWEEN_SUGGESTION_REQUESTS_MILLIS) {
+            Log.d(TAG, "requesting device suggestion");
+            mLastSuggestionRequestTime = currentRequestTime;
+            mInfoMediaManager.requestDeviceSuggestion();
+        } else {
+            Log.d(
+                    TAG,
+                    "requestDeviceSuggestion() ignored due to difference between requests: "
+                            + (currentRequestTime - mLastSuggestionRequestTime));
+        }
     }
 
     @Nullable
@@ -622,6 +637,8 @@ public class LocalMediaManager implements BluetoothCallback {
                         } else {
                             MediaDevice mutingExpectedDevice = getMutingExpectedDevice();
                             if (mutingExpectedDevice != null) {
+                                Log.d(TAG, "Muting expected device added, id: "
+                                        + mutingExpectedDevice.getId());
                                 mMediaDevices.add(mutingExpectedDevice);
                             }
                         }
@@ -664,7 +681,8 @@ public class LocalMediaManager implements BluetoothCallback {
                         cachedDeviceManager.findDevice(device);
                 if (isBondedMediaDevice(cachedDevice) && isMutingExpectedDevice(cachedDevice)) {
                     return new BluetoothMediaDevice(mContext, cachedDevice, /* info= */
-                            null, /* dynamicRouteAttributes= */  null, /* item= */ null);
+                            null, /* dynamicRouteAttributes= */  null, /* item= */
+                            null, /* isMutingExpectedDevice= */ true);
                 }
             }
             return null;
@@ -917,6 +935,8 @@ public class LocalMediaManager implements BluetoothCallback {
                             }
                             unregisterCallback(mDeviceCallback);
                             stopScan();
+                            mInfoMediaManager.onConnectionAttemptCompletedForSuggestion(
+                                    mSuggestedDeviceState);
                         }
                     };
         }
@@ -926,6 +946,7 @@ public class LocalMediaManager implements BluetoothCallback {
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
                     mConnectionAttemptFinishedRunnable, SCAN_DURATION_MS);
+            mInfoMediaManager.onConnectionAttemptedForSuggestion(mSuggestedDeviceState);
         }
     }
 }

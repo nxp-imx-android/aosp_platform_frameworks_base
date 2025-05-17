@@ -45,6 +45,20 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
         return constraints
     }
 
+    override fun applyExternalDisplayPresentationConstraints(
+        constraints: ConstraintSet
+    ): ConstraintSet {
+        return constraints.apply {
+            constrainWidth(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, WRAP_CONTENT)
+            constrainHeight(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, WRAP_CONTENT)
+
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, TOP, PARENT_ID, TOP)
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, BOTTOM, PARENT_ID, BOTTOM)
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, START, PARENT_ID, START)
+            connect(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, END, PARENT_ID, END)
+        }
+    }
+
     override fun applyPreviewConstraints(
         clockPreviewConfig: ClockPreviewConfig,
         constraints: ConstraintSet,
@@ -56,11 +70,18 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
             constrainMaxHeight(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE, 0)
 
             val largeClockTopMargin =
-                view.context.getSafeStatusBarHeight() +
-                    res.getDimensionPixelSize(clocksR.dimen.small_clock_padding_top) +
-                    res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
-                    res.getDimensionPixelSize(clocksR.dimen.date_weather_view_height) +
-                    res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
+                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                    view.context.getSafeStatusBarHeight() / 2 +
+                        res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
+                        res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
+                } else {
+                    view.context.getSafeStatusBarHeight() +
+                        res.getDimensionPixelSize(clocksR.dimen.small_clock_padding_top) +
+                        res.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
+                        res.getDimensionPixelSize(clocksR.dimen.date_weather_view_height) +
+                        res.getDimensionPixelSize(clocksR.dimen.enhanced_smartspace_height)
+                }
+
             connect(
                 ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE,
                 TOP,

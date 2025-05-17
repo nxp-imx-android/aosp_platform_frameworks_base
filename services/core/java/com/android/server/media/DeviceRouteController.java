@@ -104,17 +104,17 @@ import java.util.List;
         }
     }
 
-    /** Returns the currently selected device (built-in, wired or bluetooth) route. */
+    /** Returns the currently selected device (built-in or wired) route. */
     @NonNull
-    List<MediaRoute2Info> getSelectedRoutes();
+    MediaRoute2Info getSelectedRoute();
 
     /**
      * Returns all available routes.
      *
      * <p>Note that this method returns available routes including the selected route because (a)
      * this interface doesn't guarantee that the internal state of the controller won't change
-     * between calls to {@link #getSelectedRoutes()} and this method and (b) {@link
-     * #getSelectedRoutes()} may be treated as a transferable route (not a selected route) if the
+     * between calls to {@link #getSelectedRoute()} and this method and (b) {@link
+     * #getSelectedRoute()} may be treated as a transferable route (not a selected route) if the
      * selected route is from {@link BluetoothRouteController}.
      */
     List<MediaRoute2Info> getAvailableRoutes();
@@ -127,10 +127,6 @@ import java.util.List;
      * @param routeId to switch to or {@code null} to unset the active device.
      */
     void transferTo(@Nullable String routeId);
-
-    void selectRoute(String routeId);
-
-    void deselectRoute();
 
     /**
      * Updates device route volume.
@@ -158,9 +154,6 @@ import java.util.List;
 
     /** Releases the routing session. */
     void releaseRoutingSession();
-
-    /** Return the first audio device's type. */
-    int getAudioDeviceType();
 
     /**
      * Interface for receiving events when device route has changed.

@@ -46,6 +46,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.app.WindowConfiguration.activityTypeToString;
+import static android.app.WindowConfiguration.isFloating;
 import static android.content.Context.CONTEXT_RESTRICTED;
 import static android.content.Intent.ACTION_MAIN;
 import static android.content.Intent.CATEGORY_HOME;
@@ -164,6 +165,7 @@ import static com.android.server.wm.ActivityRecordProto.PROVIDES_MAX_BOUNDS;
 import static com.android.server.wm.ActivityRecordProto.REPORTED_DRAWN;
 import static com.android.server.wm.ActivityRecordProto.REPORTED_VISIBLE;
 import static com.android.server.wm.ActivityRecordProto.REQUEST_OPEN_IN_BROWSER_EDUCATION_TIMESTAMP;
+import static com.android.server.wm.ActivityRecordProto.SHOULD_ALLOW_SIMULATE_REQUESTED_ORIENTATION_FOR_CAMERA_COMPAT;
 import static com.android.server.wm.ActivityRecordProto.SHOULD_ENABLE_USER_ASPECT_RATIO_SETTINGS;
 import static com.android.server.wm.ActivityRecordProto.SHOULD_FORCE_ROTATE_FOR_CAMERA_COMPAT;
 import static com.android.server.wm.ActivityRecordProto.SHOULD_IGNORE_ORIENTATION_REQUEST_LOOP;
@@ -327,6 +329,7 @@ import android.window.SizeConfigurationBuckets;
 import android.window.SplashScreen;
 import android.window.SplashScreenView;
 import android.window.SplashScreenView.SplashScreenViewParcelable;
+import android.window.StartingWindowRemovalInfo;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
 import android.window.TransitionInfo.AnimationOptions;
@@ -2772,6 +2775,10 @@ final class ActivityRecord extends WindowToken {
                     mStartingData.mPrepareRemoveAnimation = prepareAnimation;
                     return;
                 }
+            } else if (mSyncState != SYNC_STATE_NONE) {
+                mStartingData.mRemoveAfterTransaction = AFTER_TRANSACTION_REMOVE_DIRECTLY;
+                mStartingData.mPrepareRemoveAnimation = prepareAnimation;
+                return;
             }
             animate = prepareAnimation && mStartingData.needRevealAnimation()
                     && mStartingWindow.isVisibleByPolicy();
@@ -2780,10 +2787,7 @@ final class ActivityRecord extends WindowToken {
                             + " animate=%b Callers=%s", this, mStartingWindow, animate,
                     Debug.getCallers(5));
             surface = mStartingSurface;
-            mStartingData = null;
-            mStartingSurface = null;
-            mStartingWindow = null;
-            mTransitionChangeFlags &= ~FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
+            cleanUpStartingInfo();
             if (surface == null) {
                 ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "startingWindow was set but "
                         + "startingSurface==null, couldn't remove");
@@ -2796,6 +2800,25 @@ final class ActivityRecord extends WindowToken {
             return;
         }
         surface.remove(animate, hasImeSurface);
+    }
+
+    StartingWindowRemovalInfo getStartingWindowInfo() {
+        if (mStartingData == null || mStartingWindow == null) {
+            return null;
+        }
+        final boolean animate = mStartingData.mPrepareRemoveAnimation
+                && mStartingData.needRevealAnimation()
+                && mStartingWindow.isVisibleByPolicy();
+        final boolean hasImeSurface = mStartingData.hasImeSurface();
+        return mAtmService.mTaskOrganizerController.getStartingWindowRemovalInfo(
+                task, animate, hasImeSurface);
+    }
+
+    void cleanUpStartingInfo() {
+        mStartingData = null;
+        mStartingSurface = null;
+        mStartingWindow = null;
+        mTransitionChangeFlags &= ~FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
     }
 
     /**
@@ -7533,8 +7556,21 @@ final class ActivityRecord extends WindowToken {
         final AppCompatSafeRegionPolicy safeRegionPolicy =
                 mAppCompatController.getSafeRegionPolicy();
         mAppCompatController.getLetterboxPolicy().resetFixedOrientationLetterboxEligibility();
+
+        boolean shouldApplyLegacyInsets =
+                !isFloating(newParentConfiguration.windowConfiguration.getWindowingMode());
+        if (com.android.wm.shell.Flags.enableCreateAnyBubble()
+                && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
+            final Task task = getTask();
+            if (task != null) {
+                // Similar to floating windows, an app bubble should not apply legacy insets.
+                // TODO(b/407669465): Update isAppBubble usage once migrated to the new approach.
+                shouldApplyLegacyInsets &= !task.getTaskInfo().isAppBubble;
+            }
+        }
         mResolveConfigHint.resolveTmpOverrides(mDisplayContent, newParentConfiguration,
-                isFixedRotationTransforming(), safeRegionPolicy.getLatestSafeRegionBounds());
+                isFixedRotationTransforming(), safeRegionPolicy.getLatestSafeRegionBounds(),
+                shouldApplyLegacyInsets);
 
         // Can't use resolvedConfig.windowConfiguration.getWindowingMode() because it can be
         // different from windowing mode of the task (PiP) during transition from fullscreen to PiP
@@ -8413,7 +8449,7 @@ final class ActivityRecord extends WindowToken {
         // don't want to save mAppCompatDisplayInsets in onConfigurationChanged without visibility
         // check to avoid remembering obsolete configuration which can lead to unnecessary
         // size-compat mode.
-        if (mVisibleRequested) {
+        if (isVisibleRequested()) {
             // Calling from here rather than resolveOverrideConfiguration to ensure that this is
             // called after full config is updated in ConfigurationContainer#onConfigurationChanged.
             mAppCompatController.getSizeCompatModePolicy().updateAppCompatDisplayInsets();
@@ -8451,7 +8487,7 @@ final class ActivityRecord extends WindowToken {
         setLastReportedConfiguration(getProcessGlobalConfiguration(), newMergedOverrideConfig);
         setLastReportedActivityWindowInfo(newActivityWindowInfo);
 
-        if (mState == INITIALIZING) {
+        if (getState() == INITIALIZING) {
             // No need to relaunch or schedule new config for activity that hasn't been launched
             // yet. We do, however, return after applying the config to activity record, so that
             // it will use it for launch transaction.
@@ -9199,6 +9235,8 @@ final class ActivityRecord extends WindowToken {
                 aspectRatioOverrides.isUserFullscreenOverrideEnabled());
         proto.write(REQUEST_OPEN_IN_BROWSER_EDUCATION_TIMESTAMP,
                 mRequestOpenInBrowserEducationTimestamp);
+        proto.write(SHOULD_ALLOW_SIMULATE_REQUESTED_ORIENTATION_FOR_CAMERA_COMPAT,
+                cameraOverrides.shouldApplyFreeformTreatmentForCameraCompat());
     }
 
     @Override

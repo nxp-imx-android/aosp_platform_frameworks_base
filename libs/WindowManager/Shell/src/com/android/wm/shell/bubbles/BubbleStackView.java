@@ -1577,8 +1577,17 @@ public class BubbleStackView extends FrameLayout
     private void updateOverflow() {
         mBubbleOverflow.update();
         if (mShowingOverflow) {
-            mBubbleContainer.reorderView(mBubbleOverflow.getIconView(),
-                    mBubbleContainer.getChildCount() - 1 /* index */);
+            View overflow = mBubbleOverflow.getIconView();
+            if (overflow != null) {
+                ViewGroup parent = (ViewGroup) overflow.getParent();
+                if (parent != null && parent != mBubbleContainer) {
+                    Log.w(TAG, "Found an unexpected parent for the overflow icon before "
+                            + "reordering. Removing it directly. Parent = " + parent);
+                    parent.removeView(overflow);
+                }
+                mBubbleContainer.reorderView(overflow,
+                        mBubbleContainer.getChildCount() - 1 /* index */);
+            }
         }
         updateOverflowVisibility();
     }

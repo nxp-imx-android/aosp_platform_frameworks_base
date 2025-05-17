@@ -591,7 +591,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         prepareDialog();
 
         WindowManager.LayoutParams attrs = mDialog.getWindow().getAttributes();
-        attrs.setTitle("ActionsDialog");
+        attrs.setTitle("GlobalActionsDialogLite");
         attrs.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
         mDialog.getWindow().setAttributes(attrs);
         // Don't acquire soft keyboard focus, to avoid destroying state when capturing bugreports

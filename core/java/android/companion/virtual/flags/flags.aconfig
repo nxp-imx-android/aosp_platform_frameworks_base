@@ -130,6 +130,16 @@ flag {
 }
 
 flag {
+    name: "virtual_power_group_sleep_no_doze"
+    namespace: "virtual_devices"
+    description: "Sleep non-default power groups directly, skipping doze"
+    bug: "416220040"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "vdm_settings"
     namespace: "virtual_devices"
     description: "Show virtual devices in Settings"
@@ -186,4 +196,32 @@ flag {
     namespace: "virtual_devices"
     description: "Enable VDM access for computer control"
     bug: "410570802"
+}
+
+flag {
+    name: "virtual_camera_on_open"
+    namespace: "virtual_devices"
+    description: "Callback called when the virtual camera device is requested to be opened"
+    bug: "409241122"
+    is_exported: true
+}
+
+flag {
+    name: "gwpc_aware_windowing_mode"
+    namespace: "virtual_devices"
+    description: "Fallback to FULLSCREEN when the windowing mode is unsupported"
+    bug: "378663612"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_vdm_opt_out_on_mirror_displays"
+    namespace: "virtual_devices"
+    description: "Do not show content from opted out activities on mirror displays"
+    bug: "394573488"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

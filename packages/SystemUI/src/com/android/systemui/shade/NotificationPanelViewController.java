@@ -1638,6 +1638,8 @@ public final class NotificationPanelViewController implements
                 } else {
                     expands = vel > 0;
                 }
+            } else {
+                mShadeLog.d("flingExpands: ignoring false touch");
             }
         }
 
@@ -2657,6 +2659,7 @@ public final class NotificationPanelViewController implements
         ipw.print("mGestureWaitForTouchSlop="); ipw.println(mGestureWaitForTouchSlop);
         ipw.print("mIgnoreXTouchSlop="); ipw.println(mIgnoreXTouchSlop);
         ipw.print("mExpandLatencyTracking="); ipw.println(mExpandLatencyTracking);
+        ipw.print("mUseExternalTouch="); ipw.println(mUseExternalTouch);
         ipw.println("gestureExclusionRect:" + calculateGestureExclusionRect());
         Trace.beginSection("Table<DownEvents>");
         new DumpsysTableLogger(
@@ -3949,10 +3952,12 @@ public final class NotificationPanelViewController implements
         @Override
         public boolean onTouchEvent(MotionEvent event) {
             if (!mUseExternalTouch) {
+                mShadeLog.d("onTouch: external touch handling disabled");
                 return false;
             }
 
             if (mAlternateBouncerInteractor.isVisibleState()) {
+                mShadeLog.d("onTouch: alternate bouncer visible; ignoring touch");
                 // never send touches to shade if the alternate bouncer is showing
                 return false;
             }

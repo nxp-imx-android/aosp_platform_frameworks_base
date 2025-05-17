@@ -47,7 +47,6 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowMetrics;
-import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.Button;
@@ -75,7 +74,6 @@ import java.util.Collections;
 class WindowMagnificationSettings implements MagnificationGestureDetector.OnGestureListener {
     private static final String TAG = "WindowMagnificationSettings";
     private final Context mContext;
-    private final AccessibilityManager mAccessibilityManager;
     private final WindowManager mWindowManager;
     private final SecureSettings mSecureSettings;
 
@@ -97,7 +95,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     private MaterialSwitch mMagnifyKeyboardSwitch;
     private LinearLayout mMagnifyTypingView;
     private MaterialSwitch mMagnifyTypingSwitch;
-    private LinearLayout mPanelView;
     private LinearLayout mSettingView;
     private ImageButton mSmallButton;
     private ImageButton mMediumButton;
@@ -107,8 +104,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     private ImageButton mFullScreenButton;
     private int mLastSelectedButtonIndex = MagnificationSize.DEFAULT;
     private boolean mAllowDiagonalScrolling = false;
-    private boolean mAllowMagnifyTyping = false;
-    private boolean mAllowMagnifyKeyboard = false;
 
     /**
      * Amount by which magnification scale changes compared to seekbar in settings.
@@ -119,7 +114,12 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
     private WindowMagnificationSettingsCallback mCallback;
 
-    private ContentObserver mMagnificationCapabilityObserver;
+    @VisibleForTesting
+    ContentObserver mMagnificationCapabilityObserver;
+    @VisibleForTesting
+    ContentObserver mMagnifyTypingObserver;
+    @VisibleForTesting
+    ContentObserver mMagnifyKeyboardObserver;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -145,7 +145,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider, SecureSettings secureSettings,
             WindowManager windowManager) {
         mContext = context;
-        mAccessibilityManager = mContext.getSystemService(AccessibilityManager.class);
         mWindowManager = windowManager;
         mSfVsyncFrameProvider = sfVsyncFrameProvider;
         mCallback = callback;
@@ -154,17 +153,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         mAllowDiagonalScrolling = mSecureSettings.getIntForUser(
                 Settings.Secure.ACCESSIBILITY_ALLOW_DIAGONAL_SCROLLING, 1,
                 UserHandle.USER_CURRENT) == 1;
-
-        if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
-            mAllowMagnifyTyping = mSecureSettings.getIntForUser(
-                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED, 1,
-                    UserHandle.USER_CURRENT) == 1;
-
-            mAllowMagnifyKeyboard = mSecureSettings.getIntForUser(
-                    Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
-                    AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext),
-                    UserHandle.USER_CURRENT) == 1;
-        }
 
         mParams = createLayoutParams(context);
         mWindowInsetChangeRunnable = this::onWindowInsetChanged;
@@ -183,6 +171,28 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                 });
             }
         };
+
+        if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
+            mMagnifyTypingObserver = new ContentObserver(
+                    mContext.getMainThreadHandler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    mSettingView.post(() -> {
+                        updateMagnifyTypingUI();
+                    });
+                }
+            };
+
+            mMagnifyKeyboardObserver = new ContentObserver(
+                    mContext.getMainThreadHandler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    mSettingView.post(() -> {
+                        updateMagnifyKeyboardUI();
+                    });
+                }
+            };
+        }
     }
 
     private class ZoomSeekbarChangeListener implements
@@ -340,6 +350,10 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
         // Unregister observer before removing view
         mSecureSettings.unregisterContentObserverSync(mMagnificationCapabilityObserver);
+        if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
+            mSecureSettings.unregisterContentObserverSync(mMagnifyTypingObserver);
+            mSecureSettings.unregisterContentObserverSync(mMagnifyKeyboardObserver);
+        }
         mWindowManager.removeView(mSettingView);
         mIsVisible = false;
         if (resetPosition) {
@@ -391,6 +405,10 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
     private void showSettingPanel(boolean resetPosition) {
         if (!mIsVisible) {
             updateUIControlsIfNeeded();
+            if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                updateMagnifyTypingUI();
+                updateMagnifyKeyboardUI();
+            }
             setScaleSeekbar(getMagnificationScale());
             if (resetPosition) {
                 mDraggableWindowBounds.set(getDraggableWindowBounds());
@@ -404,6 +422,18 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                     Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY,
                     mMagnificationCapabilityObserver,
                     UserHandle.USER_CURRENT);
+
+            if (Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                mSecureSettings.registerContentObserverForUserSync(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED,
+                        mMagnifyTypingObserver,
+                        UserHandle.USER_CURRENT);
+
+                mSecureSettings.registerContentObserverForUserSync(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                        mMagnifyKeyboardObserver,
+                        UserHandle.USER_CURRENT);
+            }
 
             // Exclude magnification switch button from system gesture area.
             setSystemGestureExclusion();
@@ -441,12 +471,17 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
     @VisibleForTesting
     boolean isMagnifyTypingEnabled() {
-        return mAllowMagnifyTyping;
+        return mSecureSettings.getIntForUser(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED,
+                1, UserHandle.USER_CURRENT) == 1;
     }
 
     @VisibleForTesting
     boolean isMagnifyKeyboardEnabled() {
-        return mAllowMagnifyKeyboard;
+        return mSecureSettings.getIntForUser(
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME,
+                AccessibilityUtils.getMagnificationMagnifyKeyboardDefaultValue(mContext),
+                UserHandle.USER_CURRENT) == 1;
     }
 
     /**
@@ -534,6 +569,16 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
         mSettingView.requestLayout();
     }
 
+    private void updateMagnifyTypingUI() {
+        mMagnifyTypingSwitch.setChecked(isMagnifyTypingEnabled());
+        mSettingView.requestLayout();
+    }
+
+    private void updateMagnifyKeyboardUI() {
+        mMagnifyKeyboardSwitch.setChecked(isMagnifyKeyboardEnabled());
+        mSettingView.requestLayout();
+    }
+
     private final BroadcastReceiver mScreenOffReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -551,7 +596,6 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
 
         mSettingView.setAccessibilityDelegate(mPanelDelegate);
 
-        mPanelView = mSettingView.findViewById(R.id.magnifier_panel_view);
         mSmallButton = mSettingView.findViewById(R.id.magnifier_small_button);
         mMediumButton = mSettingView.findViewById(R.id.magnifier_medium_button);
         mLargeButton = mSettingView.findViewById(R.id.magnifier_large_button);
@@ -579,7 +623,7 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                     (LinearLayout) mSettingView.findViewById(R.id.magnifier_typing_view);
             mMagnifyTypingSwitch =
                     (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_typing_switch);
-            mMagnifyTypingSwitch.setChecked(mAllowMagnifyTyping);
+            mMagnifyTypingSwitch.setChecked(isMagnifyTypingEnabled());
             mMagnifyTypingSwitch.setOnCheckedChangeListener(
                     (view, isChecked) -> setMagnifyTyping(isChecked));
 
@@ -587,7 +631,7 @@ class WindowMagnificationSettings implements MagnificationGestureDetector.OnGest
                     (LinearLayout) mSettingView.findViewById(R.id.magnifier_keyboard_view);
             mMagnifyKeyboardSwitch =
                     (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_keyboard_switch);
-            mMagnifyKeyboardSwitch.setChecked(mAllowMagnifyKeyboard);
+            mMagnifyKeyboardSwitch.setChecked(isMagnifyKeyboardEnabled());
             mMagnifyKeyboardSwitch.setOnCheckedChangeListener(
                     (view, isChecked) -> setMagnifyKeyboard(isChecked));
         }

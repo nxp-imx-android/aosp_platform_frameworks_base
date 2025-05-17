@@ -108,6 +108,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
 
     @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun transitionToGone_keyguardOccluded_biometricAuthenticated() =
         testScope.runTest {
             transitionRepository.sendTransitionSteps(
@@ -321,6 +322,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
 
     @Test
     @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableSceneContainer
     fun transitionToGone_whenOpeningGlanceableHubEditMode() =
         testScope.runTest {
             kosmos.fakeKeyguardBouncerRepository.setAlternateVisible(true)

@@ -26,6 +26,7 @@ import android.tools.flicker.subject.region.RegionSubject
 import android.tools.helpers.WindowUtils
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.IComponentNameMatcher
+import android.tools.traces.wm.WindowManagerState
 import android.tools.traces.wm.WindowManagerTrace
 
 /**
@@ -181,7 +182,13 @@ fun LegacyFlickerTest.navBarLayerPositionAtEnd() {
     assertLayersEnd { assertNavBarPosition(this, scenario.isGesturalNavigation) }
 }
 
-private fun assertNavBarPosition(sfState: LayerTraceEntrySubject, isGesturalNavigation: Boolean) {
+/**
+ * Asserts [ComponentNameMatcher.NAV_BAR] layer is at the correct position.
+ *
+ * @param sfState the [LayerTraceEntrySubject] contains the navigation bar layer
+ * @param isGesturalNavigation whether the navigation bar is a gesture navigation bar
+ */
+fun assertNavBarPosition(sfState: LayerTraceEntrySubject, isGesturalNavigation: Boolean) {
     val display =
         sfState.entry.displays.filterNot { it.isOff }.minByOrNull { it.id }
             ?: error("There is no display!")
@@ -230,13 +237,9 @@ fun LegacyFlickerTest.navBarLayerPositionAtStartAndEnd() {
 fun LegacyFlickerTest.statusBarLayerPositionAtStart(
     wmTrace: WindowManagerTrace? = this.reader.readWmTrace()
 ) {
-    // collect navbar position for the equivalent WM state
+    // collect status bar position for the equivalent WM state
     val state = wmTrace?.entries?.firstOrNull() ?: error("WM state missing in $this")
-    val display = state.getDisplay(PlatformConsts.DEFAULT_DISPLAY) ?: error("Display not found")
-    val navBarPosition = WindowUtils.getExpectedStatusBarPosition(display)
-    assertLayersStart {
-        this.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversExactly(navBarPosition)
-    }
+    assertLayersStart { assertStatusBarLayerPosition(this, state) }
 }
 
 /**
@@ -246,13 +249,26 @@ fun LegacyFlickerTest.statusBarLayerPositionAtStart(
 fun LegacyFlickerTest.statusBarLayerPositionAtEnd(
     wmTrace: WindowManagerTrace? = this.reader.readWmTrace()
 ) {
-    // collect navbar position for the equivalent WM state
+    // collect status bar position for the equivalent WM state
     val state = wmTrace?.entries?.lastOrNull() ?: error("WM state missing in $this")
-    val display = state.getDisplay(PlatformConsts.DEFAULT_DISPLAY) ?: error("Display not found")
-    val navBarPosition = WindowUtils.getExpectedStatusBarPosition(display)
-    assertLayersEnd {
-        this.visibleRegion(ComponentNameMatcher.STATUS_BAR).coversExactly(navBarPosition)
-    }
+    assertLayersEnd { assertStatusBarLayerPosition(this, state) }
+}
+
+/**
+ * Asserts [ComponentNameMatcher.STATUS_BAR] layer is at the correct position.
+ *
+ * @param layerTraceEntrySubject the [LayerTraceEntrySubject] contains the status bar layer
+ * @param wmState the [WindowManagerState] to report display bounds for position calculation
+ */
+fun assertStatusBarLayerPosition(
+    layerTraceEntrySubject: LayerTraceEntrySubject,
+    wmState: WindowManagerState,
+) {
+    val display = wmState.getDisplay(PlatformConsts.DEFAULT_DISPLAY) ?: error("Display not found")
+    val statusBarPosition = WindowUtils.getExpectedStatusBarPosition(display)
+    layerTraceEntrySubject
+        .visibleRegion(ComponentNameMatcher.STATUS_BAR)
+        .coversExactly(statusBarPosition)
 }
 
 /**

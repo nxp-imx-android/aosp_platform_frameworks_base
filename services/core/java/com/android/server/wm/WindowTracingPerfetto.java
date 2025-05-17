@@ -24,6 +24,7 @@ import android.os.Looper;
 import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.tracing.TracingUtils;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.Choreographer;
@@ -111,32 +112,43 @@ class WindowTracingPerfetto extends WindowTracing {
     @Override
     protected void log(String where) {
         try {
-            Trace.beginSection("window_tracing_log");
+            Trace.beginSection(TracingUtils.uiTracingSliceName("Window::log"));
             boolean isStartLogEvent = where == WHERE_START_TRACING;
             boolean isOnFrameLogEvent = where == WHERE_ON_FRAME;
 
-            ArrayList<Runnable> pendingStopDones = new ArrayList<Runnable>();
+            ArrayList<Runnable> pendingStopDones = new ArrayList<>();
 
             mDataSource.trace((context) -> {
-                WindowTracingDataSource.Config dataSourceConfig =
-                        context.getCustomTlsState().mConfig;
+                WindowTracingDataSource.TlsState tlsState = context.getCustomTlsState();
 
                 if (isStartLogEvent) {
-                    boolean isDataSourceStarting = context.getCustomTlsState()
-                            .mIsStarting.compareAndSet(true, false);
-                    if (!isDataSourceStarting) {
-                        return;
+                    if (tlsState.mConfig.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
+                        // A single dump gets triggered when the data source is stopping
+                        // (onStop() callback)
+                        boolean isStopping = tlsState.mStatus.compareAndSet(
+                                WindowTracingDataSource.Status.STOPPING,
+                                WindowTracingDataSource.Status.STOPPED);
+                        if (!isStopping) {
+                            return;
+                        }
+                        pendingStopDones.add(context::stopDone);
+                    } else {
+                        boolean isStarting = tlsState.mStatus.compareAndSet(
+                                WindowTracingDataSource.Status.STARTING,
+                                WindowTracingDataSource.Status.STARTED);
+                        if (!isStarting) {
+                            return;
+                        }
                     }
                 } else if (isOnFrameLogEvent) {
-                    boolean isDataSourceLoggingOnFrame =
-                            dataSourceConfig.mLogFrequency == WindowTracingLogFrequency.FRAME;
-                    if (!isDataSourceLoggingOnFrame) {
+                    if (tlsState.mConfig.mLogFrequency != WindowTracingLogFrequency.FRAME) {
                         return;
                     }
-                } else if (dataSourceConfig.mLogFrequency
-                        == WindowTracingLogFrequency.SINGLE_DUMP) {
-                    // If it is a dump, write only the start log event and skip the following ones
-                    return;
+                    boolean isStarted =
+                            tlsState.mStatus.get() == WindowTracingDataSource.Status.STARTED;
+                    if (!isStarted) {
+                        return;
+                    }
                 }
 
                 ProtoOutputStream os = context.newTracePacket();
@@ -146,18 +158,14 @@ class WindowTracingPerfetto extends WindowTracing {
                         os.start(TracePacket.WINSCOPE_EXTENSIONS);
                 final long tokenExtensionsField =
                         os.start(WinscopeExtensionsImpl.WINDOWMANAGER);
-                dumpToProto(os, dataSourceConfig.mLogLevel, where, timestamp);
+                dumpToProto(os, tlsState.mConfig.mLogLevel, where, timestamp);
                 os.end(tokenExtensionsField);
                 os.end(tokenWinscopeExtensions);
-
-                if (dataSourceConfig.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
-                    // Postpone the stopDone() call to when DataSource#trace() has returned.
-                    // At this point the tracing data has not been written to Perfetto yet,
-                    // hence we can't already call stopDone().
-                    pendingStopDones.add(context::stopDone);
-                }
             });
 
+            // Execute the stopDone() calls only after DataSource#trace() has returned. Within
+            // DataSource#trace() the data is not written to Perfetto yet, hence stopDone()
+            // can't be called there.
             for (int i = 0; i < pendingStopDones.size(); ++i) {
                 pendingStopDones.get(i).run();
                 Log.i(TAG, "Stopped session (frequency=SINGLE_DUMP) (postponed stop)");
@@ -199,14 +207,17 @@ class WindowTracingPerfetto extends WindowTracing {
     void onStop(WindowTracingDataSource.Instance instance) {
         if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.FRAME) {
             instance.stopDone();
-            Log.i(TAG, "Stopped session (frequency=FRAME)");
+            instance.mStatus.set(WindowTracingDataSource.Status.STOPPED);
             mCountSessionsOnFrame.decrementAndGet();
+            Log.i(TAG, "Stopped session (frequency=FRAME)");
         } else if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.TRANSACTION) {
             instance.stopDone();
+            instance.mStatus.set(WindowTracingDataSource.Status.STOPPED);
             mCountSessionsOnTransaction.decrementAndGet();
             Log.i(TAG, "Stopped session (frequency=TRANSACTION)");
         } else if (instance.mConfig.mLogFrequency == WindowTracingLogFrequency.SINGLE_DUMP) {
             Log.i(TAG, "Triggering log event on stop (frequency=SINGLE_DUMP)");
+            instance.mStatus.set(WindowTracingDataSource.Status.STOPPING);
             mMainHandler.post(() -> log(WHERE_START_TRACING));
         }
     }

@@ -27,6 +27,7 @@ import com.android.systemui.lifecycle.Hydrator
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -36,14 +37,24 @@ import kotlinx.coroutines.launch
 class AmbientCueViewModel
 @AssistedInject
 constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveActivatable() {
-    private val hydrator = Hydrator("OverlayViewModel.hydrator")
+    private val hydrator = Hydrator("AmbientCueViewModel.hydrator")
 
-    val isVisible: Boolean by
+    private val isRootViewAttached: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "isVisible",
+            traceName = "isRootViewAttached",
             initialValue = false,
-            source = ambientCueInteractor.isVisible,
+            source = ambientCueInteractor.isRootViewAttached,
         )
+
+    private val isImeVisible: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isImeVisible",
+            initialValue = false,
+            source = ambientCueInteractor.isImeVisible,
+        )
+
+    val isVisible: Boolean
+        get() = isRootViewAttached && !isImeVisible
 
     var isExpanded: Boolean by mutableStateOf(false)
         private set
@@ -69,7 +80,6 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
         )
 
     fun show() {
-        ambientCueInteractor.setIsVisible(true)
         isExpanded = false
     }
 
@@ -82,8 +92,25 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
     }
 
     fun hide() {
-        ambientCueInteractor.setIsVisible(false)
+        ambientCueInteractor.setDeactivated(true)
         isExpanded = false
+    }
+
+    private var deactivateCueBarJob: Job? = null
+
+    fun cancelDeactivation() {
+        deactivateCueBarJob?.cancel()
+    }
+
+    suspend fun delayAndDeactivateCueBar() {
+        deactivateCueBarJob?.cancel()
+
+        coroutineScopeTraced("AmbientCueViewModel") {
+            deactivateCueBarJob = launch {
+                delay(AMBIENT_CUE_TIMEOUT_SEC)
+                ambientCueInteractor.setDeactivated(true)
+            }
+        }
     }
 
     override suspend fun onActivated(): Nothing {
@@ -91,12 +118,12 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
             launch { hydrator.activate() }
             launch {
                 // Hide the UI if the user doesn't interact with it after N seconds
-                ambientCueInteractor.isVisible.collectLatest { isVisible ->
-                    if (!isVisible) return@collectLatest
-                    delay(AMBIENT_CUE_TIMEOUT_SEC)
-                    if (!isExpanded) {
-                        ambientCueInteractor.setIsVisible(false)
+                ambientCueInteractor.isRootViewAttached.collectLatest { isAttached ->
+                    if (!isAttached) {
+                        cancelDeactivation()
+                        return@collectLatest
                     }
+                    delayAndDeactivateCueBar()
                 }
             }
             awaitCancellation()

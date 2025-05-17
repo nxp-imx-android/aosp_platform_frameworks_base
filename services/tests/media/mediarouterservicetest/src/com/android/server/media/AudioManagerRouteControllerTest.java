@@ -160,20 +160,20 @@ public class AudioManagerRouteControllerTest {
 
     @Test
     public void getSelectedRoute_afterDevicesConnect_returnsRightSelectedRoute() {
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
 
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP);
         verify(mOnDeviceRouteChangedListener).onDeviceRouteChanged();
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
 
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ null, // Selected device doesn't change.
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
     }
 
@@ -189,19 +189,19 @@ public class AudioManagerRouteControllerTest {
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP);
         verify(mOnDeviceRouteChangedListener, times(2)).onDeviceRouteChanged();
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
 
         removeAvailableAudioDeviceInfos(
                 /* newSelectedDevice= */ null,
                 /* devicesToRemove...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
 
         removeAvailableAudioDeviceInfos(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER,
                 /* devicesToRemove...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
     }
 
@@ -230,7 +230,7 @@ public class AudioManagerRouteControllerTest {
                                 .map(MediaRoute2Info::getType)
                                 .toList())
                 .containsExactly(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
+        assertThat(mControllerUnderTest.getSelectedRoute().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
     }
 
@@ -267,7 +267,7 @@ public class AudioManagerRouteControllerTest {
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
 
-        MediaRoute2Info selectedRoute = mControllerUnderTest.getSelectedRoutes().getFirst();
+        MediaRoute2Info selectedRoute = mControllerUnderTest.getSelectedRoute();
         assertThat(selectedRoute.getType()).isEqualTo(MediaRoute2Info.TYPE_WIRED_HEADSET);
         assertThat(selectedRoute.getVolume()).isEqualTo(2);
         assertThat(selectedRoute.getVolumeMax()).isEqualTo(3);
@@ -290,7 +290,7 @@ public class AudioManagerRouteControllerTest {
         when(mMockAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)).thenReturn(0);
         when(mMockAudioManager.isVolumeFixed()).thenReturn(true);
         mControllerUnderTest.updateVolume(0);
-        MediaRoute2Info newSelectedRoute = mControllerUnderTest.getSelectedRoutes().getFirst();
+        MediaRoute2Info newSelectedRoute = mControllerUnderTest.getSelectedRoute();
         assertThat(newSelectedRoute.getVolume()).isEqualTo(0);
         assertThat(newSelectedRoute.getVolumeHandling())
                 .isEqualTo(MediaRoute2Info.PLAYBACK_VOLUME_FIXED);
@@ -298,14 +298,14 @@ public class AudioManagerRouteControllerTest {
 
     @Test
     public void getAvailableRoutes_whenNoProductNameIsProvided_usesTypeToPopulateName() {
-        assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getName().toString())
+        assertThat(mControllerUnderTest.getSelectedRoute().getName().toString())
                 .isEqualTo(FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER.getProductName().toString());
 
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_NO_NAME,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_NO_NAME);
 
-        MediaRoute2Info selectedRoute = mControllerUnderTest.getSelectedRoutes().getFirst();
+        MediaRoute2Info selectedRoute = mControllerUnderTest.getSelectedRoute();
         assertThat(selectedRoute.getName().toString()).isEqualTo(FAKE_ROUTE_NAME);
     }
 

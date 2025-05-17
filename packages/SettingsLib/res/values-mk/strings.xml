@@ -361,7 +361,7 @@
     <string name="dev_settings_warning_title" msgid="8251234890169074553">"Дозволи поставки за развој?"</string>
     <string name="dev_settings_warning_message" msgid="37741686486073668">"Овие поставки се наменети само за употреба за развој. Тие може да предизвикаат уредот и апликациите во него да се расипат или да се однесуваат необично."</string>
     <string name="verify_apps_over_usb_title" msgid="6031809675604442636">"Потврди апликации преку USB"</string>
-    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Провери апликации инсталирани преку ADB/ADT за штетно однесување."</string>
+    <string name="verify_apps_over_usb_summary" msgid="1317933737581167839">"Проверува апликации инсталирани преку ADB/ADT за штетно однесување."</string>
     <string name="bluetooth_show_devices_without_names_summary" msgid="780964354377854507">"Ќе се прикажуваат уредите со Bluetooth без имиња (само MAC-адреси)"</string>
     <string name="bluetooth_disable_absolute_volume_summary" msgid="2006309932135547681">"Ја оневозможува функцијата за апсолутна јачина на звук преку Bluetooth во случај кога ќе настанат проблеми со далечинските уреди, како на пр., неприфатливо силен звук или недоволна контрола."</string>
     <string name="bluetooth_enable_gabeldorsche_summary" msgid="2054730331770712629">"Ја овозможува функцијата Bluetooth Gabeldorsche."</string>
@@ -380,7 +380,7 @@
     <string name="select_application" msgid="2543228890535466325">"Избери апликација"</string>
     <string name="no_application" msgid="9038334538870247690">"Ништо"</string>
     <string name="wait_for_debugger" msgid="7461199843335409809">"Почекај ја програмата за отстранување грешки"</string>
-    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"Пред да се изврши, апликацијата во која се отстрануваат грешки чека да се закачи програмата за отстранување грешки"</string>
+    <string name="wait_for_debugger_summary" msgid="6846330006113363286">"Пред да се изврши, апликацијата за која се отстрануваат грешки чека да се закачи програмата за отстранување грешки"</string>
     <string name="debug_input_category" msgid="7349460906970849771">"Внесување"</string>
     <string name="debug_drawing_category" msgid="5066171112313666619">"Цртање"</string>
     <string name="debug_hw_drawing_category" msgid="5830815169336975162">"Хардверско забрзување"</string>

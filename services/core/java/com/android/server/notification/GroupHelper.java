@@ -90,6 +90,9 @@ public class GroupHelper {
     //  with less than this value, they will be forced grouped
     private static final int MIN_CHILD_COUNT_TO_AVOID_FORCE_GROUPING = 3;
 
+    private static final int AUTOGROUP_AT_COUNT_DEFAULT = 2;
+    private static final int AUTOGROUP_BUNDLES_AT_COUNT_DEFAULT = 1;
+
     // Regrouping needed because the channel was updated, ie. importance changed
     static final int REGROUP_REASON_CHANNEL_UPDATE = 0;
     // Regrouping needed because of notification bundling
@@ -147,24 +150,30 @@ public class GroupHelper {
             mAggregatedNotifications = new ArrayMap<>();
 
     private static List<NotificationSectioner> NOTIFICATION_SHADE_SECTIONS =
-            getNotificationShadeSections();
+            getNotificationShadeSections(AUTOGROUP_AT_COUNT_DEFAULT,
+                AUTOGROUP_BUNDLES_AT_COUNT_DEFAULT);
 
     private static List<NotificationSectioner> NOTIFICATION_BUNDLE_SECTIONS;
 
-    private static List<NotificationSectioner> getNotificationShadeSections() {
+    private static List<NotificationSectioner> getNotificationShadeSections(int autogroupAtCount,
+            int autogroupBundlesAtCount) {
         ArrayList<NotificationSectioner> sectionsList = new ArrayList<>();
         if (android.service.notification.Flags.notificationClassification()) {
             sectionsList.addAll(List.of(
-                new NotificationSectioner("PromotionsSection", 0, (record) ->
+                new NotificationSectioner("PromotionsSection", 0,
+                        autogroupBundlesAtCount, (record) ->
                         NotificationChannel.PROMOTIONS_ID.equals(record.getChannel().getId())
                         && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
-                new NotificationSectioner("SocialSection", 0, (record) ->
+                new NotificationSectioner("SocialSection", 0,
+                        autogroupBundlesAtCount, (record) ->
                         NotificationChannel.SOCIAL_MEDIA_ID.equals(record.getChannel().getId())
                         && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
-                new NotificationSectioner("NewsSection", 0, (record) ->
+                new NotificationSectioner("NewsSection", 0,
+                        autogroupBundlesAtCount, (record) ->
                         NotificationChannel.NEWS_ID.equals(record.getChannel().getId())
                         && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT),
-                new NotificationSectioner("RecsSection", 0, (record) ->
+                new NotificationSectioner("RecsSection", 0,
+                        autogroupBundlesAtCount, (record) ->
                         NotificationChannel.RECS_ID.equals(record.getChannel().getId())
                         && record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)
                 ));
@@ -174,30 +183,32 @@ public class GroupHelper {
 
         if (Flags.notificationForceGroupConversations()) {
             // add priority people section
-            sectionsList.add(new NotificationSectioner("PeopleSection(priority)", 1, (record) ->
+            sectionsList.add(new NotificationSectioner("PeopleSection(priority)", 1,
+                    autogroupAtCount, (record) ->
                     record.isConversation() && record.getChannel().isImportantConversation()));
 
             // add non-priority people section
-            sectionsList.add(new NotificationSectioner("PeopleSection", 0,
+            sectionsList.add(new NotificationSectioner("PeopleSection", 0, autogroupAtCount,
                     NotificationRecord::isConversation));
         }
 
         sectionsList.addAll(List.of(
-            new NotificationSectioner("AlertingSection", 0, (record) ->
-                record.getImportance() >= NotificationManager.IMPORTANCE_DEFAULT),
-            new NotificationSectioner("SilentSection", 1, (record) ->
-                record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)));
+            new NotificationSectioner("AlertingSection", 0, autogroupAtCount, (record) ->
+                    record.getImportance() >= NotificationManager.IMPORTANCE_DEFAULT),
+            new NotificationSectioner("SilentSection", 1, autogroupAtCount, (record) ->
+                    record.getImportance() < NotificationManager.IMPORTANCE_DEFAULT)));
         return sectionsList;
     }
 
     public GroupHelper(Context context, PackageManager packageManager, int autoGroupAtCount,
-            int autoGroupSparseGroupsAtCount, Callback callback) {
+            int autoGroupBundlesAtCount, int autoGroupSparseGroupsAtCount, Callback callback) {
         mAutoGroupAtCount = autoGroupAtCount;
         mCallback =  callback;
         mContext = context;
         mPackageManager = packageManager;
         mAutogroupSparseGroupsAtCount = autoGroupSparseGroupsAtCount;
-        NOTIFICATION_SHADE_SECTIONS = getNotificationShadeSections();
+        NOTIFICATION_SHADE_SECTIONS = getNotificationShadeSections(autoGroupAtCount,
+                autoGroupBundlesAtCount);
     }
 
     void setTestHarnessExempted(boolean isExempted) {
@@ -610,11 +621,10 @@ public class GroupHelper {
             mUngroupedAbuseNotifications.put(fullAggregateGroupKey, ungrouped);
 
             // scenario 0: ungrouped notifications
-            if (ungrouped.size() >= mAutoGroupAtCount || autogroupSummaryExists) {
+            if (ungrouped.size() >= sectioner.mAutogroupAtCount || autogroupSummaryExists) {
                 if (DEBUG) {
-                    if (ungrouped.size() >= mAutoGroupAtCount) {
-                        Slog.i(TAG,
-                            "Found >=" + mAutoGroupAtCount
+                    if (ungrouped.size() >= sectioner.mAutogroupAtCount) {
+                        Slog.i(TAG, "Found >=" + sectioner.mAutogroupAtCount
                                 + " ungrouped notifications => force grouping");
                     } else {
                         Slog.i(TAG, "Found aggregate summary => force grouping");
@@ -671,8 +681,9 @@ public class GroupHelper {
 
     /**
      * A notification was added that is app-grouped.
+     * @return true if the notification was previously auto-grouped
      */
-    private void maybeUngroupOnAppGrouped(NotificationRecord record) {
+    private boolean maybeUngroupOnAppGrouped(NotificationRecord record) {
         FullyQualifiedGroupKey currentSectionKey = getSectionGroupKeyWithFallback(record);
 
         // The notification was part of a different section => trigger regrouping
@@ -684,7 +695,7 @@ public class GroupHelper {
             currentSectionKey = prevSectionKey;
         }
 
-        maybeUngroupWithSections(record, currentSectionKey);
+        return maybeUngroupWithSections(record, currentSectionKey);
     }
 
     /**
@@ -699,16 +710,19 @@ public class GroupHelper {
      * This method implements autogrouping with sections support.
      *
      * And updates the internal state of un-app-grouped notifications and their flags.
+     *
+     * @return true if the notification was previously auto-grouped
      */
-    private void maybeUngroupWithSections(NotificationRecord record,
+    private boolean maybeUngroupWithSections(NotificationRecord record,
             @Nullable FullyQualifiedGroupKey fullAggregateGroupKey) {
+        boolean wasUnAggregated = false;
         if (fullAggregateGroupKey == null) {
             if (DEBUG) {
                 Slog.i(TAG,
                         "Skipping maybeUngroupWithSections for " + record
                             + " no valid section found.");
             }
-            return;
+            return false;
         }
 
         final StatusBarNotification sbn = record.getSbn();
@@ -728,6 +742,7 @@ public class GroupHelper {
             if (aggregatedNotificationsAttrs.containsKey(record.getKey())) {
                 aggregatedNotificationsAttrs.remove(sbn.getKey());
                 mAggregatedNotifications.put(fullAggregateGroupKey, aggregatedNotificationsAttrs);
+                wasUnAggregated = true;
 
                 if (DEBUG) {
                     Slog.i(TAG, "maybeUngroup removeAutoGroup: " + record);
@@ -751,6 +766,7 @@ public class GroupHelper {
                 }
             }
         }
+        return wasUnAggregated;
     }
 
     /**
@@ -784,6 +800,10 @@ public class GroupHelper {
         if (mIsTestHarnessExempted) {
             return;
         }
+
+        // If any formerly-ungrouped or autogrouped notifications will be grouped by this summary,
+        // update grouping
+        onGroupSummaryAdded(record, notificationList);
 
         final NotificationSectioner sectioner = getSection(record);
         if (sectioner == null) {
@@ -860,10 +880,11 @@ public class GroupHelper {
         //  or if aggregate group exists
         boolean hasSummary = !mAggregatedNotifications.getOrDefault(fullAggregateGroupKey,
                 new ArrayMap<>()).isEmpty();
-        if (ungrouped.size() >= mAutoGroupAtCount || hasSummary) {
+
+        if (ungrouped.size() >= sectioner.mAutogroupAtCount || hasSummary) {
             if (DEBUG) {
-                if (ungrouped.size() >= mAutoGroupAtCount) {
-                    Slog.i(TAG, "Found >=" + mAutoGroupAtCount
+                if (ungrouped.size() >= sectioner.mAutogroupAtCount) {
+                    Slog.i(TAG, "Found >=" + sectioner.mAutogroupAtCount
                             + " ungrouped notifications => force grouping");
                 } else {
                     Slog.i(TAG, "Found aggregate summary => force grouping");
@@ -1086,45 +1107,48 @@ public class GroupHelper {
     }
 
     /**
-     * Called when a group summary is posted. If there are any ungrouped notifications that are
-     * in that group, remove them as they are no longer candidates for autogrouping.
+     * Called when a group summary is posted.
+     * If there are any ungrouped or force-grouped notifications from that group,
+     * remove them from the ungrouped list or autogroup
+     * and regroup them into the app-provided group.
      *
      * @param summaryRecord the NotificationRecord for the newly posted group summary
      * @param notificationList the full notification list from NotificationManagerService
      */
-    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
-    protected void onGroupSummaryAdded(final NotificationRecord summaryRecord,
+    private void onGroupSummaryAdded(final NotificationRecord summaryRecord,
             final List<NotificationRecord> notificationList) {
-        String groupKey = summaryRecord.getSbn().getGroup();
+        if (!summaryRecord.getNotification().isGroupSummary()) {
+            return;
+        }
+        if (GroupHelper.isAggregatedGroup(summaryRecord)) {
+            return;
+        }
         synchronized (mAggregatedNotifications) {
-            final NotificationSectioner sectioner = getSection(summaryRecord);
-            if (sectioner == null) {
-                Slog.w(TAG, "onGroupSummaryAdded " + summaryRecord + ": no valid section found");
-                return;
+            if (DEBUG) {
+                Log.i(TAG, "onGroupSummaryAdded: " + summaryRecord);
             }
+            final String summaryGroupKey = summaryRecord.getGroupKey();
 
-            FullyQualifiedGroupKey aggregateGroupKey = FullyQualifiedGroupKey.forRecord(
-                    summaryRecord, sectioner);
-            ArrayMap<String, NotificationAttributes> ungrouped =
-                    mUngroupedAbuseNotifications.getOrDefault(aggregateGroupKey,
-                            new ArrayMap<>());
-            if (ungrouped.isEmpty()) {
-                // don't bother looking through the notification list if there are no pending
-                // ungrouped notifications in this section (likely to be the most common case)
-                return;
-            }
-
-            // Look through full notification list for any notifications belonging to this group;
-            // remove from ungrouped map if needed, as the presence of the summary means they will
-            // now be grouped
             for (NotificationRecord r : notificationList) {
+                final String oldGroupKey = GroupHelper.getFullAggregateGroupKey(
+                        r.getSbn().getPackageName(), r.getOriginalGroupKey(), r.getUserId());
                 if (!r.getNotification().isGroupSummary()
-                        && groupKey.equals(r.getSbn().getGroup())
-                        && ungrouped.containsKey(r.getKey())) {
-                    ungrouped.remove(r.getKey());
+                        && (r.mOriginalFlags & FLAG_GROUP_SUMMARY) == 0
+                        && summaryGroupKey.equals(oldGroupKey)) {
+                    final NotificationSectioner sectioner = getSection(r);
+                    if (sectioner == null || NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)) {
+                        if (DEBUG) {
+                            Slog.i(TAG, "onGroupSummaryAdded skip bundled child: " + r);
+                        }
+                        continue;
+                    }
+                    if (maybeUngroupOnAppGrouped(r)) {
+                        // Cleanup override group key here so that onNotificationPostedWithDelay
+                        // has the right state synchronously
+                        r.setOverrideGroupKey(null);
+                    }
                 }
             }
-            mUngroupedAbuseNotifications.put(aggregateGroupKey, ungrouped);
         }
     }
 
@@ -1245,7 +1269,9 @@ public class GroupHelper {
                 String pkgName, ArrayMap<String, NotificationRecord> notificationsToCheck) {
         final ArrayList<NotificationMoveOp> notificationsToMove = new ArrayList<>();
         for (NotificationRecord record : notificationsToCheck.values()) {
-            if (isChildOfValidAppGroup(record)) {
+            // Valid app grouped child notification or ungrouped notifications from previous invalid
+            // sections (ie. conversations) can be moved to bundle sections
+            if (isChildOfValidAppGroup(record) || isNotAppGroupPrevInvalidSection(record)) {
                 // Check if section changes to a bundle section
                 NotificationSectioner sectioner = getSection(record);
                 if (sectioner != null && NOTIFICATION_BUNDLE_SECTIONS.contains(sectioner)) {
@@ -1468,9 +1494,11 @@ public class GroupHelper {
             NotificationRecord triggeringNotification = groupsToUpdate.get(groupKey).record;
             boolean hasSummary = groupsToUpdate.get(groupKey).hasSummary;
             //Group needs to be created/updated
-            if (ungrouped.size() >= mAutoGroupAtCount
+            NotificationSectioner sectioner = getSection(triggeringNotification);
+            final int autogroupAtCount =
+                    sectioner != null ? sectioner.mAutogroupAtCount : mAutoGroupAtCount;
+            if (ungrouped.size() >= autogroupAtCount
                     || (hasSummary && !aggregatedNotificationsAttrs.isEmpty())) {
-                NotificationSectioner sectioner = getSection(triggeringNotification);
                 if (sectioner == null) {
                     continue;
                 }
@@ -1547,6 +1575,23 @@ public class GroupHelper {
         }
 
         if (isNotificationAggregatedInSection(record, sectioner)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isNotAppGroupPrevInvalidSection(NotificationRecord record) {
+        final StatusBarNotification sbn = record.getSbn();
+        if (sbn.isGroup()) {
+            return false;
+        }
+
+        if (record.isCanceled) {
+            return false;
+        }
+
+        if (getPreviousValidSectionKey(record) != null) {
             return false;
         }
 
@@ -1975,12 +2020,14 @@ public class GroupHelper {
     protected static class NotificationSectioner {
         final String mName;
         final int mSummaryId;
+        final int mAutogroupAtCount;
         private final Predicate<NotificationRecord> mSectionChecker;
 
-        private NotificationSectioner(String name, int summaryId,
+        private NotificationSectioner(String name, int summaryId, int autogroupAtCount,
                 Predicate<NotificationRecord> sectionChecker) {
             mName = name;
             mSummaryId = summaryId;
+            mAutogroupAtCount = autogroupAtCount;
             mSectionChecker = sectionChecker;
         }
 
@@ -1991,7 +2038,14 @@ public class GroupHelper {
         private boolean isNotificationGroupable(final NotificationRecord record) {
             if (!Flags.notificationForceGroupConversations()) {
                 if (record.isConversation()) {
-                    return false;
+                    // Bundled conversations are groupable
+                    if (android.service.notification.Flags.notificationClassification()) {
+                        if (!NOTIFICATION_BUNDLE_SECTIONS.contains(this)) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
                 }
             }
 

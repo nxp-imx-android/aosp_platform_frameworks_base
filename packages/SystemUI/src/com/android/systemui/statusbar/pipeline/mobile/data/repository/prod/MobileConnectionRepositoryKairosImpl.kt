@@ -164,7 +164,7 @@ constructor(
                     }
 
                     override fun onCarrierRoamingNtnModeChanged(active: Boolean) {
-                        logger.logOnCarrierRoamingNtnModeChanged(active)
+                        logger.logOnCarrierRoamingNtnModeChanged(active, subId)
                         emit(CallbackEvent.OnCarrierRoamingNtnModeChanged(active))
                     }
 

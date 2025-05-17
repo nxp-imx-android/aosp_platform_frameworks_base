@@ -61,9 +61,8 @@ import androidx.annotation.UiThread
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
-import com.android.systemui.Flags.activityTransitionUseLargestWindow
+import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
 import com.android.systemui.Flags.moveTransitionAnimationLayer
-import com.android.systemui.Flags.translucentOccludingActivityFix
 import com.android.systemui.animation.TransitionAnimator.Companion.assertLongLivedReturnAnimations
 import com.android.systemui.animation.TransitionAnimator.Companion.assertReturnAnimations
 import com.android.systemui.animation.TransitionAnimator.Companion.longLivedReturnAnimationsEnabled
@@ -1278,12 +1277,7 @@ constructor(
             val window = setUpAnimation(apps, callback) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
-                val navigationBar =
-                    nonApps?.firstOrNull {
-                        it.windowType == WindowManager.LayoutParams.TYPE_NAVIGATION_BAR
-                    }
-
-                startAnimation(window, navigationBar, iCallback = callback)
+                startAnimation(window, iCallback = callback)
             } else {
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
                 takeOverAnimationInternal(
@@ -1315,14 +1309,7 @@ constructor(
         ) {
             val useSpring =
                 !controller.isLaunching && startWindowState != null && startTransaction != null
-            startAnimation(
-                window,
-                navigationBar = null,
-                useSpring,
-                startWindowState,
-                startTransaction,
-                callback,
-            )
+            startAnimation(window, useSpring, startWindowState, startTransaction, callback)
         }
 
         @UiThread
@@ -1381,43 +1368,32 @@ constructor(
 
             for (it in apps) {
                 if (it.mode == targetMode) {
-                    if (activityTransitionUseLargestWindow()) {
-                        if (returnAnimationsEnabled()) {
-                            // If the controller contains a cookie, _only_ match if either the
-                            // candidate contains the matching cookie, or a component is also
-                            // defined and is a match.
-                            if (
-                                controller.transitionCookie != null &&
-                                    it.taskInfo
-                                        ?.launchCookies
-                                        ?.contains(controller.transitionCookie) != true &&
-                                    (controller.component == null ||
-                                        it.taskInfo?.topActivity != controller.component)
-                            ) {
-                                continue
-                            }
-                        }
-
+                    if (returnAnimationsEnabled()) {
+                        // If the controller contains a cookie, _only_ match if either the
+                        // candidate contains the matching cookie, or a component is also
+                        // defined and is a match.
                         if (
-                            candidate == null ||
-                                !it.hasAnimatingParent && candidate.hasAnimatingParent
+                            controller.transitionCookie != null &&
+                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                    true &&
+                                (controller.component == null ||
+                                    it.taskInfo?.topActivity != controller.component)
                         ) {
-                            candidate = it
                             continue
                         }
-                        if (
-                            !it.hasAnimatingParent &&
-                                it.screenSpaceBounds.hasGreaterAreaThan(candidate.screenSpaceBounds)
-                        ) {
-                            candidate = it
-                        }
-                    } else {
-                        if (!it.hasAnimatingParent) {
-                            return it
-                        }
-                        if (candidate == null) {
-                            candidate = it
-                        }
+                    }
+
+                    if (
+                        candidate == null || !it.hasAnimatingParent && candidate.hasAnimatingParent
+                    ) {
+                        candidate = it
+                        continue
+                    }
+                    if (
+                        !it.hasAnimatingParent &&
+                            it.screenSpaceBounds.hasGreaterAreaThan(candidate.screenSpaceBounds)
+                    ) {
+                        candidate = it
                     }
                 }
             }
@@ -1427,7 +1403,6 @@ constructor(
 
         private fun startAnimation(
             window: RemoteAnimationTarget,
-            navigationBar: RemoteAnimationTarget? = null,
             useSpring: Boolean = false,
             startingWindowState: WindowAnimationState? = null,
             startTransaction: SurfaceControl.Transaction? = null,
@@ -1466,7 +1441,7 @@ constructor(
                     controller.createAnimatorState()
                 }
             val windowBackgroundColor =
-                if (translucentOccludingActivityFix() && window.isTranslucent) {
+                if (window.isTranslucent) {
                     Color.TRANSPARENT
                 } else {
                     window.taskInfo?.let { callback.getBackgroundColor(it) }
@@ -1596,20 +1571,39 @@ constructor(
                         iCallback?.invoke()
 
                         if (reparent) {
-                            // Relying on this try-catch is not great, but the existence of
-                            // RemoteAnimationRunnerCompat means that we can't reliably assume that
-                            // the transaction will be executed while the leash is still valid.
-                            // TODO(b/397180418): remove once the RemoteAnimation wrapper is cleaned
-                            //  up.
-                            try {
-                                // Reparent to null to avoid leaking the transition leash.
-                                // TODO(b/397180418): shouldn't be needed anymore once the
-                                //  RemoteAnimation wrapper is cleaned up.
-                                SurfaceControl.Transaction().use {
-                                    it.reparent(window.leash, null).apply()
+                            val cleanUpTransitionLeash: () -> Unit = {
+                                // Relying on this try-catch is not great, but the existence of
+                                // RemoteAnimationRunnerCompat means that we can't reliably
+                                // assume that the transaction will be executed while the leash
+                                // is still valid.
+                                // TODO(b/397180418): remove once the RemoteAnimation wrapper is
+                                //  cleaned up.
+                                try {
+                                    // Reparent to null to avoid leaking the transition leash.
+                                    // TODO(b/397180418): shouldn't be needed anymore once the
+                                    //  RemoteAnimation wrapper is cleaned up.
+                                    SurfaceControl.Transaction().use {
+                                        it.reparent(window.leash, null)
+                                        it.apply(/* sync */ false)
+                                    }
+                                } catch (e: IllegalStateException) {
+                                    Log.e(
+                                        TAG,
+                                        "Failed to clean up transition leash: already released",
+                                    )
                                 }
-                            } catch (e: IllegalStateException) {
-                                Log.e(TAG, "Failed to clean up transition leash: already released")
+                            }
+                            if (animationLibraryDelayLeashCleanup()) {
+                                // This cleanup is not time-sensitive as it is just to avoid leaking
+                                // leashes. By delaying it, we make (reasonably) sure that the
+                                // finish callback above is executed before the reparent
+                                // transaction, which avoids flaky flickers. Unfortunately both are
+                                // async, so we need to resort to this hacky solution. Fortunately
+                                // none of this will be necessary as soon as b/397180418 is done.
+                                Handler(Looper.getMainLooper())
+                                    .postDelayed(cleanUpTransitionLeash, 500L)
+                            } else {
+                                cleanUpTransitionLeash()
                             }
                         }
 
@@ -1630,7 +1624,6 @@ constructor(
                         linearProgress: Float,
                     ) {
                         applyStateToWindow(window, state, linearProgress, useSpring)
-                        navigationBar?.let { applyStateToNavigationBar(it, state, linearProgress) }
 
                         listener?.onTransitionAnimationProgress(linearProgress)
                         delegate.onTransitionAnimationProgress(state, progress, linearProgress)
@@ -1802,57 +1795,6 @@ constructor(
                     .withCornerRadius(cornerRadius)
                     .withVisibility(true)
             if (transaction != null) params.withMergeTransaction(transaction)
-
-            transactionApplier.scheduleApply(params.build())
-        }
-
-        // TODO(b/377643129): remote transitions have no way of identifying the navbar when
-        //  converting to RemoteAnimationTargets (and in my testing it was never included in the
-        //  transition at all). So this method is not used anymore. Remove or adapt once we fully
-        //  convert to remote transitions.
-        private fun applyStateToNavigationBar(
-            navigationBar: RemoteAnimationTarget,
-            state: TransitionAnimator.State,
-            linearProgress: Float,
-        ) {
-            if (transactionApplierView.viewRootImpl == null || !navigationBar.leash.isValid) {
-                // Don't apply any transaction if the view root we synchronize with was detached or
-                // if the SurfaceControl associated with [navigationBar] is not valid, as
-                // [SyncRtSurfaceTransactionApplier.scheduleApply] would otherwise throw.
-                return
-            }
-
-            val fadeInProgress =
-                TransitionAnimator.getProgress(
-                    TIMINGS,
-                    linearProgress,
-                    ANIMATION_DELAY_NAV_FADE_IN,
-                    ANIMATION_DURATION_NAV_FADE_OUT,
-                )
-
-            val params = SyncRtSurfaceTransactionApplier.SurfaceParams.Builder(navigationBar.leash)
-            if (fadeInProgress > 0) {
-                matrix.reset()
-                matrix.setTranslate(
-                    0f,
-                    (state.top - navigationBar.sourceContainerBounds.top).toFloat(),
-                )
-                windowCrop.set(state.left, 0, state.right, state.height)
-                params
-                    .withAlpha(NAV_FADE_IN_INTERPOLATOR.getInterpolation(fadeInProgress))
-                    .withMatrix(matrix)
-                    .withWindowCrop(windowCrop)
-                    .withVisibility(true)
-            } else {
-                val fadeOutProgress =
-                    TransitionAnimator.getProgress(
-                        TIMINGS,
-                        linearProgress,
-                        0,
-                        ANIMATION_DURATION_NAV_FADE_OUT,
-                    )
-                params.withAlpha(1f - NAV_FADE_OUT_INTERPOLATOR.getInterpolation(fadeOutProgress))
-            }
 
             transactionApplier.scheduleApply(params.build())
         }

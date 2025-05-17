@@ -90,6 +90,7 @@ package android {
     field public static final String BIND_SATELLITE_SERVICE = "android.permission.BIND_SATELLITE_SERVICE";
     field public static final String BIND_SETTINGS_SUGGESTIONS_SERVICE = "android.permission.BIND_SETTINGS_SUGGESTIONS_SERVICE";
     field public static final String BIND_SOUND_TRIGGER_DETECTION_SERVICE = "android.permission.BIND_SOUND_TRIGGER_DETECTION_SERVICE";
+    field @FlaggedApi("android.permission.flags.supervision_role_enabled") public static final String BIND_SUPERVISION_APP_SERVICE = "android.permission.BIND_SUPERVISION_APP_SERVICE";
     field public static final String BIND_TELEPHONY_DATA_SERVICE = "android.permission.BIND_TELEPHONY_DATA_SERVICE";
     field public static final String BIND_TELEPHONY_NETWORK_SERVICE = "android.permission.BIND_TELEPHONY_NETWORK_SERVICE";
     field public static final String BIND_TEXTCLASSIFIER_SERVICE = "android.permission.BIND_TEXTCLASSIFIER_SERVICE";
@@ -173,6 +174,7 @@ package android {
     field @Deprecated public static final String HIDE_NON_SYSTEM_OVERLAY_WINDOWS = "android.permission.HIDE_NON_SYSTEM_OVERLAY_WINDOWS";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String IMPORT_XR_ANCHOR = "android.permission.IMPORT_XR_ANCHOR";
     field public static final String INJECT_EVENTS = "android.permission.INJECT_EVENTS";
+    field @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public static final String INJECT_KEY_EVENTS = "android.permission.INJECT_KEY_EVENTS";
     field @FlaggedApi("android.content.pm.sdk_dependency_installer") public static final String INSTALL_DEPENDENCY_SHARED_LIBRARIES = "android.permission.INSTALL_DEPENDENCY_SHARED_LIBRARIES";
     field public static final String INSTALL_DPC_PACKAGES = "android.permission.INSTALL_DPC_PACKAGES";
     field public static final String INSTALL_DYNAMIC_SYSTEM = "android.permission.INSTALL_DYNAMIC_SYSTEM";
@@ -3648,6 +3650,7 @@ package android.companion.virtual.camera {
   }
 
   public interface VirtualCameraCallback {
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_on_open") public default void onOpenCamera();
     method public default void onProcessCaptureRequest(int, long);
     method public void onStreamClosed(int);
     method public void onStreamConfigured(int, @NonNull android.view.Surface, @IntRange(from=1) int, @IntRange(from=1) int, int);

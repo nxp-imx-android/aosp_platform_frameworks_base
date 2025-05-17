@@ -957,7 +957,6 @@ final class KeyGestureController {
                 DEFAULT_DISPLAY, /* focusedToken = */null, /* flags = */0, appLaunchData);
     }
 
-    @VisibleForTesting
     void handleKeyGesture(int deviceId, int[] keycodes, int modifierState,
             @KeyGestureEvent.KeyGestureType int gestureType, int action, int displayId,
             @Nullable IBinder focusedToken, int flags, @Nullable AppLaunchData appLaunchData) {
@@ -1013,14 +1012,6 @@ final class KeyGestureController {
         mHandler.obtainMessage(MSG_NOTIFY_KEY_GESTURE_EVENT, event).sendToTarget();
     }
 
-    public void handleKeyGesture(int deviceId, int[] keycodes, int modifierState,
-            @KeyGestureEvent.KeyGestureType int gestureType) {
-        AidlKeyGestureEvent event = createKeyGestureEvent(deviceId, keycodes, modifierState,
-                gestureType, KeyGestureEvent.ACTION_GESTURE_COMPLETE, DEFAULT_DISPLAY,
-                /* flags = */0, /* appLaunchData = */null);
-        handleKeyGesture(event, null /*focusedToken*/);
-    }
-
     public void handleTouchpadGesture(int touchpadGestureType) {
         // Handle custom shortcuts
         InputGestureData customGesture;
@@ -1060,20 +1051,22 @@ final class KeyGestureController {
 
     @MainThread
     private void notifyKeyGestureEvent(AidlKeyGestureEvent event) {
-        InputDevice device = getInputDevice(event.deviceId);
-        if (device == null) {
-            return;
-        }
-        KeyGestureEvent keyGestureEvent = new KeyGestureEvent(event);
-        if (event.action == KeyGestureEvent.ACTION_GESTURE_COMPLETE) {
-            KeyboardMetricsCollector.logKeyboardSystemsEventReportedAtom(device, event.keycodes,
-                    event.modifierState, keyGestureEvent.getLogEvent());
-        }
         notifyAllListeners(event);
+        KeyGestureEvent keyGestureEvent = new KeyGestureEvent(event);
         while (mLastHandledEvents.size() >= MAX_TRACKED_EVENTS) {
             mLastHandledEvents.removeFirst();
         }
         mLastHandledEvents.addLast(keyGestureEvent);
+        boolean complete = keyGestureEvent.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
+                && !keyGestureEvent.isCancelled();
+        if (complete) {
+            InputDevice device = getInputDevice(event.deviceId);
+            if (device == null) {
+                return;
+            }
+            KeyboardMetricsCollector.logKeyboardSystemsEventReportedAtom(device, event.keycodes,
+                    event.modifierState, keyGestureEvent.getLogEvent());
+        }
     }
 
     @MainThread
@@ -1297,9 +1290,21 @@ final class KeyGestureController {
             }
             for (int gestureType : keyGesturesToHandle) {
                 if (mSupportedKeyGestureToPidMap.indexOfKey(gestureType) >= 0) {
-                    throw new IllegalArgumentException(
-                            "Key gesture " + gestureType + " is already registered by pid = "
-                                    + mSupportedKeyGestureToPidMap.get(gestureType));
+                    // Check if existing registered pid is dead or not.
+                    // Due to race conditions it is possible to get cases where the process is
+                    // killed and we haven't yet received the binderDied() callback.
+                    int existingPid = mSupportedKeyGestureToPidMap.get(gestureType);
+                    KeyGestureHandlerRecord existingHandler = Objects.requireNonNull(
+                            mKeyGestureHandlerRecords.get(existingPid));
+                    if (existingHandler.mKeyGestureHandler.asBinder().isBinderAlive()) {
+                        throw new IllegalArgumentException(
+                                "Key gesture " + gestureType + " is already registered by pid = "
+                                        + existingPid);
+                    } else {
+                        Slog.w(TAG, "registerKeyGestureHandler: pid = " + existingPid
+                                + " was killed but we didn't receive binderDied callback");
+                        onKeyGestureHandlerRemoved(existingPid);
+                    }
                 }
             }
             KeyGestureHandlerRecord record = new KeyGestureHandlerRecord(pid, handler);

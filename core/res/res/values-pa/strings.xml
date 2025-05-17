@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ਇੱਕ ਹੱਥ ਮੋਡ"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ਜ਼ਿਆਦਾ ਘੱਟ ਚਮਕ"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ਸੁਣਨ ਵਾਲੇ ਡੀਵਾਈਸ"</string>
-    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"ਸਵੈ-ਕਲਿੱਕ (ਉਡੀਕ ਦਾ ਸਮਾਂ)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"ਮਾਊਸ ਕੁੰਜੀਆਂ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"ਕਨੈਕਟ ਹੈ"</string>
@@ -1831,6 +1830,8 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> ਨੂੰ ਲਾਗ-ਆਉਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ …"</string>
     <string name="owner_name" msgid="8713560351570795743">"ਮਾਲਕ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ਮਹਿਮਾਨ"</string>
+    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
+    <skip />
     <string name="error_message_title" msgid="4082495589294631966">"ਅਸ਼ੁੱਧੀ"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਇਸ ਤਬਦੀਲੀ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ਇਸ ਕਾਰਵਾਈ ਨੂੰ ਸੰਭਾਲਣ ਲਈ ਕੋਈ ਐਪਲੀਕੇਸ਼ਨ ਨਹੀਂ ਮਿਲੀ।"</string>
@@ -2268,32 +2269,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Dpad ਦਾ ਖੱਬੇ ਪਾਸੇ ਵਾਲਾ ਬਟਨ"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Dpad ਦਾ ਸੱਜੇ ਪਾਸੇ ਵਾਲਾ ਬਟਨ"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Dpad ਦਾ ਵਿਚਕਾਰਲਾ ਬਟਨ"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
-    <skip />
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"ਸਵੈ-ਕਲਿੱਕ ਵਿਕਲਪ ਮੀਨੂ"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"ਖੱਬਾ-ਕਲਿੱਕ ਦਬਾਓ"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"ਸੱਜਾ-ਕਲਿੱਕ ਦਬਾਓ"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"ਡਬਲ-ਕਲਿੱਕ ਕਰੋ"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"ਘਸੀਟੋ"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ਸਕ੍ਰੋਲ ਕਰੋ"</string>
-    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
-    <skip />
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"ਸਪਰਸ਼ ਕਰ ਕੇ ਰੱਖੋ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ਰੋਕੋ"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"ਮੁੜ-ਚਾਲੂ ਕਰੋ"</string>
-    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
-    <skip />
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"ਮੀਨੂ ਦੀ ਸਥਿਤੀ ਬਦਲੋ"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"ਉੱਪਰ ਵੱਲ ਸਕ੍ਰੋਲ ਕਰੋ"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"ਹੇਠਾਂ ਸਕ੍ਰੋਲ ਕਰੋ"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"ਖੱਬੇ ਪਾਸੇ ਵੱਲ ਸਕ੍ਰੋਲ ਕਰੋ"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"ਸੱਜੇ ਪਾਸੇ ਵੱਲ ਸਕ੍ਰੋਲ ਕਰੋ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"ਸਕ੍ਰੋਲ ਮੋਡ ਤੋਂ ਬਾਹਰ ਜਾਓ"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ਸਕ੍ਰੋਲ ਪੈਨਲ"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ਨੂੰ ਪ੍ਰਤਿਬੰਧਿਤ ਖਾਨੇ ਵਿੱਚ ਪਾਇਆ ਗਿਆ ਹੈ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>

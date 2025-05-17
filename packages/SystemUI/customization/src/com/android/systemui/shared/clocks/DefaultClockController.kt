@@ -18,6 +18,7 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
 import android.icu.text.NumberFormat
+import android.icu.util.TimeZone
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.FrameLayout
@@ -40,12 +41,12 @@ import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.Flags.ambientAod
 import java.io.PrintWriter
 import java.util.Locale
-import java.util.TimeZone
 
 /**
  * Controls the default clock visuals.
@@ -213,11 +214,13 @@ class DefaultClockController(
     inner class DefaultClockEvents : ClockEvents {
         override var isReactiveTouchInteractionEnabled: Boolean = false
 
-        override fun onTimeFormatChanged(is24Hr: Boolean) =
-            clocks.forEach { it.refreshFormat(is24Hr) }
+        override fun onTimeFormatChanged(formatKind: TimeFormatKind) =
+            clocks.forEach { it.refreshFormat(formatKind == TimeFormatKind.FULL_DAY) }
 
-        override fun onTimeZoneChanged(timeZone: TimeZone) =
-            clocks.forEach { it.onTimeZoneChanged(timeZone) }
+        override fun onTimeZoneChanged(timeZone: TimeZone) {
+            val legacyTimezone = java.util.TimeZone.getTimeZone(timeZone.getID())
+            clocks.forEach { it.onTimeZoneChanged(legacyTimezone) }
+        }
 
         override fun onLocaleChanged(locale: Locale) {
             val nf = NumberFormat.getInstance(locale)

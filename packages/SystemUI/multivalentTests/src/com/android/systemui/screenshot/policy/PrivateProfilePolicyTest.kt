@@ -21,6 +21,7 @@ import android.content.ComponentName
 import android.os.UserHandle
 import android.platform.test.annotations.DisabledOnRavenwood
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screenshot.data.model.DisplayContentModel
 import com.android.systemui.screenshot.data.model.DisplayContentScenarios.ActivityNames.FILES
@@ -47,7 +48,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @DisabledOnRavenwood(blockedBy = [ActivityTaskManager.RootTaskInfo::class])
-class PrivateProfilePolicyTest {
+class PrivateProfilePolicyTest : SysuiTestCase() {
     private val kosmos = Kosmos()
     private val policy = PrivateProfilePolicy(kosmos.profileTypeRepository)
 

@@ -15,8 +15,6 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.ReflectedMethod.reflectMethod;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
@@ -27,6 +25,7 @@ import com.android.ravenwood.common.SneakyThrow;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -89,7 +88,7 @@ public class RavenwoodUtils {
             latch.countDown();
         });
         try {
-            latch.await();
+            latch.await(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while waiting on the Runnable", e);
         }

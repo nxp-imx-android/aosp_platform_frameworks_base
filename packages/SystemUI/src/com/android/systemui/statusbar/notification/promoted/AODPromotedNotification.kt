@@ -460,6 +460,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateTextView(headerTextSecondary, content.subText)
         updateTitle(titleView, content)
         updateTimeAndChronometer(content)
+        updateProfileBadge(content)
 
         updateHeaderDividers(content, hideTitle = !hasTitle, hideAppName = hideAppName)
 
@@ -495,6 +496,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     ) {
         updateAppName(content, forceHide = collapsed)
         updateTimeAndChronometer(content)
+        updateProfileBadge(content)
 
         updateImageView(verificationIcon, content.verificationIcon)
         updateTextView(verificationText, content.verificationText)
@@ -569,6 +571,14 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         time?.isVisible = (content.time is When.Time)
         chronometer?.isVisible = (content.time is When.Chronometer)
+    }
+
+    private fun updateProfileBadge(content: PromotedNotificationContentModel) {
+        if (content.profileBadgeBitmap != null) {
+            profileBadge?.setImageBitmap(content.profileBadgeBitmap)
+            profileBadge?.visibility = VISIBLE
+            profileBadge?.setColorFilter(PrimaryText.colorInt, PorterDuff.Mode.SRC_IN)
+        }
     }
 
     private fun updateNotifIcon(

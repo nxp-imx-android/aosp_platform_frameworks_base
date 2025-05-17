@@ -52,6 +52,7 @@ import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.wrapper.RotationPolicyWrapper;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -134,6 +135,11 @@ public class DeviceStateRotationLockSettingControllerTest extends SysuiTestCase 
         verify(mDeviceStateManager)
                 .registerCallback(any(), deviceStateCallbackArgumentCaptor.capture());
         mDeviceStateCallback = deviceStateCallbackArgumentCaptor.getValue();
+    }
+
+    @After
+    public void tearDown() {
+        mDeviceStateRotationLockSettingController.setListening(false);
     }
 
     @Test

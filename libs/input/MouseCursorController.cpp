@@ -23,6 +23,7 @@
 #include "MouseCursorController.h"
 
 #include <input/Input.h>
+#include <input/InputFlags.h>
 #include <log/log.h>
 
 #define INDENT "  "
@@ -174,6 +175,10 @@ void MouseCursorController::setSkipScreenshot(bool skip) {
     if (mLocked.skipScreenshot == skip) {
         return;
     }
+    ALOGW_IF(InputFlags::doNotUseSkipScreenshotFlagForMouseCursor() &&
+                     mLocked.viewport.displayId != ui::LogicalDisplayId::DEFAULT &&
+                     mLocked.skipScreenshot,
+             "SkipScreenshot will be ignored for display: %d", mLocked.viewport.displayId.val());
     mLocked.skipScreenshot = skip;
     updatePointerLocked();
 }
@@ -368,7 +373,16 @@ void MouseCursorController::updatePointerLocked() REQUIRES(mLock) {
     mLocked.pointerSprite->setLayer(Sprite::BASE_LAYER_POINTER);
     mLocked.pointerSprite->setPosition(mLocked.pointerPosition.x, mLocked.pointerPosition.y);
     mLocked.pointerSprite->setDisplayId(mLocked.viewport.displayId);
-    mLocked.pointerSprite->setSkipScreenshot(mLocked.skipScreenshot);
+    if (InputFlags::doNotUseSkipScreenshotFlagForMouseCursor() &&
+        mLocked.viewport.displayId != ui::LogicalDisplayId::DEFAULT) {
+        //  This is a temporary workaround to avoid b/418143858.
+        // TODO(b/412777943): At present the SKIP_SCREENSHOT flag causes layers to be excluded from
+        //  all external-displays. On connected display this causes cursor to be hidden on external
+        //  displays.
+        mLocked.pointerSprite->setSkipScreenshot(false);
+    } else {
+        mLocked.pointerSprite->setSkipScreenshot(mLocked.skipScreenshot);
+    }
 
     if (mLocked.pointerAlpha > 0) {
         mLocked.pointerSprite->setAlpha(mLocked.pointerAlpha);

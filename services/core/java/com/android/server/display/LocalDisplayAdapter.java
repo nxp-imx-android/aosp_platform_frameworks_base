@@ -848,7 +848,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     mInfo.type = Display.TYPE_EXTERNAL;
                     mInfo.touch = DisplayDeviceInfo.TOUCH_EXTERNAL;
                     mInfo.flags |= DisplayDeviceInfo.FLAG_PRESENTATION;
-                    if (mInfo.name == null) {
+                    if (mInfo.name == null && mStaticDisplayInfo.deviceProductInfo != null) {
+                        mInfo.name = mStaticDisplayInfo.deviceProductInfo.getName();
+                    }
+                    if (mInfo.name == null || mInfo.name.isBlank()) {
                         mInfo.name = getContext().getResources().getString(
                                 R.string.display_manager_hdmi_display_name);
                     }

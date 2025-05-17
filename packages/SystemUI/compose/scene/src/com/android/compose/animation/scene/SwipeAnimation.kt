@@ -22,6 +22,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.DecayAnimationSpec
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.calculateTargetValue
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -413,35 +414,47 @@ internal class SwipeAnimation<T : ContentKey>(
                 else -> error("Target $targetOffset should be $lowerBound or $upperBound")
             }
 
-        if (willDecayReachBounds) {
-            val result = animatable.animateDecay(initialVelocity, decayAnimationSpec)
-            check(animatable.value == targetOffset) {
-                buildString {
-                    appendLine(
-                        "animatable.value = ${animatable.value} != $targetOffset = targetOffset"
+        // TODO(b/417444347): Use the default or fast spatial spec for small STLs, or make it a
+        // parameter of the transitions spec.
+        val animationSpec = spec ?: layoutState.motionScheme.slowSpatialSpec()
+        val result =
+            if (
+                willDecayReachBounds &&
+                    willDecayFasterThanAnimating(
+                        animationSpec,
+                        decayAnimationSpec,
+                        initialOffset,
+                        targetOffset,
+                        initialVelocity,
                     )
-                    appendLine("  initialOffset=$initialOffset")
-                    appendLine("  targetOffset=$targetOffset")
-                    appendLine("  initialVelocity=$initialVelocity")
-                    appendLine("  decayOffset=$decayOffset")
-                    appendLine(
-                        "  animateDecay result: reason=${result.endReason} " +
-                            "value=${result.endState.value} velocity=${result.endState.velocity}"
-                    )
+            ) {
+                animatable.animateDecay(initialVelocity, decayAnimationSpec).also { result ->
+                    check(animatable.value == targetOffset) {
+                        buildString {
+                            appendLine(
+                                "animatable.value=${animatable.value} != $targetOffset=targetOffset"
+                            )
+                            appendLine("  initialOffset=$initialOffset")
+                            appendLine("  targetOffset=$targetOffset")
+                            appendLine("  initialVelocity=$initialVelocity")
+                            appendLine("  decayOffset=$decayOffset")
+                            appendLine(
+                                "  animateDecay result: reason=${result.endReason} " +
+                                    "value=${result.endState.value} " +
+                                    "velocity=${result.endState.velocity}"
+                            )
+                        }
+                    }
                 }
+            } else {
+                animatable.animateTo(
+                    targetValue = targetOffset,
+                    animationSpec = animationSpec,
+                    initialVelocity = initialVelocity,
+                )
             }
-            return initialVelocity - result.endState.velocity
-        }
 
-        val motionSpatialSpec = spec ?: layoutState.motionScheme.defaultSpatialSpec()
-        animatable.animateTo(
-            targetValue = targetOffset,
-            animationSpec = motionSpatialSpec,
-            initialVelocity = initialVelocity,
-        )
-
-        // We consumed the whole velocity.
-        return initialVelocity
+        return initialVelocity - result.endState.velocity
     }
 
     private fun canChangeContent(targetContent: ContentKey): Boolean {
@@ -473,6 +486,106 @@ internal class SwipeAnimation<T : ContentKey>(
             animateOffset(initialVelocity = 0f, targetContent = currentContent)
         }
     }
+}
+
+internal fun willDecayFasterThanAnimating(
+    animationSpec: AnimationSpec<Float>,
+    decayAnimationSpec: DecayAnimationSpec<Float>,
+    initialOffset: Float,
+    targetOffset: Float,
+    initialVelocity: Float,
+): Boolean {
+    if (initialOffset == targetOffset) {
+        return true
+    }
+
+    fun hasReachedTargetOffset(value: Float): Boolean {
+        return when {
+            initialOffset < targetOffset -> value >= targetOffset
+            else -> value <= targetOffset
+        }
+    }
+
+    val converter = Float.VectorConverter
+    val decayAnimationSpecVector = decayAnimationSpec.vectorize(converter)
+    val initialOffsetVector = converter.convertToVector(initialOffset)
+    val initialVelocityVector = converter.convertToVector(initialVelocity)
+
+    // Given that the Animatable that we are going to animate with animationSpec or
+    // decayAnimationSpec has bounds and will stop as soon as the targetOffset is reached, we
+    // can not use the getDurationNanos() API from VectorizedAnimationSpec and
+    // VectorizedDecayAnimationSpec.
+    //
+    // For the decay, we can use a simple binary search given that once the decay has reached
+    // the target value it will never change direction.
+    val decayDuration = binarySearch { timeMs ->
+        hasReachedTargetOffset(
+            converter.convertFromVector(
+                decayAnimationSpecVector.getValueFromNanos(
+                    playTimeNanos = timeMs * MillisToNanos,
+                    initialValue = initialOffsetVector,
+                    initialVelocity = initialVelocityVector,
+                )
+            )
+        )
+    }
+
+    // For the animation we can't use binary search given that springs and eased interpolations
+    // can oscillate around the target offset. Given that it's ok to estimate this duration, we
+    // simply check whether we passed the threshold for each single frame step time (~8ms).
+    val animationSpecVector = animationSpec.vectorize(converter)
+    val targetOffsetVector = converter.convertToVector(targetOffset)
+    val maxAnimationDurationMs =
+        animationSpecVector.getDurationNanos(
+            initialOffsetVector,
+            targetOffsetVector,
+            initialVelocityVector,
+        ) / MillisToNanos
+    var animationDurationMs = 0
+    var hasReachedTarget = false
+    while (!hasReachedTarget && animationDurationMs < maxAnimationDurationMs) {
+        animationDurationMs += ApproximateFrameTime
+        hasReachedTarget =
+            hasReachedTargetOffset(
+                converter.convertFromVector(
+                    animationSpecVector.getValueFromNanos(
+                        playTimeNanos = animationDurationMs * MillisToNanos,
+                        initialValue = initialOffsetVector,
+                        initialVelocity = initialVelocityVector,
+                        targetValue = targetOffsetVector,
+                    )
+                )
+            )
+    }
+
+    return decayDuration <= animationDurationMs
+}
+
+/** Returns the lowest timeMs >= 0 for which [f] is true. */
+private fun binarySearch(f: (timeMs: Long) -> Boolean): Long {
+    check(!f(0)) { "f should return false for timeMillis=0" }
+    var low = 0L
+    var high = 128L // common duration that is also a power of 2.
+    while (!f(high)) {
+        if (high > Long.MAX_VALUE / 2) {
+            error("overflow, f($high) returned false")
+        }
+
+        low = high
+        high *= 2
+    }
+
+    var result = high
+    while (low <= high) {
+        val mid = low + (high - low) / 2
+        if (f(mid)) {
+            result = mid
+            high = mid - 1
+        } else {
+            low = mid + 1
+        }
+    }
+    return result
 }
 
 private object DefaultSwipeDistance : UserActionDistance {
@@ -639,3 +752,6 @@ private class ReplaceOverlaySwipeTransition(
         swipeAnimation.freezeAndAnimateToCurrentState()
     }
 }
+
+private const val MillisToNanos = 1_000_000L
+private const val ApproximateFrameTime = 1_000 / 120

@@ -34,10 +34,12 @@ import android.view.SurfaceControlHdrLayerInfoListener;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.display.BrightnessSynchronizer;
+import com.android.internal.display.BrightnessUtils;
 import com.android.server.display.DisplayBrightnessState;
 import com.android.server.display.DisplayDeviceConfig;
 import com.android.server.display.brightness.BrightnessReason;
 import com.android.server.display.config.HdrBrightnessData;
+import com.android.server.display.feature.DisplayManagerFlags;
 
 import java.io.PrintWriter;
 import java.util.Map;
@@ -48,11 +50,6 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
 
     static final float DEFAULT_MAX_HDR_SDR_RATIO = 1.0f;
     private static final float DEFAULT_HDR_LAYER_SIZE = -1.0f;
-
-    private final Uri mLowPowerModeSetting = Settings.Global.getUriFor(
-            Settings.Global.LOW_POWER_MODE);
-
-    private final ContentObserver mContentObserver;
 
     private final SurfaceControlHdrLayerInfoListener mHdrListener =
             new SurfaceControlHdrLayerInfoListener() {
@@ -70,10 +67,10 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
     private final Handler mHandler;
     private final BrightnessClamperController.ClamperChangeListener mClamperChangeListener;
     private final Injector mInjector;
+    private final DisplayManagerFlags mFlags;
     private final Runnable mDebouncer;
 
     private IBinder mRegisteredDisplayToken;
-    private boolean mContentObserverRegistered = false;
 
     private DisplayDeviceConfig mDisplayDeviceConfig;
     @Nullable
@@ -86,6 +83,7 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
     private float mAmbientLux = INVALID_LUX;
 
     private boolean mLowPowerMode = false;
+    private final LowPowerModeSettingObserver mLowPowerModeSettingObserver;
 
     private Mode mMode = Mode.NO_HDR;
     // The maximum brightness allowed for current lux
@@ -95,17 +93,22 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
     private float mTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
     private float mPendingTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
 
-    HdrBrightnessModifier(Handler handler, Context context,
+    private boolean mHdrBrightnessEnabled = true;
+    private float mHdrBrightnessBoostLevel = 1;
+    private final HdrSettingsObserver mHdrSettingsObserver;
+
+    HdrBrightnessModifier(Handler handler, Context context, DisplayManagerFlags flags,
             BrightnessClamperController.ClamperChangeListener clamperChangeListener,
             BrightnessClamperController.DisplayDeviceData displayData) {
-        this(new Handler(handler.getLooper()), clamperChangeListener,
+        this(new Handler(handler.getLooper()), flags, clamperChangeListener,
                 new Injector(context), displayData);
     }
 
     @VisibleForTesting
-    HdrBrightnessModifier(Handler handler,
+    HdrBrightnessModifier(Handler handler, DisplayManagerFlags flags,
             BrightnessClamperController.ClamperChangeListener clamperChangeListener,
             Injector injector, BrightnessClamperController.DisplayDeviceData displayData) {
+        mFlags = flags;
         mHandler = handler;
         mClamperChangeListener = clamperChangeListener;
         mInjector = injector;
@@ -114,12 +117,8 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
             mMaxBrightness = mPendingMaxBrightness;
             mClamperChangeListener.onChanged();
         };
-        mContentObserver = new ContentObserver(mHandler) {
-            @Override
-            public void onChange(boolean selfChange) {
-                onLowPowerModeChange();
-            }
-        };
+        mLowPowerModeSettingObserver = new LowPowerModeSettingObserver(mHandler);
+        mHdrSettingsObserver = new HdrSettingsObserver(mHandler);
         mHandler.post(() -> onDisplayChanged(displayData));
     }
 
@@ -134,7 +133,7 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
             return;
         }
         float hdrBrightness = mDisplayDeviceConfig.getHdrBrightnessFromSdr(
-                stateBuilder.getBrightness(), mMaxDesiredHdrRatio,
+                stateBuilder.getBrightness(), mMaxDesiredHdrRatio, getRatioScaleFactor(),
                 mHdrBrightnessData.sdrToHdrRatioSpline);
         float maxBrightness = getMaxBrightness(mMode, mMaxBrightness, mHdrBrightnessData);
         hdrBrightness = Math.min(hdrBrightness, maxBrightness);
@@ -162,13 +161,20 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
         pw.println("  mTransitionRate=" + mTransitionRate);
         pw.println("  mPendingTransitionRate=" + mPendingTransitionRate);
         pw.println("  mHdrListener registered=" + (mRegisteredDisplayToken != null));
-        pw.println("  mContentObserverRegistered=" + mContentObserverRegistered);
+        pw.println("  mLowPowerModeSettingObserver.mRegistered="
+                + mLowPowerModeSettingObserver.mRegistered);
+        pw.println("  mHdrSettingsObserver.mRegistered=" + mHdrSettingsObserver.mRegistered);
+        pw.println("  mHdrBrightnessEnabled=" + mHdrBrightnessEnabled);
+        pw.println("  mHdrBrightnessBoostLevel=" + mHdrBrightnessBoostLevel);
+        pw.println("  ratioScaleFactor=" + getRatioScaleFactor());
     }
 
     // Called in DisplayControllerHandler
     @Override
     public void stop() {
         unregisterHdrListener();
+        mLowPowerModeSettingObserver.unregister();
+        mHdrSettingsObserver.unregister();
         mHandler.removeCallbacksAndMessages(null);
     }
 
@@ -201,19 +207,23 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
         HdrBrightnessData data = mDisplayDeviceConfig.getHdrBrightnessData();
         if (data == null) {
             unregisterHdrListener();
+            mHdrSettingsObserver.unregister();
         } else {
             registerHdrListener(displayData.mDisplayToken);
+            if (mFlags.isHdrBrightnessSettingEnabled()) {
+                mHdrSettingsObserver.register();
+            }
         }
         if (data == null || data.allowInLowPowerMode) {
-            unregisterContentObserver();
+            mLowPowerModeSettingObserver.unregister();
         } else {
-            registerContentObserver();
+            mLowPowerModeSettingObserver.register();
         }
 
         Mode newMode = recalculateMode(data);
         // mode changed, or mode was HDR  and HdrBrightnessData changed
         boolean needToNotifyChange = mMode != newMode
-                || (mMode != HdrBrightnessModifier.Mode.NO_HDR && data != mHdrBrightnessData);
+                || (mMode != Mode.NO_HDR && data != mHdrBrightnessData);
         mMode = newMode;
         mHdrBrightnessData = data;
         mMaxBrightness = findBrightnessLimit(mHdrBrightnessData, mAmbientLux);
@@ -234,6 +244,7 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
             aggregatedState.mSdrHdrRatioSpline = mHdrBrightnessData.sdrToHdrRatioSpline;
             aggregatedState.mMaxHdrBrightness = getMaxBrightness(
                     mMode, mMaxBrightness, mHdrBrightnessData);
+            aggregatedState.mHdrRatioScaleFactor = getRatioScaleFactor();
         }
     }
 
@@ -289,16 +300,6 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
         }
         // HDR layer > that minHdr % for Hbm
         return Mode.HBM_HDR;
-    }
-
-    private void onLowPowerModeChange() {
-        mLowPowerMode = mInjector.isLowPowerMode();
-        Mode newMode = recalculateMode(mHdrBrightnessData);
-        if (newMode != mMode) {
-            mMode = newMode;
-            mTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
-            mClamperChangeListener.onChanged();
-        }
     }
 
     private float getMaxBrightness(Mode mode, float maxBrightness, HdrBrightnessData data) {
@@ -370,26 +371,114 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
         }
     }
 
-    // Called in DisplayControllerHandler
-    private void registerContentObserver() {
-        if (!mContentObserverRegistered) {
-            mInjector.registerContentObserver(mContentObserver, mLowPowerModeSetting);
-            mContentObserverRegistered = true;
-            mLowPowerMode = mInjector.isLowPowerMode();
-        }
-    }
-
-    // Called in DisplayControllerHandler
-    private void unregisterContentObserver() {
-        if (mContentObserverRegistered) {
-            mInjector.unregisterContentObserver(mContentObserver);
-            mContentObserverRegistered = false;
-            mLowPowerMode = false;
+    private float getRatioScaleFactor() {
+        if (mFlags.isHdrBrightnessSettingEnabled()) {
+            return mHdrBrightnessEnabled ? BrightnessUtils.convertGammaToLinear(
+                    mHdrBrightnessBoostLevel) : 0;
+        } else {
+            return 1;
         }
     }
 
     private enum Mode {
         NO_HDR, NBM_HDR, HBM_HDR
+    }
+
+    private final class LowPowerModeSettingObserver extends ContentObserver {
+        private static final Uri LOW_POWER_MODE_SETTING = Settings.Global.getUriFor(
+                Settings.Global.LOW_POWER_MODE);
+        boolean mRegistered;
+
+        LowPowerModeSettingObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            onLowPowerModeChange();
+        }
+
+        void register() {
+            if (!mRegistered) {
+                mInjector.registerLowPowerModeSettingObserver(this);
+                mLowPowerMode = mInjector.isLowPowerMode();
+                mRegistered = true;
+            }
+        }
+
+        void unregister() {
+            if (mRegistered) {
+                mInjector.unregisterLowPowerModeSettingObserver(this);
+                mLowPowerMode = false;
+                mRegistered = false;
+            }
+        }
+
+        private void onLowPowerModeChange() {
+            mLowPowerMode = mInjector.isLowPowerMode();
+            Mode newMode = recalculateMode(mHdrBrightnessData);
+            if (newMode != mMode) {
+                mMode = newMode;
+                mTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
+                mClamperChangeListener.onChanged();
+            }
+        }
+    }
+
+    private final class HdrSettingsObserver extends ContentObserver {
+        private static final Uri HDR_BRIGHTNESS_ENABLED_SETTING = Settings.Secure.getUriFor(
+                Settings.Secure.HDR_BRIGHTNESS_ENABLED);
+        private static final Uri HDR_BRIGHTNESS_BOOST_LEVEL_SETTING = Settings.Secure.getUriFor(
+                Settings.Secure.HDR_BRIGHTNESS_BOOST_LEVEL);
+
+        boolean mRegistered;
+
+        HdrSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (HDR_BRIGHTNESS_ENABLED_SETTING.equals(uri)) {
+                updateHdrBrightnessEnabled();
+            } else if (HDR_BRIGHTNESS_BOOST_LEVEL_SETTING.equals(uri)) {
+                updateHdrBrightnessBoostLevel();
+            }
+        }
+
+        void register() {
+            if (!mRegistered) {
+                mInjector.registerHdrSettingsObserver(this);
+                mHdrBrightnessEnabled = mInjector.isHdrBrightnessEnabled();
+                mHdrBrightnessBoostLevel = mInjector.getHdrBrightnessBoostLevel();
+                mRegistered = true;
+            }
+        }
+
+        void unregister() {
+            if (mRegistered) {
+                mInjector.unregisterHdrSettingObserver(this);
+                mHdrBrightnessEnabled = true;
+                mHdrBrightnessBoostLevel = 1;
+                mRegistered = false;
+            }
+        }
+
+        private void updateHdrBrightnessEnabled() {
+            mHdrBrightnessEnabled = mInjector.isHdrBrightnessEnabled();
+            if (mMode != Mode.NO_HDR) {
+                mTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
+                mClamperChangeListener.onChanged();
+            }
+        }
+
+        private void updateHdrBrightnessBoostLevel() {
+            mHdrBrightnessBoostLevel = mInjector.getHdrBrightnessBoostLevel();
+            if (mMode != Mode.NO_HDR) {
+                mTransitionRate = CUSTOM_ANIMATION_RATE_NOT_SET;
+                mClamperChangeListener.onChanged();
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -408,18 +497,44 @@ public class HdrBrightnessModifier implements BrightnessStateModifier,
             listener.unregister(token);
         }
 
-        void registerContentObserver(ContentObserver observer, Uri uri) {
-            mContext.getContentResolver().registerContentObserver(uri, false,
-                    observer, UserHandle.USER_ALL);
+        void registerLowPowerModeSettingObserver(ContentObserver observer) {
+            mContext.getContentResolver().registerContentObserver(
+                    LowPowerModeSettingObserver.LOW_POWER_MODE_SETTING, false, observer,
+                    UserHandle.USER_CURRENT);
         }
 
-        void unregisterContentObserver(ContentObserver observer) {
+        void unregisterLowPowerModeSettingObserver(ContentObserver observer) {
+            mContext.getContentResolver().unregisterContentObserver(observer);
+        }
+
+        void registerHdrSettingsObserver(ContentObserver observer) {
+            mContext.getContentResolver().registerContentObserver(
+                    HdrSettingsObserver.HDR_BRIGHTNESS_ENABLED_SETTING, false, observer,
+                    UserHandle.USER_CURRENT);
+            mContext.getContentResolver().registerContentObserver(
+                    HdrSettingsObserver.HDR_BRIGHTNESS_BOOST_LEVEL_SETTING, false, observer,
+                    UserHandle.USER_CURRENT);
+        }
+
+        void unregisterHdrSettingObserver(ContentObserver observer) {
             mContext.getContentResolver().unregisterContentObserver(observer);
         }
 
         boolean isLowPowerMode() {
             return Settings.Global.getInt(
                     mContext.getContentResolver(), Settings.Global.LOW_POWER_MODE, 0) != 0;
+        }
+
+        boolean isHdrBrightnessEnabled() {
+            return Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    Settings.Secure.HDR_BRIGHTNESS_ENABLED, /* def= */ 1, UserHandle.USER_CURRENT)
+                    != 0;
+        }
+
+        float getHdrBrightnessBoostLevel() {
+            return Settings.Secure.getFloatForUser(mContext.getContentResolver(),
+                    Settings.Secure.HDR_BRIGHTNESS_BOOST_LEVEL, /* def= */ 1,
+                    UserHandle.USER_CURRENT);
         }
     }
 }

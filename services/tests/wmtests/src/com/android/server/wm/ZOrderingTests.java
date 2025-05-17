@@ -43,6 +43,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.wm.WindowStateAnimator.PRESERVED_SURFACE_LAYER;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -226,7 +227,7 @@ public class ZOrderingTests extends WindowTestsBase {
 
     @Test
     public void testAssignWindowLayers_ForImeWithNoTarget() {
-        mDisplayContent.setImeLayeringTarget(null);
+        mDisplayContent.setImeLayeringTarget(null /* target */);
         mDisplayContent.assignChildLayers(mTransaction);
 
         // The Ime has an higher base layer than app windows and lower base layer than system
@@ -293,8 +294,10 @@ public class ZOrderingTests extends WindowTestsBase {
         final WindowState imeAppTarget = createWindow("imeAppTarget");
         final WindowState appAboveImeTarget = createWindow("appAboveImeTarget");
 
+        mDisplayContent.setImeInputTarget(imeAppTarget);
         mDisplayContent.setImeLayeringTarget(imeAppTarget);
-        mDisplayContent.setImeControlTargetForTesting(imeAppTarget);
+        assertWithMessage("IME control target was updated")
+                .that(mDisplayContent.getImeControlTarget()).isEqualTo(imeAppTarget);
         mDisplayContent.assignChildLayers(mTransaction);
 
         // Ime should be above all app windows except for non-fullscreen app window above it and
@@ -339,8 +342,10 @@ public class ZOrderingTests extends WindowTestsBase {
 
     @Test
     public void testAssignWindowLayers_ForStatusBarImeTarget() {
+        mDisplayContent.setImeInputTarget(mStatusBarWindow);
         mDisplayContent.setImeLayeringTarget(mStatusBarWindow);
-        mDisplayContent.setImeControlTargetForTesting(mStatusBarWindow);
+        assertWithMessage("IME control target was updated")
+                .that(mDisplayContent.getImeControlTarget()).isEqualTo(mStatusBarWindow);
         mDisplayContent.assignChildLayers(mTransaction);
 
         assertWindowHigher(mImeWindow, mChildAppWindowAbove);
@@ -405,7 +410,8 @@ public class ZOrderingTests extends WindowTestsBase {
                 TYPE_APPLICATION).setWindowToken(mAppWindow.mActivityRecord).build();
         mDisplayContent.setImeInputTarget(imeAppTarget);
         mDisplayContent.setImeLayeringTarget(imeAppTarget);
-        mDisplayContent.setImeControlTargetForTesting(imeAppTarget);
+        assertWithMessage("IME control target was updated")
+                .that(mDisplayContent.getImeControlTarget()).isEqualTo(imeAppTarget);
 
         // Set a popup IME layering target and keeps the original IME control target behinds it.
         final WindowState popupImeTargetWin = newWindowBuilder("popupImeTargetWin",
@@ -467,8 +473,10 @@ public class ZOrderingTests extends WindowTestsBase {
         // Simulate the app window is in multi windowing mode and is IME layering and input target
         mAppWindow.getConfiguration().windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_MULTI_WINDOW);
-        mDisplayContent.setImeLayeringTarget(mAppWindow);
         mDisplayContent.setImeInputTarget(mAppWindow);
+        mDisplayContent.setImeLayeringTarget(mAppWindow);
+        assertWithMessage("IME control target was updated")
+                .that(mDisplayContent.getImeControlTarget()).isEqualTo(mAppWindow);
         makeWindowVisible(mImeWindow);
 
         // Create a popupWindow
@@ -491,8 +499,10 @@ public class ZOrderingTests extends WindowTestsBase {
         // Simulate the app window is in multi windowing mode and is IME layering and input target
         mAppWindow.getConfiguration().windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_MULTI_WINDOW);
-        mDisplayContent.setImeLayeringTarget(mAppWindow);
         mDisplayContent.setImeInputTarget(mAppWindow);
+        mDisplayContent.setImeLayeringTarget(mAppWindow);
+        assertWithMessage("IME control target was updated")
+                .that(mDisplayContent.getImeControlTarget()).isEqualTo(mAppWindow);
         makeWindowVisible(mImeWindow);
 
         // Create a popupWindow

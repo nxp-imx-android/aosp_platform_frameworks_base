@@ -53,6 +53,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
+import java.util.Optional
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -76,6 +77,7 @@ class BubbleViewInfoTaskTest {
     private lateinit var bubblePositioner: BubblePositioner
     private lateinit var bubbleLogger: BubbleLogger
     private lateinit var expandedViewManager: BubbleExpandedViewManager
+    private lateinit var appInfoProvider: FakeBubbleAppInfoProvider
 
     private val bubbleTaskViewFactory = BubbleTaskViewFactory {
         BubbleTaskView(mock<TaskView>(), directExecutor())
@@ -130,6 +132,8 @@ class BubbleViewInfoTaskTest {
                 BubblePersistentRepository(context)
             )
 
+        appInfoProvider = FakeBubbleAppInfoProvider()
+
         bubbleController =
             BubbleController(
                 context,
@@ -163,6 +167,8 @@ class BubbleViewInfoTaskTest {
                 mock<IWindowManager>(),
                 BubbleResizabilityChecker(),
                 HomeIntentProvider(context),
+                appInfoProvider,
+                { Optional.empty() },
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this
@@ -332,6 +338,7 @@ class BubbleViewInfoTaskTest {
             bubbleStackView,
             null /* layerView */,
             iconFactory,
+            appInfoProvider,
             false /* skipInflation */,
             callback,
             mainExecutor,

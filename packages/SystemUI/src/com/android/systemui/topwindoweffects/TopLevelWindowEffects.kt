@@ -16,16 +16,12 @@
 
 package com.android.systemui.topwindoweffects
 
-import android.content.Context
-import android.graphics.PixelFormat
-import android.util.Log
-import android.view.Gravity
-import android.view.View
-import android.view.WindowInsets
-import android.view.WindowManager
-import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
-import com.android.internal.jank.InteractionJankMonitor
+import androidx.core.animation.Animator
+import androidx.core.animation.AnimatorListenerAdapter
+import androidx.core.animation.Interpolator
+import androidx.core.animation.ValueAnimator
+import com.android.app.animation.InterpolatorsAndroidX
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -33,10 +29,9 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
-import com.android.systemui.topwindoweffects.qualifiers.TopLevelWindowEffectsThread
-import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
-import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
+import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.io.PrintWriter
 import java.util.Optional
@@ -51,91 +46,110 @@ import kotlinx.coroutines.launch
 class TopLevelWindowEffects
 @Inject
 constructor(
-    @Application private val context: Context,
-    @Main private val mainExecutor: Executor,
-    @TopLevelWindowEffectsThread private val topLevelWindowEffectsScope: CoroutineScope,
-    private val windowManager: WindowManager,
+    @Application private val applicationScope: CoroutineScope,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
-    private val viewModelFactory: SqueezeEffectViewModel.Factory,
     // TODO(b/409930584): make AppZoomOut non-optional
     private val appZoomOutOptional: Optional<AppZoomOut>,
-    private val notificationShadeWindowController: NotificationShadeWindowController,
+    squeezeEffectHapticPlayerFactory: SqueezeEffectHapticPlayer.Factory,
     private val topUiController: TopUiController,
-    private val interactionJankMonitor: InteractionJankMonitor,
+    // TODO(b/411061512): Remove notificationShadeWindowController and mainExecutor once
+    // TopUiControllerRefactor made it to nextfood
+    private val notificationShadeWindowController: NotificationShadeWindowController,
+    @Main private val mainExecutor: Executor,
 ) : CoreStartable {
 
-    private var root: EffectsWindowRoot? = null
+    // The main animation is interruptible until power button long press has been detected. At this
+    // point the default assistant is invoked, and since this invocation cannot be interrupted by
+    // lifting the power button the animation shouldn't be interruptible either.
+    private var isAnimationInterruptible = true
 
-    // TODO(b/414267753): Make cleanup of window logic more robust
-    private var isInvocationEffectHappening = false
+    private var squeezeProgress: Float = 0f
+
+    private var animator: ValueAnimator? = null
+
+    private val hapticPlayer: SqueezeEffectHapticPlayer? by lazy {
+        if (squeezeEffectInteractor.isSqueezeEffectHapticEnabled) {
+            squeezeEffectHapticPlayerFactory.create()
+        } else {
+            null
+        }
+    }
 
     override fun start() {
-        topLevelWindowEffectsScope.launch {
-            squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
-                if (enabled) {
-                    squeezeEffectInteractor.isPowerButtonDownAsSingleKeyGesture.collectLatest { down
-                        ->
-                        if (down) {
-                            val roundedCornerInfo =
-                                squeezeEffectInteractor.getRoundedCornersResourceId()
-                            delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMs())
-                            addWindow(
-                                roundedCornerInfo.topResourceId,
-                                roundedCornerInfo.bottomResourceId,
-                                roundedCornerInfo.physicalPixelDisplaySizeRatio,
-                            )
-                        } else if (root != null && !isInvocationEffectHappening) {
-                            removeWindow()
-                        }
+        applicationScope.launch {
+            squeezeEffectInteractor.isEffectEnabledAndPowerButtonPressedAsSingleGesture
+                .collectLatest { enabledAndPressed ->
+                    if (enabledAndPressed) {
+                        startSqueeze()
+                    } else {
+                        cancelSqueeze()
                     }
                 }
+        }
+    }
+
+    private suspend fun startSqueeze() {
+        delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMs())
+        setRequestTopUi(true)
+        val inwardsAnimationDuration =
+            squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs()
+        animateSqueezeProgressTo(
+            targetProgress = 1f,
+            duration = inwardsAnimationDuration,
+            interpolator = InterpolatorsAndroidX.LEGACY,
+        ) {
+            animateSqueezeProgressTo(
+                targetProgress = 0f,
+                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
+                interpolator = InterpolatorsAndroidX.LEGACY,
+            ) {
+                finishAnimation()
+            }
+        }
+        hapticPlayer?.start(inwardsAnimationDuration.toInt() + DEFAULT_OUTWARD_EFFECT_DURATION)
+        squeezeEffectInteractor.isPowerButtonLongPressed.collectLatest { isLongPressed ->
+            if (isLongPressed) {
+                isAnimationInterruptible = false
             }
         }
     }
 
-    private fun addWindow(
-        @DrawableRes topRoundedCornerId: Int,
-        @DrawableRes bottomRoundedCornerId: Int,
-        physicalPixelDisplaySizeRatio: Float,
-    ) {
-        if (isInvocationEffectHappening) {
-            return
-        }
-
-        if (root != null) {
-            Log.i(TAG, "addWindow: remove previous window")
-            removeWindow()
-        }
-
-        root =
-            EffectsWindowRoot(
-                    context = context,
-                    viewModelFactory = viewModelFactory,
-                    topRoundedCornerResourceId = topRoundedCornerId,
-                    bottomRoundedCornerResourceId = bottomRoundedCornerId,
-                    physicalPixelDisplaySizeRatio = physicalPixelDisplaySizeRatio,
-                    onEffectFinished = ::removeWindow,
-                    appZoomOutOptional = appZoomOutOptional,
-                    interactionJankMonitor = interactionJankMonitor,
-                    onEffectStarted = { isInvocationEffectHappening = true },
-                )
-                .apply { visibility = View.GONE }
-
-        root?.let { rootView ->
-            setRequestTopUi(true)
-            windowManager.addView(rootView, getWindowManagerLayoutParams())
-            rootView.post { rootView.visibility = View.VISIBLE }
+    private fun cancelSqueeze() {
+        if (isAnimationInterruptible && animator != null) {
+            hapticPlayer?.cancel()
+            animateSqueezeProgressTo(
+                targetProgress = 0f,
+                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
+                interpolator = InterpolatorsAndroidX.LEGACY,
+            ) {
+                finishAnimation()
+            }
         }
     }
 
-    private fun removeWindow() {
-        if (root != null) {
-            windowManager.removeView(root)
-            root = null
-        }
+    private fun animateSqueezeProgressTo(
+        targetProgress: Float,
+        duration: Long,
+        interpolator: Interpolator,
+        doOnEnd: () -> Unit,
+    ) {
+        animator?.cancel()
+        animator =
+            ValueAnimator.ofFloat(squeezeProgress, targetProgress).apply {
+                this.duration = duration
+                this.interpolator = interpolator
+                addUpdateListener {
+                    squeezeProgress = animatedValue as Float
+                    appZoomOutOptional.ifPresent { it.setTopLevelProgress(squeezeProgress) }
+                }
+                setListenerForNaturalCompletion { doOnEnd() }
+                start()
+            }
+    }
 
-        isInvocationEffectHappening = false
-
+    private fun finishAnimation() {
+        animator = null
+        isAnimationInterruptible = true
         setRequestTopUi(false)
     }
 
@@ -149,42 +163,42 @@ constructor(
         }
     }
 
-    private fun getWindowManagerLayoutParams(): WindowManager.LayoutParams {
-        val lp =
-            WindowManager.LayoutParams(
-                WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                PixelFormat.TRANSPARENT,
-            )
-
-        lp.privateFlags =
-            lp.privateFlags or
-                (WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS or
-                    WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION or
-                    WindowManager.LayoutParams.PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED or
-                    WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED or
-                    WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
-
-        lp.layoutInDisplayCutoutMode =
-            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-
-        lp.title = TAG
-        lp.fitInsetsTypes = WindowInsets.Type.systemOverlays()
-        lp.gravity = Gravity.TOP
-
-        return lp
-    }
-
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("$TAG:")
-        pw.println("  isInvocationEffectHappening=$isInvocationEffectHappening")
-        root?.dump(pw, "  ") ?: pw.println("  root=null")
+        pw.println("  isAnimationInterruptible=$isAnimationInterruptible")
+        pw.println("  squeezeProgress=$squeezeProgress")
     }
 
     companion object {
         @VisibleForTesting const val TAG = "TopLevelWindowEffects"
     }
+}
+
+/**
+ * Adds an [Animator.AnimatorListener] to this [ValueAnimator] that triggers the
+ * [onNaturallyCompletedAction] only when the animation finishes normally (i.e., not cancelled).
+ *
+ * This works because [AnimatorListenerAdapter.onAnimationCancel] is guaranteed to be called before
+ * [AnimatorListenerAdapter.onAnimationEnd] (if the animation is cancelled). See
+ * https://developer.android.com/reference/android/animation/Animator#cancel()
+ *
+ * @param onNaturallyCompletedAction The lambda to execute when the animation ends without being
+ *   cancelled.
+ */
+private fun ValueAnimator.setListenerForNaturalCompletion(onNaturallyCompletedAction: () -> Unit) {
+    addListener(
+        object : AnimatorListenerAdapter() {
+            private var wasCancelled = false
+
+            override fun onAnimationCancel(animation: Animator) {
+                wasCancelled = true
+            }
+
+            override fun onAnimationEnd(animation: Animator) {
+                if (!wasCancelled) {
+                    onNaturallyCompletedAction()
+                }
+            }
+        }
+    )
 }

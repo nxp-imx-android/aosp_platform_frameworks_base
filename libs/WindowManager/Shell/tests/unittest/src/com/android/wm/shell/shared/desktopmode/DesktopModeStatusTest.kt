@@ -291,6 +291,16 @@ class DesktopModeStatusTest : ShellTestCase() {
 
     @EnableFlags(Flags.FLAG_SHOW_DESKTOP_EXPERIENCE_DEV_OPTION)
     @Test
+    fun canShowDesktopExperienceDevOption_flagEnabled_deviceNotEligible_forceDevOpt_returnsTrue() {
+        doReturn(true).whenever(mockResources).getBoolean(
+            eq(R.bool.config_isDesktopModeDevOptionSupported)
+        )
+
+        assertThat(DesktopModeStatus.canShowDesktopExperienceDevOption(mockContext)).isTrue()
+    }
+
+    @EnableFlags(Flags.FLAG_SHOW_DESKTOP_EXPERIENCE_DEV_OPTION)
+    @Test
     fun canShowDesktopExperienceDevOption_flagEnabled_deviceEligible_returnsTrue() {
         setDeviceEligibleForDesktopMode(true)
 

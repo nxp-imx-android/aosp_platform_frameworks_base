@@ -68,13 +68,26 @@ fun verifyEnterBubbleTransaction(
 }
 
 /** Verifies the [WindowContainerTransaction] to exit Bubble. */
-fun verifyExitBubbleTransaction(wct: WindowContainerTransaction, taskToken: IBinder) {
+fun verifyExitBubbleTransaction(
+    wct: WindowContainerTransaction, taskToken: IBinder, captionInsetsOwner: IBinder?) {
     // Verify hierarchy ops
 
-    assertThat(wct.hierarchyOps.size).isEqualTo(1)
-    val hierarchyOp = wct.hierarchyOps[0]
-    assertThat(hierarchyOp.container).isEqualTo(taskToken)
-    assertThat(hierarchyOp.isAlwaysOnTop).isFalse()
+    // If there is a caption insets owner set, then that will add an hierarchy op after the
+    // alwaysOnTop hierarchy op to remove the insets source.
+    if (captionInsetsOwner != null) {
+        assertThat(wct.hierarchyOps.size).isEqualTo(2)
+
+        val removeInsetsHierarchyOp = wct.hierarchyOps[1]
+        assertThat(removeInsetsHierarchyOp.container).isEqualTo(taskToken)
+        assertThat(removeInsetsHierarchyOp.insetsFrameProvider).isNotNull()
+        assertThat(removeInsetsHierarchyOp.caller).isEqualTo(captionInsetsOwner)
+    } else {
+        assertThat(wct.hierarchyOps.size).isEqualTo(1)
+    }
+
+    val alwaysOnTopHierarchyOp = wct.hierarchyOps[0]
+    assertThat(alwaysOnTopHierarchyOp.container).isEqualTo(taskToken)
+    assertThat(alwaysOnTopHierarchyOp.isAlwaysOnTop).isFalse()
 
     // Verify Change
 

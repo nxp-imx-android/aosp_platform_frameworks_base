@@ -17,10 +17,10 @@
 package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
+import android.icu.util.TimeZone
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.RelativeLayout
-import androidx.annotation.VisibleForTesting
 import com.android.systemui.animation.TextAnimator
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
@@ -31,13 +31,13 @@ import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.clocks.view.HorizontalAlignment
 import com.android.systemui.shared.clocks.view.SimpleDigitalClockTextView
 import com.android.systemui.shared.clocks.view.VerticalAlignment
 import java.util.Locale
-import java.util.TimeZone
 
 private val TAG = SimpleDigitalHandLayerController::class.simpleName!!
 
@@ -47,10 +47,8 @@ data class LayerConfig(
     val aodStyle: FontTextStyle,
     val alignment: DigitalAlignment,
     val timespec: DigitalTimespec,
-    val dateTimeFormat: String,
-) {
-    fun getViewId(): Int = timespec.getViewId("h" in dateTimeFormat)
-}
+    val timeFormatter: DigitalTimeFormatter?,
+)
 
 data class DigitalAlignment(
     val horizontalAlignment: HorizontalAlignment?,
@@ -64,15 +62,6 @@ data class FontTextStyle(
     val transitionInterpolator: Interpolator? = null,
 )
 
-enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int) {
-    TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),
-    DIGIT_PAIR(ClockViewIds.HOUR_DIGIT_PAIR, ClockViewIds.MINUTE_DIGIT_PAIR),
-    FIRST_DIGIT(ClockViewIds.HOUR_FIRST_DIGIT, ClockViewIds.MINUTE_FIRST_DIGIT),
-    SECOND_DIGIT(ClockViewIds.HOUR_SECOND_DIGIT, ClockViewIds.MINUTE_SECOND_DIGIT);
-
-    fun getViewId(isHour: Boolean): Int = if (isHour) hourViewId else minuteViewId
-}
-
 open class SimpleDigitalHandLayerController(
     private val clockCtx: ClockContext,
     private val layerCfg: LayerConfig,
@@ -80,15 +69,8 @@ open class SimpleDigitalHandLayerController(
 ) : SimpleClockLayerController {
     override val view = SimpleDigitalClockTextView(clockCtx, isLargeClock)
     private val logger = Logger(clockCtx.messageBuffer, TAG)
-    val timespec = DigitalTimespecHandler(layerCfg.timespec, layerCfg.dateTimeFormat)
+    private val timespec = DigitalTimespecHandler(layerCfg.timespec, layerCfg.timeFormatter!!)
     override var onViewBoundsChanged by view::onViewBoundsChanged
-
-    @VisibleForTesting
-    override var fakeTimeMills: Long?
-        get() = timespec.fakeTimeMills
-        set(value) {
-            timespec.fakeTimeMills = value
-        }
 
     override val config = ClockFaceConfig()
     var dozeState: DefaultClockController.AnimationState? = null
@@ -102,13 +84,11 @@ open class SimpleDigitalHandLayerController(
         layerCfg.alignment.verticalAlignment?.let { view.verticalAlignment = it }
         layerCfg.alignment.horizontalAlignment?.let { view.horizontalAlignment = it }
         view.applyStyles(layerCfg.style, layerCfg.aodStyle)
-
-        view.id = layerCfg.getViewId()
+        view.id = timespec.getViewId()
     }
 
     fun refreshTime() {
-        timespec.updateTime()
-        val text = timespec.getDigitString()
+        val text = timespec.getText()
         if (view.text != text) {
             view.text = text
             view.refreshTime()
@@ -143,18 +123,15 @@ open class SimpleDigitalHandLayerController(
             override var isReactiveTouchInteractionEnabled = false
 
             override fun onLocaleChanged(locale: Locale) {
-                timespec.updateLocale(locale)
+                timespec.formatter.updateLocale(locale)
                 refreshTime()
             }
 
-            /** Call whenever the text time format changes (12hr vs 24hr) */
-            override fun onTimeFormatChanged(is24Hr: Boolean) {
-                timespec.is24Hr = is24Hr
+            override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
                 refreshTime()
             }
 
             override fun onTimeZoneChanged(timeZone: TimeZone) {
-                timespec.timeZone = timeZone
                 refreshTime()
             }
 

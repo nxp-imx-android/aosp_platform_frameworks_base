@@ -543,7 +543,9 @@ public final class MediaSession {
                 mBinder.resetQueue();
             } else {
                 IBinder binder = mBinder.getBinderForSetQueue();
-                ParcelableListBinder.send(binder, queue);
+                if (binder != null) {
+                    ParcelableListBinder.send(binder, queue);
+                }
             }
         } catch (RemoteException e) {
             Log.wtf("Dead object in setQueue.", e);

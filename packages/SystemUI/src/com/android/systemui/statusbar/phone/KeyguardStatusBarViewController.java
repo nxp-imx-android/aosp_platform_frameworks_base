@@ -87,7 +87,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.binder.BatteryWithPerc
 import com.android.systemui.statusbar.pipeline.battery.ui.binder.UnifiedBatteryViewBinder;
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.ShowPercentMode;
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryNextToPercentViewModel;
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel;
+import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel;
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SystemStatusIconsLayoutHelper;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
@@ -140,7 +140,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final TintedIconManager.Factory mTintedIconManagerFactory;
     private final BatteryMeterViewController mBatteryMeterViewController;
     private final BatteryNextToPercentViewModel.Factory mTandemBatteryViewModelFactory;
-    private final UnifiedBatteryViewModel.Factory mUnifiedBatteryViewModelFactory;
+    private final BatteryViewModel.ShowPercentWhenChargingOrSetting.Factory mBatteryViewModel;
     private final ShadeViewStateProvider mShadeViewStateProvider;
     private final KeyguardStateController mKeyguardStateController;
     private final KeyguardBypassController mKeyguardBypassController;
@@ -276,9 +276,17 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
 
     private boolean mCommunalShowing;
 
-    private final Consumer<Boolean> mCommunalConsumer = (communalShowing) -> {
-        updateCommunalShowing(communalShowing);
-    };
+    private final Consumer<Boolean> mCommunalConsumer = this::updateCommunalShowing;
+    private final KeyguardStateController.Callback mKeyguardStateControllerCallback =
+            new KeyguardStateController.Callback() {
+                @Override
+                public void onKeyguardFadingAwayChanged() {
+                    if (!mKeyguardStateController.isKeyguardFadingAway()) {
+                        mFirstBypassAttempt = false;
+                        mDelayShowingKeyguardStatusBar = false;
+                    }
+                }
+            };
 
     @VisibleForTesting
     void updateCommunalShowing(boolean communalShowing) {
@@ -287,7 +295,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         // When communal is hidden (either by transition or state change), set alpha to fully
         // visible.
         if (!mCommunalShowing) {
-            setAlpha(-1f);
+            setAlphaByCommunal(-1f);
         }
         updateViewState();
     }
@@ -316,20 +324,26 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private boolean mShowingKeyguardHeadsUp;
     private StatusBarSystemEventDefaultAnimator mSystemEventAnimator;
     private float mSystemEventAnimatorAlpha = 1;
-    private final Consumer<Float> mToGlanceableHubStatusBarAlphaConsumer = (alpha) ->
-            updateCommunalAlphaTransition(alpha);
+    private final Consumer<Float> mToGlanceableHubStatusBarAlphaConsumer =
+            this::updateCommunalAlphaTransition;
 
-    private final Consumer<Float> mFromGlanceableHubStatusBarAlphaConsumer = (alpha) ->
-            updateCommunalAlphaTransition(alpha);
+    private final Consumer<Float> mFromGlanceableHubStatusBarAlphaConsumer =
+            this::updateCommunalAlphaTransition;
 
     @VisibleForTesting  void updateCommunalAlphaTransition(float alpha) {
-        setAlpha(!mCommunalShowing || alpha == 0 ? -1 : alpha);
+        setAlphaByCommunal(alpha);
     }
 
     /**
      * The alpha value to be set on the View. If -1, this value is to be ignored.
      */
     private float mExplicitAlpha = -1f;
+
+    /**
+     * The alpha value to be set on the View requested by the glanceable hub. If -1, this value is
+     * to be ignored. Otherwise, it takes precedence over mExplicitAlpha.
+     */
+    private float mExplicitAlphaByCommunal = -1f;
 
     @Inject
     public KeyguardStatusBarViewController(
@@ -345,7 +359,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             TintedIconManager.Factory tintedIconManagerFactory,
             BatteryMeterViewController batteryMeterViewController,
             BatteryNextToPercentViewModel.Factory tandemBatteryViewModelFactory,
-            UnifiedBatteryViewModel.Factory unifiedBatteryViewModelFactory,
+            BatteryViewModel.ShowPercentWhenChargingOrSetting.Factory batteryViewModel,
             ShadeViewStateProvider shadeViewStateProvider,
             KeyguardStateController keyguardStateController,
             KeyguardBypassController bypassController,
@@ -381,7 +395,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mTintedIconManagerFactory = tintedIconManagerFactory;
         mBatteryMeterViewController = batteryMeterViewController;
         mTandemBatteryViewModelFactory = tandemBatteryViewModelFactory;
-        mUnifiedBatteryViewModelFactory = unifiedBatteryViewModelFactory;
+        mBatteryViewModel = batteryViewModel;
         mShadeViewStateProvider = shadeViewStateProvider;
         mKeyguardStateController = keyguardStateController;
         mKeyguardBypassController = bypassController;
@@ -403,17 +417,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mKeyguardInteractor = keyguardInteractor;
 
         mFirstBypassAttempt = mKeyguardBypassController.getBypassEnabled();
-        mKeyguardStateController.addCallback(
-                new KeyguardStateController.Callback() {
-                    @Override
-                    public void onKeyguardFadingAwayChanged() {
-                        if (!mKeyguardStateController.isKeyguardFadingAway()) {
-                            mFirstBypassAttempt = false;
-                            mDelayShowingKeyguardStatusBar = false;
-                        }
-                    }
-                }
-        );
+        if (!SceneContainerFlag.isEnabled()) {
+            mKeyguardStateController.addCallback(mKeyguardStateControllerCallback);
+        }
 
         Resources r = getResources();
         updateBlockedIcons();
@@ -450,6 +456,10 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
 
     @Override
     protected void onViewAttached() {
+        if (SceneContainerFlag.isEnabled()) {
+            mKeyguardStateControllerCallback.onKeyguardFadingAwayChanged();
+            mKeyguardStateController.addCallback(mKeyguardStateControllerCallback);
+        }
         mView.init(mStatusBarUserChipViewModel);
         mConfigurationController.addCallback(mConfigurationListener);
         mAnimationScheduler.addCallback(mAnimationCallback);
@@ -523,7 +533,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         } else {
             UnifiedBatteryViewBinder.bind(
                     batteryComposeView,
-                    mUnifiedBatteryViewModelFactory,
+                    mBatteryViewModel,
                     DarkIconInteractor.toIsAreaDark(mView.darkChangeFlow()));
         }
 
@@ -542,6 +552,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mSecureSettings.unregisterContentObserverSync(mVolumeSettingObserver);
         if (mTintedIconManager != null) {
             mStatusBarIconController.removeIconGroup(mTintedIconManager);
+        }
+        if (SceneContainerFlag.isEnabled()) {
+            mKeyguardStateController.removeCallback(mKeyguardStateControllerCallback);
         }
     }
 
@@ -661,7 +674,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 1, mShadeViewStateProvider.getLockscreenShadeDragProgress() * 2);
 
         float newAlpha;
-        if (mExplicitAlpha != -1) {
+        if (mExplicitAlphaByCommunal != -1) {
+            newAlpha = mExplicitAlphaByCommunal;
+        } else if (mExplicitAlpha != -1) {
             newAlpha = mExplicitAlpha;
         } else {
             newAlpha = Math.min(getKeyguardContentsAlpha(), alphaQsExpansion)
@@ -687,7 +702,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                         && !mDozing
                         && !hideForBypass
                         && !mDisableStateTracker.isDisabled()
-                        && (Flags.glanceableHubV2() || (!mCommunalShowing || mExplicitAlpha != -1))
                         ? View.VISIBLE : View.INVISIBLE;
 
         updateViewState(newAlpha, newVisibility);
@@ -839,6 +853,18 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         }
 
         mExplicitAlpha = alpha;
+        updateViewState();
+    }
+
+    /**
+     * Sets the alpha to be set on the view when glanceable hub is showing. This value takes
+     * precedence over the value set by {@link #setAlpha(float)}.
+     *
+     * @param alpha a value between 0 and 1. -1 if the value is to be reset/ignored.
+     */
+    private void setAlphaByCommunal(float alpha) {
+        // Only set explicit alpha when communal is showing
+        mExplicitAlphaByCommunal = mCommunalShowing ? alpha : -1;
         updateViewState();
     }
 

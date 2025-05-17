@@ -21,10 +21,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Resources
+import android.icu.util.TimeZone as IcuTimeZone
 import android.os.Trace
 import android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
 import android.provider.Settings.Global.ZEN_MODE_OFF
-import android.text.format.DateFormat
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
@@ -59,6 +59,7 @@ import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockFaceController.Companion.updateTheme
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
@@ -126,8 +127,8 @@ constructor(
             connectClock(value)
         }
 
-    private fun is24HourFormat(userId: Int? = null): Boolean {
-        return DateFormat.is24HourFormat(context, userId ?: userTracker.userId)
+    private fun getTimeFormatKind(userId: Int? = null): TimeFormatKind {
+        return TimeFormatKind.getFromContext(context, userId ?: userTracker.userId)
     }
 
     private fun disconnectClock(clock: ClockController?) {
@@ -197,7 +198,7 @@ constructor(
                 var pastVisibility: Int? = null
 
                 override fun onViewAttachedToWindow(view: View) {
-                    clock.events.onTimeFormatChanged(is24HourFormat())
+                    clock.events.onTimeFormatChanged(getTimeFormatKind())
                     // Match the asing for view.parent's layout classes.
                     smallClockFrame =
                         (view.parent as ViewGroup)?.also { frame ->
@@ -229,7 +230,7 @@ constructor(
         largeClockOnAttachStateChangeListener =
             object : OnAttachStateChangeListener {
                 override fun onViewAttachedToWindow(p0: View) {
-                    clock.events.onTimeFormatChanged(is24HourFormat())
+                    clock.events.onTimeFormatChanged(getTimeFormatKind())
                 }
 
                 override fun onViewDetachedFromWindow(p0: View) {}
@@ -369,15 +370,15 @@ constructor(
             }
 
             override fun onTimeFormatChanged(timeFormat: String?) {
-                clock?.run { events.onTimeFormatChanged(is24HourFormat()) }
+                clock?.run { events.onTimeFormatChanged(getTimeFormatKind()) }
             }
 
             override fun onTimeZoneChanged(timeZone: TimeZone) {
-                clock?.run { events.onTimeZoneChanged(timeZone) }
+                clock?.run { events.onTimeZoneChanged(IcuTimeZone.getTimeZone(timeZone.getID())) }
             }
 
             override fun onUserSwitchComplete(userId: Int) {
-                clock?.run { events.onTimeFormatChanged(is24HourFormat(userId)) }
+                clock?.run { events.onTimeFormatChanged(getTimeFormatKind(userId)) }
                 zenModeCallback.onNextAlarmChanged()
             }
 

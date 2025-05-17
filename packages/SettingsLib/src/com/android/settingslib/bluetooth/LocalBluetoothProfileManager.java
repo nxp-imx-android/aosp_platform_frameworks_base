@@ -708,15 +708,19 @@ public class LocalBluetoothProfileManager {
             removedProfiles.remove(mPanProfile);
         }
 
-        if ((mMapProfile != null) &&
-            (mMapProfile.getConnectionStatus(device) == BluetoothProfile.STATE_CONNECTED)) {
+        if ((mMapProfile != null
+                        && mMapProfile.getConnectionStatus(device)
+                                == BluetoothProfile.STATE_CONNECTED)
+                || removedProfiles.contains(mMapProfile)) {
             profiles.add(mMapProfile);
             removedProfiles.remove(mMapProfile);
             mMapProfile.setEnabled(device, true);
         }
 
-        if ((mPbapProfile != null) &&
-            (mPbapProfile.getConnectionStatus(device) == BluetoothProfile.STATE_CONNECTED)) {
+        if ((mPbapProfile != null
+                        && mPbapProfile.getConnectionStatus(device)
+                                == BluetoothProfile.STATE_CONNECTED)
+                || removedProfiles.contains(mPbapProfile)) {
             profiles.add(mPbapProfile);
             removedProfiles.remove(mPbapProfile);
             mPbapProfile.setEnabled(device, true);

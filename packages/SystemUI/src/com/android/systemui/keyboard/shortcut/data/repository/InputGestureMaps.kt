@@ -47,7 +47,7 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS
-import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.Accessibility
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.AppCategories
@@ -95,7 +95,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS to Accessibility,
             KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS to Accessibility,
             KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to Accessibility,
-            KEY_GESTURE_TYPE_TOGGLE_TALKBACK to Accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER to Accessibility,
             KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION to Accessibility,
             KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to Accessibility,
         )
@@ -150,7 +150,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS to R.string.shortcutHelper_category_accessibility,
             KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS to R.string.shortcutHelper_category_accessibility,
             KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to R.string.shortcutHelper_category_accessibility,
-            KEY_GESTURE_TYPE_TOGGLE_TALKBACK to R.string.shortcutHelper_category_accessibility,
+            KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER to R.string.shortcutHelper_category_accessibility,
             KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION to R.string.shortcutHelper_category_accessibility,
             KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to
                 R.string.shortcutHelper_category_accessibility,
@@ -202,7 +202,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS to R.string.group_accessibility_toggle_slow_keys,
             KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS to
                 R.string.group_accessibility_toggle_voice_access,
-            KEY_GESTURE_TYPE_TOGGLE_TALKBACK to R.string.group_accessibility_toggle_talkback,
+            KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER to R.string.group_accessibility_toggle_talkback,
             KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION to
                 R.string.group_accessibility_toggle_magnification,
             KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK to

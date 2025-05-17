@@ -117,4 +117,8 @@
 
     <!-- Whether Sys UI reboot UI is prioritized for reocvery triggered UI. -->
     <bool name="config_prioritizeSysUiForRecoveryRebootUi">true</bool>
+
+    <!-- Amount of time in ms the user needs to press the relevant key to bring up the
+         global actions dialog -->
+    <integer name="config_globalActionsKeyTimeout">300</integer>
 </resources>

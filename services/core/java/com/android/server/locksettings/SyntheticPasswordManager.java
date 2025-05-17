@@ -620,11 +620,6 @@ class SyntheticPasswordManager {
         return null;
     }
 
-    @VisibleForTesting
-    public boolean isAutoPinConfirmationFeatureAvailable() {
-        return LockPatternUtils.isAutoPinConfirmFeatureAvailable();
-    }
-
     /**
      * Returns a handle to the Weaver service, or null if Weaver is unavailable.  Note that not all
      * devices support Weaver.
@@ -1004,10 +999,7 @@ class SyntheticPasswordManager {
     public long createLskfBasedProtector(IGateKeeperService gatekeeper,
             LockscreenCredential credential, SyntheticPassword sp, int userId) {
         long protectorId = generateProtectorId();
-        int pinLength = PIN_LENGTH_UNAVAILABLE;
-        if (isAutoPinConfirmationFeatureAvailable()) {
-            pinLength = derivePinLength(credential.size(), credential.isPin(), userId);
-        }
+        int pinLength = derivePinLength(credential.size(), credential.isPin(), userId);
         // There's no need to store password data about an empty LSKF.
         PasswordData pwd = credential.isNone() ? null :
                 PasswordData.create(credential.getType(), pinLength);
@@ -1540,10 +1532,6 @@ class SyntheticPasswordManager {
      */
     public boolean refreshPinLengthOnDisk(PasswordMetrics passwordMetrics,
             long protectorId, int userId) {
-        if (!isAutoPinConfirmationFeatureAvailable()) {
-            return false;
-        }
-
         byte[] pwdDataBytes = loadState(PASSWORD_DATA_NAME, protectorId, userId);
         if (pwdDataBytes == null) {
             return false;
@@ -1866,13 +1854,18 @@ class SyntheticPasswordManager {
             Slogf.e(TAG, "Failed to read password metrics file for user %d", userId);
             return null;
         }
-        final byte[] decrypted = SyntheticPasswordCrypto.decrypt(sp.deriveMetricsKey(),
-                /* personalization= */ new byte[0], encrypted);
-        if (decrypted == null) {
-            Slogf.e(TAG, "Failed to decrypt password metrics file for user %d", userId);
-            return null;
+        final byte[] metricsKey = sp.deriveMetricsKey();
+        try {
+            final byte[] decrypted = SyntheticPasswordCrypto.decrypt(metricsKey,
+                    /* personalization= */ new byte[0], encrypted);
+            if (decrypted == null) {
+                Slogf.e(TAG, "Failed to decrypt password metrics file for user %d", userId);
+                return null;
+            }
+            return VersionedPasswordMetrics.deserialize(decrypted).getMetrics();
+        } finally {
+            ArrayUtils.zeroize(metricsKey);
         }
-        return VersionedPasswordMetrics.deserialize(decrypted).getMetrics();
     }
 
     /**
@@ -2067,11 +2060,15 @@ class SyntheticPasswordManager {
             @NonNull final byte[] vendorAuthSecret,
             @NonNull final SyntheticPassword sp,
             @UserIdInt final int userId) {
-        final byte[] encrypted =
-                SyntheticPasswordCrypto.encrypt(
-                        sp.deriveVendorAuthSecretEncryptionKey(), new byte[0], vendorAuthSecret);
-        saveState(VENDOR_AUTH_SECRET_NAME, encrypted, NULL_PROTECTOR_ID, userId);
-        syncState(userId);
+        final byte[] key = sp.deriveVendorAuthSecretEncryptionKey();
+        try {
+            final byte[] encrypted = SyntheticPasswordCrypto.encrypt(key, new byte[0],
+                    vendorAuthSecret);
+            saveState(VENDOR_AUTH_SECRET_NAME, encrypted, NULL_PROTECTOR_ID, userId);
+            syncState(userId);
+        } finally {
+            ArrayUtils.zeroize(key);
+        }
     }
 
     public @Nullable byte[] readVendorAuthSecret(
@@ -2080,7 +2077,11 @@ class SyntheticPasswordManager {
         if (encrypted == null) {
             return null;
         }
-        return SyntheticPasswordCrypto.decrypt(
-                sp.deriveVendorAuthSecretEncryptionKey(), new byte[0], encrypted);
+        final byte[] key = sp.deriveVendorAuthSecretEncryptionKey();
+        try {
+            return SyntheticPasswordCrypto.decrypt(key, new byte[0], encrypted);
+        } finally {
+            ArrayUtils.zeroize(key);
+        }
     }
 }

@@ -89,6 +89,16 @@ flag {
 }
 
 flag {
+    name: "enable_fix_for_route_visibility"
+    namespace: "media_better_together"
+    description: "Fixes a bug causing private routes to appear on the output switcher of an app that shouldn't see them."
+    bug: "416436531"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_suggested_device_api"
     is_exported: true
     namespace: "media_better_together"
@@ -291,6 +301,16 @@ flag {
 }
 
 flag {
+    name: "avoid_binder_calls_for_muting_expected_device"
+    namespace: "media_better_together"
+    description: "Sets isMutingExpectedDevice attribute during construction of MediaDevice."
+    bug: "414668703"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_output_switcher_personal_audio_sharing"
     namespace: "cross_device_experiences"
     description: "Enables personal audio sharing in the output switcher."
@@ -302,6 +322,16 @@ flag {
     namespace: "media_better_together"
     description: "Fixes a bug causing the failure of transferring to a builtin speaker."
     bug: "398527989"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "hide_bt_address_from_apps_without_bt_permission"
+    namespace: "media_better_together"
+    description: "Hides the BT address of media routes to apps without BT permission."
+    bug: "373646834"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

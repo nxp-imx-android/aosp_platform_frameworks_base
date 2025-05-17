@@ -127,7 +127,9 @@ class BundledNotificationInfoTest : SysuiTestCase() {
         systemPackageInfo.packageName = TEST_SYSTEM_PACKAGE_NAME
         whenever(mockPackageManager.getPackageInfo(eq(TEST_SYSTEM_PACKAGE_NAME), anyInt()))
             .thenReturn(systemPackageInfo)
-        whenever(mockPackageManager.getPackageInfo(eq("android"), anyInt())).thenReturn(packageInfo)
+        whenever(mockPackageManager.getPackageInfo(eq("android"), anyInt()))
+            .thenReturn(packageInfo)
+        whenever(mockPackageManager.getApplicationLabel(applicationInfo)).thenReturn("App")
 
         val assistant = ComponentName("package", "service")
         whenever(mockINotificationManager.allowedNotificationAssistant).thenReturn(assistant)
@@ -215,47 +217,30 @@ class BundledNotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    fun testNews_summaryText() {
+    fun testToggleContainerCallsUpdate() {
+        whenever(mockINotificationManager.isAdjustmentSupportedForPackage(
+            anyInt(), anyString(), anyString())).thenReturn(true)
+
+        bindNotification()
+
+        underTest.findViewById<View>(R.id.classification_toggle).performClick()
+        underTest.findViewById<View>(R.id.done).performClick()
+        underTest.handleCloseControls(true, false)
+
+        testableLooper.processAllMessages()
+        verify(mockINotificationManager)
+            .setAdjustmentSupportedForPackage(anyInt(), anyString(), anyString(), eq(false))
+    }
+
+    @Test
+    fun testSummaryText() {
         val channel = NotificationChannel(NEWS_ID, "news", 2)
         entry = NotificationEntryBuilder(entry)
             .updateRanking { it.setChannel(channel) }
             .build()
         bindNotification()
         assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
-            context.getString(R.string.notification_guts_news_summary))
-    }
-
-    @Test
-    fun testSocial_summaryText() {
-        val channel = NotificationChannel(SOCIAL_MEDIA_ID, "news", 2)
-        entry = NotificationEntryBuilder(entry)
-            .updateRanking { it.setChannel(channel) }
-            .build()
-        bindNotification()
-        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
-            context.getString(R.string.notification_guts_social_summary))
-    }
-
-    @Test
-    fun testPromotions_summaryText() {
-        val channel = NotificationChannel(PROMOTIONS_ID, "news", 2)
-        entry = NotificationEntryBuilder(entry)
-            .updateRanking { it.setChannel(channel) }
-            .build()
-        bindNotification()
-        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
-            context.getString(R.string.notification_guts_promotions_summary))
-    }
-
-    @Test
-    fun testRecs_summaryText() {
-        val channel = NotificationChannel(RECS_ID, "news", 2)
-        entry = NotificationEntryBuilder(entry)
-            .updateRanking { it.setChannel(channel) }
-            .build()
-        bindNotification()
-        assertThat((underTest.findViewById(R.id.feature_summary) as TextView).text).isEqualTo(
-            context.getString(R.string.notification_guts_recs_summary))
+            "For App")
     }
 
     private fun bindNotification(

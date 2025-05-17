@@ -103,6 +103,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.bubbles.shortcut.BubbleShortcutHelper;
@@ -131,6 +132,7 @@ import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.bubbles.ContextUtils;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.draganddrop.DragAndDropConstants;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ConfigurationChangeListener;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -140,6 +142,8 @@ import com.android.wm.shell.taskview.TaskViewController;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
+
+import dagger.Lazy;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -222,6 +226,8 @@ public class BubbleController implements ConfigurationChangeListener,
     private final BubbleExpandedViewManager mExpandedViewManager;
     private final ResizabilityChecker mResizabilityChecker;
     private final HomeIntentProvider mHomeIntentProvider;
+    private final BubbleAppInfoProvider mAppInfoProvider;
+    private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -350,7 +356,9 @@ public class BubbleController implements ConfigurationChangeListener,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
             ResizabilityChecker resizabilityChecker,
-            HomeIntentProvider homeIntentProvider) {
+            HomeIntentProvider homeIntentProvider,
+            BubbleAppInfoProvider appInfoProvider,
+            Lazy<Optional<SplitScreenController>> splitScreenController) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -404,6 +412,8 @@ public class BubbleController implements ConfigurationChangeListener,
         mExpandedViewManager = BubbleExpandedViewManager.fromBubbleController(this);
         mResizabilityChecker = resizabilityChecker;
         mHomeIntentProvider = homeIntentProvider;
+        mAppInfoProvider = appInfoProvider;
+        mSplitScreenController = splitScreenController;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -502,9 +512,11 @@ public class BubbleController implements ConfigurationChangeListener,
             }
         }, mMainHandler);
 
-        mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData));
+        mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData,
+                mBubbleTransitions.mTaskViewTransitions, mSplitScreenController));
 
-        mTaskStackListener.addListener(new BubbleTaskStackListener(this, mBubbleData));
+        mTaskStackListener.addListener(
+                new BubbleTaskStackListener(this, mBubbleData, mSplitScreenController));
 
         mDisplayController.addDisplayChangingController(
                 (displayId, fromRotation, toRotation, newDisplayAreaInfo, t) -> {
@@ -1334,6 +1346,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
         for (Bubble b : mBubbleData.getOverflowBubbles()) {
@@ -1345,6 +1358,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
     }
@@ -1951,6 +1965,7 @@ public class BubbleController implements ConfigurationChangeListener,
                         mStackView,
                         mLayerView,
                         mBubbleIconFactory,
+                        mAppInfoProvider,
                         true /* skipInflation */);
             });
             return null;
@@ -2014,6 +2029,7 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView,
                     mLayerView,
                     mBubbleIconFactory,
+                    mAppInfoProvider,
                     false /* skipInflation */);
         }
     }
@@ -2106,6 +2122,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 mStackView,
                 mLayerView,
                 mBubbleIconFactory,
+                mAppInfoProvider,
                 false /* skipInflation */);
     }
 
@@ -2883,7 +2900,8 @@ public class BubbleController implements ConfigurationChangeListener,
                 entry.getKey());
     }
 
-    static PackageManager getPackageManagerForUser(Context context, int userId) {
+    /** Gets the {@link PackageManager} for the user's context. */
+    public static PackageManager getPackageManagerForUser(Context context, int userId) {
         Context contextForUser = context;
         // UserHandle defines special userId as negative values, e.g. USER_ALL
         if (userId >= 0) {
@@ -3158,22 +3176,6 @@ public class BubbleController implements ConfigurationChangeListener,
                     (controller) -> {
                         if (mLayerView != null) {
                             showExpandedViewForBubbleBar();
-                        }
-                    });
-        }
-
-        @Override
-        public void showDropTarget(boolean show, BubbleBarLocation location) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "IBubbles.showDropTarget: show=%b loc=%s",
-                    show, location);
-            executeRemoteCallWithTaskPermission(
-                    mController,
-                    "showDropTarget",
-                    (controller) -> {
-                        if (show) {
-                            showBubbleBarExpandedViewDropTarget(location);
-                        } else {
-                            hideBubbleBarExpandedViewDropTarget();
                         }
                     });
         }
@@ -3604,6 +3606,16 @@ public class BubbleController implements ConfigurationChangeListener,
         @Override
         public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible) {
             if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+                // When removing the last bubble, BubbleData has already removed the bubble from
+                // the stack before this call occurs. Without this check, the TO_BACK transition
+                // would trigger DesktopModeWindowDecorViewModel#onTaskChanging, which
+                // incorrectly creates desktop mode window decorations for the removed bubble task
+                // since AppHandleAndHeaderVisibilityHelper#allowedForTask can't find the task in
+                // the bubble stack anymore. These decorations then "leak" because the task will be
+                // closed in the subsequent CLOSE transition. See b/416655338 for more details.
+                if (!visible && !mBubbleData.hasBubbleInStackWithTaskView(taskView)) {
+                    return;
+                }
                 // Use reorder instead of always-on-top with hidden.
                 mBaseTransitions.setTaskViewVisible(taskView, visible, true /* reorder */,
                         false /* toggleHiddenOnReorder */);

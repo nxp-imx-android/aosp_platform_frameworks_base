@@ -16,11 +16,9 @@
 
 package com.android.systemui.statusbar.pipeline.battery.ui.composable
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,15 +31,16 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BatteryWithEstimate(
-    viewModelFactory: UnifiedBatteryViewModel.Factory,
+    viewModelFactory: BatteryViewModel.Factory,
     isDarkProvider: () -> IsAreaDark,
+    textColor: Color,
     showEstimate: Boolean,
     modifier: Modifier = Modifier,
+    showIcon: Boolean = true,
 ) {
     val viewModel =
         rememberViewModel(traceName = "BatteryWithEstimate") { viewModelFactory.create() }
@@ -49,19 +48,23 @@ fun BatteryWithEstimate(
     val batteryHeight =
         with(LocalDensity.current) { BatteryViewModel.STATUS_BAR_BATTERY_HEIGHT.toDp() }
 
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        UnifiedBattery(
-            viewModelFactory = viewModelFactory,
-            isDarkProvider = isDarkProvider,
-            modifier =
-                Modifier.height(batteryHeight).align(Alignment.CenterVertically).wrapContentWidth(),
-        )
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (showIcon) {
+            UnifiedBattery(
+                viewModel = viewModel,
+                isDarkProvider = isDarkProvider,
+                modifier = Modifier.height(batteryHeight).align(Alignment.CenterVertically),
+            )
+        }
         if (showEstimate) {
             viewModel.batteryTimeRemainingEstimate?.let {
-                Spacer(modifier.width(4.dp))
                 Text(
                     text = it,
-                    color = Color.White,
+                    color = textColor,
                     style = MaterialTheme.typography.bodyMediumEmphasized,
                     maxLines = 1,
                 )

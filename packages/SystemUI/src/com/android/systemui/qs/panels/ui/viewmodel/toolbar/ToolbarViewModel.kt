@@ -30,18 +30,24 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.qs.footer.domain.interactor.FooterActionsInteractor
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel
-import com.android.systemui.qs.footer.ui.viewmodel.powerButtonViewModel
-import com.android.systemui.qs.footer.ui.viewmodel.settingsButtonViewModel
+import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel.PowerActionViewModel
+import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel.SettingsActionViewModel
+import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsSecurityButtonViewModel
+import com.android.systemui.qs.footer.ui.viewmodel.securityButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.userSwitcherViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Provider
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ToolbarViewModel
@@ -53,27 +59,17 @@ constructor(
     private val footerActionsInteractor: FooterActionsInteractor,
     private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
     private val falsingInteractor: FalsingInteractor,
-    shadeModeInteractor: ShadeModeInteractor,
     @ShadeDisplayAware appContext: Context,
 ) : ExclusiveActivatable() {
     private val qsThemedContext =
         ContextThemeWrapper(appContext, R.style.Theme_SystemUI_QuickSettings)
     private val hydrator = Hydrator("ToolbarViewModel.hydrator")
 
-    val powerButtonViewModel: FooterActionsButtonViewModel? by
-        hydrator.hydratedStateOf(
-            traceName = "powerButtonViewModel",
-            initialValue = null,
-            source =
-                powerButtonViewModel(
-                    qsThemedContext,
-                    ::onPowerButtonClicked,
-                    shadeModeInteractor.shadeMode,
-                ),
-        )
+    val powerButtonViewModel: FooterActionsButtonViewModel =
+        PowerActionViewModel(context = qsThemedContext, onClick = ::onPowerButtonClicked)
 
     val settingsButtonViewModel =
-        settingsButtonViewModel(qsThemedContext, ::onSettingsButtonClicked)
+        SettingsActionViewModel(qsThemedContext, ::onSettingsButtonClicked)
 
     val userSwitcherViewModel: FooterActionsButtonViewModel? by
         hydrator.hydratedStateOf(
@@ -87,6 +83,18 @@ constructor(
                 ),
         )
 
+    var securityInfoViewModel: FooterActionsSecurityButtonViewModel? by mutableStateOf(null)
+        private set
+
+    /**
+     * Whether the security info text should be shown. When this is `true`, only the icon should be
+     * shown.
+     *
+     * If there's no security info to show, this will also be `true`.
+     */
+    var securityInfoShowCollapsed: Boolean by mutableStateOf(true)
+        private set
+
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch {
@@ -98,6 +106,17 @@ constructor(
                 }
             }
             launch { hydrator.activate() }
+            launch {
+                footerActionsInteractor.securityButtonConfig
+                    .map { it?.let { securityButtonViewModel(it, ::onSecurityButtonClicked) } }
+                    .distinctUntilChanged()
+                    .collectLatest {
+                        securityInfoShowCollapsed = it == null
+                        securityInfoViewModel = it
+                        delay(COLLAPSED_SECURITY_INFO_DELAY)
+                        securityInfoShowCollapsed = true
+                    }
+            }
             awaitCancellation()
         }
     }
@@ -120,8 +139,18 @@ constructor(
         falsingInteractor.runIfNotFalseTap { footerActionsInteractor.showSettings(expandable) }
     }
 
+    fun onSecurityButtonClicked(quickSettingsContext: Context, expandable: Expandable) {
+        falsingInteractor.runIfNotFalseTap {
+            footerActionsInteractor.showDeviceMonitoringDialog(quickSettingsContext, expandable)
+        }
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(): ToolbarViewModel
+    }
+
+    private companion object {
+        val COLLAPSED_SECURITY_INFO_DELAY = 5.seconds
     }
 }

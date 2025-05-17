@@ -179,6 +179,16 @@ flag {
 }
 
 flag {
+    name: "notifications_hun_accessibility_refactor"
+    namespace: "systemui"
+    description: "Refactors where notification HUN accessibility events happen"
+    bug: "397507681"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notifications_hun_shared_animation_values"
     namespace: "systemui"
     description: "Adds a shared class for fetching HUN animation values."
@@ -656,16 +666,6 @@ flag {
 }
 
 flag {
-    name: "clipboard_shared_transitions"
-    namespace: "systemui"
-    description: "Show shared transitions from clipboard"
-    bug: "360843770"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "clipboard_use_description_mimetype"
     namespace: "systemui"
     description: "Read item mimetype from description rather than checking URI"
@@ -872,16 +872,6 @@ flag {
     namespace: "systemui"
     description: "Decide whether to update user switcher in background thread."
     bug: "322745650"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "clipboard_noninteractive_on_lockscreen"
-    namespace: "systemui"
-    description: "Prevents the interactive clipboard UI from appearing when device is locked"
-    bug: "317048495"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1289,16 +1279,6 @@ flag {
 }
 
 flag {
-  name: "translucent_occluding_activity_fix"
-  namespace: "systemui"
-  description: "Fixes occlusion animation for transluent activities"
-  bug: "303010980"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
    namespace: "systemui"
    name: "fetch_bookmarks_xml_keyboard_shortcuts"
    description: "Fetches application launch keyboard shortcuts from system server rather than building a hardcoded list."
@@ -1306,16 +1286,6 @@ flag {
    metadata {
        purpose: PURPOSE_BUGFIX
    }
-}
-
-flag {
-  namespace: "systemui"
-  name: "qs_register_setting_observer_on_bg_thread"
-  description: "Registers Quick Settings content providers on background thread"
-  bug: "351766769"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1516,16 +1486,6 @@ flag {
     namespace: "systemui"
     description: "Updates to button animations and font changes for bouncer, bouncer_ui_revamp will cover only the blur changes."
     bug: "376491880"
-}
-
-flag {
-  name: "disable_blurred_shade_visible"
-  namespace: "systemui"
-  description: "Removes the check for a blur radius when determining shade window visibility"
-  bug: "394977231"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1764,6 +1724,13 @@ flag {
 }
 
 flag {
+    name: "clock_modernization"
+    namespace: "systemui"
+    description: "Implement the status bar/shade header clock in the recommended architecture"
+    bug: "390204943"
+}
+
+flag {
     name: "notifications_launch_radius"
     namespace: "systemui"
     description: "Fixes a discrepancy in corner radius between expanding notification and opening window during launch animations."
@@ -1823,16 +1790,6 @@ flag {
     metadata {
        purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-   name: "keyguard_wm_reorder_atms_calls"
-   namespace: "systemui"
-   description: "Calls ATMS#setLockScreenShown before default display callbacks in case they're slow"
-   bug: "399693427"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {
@@ -1966,6 +1923,13 @@ flag {
 }
 
 flag {
+    name: "desktop_screen_capture"
+    namespace: "systemui"
+    description: "Enables the pre and post capture UI and the Quick Settings button for the desktop screen capture feature."
+    bug: "412421893"
+}
+
+flag {
     name: "fix_dialog_launch_animation_jank_logging"
     namespace: "systemui"
     description: "Adjust timing of jank logging for dialog launch animations, and attach it to the dialog window instead of the origin view window."
@@ -1973,4 +1937,24 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "animation_library_delay_leash_cleanup"
+    namespace: "systemui"
+    description: "Clean up the transition leash with a delay to ensure that the finish callback happens first, avoiding flickers"
+    bug: "356065603"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+   name: "qs_compose_fragment_early_expansion"
+   namespace: "systemui"
+   description: "Start expansion from QQS into QS early when touching the shade."
+   bug: "414856236"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
 }

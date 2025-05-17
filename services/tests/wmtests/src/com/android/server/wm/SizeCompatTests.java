@@ -752,15 +752,44 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags({com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+            com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES})
+    // Enable to prevent any non-legacy override insets from being added.
+    @EnableCompatChanges({ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED})
+    public void testLegacyInsetOverride_isAppBubble_notApplied() {
+        // Set up app.
+        final int notchHeight = 100;
+        final DisplayContent display =
+                new TestDisplayContent.Builder(mAtm, 1000, 2800)
+                        .setNotch(notchHeight)
+                        .build();
+        setUpApp(display);
+
+        // Simulate inset override for legacy app bound behaviour.
+        mActivity.mResolveConfigHint.mUseOverrideInsetsForConfig = true;
+
+        // Set up activity task to be in app bubble.
+        mTask.mLaunchNextToBubble = true;
+        mTask.setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
+        prepareUnresizable(mActivity, SCREEN_ORIENTATION_PORTRAIT);
+
+        Rect bounds = new Rect(mActivity.getWindowConfiguration().getBounds());
+        Rect appBounds = new Rect(mActivity.getWindowConfiguration().getAppBounds());
+        // App bounds should not include insets and should match bounds.
+        assertEquals(new Rect(0, 0, 1000, 2800), appBounds);
+        assertEquals(new Rect(0, 0, 1000, 2800), bounds);
+    }
+
+    @Test
     public void testAspectRatioMatchParentBoundsAndImeAttachable() {
         setUpApp(new TestDisplayContent.Builder(mAtm, 1000, 2000).build());
         prepareUnresizable(mActivity, 2f /* maxAspect */, SCREEN_ORIENTATION_UNSPECIFIED);
         assertFitted();
 
         rotateDisplay(mActivity.mDisplayContent, ROTATION_90);
-        mActivity.mDisplayContent.setImeLayeringTarget(addWindowToActivity(mActivity));
-        mActivity.mDisplayContent.setImeInputTarget(
-                mActivity.mDisplayContent.getImeLayeringTarget());
+        final var appWindow = addWindowToActivity(mActivity);
+        mActivity.mDisplayContent.setImeInputTarget(appWindow);
+        mActivity.mDisplayContent.setImeLayeringTarget(appWindow);
         // Because the aspect ratio of display doesn't exceed the max aspect ratio of activity.
         // The activity should still fill its parent container and IME can attach to the activity.
         assertTrue(mActivity.matchParentBounds());

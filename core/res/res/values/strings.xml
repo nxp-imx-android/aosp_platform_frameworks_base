@@ -1095,6 +1095,11 @@
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_fullScreenIntent">Allows the app to display notifications as full screen activities on a locked device</string>
 
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_postPromotedNotifications">Show live updates</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_postPromotedNotifications">Allows the app to display ongoing, time-sensitive notifications on the status bar and lock screen</string>
+
     <!-- Title of an application permission, listed so the user can install application shortcuts
     in their Launcher -->
     <string name="permlab_install_shortcut">install shortcuts</string>

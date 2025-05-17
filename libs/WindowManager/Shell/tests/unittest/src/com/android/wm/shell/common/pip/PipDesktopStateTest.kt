@@ -35,6 +35,8 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler
+import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
+import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING
@@ -75,6 +77,8 @@ class PipDesktopStateTest : ShellTestCase() {
         whenever(mockPipDisplayLayoutState.displayId).thenReturn(DISPLAY_ID)
 
         defaultTda = DisplayAreaInfo(mock<WindowContainerToken>(), DISPLAY_ID, /* featureId = */ 0)
+        defaultTda.configuration.windowConfiguration.windowingMode =
+            TOUCH_FIRST_DISPLAY_WINDOWING_MODE
         whenever(mockRootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DISPLAY_ID)).thenReturn(
             defaultTda
         )
@@ -92,6 +96,8 @@ class PipDesktopStateTest : ShellTestCase() {
         verify(mockRecentsTransitionHandler).addTransitionStateListener(captor.capture())
         recentsTransitionStateListener = captor.firstValue
         recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING)
+
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
     }
 
     @Test
@@ -116,13 +122,15 @@ class PipDesktopStateTest : ShellTestCase() {
 
     @Test
     fun isPipInDesktopMode_anyDeskActive_returnsTrue() {
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
+        assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
 
+        defaultTda.configuration.windowConfiguration.windowingMode =
+            DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
         assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
     }
 
     @Test
-    fun isPipInDesktopMode_noDeskActive_returnsFalse() {
+    fun isPipInDesktopMode_noDeskActive_touchFirstDisplay_returnsFalse() {
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
 
         assertThat(pipDesktopState.isPipInDesktopMode()).isFalse()
@@ -130,8 +138,17 @@ class PipDesktopStateTest : ShellTestCase() {
 
     @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
+    fun isPipInDesktopMode_desktopFirstDisplay_returnsTrue() {
+        defaultTda.configuration.windowConfiguration.windowingMode =
+            DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
+        assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
+
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
+        assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
+    }
+
+    @Test
     fun outPipWindowingMode_exitToDesktop_displayFreeform_returnsUndefined() {
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
         setDisplayWindowingMode(WINDOWING_MODE_FREEFORM)
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
@@ -140,7 +157,6 @@ class PipDesktopStateTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_exitToDesktop_displayFullscreen_returnsFreeform() {
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
         setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN)
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FREEFORM)
@@ -149,6 +165,7 @@ class PipDesktopStateTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_exitToFullscreen_displayFullscreen_returnsUndefined() {
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
         setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN)
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
@@ -165,7 +182,6 @@ class PipDesktopStateTest : ShellTestCase() {
     @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_midRecents_inDesktop_returnsFullscreen() {
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
         recentsTransitionStateListener.onTransitionStateChanged(TRANSITION_STATE_ANIMATING)
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FULLSCREEN)

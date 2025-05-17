@@ -384,7 +384,11 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             mTransaction.setTrustedOverlay(surfaceControl, TrustedOverlay.DISABLED)
                     .apply();
         }
-        notifyInitialized();
+        if (!mNotifiedForInitialized) {
+            notifyInitialized();
+        } else {
+            notifySurfaceAlreadyCreated();
+        }
         mShellExecutor.execute(() -> {
             if (mTaskToken == null) {
                 // Nothing to update, task is not yet available
@@ -415,6 +419,10 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
                         + "captionInsets=%s", hashCode(), captionInsets);
         mCaptionInsets = captionInsets;
         applyCaptionInsetsIfNeeded();
+    }
+
+    @Nullable Binder getCaptionInsetsOwner() {
+        return mCaptionInsetsOwner;
     }
 
     void applyCaptionInsetsIfNeeded() {
@@ -472,6 +480,15 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             mNotifiedForInitialized = true;
             mListenerExecutor.execute(() -> {
                 mListener.onInitialized();
+            });
+        }
+    }
+
+    /** Called when the surface is created, only when the task view is alreayd initialized. */
+    protected void notifySurfaceAlreadyCreated() {
+        if (mListener != null) {
+            mListenerExecutor.execute(() -> {
+                mListener.onSurfaceAlreadyCreated();
             });
         }
     }

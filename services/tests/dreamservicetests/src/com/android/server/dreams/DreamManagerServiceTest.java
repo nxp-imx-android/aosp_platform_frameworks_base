@@ -16,11 +16,14 @@
 
 package com.android.server.dreams;
 
+import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.dreams.DreamManagerService.CHARGE_LIMIT_PERCENTAGE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -33,6 +36,7 @@ import android.app.ActivityManagerInternal;
 import android.content.BroadcastReceiver;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.hardware.health.BatteryChargingState;
 import android.os.BatteryManager;
 import android.os.BatteryManagerInternal;
 import android.os.PowerManagerInternal;
@@ -199,6 +203,44 @@ public class DreamManagerServiceTest {
         // Initialize service so settings are read.
         final DreamManagerService service = createService();
         service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Battery changed event is received.
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor = ArgumentCaptor.forClass(
+                BroadcastReceiver.class);
+        verify(mContextSpy).registerReceiver(receiverCaptor.capture(),
+                argThat((arg) -> arg.hasAction(Intent.ACTION_BATTERY_CHANGED)));
+        receiverCaptor.getValue().onReceive(mContext, new Intent());
+
+        // Dream condition is active.
+        assertThat(service.dreamConditionActiveInternal()).isTrue();
+    }
+
+    @EnableFlags(FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT)
+    @Test
+    public void testDreamConditionActive_chargeLimitActive() {
+        // Enable dreaming while charging only.
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, UserHandle.USER_CURRENT);
+        // Enable charge limit setting.
+        Settings.Secure.putIntForUser(mContextSpy.getContentResolver(),
+                Settings.Secure.CHARGE_OPTIMIZATION_MODE, 1, UserHandle.USER_CURRENT);
+
+        // Device is not considered charging when charge limit is on.
+        when(mBatteryManagerInternal.isPowered(anyInt())).thenReturn(false);
+        when(mBatteryManagerInternal.getBatteryLevel()).thenReturn(CHARGE_LIMIT_PERCENTAGE);
+
+        // Initialize service so settings are read.
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+
+        // Battery changed event is received.
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor = ArgumentCaptor.forClass(
+                BroadcastReceiver.class);
+        verify(mContextSpy).registerReceiver(receiverCaptor.capture(),
+                argThat((arg) -> arg.hasAction(Intent.ACTION_BATTERY_CHANGED)));
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_CHARGING_STATUS, BatteryChargingState.LONG_LIFE);
+        receiverCaptor.getValue().onReceive(mContext, intent);
 
         // Dream condition is active.
         assertThat(service.dreamConditionActiveInternal()).isTrue();

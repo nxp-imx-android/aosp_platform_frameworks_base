@@ -227,6 +227,7 @@ public class BrightnessClamperController {
                 || !BrightnessSynchronizer.floatEquals(state1.mMaxHdrBrightness,
                 state2.mMaxHdrBrightness)
                 || state1.mSdrHdrRatioSpline != state2.mSdrHdrRatioSpline
+                || state1.mHdrRatioScaleFactor != state2.mHdrRatioScaleFactor
                 || state1.mMaxBrightnessReason != state2.mMaxBrightnessReason
                 || !BrightnessSynchronizer.floatEquals(state1.mMaxBrightness,
                 state2.mMaxBrightness);
@@ -291,7 +292,7 @@ public class BrightnessClamperController {
                         data.mDisplayDeviceConfig));
             }
             if (flags.useNewHdrBrightnessModifier()) {
-                modifiers.add(new HdrBrightnessModifier(handler, context, listener, data));
+                modifiers.add(new HdrBrightnessModifier(handler, context, flags, listener, data));
             }
             return modifiers;
         }
@@ -446,6 +447,7 @@ public class BrightnessClamperController {
         float mMaxHdrBrightness = PowerManager.BRIGHTNESS_MAX;
         @Nullable
         Spline mSdrHdrRatioSpline = null;
+        float mHdrRatioScaleFactor = 1;
         @BrightnessInfo.BrightnessMaxReason
         int mMaxBrightnessReason = BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE;
         float mMaxBrightness = PowerManager.BRIGHTNESS_MAX;

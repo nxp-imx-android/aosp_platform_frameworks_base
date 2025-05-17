@@ -17,6 +17,8 @@
 package com.android.systemui.accessibility;
 
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY;
+import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED;
+import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN;
 import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW;
@@ -75,6 +77,8 @@ import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView.OnSeekBarW
 import com.android.systemui.res.R;
 import com.android.systemui.util.settings.SecureSettings;
 
+import com.google.android.material.materialswitch.MaterialSwitch;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,6 +99,8 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
     private ViewGroup mSettingView;
     private SeekBarWithIconButtonsView mZoomSeekbar;
+    private MaterialSwitch mMagnifyTypingSwitch;
+    private MaterialSwitch mMagnifyKeyboardSwitch;
     @Mock
     private AccessibilityManager mAccessibilityManager;
     @Mock
@@ -106,10 +112,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     private TestableWindowManager mWindowManager;
     private WindowMagnificationSettings mWindowMagnificationSettings;
     private MotionEventHelper mMotionEventHelper = new MotionEventHelper();
-
-    private ArgumentCaptor<Float> mSecureSettingsScaleCaptor;
-    private ArgumentCaptor<String> mSecureSettingsNameCaptor;
-    private ArgumentCaptor<Integer> mSecureSettingsUserHandleCaptor;
     private ArgumentCaptor<Float> mCallbackMagnifierScaleCaptor;
 
     @Before
@@ -134,9 +136,10 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
 
         mSettingView = mWindowMagnificationSettings.getSettingView();
         mZoomSeekbar = mSettingView.findViewById(R.id.magnifier_zoom_slider);
-        mSecureSettingsScaleCaptor = ArgumentCaptor.forClass(Float.class);
-        mSecureSettingsNameCaptor = ArgumentCaptor.forClass(String.class);
-        mSecureSettingsUserHandleCaptor = ArgumentCaptor.forClass(Integer.class);
+        mMagnifyTypingSwitch =
+                (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_typing_switch);
+        mMagnifyKeyboardSwitch =
+                (MaterialSwitch) mSettingView.findViewById(R.id.magnifier_keyboard_switch);
         mCallbackMagnifierScaleCaptor = ArgumentCaptor.forClass(Float.class);
     }
 
@@ -461,7 +464,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    public void showSettingsPanel_observerRegistered() {
+    public void showSettingsPanel_magnificationCapabilityObserverRegistered() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
                 /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
@@ -475,7 +478,37 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
-    public void hideSettingsPanel_observerUnregistered() {
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void showSettingsPanel_MagnifyTypingObserverRegistered() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        mWindowMagnificationSettings.showSettingPanel();
+
+        verify(mSecureSettings).registerContentObserverForUserSync(
+                eq(ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
+                any(ContentObserver.class),
+                eq(UserHandle.USER_CURRENT));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void showSettingsPanel_MagnifyKeyboardObserverRegistered() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        mWindowMagnificationSettings.showSettingPanel();
+
+        verify(mSecureSettings).registerContentObserverForUserSync(
+                eq(ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
+                any(ContentObserver.class),
+                eq(UserHandle.USER_CURRENT));
+    }
+
+    @Test
+    public void hideSettingsPanel_MagnificationCapabilityObserverUnregistered() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
                 /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
@@ -483,7 +516,92 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
         mWindowMagnificationSettings.showSettingPanel();
         mWindowMagnificationSettings.hideSettingPanel();
 
-        verify(mSecureSettings).unregisterContentObserverSync(any(ContentObserver.class));
+        verify(mSecureSettings).unregisterContentObserverSync(
+                mWindowMagnificationSettings.mMagnificationCapabilityObserver);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void hideSettingsPanel_magnifyTypingObserverUnregistered() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        mWindowMagnificationSettings.showSettingPanel();
+        mWindowMagnificationSettings.hideSettingPanel();
+
+        verify(mSecureSettings).unregisterContentObserverSync(
+                mWindowMagnificationSettings.mMagnifyTypingObserver);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void hideSettingsPanel_magnifyKeyboardObserverUnregistered() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        mWindowMagnificationSettings.showSettingPanel();
+        mWindowMagnificationSettings.hideSettingPanel();
+
+        verify(mSecureSettings).unregisterContentObserverSync(
+                mWindowMagnificationSettings.mMagnifyKeyboardObserver);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void magnifyTypingSwitch_settingsValueIsTrue_switchIsChecked() {
+        when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
+                anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(1);
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        mWindowMagnificationSettings.showSettingPanel();
+
+        assertThat(mMagnifyTypingSwitch.isChecked()).isEqualTo(true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void magnifyTypingSwitch_settingsValueIsFalse_switchIsUnchecked() {
+        when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_FOLLOW_TYPING_ENABLED),
+                anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(0);
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+
+        mWindowMagnificationSettings.showSettingPanel();
+
+        assertThat(mMagnifyTypingSwitch.isChecked()).isEqualTo(false);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void magnifyKeyboardSwitch_settingsValueIsTrue_switchIsChecked() {
+        when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
+                anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(1);
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+
+        mWindowMagnificationSettings.showSettingPanel();
+
+        assertThat(mMagnifyKeyboardSwitch.isChecked()).isEqualTo(true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void magnifyKeyboardSwitch_settingsValueIsFalse_switchIsUnchecked() {
+        when(mSecureSettings.getIntForUser(eq(ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME),
+                anyInt(), eq(UserHandle.USER_CURRENT))).thenReturn(0);
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN);
+
+        mWindowMagnificationSettings.showSettingPanel();
+
+        assertThat(mMagnifyKeyboardSwitch.isChecked()).isEqualTo(false);
     }
 
     @Test

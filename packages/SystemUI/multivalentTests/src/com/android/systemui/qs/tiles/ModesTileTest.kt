@@ -18,6 +18,7 @@ package com.android.systemui.qs.tiles
 
 import android.graphics.drawable.TestStubDrawable
 import android.os.Handler
+import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
 import android.service.quicksettings.Tile
 import android.testing.TestableLooper
@@ -29,6 +30,7 @@ import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.common.shared.model.asIcon
+import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -45,15 +47,16 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesTileDataInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
+import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel.ActiveMode
 import com.android.systemui.qs.tiles.impl.modes.ui.mapper.ModesTileMapper
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.statusbar.policy.ui.dialog.ModesDialogDelegate
 import com.android.systemui.statusbar.policy.ui.dialog.modesDialogEventLogger
 import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.modesDialogViewModel
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.settings.FakeSettings
 import com.android.systemui.util.settings.SecureSettings
 import com.google.common.truth.Truth.assertThat
@@ -65,6 +68,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @EnableFlags(android.app.Flags.FLAG_MODES_UI_TILE_REACTIVATES_LAST)
@@ -95,7 +102,14 @@ class ModesTileTest : SysuiTestCase() {
     private val inputHandler = FakeQSTileIntentUserInputHandler()
     private val zenModeRepository = kosmos.zenModeRepository
     private val tileDataInteractor =
-        ModesTileDataInteractor(context, kosmos.zenModeInteractor, testDispatcher)
+        ModesTileDataInteractor(
+            context,
+            kosmos.zenModeInteractor,
+            kosmos.shadeInteractor,
+            kosmos.keyguardRepository,
+            testDispatcher,
+            testScope,
+        )
     private val mapper = ModesTileMapper(context.resources, context.theme)
 
     private lateinit var userActionInteractor: ModesTileUserActionInteractor
@@ -130,6 +144,7 @@ class ModesTileTest : SysuiTestCase() {
                 inputHandler,
                 dialogDelegate,
                 kosmos.zenModeInteractor,
+                tileDataInteractor,
                 kosmos.modesDialogEventLogger,
             )
 
@@ -186,7 +201,7 @@ class ModesTileTest : SysuiTestCase() {
             val model =
                 ModesTileModel(
                     isActivated = true,
-                    activeModes = listOf("One", "Two"),
+                    activeModes = listOf(ActiveMode("1", "One"), ActiveMode("2", "Two")),
                     icon = TestStubDrawable().asIcon(),
                     quickMode = TestModeBuilder.MANUAL_DND,
                 )
@@ -195,6 +210,7 @@ class ModesTileTest : SysuiTestCase() {
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
             assertThat(tileState.label).isEqualTo("2 Modes")
+            assertThat(tileState.disabledByPolicy).isFalse()
         }
 
     @Test
@@ -213,5 +229,36 @@ class ModesTileTest : SysuiTestCase() {
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
             assertThat(tileState.label).isEqualTo("2 Modes")
+        }
+
+    @Test
+    fun handleUpdateState_checksUserRestriction() =
+        testScope.runTest {
+            val tileState = QSTile.State().apply { state = Tile.STATE_INACTIVE }
+            val model =
+                ModesTileModel(
+                    isActivated = false,
+                    activeModes = listOf(),
+                    icon = TestStubDrawable().asIcon(),
+                    quickMode = TestModeBuilder.MANUAL_DND,
+                )
+            val userManager = mock<UserManager>()
+            whenever(userManager.getUserRestrictionSources(any(), any()))
+                .thenReturn(
+                    listOf(
+                        UserManager.EnforcingUser(
+                            context.userId,
+                            UserManager.RESTRICTION_SOURCE_DEVICE_OWNER,
+                        )
+                    )
+                )
+            context.addMockSystemService(UserManager::class.java, userManager)
+            context.prepareCreatePackageContextAsUser(context.packageName, context.user, context)
+
+            underTest.handleUpdateState(tileState, model)
+
+            assertThat(tileState.disabledByPolicy).isTrue()
+            verify(userManager)
+                .getUserRestrictionSources(eq(UserManager.DISALLOW_ADJUST_VOLUME), eq(context.user))
         }
 }

@@ -96,6 +96,11 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }.setDuration(200);
     private static final SourceType FROM_PARENT = SourceType.from("FromParent(NCC)");
+    /**
+     * Temporary "flag" for a hack that works around an issue where isRemoved is always false for
+     * rows.
+     */
+    private static final boolean USE_IS_CHANGING_POSITION_TO_RESTORE = true;
 
     private final List<View> mDividers = new ArrayList<>();
     private final List<ExpandableNotificationRow> mAttachedChildren = new ArrayList<>();
@@ -418,12 +423,23 @@ public class NotificationChildrenContainer extends ViewGroup
         row.setSystemChildExpanded(false);
         row.setNotificationFaded(false);
         row.setUserLocked(false);
-        if (!row.isRemoved()) {
+        if (shouldRestoreChild(row)) {
             mGroupingUtil.restoreChildNotification(row);
         }
 
         row.requestRoundnessReset(FROM_PARENT, /* animate = */ false);
         applyRoundnessAndInvalidate();
+    }
+
+    private static boolean shouldRestoreChild(ExpandableNotificationRow row) {
+        // TODO: b/417457086 - We're only checking for isChangingPosition here as a quick-and-dirty
+        //  fix for b/415665263, but the real issue is that isRemoved is currently ALWAYS false.
+        //  We need to fix that behind a flag, so this hack is temporary.
+        if (USE_IS_CHANGING_POSITION_TO_RESTORE) {
+            return !row.isRemoved() && row.isChangingPosition();
+        } else {
+            return !row.isRemoved();
+        }
     }
 
     /**
@@ -834,7 +850,7 @@ public class NotificationChildrenContainer extends ViewGroup
         int firstOverflowIndex = lastVisibleIndex + 1;
         float expandFactor = 0;
         boolean expandingToExpandedGroup = mUserLocked && !showingAsLowPriority();
-        if (notificationsRedesignTemplates() || mUserLocked) {
+        if (mUserLocked) {
             expandFactor = getGroupExpandFraction();
             firstOverflowIndex = getMaxAllowedVisibleChildren(true /* likeCollapsed */);
         }
@@ -1198,23 +1214,10 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
         }
-        if (mGroupHeader != null) {
-            if (mHeaderViewState != null) {
-                // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
-                //  but mHeaderViewState is null.
-                mHeaderViewState.applyToView(mGroupHeader);
-            }
-
-            // Only apply the special viewState for the header's children if we're not currently
-            // showing the minimized header.
-            if (notificationsRedesignTemplates() && !showingAsLowPriority()) {
-                if (mTopLineViewState != null) {
-                    mTopLineViewState.applyToView(mGroupHeader.getTopLineView());
-                }
-                if (mExpandButtonViewState != null) {
-                    mExpandButtonViewState.applyToView(mGroupHeader.getExpandButton());
-                }
-            }
+        if (mGroupHeader != null && mHeaderViewState != null) {
+            // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
+            //  but mHeaderViewState is null.
+            mHeaderViewState.applyToView(mGroupHeader);
         }
         updateChildrenClipping();
     }
@@ -1228,7 +1231,11 @@ public class NotificationChildrenContainer extends ViewGroup
             float top = childTop + Math.max(0, slidingChild.getClipTopAmount());
             float bottom = childTop + slidingChild.getActualHeight();
             if (y >= top && y <= bottom) {
-                return slidingChild;
+                if (NotificationBundleUi.isEnabled()) {
+                    return slidingChild.getViewAtPosition(y - top);
+                } else {
+                    return slidingChild;
+                }
             }
         }
         return null;
@@ -1412,8 +1419,6 @@ public class NotificationChildrenContainer extends ViewGroup
             if (expanded) {
                 ColorDrawable cd = new ColorDrawable();
                 cd.setColor(mContainingNotification.calculateBgColor());
-                // TODO(b/389839492): The backgroundDrawable needs an outline like in the original:
-                //  setOutlineProvider(mProvider);
                 mBundleHeaderViewModel.setBackgroundDrawable(cd);
             } else {
                 mBundleHeaderViewModel.setBackgroundDrawable(null);
@@ -1448,7 +1453,7 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     public void setActualHeight(int actualHeight) {
-        if (!notificationsRedesignTemplates() && !mUserLocked) {
+        if (!mUserLocked) {
             return;
         }
         mActualHeight = actualHeight;

@@ -222,6 +222,7 @@ import com.android.server.pm.CrossProfileAppsService;
 import com.android.server.pm.DataLoaderManagerService;
 import com.android.server.pm.DexOptHelper;
 import com.android.server.pm.DynamicCodeLoggingService;
+import com.android.server.pm.HsumBootUserInitializer;
 import com.android.server.pm.Installer;
 import com.android.server.pm.LauncherAppsService;
 import com.android.server.pm.OtaDexoptService;
@@ -489,6 +490,7 @@ public final class SystemServer implements Dumpable {
     // TODO: remove all of these references by improving dependency resolution and boot phases
     private PowerManagerService mPowerManagerService;
     private ActivityManagerService mActivityManagerService;
+    private UserManagerService mUserManagerService;
     private WindowManagerGlobalLock mWindowManagerGlobalLock;
     private WebViewUpdateService mWebViewUpdateService;
     private DisplayManagerService mDisplayManagerService;
@@ -1374,7 +1376,8 @@ public final class SystemServer implements Dumpable {
         }
 
         t.traceBegin("StartUserManagerService");
-        mSystemServiceManager.startService(UserManagerService.LifeCycle.class);
+        mUserManagerService = mSystemServiceManager
+                .startService(UserManagerService.LifeCycle.class).getService();
         t.traceEnd();
 
         // Initialize attribute cache used to cache resources from packages.
@@ -3029,8 +3032,8 @@ public final class SystemServer implements Dumpable {
         // Create initial user if needed, which should be done early since some system services rely
         // on it in their setup, but likely needs to be done after LockSettingsService is ready.
         final HsumBootUserInitializer hsumBootUserInitializer =
-                HsumBootUserInitializer.createInstance(
-                        mActivityManagerService, mPackageManagerService, mContentResolver,
+                HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
+                        mPackageManagerService, mContentResolver,
                         context.getResources().getBoolean(R.bool.config_isMainUserPermanentAdmin),
                         context.getResources().getBoolean(R.bool.config_createInitialUser)
                         );

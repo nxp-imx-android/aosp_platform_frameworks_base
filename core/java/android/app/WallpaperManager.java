@@ -36,6 +36,7 @@ import android.annotation.RawRes;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
@@ -375,24 +376,32 @@ public class WallpaperManager {
      * Portrait orientation of most screens
      * @hide
      */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
     public static final int ORIENTATION_PORTRAIT = 0;
 
     /**
      * Landscape orientation of most screens
      * @hide
      */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
     public static final int ORIENTATION_LANDSCAPE = 1;
 
     /**
      * Portrait orientation with similar width and height (e.g. the inner screen of a foldable)
      * @hide
      */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
     public static final int ORIENTATION_SQUARE_PORTRAIT = 2;
 
     /**
      * Landscape orientation with similar width and height (e.g. the inner screen of a foldable)
      * @hide
      */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
     public static final int ORIENTATION_SQUARE_LANDSCAPE = 3;
 
     /**
@@ -401,6 +410,8 @@ public class WallpaperManager {
      * @return the corresponding {@link ScreenOrientation}.
      * @hide
      */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
     public static @ScreenOrientation int getOrientation(@NonNull Point screenSize) {
         float ratio = ((float) screenSize.x) / screenSize.y;
         // ratios between 3/4 and 4/3 are considered square
@@ -1693,6 +1704,52 @@ public class WallpaperManager {
     }
 
     /**
+     * For the current user, if the wallpaper of the specified destination is an ImageWallpaper,
+     * return the custom crops of the wallpaper, that have been provided for example via
+     * {@link #setStreamWithCrops}. These crops are relative to the original bitmap.
+     * <p>
+     * Calling {@link #setStreamWithCrops(InputStream, SparseArray, boolean, int)} with this
+     * SparseArray and the current original bitmap file, that can be obtained with
+     * {@link #getWallpaperFile(int, boolean)} with {@code getCropped=false}, will exactly lead to
+     * the current wallpaper state.
+     *
+     * @param which wallpaper type. Must be either {@link #FLAG_SYSTEM} or {@link #FLAG_LOCK}.
+     * @return A map from {{@link #ORIENTATION_PORTRAIT}, {@link #ORIENTATION_LANDSCAPE},
+     *          {@link #ORIENTATION_SQUARE_PORTRAIT}, {{@link #ORIENTATION_SQUARE_LANDSCAPE}}} to
+     *          Rect, representing the custom cropHints. The map can be empty and will only contains
+     *          entries for screen orientations for which a custom crop was provided. If no custom
+     *          crop is provided for an orientation, the system will infer the crop based on the
+     *          custom crops of the other orientations; or center-align the full image if no custom
+     *          crops are provided at all.
+     *          <p>
+     *          Return an empty map if the wallpaper is not an ImageWallpaper. Also return
+     *          an empty map when called with which={@link #FLAG_LOCK} if there is a shared
+     *          home + lock wallpaper.
+     *
+     * @hide
+     */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
+    @RequiresPermission(READ_WALLPAPER_INTERNAL)
+    @NonNull
+    public SparseArray<Rect> getBitmapCrops(@SetWallpaperFlags int which) {
+        checkExactlyOneWallpaperFlagSet(which);
+        try {
+            Bundle bundle = sGlobals.mService.getCurrentBitmapCrops(which, mContext.getUserId());
+            SparseArray<Rect> result = new SparseArray<>();
+            if (bundle == null) return result;
+            for (String key : bundle.keySet()) {
+                int intKey = Integer.parseInt(key);
+                Rect rect = bundle.getParcelable(key, Rect.class);
+                result.put(intKey, rect);
+            }
+            return result;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * For preview purposes.
      * Return how a bitmap of a given size would be cropped for a given list of display sizes, if
      * it was set as wallpaper via {@link #setBitmapWithCrops(Bitmap, Map, boolean, int)} or
@@ -1937,6 +1994,8 @@ public class WallpaperManager {
      *                   which={@link #FLAG_LOCK} if there is a shared home + lock wallpaper.
      * @hide
      */
+    @SuppressLint("UnflaggedApi")
+    @TestApi
     @Nullable
     public ParcelFileDescriptor getWallpaperFile(@SetWallpaperFlags int which, boolean getCropped) {
         return getWallpaperFile(which, mContext.getUserId(), getCropped);
@@ -2257,11 +2316,12 @@ public class WallpaperManager {
         final WallpaperSetCompletion completion = new WallpaperSetCompletion();
         try {
             Resources resources = mContext.getResources();
-            /* Set the wallpaper to the default values */
+            WallpaperDescription description = new WallpaperDescription.Builder().build();
+            // This code no longer executes because multiCrop() is always true. This is just so
+            // that this compiles.
             ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(
-                    "res:" + resources.getResourceName(resid),
-                    mContext.getOpPackageName(), null, null, false, result, which, completion,
-                    mContext.getUserId());
+                    "res:" + resources.getResourceName(resid), mContext.getOpPackageName(),
+                    description, false, result, which, completion, mContext.getUserId());
             if (fd != null) {
                 FileOutputStream fos = null;
                 try {
@@ -2381,7 +2441,9 @@ public class WallpaperManager {
         if (multiCrop()) {
             SparseArray<Rect> cropMap = new SparseArray<>();
             if (visibleCropHint != null) cropMap.put(ORIENTATION_UNKNOWN, visibleCropHint);
-            return setBitmapWithCrops(fullImage, cropMap, allowBackup, which, userId);
+            WallpaperDescription description = new WallpaperDescription.Builder().setCropHints(
+                    cropMap).build();
+            return setBitmapWithDescription(fullImage, description, allowBackup, which, userId);
         }
         validateRect(visibleCropHint);
         if (sGlobals.mService == null) {
@@ -2392,8 +2454,11 @@ public class WallpaperManager {
         final WallpaperSetCompletion completion = new WallpaperSetCompletion();
         final List<Rect> crops = visibleCropHint == null ? null : List.of(visibleCropHint);
         try {
+            // This code no longer executes because multiCrop() is always true. This is just so
+            // that this compiles.
+            WallpaperDescription description = new WallpaperDescription.Builder().build();
             ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
-                    mContext.getOpPackageName(), null, crops, allowBackup, result, which,
+                    mContext.getOpPackageName(), description, allowBackup, result, which,
                     completion, userId);
             if (fd != null) {
                 FileOutputStream fos = null;
@@ -2427,48 +2492,10 @@ public class WallpaperManager {
     @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
     public int setBitmapWithCrops(@Nullable Bitmap fullImage, @NonNull Map<Point, Rect> cropHints,
             boolean allowBackup, @SetWallpaperFlags int which) throws IOException {
-        SparseArray<Rect> crops = new SparseArray<>();
-        cropHints.forEach((k, v) -> crops.put(getOrientation(k), v));
-        return setBitmapWithCrops(fullImage, crops, allowBackup, which, mContext.getUserId());
-    }
-
-    @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
-    private int setBitmapWithCrops(@Nullable Bitmap fullImage, @NonNull SparseArray<Rect> cropHints,
-            boolean allowBackup, @SetWallpaperFlags int which, int userId) throws IOException {
-        if (sGlobals.mService == null) {
-            Log.w(TAG, "WallpaperService not running");
-            throw new RuntimeException(new DeadSystemException());
-        }
-        int size = cropHints.size();
-        int[] screenOrientations = new int[size];
-        List<Rect> crops = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            screenOrientations[i] = cropHints.keyAt(i);
-            Rect cropHint = cropHints.valueAt(i);
-            validateRect(cropHint);
-            crops.add(cropHint);
-        }
-        final Bundle result = new Bundle();
-        final WallpaperSetCompletion completion = new WallpaperSetCompletion();
-        try {
-            ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
-                    mContext.getOpPackageName(), screenOrientations, crops, allowBackup,
-                    result, which, completion, userId);
-            if (fd != null) {
-                FileOutputStream fos = null;
-                try {
-                    fos = new ParcelFileDescriptor.AutoCloseOutputStream(fd);
-                    fullImage.compress(Bitmap.CompressFormat.PNG, 90, fos);
-                    fos.close();
-                    completion.waitForCompletion();
-                } finally {
-                    IoUtils.closeQuietly(fos);
-                }
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-        return result.getInt(EXTRA_NEW_WALLPAPER_ID, 0);
+        WallpaperDescription description = new WallpaperDescription.Builder().setCropHints(
+                cropHints).build();
+        return setBitmapWithDescription(fullImage, description, allowBackup, which,
+                mContext.getUserId());
     }
 
     /**
@@ -2488,8 +2515,41 @@ public class WallpaperManager {
     public int setBitmapWithDescription(@Nullable Bitmap fullImage,
             @NonNull WallpaperDescription description, boolean allowBackup,
             @SetWallpaperFlags int which) throws IOException {
-        return setBitmapWithCrops(fullImage, description.getCropHints(), allowBackup, which,
+        return setBitmapWithDescription(fullImage, description, allowBackup, which,
                 mContext.getUserId());
+    }
+
+    private int setBitmapWithDescription(@Nullable Bitmap fullImage,
+            @NonNull WallpaperDescription description, boolean allowBackup,
+            @SetWallpaperFlags int which, int userId) throws IOException {
+        if (sGlobals.mService == null) {
+            Log.w(TAG, "WallpaperService not running");
+            throw new RuntimeException(new DeadSystemException());
+        }
+        for (int i = 0; i < description.getCropHints().size(); i++) {
+            validateRect(description.getCropHints().valueAt(i));
+        }
+        final Bundle result = new Bundle();
+        final WallpaperSetCompletion completion = new WallpaperSetCompletion();
+        try {
+            ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
+                    mContext.getOpPackageName(), description, allowBackup,
+                    result, which, completion, userId);
+            if (fd != null) {
+                FileOutputStream fos = null;
+                try {
+                    fos = new ParcelFileDescriptor.AutoCloseOutputStream(fd);
+                    fullImage.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                    fos.close();
+                    completion.waitForCompletion();
+                } finally {
+                    IoUtils.closeQuietly(fos);
+                }
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+        return result.getInt(EXTRA_NEW_WALLPAPER_ID, 0);
     }
 
     private final void validateRect(Rect rect) {
@@ -2603,8 +2663,11 @@ public class WallpaperManager {
         final WallpaperSetCompletion completion = new WallpaperSetCompletion();
         final List<Rect> crops = visibleCropHint == null ? null : List.of(visibleCropHint);
         try {
+            // This code no longer executes because multiCrop() is always true. This is just so
+            // that this compiles.
+            WallpaperDescription description = new WallpaperDescription.Builder().build();
             ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
-                    mContext.getOpPackageName(), null, crops, allowBackup, result, which,
+                    mContext.getOpPackageName(), description, allowBackup, result, which,
                     completion, mContext.getUserId());
             if (fd != null) {
                 FileOutputStream fos = null;
@@ -2640,9 +2703,9 @@ public class WallpaperManager {
     public int setStreamWithCrops(@NonNull InputStream bitmapData,
             @NonNull Map<Point, Rect> cropHints, boolean allowBackup, @SetWallpaperFlags int which)
             throws IOException {
-        SparseArray<Rect> crops = new SparseArray<>();
-        cropHints.forEach((k, v) -> crops.put(getOrientation(k), v));
-        return setStreamWithCrops(bitmapData, crops, allowBackup, which);
+        WallpaperDescription description = new WallpaperDescription.Builder().setCropHints(
+                cropHints).build();
+        return setStreamWithDescription(bitmapData, description, allowBackup, which);
     }
 
     /**
@@ -2664,40 +2727,9 @@ public class WallpaperManager {
     public int setStreamWithCrops(@NonNull InputStream bitmapData,
             @NonNull SparseArray<Rect> cropHints, boolean allowBackup, @SetWallpaperFlags int which)
             throws IOException {
-        if (sGlobals.mService == null) {
-            Log.w(TAG, "WallpaperService not running");
-            throw new RuntimeException(new DeadSystemException());
-        }
-        int size = cropHints.size();
-        int[] screenOrientations = new int[size];
-        List<Rect> crops = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            screenOrientations[i] = cropHints.keyAt(i);
-            Rect cropHint = cropHints.valueAt(i);
-            validateRect(cropHint);
-            crops.add(cropHint);
-        }
-        final Bundle result = new Bundle();
-        final WallpaperSetCompletion completion = new WallpaperSetCompletion();
-        try {
-            ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
-                    mContext.getOpPackageName(), screenOrientations, crops, allowBackup,
-                    result, which, completion, mContext.getUserId());
-            if (fd != null) {
-                FileOutputStream fos = null;
-                try {
-                    fos = new ParcelFileDescriptor.AutoCloseOutputStream(fd);
-                    copyStreamToWallpaperFile(bitmapData, fos);
-                    fos.close();
-                    completion.waitForCompletion();
-                } finally {
-                    IoUtils.closeQuietly(fos);
-                }
-            }
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
-        return result.getInt(EXTRA_NEW_WALLPAPER_ID, 0);
+        WallpaperDescription description = new WallpaperDescription.Builder().setCropHints(
+                cropHints).build();
+        return setStreamWithDescription(bitmapData, description, allowBackup, which);
     }
 
     /**
@@ -2719,7 +2751,34 @@ public class WallpaperManager {
     public int setStreamWithDescription(@NonNull InputStream bitmapData,
             @NonNull WallpaperDescription description, boolean allowBackup,
             @SetWallpaperFlags int which) throws IOException {
-        return setStreamWithCrops(bitmapData, description.getCropHints(), allowBackup, which);
+        if (sGlobals.mService == null) {
+            Log.w(TAG, "WallpaperService not running");
+            throw new RuntimeException(new DeadSystemException());
+        }
+        for (int i = 0; i < description.getCropHints().size(); i++) {
+            validateRect(description.getCropHints().valueAt(i));
+        }
+        final Bundle result = new Bundle();
+        final WallpaperSetCompletion completion = new WallpaperSetCompletion();
+        try {
+            ParcelFileDescriptor fd = sGlobals.mService.setWallpaper(null,
+                    mContext.getOpPackageName(), description, allowBackup, result, which,
+                    completion, mContext.getUserId());
+            if (fd != null) {
+                FileOutputStream fos = null;
+                try {
+                    fos = new ParcelFileDescriptor.AutoCloseOutputStream(fd);
+                    copyStreamToWallpaperFile(bitmapData, fos);
+                    fos.close();
+                    completion.waitForCompletion();
+                } finally {
+                    IoUtils.closeQuietly(fos);
+                }
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+        return result.getInt(EXTRA_NEW_WALLPAPER_ID, 0);
     }
 
     /**

@@ -788,12 +788,14 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testFingerprintNotification_UpdatesScrims() {
         mCentralSurfaces.notifyBiometricAuthModeChanged();
         verify(mScrimController).legacyTransitionTo(any(), any());
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testFingerprintUnlock_UpdatesScrims() {
         // Simulate unlocking from AoD with fingerprint.
         when(mBiometricUnlockController.getMode())
@@ -803,6 +805,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testTransitionLaunch_goesToUnlocked() {
         mCentralSurfaces.setBarStateForTest(StatusBarState.KEYGUARD);
         mCentralSurfaces.showKeyguardImpl();
@@ -814,6 +817,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testSetExpansionAffectsAlpha_whenKeyguardShowingButGoingAwayForAnyReason() {
         mCentralSurfaces.updateScrimController();
         verify(mScrimController).setExpansionAffectsAlpha(eq(true));
@@ -838,6 +842,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testTransitionLaunch_noPreview_doesntGoUnlocked() {
         mCentralSurfaces.setBarStateForTest(StatusBarState.KEYGUARD);
         when(mKeyguardStateController.isShowing()).thenReturn(true);
@@ -850,6 +855,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testSetOccluded_propagatesToScrimController() {
         ArgumentCaptor<KeyguardStateController.Callback> callbackCaptor =
                 ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
@@ -866,6 +872,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testPulseWhileDozing_updatesScrimController() {
         mCentralSurfaces.setBarStateForTest(StatusBarState.KEYGUARD);
         when(mKeyguardStateController.isShowing()).thenReturn(true);
@@ -883,6 +890,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testSetDozingNotUnlocking_transitionToAOD_cancelKeyguardFadingAway() {
         setDozing(true);
         when(mKeyguardStateController.isShowing()).thenReturn(false);
@@ -895,6 +903,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testNotOccluding_QSNotExpanded_flagOn_doesNotTransitionScrimState() {
         when(mAlternateBouncerInteractor.isVisibleState()).thenReturn(true);
 
@@ -910,6 +919,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testNotOccluding_QSExpanded_flagOn_doesTransitionScrimStateToKeyguard() {
         when(mAlternateBouncerInteractor.isVisibleState()).thenReturn(true);
 
@@ -925,6 +935,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testEnteringGlanceableHub_updatesScrim() {
         // Transition to the glanceable hub.
         mKosmos.getCommunalRepository()
@@ -946,6 +957,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     public void testEnteringGlanceableHub_whenDreaming_updatesScrim() {
         when(mKeyguardStateController.isShowing()).thenReturn(true);
         when(mKeyguardStateController.isOccluded()).thenReturn(true);
@@ -983,18 +995,35 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    public void testOnStartedWakingUp_isNotDozing() {
+    @DisableSceneContainer
+    public void testOnStartedWakingUp_isNotDozing_withoutSceneContainer() {
+        testOnStartedWakingUp_isNotDozing(true);
+    }
+
+    @Test
+    @EnableSceneContainer
+    public void testOnStartedWakingUp_isNotDozing_withSceneContainer() {
+        // When the scene framework is enabled, the ShadeController implementation does nothing when
+        // told to instantly expand the shade.
+        testOnStartedWakingUp_isNotDozing(/* verifyNpvcExpandInvocations= */ false);
+    }
+
+    private void testOnStartedWakingUp_isNotDozing(boolean verifyNpvcExpandInvocations) {
         mCentralSurfaces.setBarStateForTest(StatusBarState.KEYGUARD);
         when(mStatusBarStateController.isKeyguardRequested()).thenReturn(true);
         when(mDozeServiceHost.getDozingRequested()).thenReturn(true);
         mCentralSurfaces.updateIsKeyguard();
-        // TODO: mNotificationPanelView.expand(false) gets called twice. Should be once.
-        verify(mNotificationPanelViewController, times(2)).expand(eq(false));
-        clearInvocations(mNotificationPanelViewController);
+        if (verifyNpvcExpandInvocations) {
+            // TODO: mNotificationPanelView.expand(false) gets called twice. Should be once.
+            verify(mNotificationPanelViewController, times(2)).expand(eq(false));
+            clearInvocations(mNotificationPanelViewController);
+        }
 
         mCentralSurfaces.mWakefulnessObserver.onStartedWakingUp();
         verify(mDozeServiceHost, never()).stopDozing();
-        verify(mNotificationPanelViewController).expand(eq(false));
+        if (verifyNpvcExpandInvocations) {
+            verify(mNotificationPanelViewController).expand(eq(false));
+        }
         mCentralSurfaces.mWakefulnessObserver.onFinishedWakingUp();
         verify(mDozeServiceHost).stopDozing();
     }
@@ -1032,6 +1061,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    // When the scene framework is enabled, setting the "leave open" bit is handled in
+    // SceneContainerStartable
+    @DisableSceneContainer
     public void deviceStateChange_unfolded_shadeOpen_setsLeaveOpenOnKeyguardHide() {
         setFoldedStates(FOLD_STATE_FOLDED.getIdentifier());
         setGoToSleepStates(FOLD_STATE_FOLDED.getIdentifier());
@@ -1069,6 +1101,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    // When the scene framework is enabled, closing QS based on screen power happens in
+    // SceneContainerStartable
+    @DisableSceneContainer
     public void deviceStateChange_unfolded_shadeExpanding_onKeyguard_closesQS() {
         setFoldedStates(FOLD_STATE_FOLDED.getIdentifier());
         setGoToSleepStates(FOLD_STATE_FOLDED.getIdentifier());
@@ -1082,6 +1117,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
+    // When the scene framework is enabled, closing QS based on screen power happens in
+    // SceneContainerStartable
+    @DisableSceneContainer
     public void deviceStateChange_unfolded_shadeExpanded_onKeyguard_closesQS() {
         setFoldedStates(FOLD_STATE_FOLDED.getIdentifier());
         setGoToSleepStates(FOLD_STATE_FOLDED.getIdentifier());
@@ -1163,7 +1201,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableSceneContainer
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     @EnableFlags(QSComposeFragment.FLAG_NAME)
     public void brightnesShowingChanged_qsUiRefactorFlagEnabled_ScrimControllerNotified() {
         mBrightnessMirrorShowingRepository.setMirrorShowing(true);
@@ -1180,7 +1218,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableSceneContainer
+    @DisableSceneContainer // ScrimStartable updates scrims when the scene framework is enabled.
     @DisableFlags(QSComposeFragment.FLAG_NAME)
     public void brightnesShowingChanged_flagsDisabled_ScrimControllerNotified() {
         mBrightnessMirrorShowingRepository.setMirrorShowing(true);

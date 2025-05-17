@@ -50,7 +50,7 @@ interface IVirtualDeviceManager {
             in VirtualDeviceParams params, in IVirtualDeviceActivityListener activityListener,
             in IVirtualDeviceSoundEffectListener soundEffectListener);
 
-    @EnforcePermission("COMPUTER_CONTROL_ACCESS")
+    @EnforcePermission("ACCESS_COMPUTER_CONTROL")
     IVirtualDevice createLocalVirtualDevice(
             in IBinder token, in AttributionSource attributionSource,
             in VirtualDeviceParams params, in IVirtualDeviceActivityListener activityListener,

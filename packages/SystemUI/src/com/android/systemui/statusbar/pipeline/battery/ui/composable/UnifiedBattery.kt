@@ -49,14 +49,12 @@ import androidx.compose.ui.util.fastFirst
 import androidx.compose.ui.util.fastFirstOrNull
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryColors
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryFrame
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.BatteryGlyph
 import com.android.systemui.statusbar.pipeline.battery.shared.ui.PathSpec
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
-import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.UnifiedBatteryViewModel
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
@@ -159,12 +157,10 @@ private fun Int.scaledLevel(): Float {
  */
 @Composable
 fun UnifiedBattery(
-    viewModelFactory: UnifiedBatteryViewModel.Factory,
+    viewModel: BatteryViewModel,
     isDarkProvider: () -> IsAreaDark,
     modifier: Modifier,
 ) {
-    val viewModel = rememberViewModel(traceName = "UnifiedBattery") { viewModelFactory.create() }
-
     var bounds by remember { mutableStateOf(Rect()) }
 
     val colorProvider = {

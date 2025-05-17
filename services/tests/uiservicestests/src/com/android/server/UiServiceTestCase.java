@@ -15,7 +15,9 @@ package com.android.server;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -93,7 +95,12 @@ public class UiServiceTestCase {
                             return Build.VERSION_CODES.CUR_DEVELOPMENT;
                     }
                 });
-
+        when(mPmi.getPackageUid(eq(PKG_N_MR1), anyLong(), anyInt())).thenReturn(UID_N_MR1);
+        when(mPmi.getPackageUid(eq(PKG_O), anyLong(), anyInt())).thenReturn(UID_O);
+        when(mPmi.getPackageUid(eq(PKG_P), anyLong(), anyInt())).thenReturn(UID_P);
+        when(mPmi.getPackageUid(eq(PKG_R), anyLong(), anyInt())).thenReturn(UID_R);
+        when(mPmi.getPackageUid(eq(mContext.getPackageName()), anyLong(), eq(mUserId)))
+                .thenReturn(mUid);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUmi);
         LocalServices.removeServiceForTest(UriGrantsManagerInternal.class);

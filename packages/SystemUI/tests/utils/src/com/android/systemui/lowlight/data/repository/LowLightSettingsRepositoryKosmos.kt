@@ -20,12 +20,12 @@ import android.content.res.mockResources
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.util.settings.fakeSettings
+import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 
 val Kosmos.lowLightSettingsRepository by Fixture {
     LowLightSettingsRepositoryImpl(
         bgDispatcher = testDispatcher,
-        secureSettings = fakeSettings,
+        userAwareSecureSettingsRepository = userAwareSecureSettingsRepository,
         resources = mockResources,
     )
 }

@@ -166,6 +166,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mTitleText.visibility).isEqualTo(VISIBLE)
             assertThat(mTitleText.text.toString()).isEqualTo(TEST_DEVICE_NAME_2)
             assertThat(mSlider.visibility).isEqualTo(GONE)
+            assertThat(mMainContent.stateDescription).isNull()
         }
     }
 
@@ -179,6 +180,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mTitleText.visibility).isEqualTo(VISIBLE)
             assertThat(mTitleText.text.toString()).isEqualTo(TEST_DEVICE_NAME_1)
             assertThat(mSlider.visibility).isEqualTo(VISIBLE)
+            assertThat(mMainContent.stateDescription.toString())
+                .isEqualTo(mContext.getString(R.string.media_output_item_connected_state))
         }
     }
 
@@ -235,6 +238,7 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mSlider.value).isEqualTo(TEST_CURRENT_VOLUME)
             assertThat(mSlider.valueFrom).isEqualTo(0)
             assertThat(mSlider.valueTo).isEqualTo(TEST_MAX_VOLUME)
+            assertThat(mSlider.stateDescription).isEqualTo("50%")
         }
     }
 

@@ -17,6 +17,9 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
@@ -55,10 +58,7 @@ constructor(
         traceName = "PasswordBouncerViewModel",
     ) {
 
-    private val _password = MutableStateFlow("")
-
-    /** The password entered so far. */
-    val password: StateFlow<String> = _password.asStateFlow()
+    val textFieldState = TextFieldState()
 
     override val authenticationMethod = AuthenticationMethodModel.Password
 
@@ -129,6 +129,14 @@ constructor(
                         }
                         .collect { _isImeSwitcherButtonVisible.value = it }
                 }
+                launch {
+                    snapshotFlow { textFieldState.text.toString() }
+                        .collect {
+                            if (it.isNotEmpty()) {
+                                onIntentionalUserInput()
+                            }
+                        }
+                }
                 awaitCancellation()
             }
         } finally {
@@ -143,24 +151,15 @@ constructor(
     }
 
     override fun clearInput() {
-        _password.value = ""
+        textFieldState.clearText()
     }
 
     override fun getInput(): List<Any> {
-        return _password.value.toCharArray().toList()
+        return textFieldState.text.toList()
     }
 
     override fun onSuccessfulAuthentication() {
         wasSuccessfullyAuthenticated = true
-    }
-
-    /** Notifies that the user has changed the password input. */
-    fun onPasswordInputChanged(newPassword: String) {
-        if (newPassword.isNotEmpty()) {
-            onIntentionalUserInput()
-        }
-
-        _password.value = newPassword
     }
 
     /** Notifies that the user clicked the button to change the input method. */
@@ -170,7 +169,7 @@ constructor(
 
     /** Notifies that the user has pressed the key for attempting to authenticate the password. */
     fun onAuthenticateKeyPressed() {
-        if (_password.value.isNotEmpty()) {
+        if (textFieldState.text.isNotEmpty()) {
             tryAuthenticate()
         }
     }

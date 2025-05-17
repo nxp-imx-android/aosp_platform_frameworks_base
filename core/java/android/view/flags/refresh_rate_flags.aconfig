@@ -95,3 +95,13 @@ flag {
     description: "Feature flag to ennable ARR debug message"
     bug: "394614443"
 }
+
+flag {
+    name: "toolkit_velocity_map_sysprop"
+    namespace: "toolkit"
+    description: "Feature flag to map velocity to frame rate using sysprop"
+    bug: "404936438"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

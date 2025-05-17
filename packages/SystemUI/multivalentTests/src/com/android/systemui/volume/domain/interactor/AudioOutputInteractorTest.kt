@@ -134,7 +134,7 @@ class AudioOutputInteractorTest : SysuiTestCase() {
                 val cachedBluetoothDevice: CachedBluetoothDevice = mock {
                     on { address }.thenReturn(btDevice.address)
                     on { name }.thenReturn(btDevice.productName.toString())
-                    on { isHearingAidDevice }.thenReturn(true)
+                    on { isHearingDevice }.thenReturn(true)
                 }
                 whenever(bluetoothAdapter.getRemoteDevice(eq(btDevice.address)))
                     .thenReturn(bluetoothDevice)

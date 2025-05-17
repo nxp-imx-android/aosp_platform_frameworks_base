@@ -217,7 +217,7 @@ public class VirtualDeviceInternal {
                 mSoundEffectListener);
     }
 
-    @RequiresPermission(Manifest.permission.COMPUTER_CONTROL_ACCESS)
+    @RequiresPermission(Manifest.permission.ACCESS_COMPUTER_CONTROL)
     VirtualDeviceInternal(
             IVirtualDeviceManager service,
             Context context,

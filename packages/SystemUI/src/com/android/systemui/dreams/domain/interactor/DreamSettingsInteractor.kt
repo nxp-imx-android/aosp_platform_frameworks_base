@@ -19,21 +19,14 @@ package com.android.systemui.dreams.domain.interactor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dreams.data.repository.DreamSettingsRepository
 import com.android.systemui.dreams.shared.model.WhenToDream
-import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 @SysUISingleton
-class DreamSettingsInteractor
-@Inject
-constructor(userInteractor: SelectedUserInteractor, repository: DreamSettingsRepository) {
+class DreamSettingsInteractor @Inject constructor(repository: DreamSettingsRepository) {
     /** When to dream for the currently selected user. */
-    val whenToDream: Flow<WhenToDream> =
-        userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
-            repository.getWhenToDreamState(user)
-        }
+    val whenToDream: Flow<WhenToDream> = repository.getWhenToDreamState()
 
     val dreamingEnabled: Flow<Boolean> = whenToDream.map { it != WhenToDream.NEVER }
 }

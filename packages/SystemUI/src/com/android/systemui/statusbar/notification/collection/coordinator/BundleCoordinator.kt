@@ -22,6 +22,7 @@ import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.os.Build
 import android.os.SystemProperties
+import androidx.annotation.VisibleForTesting
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -40,6 +41,7 @@ import com.android.systemui.statusbar.notification.dagger.NewsHeader
 import com.android.systemui.statusbar.notification.dagger.PromoHeader
 import com.android.systemui.statusbar.notification.dagger.RecsHeader
 import com.android.systemui.statusbar.notification.dagger.SocialHeader
+import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
@@ -65,7 +67,7 @@ constructor(
                 return entry.asListEntry()?.representativeEntry?.channel?.id == NEWS_ID
             }
 
-            override fun getHeaderNodeController(): NodeController? {
+            override fun getHeaderNodeController(): NodeController {
                 return newsHeaderController
             }
         }
@@ -76,7 +78,7 @@ constructor(
                 return entry.asListEntry()?.representativeEntry?.channel?.id == SOCIAL_MEDIA_ID
             }
 
-            override fun getHeaderNodeController(): NodeController? {
+            override fun getHeaderNodeController(): NodeController {
                 return socialHeaderController
             }
         }
@@ -87,7 +89,7 @@ constructor(
                 return entry.asListEntry()?.representativeEntry?.channel?.id == RECS_ID
             }
 
-            override fun getHeaderNodeController(): NodeController? {
+            override fun getHeaderNodeController(): NodeController {
                 return recsHeaderController
             }
         }
@@ -98,14 +100,13 @@ constructor(
                 return entry.asListEntry()?.representativeEntry?.channel?.id == PROMOTIONS_ID
             }
 
-            override fun getHeaderNodeController(): NodeController? {
+            override fun getHeaderNodeController(): NodeController {
                 return promoHeaderController
             }
         }
 
     val bundler =
         object : NotifBundler("NotifBundler") {
-
             // Use list instead of set to keep fixed order
             override val bundleSpecs: List<BundleSpec> = buildList {
                 add(BundleSpec.NEWS)
@@ -145,20 +146,18 @@ constructor(
         }
 
     /** Recursively check parents until finding bundle or null */
-    private fun PipelineEntry.getBundleOrNull(): BundleEntry? {
-        return when (this) {
+    private fun PipelineEntry.getBundleOrNull(): BundleEntry? =
+        when (this) {
             is BundleEntry -> this
             is ListEntry -> parent?.getBundleOrNull()
         }
-    }
 
-    private fun inflateAllBundleEntries(list: List<PipelineEntry>) {
-        list.filterIsInstance<BundleEntry>().forEach { bundleBarn.inflateBundleEntry(it) }
+    private fun inflateAllBundleEntries(entries: List<PipelineEntry>) {
+        entries.forEachBundleEntry { bundleBarn.inflateBundleEntry(it) }
     }
 
     private val bundleFilter: NotifFilter =
         object : NotifFilter("BundleInflateFilter") {
-
             override fun shouldFilterOut(entry: NotificationEntry, now: Long): Boolean {
                 // TODO(b/399736937) Do not hide notifications if we have a bug that means the
                 //  bundle isn't inflated yet. It's better that we just show those notifications in
@@ -174,8 +173,59 @@ constructor(
             }
         }
 
-    private val bundleCountUpdater = OnBeforeRenderListListener { entries ->
-        entries.filterIsInstance<BundleEntry>().forEach(BundleEntry::updateTotalCount)
+    /** Updates the total count of [NotificationEntry]s within each bundle. */
+    @get:VisibleForTesting
+    val bundleCountUpdater = OnBeforeRenderListListener { entries ->
+        entries.forEachBundleEntry { bundleEntry ->
+            var count = 0
+            for (child in bundleEntry.children) {
+                when (child) {
+                    is NotificationEntry -> {
+                        count++
+                    }
+
+                    is GroupEntry -> {
+                        count += child.children.size
+                    }
+
+                    else -> error("Unexpected ListEntry type: ${child::class.simpleName}")
+                }
+            }
+            bundleEntry.bundleRepository.numberOfChildren = count
+        }
+    }
+
+    /**
+     * For each BundleEntry, populate its bundleRepository.appDataList with AppData (package name,
+     * UserHandle) from its notif children
+     */
+    @get:VisibleForTesting
+    val bundleAppDataUpdater = OnBeforeRenderListListener { entries ->
+        entries.forEachBundleEntry { bundleEntry ->
+            val newAppDataList: List<AppData> =
+                bundleEntry.children.flatMap { listEntry ->
+                    when (listEntry) {
+                        is NotificationEntry -> {
+                            listOf(AppData(listEntry.sbn.packageName, listEntry.sbn.user))
+                        }
+
+                        is GroupEntry -> {
+                            val summary = listEntry.representativeEntry
+                            if (summary != null) {
+                                listOf(AppData(summary.sbn.packageName, summary.sbn.user))
+                            } else {
+                                error(
+                                    "BundleEntry (key: ${bundleEntry.key}) contains GroupEntry " +
+                                        "(key: ${listEntry.key}) with no summary."
+                                )
+                            }
+                        }
+
+                        else -> error("Unexpected ListEntry type: ${listEntry::class.simpleName}")
+                    }
+                }
+            bundleEntry.bundleRepository.appDataList = newAppDataList
+        }
     }
 
     override fun attach(pipeline: NotifPipeline) {
@@ -184,6 +234,15 @@ constructor(
             pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
             pipeline.addFinalizeFilter(bundleFilter)
             pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
+            pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
+        }
+    }
+
+    private fun List<PipelineEntry>.forEachBundleEntry(block: (BundleEntry) -> Unit) {
+        for (entry in this) {
+            if (entry is BundleEntry) {
+                block(entry)
+            }
         }
     }
 

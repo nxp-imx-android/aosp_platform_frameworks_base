@@ -337,6 +337,11 @@ public class IconManager implements DemoModeCommandReceiver {
         }
     }
 
+    /** Returns the display id associated to the view group of this icon manager */
+    public int getDisplayId() {
+        return mGroup.getContext().getDisplayId();
+    }
+
     @Override
     public void dispatchDemoCommand(String command, Bundle args) {
         if (!mDemoable) {

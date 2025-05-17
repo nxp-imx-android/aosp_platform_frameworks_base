@@ -149,11 +149,11 @@ object PipUtils {
 
 
     /**
-     * Returns a fake source rect hint for animation purposes when app-provided one is invalid.
+     * Returns a pseudo source rect hint for animation purposes when app-provided one is invalid.
      * Resulting adjusted source rect hint lets the app icon in the content overlay to stay visible.
      */
     @JvmStatic
-    fun getEnterPipWithOverlaySrcRectHint(appBounds: Rect, aspectRatio: Float): Rect {
+    fun getPseudoSourceRectHint(appBounds: Rect, aspectRatio: Float): Rect {
         val appBoundsAspRatio = appBounds.width().toFloat() / appBounds.height()
         val width: Int
         val height: Int

@@ -226,7 +226,9 @@ open class HostStubGenLogger(val options: HostStubGenLoggerOptions) {
         }
 
         override fun write(cbuf: CharArray, off: Int, len: Int) {
-            println(level, String(cbuf, off, len))
+            String(cbuf, off, len).lines().forEach {
+                println(level, it)
+            }
         }
     }
 }
@@ -244,9 +246,9 @@ private class BufferedLogger(base: HostStubGenLogger) : HostStubGenLogger(base) 
                     it.println(indent, message)
                 }
             }
-            output.clear()
             it.flush()
         }
+        output.clear()
     }
 
     override fun println(level: LogLevel, message: String) {
@@ -330,8 +332,6 @@ interface LogPrinter {
 
     fun println(indent: Int, message: String)
 
-    // TODO: This should be removed once MultiplexingWriter starts applying indent, at which point
-    // println() should be used instead.
     fun write(cbuf: CharArray, off: Int, len: Int)
 
     fun flush()

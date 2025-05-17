@@ -25,13 +25,14 @@ import android.view.Display
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.util.ScreenshotRequest
+import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @DisabledOnRavenwood(blockedBy = [ScreenshotRequest::class])
-class ScreenshotDataTest {
+class ScreenshotDataTest : SysuiTestCase() {
     private val type = WindowManager.TAKE_SCREENSHOT_FULLSCREEN
     private val source = WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER
     private val bounds = Rect(1, 2, 3, 4)

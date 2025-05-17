@@ -43,6 +43,10 @@ class FakeConfigurationController @Inject constructor() :
         listeners.forEach { it.onDensityOrFontScaleChanged() }
     }
 
+    fun notifyLocaleChanged() {
+        listeners.forEach { it.onLocaleListChanged() }
+    }
+
     fun notifyConfigurationChanged() {
         onConfigurationChanged(newConfiguration = Configuration())
     }

@@ -16,75 +16,53 @@
 
 package com.android.wm.shell.common.split;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_90_10;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_END_AND_DISMISS;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_START_AND_DISMISS;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
 import android.content.res.Resources;
-import android.util.DisplayMetrics;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.mechanics.spec.MotionSpec;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.common.split.DividerSnapAlgorithm.SnapTarget;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoSession;
 
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class MagneticDividerUtilsTests {
-    private MockitoSession mMockitoSession;
-
-    private final List<SnapTarget> mTargets = List.of(
-            new SnapTarget(0, SNAP_TO_START_AND_DISMISS),
-            new SnapTarget(100, SNAP_TO_2_10_90),
-            new SnapTarget(500, SNAP_TO_2_50_50),
-            new SnapTarget(900, SNAP_TO_2_90_10),
-            new SnapTarget(1000, SNAP_TO_END_AND_DISMISS)
-    );
-
-    @Mock Resources mResources;
-    @Mock DisplayMetrics mDisplayMetrics;
+    Resources mResources;
 
     @Before
     public void setup() {
-        mMockitoSession = mockitoSession()
-                .initMocks(this)
-                .mockStatic(PipUtils.class)
-                .startMocking();
-    }
-
-    @After
-    public void tearDown() {
-        mMockitoSession.finishMocking();
+        mResources = InstrumentationRegistry.getInstrumentation().getContext().getResources();
     }
 
     @Test
-    public void generateMotionSpec_producesCorrectNumberOfBreakpointsAndMappings() {
-        when(mResources.getDisplayMetrics()).thenReturn(mDisplayMetrics);
-        when(PipUtils.dpToPx(anyFloat(), eq(mDisplayMetrics))).thenReturn(30);
+    public void generateMotionSpec_worksOnThisDeviceWithoutCrashing() {
+        int longEdge = Math.max(
+                mResources.getDisplayMetrics().heightPixels,
+                mResources.getDisplayMetrics().widthPixels
+        );
 
+        List<SnapTarget> mTargets = List.of(
+                new SnapTarget(0, SNAP_TO_START_AND_DISMISS),
+                new SnapTarget(longEdge / 10, SNAP_TO_2_10_90),
+                new SnapTarget(longEdge / 2, SNAP_TO_2_50_50),
+                new SnapTarget(longEdge - (longEdge / 10), SNAP_TO_2_90_10),
+                new SnapTarget(longEdge, SNAP_TO_END_AND_DISMISS)
+        );
+
+        // Check that a MotionSpec gets created without crashing. A crash can happen if the dp
+        // values set MagneticDividerUtils are large enough that the snap zones overlap on smaller
+        // screens.
         MotionSpec motionSpec = MagneticDividerUtils.generateMotionSpec(mTargets, mResources);
-
-        // Expect 12 breakpoints: the "min" breakpoint, the "max" breakpoint, and 2 breakpoints for
-        // each of the 5 snap points.
-        assertEquals(12, motionSpec.getMaxDirection().getBreakpoints().size());
-        // Expect 11 mappings, that go between the breakpoints.
-        assertEquals(11, motionSpec.getMaxDirection().getMappings().size());
     }
 }

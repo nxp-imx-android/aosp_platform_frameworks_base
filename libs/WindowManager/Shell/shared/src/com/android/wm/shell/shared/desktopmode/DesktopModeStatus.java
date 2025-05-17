@@ -18,7 +18,6 @@ package com.android.wm.shell.shared.desktopmode;
 
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
 
-import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enableBubbleToFullscreen;
 
 import android.annotation.NonNull;
@@ -120,7 +119,7 @@ public class DesktopModeStatus {
      */
     public static boolean canShowDesktopExperienceDevOption(@NonNull Context context) {
         return Flags.showDesktopExperienceDevOption()
-                && isDeviceEligibleForDesktopMode(context);
+                && isDeviceEligibleForDesktopExperienceDevOption(context);
     }
 
     /** Returns if desktop mode dev option should be enabled if there is no user override. */
@@ -165,14 +164,21 @@ public class DesktopModeStatus {
         }
 
         // TODO (b/395014779): Change this to use WM API
-        if ((display.getType() == Display.TYPE_EXTERNAL
-                || display.getType() == Display.TYPE_OVERLAY)
-                && enableDisplayContentModeManagement()) {
-            final WindowManager wm = context.getSystemService(WindowManager.class);
-            return wm != null && wm.isEligibleForDesktopMode(display.getDisplayId());
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+            return false;
         }
+        final WindowManager wm = context.getSystemService(WindowManager.class);
+        return wm != null && wm.isEligibleForDesktopMode(display.getDisplayId());
+    }
 
-        return false;
+    /**
+     * Returns true if the multi-desks frontend should be enabled on the display.
+     */
+    public static boolean isMultipleDesktopFrontendEnabledOnDisplay(@NonNull Context context,
+            Display display) {
+        return DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_FRONTEND.isTrue()
+                && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                && isDesktopModeSupportedOnDisplay(context, display);
     }
 
     /**
@@ -216,11 +222,9 @@ public class DesktopModeStatus {
     }
 
     /**
-     * Return {@code true} if the developer option for desktop mode is unrestricted and is supported
-     * in the device.
+     * Return {@code true} if the developer option for desktop mode is supported on this device.
      *
-     * Note that, if {@link #isDeviceEligibleForDesktopMode(Context)} is true, then
-     * {@link #isDeviceEligibleForDesktopModeDevOption(Context)} is also true.
+     * <p> This method doesn't check if the developer option flag is enabled or not.
      */
     private static boolean isDeviceEligibleForDesktopModeDevOption(@NonNull Context context) {
         if (!enforceDeviceRestrictions()) {
@@ -229,6 +233,19 @@ public class DesktopModeStatus {
         final boolean desktopModeSupported = isDesktopModeSupported(context)
                 && canInternalDisplayHostDesktops(context);
         return desktopModeSupported || isDesktopModeDevOptionSupported(context);
+    }
+
+    /**
+     * Return {@code true} if the developer option for desktop experience is supported on this
+     * device.
+     *
+     * <p> This method doesn't check if the developer option flag is enabled or not.
+     */
+    private static boolean isDeviceEligibleForDesktopExperienceDevOption(@NonNull Context context) {
+        if (!enforceDeviceRestrictions()) {
+            return true;
+        }
+        return isDesktopModeSupported(context) || isDesktopModeDevOptionSupported(context);
     }
 
     /**

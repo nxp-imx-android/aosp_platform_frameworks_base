@@ -13,10 +13,32 @@
  */
 package com.android.systemui.plugins.clocks
 
+import android.content.Context
+import android.icu.util.TimeZone
+import android.text.format.DateFormat
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.ProtectedReturn
 import java.util.Locale
-import java.util.TimeZone
+
+/** Denotes format kind that should be used when rendering the clock */
+enum class TimeFormatKind {
+    HALF_DAY,
+    FULL_DAY;
+
+    companion object {
+        fun getFromContext(context: Context): TimeFormatKind {
+            return lookup(DateFormat.is24HourFormat(context))
+        }
+
+        fun getFromContext(context: Context, userId: Int): TimeFormatKind {
+            return lookup(DateFormat.is24HourFormat(context, userId))
+        }
+
+        fun lookup(is24Hr: Boolean): TimeFormatKind {
+            return if (is24Hr) FULL_DAY else HALF_DAY
+        }
+    }
+}
 
 /** Events that should call when various rendering parameters change */
 @ProtectedInterface
@@ -28,8 +50,8 @@ interface ClockEvents {
     /** Call whenever timezone changes */
     fun onTimeZoneChanged(timeZone: TimeZone)
 
-    /** Call whenever the text time format changes (12hr vs 24hr) */
-    fun onTimeFormatChanged(is24Hr: Boolean)
+    /** Call whenever the text time format kind changes */
+    fun onTimeFormatChanged(formatKind: TimeFormatKind)
 
     /** Call whenever the locale changes */
     fun onLocaleChanged(locale: Locale)

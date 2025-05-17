@@ -28,6 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +45,7 @@ import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -148,11 +150,15 @@ private fun ContentScope.BundleHeaderContent(
             modifier = Modifier.element(BundleHeader.Elements.TitleText).weight(1f),
         )
 
-        if (collapsed && viewModel.previewIcons.isNotEmpty()) {
-            BundlePreviewIcons(
-                previewDrawables = viewModel.previewIcons,
-                modifier = Modifier.padding(start = 8.dp),
-            )
+        if (collapsed) {
+            val currentPreviewIcons: List<Drawable> by
+                viewModel.previewIcons.collectAsStateWithLifecycle(initialValue = emptyList())
+            if (currentPreviewIcons.isNotEmpty()) {
+                BundlePreviewIcons(
+                    previewDrawables = currentPreviewIcons,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
         }
 
         ExpansionControl(

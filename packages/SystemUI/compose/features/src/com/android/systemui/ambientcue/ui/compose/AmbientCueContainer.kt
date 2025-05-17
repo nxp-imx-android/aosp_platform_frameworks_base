@@ -42,7 +42,16 @@ fun AmbientCueContainer(
     // TODO: b/414507396 - Replace with the height of the navbar
     val chipsBottomPadding = 46.dp
 
-    LaunchedEffect(expanded) { onShouldInterceptTouches(expanded) }
+    LaunchedEffect(expanded) {
+        onShouldInterceptTouches(expanded)
+        if (expanded) {
+            viewModel.cancelDeactivation()
+        } else {
+            viewModel.delayAndDeactivateCueBar()
+        }
+    }
+
+    LaunchedEffect(actions) { viewModel.delayAndDeactivateCueBar() }
 
     Box(
         modifier.clickable(enabled = expanded, indication = null, interactionSource = null) {

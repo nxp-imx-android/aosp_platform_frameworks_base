@@ -28,6 +28,7 @@ import com.android.systemui.ScreenDecorationsModule;
 import com.android.systemui.accessibility.AccessibilityModule;
 import com.android.systemui.accessibility.SystemActionsModule;
 import com.android.systemui.accessibility.data.repository.AccessibilityRepositoryModule;
+import com.android.systemui.actioncorner.ActionCornerModule;
 import com.android.systemui.battery.BatterySaverModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayOverrideModule;
 import com.android.systemui.communal.posturing.dagger.NoopPosturingModule;
@@ -177,6 +178,7 @@ import javax.inject.Named;
         WallpaperModule.class,
         ShortcutHelperModule.class,
         ContextualEducationModule.class,
+        ActionCornerModule.class,
 })
 public abstract class ReferenceSystemUIModule {
 

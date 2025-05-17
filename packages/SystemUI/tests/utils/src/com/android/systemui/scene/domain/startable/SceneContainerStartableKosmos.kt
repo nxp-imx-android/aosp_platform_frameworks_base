@@ -38,7 +38,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
-import com.android.systemui.model.sysUiState
+import com.android.systemui.model.sysuiStateInteractor
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.disabledContentInteractor
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
@@ -46,6 +46,7 @@ import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.session.shared.shadeSessionStorage
 import com.android.systemui.scene.shared.logger.sceneLogger
+import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
@@ -63,7 +64,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         deviceUnlockedInteractor = deviceUnlockedInteractor,
         bouncerInteractor = bouncerInteractor,
         keyguardInteractor = keyguardInteractor,
-        sysUiState = sysUiState,
         sceneLogger = sceneLogger,
         falsingCollector = falsingCollector,
         falsingManager = falsingManager,
@@ -91,5 +91,7 @@ val Kosmos.sceneContainerStartable by Fixture {
         shadeModeInteractor = shadeModeInteractor,
         tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
         trustInteractor = trustInteractor,
+        sysuiStateInteractor = sysuiStateInteractor,
+        shadeDisplaysInteractor = { shadeDisplaysInteractor },
     )
 }

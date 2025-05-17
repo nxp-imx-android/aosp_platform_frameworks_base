@@ -64,6 +64,7 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ITransitionPlayer;
 import android.window.RemoteTransition;
+import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentOrganizer;
 import android.window.TransitionFilter;
 import android.window.TransitionInfo;
@@ -208,6 +209,9 @@ public class Transitions implements RemoteCallable<Transitions>,
 
     /** Transition type for converting a task to a bubble. */
     public static final int TRANSIT_CONVERT_TO_BUBBLE = TRANSIT_FIRST_CUSTOM + 24;
+
+    /** Transition type for converting a floating bubble to a bar bubble. */
+    public static final int TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR = TRANSIT_FIRST_CUSTOM + 25;
 
     /** Transition type for desktop mode transitions. */
     public static final int TRANSIT_DESKTOP_MODE_TYPES =
@@ -1281,6 +1285,10 @@ public class Transitions implements RemoteCallable<Transitions>,
         mPendingTransitions.add(0, active);
     }
 
+    void removeStartingWindow(StartingWindowRemovalInfo removalInfo) {
+        mOrganizer.removeStartingWindow(removalInfo);
+    }
+
     /**
      * Start a new transition directly.
      * @param handler if null, the transition will be dispatched to the registered set of transition
@@ -1649,6 +1657,11 @@ public class Transitions implements RemoteCallable<Transitions>,
                 TransitionRequestInfo request) throws RemoteException {
             mMainExecutor.execute(() -> Transitions.this.requestStartTransition(iBinder, request));
         }
+
+        @Override
+        public void removeStartingWindow(StartingWindowRemovalInfo removalInfo) {
+            mMainExecutor.execute(() -> Transitions.this.removeStartingWindow(removalInfo));
+        }
     }
 
     /**
@@ -1918,6 +1931,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             case TRANSIT_START_RECENTS_TRANSITION -> "START_RECENTS_TRANSITION";
             case TRANSIT_END_RECENTS_TRANSITION -> "END_RECENTS_TRANSITION";
             case TRANSIT_CONVERT_TO_BUBBLE -> "CONVERT_TO_BUBBLE";
+            case TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR -> "BUBBLE_CONVERT_FLOATING_TO_BAR";
             default -> "";
         };
         if (typeStr.isEmpty()) {

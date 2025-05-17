@@ -24,6 +24,8 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP;
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtilsKt.verifyExitBubbleTransaction;
 
@@ -66,13 +68,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 /**
  * Tests of {@link TaskViewTransitions}.
@@ -144,12 +146,16 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     }
 
     @EnableFlags({
+            FLAG_ENABLE_CREATE_ANY_BUBBLE,
             FLAG_ENABLE_BUBBLE_ANYTHING,
             FLAG_EXCLUDE_TASK_FROM_RECENTS,
             FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
+            FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
     })
     @Test
     public void testMoveTaskViewToFullscreen_applyWctToExitBubble() {
+        final Binder captionInsetsOwner = new Binder();
+        when(mTaskViewTaskController.getCaptionInsetsOwner()).thenReturn(captionInsetsOwner);
         mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
 
         final TaskViewTransitions.PendingTransition pending = mTaskViewTransitions.findPending(
@@ -157,7 +163,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         assertThat(pending).isNotNull();
         final WindowContainerTransaction wct = pending.mWct;
         assertThat(wct).isNotNull();
-        verifyExitBubbleTransaction(wct, mToken.asBinder());
+        verifyExitBubbleTransaction(wct, mToken.asBinder(), captionInsetsOwner);
     }
 
     @Test

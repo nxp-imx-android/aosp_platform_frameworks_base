@@ -87,6 +87,7 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.anyLong
+import org.mockito.Mockito.atLeast
 import org.mockito.Mockito.floatThat
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -613,7 +614,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
                 this,
             )
 
-            verify(mediaCarousel).visibility = View.VISIBLE
+            verify(mediaCarousel, atLeast(1)).visibility = View.VISIBLE
             assertEquals(true, updatedVisibility)
             assertEquals(false, mediaCarouselController.isLockedAndHidden())
 
@@ -638,7 +639,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
             kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
             kosmos.setSceneTransition(Idle(Scenes.Gone))
 
-            verify(mediaCarousel).visibility = View.VISIBLE
+            verify(mediaCarousel, atLeast(1)).visibility = View.VISIBLE
             assertEquals(true, updatedVisibility)
 
             job.cancel()

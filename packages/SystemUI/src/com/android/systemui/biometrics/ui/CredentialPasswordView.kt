@@ -54,6 +54,7 @@ class CredentialPasswordView(context: Context, attrs: AttributeSet?) :
 
     override fun onApplyWindowInsets(v: View, insets: WindowInsets): WindowInsets {
         val statusBarInsets: Insets = insets.getInsets(WindowInsets.Type.statusBars())
+        val displayCutoutInsets: Insets = insets.getInsets(WindowInsets.Type.displayCutout())
         val keyboardInsets: Insets = insets.getInsets(WindowInsets.Type.ime())
         val navigationInsets: Insets = insets.getInsets(WindowInsets.Type.navigationBars())
         val imeBottomInset = keyboardInsets.bottom
@@ -79,7 +80,7 @@ class CredentialPasswordView(context: Context, attrs: AttributeSet?) :
 
         setPadding(
             0,
-            statusBarInsets.top,
+            statusBarInsets.top.coerceAtLeast(displayCutoutInsets.top),
             0,
             if (keyboardInsets.bottom == 0) navigationInsets.bottom else keyboardInsets.bottom,
         )

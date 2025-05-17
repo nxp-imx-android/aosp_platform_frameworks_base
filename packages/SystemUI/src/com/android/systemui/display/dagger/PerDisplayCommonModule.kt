@@ -25,41 +25,70 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.display.data.repository.DisplayStateRepository
+import com.android.systemui.display.data.repository.DisplayStateRepositoryImpl
+import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.Multibinds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
 /** Module providing common dependencies for per-display singletons. */
 @Module
-class PerDisplayCommonModule {
+interface PerDisplayCommonModule {
 
-    @Provides
-    @PerDisplaySingleton
-    fun provideDisplay(@DisplayId displayId: Int, displayRepository: DisplayRepository): Display {
-        return displayRepository.getDisplay(displayId)
-            ?: error("Couldn't get the display with id=$displayId")
-    }
+    @Multibinds
+    @DisplayAware
+    fun lifecycleListeners(): Set<SystemUIDisplaySubcomponent.LifecycleListener>
 
-    @Provides
+    @Binds
     @PerDisplaySingleton
     @DisplayAware
-    fun provideDisplayContext(
-        display: Display,
-        @Application context: Context,
-    ): Context {
-        return context.createDisplayContext(display)
-    }
+    fun displayStateRepository(impl: DisplayStateRepositoryImpl): DisplayStateRepository
 
-    @Provides
+    @Binds
     @PerDisplaySingleton
     @DisplayAware
-    fun provideDisplayCoroutineScope(
-        @Background backgroundDispatcher: CoroutineDispatcher,
-        @DisplayId displayId: Int,
-    ): CoroutineScope {
-        return CoroutineScope(
-            backgroundDispatcher + newTracingContext("DisplayScope(id=$displayId)")
-        )
+    fun bindsDisplayStateInteractor(impl: DisplayStateInteractorImpl): DisplayStateInteractor
+
+    companion object {
+        @Provides
+        @PerDisplaySingleton
+        fun provideDisplay(
+            @DisplayId displayId: Int,
+            displayRepository: DisplayRepository,
+        ): Display {
+            return displayRepository.getDisplay(displayId)
+                ?: error("Couldn't get the display with id=$displayId")
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun provideDisplayContext(display: Display, @Application context: Context): Context {
+            return if (display.displayId == Display.DEFAULT_DISPLAY) {
+                // No need to create a new context, if we already have one.
+                context
+            } else {
+                context.createDisplayContext(display)
+            }
+        }
+
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun provideDisplayCoroutineScope(
+            @Background backgroundDispatcher: CoroutineDispatcher,
+            @DisplayId displayId: Int,
+        ): CoroutineScope {
+            return CoroutineScope(
+                backgroundDispatcher + newTracingContext("DisplayScope(id=$displayId)")
+            )
+        }
+
+        @Provides @DisplayAware fun provideDisplayId(@DisplayId displayId: Int): Int = displayId
     }
 }

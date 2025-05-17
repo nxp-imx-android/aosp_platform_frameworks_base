@@ -69,9 +69,7 @@ class DisplayTopologyCoordinatorTest {
             override fun createTopologyStore(
                 displayIdToUniqueId: SparseArray<String>,
                 uniqueIdToDisplayId: MutableMap<String, Int>
-            ) =
-                mockTopologyStore
-            override fun getDisplayInfo(displayId: Int) = displayInfos.get(displayId)
+            ) = mockTopologyStore
         }
         whenever(mockIsExtendedDisplayAllowed()).thenReturn(true)
         whenever(mockTopology.copy()).thenReturn(mockTopologyCopy)
@@ -79,7 +77,7 @@ class DisplayTopologyCoordinatorTest {
         coordinator = DisplayTopologyCoordinator(injector, mockIsExtendedDisplayAllowed,
             mockShouldIncludeDefaultDisplayInTopology, mockTopologyChangedCallback,
             topologyChangeExecutor, DisplayManagerService.SyncRoot(), mockTopologySavedCallback,
-            mockFlags)
+            mockFlags, displayInfos::get)
     }
 
     @Test

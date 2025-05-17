@@ -66,6 +66,10 @@ abstract class CloseAllAppsWithAppHeaderExit (
         nonResizeableApp.closeDesktopApp(wmHelper, device)
         mailApp.closeDesktopApp(wmHelper, device)
         testApp.closeDesktopApp(wmHelper, device)
+        wmHelper.StateSyncBuilder()
+            .withAppTransitionIdle()
+            .withHomeActivityVisible()
+            .waitForAndVerify()
     }
 
     @After

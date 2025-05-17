@@ -126,3 +126,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "log_augmented_service_uid"
+  namespace: "autofill"
+  description: "Log the UID of the augmented autofill service in FillRequest events"
+  bug: "411232512"
+}

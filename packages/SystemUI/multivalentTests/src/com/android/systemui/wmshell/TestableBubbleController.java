@@ -32,6 +32,7 @@ import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.ResizabilityChecker;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -42,6 +43,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.onehanded.OneHandedController;
+import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -84,14 +86,17 @@ public class TestableBubbleController extends BubbleController {
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
             ResizabilityChecker resizabilityChecker,
-            HomeIntentProvider homeIntentProvider) {
+            HomeIntentProvider homeIntentProvider,
+            BubbleAppInfoProvider appInfoProvider,
+            Optional<SplitScreenController> splitScreenController) {
         super(context, shellInit, shellCommandHandler, shellController, data, Runnable::run,
                 floatingContentCoordinator, dataRepository, bubbleTransitions, statusBarService,
                 windowManager, displayInsetsController, displayImeController, userManager,
                 launcherApps, bubbleLogger, taskStackListener, shellTaskOrganizer, positioner,
                 displayController, oneHandedOptional, dragAndDropController, shellMainExecutor,
                 shellMainHandler, new SyncExecutor(), taskViewTransitions,
-                transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider);
+                transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider,
+                appInfoProvider, () -> splitScreenController);
         setInflateSynchronously(true);
         onInit();
     }

@@ -27,7 +27,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -55,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -72,7 +72,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
@@ -92,6 +91,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.privacy.OngoingPrivacyChip
+import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import com.android.systemui.scene.shared.model.Scenes
@@ -102,6 +102,7 @@ import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
+import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairosComposeWrapper
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModel
@@ -172,7 +173,7 @@ object ShadeHeader {
     }
 }
 
-/** The status bar that appears above the Shade scene on small screens */
+/** The status bar that appears above the Shade scene on small screens. */
 @Composable
 fun ContentScope.CollapsedShadeHeader(
     viewModel: ShadeHeaderViewModel,
@@ -190,8 +191,6 @@ fun ContentScope.CollapsedShadeHeader(
                     shouldUseExpandedFormat(layoutState.transitionState)
             }
         }
-
-    val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
@@ -212,10 +211,11 @@ fun ContentScope.CollapsedShadeHeader(
             }
         },
         endContent = {
-            if (isPrivacyChipVisible) {
+            if (viewModel.isPrivacyChipVisible) {
                 Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                     PrivacyChip(
-                        viewModel = viewModel,
+                        privacyList = viewModel.privacyItems,
+                        onClick = viewModel::onPrivacyChipClicked,
                         modifier = Modifier.align(Alignment.CenterEnd),
                     )
                 }
@@ -230,8 +230,12 @@ fun ContentScope.CollapsedShadeHeader(
                     if (isSplitShade) {
                         ShadeCarrierGroup(viewModel = viewModel)
                     }
-                    SystemIconChip(
-                        onClick = viewModel::onSystemIconChipClicked.takeIf { isSplitShade }
+                    HighlightChip(
+                        onClick = {
+                            if (isSplitShade) {
+                                viewModel.onSystemIconChipClicked()
+                            }
+                        }
                     ) {
                         val paddingEnd =
                             with(LocalDensity.current) {
@@ -242,11 +246,12 @@ fun ContentScope.CollapsedShadeHeader(
                             useExpandedFormat = useExpandedTextFormat,
                             modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                         )
-                        BatteryIcon(
-                            createBatteryMeterViewController =
-                                viewModel.createBatteryMeterViewController,
+                        BatteryInfo(
+                            viewModel = viewModel,
+                            showIcon = true,
                             useExpandedFormat = useExpandedTextFormat,
                             modifier = Modifier.padding(vertical = 8.dp),
+                            textColor = Color.White, // Single shade is always in Dark theme
                         )
                     }
                 }
@@ -255,7 +260,7 @@ fun ContentScope.CollapsedShadeHeader(
     )
 }
 
-/** The status bar that appears above the Quick Settings scene on small screens */
+/** The status bar that appears above the Quick Settings scene on small screens. */
 @Composable
 fun ContentScope.ExpandedShadeHeader(
     viewModel: ShadeHeaderViewModel,
@@ -265,12 +270,14 @@ fun ContentScope.ExpandedShadeHeader(
         derivedStateOf { shouldUseExpandedFormat(layoutState.transitionState) }
     }
 
-    val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
-
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
-        if (isPrivacyChipVisible) {
+        if (viewModel.isPrivacyChipVisible) {
             Box(modifier = Modifier.height(ShadeHeader.Dimensions.StatusBarHeight).fillMaxWidth()) {
-                PrivacyChip(viewModel = viewModel, modifier = Modifier.align(Alignment.CenterEnd))
+                PrivacyChip(
+                    privacyList = viewModel.privacyItems,
+                    onClick = viewModel::onPrivacyChipClicked,
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                )
             }
         }
         Column(
@@ -306,7 +313,7 @@ fun ContentScope.ExpandedShadeHeader(
                     textColor = colorAttr(android.R.attr.textColorPrimary),
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
-                SystemIconChip {
+                HighlightChip {
                     val paddingEnd =
                         with(LocalDensity.current) {
                             (if (NewStatusBarIcons.isEnabled) 3.sp else 6.sp).toDp()
@@ -316,10 +323,11 @@ fun ContentScope.ExpandedShadeHeader(
                         useExpandedFormat = useExpandedFormat,
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                     )
-                    BatteryIcon(
+                    BatteryInfo(
+                        viewModel = viewModel,
+                        showIcon = true,
                         useExpandedFormat = useExpandedFormat,
-                        createBatteryMeterViewController =
-                            viewModel.createBatteryMeterViewController,
+                        textColor = Color.White, // Single shade is always in Dark theme
                     )
                 }
             }
@@ -342,37 +350,30 @@ fun ContentScope.OverlayShadeHeader(
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
-    val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
-
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
         modifier = modifier,
         startContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.padding(horizontal = horizontalPadding),
-            ) {
-                if (showClock) {
-                    Clock(
-                        onClick = viewModel::onClockClicked,
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                    )
-                }
-                NotificationsChip(
-                    onClick = viewModel::onNotificationIconChipClicked,
+            Box(modifier = Modifier.padding(horizontal = horizontalPadding)) {
+                HighlightChip(
                     backgroundColor = notificationsHighlight.backgroundColor,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    onClick = viewModel::onNotificationIconChipClicked,
                     modifier =
-                        Modifier.bouncy(
-                            isEnabled = viewModel.animateNotificationsChipBounce,
-                            onBoundsChange = { bounds ->
-                                viewModel.onDualShadeEducationElementBoundsChange(
-                                    element = DualShadeEducationElement.Notifications,
-                                    bounds = bounds,
-                                )
-                            },
-                        ),
+                        Modifier.align(Alignment.CenterStart)
+                            .bouncy(
+                                isEnabled = viewModel.animateNotificationsChipBounce,
+                                onBoundsChange = { bounds ->
+                                    viewModel.onDualShadeEducationElementBoundsChange(
+                                        element = DualShadeEducationElement.Notifications,
+                                        bounds = bounds,
+                                    )
+                                },
+                            ),
                 ) {
+                    if (showClock) {
+                        Clock(textColor = notificationsHighlight.foregroundColor)
+                    }
                     VariableDayDate(
                         longerDateText = viewModel.longerDateText,
                         shorterDateText = viewModel.shorterDateText,
@@ -387,7 +388,7 @@ fun ContentScope.OverlayShadeHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
-                SystemIconChip(
+                HighlightChip(
                     backgroundColor = quickSettingsHighlight.backgroundColor,
                     onClick = viewModel::onSystemIconChipClicked,
                     modifier =
@@ -412,17 +413,18 @@ fun ContentScope.OverlayShadeHeader(
                         modifier = Modifier.padding(end = paddingEnd).weight(1f, fill = false),
                         isHighlighted = isHighlighted,
                     )
-                    BatteryIcon(
-                        createBatteryMeterViewController =
-                            viewModel.createBatteryMeterViewController,
+                    BatteryInfo(
+                        viewModel = viewModel,
+                        showIcon = true,
                         useExpandedFormat = false,
                         isHighlighted = isHighlighted,
                     )
                 }
-                if (isPrivacyChipVisible) {
+                if (viewModel.isPrivacyChipVisible) {
                     Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
                         PrivacyChip(
-                            viewModel = viewModel,
+                            privacyList = viewModel.privacyItems,
+                            onClick = viewModel::onPrivacyChipClicked,
                             modifier = Modifier.align(Alignment.CenterEnd),
                         )
                     }
@@ -441,10 +443,7 @@ fun QuickSettingsOverlayHeader(viewModel: ShadeHeaderViewModel, modifier: Modifi
         modifier = modifier.fillMaxWidth(),
     ) {
         ShadeCarrierGroup(viewModel = viewModel)
-        BatteryIcon(
-            createBatteryMeterViewController = viewModel.createBatteryMeterViewController,
-            useExpandedFormat = true,
-        )
+        BatteryInfo(viewModel = viewModel, showIcon = false, useExpandedFormat = true)
     }
 }
 
@@ -506,9 +505,10 @@ private fun CutoutAwareShadeHeader(
 
 @Composable
 private fun ContentScope.Clock(
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
     scale: Float = 1f,
+    textColor: Color? = null,
 ) {
     val layoutDirection = LocalLayoutDirection.current
 
@@ -523,6 +523,7 @@ private fun ContentScope.Clock(
                         null,
                     )
                 },
+                update = { view -> textColor?.let { view.setTextColor(it.toArgb()) } },
                 modifier =
                     modifier
                         // use graphicsLayer instead of Modifier.scale to anchor transform to the
@@ -539,19 +540,49 @@ private fun ContentScope.Clock(
                                     0.5f,
                                 )
                         }
-                        .clickable { onClick() },
+                        .thenIf(onClick != null) { Modifier.clickable { onClick?.invoke() } },
             )
         }
     }
 }
 
 @Composable
-private fun BatteryIcon(
+private fun BatteryInfo(
+    viewModel: ShadeHeaderViewModel,
+    showIcon: Boolean,
+    useExpandedFormat: Boolean,
+    modifier: Modifier = Modifier,
+    isHighlighted: Boolean = false,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    if (NewStatusBarIcons.isEnabled) {
+        BatteryWithEstimate(
+            viewModelFactory = viewModel.batteryViewModelFactory,
+            isDarkProvider = { viewModel.isShadeAreaDark },
+            showIcon = showIcon,
+            showEstimate = useExpandedFormat,
+            textColor = textColor,
+            modifier = modifier,
+        )
+    } else {
+        BatteryIconLegacy(
+            createBatteryMeterViewController = viewModel.createBatteryMeterViewController,
+            useExpandedFormat = useExpandedFormat,
+            modifier = modifier,
+            isHighlighted = isHighlighted,
+        )
+    }
+}
+
+@Composable
+private fun BatteryIconLegacy(
     createBatteryMeterViewController: (ViewGroup, StatusBarLocation) -> BatteryMeterViewController,
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
     isHighlighted: Boolean = false,
 ) {
+    NewStatusBarIcons.assertInLegacyMode()
+
     val localContext = LocalContext.current
     val themedContext =
         ContextThemeWrapper(localContext, R.style.Theme_SystemUI_QuickSettings_Header)
@@ -693,13 +724,6 @@ private fun ContentScope.StatusIcons(
     val micSlot = stringResource(id = com.android.internal.R.string.status_bar_microphone)
     val locationSlot = stringResource(id = com.android.internal.R.string.status_bar_location)
 
-    val isSingleCarrier by viewModel.isSingleCarrier.collectAsStateWithLifecycle()
-    val isPrivacyChipEnabled by viewModel.isPrivacyChipEnabled.collectAsStateWithLifecycle()
-    val isMicCameraIndicationEnabled by
-        viewModel.isMicCameraIndicationEnabled.collectAsStateWithLifecycle()
-    val isLocationIndicationEnabled by
-        viewModel.isLocationIndicationEnabled.collectAsStateWithLifecycle()
-
     val iconContainer = remember { StatusIconContainer(themedContext, null) }
     val iconManager = remember {
         viewModel.createTintedIconManager(iconContainer, StatusBarLocation.QS)
@@ -717,21 +741,21 @@ private fun ContentScope.StatusIcons(
             iconContainer.setQsExpansionTransitioning(
                 layoutState.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings)
             )
-            if (isSingleCarrier || !useExpandedFormat) {
+            if (viewModel.isSingleCarrier || !useExpandedFormat) {
                 iconContainer.removeIgnoredSlots(carrierIconSlots)
             } else {
                 iconContainer.addIgnoredSlots(carrierIconSlots)
             }
 
-            if (isPrivacyChipEnabled) {
-                if (isMicCameraIndicationEnabled) {
+            if (viewModel.isPrivacyChipEnabled) {
+                if (viewModel.isMicCameraIndicationEnabled) {
                     iconContainer.addIgnoredSlot(cameraSlot)
                     iconContainer.addIgnoredSlot(micSlot)
                 } else {
                     iconContainer.removeIgnoredSlot(cameraSlot)
                     iconContainer.removeIgnoredSlot(micSlot)
                 }
-                if (isLocationIndicationEnabled) {
+                if (viewModel.isLocationIndicationEnabled) {
                     iconContainer.addIgnoredSlot(locationSlot)
                 } else {
                     iconContainer.removeIgnoredSlot(locationSlot)
@@ -754,41 +778,25 @@ private fun ContentScope.StatusIcons(
 }
 
 @Composable
-private fun NotificationsChip(
-    onClick: () -> Unit,
+private fun HighlightChip(
     modifier: Modifier = Modifier,
-    backgroundColor: Color,
-    content: @Composable BoxScope.() -> Unit,
+    backgroundColor: Color = Color.Unspecified,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    onClick: () -> Unit = {},
+    content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    Box(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = horizontalArrangement,
         modifier =
             modifier
+                .clip(RoundedCornerShape(25.dp))
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
                     onClick = onClick,
                 )
-                .background(backgroundColor, RoundedCornerShape(25.dp))
-                .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun SystemIconChip(
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = Color.Unspecified,
-    onClick: (() -> Unit)? = null,
-    content: @Composable RowScope.() -> Unit,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-            modifier
-                .clip(RoundedCornerShape(25.dp))
-                .thenIf(onClick != null) { Modifier.clickable(onClick = { onClick?.invoke() }) }
                 .thenIf(backgroundColor != Color.Unspecified) {
                     Modifier.background(backgroundColor)
                         .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
@@ -799,17 +807,16 @@ private fun SystemIconChip(
 
 @Composable
 private fun ContentScope.PrivacyChip(
-    viewModel: ShadeHeaderViewModel,
+    privacyList: List<PrivacyItem>,
+    onClick: (OngoingPrivacyChip) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val privacyList by viewModel.privacyItems.collectAsStateWithLifecycle()
-
     AndroidView(
         factory = { context ->
             val view =
                 OngoingPrivacyChip(context, null).also { privacyChip ->
                     privacyChip.privacyList = privacyList
-                    privacyChip.setOnClickListener { viewModel.onPrivacyChipClicked(privacyChip) }
+                    privacyChip.setOnClickListener { onClick(privacyChip) }
                 }
             view
         },

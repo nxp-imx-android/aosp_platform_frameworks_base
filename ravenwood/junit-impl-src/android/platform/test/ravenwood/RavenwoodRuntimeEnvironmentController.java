@@ -30,17 +30,16 @@ import static com.android.ravenwood.common.RavenwoodCommonUtils.withDefault;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityThread_ravenwood;
 import android.app.AppCompatCallbacks;
+import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.ResourcesManager;
 import android.app.UiAutomation;
+import android.app.UiAutomation_ravenwood;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
@@ -52,6 +51,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Looper_ravenwood;
 import android.os.Message;
 import android.os.Process_ravenwood;
 import android.os.ServiceManager;
@@ -82,14 +82,12 @@ import org.junit.runner.Description;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -130,8 +128,13 @@ public class RavenwoodRuntimeEnvironmentController {
     private static final boolean ENABLE_TIMEOUT_STACKS =
             !"0".equals(System.getenv("RAVENWOOD_ENABLE_TIMEOUT_STACKS"));
 
-    private static final boolean TOLERATE_LOOPER_ASSERTS =
-            !"0".equals(System.getenv("RAVENWOOD_TOLERATE_LOOPER_ASSERTS"));
+    /** RavenwoodCoreTest modifies it, so not final. */
+    public static volatile boolean TOLERATE_UNHANDLED_ASSERTS =
+            !"0".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_ASSERTS"));
+
+    /** RavenwoodCoreTest modifies it, so not final. */
+    public static volatile boolean TOLERATE_UNHANDLED_EXCEPTIONS =
+            "1".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS"));
 
     static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
@@ -192,7 +195,6 @@ public class RavenwoodRuntimeEnvironmentController {
 
     /** Map from path -> resources. */
     private static final HashMap<File, Resources> sCachedResources = new HashMap<>();
-    private static Set<String> sAdoptedPermissions = Collections.emptySet();
 
     private static final Object sInitializationLock = new Object();
 
@@ -360,6 +362,7 @@ public class RavenwoodRuntimeEnvironmentController {
         final var main = new HandlerThread(MAIN_THREAD_NAME);
         sMainThread = main;
         main.start();
+        Looper_ravenwood.sDispatcher = RavenwoodRuntimeEnvironmentController::dispatchMessage;
         Looper.setMainLooperForTest(main.getLooper());
 
         final boolean isSelfInstrumenting =
@@ -409,6 +412,8 @@ public class RavenwoodRuntimeEnvironmentController {
         var systemServerContext =
                 new RavenwoodContext(ANDROID_PACKAGE_NAME, main, systemResourcesLoader);
 
+        var uiAutomation = new UiAutomation(sInstContext, new IUiAutomationConnection.Default());
+
         var instArgs = Bundle.EMPTY;
         RavenwoodUtils.runOnMainThreadSync(() -> {
             var instClassName = withDefault(sInstrumentationClass, DEFAULT_INSTRUMENTATION_CLASS);
@@ -425,7 +430,7 @@ public class RavenwoodRuntimeEnvironmentController {
                 }
             }
 
-            initInstrumentation();
+            sInstrumentation.basicInit(sInstContext, sTargetContext, uiAutomation);
             sInstrumentation.onCreate(instArgs);
         });
         InstrumentationRegistry.registerInstance(sInstrumentation, instArgs);
@@ -466,19 +471,12 @@ public class RavenwoodRuntimeEnvironmentController {
         }
     }
 
-    private static void initInstrumentation() {
-        // We need to recreate the mocks for each test class, because sometimes tests
-        // will call Mockito.framework().clearInlineMocks() after execution.
-        sInstrumentation.basicInit(sInstContext, sTargetContext, createMockUiAutomation());
-    }
-
     /**
      * Partially reset and initialize before each test class invocation
      */
     public static void initForRunner() {
-        initInstrumentation();
-
         // Reset some global state
+        UiAutomation_ravenwood.reset();
         Process_ravenwood.reset();
         DeviceConfig_host.reset();
         Binder.restoreCallingIdentity(sCallingIdentity);
@@ -591,30 +589,35 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     /**
-     * Return if an exception is benign and okay to continue running the main looper even
-     * if we detect it.
+     * Return if an exception is benign and okay to continue running the remaining tests.
      */
     private static boolean isThrowableRecoverable(Throwable th) {
-        return th instanceof AssertionError || th instanceof AssumptionViolatedException;
+        if (TOLERATE_UNHANDLED_EXCEPTIONS) {
+            return true;
+        }
+        if (TOLERATE_UNHANDLED_ASSERTS
+                && (th instanceof AssertionError || th instanceof AssumptionViolatedException)) {
+            return true;
+        }
+        return false;
     }
 
     private static Exception makeRecoverableExceptionInstance(Throwable inner) {
         var outer = new Exception(String.format("Exception detected on thread %s: "
-                + " *** Continuing the test because it's recoverable ***",
+                + " *** Continuing running the remaining tests ***",
                 Thread.currentThread().getName()), inner);
         Log.e(TAG, outer.getMessage(), outer);
         return outer;
     }
 
-    // TODO: use it to tolerate assert failures on the main thread
-    static void dispatchMessage(Message msg) {
+    private static void dispatchMessage(Message msg) {
         try {
             msg.getTarget().dispatchMessage(msg);
         } catch (Throwable th) {
             var desc = String.format("Detected %s on looper thread %s", th.getClass().getName(),
                     Thread.currentThread());
             sStdErr.println(desc);
-            if (TOLERATE_LOOPER_ASSERTS && isThrowableRecoverable(th)) {
+            if (isThrowableRecoverable(th)) {
                 sPendingRecoverableUncaughtException.compareAndSet(null,
                         makeRecoverableExceptionInstance(th));
                 return;
@@ -719,34 +722,6 @@ public class RavenwoodRuntimeEnvironmentController {
                 () -> Class.forName("org.mockito.Matchers"));
     }
 
-    static <T> T makeDefaultThrowMock(Class<T> clazz) {
-        return mock(clazz, inv -> { throw new RavenwoodUnsupportedApiException(); });
-    }
-
-    // TODO: use the real UiAutomation class instead of a mock
-    private static UiAutomation createMockUiAutomation() {
-        sAdoptedPermissions = Collections.emptySet();
-        var mock = makeDefaultThrowMock(UiAutomation.class);
-        doAnswer(inv -> {
-            sAdoptedPermissions = UiAutomation.ALL_PERMISSIONS;
-            return null;
-        }).when(mock).adoptShellPermissionIdentity();
-        doAnswer(inv -> {
-            if (inv.getArgument(0) == null) {
-                sAdoptedPermissions = UiAutomation.ALL_PERMISSIONS;
-            } else {
-                sAdoptedPermissions = (Set) Set.of(inv.getArguments());
-            }
-            return null;
-        }).when(mock).adoptShellPermissionIdentity(any());
-        doAnswer(inv -> {
-            sAdoptedPermissions = Collections.emptySet();
-            return null;
-        }).when(mock).dropShellPermissionIdentity();
-        doAnswer(inv -> sAdoptedPermissions).when(mock).getAdoptedShellPermissions();
-        return mock;
-    }
-
     private static void dumpCommandLineArgs() {
         Log.i(TAG, "JVM arguments:");
 
@@ -762,7 +737,6 @@ public class RavenwoodRuntimeEnvironmentController {
     }
 
     private static void onUncaughtException(Thread thread, Throwable inner) {
-
         if (isThrowableRecoverable(inner)) {
             sPendingRecoverableUncaughtException.compareAndSet(null,
                     makeRecoverableExceptionInstance(inner));
@@ -770,7 +744,9 @@ public class RavenwoodRuntimeEnvironmentController {
         }
         var msg = String.format(
                 "Uncaught exception detected on thread %s, test=%s:"
-                + " %s; Failing all subsequent tests",
+                + " %s; Failing all subsequent tests."
+                + " (Run with `RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS=1 atest...` to "
+                + "force run the subsequent tests)",
                 thread, sCurrentDescription, RavenwoodCommonUtils.getStackTraceString(inner));
 
         var outer = new Exception(msg, inner);

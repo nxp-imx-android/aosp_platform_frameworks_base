@@ -270,7 +270,7 @@
     <string name="global_action_logout" msgid="6093581310002476511">"结束会话"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"屏幕截图"</string>
     <string name="global_action_standby" msgid="6786920589970257642">"待机"</string>
-    <string name="bugreport_title" msgid="8549990811777373050">"错误报告"</string>
+    <string name="bugreport_title" msgid="8549990811777373050">"Bug 报告"</string>
     <string name="bugreport_message" msgid="5212529146119624326">"这会收集有关当前设备状态的信息，并以电子邮件的形式进行发送。从开始生成错误报告到准备好发送需要一点时间，请耐心等待。"</string>
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"互动式报告"</string>
     <string name="bugreport_option_interactive_summary" msgid="8493795476325339542">"在大多数情况下，建议您使用此选项，以便追踪报告的生成进度，输入与相应问题相关的更多详细信息，以及截取屏幕截图。系统可能会省略掉一些不常用的区段，从而缩短生成报告的时间。"</string>
@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"单手模式"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"极暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助听装置"</string>
-    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"自动点击（停留时间）"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"鼠标键"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已断开连接"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已连接"</string>
@@ -1831,6 +1830,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"正在将<xliff:g id="NAME">%1$s</xliff:g>退出账号…"</string>
     <string name="owner_name" msgid="8713560351570795743">"机主"</string>
     <string name="guest_name" msgid="8502103277839834324">"访客"</string>
+    <string name="headless_system_user_name" msgid="1849150903255530049">"系统用户"</string>
     <string name="error_message_title" msgid="4082495589294631966">"错误"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"您的管理员不允许进行这项更改"</string>
     <string name="app_not_found" msgid="3429506115332341800">"找不到可处理此操作的应用"</string>
@@ -2268,32 +2268,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"向左方向键"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"向右方向键"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"方向键中心"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
-    <skip />
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"自动点击选项菜单"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"左键点击"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"右键点击"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"双击"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"拖动"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"滚动"</string>
-    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
-    <skip />
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"轻触并按住"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"暂停"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"继续"</string>
-    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
-    <skip />
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"更改菜单位置"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"向上滚动"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"向下滚动"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"向左滚动"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"向右滚动"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"退出滚动模式"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"滚动面板"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> 已被放入受限存储分区"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>："</string>

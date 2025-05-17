@@ -15,6 +15,7 @@
 syntax = "proto2";
 
 package com.android.settingslib.spa.search;
+option java_package = "com.android.settingslib.spa.search";
 
 message SpaSearchLandingKey {
   oneof page {
@@ -26,6 +27,8 @@ message SpaSearchLandingKey {
 message SpaSearchLandingSpaPage {
   /** The destination of SPA page. */
   optional string destination = 1;
+  /** The key to highlight the item. */
+  optional string highlight_item_key = 2;
 }
 
 message SpaSearchLandingFragment {

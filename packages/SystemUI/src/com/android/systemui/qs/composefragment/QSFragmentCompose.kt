@@ -363,6 +363,14 @@ constructor(
                         }
                 }
             }
+            launch {
+                snapshotFlow { viewModel.isQsFullyExpanded }
+                    .collect {
+                        if (!it && viewModel.isEditing) {
+                            viewModel.containerViewModel.editModeViewModel.stopEditing()
+                        }
+                    }
+            }
         }
 
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
@@ -839,7 +847,8 @@ constructor(
                                                     derivedStateOf {
                                                         viewModel.isQsVisibleAndAnyShadeExpanded &&
                                                             viewModel.expansionState.progress >
-                                                                0f &&
+                                                                QSFragmentComposeViewModel
+                                                                    .QS_LISTENING_THRESHOLD &&
                                                             !viewModel.isEditing
                                                     }
                                                 }
@@ -875,7 +884,12 @@ constructor(
                                     )
                         ) {
                             QuickSettingsLayout(
-                                brightness = BrightnessSlider,
+                                brightness =
+                                    if (viewModel.isBrightnessSliderVisible) {
+                                        { BrightnessSlider() }
+                                    } else {
+                                        {}
+                                    },
                                 tiles = TileGrid,
                                 media = Media,
                                 mediaInRow = viewModel.qsMediaInRow,
@@ -1381,6 +1395,7 @@ fun QuickQuickSettingsLayout(
     }
 }
 
+/** [brightness] is nullable as it might not be there (e.g. on connected displays). */
 @Composable
 @VisibleForTesting
 fun QuickSettingsLayout(

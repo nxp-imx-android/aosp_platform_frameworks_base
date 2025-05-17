@@ -21,7 +21,6 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.Flags.unfoldLatencyTrackingFix
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.NotificationPanelUnfoldAnimationController
-import com.android.systemui.statusbar.phone.StatusBarMoveFromCenterAnimationController
 import com.android.systemui.unfold.dagger.NaturalRotation
 import com.android.systemui.unfold.dagger.UnfoldBg
 import com.android.systemui.unfold.domain.interactor.DisplaySwitchTrackingInteractor
@@ -160,8 +159,6 @@ interface SysUIUnfoldComponent {
     }
 
     fun getKeyguardUnfoldTransition(): KeyguardUnfoldTransition
-
-    fun getStatusBarMoveFromCenterAnimationController(): StatusBarMoveFromCenterAnimationController
 
     fun getNotificationPanelUnfoldAnimationController(): NotificationPanelUnfoldAnimationController
 

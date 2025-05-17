@@ -167,6 +167,17 @@ flag {
 }
 
 flag {
+    name: "respect_fullscreen_activity_option_in_desktop_launch_params"
+    namespace: "lse_desktop_experience"
+    description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for /n"
+                 "activities which request fullscreen via their activity options."
+    bug: "416032057"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_windowing_wallpaper_activity"
     namespace: "lse_desktop_experience"
     description: "Enables desktop wallpaper activity to show wallpaper in the desktop mode"
@@ -671,6 +682,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable multiple desktop sessions for desktop windowing (frontend)."
     bug: "362720309"
+}
+
+flag {
+    name: "parallel_cd_transitions_during_recents"
+    namespace: "lse_desktop_experience"
+    description: "Runs CD transitions in a separate track when the recents transition is running"
+    bug: "416499938"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1281,6 +1302,16 @@ flag {
 }
 
 flag {
+    name: "enable_no_window_decoration_for_desks"
+    namespace: "lse_desktop_experience"
+    description: "Stops the creation of a window decoration for desk tasks."
+    bug: "414449402"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_window_repositioning_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
@@ -1292,6 +1323,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Keep desktop open when the last window is minimized."
     bug: "410493575"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_taskbar_recent_tasks_throttle_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Throttle recent tasks reload operations for Taskbar."
+    bug: "415090968"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -56,16 +56,19 @@ import kotlinx.coroutines.launch
 @Composable
 fun rememberDragAndDropTargetState(
     gridState: LazyGridState,
+    gridItemSize: SizeInfo?,
     contentOffset: Offset,
     contentListState: ContentListState,
 ): DragAndDropTargetState {
     val scope = rememberCoroutineScope()
     val autoScrollThreshold = with(LocalDensity.current) { 60.dp.toPx() }
+    val columnWidth = with(LocalDensity.current) { gridItemSize?.cellSize?.width?.roundToPx() ?: 0 }
 
     val state =
         remember(gridState, contentOffset, contentListState, autoScrollThreshold, scope) {
             DragAndDropTargetState(
                 state = gridState,
+                columnWidth = columnWidth,
                 contentOffset = contentOffset,
                 contentListState = contentListState,
                 autoScrollThreshold = autoScrollThreshold,
@@ -136,6 +139,7 @@ fun Modifier.dragAndDropTarget(dragDropTargetState: DragAndDropTargetState): Mod
  */
 class DragAndDropTargetState(
     state: LazyGridState,
+    columnWidth: Int,
     contentOffset: Offset,
     contentListState: ContentListState,
     autoScrollThreshold: Float,
@@ -145,6 +149,7 @@ class DragAndDropTargetState(
         if (glanceableHubV2()) {
             DragAndDropTargetStateV2(
                 state = state,
+                columnWidth = columnWidth,
                 contentListState = contentListState,
                 scope = scope,
                 autoScrollThreshold = autoScrollThreshold,
@@ -339,6 +344,7 @@ private class DragAndDropTargetStateV1(
  */
 private class DragAndDropTargetStateV2(
     private val state: LazyGridState,
+    private val columnWidth: Int,
     private val contentOffset: Offset,
     private val contentListState: ContentListState,
     private val autoScrollThreshold: Float,
@@ -352,7 +358,6 @@ private class DragAndDropTargetStateV2(
     private var placeHolderIndex: Int? = null
     private var previousTargetItemKey: Any? = null
     private var dragOffset = Offset.Zero
-    private var columnWidth = 0
 
     private val scrollChannel = Channel<Float>()
 
@@ -384,12 +389,6 @@ private class DragAndDropTargetStateV2(
         // assume item will be added to the end.
         contentListState.list.add(placeHolder)
         placeHolderIndex = contentListState.list.size - 1
-
-        // Use the width of the first item as the column width.
-        columnWidth =
-            state.layoutInfo.visibleItemsInfo.first().size.width +
-                state.layoutInfo.beforeContentPadding +
-                state.layoutInfo.afterContentPadding
     }
 
     override fun onMoved(event: DragAndDropEvent) {

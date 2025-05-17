@@ -200,6 +200,8 @@ public class VibratorManagerServiceTest {
             new SparseArray<>();
     private final SparseArray<VibrationEffect>  mHapticFeedbackVibrationMapSourceTouchScreen =
             new SparseArray<>();
+    private final SparseArray<VibrationEffect>  mHapticFeedbackVibrationMapUsageGestureInput =
+            new SparseArray<>();
 
     private final List<HalVibration> mPendingVibrations = new ArrayList<>();
     private final List<VendorVibrationSession> mPendingSessions = new ArrayList<>();
@@ -357,7 +359,8 @@ public class VibratorManagerServiceTest {
                         return new HapticFeedbackVibrationProvider(resources, vibratorInfo,
                                 new HapticFeedbackCustomization(mHapticFeedbackVibrationMap,
                                         mHapticFeedbackVibrationMapSourceRotary,
-                                        mHapticFeedbackVibrationMapSourceTouchScreen));
+                                        mHapticFeedbackVibrationMapSourceTouchScreen,
+                                        mHapticFeedbackVibrationMapUsageGestureInput));
                     }
 
                     @Override
@@ -1701,6 +1704,99 @@ public class VibratorManagerServiceTest {
         assertTrue(
                 attrsByTouchScreen.isFlagSet(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY));
     }
+
+    @Test
+    @EnableFlags(android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE)
+    public void performHapticFeedback_withValidCustomUsage_vibrates() throws Exception {
+        // Deny permissions for extra check that custom usages do not require permission
+        denyPermission(android.Manifest.permission.VIBRATE);
+        denyPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
+        denyPermission(android.Manifest.permission.MODIFY_PHONE_STATE);
+        denyPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING);
+        mHapticFeedbackVibrationMap.put(
+                HapticFeedbackConstants.SCROLL_TICK,
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+        mHapticFeedbackVibrationMapUsageGestureInput.put(
+                HapticFeedbackConstants.SCROLL_TICK,
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK));
+        mockVibrators(1);
+        FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(1);
+        fakeVibrator.setSupportedEffects(VibrationEffect.EFFECT_CLICK, VibrationEffect.EFFECT_TICK);
+        VibratorManagerService service = createSystemReadyService();
+
+        HalVibration accessibilityVibration =
+                performHapticFeedbackAndWaitUntilFinished(
+                        service, HapticFeedbackConstants.SCROLL_TICK,
+                        VibrationAttributes.USAGE_ACCESSIBILITY, /* always= */ true);
+        HalVibration gestureInputVibration =
+                performHapticFeedbackAndWaitUntilFinished(
+                        service, HapticFeedbackConstants.SCROLL_TICK,
+                        VibrationAttributes.USAGE_GESTURE_INPUT, /* always= */ true);
+
+        List<VibrationEffectSegment> playedSegments = fakeVibrator.getAllEffectSegments();
+        assertEquals(2, playedSegments.size());
+        PrebakedSegment segment = (PrebakedSegment) playedSegments.get(0);
+        assertEquals(VibrationEffect.EFFECT_CLICK, segment.getEffectId());
+        VibrationAttributes attrs = accessibilityVibration.callerInfo.attrs;
+        assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF));
+        assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY));
+        assertEquals(VibrationAttributes.USAGE_ACCESSIBILITY, attrs.getUsage());
+
+        segment = (PrebakedSegment) playedSegments.get(1);
+        assertEquals(VibrationEffect.EFFECT_TICK, segment.getEffectId());
+        attrs = gestureInputVibration.callerInfo.attrs;
+        assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_USER_VIBRATION_INTENSITY_OFF));
+        assertTrue(attrs.isFlagSet(VibrationAttributes.FLAG_BYPASS_INTERRUPTION_POLICY));
+        assertEquals(VibrationAttributes.USAGE_GESTURE_INPUT, attrs.getUsage());
+    }
+
+    @Test
+    @DisableFlags(android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE)
+    public void performHapticFeedback_withValidCustomUsage_featureDisabled_noVibration()
+            throws Exception {
+        // Deny permissions for extra check that custom usages do not require permission
+        denyPermission(android.Manifest.permission.VIBRATE);
+        denyPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
+        denyPermission(android.Manifest.permission.MODIFY_PHONE_STATE);
+        denyPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING);
+        mHapticFeedbackVibrationMap.put(
+                HapticFeedbackConstants.SCROLL_TICK,
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+        mockVibrators(1);
+        FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(1);
+        fakeVibrator.setSupportedEffects(VibrationEffect.EFFECT_CLICK);
+        VibratorManagerService service = createSystemReadyService();
+
+        performHapticFeedbackAndWaitUntilFinished(
+                service, HapticFeedbackConstants.SCROLL_TICK,
+                VibrationAttributes.USAGE_ACCESSIBILITY, /* always= */ true);
+
+        assertTrue(fakeVibrator.getAllEffectSegments().isEmpty());
+    }
+
+    @Test
+    @EnableFlags(android.os.vibrator.Flags.FLAG_HAPTIC_FEEDBACK_WITH_CUSTOM_USAGE)
+    public void performHapticFeedback_withInvalidCustomUsage_noVibration() throws Exception {
+        // Deny permissions for extra check that custom usages do not require permission
+        denyPermission(android.Manifest.permission.VIBRATE);
+        denyPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS);
+        denyPermission(android.Manifest.permission.MODIFY_PHONE_STATE);
+        denyPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING);
+        mHapticFeedbackVibrationMap.put(
+                HapticFeedbackConstants.SCROLL_TICK,
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+        mockVibrators(1);
+        FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(1);
+        fakeVibrator.setSupportedEffects(VibrationEffect.EFFECT_CLICK);
+        VibratorManagerService service = createSystemReadyService();
+
+        performHapticFeedbackAndWaitUntilFinished(
+                service, HapticFeedbackConstants.SCROLL_TICK,
+                VibrationAttributes.USAGE_ALARM, /* always= */ true);
+
+        assertTrue(fakeVibrator.getAllEffectSegments().isEmpty());
+    }
+
 
     @Test
     public void performHapticFeedback_restrictedConstantsWithoutPermission_doesNotVibrate()
@@ -4049,8 +4145,14 @@ public class VibratorManagerServiceTest {
 
     private HalVibration performHapticFeedbackAndWaitUntilFinished(VibratorManagerService service,
             int constant, boolean always) throws InterruptedException {
+        return performHapticFeedbackAndWaitUntilFinished(
+                service, constant, VibrationAttributes.USAGE_UNKNOWN, always);
+    }
+
+    private HalVibration performHapticFeedbackAndWaitUntilFinished(VibratorManagerService service,
+            int constant, int usage, boolean always) throws InterruptedException {
         HalVibration vib = service.performHapticFeedbackInternal(UID, Context.DEVICE_ID_DEFAULT,
-                PACKAGE_NAME, constant, "some reason", service,
+                PACKAGE_NAME, constant, usage, "some reason", service,
                 always ? HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING : 0 /* flags */,
                 0 /* privFlags */);
         if (vib != null) {

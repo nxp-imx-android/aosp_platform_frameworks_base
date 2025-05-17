@@ -48,10 +48,10 @@ public final class HapticFeedbackVibrationProvider {
     private static final VibrationAttributes IME_FEEDBACK_VIBRATION_ATTRIBUTES =
             VibrationAttributes.createForUsage(VibrationAttributes.USAGE_IME_FEEDBACK);
 
+    private static final long[] SAFE_MODE_VIBRATION_TIMINGS = new long[] {0, 1, 20, 21, 500, 600};
+
     private final VibratorInfo mVibratorInfo;
     private final boolean mHapticTextHandleEnabled;
-    // Vibrator effect for haptic feedback during boot when safe mode is enabled.
-    private final VibrationEffect mSafeModeEnabledVibrationEffect;
 
     private final HapticFeedbackCustomization mHapticFeedbackCustomization;
 
@@ -69,12 +69,6 @@ public final class HapticFeedbackVibrationProvider {
                 com.android.internal.R.bool.config_enableHapticTextHandle);
         mHapticFeedbackCustomization = hapticFeedbackCustomization;
 
-        VibrationEffect safeModeVibration = mHapticFeedbackCustomization.getEffect(
-                HapticFeedbackConstants.SAFE_MODE_ENABLED);
-        mSafeModeEnabledVibrationEffect = safeModeVibration != null ? safeModeVibration
-                : VibrationSettings.createEffectFromResource(res,
-                        com.android.internal.R.array.config_safeModeEnabledVibePattern);
-
         mKeyboardVibrationFixedAmplitude = res.getFloat(
                 com.android.internal.R.dimen.config_keyboardHapticFeedbackFixedAmplitude);
         if (mKeyboardVibrationFixedAmplitude < 0 || mKeyboardVibrationFixedAmplitude > 1) {
@@ -87,14 +81,17 @@ public final class HapticFeedbackVibrationProvider {
      * {@link HapticFeedbackConstants}).
      *
      * @param effectId the haptic feedback effect ID whose respective vibration we want to get.
+     * @param usage the {@link VibrationAttributes} usage for the haptic feedback.
      * @return a {@link VibrationEffect} for the given haptic feedback effect ID, or {@code null} if
      *          the provided effect ID is not supported.
      */
-    @Nullable public VibrationEffect getVibration(int effectId) {
+    @Nullable public VibrationEffect getVibration(
+            int effectId, @VibrationAttributes.Usage int usage) {
         if (!isFeedbackConstantEnabled(effectId)) {
             return null;
         }
-        VibrationEffect customizedVibration = mHapticFeedbackCustomization.getEffect(effectId);
+        VibrationEffect customizedVibration =
+                mHapticFeedbackCustomization.getEffect(effectId, usage);
         if (customizedVibration != null) {
             return customizedVibration;
         }
@@ -111,12 +108,12 @@ public final class HapticFeedbackVibrationProvider {
      * @return a {@link VibrationEffect} for the given haptic feedback effect ID, or {@code null} if
      * the provided effect ID is not supported.
      */
-    @Nullable public VibrationEffect getVibration(int effectId, int inputSource) {
+    @Nullable public VibrationEffect getVibrationForInputDevice(int effectId, int inputSource) {
         if (!isFeedbackConstantEnabled(effectId)) {
             return null;
         }
-        VibrationEffect customizedVibration = mHapticFeedbackCustomization.getEffect(effectId,
-                inputSource);
+        VibrationEffect customizedVibration =
+                mHapticFeedbackCustomization.getEffectForInputDevice(effectId, inputSource);
         if (customizedVibration != null) {
             return customizedVibration;
         }
@@ -133,8 +130,14 @@ public final class HapticFeedbackVibrationProvider {
      * @return the {@link VibrationAttributes} that should be used for the provided haptic feedback.
      */
     public VibrationAttributes getVibrationAttributes(int effectId,
+            @VibrationAttributes.Usage int usage,
             @HapticFeedbackConstants.Flags int flags,
             @HapticFeedbackConstants.PrivateFlags int privFlags) {
+        if (usage != VibrationAttributes.USAGE_UNKNOWN) {
+            // TODO(b/397602072): create static usage fields and reuse them for the common usages.
+            return getVibrationAttributesWithFlags(
+                    VibrationAttributes.createForUsage(usage), effectId, flags);
+        }
         VibrationAttributes attrs;
         switch (effectId) {
             case HapticFeedbackConstants.EDGE_SQUEEZE:
@@ -172,7 +175,7 @@ public final class HapticFeedbackVibrationProvider {
      * @param inputSource the {@link InputDevice.Source} that customizes the
      *                    {@link VibrationAttributes}.
      */
-    public VibrationAttributes getVibrationAttributes(int effectId,
+    public VibrationAttributes getVibrationAttributesForInputDevice(int effectId,
             int inputSource,
             @HapticFeedbackConstants.Flags int flags,
             @HapticFeedbackConstants.PrivateFlags int privFlags) {
@@ -188,7 +191,8 @@ public final class HapticFeedbackVibrationProvider {
                 }
             }
         }
-        return getVibrationAttributes(effectId, flags, privFlags);
+        return getVibrationAttributes(
+                effectId, VibrationAttributes.USAGE_UNKNOWN, flags, privFlags);
     }
 
     /**
@@ -271,7 +275,8 @@ public final class HapticFeedbackVibrationProvider {
 
             case HapticFeedbackConstants.SAFE_MODE_ENABLED:
                 // safe mode effect is not customized by the input source.
-                return mSafeModeEnabledVibrationEffect;
+                return VibrationEffect.createWaveform(
+                        SAFE_MODE_VIBRATION_TIMINGS, /* repeat= */ -1);
 
             case HapticFeedbackConstants.ASSISTANT_BUTTON:
                 // assistant effect is not customized by the input source.

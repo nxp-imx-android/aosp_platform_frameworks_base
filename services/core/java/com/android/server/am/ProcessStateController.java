@@ -124,11 +124,10 @@ public class ProcessStateController {
      * associates a new one if required.
      */
     public BoundServiceSession getBoundServiceSessionFor(ConnectionRecord connectionRecord) {
-        if (connectionRecord.notHasFlag(Context.BIND_ALLOW_FREEZE)) {
+        if (connectionRecord.notHasFlag(Context.BIND_ALLOW_FREEZE) && connectionRecord.notHasFlag(
+                Context.BIND_SIMULATE_ALLOW_FREEZE)) {
             // Don't incur the memory and compute overhead for process state adjustments for all
             // bindings by default. This should be opted into as needed.
-            // TODO: b/415379524 - Add a debug flag to allow clients to opt-in to binder call
-            // accounting without having to use BIND_ALLOW_FREEZE.
             return null;
         }
         if (connectionRecord.mBoundServiceSession != null) {

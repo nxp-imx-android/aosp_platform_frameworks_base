@@ -31,14 +31,20 @@ import com.android.server.SystemService;
 public final class TaskContinuityManagerService extends SystemService {
 
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
+    private TaskBroadcaster mTaskBroadcaster;
+    private TaskReceiver mTaskReceiver;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
+        mTaskBroadcaster = new TaskBroadcaster(context);
+        mTaskReceiver = new TaskReceiver(context);
     }
 
     @Override
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
+        mTaskBroadcaster.startBroadcasting();
+        mTaskReceiver.startListening();
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 

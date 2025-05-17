@@ -74,6 +74,7 @@ import static com.android.server.wm.RootWindowContainerProto.KEYGUARD_CONTROLLER
 import static com.android.server.wm.RootWindowContainerProto.WINDOW_CONTAINER;
 import static com.android.server.wm.Task.REPARENT_LEAVE_ROOT_TASK_IN_PLACE;
 import static com.android.server.wm.Task.REPARENT_MOVE_ROOT_TASK_TO_FRONT;
+import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_LAYOUT_REPEATS;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_WINDOW_TRACE;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -457,8 +458,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mDeviceStateController = new DeviceStateController(service.mContext, service.mGlobalLock);
         mDisplayRotationCoordinator = new DisplayRotationCoordinator();
         mDeviceStateAutoRotateSettingController =
-                DisplayRotation.createDeviceStateAutoRotateDependencies(mService.mContext,
-                        mDeviceStateController, mService.mH);
+                DisplayRotation.createDeviceStateAutoRotateDependencies(service.mContext,
+                        mDeviceStateController, service);
     }
 
     /**
@@ -629,6 +630,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         forAllWindows(w -> {
             w.setSecureLocked(w.isSecureLocked());
         }, true /* traverseTopToBottom */);
+        forAllTasks(t -> {
+            t.setSecure(t.isSecure());
+        });
     }
 
     void updateHiddenWhileSuspendedState(final ArraySet<String> packages, final boolean suspended) {
@@ -1795,7 +1799,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 continue;
             }
             try {
-                final boolean canResume = r.isFocusable() && r == tf.topRunningActivity();
+                final boolean canResume = r.isFocusable() && r == tf.topRunningActivity()
+                        && tf.getVisibility(r) == TASK_FRAGMENT_VISIBILITY_VISIBLE;
                 if (mTaskSupervisor.realStartActivityLocked(r, app, canResume,
                         true /* checkConfig */)) {
                     hasActivityStarted = true;

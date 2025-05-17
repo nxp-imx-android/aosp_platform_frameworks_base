@@ -39,7 +39,7 @@ class AppCompatCameraPolicy {
 
     @Nullable
     @VisibleForTesting
-    final CameraStateMonitor mCameraStateMonitor;
+    final CameraStateMonitorImpl mCameraStateMonitor;
     @Nullable
     @VisibleForTesting
     final ActivityRefresher mActivityRefresher;
@@ -58,7 +58,7 @@ class AppCompatCameraPolicy {
                 DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
                         && DesktopModeHelper.canEnterDesktopMode(wmService.mContext);
         if (needsDisplayRotationCompatPolicy || needsCameraCompatFreeformPolicy) {
-            mCameraStateMonitor = new CameraStateMonitor(displayContent, wmService.mH);
+            mCameraStateMonitor = new CameraStateMonitorImpl(displayContent, wmService.mH);
             mActivityRefresher = new ActivityRefresher(wmService, wmService.mH);
             mDisplayRotationCompatPolicy =
                     needsDisplayRotationCompatPolicy ? new DisplayRotationCompatPolicy(

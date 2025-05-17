@@ -4843,9 +4843,8 @@ public final class Settings {
         }
 
         private static float getDefaultFontScale(ContentResolver cr, int userHandle) {
-            return com.android.window.flags.Flags.configurableFontScaleDefault()
-                    ? Settings.System.getFloatForUser(cr, DEFAULT_DEVICE_FONT_SCALE,
-                    DEFAULT_FONT_SCALE, userHandle) : DEFAULT_FONT_SCALE;
+            return Settings.System.getFloatForUser(cr, DEFAULT_DEVICE_FONT_SCALE,
+                    DEFAULT_FONT_SCALE, userHandle);
         }
 
         /**
@@ -5538,6 +5537,25 @@ public final class Settings {
          */
         public static final String HARDWARE_HAPTIC_FEEDBACK_INTENSITY =
                 "hardware_haptic_feedback_intensity";
+
+        /**
+         * The intensity of gesture input vibrations if configurable. See {@link
+         * android.os.VibrationAttributes#USAGE_GESTURE_INPUT} for details about gesture input
+         * vibrations.
+         *
+         * Not all devices are capable of changing their feedback intensity; on these devices
+         * there will likely be no difference between the various vibration intensities except for
+         * intensity 0 (off) and the rest.
+         *
+         * <b>Values:</b><br/>
+         * 0 - Vibration is disabled<br/>
+         * 1 - Weak vibrations<br/>
+         * 2 - Medium vibrations<br/>
+         * 3 - Strong vibrations
+         * @hide
+         */
+        public static final String GESTURE_INPUT_VIBRATION_INTENSITY =
+                "gesture_input_vibration_intensity";
 
         /**
          * Whether keyboard vibration feedback is enabled. The value is boolean (1 or 0).
@@ -9606,6 +9624,23 @@ public final class Settings {
          */
         public static final String EM_VALUE =
                 "em_value";
+        /**
+         * Setting that specifies whether High Dynamic Range brightness is enabled.
+         *
+         * @hide
+         */
+        public static final String HDR_BRIGHTNESS_ENABLED =
+                "hdr_brightness_enabled";
+
+        /**
+         * Setting that specifies the intensity of the High Dynamic Range brightness. The range is
+         * [0, 1], which is which is used to scale the HDR/SDR ratio.
+         *
+         * @hide
+         */
+        public static final String HDR_BRIGHTNESS_BOOST_LEVEL =
+                "hdr_brightness_boost_level";
+
         /**
          * List of the enabled print services.
          *
@@ -21086,6 +21121,13 @@ public final class Settings {
              */
             public static final String GESTURE_DISMISS_ACTION_USER_PREFERENCE =
                     "gesture_dismiss_action_user_preference";
+
+            /**
+             * Setting indicating the duration, in days, between two gesture hint sessions.
+             *
+             * @hide
+             */
+            public static final String GESTURE_HINT_PERIOD_DAYS = "gesture_hint_period_days";
 
             /** Whether Wear Power Anomaly Service is enabled.
              *

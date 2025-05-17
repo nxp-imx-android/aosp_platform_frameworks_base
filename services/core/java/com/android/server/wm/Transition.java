@@ -23,6 +23,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
@@ -45,6 +46,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.TransitionFlags;
 import static android.view.WindowManager.TransitionType;
 import static android.view.WindowManager.transitTypeToString;
+import static android.window.DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION;
 import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS;
 import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKGROUND_COLOR;
@@ -76,6 +78,7 @@ import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_S
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_TIMEOUT;
 import static com.android.server.wm.ActivityTaskManagerInternal.APP_TRANSITION_WINDOWS_DRAWN;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_IDLE;
+import static com.android.server.wm.StartingData.AFTER_TRANSACTION_REMOVE_DIRECTLY;
 import static com.android.server.wm.StartingData.AFTER_TRANSITION_FINISH;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
@@ -109,6 +112,7 @@ import android.view.Display;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ScreenCapture;
+import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TransitionInfo;
 import android.window.WindowContainerTransaction;
@@ -1302,6 +1306,12 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             return false;
         }
 
+        // If PiP on Desktop Windowing is enabled and the task is freeform, we disable entering PiP.
+        if (ENABLE_DESKTOP_WINDOWING_PIP.isTrue()
+                && ar.getTask().getWindowingMode() == WINDOWING_MODE_FREEFORM) {
+            return false;
+        }
+
         final ActivityRecord resuming = getVisibleTransientLaunch(ar.getTaskDisplayArea());
         if (ar.pictureInPictureArgs != null && ar.pictureInPictureArgs.isAutoEnterEnabled()) {
             if (!ar.getTask().isVisibleRequested() || didCommitTransientLaunch()) {
@@ -2103,6 +2113,32 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mLogger.logOnSendAsync(mController.mLoggerHandler);
             mController.mTransitionTracer.logSentTransition(this, mTargets);
         }
+        removeStartingWindowIfAny();
+    }
+
+    private void removeStartingWindowIfAny() {
+        if (!Flags.removeStartingInTransition()) {
+            return;
+        }
+        for (int i = mParticipants.size() - 1; i >= 0; --i) {
+            final ActivityRecord ar = mParticipants.valueAt(i).asActivityRecord();
+            if (ar == null || ar.mStartingData == null || ar.mStartingSurface == null
+                    || ar.mStartingData.mRemoveAfterTransaction
+                    != AFTER_TRANSACTION_REMOVE_DIRECTLY) {
+                continue;
+            }
+            final StartingWindowRemovalInfo removalInfo = ar.getStartingWindowInfo();
+            if (removalInfo != null) {
+                try {
+                    ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS,
+                            "Remove Starting Window after transition: %s", ar);
+                    mController.getTransitionPlayer().removeStartingWindow(removalInfo);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Unable to remove starting window after transition");
+                }
+                ar.cleanUpStartingInfo();
+            }
+        }
     }
 
     void ensureParticipantSurfaceVisibility() {
@@ -2586,6 +2622,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         sb.append(" id=" + mSyncId);
         sb.append(" type=" + transitTypeToString(mType));
         sb.append(" flags=0x" + Integer.toHexString(mFlags));
+        sb.append(" parallelCollectType=" + parallelCollectTypeToString(mParallelCollectType));
+        sb.append(" recentsDisplayId=" + mRecentsDisplayId);
         if (mOverrideOptions != null) {
             sb.append(" overrideAnimOptions=" + mOverrideOptions);
         }
@@ -3887,6 +3925,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (mState < STATE_STARTED && this == mController.getCollectingTransition()) {
             applyDisplayChangeIfNeeded(new ArraySet<>());
         }
+    }
+
+    @NonNull
+    private static String parallelCollectTypeToString(@ParallelType int parallelCollectType) {
+        return switch (parallelCollectType) {
+            case PARALLEL_TYPE_NONE -> "NONE";
+            case PARALLEL_TYPE_MUTUAL -> "MUTUAL";
+            case PARALLEL_TYPE_RECENTS -> "RECENTS";
+            default -> "UNKNOWN(" + parallelCollectType + ")";
+        };
     }
 
     /**

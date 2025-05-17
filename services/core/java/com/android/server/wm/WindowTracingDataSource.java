@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.tracing.perfetto.DataSourceParams.PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.internal.perfetto.protos.DataSourceConfigOuterClass.DataSourceConfig;
 import android.internal.perfetto.protos.WindowmanagerConfig.WindowManagerConfig;
@@ -34,18 +35,31 @@ import android.util.proto.ProtoInputStream;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class WindowTracingDataSource extends DataSource<WindowTracingDataSource.Instance,
         WindowTracingDataSource.TlsState, Void> {
 
+    @IntDef({
+            com.android.server.wm.WindowTracingDataSource.Status.STARTING,
+            com.android.server.wm.WindowTracingDataSource.Status.STARTED,
+            com.android.server.wm.WindowTracingDataSource.Status.STOPPING,
+            com.android.server.wm.WindowTracingDataSource.Status.STOPPED,
+    })
+    @interface Status {
+        int STARTING = 0;
+        int STARTED = 1;
+        int STOPPING = 2;
+        int STOPPED = 3;
+    }
+
     public static class TlsState {
         public final Config mConfig;
-        public final AtomicBoolean mIsStarting;
+        public final AtomicInteger mStatus;
 
-        private TlsState(Config config, AtomicBoolean isStarting) {
+        private TlsState(Config config, AtomicInteger status) {
             mConfig = config;
-            mIsStarting = isStarting;
+            mStatus = status;
         }
     }
 
@@ -64,7 +78,7 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
 
     public static class Instance extends DataSourceInstance {
         public final Config mConfig;
-        public final AtomicBoolean mIsStarting = new AtomicBoolean(true);
+        public final AtomicInteger mStatus = new AtomicInteger(Status.STARTING);
         private final WeakReference<WindowTracingPerfetto> mWindowTracing;
 
         public Instance(DataSource dataSource,
@@ -131,9 +145,9 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
         try (Instance dsInstance = args.getDataSourceInstanceLocked()) {
             if (dsInstance == null) {
                 // Datasource instance has been removed
-                return new TlsState(CONFIG_DEFAULT,  new AtomicBoolean(true));
+                return new TlsState(CONFIG_DEFAULT,  new AtomicInteger(Status.STARTING));
             }
-            return new TlsState(dsInstance.mConfig, dsInstance.mIsStarting);
+            return new TlsState(dsInstance.mConfig, dsInstance.mStatus);
         }
     }
 

@@ -22,6 +22,7 @@ import static android.os.BatteryManager.EXTRA_PLUGGED;
 import static android.os.VibrationAttributes.USAGE_ACCESSIBILITY;
 import static android.os.VibrationAttributes.USAGE_ALARM;
 import static android.os.VibrationAttributes.USAGE_COMMUNICATION_REQUEST;
+import static android.os.VibrationAttributes.USAGE_GESTURE_INPUT;
 import static android.os.VibrationAttributes.USAGE_HARDWARE_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_IME_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_MEDIA;
@@ -121,7 +122,8 @@ public class VibrationSettingsTest {
             USAGE_PHYSICAL_EMULATION,
             USAGE_RINGTONE,
             USAGE_TOUCH,
-            USAGE_IME_FEEDBACK
+            USAGE_IME_FEEDBACK,
+            USAGE_GESTURE_INPUT,
     };
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -819,6 +821,7 @@ public class VibrationSettingsTest {
         setUserSetting(Settings.System.NOTIFICATION_VIBRATION_INTENSITY, VIBRATION_INTENSITY_OFF);
         setUserSetting(Settings.System.MEDIA_VIBRATION_INTENSITY, VIBRATION_INTENSITY_OFF);
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY, VIBRATION_INTENSITY_OFF);
+        setUserSetting(Settings.System.GESTURE_INPUT_VIBRATION_INTENSITY, VIBRATION_INTENSITY_OFF);
 
         for (int usage : ALL_USAGES) {
             assertEquals(VIBRATION_INTENSITY_HIGH, mVibrationSettings.getDefaultIntensity(usage));
@@ -834,6 +837,7 @@ public class VibrationSettingsTest {
         setUserSetting(Settings.System.NOTIFICATION_VIBRATION_INTENSITY, VIBRATION_INTENSITY_LOW);
         setUserSetting(Settings.System.MEDIA_VIBRATION_INTENSITY, VIBRATION_INTENSITY_LOW);
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY, VIBRATION_INTENSITY_LOW);
+        setUserSetting(Settings.System.GESTURE_INPUT_VIBRATION_INTENSITY, VIBRATION_INTENSITY_LOW);
 
         for (int usage : ALL_USAGES) {
             assertEquals(errorMessageForUsage(usage),

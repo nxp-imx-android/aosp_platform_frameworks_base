@@ -57,7 +57,6 @@ import android.tracing.perfetto.TracingContext;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
-import android.util.LongArray;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
@@ -82,7 +81,8 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -118,7 +118,21 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     private final ReadWriteLock mConfigUpdaterLock = new ReentrantReadWriteLock();
 
     private final Lock mBackgroundServiceLock = new ReentrantLock();
-    protected ExecutorService mBackgroundLoggingService = Executors.newSingleThreadExecutor();
+
+    // NOTE: This is a single-thread executor configured with a ThreadPoolExecutor and a
+    // LinkedBlockingQueue. This ensures that tasks are executed in FIFO (First-In, First-Out)
+    // order, which is crucial for operations like connecting to the configuration service before
+    // other logging activities, and synchronizing queued logging tasks on tracing start and stop.
+    // Configuration:
+    //   corePoolSize: 1 (single thread)
+    //   maximumPoolSize: 1 (single thread)
+    //   keepAliveTime: 0L (threads do not time out)
+    //   workQueue: LinkedBlockingQueue (unbounded, FIFO)
+    @VisibleForTesting
+    public final ExecutorService mBackgroundLoggingService =
+            new ThreadPoolExecutor(1, 1,
+                    0L, TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<>());
 
     // Set to true once this is ready to accept protolog to logcat requests.
     private boolean mLogcatReady = false;
@@ -183,7 +197,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
                 mConfigurationService.registerClient(this, args);
             } catch (RemoteException e) {
-                throw new RuntimeException("Failed to register ProtoLog client");
+                throw new RuntimeException("Failed to register ProtoLog client", e);
             }
         });
     }
@@ -399,26 +413,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     private void onTracingFlush() {
         Log.d(LOG_TAG, "Executing onTracingFlush");
-
-        final ExecutorService loggingService;
-        mBackgroundServiceLock.lock();
-        try {
-            loggingService = mBackgroundLoggingService;
-            mBackgroundLoggingService = Executors.newSingleThreadExecutor();
-        } finally {
-            mBackgroundServiceLock.unlock();
-        }
-
-        try {
-            loggingService.shutdown();
-            boolean finished = loggingService.awaitTermination(10, TimeUnit.SECONDS);
-
-            if (!finished) {
-                Log.e(LOG_TAG, "ProtoLog background tracing service didn't finish gracefully.");
-            }
-        } catch (InterruptedException e) {
-            Log.e(LOG_TAG, "Failed to wait for tracing to finish", e);
-        }
+        waitForExistingBackgroundTasksToComplete();
 
         if (!android.tracing.Flags.clientSideProtoLogging()) {
             dumpViewerConfig();
@@ -897,6 +892,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
     }
 
+    private void waitForExistingBackgroundTasksToComplete() {
+        try {
+            this.mBackgroundLoggingService.submit(() -> {
+                Log.i(LOG_TAG, "Completed all pending background tasks");
+            }).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "Failed to wait for tracing service background tasks to complete", e);
+        }
+    }
+
     /**
      * This is only used by unit tests to wait until {@link #connectToConfigurationService} is
      * done. Because unit tests are sensitive to concurrent accesses.
@@ -907,13 +912,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         if (!(currentInstance instanceof PerfettoProtoLogImpl protoLog)) {
             return;
         }
-        try {
-            protoLog.mBackgroundLoggingService.submit(() -> {
-                Log.i(LOG_TAG, "Complete initialization");
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(LOG_TAG, "Failed to wait for tracing service", e);
-        }
+
+        protoLog.waitForExistingBackgroundTasksToComplete();
     }
 }
 

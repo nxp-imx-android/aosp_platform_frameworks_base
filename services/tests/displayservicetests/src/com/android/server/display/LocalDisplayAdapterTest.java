@@ -16,6 +16,8 @@
 
 package com.android.server.display;
 
+import static android.hardware.display.DeviceProductInfo.CONNECTION_TO_SINK_DIRECT;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -42,6 +44,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
+import android.hardware.display.DeviceProductInfo;
 import android.hardware.display.DisplayManagerInternal.DisplayOffloader;
 import android.os.Binder;
 import android.os.Handler;
@@ -1653,6 +1656,59 @@ public class LocalDisplayAdapterTest {
         boolean shouldShowSystemDecorations =
                 ((flags & DisplayDeviceInfo.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) != 0);
         assertFalse(allowsContentModeSwitch && shouldShowSystemDecorations);
+    }
+
+    @Test
+    public void testExternalDisplayName_fromEDID() throws Exception {
+        FakeDisplay display = new FakeDisplay(PORT_A);
+        String displayName = "Display Name";
+        display.info.deviceProductInfo = new DeviceProductInfo(displayName, "Manufacturer",
+                "ProductId", 2025, CONNECTION_TO_SINK_DIRECT);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        DisplayDevice displayDevice = mListener.addedDisplays.get(0);
+        assertEquals(displayName, displayDevice.getNameLocked());
+    }
+
+    @Test
+    public void testExternalDisplayName_emptyEDIDName_fallback() throws Exception {
+        FakeDisplay display = new FakeDisplay(PORT_A);
+        String displayName = "Fallback Name";
+        doReturn(displayName).when(mMockedResources).getString(
+                eq(R.string.display_manager_hdmi_display_name));
+        display.info.deviceProductInfo = new DeviceProductInfo("  ", "Manufacturer",
+                "ProductId", 2025, CONNECTION_TO_SINK_DIRECT);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        DisplayDevice displayDevice = mListener.addedDisplays.get(0);
+        assertEquals(displayName, displayDevice.getNameLocked());
+    }
+
+    @Test
+    public void testExternalDisplayName_fromDisplayConfig() throws Exception {
+        String displayName = "DisplayConfig name";
+        doReturn(displayName).when(mMockDisplayDeviceConfig).getName();
+        FakeDisplay display = new FakeDisplay(PORT_A);
+        doReturn(displayName).when(mMockedResources).getString(
+                eq(R.string.display_manager_hdmi_display_name));
+        display.info.deviceProductInfo = new DeviceProductInfo("EDID name", "Manufacturer",
+                "ProductId", 2025, CONNECTION_TO_SINK_DIRECT);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+
+        DisplayDevice displayDevice = mListener.addedDisplays.get(0);
+        assertEquals(displayName, displayDevice.getNameLocked());
     }
 
     private void initDisplayOffloadSession() {

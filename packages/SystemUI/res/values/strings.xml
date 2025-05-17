@@ -643,6 +643,9 @@
     <!-- Content description of the battery level icon for accessibility, including the estimated time remaining before the phone runs out of battery *and* information that the device charging is paused in order to protect the lifetime of the battery (not shown on screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_battery_level_charging_paused_with_estimate">Battery <xliff:g id="percentage" example="90%">%1$d</xliff:g> percent, <xliff:g id="time" example="Until 3:15pm">%2$s</xliff:g>, charging paused for battery protection.</string>
 
+    <!-- Content description of the battery level icon for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
+    <string name="accessibility_battery_level_battery_saver_with_percent">Battery <xliff:g id="number">%d</xliff:g> percent. Battery saver is on.</string>
+
     <!-- Content description of overflow icon container of the notifications for accessibility (not shown on the screen)[CHAR LIMIT=NONE] -->
     <string name="accessibility_overflow_action">See all notifications</string>
 
@@ -2096,6 +2099,9 @@
     <!-- [CHAR LIMIT=100] Notification bundle inline settings title -->
     <string name="notification_guts_bundle_title">Silence and bundle</string>
 
+    <!-- [CHAR LIMIT=100] Notification bundle inline settings summary for an individual notification -->
+    <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
+
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary -->
     <string name="notification_guts_promotions_summary">Sales, new features, and more</string>
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary -->
@@ -2169,16 +2175,16 @@
     <string name="notification_inline_dismiss">Dismiss</string>
 
     <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
-    <string name="notification_inline_disable_promotion">Don\'t show as pinned</string>
+    <string name="notification_inline_disable_promotion">Turn off</string>
 
     <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
     <string name="notification_inline_disable_promotion_button">Block Live Updates from this app</string>
 
     <!-- Text accompanying the "Show live updates" switch explaining the purpose of the setting -->
-    <string name="live_notifications_title">Showing Live Updates</string>
+    <string name="live_notifications_title">Live updates</string>
 
     <!-- Text accompanying the "Show live updates" switch explaining the purpose of the setting -->
-    <string name="live_notifications_desc">Pinned notifications display live info from apps, and always appear on the status bar and lock screen</string>
+    <string name="live_notifications_desc">When turned off, ongoing notifications from this app won\'t be promoted on your lock screen and status bar</string>
 
     <!-- Notification: Control panel: Label that displays when the app's notifications cannot be blocked. -->
     <string name="notification_unblockable_desc">These notifications can\'t be modified.</string>
@@ -2274,6 +2280,8 @@
         few {# minutes}
         other {# minutes}
     }</string>
+    <!-- Notification: Promoted Ongoing specific long click [CHAR LIMIT=NONE] -->
+    <string name="notification_promoted_ongoing_long_click">to open demotion menu</string>
 
     <!-- Summary of battery saver not available [CHAR LIMIT=NONE] -->
 
@@ -3339,8 +3347,8 @@
     <string name="media_output_dialog_single_device">1 device selected</string>
     <!-- Summary for media output group with the active device count [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_multiple_devices"><xliff:g id="count" example="2">%1$d</xliff:g> devices selected</string>
-    <!-- Summary for disconnected status [CHAR LIMIT=50] -->
-    <string name="media_output_dialog_disconnected">(disconnected)</string>
+    <!-- Accessibility label for media output item connected state [CHAR LIMIT=50] -->
+    <string name="media_output_item_connected_state">Connected</string>
     <!-- Summary for connecting error message [CHAR LIMIT=NONE] -->
     <string name="media_output_dialog_connect_failed">Can\'t switch. Tap to try again.</string>
     <!-- Title for connecting item [CHAR LIMIT=60] -->
@@ -3361,6 +3369,8 @@
     <string name="media_output_group_title_connected_speakers">Connected speakers</string>
     <!-- Title for Speakers and Displays group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title_speakers_and_displays">Speakers &amp; Displays</string>
+    <!-- Title for the Suggested section in the Output Switcher device list. [CHAR LIMIT=NONE] -->
+    <string name="media_output_group_title_suggested">Suggested</string>
     <!-- Title for Suggested Devices group. [CHAR LIMIT=NONE] -->
     <string name="media_output_group_title_suggested_device">Suggested Devices</string>
     <!-- Title for input device group. [CHAR LIMIT=NONE] -->

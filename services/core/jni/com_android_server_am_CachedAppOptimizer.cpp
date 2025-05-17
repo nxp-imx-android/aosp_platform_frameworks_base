@@ -263,13 +263,6 @@ int madviseVmasFromBatch(unique_fd& pidfd, VmaBatch& batch, int madviseType,
     return 0;
 }
 
-// Legacy method for compacting processes, any new code should
-// use compactProcess instead.
-static inline void compactProcessProcfs(int pid, const std::string& compactionType) {
-    std::string reclaim_path = StringPrintf("/proc/%d/reclaim", pid);
-    WriteStringToFile(compactionType, reclaim_path);
-}
-
 // Compacts a set of VMAs for pid using an madviseType accepted by process_madvise syscall
 // Returns the total bytes that where madvised.
 //
@@ -413,37 +406,26 @@ static int64_t compactProcess(int pid, VmaToAdviseFunc vmaToAdviseFunc) {
     return pageoutBytes + coldBytes;
 }
 
-// Compact process using process_madvise syscall or fallback to procfs in
-// case syscall does not exist.
-static void compactProcessOrFallback(int pid, int compactionFlags) {
+// Compact process using process_madvise syscall
+static void compactProcess(int pid, int compactionFlags) {
     if ((compactionFlags & (COMPACT_ACTION_ANON_FLAG | COMPACT_ACTION_FILE_FLAG)) == 0) return;
 
     bool compactAnon = compactionFlags & COMPACT_ACTION_ANON_FLAG;
     bool compactFile = compactionFlags & COMPACT_ACTION_FILE_FLAG;
 
-    // Set when the system does not support process_madvise syscall to avoid
-    // gathering VMAs in subsequent calls prior to falling back to procfs
-    static bool shouldForceProcFs = false;
-    std::string compactionType;
     VmaToAdviseFunc vmaToAdviseFunc;
 
     if (compactAnon) {
         if (compactFile) {
-            compactionType = "all";
             vmaToAdviseFunc = getAnyPageAdvice;
         } else {
-            compactionType = "anon";
             vmaToAdviseFunc = getAnonPageAdvice;
         }
     } else {
-        compactionType = "file";
         vmaToAdviseFunc = getFilePageAdvice;
     }
 
-    if (shouldForceProcFs || compactProcess(pid, vmaToAdviseFunc) == -ENOSYS) {
-        shouldForceProcFs = true;
-        compactProcessProcfs(pid, compactionType);
-    }
+    compactProcess(pid, vmaToAdviseFunc);
 }
 
 // This performs per-process reclaim on all processes belonging to non-app UIDs.
@@ -481,7 +463,7 @@ static void com_android_server_am_CachedAppOptimizer_compactSystem(JNIEnv *, job
 
         int pid = atoi(current->d_name);
 
-        compactProcessOrFallback(pid, COMPACT_ACTION_ANON_FLAG | COMPACT_ACTION_FILE_FLAG);
+        compactProcess(pid, COMPACT_ACTION_ANON_FLAG | COMPACT_ACTION_FILE_FLAG);
     }
 }
 
@@ -518,7 +500,7 @@ static jlong com_android_server_am_CachedAppOptimizer_getMemoryFreedCompaction()
 
 static void com_android_server_am_CachedAppOptimizer_compactProcess(JNIEnv*, jobject, jint pid,
                                                                     jint compactionFlags) {
-    compactProcessOrFallback(pid, compactionFlags);
+    compactProcess(pid, compactionFlags);
 }
 
 static const JNINativeMethod sMethods[] = {

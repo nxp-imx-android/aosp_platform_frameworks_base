@@ -311,6 +311,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         @Override
         public void onStatusBarTrackpadEvent(MotionEvent event) {
+            moveShadeWindowIfNeeded(event);
             verifyCallerAndClearCallingIdentityPostMain("onStatusBarTrackpadEvent", () -> {
                 if (SceneContainerFlag.isEnabled()) {
                     int action = event.getActionMasked();

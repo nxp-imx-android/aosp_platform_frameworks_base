@@ -26,6 +26,14 @@
     // DO NOT MODIFY MANUALLY
     // Use scripts/update-test-mapping.sh to update it.
     {
+      "name": "AconfigPackageTestsRavenwood",
+      "host": true
+    },
+    {
+      "name": "AconfigPublicApiCtsTestsRavenwood",
+      "host": true
+    },
+    {
       "name": "AdServicesSharedLibrariesUnitTestsRavenwood",
       "host": true
     },
@@ -54,6 +62,10 @@
     },
     {
       "name": "CtsAppTestCasesRavenwood",
+      "host": true
+    },
+    {
+      "name": "CtsBroadcastTestCasesRavenwood",
       "host": true
     },
     {
@@ -149,11 +161,11 @@
       "host": true
     },
     {
-      "name": "RavenwoodCoreTest-light",
+      "name": "RavenwoodMinimumTest",
       "host": true
     },
     {
-      "name": "RavenwoodMinimumTest",
+      "name": "RavenwoodMinimumTest-with-module-current",
       "host": true
     },
     {

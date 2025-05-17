@@ -505,7 +505,7 @@ public class DesktopModeFlagsTest {
     }
 
     private boolean showDesktopWindowingDevOpts() {
-        return Flags.showDesktopWindowingDevOption() && !showDesktopExperienceDevOpts();
+        return Flags.showDesktopWindowingDevOption() && !Flags.showDesktopExperienceDevOption();
     }
 
     private boolean showDesktopExperienceDevOpts() {
@@ -513,7 +513,7 @@ public class DesktopModeFlagsTest {
     }
 
     private boolean showAnyDevOpts() {
-        return Flags.showDesktopWindowingDevOption() || showDesktopExperienceDevOpts();
+        return Flags.showDesktopWindowingDevOption() || Flags.showDesktopExperienceDevOption();
     }
 
     private void setDesktopModeSupported(boolean isSupported) {

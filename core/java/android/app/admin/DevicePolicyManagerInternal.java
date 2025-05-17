@@ -349,4 +349,10 @@ public abstract class DevicePolicyManagerInternal {
      */
     public abstract void setInternalEventsCallback(
             @Nullable Consumer<List<SecurityLog.SecurityEvent>> callback);
+
+    /**
+     * Removes all policies associated with admins with `packageName` and `userId`.
+     */
+    public abstract void removePoliciesForAdmins(
+            @NonNull String packageName, @UserIdInt int userId);
 }

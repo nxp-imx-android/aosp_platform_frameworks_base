@@ -17,6 +17,7 @@
 package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
+import android.icu.util.TimeZone
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -39,6 +40,7 @@ import com.android.systemui.plugins.clocks.ClockFaceLayout
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
+import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
@@ -46,13 +48,14 @@ import com.android.systemui.shared.clocks.view.FlexClockView
 import com.android.systemui.shared.clocks.view.HorizontalAlignment
 import com.android.systemui.shared.clocks.view.VerticalAlignment
 import java.util.Locale
-import java.util.TimeZone
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 // TODO(b/364680879): Merge w/ ComposedDigitalLayerController
-class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: Boolean) :
-    ClockFaceController {
+class FlexClockFaceController(
+    private val clockCtx: ClockContext,
+    private val isLargeClock: Boolean,
+) : ClockFaceController {
     override val view: View
         get() = layerController.view
 
@@ -62,14 +65,18 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
 
     private val keyguardLargeClockTopMargin =
         clockCtx.resources.getDimensionPixelSize(R.dimen.keyguard_large_clock_top_margin)
+    private val timeFormatter =
+        DigitalTimeFormatter("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
     val layerController: SimpleClockLayerController
-    val timespecHandler = DigitalTimespecHandler(DigitalTimespec.TIME_FULL_FORMAT, "hh:mm")
 
     init {
         layerController =
-            if (isLargeClock) ComposedDigitalLayerController(clockCtx)
-            else SimpleDigitalHandLayerController(clockCtx, SMALL_LAYER_CONFIG, isLargeClock)
-
+            if (isLargeClock) {
+                ComposedDigitalLayerController(clockCtx)
+            } else {
+                val cfg = SMALL_LAYER_CONFIG.copy(timeFormatter = timeFormatter)
+                SimpleDigitalHandLayerController(clockCtx, cfg, isLargeClock)
+            }
         layerController.view.layoutParams =
             FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply { gravity = Gravity.CENTER }
     }
@@ -106,23 +113,23 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
             }
 
         override fun onTimeTick() {
-            timespecHandler.updateTime()
-            view.contentDescription = timespecHandler.getContentDescription()
+            clockCtx.timeKeeper.updateTime()
+            view.contentDescription = timeFormatter.getContentDescription()
             layerController.faceEvents.onTimeTick()
         }
 
         override fun onTimeZoneChanged(timeZone: TimeZone) {
-            timespecHandler.timeZone = timeZone
+            clockCtx.timeKeeper.timeZone = timeZone
             layerController.events.onTimeZoneChanged(timeZone)
         }
 
-        override fun onTimeFormatChanged(is24Hr: Boolean) {
-            timespecHandler.is24Hr = is24Hr
-            layerController.events.onTimeFormatChanged(is24Hr)
+        override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+            timeFormatter.formatKind = formatKind
+            layerController.events.onTimeFormatChanged(formatKind)
         }
 
         override fun onLocaleChanged(locale: Locale) {
-            timespecHandler.updateLocale(locale)
+            timeFormatter.updateLocale(locale)
             layerController.events.onLocaleChanged(locale)
         }
 
@@ -244,7 +251,6 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
 
         val SMALL_LAYER_CONFIG =
             LayerConfig(
-                timespec = DigitalTimespec.TIME_FULL_FORMAT,
                 style = FontTextStyle(fontSizeScale = 0.98f),
                 aodStyle =
                     FontTextStyle(
@@ -252,7 +258,8 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
                         transitionDuration = FlexClockView.AOD_TRANSITION_DURATION,
                     ),
                 alignment = DigitalAlignment(HorizontalAlignment.START, VerticalAlignment.CENTER),
-                dateTimeFormat = "h:mm",
+                timespec = DigitalTimespec.TIME_FULL_FORMAT,
+                timeFormatter = null, // Placeholder
             )
     }
 }

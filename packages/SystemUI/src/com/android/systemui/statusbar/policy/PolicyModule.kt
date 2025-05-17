@@ -16,6 +16,7 @@ package com.android.systemui.statusbar.policy
 
 import android.hardware.SensorPrivacyManager.Sensors.CAMERA
 import android.hardware.SensorPrivacyManager.Sensors.MICROPHONE
+import android.os.UserManager.DISALLOW_ADJUST_VOLUME
 import android.os.UserManager.DISALLOW_CAMERA_TOGGLE
 import android.os.UserManager.DISALLOW_CONFIG_LOCATION
 import android.os.UserManager.DISALLOW_MICROPHONE_TOGGLE
@@ -417,6 +418,7 @@ interface PolicyModule {
                         labelRes = R.string.quick_settings_modes_label,
                     ),
                 instanceId = uiEventLogger.getNewInstanceId(),
+                policy = QSTilePolicy.Restricted(listOf(DISALLOW_ADJUST_VOLUME)),
                 category = TileCategory.UTILITIES,
             )
 

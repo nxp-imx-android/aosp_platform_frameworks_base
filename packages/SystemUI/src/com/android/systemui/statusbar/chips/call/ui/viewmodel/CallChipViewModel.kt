@@ -38,12 +38,19 @@ import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.call.domain.interactor.CallChipInteractor
+import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickBehavior
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createNotificationToggleClickListenerLegacy
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.isShowingHeadsUpFromChipTap
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
+import com.android.systemui.statusbar.notification.domain.model.TopPinnedState
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.util.time.SystemClock
@@ -55,7 +62,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 
@@ -67,12 +73,14 @@ constructor(
     @Main private val context: Context,
     @Application private val scope: CoroutineScope,
     interactor: CallChipInteractor,
+    private val notifChipsInteractor: StatusBarNotificationChipsInteractor,
+    headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     systemClock: SystemClock,
     private val activityStarter: ActivityStarter,
     @StatusBarChipsLog private val logBuffer: LogBuffer,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
-    private val logger = Logger(logBuffer, "OngoingCallVM".pad())
+    private val logger = Logger(logBuffer, "CallChipVM".pad())
     /** The transition cookie used to register and unregister launch and return animations. */
     private val cookie =
         ActivityTransitionAnimator.TransitionCookie("${CallChipViewModel::class.java}")
@@ -94,12 +102,17 @@ constructor(
 
     private val chipWithReturnAnimation: StateFlow<OngoingActivityChipModel> =
         if (StatusBarChipsReturnAnimations.isEnabled) {
-            combine(interactor.ongoingCallState, transitionState) { newState, newTransitionState ->
+            combine(
+                    interactor.ongoingCallState,
+                    transitionState,
+                    headsUpNotificationInteractor.statusBarHeadsUpState,
+                ) { newState, newTransitionState, headsUpState ->
                     val oldState = latestState
                     latestState = newState
                     val oldTransitionState = latestTransitionState
                     latestTransitionState = newTransitionState
 
+                    // Note: This log might be too noisy with HUN transitions.
                     logger.d({
                         "Call chip state updated: $str1" +
                             " oldTransitionState=$str2" +
@@ -118,8 +131,9 @@ constructor(
 
                         is OngoingCallModel.InCall ->
                             prepareChip(
-                                newState,
-                                systemClock,
+                                state = newState,
+                                headsUpState = headsUpState,
+                                systemClock = systemClock,
                                 isHidden =
                                     shouldChipBeHidden(
                                         oldState = oldState,
@@ -142,19 +156,22 @@ constructor(
 
     private val chipLegacy: StateFlow<OngoingActivityChipModel> =
         if (!StatusBarChipsReturnAnimations.isEnabled) {
-            interactor.ongoingCallState
-                .map { state ->
-                    logger.d({ "Call chip state updated: newState=$str1" }) {
-                        str1 = state.logString()
-                    }
-
-                    when (state) {
+            combine(
+                    interactor.ongoingCallState,
+                    headsUpNotificationInteractor.statusBarHeadsUpState,
+                ) { callState, headsUpState ->
+                    when (callState) {
                         is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
                         is OngoingCallModel.InCall ->
-                            if (state.isAppVisible) {
+                            if (callState.isAppVisible) {
                                 OngoingActivityChipModel.Inactive()
                             } else {
-                                prepareChip(state, systemClock, isHidden = false)
+                                prepareChip(
+                                    state = callState,
+                                    headsUpState = headsUpState,
+                                    systemClock = systemClock,
+                                    isHidden = false,
+                                )
                             }
                     }
                 }
@@ -183,6 +200,7 @@ constructor(
     /** Builds an [OngoingActivityChipModel] from all the relevant information. */
     private fun prepareChip(
         state: OngoingCallModel.InCall,
+        headsUpState: TopPinnedState,
         systemClock: SystemClock,
         isHidden: Boolean,
         transitionState: TransitionState = TransitionState.NoTransition,
@@ -210,53 +228,70 @@ constructor(
         val instanceId = state.notificationInstanceId
 
         // This block mimics OngoingCallController#updateChip.
-        if (state.startTimeMs <= 0L) {
-            // If the start time is invalid, don't show a timer and show just an icon.
-            // See b/192379214.
-            return OngoingActivityChipModel.Active(
-                key = key,
-                icon = icon,
-                content = OngoingActivityChipModel.Content.IconOnly,
-                colors = colors,
-                onClickListenerLegacy = getOnClickListener(intent, instanceId),
-                clickBehavior = getClickBehavior(intent, instanceId),
-                isHidden = isHidden,
-                transitionManager = getTransitionManager(state, transitionState),
-                instanceId = instanceId,
-            )
-        } else {
-            val startTimeInElapsedRealtime =
-                state.startTimeMs - systemClock.currentTimeMillis() + systemClock.elapsedRealtime()
-            return OngoingActivityChipModel.Active(
-                key = key,
-                icon = icon,
-                colors = colors,
-                content =
-                    OngoingActivityChipModel.Content.Timer(
-                        startTimeMs = startTimeInElapsedRealtime
-                    ),
-                onClickListenerLegacy = getOnClickListener(intent, instanceId),
-                clickBehavior = getClickBehavior(intent, instanceId),
-                isHidden = isHidden,
-                transitionManager = getTransitionManager(state, transitionState),
-                instanceId = instanceId,
-            )
-        }
+        val content =
+            when {
+                state.startTimeMs <= 0L -> {
+                    // If the start time is invalid, don't show a timer and show just an icon.
+                    // See b/192379214.
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                PromotedNotificationUi.isEnabled &&
+                    headsUpState.isShowingHeadsUpFromChipTap(
+                        notificationKey = state.notificationKey
+                    ) -> {
+                    // If the user tapped this chip to show the HUN, we want to just show the icon
+                    // because the HUN will show the rest of the information.
+                    // Similar behavior to [NotifChipsViewModel].
+                    OngoingActivityChipModel.Content.IconOnly
+                }
+                else -> {
+                    val startTimeInElapsedRealtime =
+                        state.startTimeMs - systemClock.currentTimeMillis() +
+                            systemClock.elapsedRealtime()
+                    OngoingActivityChipModel.Content.Timer(startTimeMs = startTimeInElapsedRealtime)
+                }
+            }
+
+        return OngoingActivityChipModel.Active(
+            key = key,
+            icon = icon,
+            content = content,
+            colors = colors,
+            onClickListenerLegacy = getOnClickListener(intent, instanceId, state.notificationKey),
+            clickBehavior =
+                getClickBehavior(
+                    intent = intent,
+                    instanceId = instanceId,
+                    notificationKey = state.notificationKey,
+                    headsUpState = headsUpState,
+                ),
+            isHidden = isHidden,
+            transitionManager = getTransitionManager(state, transitionState),
+            instanceId = instanceId,
+        )
     }
 
     private fun getOnClickListener(
         intent: PendingIntent?,
         instanceId: InstanceId?,
+        notificationKey: String,
     ): View.OnClickListener? {
-        if (intent == null) return null
+        if (PromotedNotificationUi.isEnabled) {
+            return createNotificationToggleClickListenerLegacy(
+                applicationScope = scope,
+                notifChipsInteractor = notifChipsInteractor,
+                logger = logger,
+                notificationKey = notificationKey,
+            )
+        }
+        if (intent == null) {
+            return null
+        }
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
 
-            logger.i({ "Chip clicked" }) {}
-            uiEventLogger.logChipTapToShow(instanceId)
+            logChipTapped(instanceId)
 
-            // TODO(b/414830065): Tapping the call chip should show the notification instead of
-            // launching the activity.
             val backgroundView =
                 view.requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
             // This mimics OngoingCallController#updateChipClickListener.
@@ -273,40 +308,54 @@ constructor(
     private fun getClickBehavior(
         intent: PendingIntent?,
         instanceId: InstanceId?,
-    ): OngoingActivityChipModel.ClickBehavior =
-        if (intent == null) {
-            OngoingActivityChipModel.ClickBehavior.None
-        } else {
-            OngoingActivityChipModel.ClickBehavior.ExpandAction(
-                onClick = { expandable ->
-                    StatusBarChipsModernization.unsafeAssertInNewMode()
-
-                    logger.i({ "Chip clicked" }) {}
-                    uiEventLogger.logChipTapToShow(instanceId)
-
-                    // TODO(b/414830065): Tapping the call chip should show the notification instead
-                    // of launching the activity.
-                    val animationController =
-                        if (
-                            !StatusBarChipsReturnAnimations.isEnabled ||
-                                transitionControllerFactory == null
-                        ) {
-                            expandable.activityTransitionController(
-                                Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
-                            )
-                        } else {
-                            transitionState.value = TransitionState.LaunchRequested
-                            // When return animations are enabled, we use a long-lived registration
-                            // with controllers created on-demand by the animation library instead
-                            // of explicitly creating one at the time of the click. By not passing
-                            // a controller here, we let the framework do its work. Otherwise, the
-                            // explicit controller would take precedence and override the other one.
-                            null
-                        }
-                    activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
-                }
+        notificationKey: String,
+        headsUpState: TopPinnedState,
+    ): OngoingActivityChipModel.ClickBehavior {
+        if (PromotedNotificationUi.isEnabled) {
+            return createNotificationToggleClickBehavior(
+                applicationScope = scope,
+                notifChipsInteractor = notifChipsInteractor,
+                logger = logger,
+                notificationKey = notificationKey,
+                isShowingHeadsUpFromChipTap =
+                    headsUpState.isShowingHeadsUpFromChipTap(notificationKey),
             )
         }
+        if (intent == null) {
+            return OngoingActivityChipModel.ClickBehavior.None
+        }
+        return OngoingActivityChipModel.ClickBehavior.ExpandAction(
+            onClick = { expandable ->
+                StatusBarChipsModernization.unsafeAssertInNewMode()
+
+                logChipTapped(instanceId)
+
+                val animationController =
+                    if (
+                        !StatusBarChipsReturnAnimations.isEnabled ||
+                            transitionControllerFactory == null
+                    ) {
+                        expandable.activityTransitionController(
+                            Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
+                        )
+                    } else {
+                        transitionState.value = TransitionState.LaunchRequested
+                        // When return animations are enabled, we use a long-lived registration
+                        // with controllers created on-demand by the animation library instead
+                        // of explicitly creating one at the time of the click. By not passing
+                        // a controller here, we let the framework do its work. Otherwise, the
+                        // explicit controller would take precedence and override the other one.
+                        null
+                    }
+                activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
+            }
+        )
+    }
+
+    private fun logChipTapped(instanceId: InstanceId?) {
+        logger.i({ "Chip clicked" }) {}
+        uiEventLogger.logChipTapToShow(instanceId)
+    }
 
     private fun getContentDescription(appName: String): ContentDescription {
         val ongoingCallDescription = context.getString(R.string.ongoing_call_content_description)

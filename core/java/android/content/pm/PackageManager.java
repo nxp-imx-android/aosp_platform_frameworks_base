@@ -3354,6 +3354,16 @@ public abstract class PackageManager {
             "android.software.car.templates_host";
 
     /**
+     * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}: The device
+     * is opted-in to render the application using Automotive App Host for Media
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.FEATURE)
+    public static final String FEATURE_CAR_TEMPLATES_HOST_MEDIA =
+            "android.software.car.templates_host.media";
+
+    /**
      * Feature for {@link #getSystemAvailableFeatures} and {@link #hasSystemFeature}:If this
      * feature is supported, the device should also declare {@link #FEATURE_AUTOMOTIVE} and show
      * a UI that can display multiple tasks at the same time on a single display. The user can
@@ -9351,7 +9361,7 @@ public abstract class PackageManager {
     @SuppressWarnings("HiddenAbstractMethod")
     @SystemApi
     @RequiresPermission(Manifest.permission.INSTALL_PACKAGES)
-    public abstract void setUpdateAvailable(@NonNull String packageName, boolean updateAvaialble);
+    public abstract void setUpdateAvailable(@NonNull String packageName, boolean updateAvailable);
 
     /**
      * Attempts to delete a package. Since this may take a little while, the

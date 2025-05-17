@@ -7,15 +7,14 @@ package {
     default_applicable_licenses: ["frameworks_base_license"],
 }
 
-java_defaults {
-    name: "RavenwoodCoreTest_defaults",
-
+android_ravenwood_test {
+    name: "RavenwoodCoreTest",
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",
         "androidx.test.rules",
         "junit-params",
-        "platform-parametric-runner-lib",
+        "platform-parametric-runner-lib-no-robo",
 
         // This library should be removed by Ravenizer
         "mockito-target-minus-junit4",
@@ -50,22 +49,5 @@ java_defaults {
         strip_mockito: true,
     },
     auto_gen_config: true,
-}
-
-android_ravenwood_test {
-    name: "RavenwoodCoreTest",
-    defaults: ["RavenwoodCoreTest_defaults"],
-    static_libs: [
-        "platform-parametric-runner-lib",
-    ],
-}
-
-// Same as RavenwoodCoreTest, but it excludes tests using platform-parametric-runner-lib,
-// because that modules has too many dependencies and slow to build incrementally.
-android_ravenwood_test {
-    name: "RavenwoodCoreTest-light",
-    defaults: ["RavenwoodCoreTest_defaults"],
-    exclude_srcs: [
-        "test/com/android/ravenwoodtest/runnercallbacktests/*",
-    ],
+    jarjar_rules: "empty.txt",
 }

@@ -110,3 +110,11 @@ flag {
   description: "Enable restricting factory reset when device supervision is enabled and a supervision PIN recovery method is set"
   bug: "383624414"
 }
+
+flag {
+  name: "enable_remove_policies_on_supervision_disable"
+  is_exported: false
+  namespace: "supervision"
+  description: "Removes all enforced policies to the user when supervision is disabled."
+  bug: "414575617"
+}

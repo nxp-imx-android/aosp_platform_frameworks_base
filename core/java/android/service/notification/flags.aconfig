@@ -74,6 +74,14 @@ flag {
   bug: "398153219"
 }
 
+flag {
+  name: "notification_get_original_importance"
+  is_exported: true
+  namespace: "systemui"
+  description: "Makes NotificationChannel#getOriginalImportance public"
+  bug: "409474564"
+}
+
 
 
 

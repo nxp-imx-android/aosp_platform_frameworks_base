@@ -1884,8 +1884,8 @@ public class ComputerEngine implements Computer {
     private int getIsolatedOwner(int isolatedUid) {
         final int ownerUid = mIsolatedOwners.get(isolatedUid, -1);
         if (ownerUid == -1) {
-            throw new IllegalStateException(
-                    "No owner UID found for isolated UID " + isolatedUid);
+            Slog.wtf(TAG, "No owner UID found for isolated UID " + isolatedUid);
+            return isolatedUid;
         }
         return ownerUid;
     }
@@ -4383,12 +4383,7 @@ public class ComputerEngine implements Computer {
         }
         final int callingUserId = UserHandle.getUserId(callingUid);
         if (isKnownIsolatedComputeApp(uid)) {
-            try {
-                uid = getIsolatedOwner(uid);
-            } catch (IllegalStateException e) {
-                // If the owner uid doesn't exist, just use the current uid
-                Slog.wtf(TAG, "Expected isolated uid " + uid + " to have an owner", e);
-            }
+            uid = getIsolatedOwner(uid);
         }
         final int appId = UserHandle.getAppId(uid);
         final Object obj = mSettings.getSettingBase(appId);
@@ -4426,12 +4421,7 @@ public class ComputerEngine implements Computer {
                 uid = getBaseSdkSandboxUid();
             }
             if (isKnownIsolatedComputeApp(uid)) {
-                try {
-                    uid = getIsolatedOwner(uid);
-                } catch (IllegalStateException e) {
-                    // If the owner uid doesn't exist, just use the current uid
-                    Slog.wtf(TAG, "Expected isolated uid " + uid + " to have an owner", e);
-                }
+                uid = getIsolatedOwner(uid);
             }
             final int appId = UserHandle.getAppId(uid);
             final Object obj = mSettings.getSettingBase(appId);

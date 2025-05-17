@@ -17,23 +17,22 @@
 package com.android.systemui.topwindoweffects.ui.viewmodel
 
 import android.os.VibrationEffect
-import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.VibratorHelper
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class SqueezeEffectHapticPlayer
 @AssistedInject
-constructor(keyEventInteractor: KeyEventInteractor, private val vibratorHelper: VibratorHelper) :
-    ExclusiveActivatable() {
+constructor(
+    private val vibratorHelper: VibratorHelper,
+    @Application private val applicationScope: CoroutineScope,
+) {
 
     private val primitiveDurations =
         vibratorHelper.getPrimitiveDurations(
@@ -41,69 +40,42 @@ constructor(keyEventInteractor: KeyEventInteractor, private val vibratorHelper: 
             VibrationEffect.Composition.PRIMITIVE_QUICK_RISE,
             VibrationEffect.Composition.PRIMITIVE_TICK,
         )
-    private val invocationHaptics =
+
+    private fun buildInvocationHaptics(totalDurationMillis: Int) =
         SqueezeEffectHapticsBuilder.createInvocationHaptics(
             lowTickDuration = primitiveDurations[0],
             quickRiseDuration = primitiveDurations[1],
             tickDuration = primitiveDurations[2],
+            totalEffectDuration = totalDurationMillis,
         )
-    private var invocationJob: Job? = null
-    private var canInterruptHaptics = true
 
-    private val powerButtonState =
-        combine(
-                keyEventInteractor.isPowerButtonDown,
-                keyEventInteractor.isPowerButtonLongPressed,
-            ) { down, longPressed ->
-                PowerButtonState(down, longPressed)
-            }
-            .distinctUntilChanged()
+    private var vibrationJob: Job? = null
 
-    override suspend fun onActivated(): Nothing {
-        coroutineScope {
-            launch(spanName = "$TAG#powerButtonState") {
-                powerButtonState.collect { state ->
-                    when {
-                        !state.down && !state.longPressed -> interruptInvocationHaptics()
-                        state.down && !state.longPressed -> beginInvocationHaptics()
-                        state.down && state.longPressed -> canInterruptHaptics = false
-                    }
-                }
-            }
-            awaitCancellation()
-        }
-    }
-
-    private suspend fun beginInvocationHaptics() {
-        if (invocationJob != null && invocationJob?.isActive == true) return
-        coroutineScope {
-            invocationJob =
-                launch(spanName = "$TAG#beginInvocationHaptics") {
-                    if (invocationHaptics.initialDelay != 0) {
-                        delay(invocationHaptics.initialDelay.toLong())
-                    }
+    fun start(totalDurationMillis: Int) {
+        cancel()
+        val invocationHaptics = buildInvocationHaptics(totalDurationMillis)
+        if (invocationHaptics.initialDelay <= 0) {
+            vibrate(invocationHaptics.vibration)
+        } else {
+            vibrationJob =
+                applicationScope.launch {
+                    delay(invocationHaptics.initialDelay.toLong())
                     if (isActive) {
-                        vibratorHelper.vibrate(
-                            invocationHaptics.vibration,
-                            SqueezeEffectHapticsBuilder.VIBRATION_ATTRIBUTES,
-                        )
+                        vibrate(invocationHaptics.vibration)
                     }
+                    vibrationJob = null
                 }
         }
     }
 
-    private fun interruptInvocationHaptics() {
-        if (!canInterruptHaptics) return
+    fun cancel() {
+        vibrationJob?.cancel()
+        vibrationJob = null
         vibratorHelper.cancel()
-        invocationJob?.cancel()
-        invocationJob = null
     }
 
-    fun onSqueezeEffectEnd() {
-        canInterruptHaptics = true
-    }
-
-    private data class PowerButtonState(val down: Boolean, val longPressed: Boolean)
+    private fun vibrate(vibrationEffect: VibrationEffect) =
+        vibratorHelper.vibrate(vibrationEffect, SqueezeEffectHapticsBuilder.VIBRATION_ATTRIBUTES)
 
     @AssistedFactory
     interface Factory {

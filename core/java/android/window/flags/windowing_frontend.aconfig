@@ -387,17 +387,6 @@ flag {
 }
 
 flag {
-    name: "clear_system_vibrator"
-    namespace: "windowing_frontend"
-    description: "Clears the system vibrator before attaching new window, to avoid leaks."
-    bug: "393190314"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reduce_task_snapshot_memory_usage"
     namespace: "windowing_frontend"
     description: "Reduce task snapshot memory usage in either heap and dmabuf."
@@ -527,4 +516,11 @@ flag {
     namespace: "wear_system_health"
     description: "WindowManagerService.getCurrentAnimatorScale() reads the animator scale from shared memory"
     bug: "406182390"
+}
+
+flag {
+    name: "always_seq_id_layout"
+    namespace: "windowing_frontend"
+    description: "Use seq-id for all client config changes"
+    bug: "385976595"
 }

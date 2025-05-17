@@ -24,15 +24,20 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
+import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
 import static android.companion.CompanionResources.PERMISSION_CHANGE_MEDIA_OUTPUT;
 import static android.companion.CompanionResources.PERMISSION_CONTACTS;
+import static android.companion.CompanionResources.PERMISSION_CREATE_VIRTUAL_DEVICE;
 import static android.companion.CompanionResources.PERMISSION_MICROPHONE;
 import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
 import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_NOTIFICATION_LISTENER_ACCESS;
 import static android.companion.CompanionResources.PERMISSION_PHONE;
+import static android.companion.CompanionResources.PERMISSION_POST_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_SMS;
 import static android.companion.CompanionResources.PERMISSION_STORAGE;
 
@@ -65,6 +70,12 @@ final class CompanionDeviceResources {
         map.put(PERMISSION_CALL_LOGS, R.string.permission_call_logs);
         map.put(PERMISSION_NOTIFICATIONS, R.string.permission_notifications);
         map.put(PERMISSION_CHANGE_MEDIA_OUTPUT, R.string.permission_media_routing_control);
+        map.put(PERMISSION_POST_NOTIFICATIONS, R.string.permission_notifications);
+        map.put(PERMISSION_CREATE_VIRTUAL_DEVICE, R.string.permission_create_virtual_device);
+        map.put(PERMISSION_ADD_MIRROR_DISPLAY, R.string.permission_add_mirror_display);
+        map.put(PERMISSION_ADD_TRUSTED_DISPLAY, R.string.permission_add_trusted_display);
+        map.put(PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY,
+                R.string.permission_add_always_unlocked_display);
         PERMISSION_TITLES = unmodifiableMap(map);
     }
 
@@ -82,6 +93,13 @@ final class CompanionDeviceResources {
         map.put(PERMISSION_CALL_LOGS, R.string.permission_call_logs_summary);
         map.put(PERMISSION_NOTIFICATIONS, R.string.permission_notifications_summary);
         map.put(PERMISSION_CHANGE_MEDIA_OUTPUT, R.string.permission_media_routing_control_summary);
+        map.put(PERMISSION_POST_NOTIFICATIONS, R.string.permission_post_notifications_summary);
+        map.put(PERMISSION_CREATE_VIRTUAL_DEVICE,
+                R.string.permission_create_virtual_device_summary);
+        map.put(PERMISSION_ADD_MIRROR_DISPLAY, R.string.permission_add_mirror_display_summary);
+        map.put(PERMISSION_ADD_TRUSTED_DISPLAY, R.string.permission_add_trusted_display_summary);
+        map.put(PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY,
+                R.string.permission_add_always_unlocked_display_summary);
         PERMISSION_SUMMARIES = unmodifiableMap(map);
     }
 
@@ -99,6 +117,12 @@ final class CompanionDeviceResources {
         map.put(PERMISSION_CALL_LOGS, R.drawable.ic_permission_call_logs);
         map.put(PERMISSION_NOTIFICATIONS, R.drawable.ic_permission_notifications);
         map.put(PERMISSION_CHANGE_MEDIA_OUTPUT, R.drawable.ic_permission_media_routing_control);
+        map.put(PERMISSION_POST_NOTIFICATIONS, R.drawable.ic_permission_notifications);
+        map.put(PERMISSION_CREATE_VIRTUAL_DEVICE, R.drawable.ic_permission_create_virtual_device);
+        map.put(PERMISSION_ADD_MIRROR_DISPLAY, R.drawable.ic_permission_add_mirror_display);
+        map.put(PERMISSION_ADD_TRUSTED_DISPLAY, R.drawable.ic_permission_add_trusted_display);
+        map.put(PERMISSION_ADD_ALWAYS_UNLOCKED_DISPLAY,
+                R.drawable.ic_permission_add_always_unlocked_display);
         PERMISSION_ICONS = unmodifiableMap(map);
     }
 

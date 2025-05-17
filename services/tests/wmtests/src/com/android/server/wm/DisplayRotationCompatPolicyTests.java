@@ -132,8 +132,8 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
                     ((Runnable) invocation.getArgument(0)).run();
                     return null;
                 });
-        CameraStateMonitor cameraStateMonitor =
-                new CameraStateMonitor(mDisplayContent, mMockHandler);
+        CameraStateMonitorImpl cameraStateMonitor =
+                new CameraStateMonitorImpl(mDisplayContent, mMockHandler);
         mActivityRefresher = new ActivityRefresher(mDisplayContent.mWmService, mMockHandler);
         mDisplayRotationCompatPolicy = new DisplayRotationCompatPolicy(mDisplayContent,
                 cameraStateMonitor, mActivityRefresher);

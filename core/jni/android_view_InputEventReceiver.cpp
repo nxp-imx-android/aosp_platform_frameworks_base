@@ -218,10 +218,17 @@ void NativeInputEventReceiver::setFdEvents(int events) {
         return;
     }
     const int fd = mInputConsumer->getChannel()->getFd();
+    int res = 0;
     if (events) {
-        mMessageQueue->getLooper()->addFd(fd, 0, events, this, nullptr);
+        res = mMessageQueue->getLooper()->addFd(fd, 0, events, this, nullptr);
     } else {
-        mMessageQueue->getLooper()->removeFd(fd);
+        res = mMessageQueue->getLooper()->removeFd(fd);
+    }
+    if (res != -1) {
+        mFdEvents = events;
+    } else {
+        ALOGE("channel '%s' ~ Failed to %s fd for channel", mName.c_str(),
+              events ? "add" : "remove");
     }
 }
 

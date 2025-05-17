@@ -30,7 +30,6 @@ import com.android.systemui.util.time.systemClock
 var Kosmos.promotedNotificationContentExtractor by
     Kosmos.Fixture {
         PromotedNotificationContentExtractorImpl(
-            applicationContext,
             notificationIconStyleProvider,
             appIconProvider,
             skeletonImageTransform,
@@ -42,11 +41,14 @@ var Kosmos.promotedNotificationContentExtractor by
 fun Kosmos.setPromotedContent(entry: NotificationEntry) {
     val extractedContent =
         promotedNotificationContentExtractor.extractContent(
-            entry,
-            Notification.Builder.recoverBuilder(applicationContext, entry.sbn.notification),
-            REDACTION_TYPE_PUBLIC,
-            RowImageInflater.newInstance(previousIndex = null, reinflating = false)
-                .useForContentModel(),
+            entry = entry,
+            recoveredBuilder =
+                Notification.Builder.recoverBuilder(applicationContext, entry.sbn.notification),
+            redactionType = REDACTION_TYPE_PUBLIC,
+            imageModelProvider =
+                RowImageInflater.newInstance(previousIndex = null, reinflating = false)
+                    .useForContentModel(),
+            packageContext = applicationContext, // using the app context for simplicity
         )
     entry.promotedNotificationContentModels =
         requireNotNull(extractedContent) { "extractContent returned null" }

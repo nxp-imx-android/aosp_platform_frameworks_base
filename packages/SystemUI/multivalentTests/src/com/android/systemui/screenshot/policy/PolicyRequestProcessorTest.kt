@@ -29,6 +29,7 @@ import android.view.WindowManager.TAKE_SCREENSHOT_FULLSCREEN
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.util.ScreenshotRequest
 import com.android.systemui.Flags
+import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screenshot.ImageCapture
 import com.android.systemui.screenshot.ScreenshotData
@@ -55,7 +56,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @DisabledOnRavenwood(blockedBy = [ScreenshotRequest::class])
-class PolicyRequestProcessorTest {
+class PolicyRequestProcessorTest : SysuiTestCase() {
     private val kosmos = Kosmos()
 
     private val screenshotRequest =

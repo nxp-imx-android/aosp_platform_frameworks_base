@@ -505,6 +505,31 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
     }
 
     /**
+     * Ensures that {@link LaunchParamsModifier} request for bounds to be cleared during layout
+     * is honored if window is in multiwindow mode.
+     */
+    @Test
+    public void testLayoutTaskBoundsChangeMultiWindow_applyRequestedEmptyBounds() {
+        final Rect emptyBounds = new Rect();
+
+        final LaunchParams params = new LaunchParams();
+        params.mBounds.set(emptyBounds);
+        params.mBoundsSet = true;
+        final InstrumentedPositioner positioner = new InstrumentedPositioner(RESULT_DONE, params);
+        final Task task = new TaskBuilder(mAtm.mTaskSupervisor)
+                .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW).build();
+        task.setBounds(10, 20, 30, 40);
+
+        mController.registerModifier(positioner);
+
+        assertNotEquals(emptyBounds, task.getBounds());
+
+        layoutTask(task);
+
+        assertEquals(emptyBounds, task.getRequestedOverrideBounds());
+    }
+
+    /**
      * Ensures that {@link LaunchParamsModifier} requests specifying bounds during
      * layout are set to last non-fullscreen bounds.
      */

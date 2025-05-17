@@ -178,7 +178,6 @@ public class TaskbarDelegate implements CommandQueue.Callbacks,
 
         @Override
         public void hide() {
-            clearTransient();
         }
     };
 

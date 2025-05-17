@@ -309,6 +309,9 @@ final class ConnectionRecord implements OomAdjusterImpl.Connection{
         if (hasFlag(Context.BIND_ALLOW_FREEZE)) {
             sb.append("!CPU ");
         }
+        if (hasFlag(Context.BIND_SIMULATE_ALLOW_FREEZE)) {
+            sb.append("S!CPU ");
+        }
         if (serviceDead) {
             sb.append("DEAD ");
         }

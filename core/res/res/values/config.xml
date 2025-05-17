@@ -58,10 +58,10 @@
         <item><xliff:g id="id">@string/status_bar_cast</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_ethernet</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_oem_satellite</xliff:g></item>
-        <item><xliff:g id="id">@string/status_bar_wifi</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_hotspot</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_stacked_mobile</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_mobile</xliff:g></item>
+        <item><xliff:g id="id">@string/status_bar_wifi</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_airplane</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_battery</xliff:g></item>
         <item><xliff:g id="id">@string/status_bar_sensors_off</xliff:g></item>
@@ -1159,6 +1159,7 @@
             3 - Power off (without confirmation)
             4 - Go to voice assist
             5 - Go to assistant (Settings.Secure.ASSISTANT)
+            6 - Go to sleep (doze)
     -->
     <integer name="config_longPressOnPowerBehavior">5</integer>
 
@@ -1381,16 +1382,6 @@
     <integer-array name="config_clockTickVibePattern">
         <item>0</item>
         <item>10</item>
-    </integer-array>
-
-    <!-- Vibrator pattern for feedback about booting with safe mode enabled -->
-    <integer-array name="config_safeModeEnabledVibePattern">
-        <item>0</item>
-        <item>1</item>
-        <item>20</item>
-        <item>21</item>
-        <item>500</item>
-        <item>600</item>
     </integer-array>
 
     <!-- The URI to associate with each ringtone effect constant, intended to be used with the
@@ -2876,8 +2867,8 @@
     <!-- Whether or not low light display behavior is enabled -->
     <bool name="config_lowLightDisplayBehaviorEnabledDefault">false</bool>
 
-    <!-- The default low light display behavior. 0 represents no behavior -->
-    <integer name="config_lowLightDisplayBehaviorDefault">0</integer>
+    <!-- The default low light display behavior. 1 represents screen off. -->
+    <integer name="config_lowLightDisplayBehaviorDefault">1</integer>
 
     <!-- The duration in milliseconds of the dream opening animation.  -->
     <integer name="config_dreamOpenAnimationDuration">250</integer>
@@ -7256,7 +7247,7 @@
     <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner
          permission for computer control access. The digest should be computed over the
          DER encoding of the trusted certificate using the SHA-256 digest algorithm. -->
-    <string-array name="config_computerControlAccessKnownSigners">
+    <string-array name="config_accessComputerControlKnownSigners">
     </string-array>
 
     <!-- Certificate digests for trusted apps that will be allowed to obtain the knownSigner

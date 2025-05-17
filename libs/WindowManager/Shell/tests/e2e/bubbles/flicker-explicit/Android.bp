@@ -33,12 +33,40 @@ android_test {
     static_libs: [
         "FlickerTestsBase",
         "androidx.test.ext.junit",
-        "flickertestapplib",
+        "flag-junit",
         "flickerlib",
         "flickerlib-helpers",
         "flickerlib-trace_processor_shell",
+        "flickertestapplib",
         "platform-test-annotations",
         "wm-flicker-common-app-helpers",
         "wm-shell-flicker-utils",
     ],
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Begin breakdowns for WMShellExplicitFlickerTestsBubbles module
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-CatchAll",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    exclude_filters: [
+        "com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest",
+        "com.android.wm.shell.flicker.bubbles.CollapseBubbleViaBackTest",
+    ],
+    test_suites: ["device-tests"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest"],
+    test_suites: ["device-tests"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-CollapseBubbleViaBackTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    include_filters: ["com.android.wm.shell.flicker.bubbles.CollapseBubbleViaBackTest"],
+    test_suites: ["device-tests"],
 }

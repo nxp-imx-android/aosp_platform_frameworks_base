@@ -32,7 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsTheme
-import com.android.settingslib.spa.framework.util.EntryHighlight
 import com.android.settingslib.spa.framework.util.wrapOnSwitchWithLog
 import com.android.settingslib.spa.widget.ui.SettingsIcon
 import com.android.settingslib.spa.widget.ui.SettingsSwitch
@@ -90,16 +89,14 @@ interface SwitchPreferenceModel {
  */
 @Composable
 fun SwitchPreference(model: SwitchPreferenceModel) {
-    EntryHighlight {
-        InternalSwitchPreference(
-            title = model.title,
-            summary = model.summary,
-            icon = model.icon,
-            checked = model.checked(),
-            changeable = model.changeable(),
-            onCheckedChange = model.onCheckedChange,
-        )
-    }
+    InternalSwitchPreference(
+        title = model.title,
+        summary = model.summary,
+        icon = model.icon,
+        checked = model.checked(),
+        changeable = model.changeable(),
+        onCheckedChange = model.onCheckedChange,
+    )
 }
 
 @Composable

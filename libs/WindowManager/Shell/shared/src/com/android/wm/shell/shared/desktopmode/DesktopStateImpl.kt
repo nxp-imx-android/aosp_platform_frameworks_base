@@ -73,8 +73,11 @@ class DesktopStateImpl(context: Context) : DesktopState {
         desktopModeEnabled || isDesktopModeEnabledByDevOption
     }
 
+    private val isDeviceEligibleForDesktopExperienceDevOption =
+        !enforceDeviceRestrictions || isDesktopModeSupported || isDesktopModeDevOptionSupported
+
     override val canShowDesktopExperienceDevOption: Boolean =
-        Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopMode
+        Flags.showDesktopExperienceDevOption() && isDeviceEligibleForDesktopExperienceDevOption
 
     override val enterDesktopByDefaultOnFreeformDisplay: Boolean =
         DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue ||
@@ -99,6 +102,15 @@ class DesktopStateImpl(context: Context) : DesktopState {
                 && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_FRONTEND.isTrue
                 && canEnterDesktopMode
 
+    override fun isMultipleDesktopFrontendEnabledOnDisplay(display: Display): Boolean =
+        DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_FRONTEND.isTrue
+                && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+                && isDesktopModeSupportedOnDisplay(display)
+
+    override fun isMultipleDesktopFrontendEnabledOnDisplay(displayId: Int): Boolean =
+        displayManager.getDisplay(displayId)?.let { isMultipleDesktopFrontendEnabledOnDisplay(it) }
+            ?: false
+
     override fun isDesktopModeSupportedOnDisplay(displayId: Int): Boolean =
         displayManager.getDisplay(displayId)?.let { isDesktopModeSupportedOnDisplay(it) } ?: false
 
@@ -106,6 +118,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
         if (!canEnterDesktopMode) return false
         if (!enforceDeviceRestrictions) return true
         if (display.type == Display.TYPE_INTERNAL) return canInternalDisplayHostDesktops
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) return false
         return windowManager?.isEligibleForDesktopMode(display.displayId) ?: false
     }
 

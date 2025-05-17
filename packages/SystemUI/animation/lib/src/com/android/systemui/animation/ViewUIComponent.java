@@ -209,30 +209,32 @@ public class ViewUIComponent implements UIComponent {
         if (mVisibleOverride) {
             Rect renderBounds = getBounds();
             canvas.translate(renderBounds.left, renderBounds.top);
-            canvas.scale(
-                    (float) renderBounds.width() / realBounds.width(),
-                    (float) renderBounds.height() / realBounds.height());
+
+            float cornerRadius = (float) Math.min(renderBounds.width(), renderBounds.height()) / 2;
 
             if (mEnableBackgroundDimming) {
                 // draw backing layer for background dimming using bounds/radius
                 mPaint.setColor(Color.BLACK);
                 mPaint.setStyle(Paint.Style.FILL);
-                // TODO: use corner radius for drawing
                 canvas.drawRoundRect(
-                        renderBounds.left,
-                        renderBounds.top,
-                        renderBounds.right,
-                        renderBounds.bottom,
-                        renderBounds.width() / 2,
-                        renderBounds.height() / 2,
+                        0,
+                        0,
+                        renderBounds.width(),
+                        renderBounds.height(),
+                        cornerRadius,
+                        cornerRadius,
                         mPaint);
             }
+
+            canvas.scale(
+                    (float) renderBounds.width() / realBounds.width(),
+                    (float) renderBounds.height() / realBounds.height());
 
             if (mView.getClipToOutline()) {
                 mView.getOutlineProvider().getOutline(mView, mClippingOutline);
                 mClippingPath.reset();
                 RectF rect = new RectF(0, 0, mView.getWidth(), mView.getHeight());
-                final float cornerRadius = mClippingOutline.getRadius();
+                cornerRadius = mClippingOutline.getRadius();
                 mClippingPath.addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW);
                 mClippingPath.close();
                 canvas.clipPath(mClippingPath);

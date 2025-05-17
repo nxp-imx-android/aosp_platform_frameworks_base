@@ -25,7 +25,9 @@ import android.testing.AndroidTestingRunner
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
+import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
@@ -334,13 +336,55 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             BOUNDS,
             destinationBoundsOverride = null,
         )
+
         verify(toggleResizeDesktopTaskTransitionHandler, times(2))
             .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
         (callbackCaptor.value).invoke()
+        // Ensures tiling isn't brought to front if tasks aren't focused, for example when
+        // initializing tiling from persistence.
+        verify(transitions, never()).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
+
         task1.isFocused = true
 
         assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true))
             .isTrue()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
+    }
+
+    @Test
+    fun taskTiled_broughtToFront_uponTilingFocusedTasks() {
+        val task1 = createVisibleTask()
+        val task2 = createVisibleTask()
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+        whenever(userRepositories.current.isVisibleTask(eq(task1.taskId))).thenReturn(true)
+        whenever(userRepositories.current.isVisibleTask(eq(task2.taskId))).thenReturn(true)
+        task1.isFocused = true
+        task2.isFocused = true
+
+        tilingDecoration.onAppTiled(
+            task1,
+            desktopWindowDecoration,
+            DesktopTasksController.SnapPosition.RIGHT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+        tilingDecoration.onAppTiled(
+            task2,
+            desktopWindowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
+
         verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
     }
 
@@ -616,6 +660,39 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    fun taskTiled_shouldBeRemoved_whenBeingMinimisedAppLimit() {
+        val task1 = createPipTask()
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
+        whenever(tiledTaskHelper.desktopModeWindowDecoration).thenReturn(desktopWindowDecoration)
+        tilingDecoration.onAppTiled(
+            task1,
+            desktopWindowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+        tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
+        val changeInfo = createMinimiseOpenChangeTransition(task1)
+
+        tilingDecoration.onTransitionReady(
+            transition = mock(),
+            info = changeInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        assertThat(tilingDecoration.leftTaskResizingHelper).isNull()
+        verify(tiledTaskHelper, times(1)).dispose()
+    }
+
+    @Test
     fun tilingDivider_shouldBeShown_whenTiledTasksBecomeVisible() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
@@ -848,6 +925,21 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             addChange(
                 Change(mock(), mock()).apply {
                     mode = TRANSIT_PIP
+                    parent = null
+                    taskInfo = task
+                    flags = flags
+                }
+            )
+        }
+
+    private fun createMinimiseOpenChangeTransition(
+        task: RunningTaskInfo?,
+        type: Int = TRANSIT_OPEN,
+    ) =
+        TransitionInfo(type, /* flags= */ 0).apply {
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = TRANSIT_TO_BACK
                     parent = null
                     taskInfo = task
                     flags = flags

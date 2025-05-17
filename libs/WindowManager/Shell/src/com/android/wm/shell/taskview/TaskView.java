@@ -29,6 +29,7 @@ import android.content.pm.ShortcutInfo;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Binder;
 import android.os.Handler;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
@@ -53,6 +54,12 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
          * launching activities.
          */
         default void onInitialized() {}
+
+        /**
+         * Only called when the surface has been created, and the task view has already been
+         * initialized (and onInitialized has been called)
+         */
+        default void onSurfaceAlreadyCreated() {}
 
         /** Called when the container can no longer launch activities. */
         default void onReleased() {}
@@ -243,6 +250,13 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
             // onComputeInternalInsets.
             mTaskViewTaskController.setCaptionInsets(null);
         }
+    }
+
+    /**
+     * Call to get the owner of the caption insets source.
+     */
+    @Nullable public Binder getCaptionInsetsOwner() {
+        return mTaskViewTaskController.getCaptionInsetsOwner();
     }
 
     /**

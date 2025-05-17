@@ -19,6 +19,7 @@ package com.android.systemui.screenshot.ui.viewmodel
 import android.view.accessibility.AccessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,7 +27,7 @@ import org.mockito.Mockito.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ScreenshotViewModelTest {
+class ScreenshotViewModelTest : SysuiTestCase() {
     private val accessibilityManager: AccessibilityManager = mock(AccessibilityManager::class.java)
     private val appearance = ActionButtonAppearance(null, "Label", "Description")
     private val onclick = {}
@@ -78,5 +79,11 @@ class ScreenshotViewModelTest {
         val updated = viewModel.actions.value[0]
         assertThat(updated.appearance).isEqualTo(otherAppearance)
         assertThat(updated.onClicked).isEqualTo(onclick)
+    }
+
+    companion object {
+        init {
+            SysuiTestCase.waitUntilMockitoCanBeInitialized()
+        }
     }
 }

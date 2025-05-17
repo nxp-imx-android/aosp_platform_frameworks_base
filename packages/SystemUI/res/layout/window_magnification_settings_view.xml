@@ -154,7 +154,7 @@
             android:layout_marginEnd="@dimen/magnification_setting_view_item_horizontal_spacing"
             android:text="@string/accessibility_magnify_keyboard"
             android:textAppearance="@style/TextAppearance.MagnificationSetting.Title"
-            android:labelFor="@id/magnifier_horizontal_lock_switch"
+            android:labelFor="@id/magnifier_keyboard_switch"
             android:layout_gravity="center_vertical" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -186,7 +186,7 @@
             android:layout_marginEnd="@dimen/magnification_setting_view_item_horizontal_spacing"
             android:text="@string/accessibility_magnify_typing"
             android:textAppearance="@style/TextAppearance.MagnificationSetting.Title"
-            android:labelFor="@id/magnifier_horizontal_lock_switch"
+            android:labelFor="@id/magnifier_typing_switch"
             android:layout_gravity="center_vertical" />
 
         <com.google.android.material.materialswitch.MaterialSwitch

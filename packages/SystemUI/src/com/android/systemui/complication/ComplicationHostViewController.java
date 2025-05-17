@@ -134,6 +134,11 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
         mLayoutEngine.updateLayoutEngine(bounds, latestComplicationLayoutParams);
     }
 
+    private void removeComplication(ComplicationId id) {
+        mLayoutEngine.removeComplication(id);
+        mComplications.remove(id);
+    }
+
     private void updateComplications(Collection<ComplicationViewModel> complications) {
         if (DEBUG) {
             Log.d(TAG, "updateComplications called. Callers = " + Debug.getCallers(25));
@@ -150,10 +155,7 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
                         .collect(Collectors.toSet());
 
         // Trim removed complications
-        removedComplicationIds.forEach(complicationId -> {
-            mLayoutEngine.removeComplication(complicationId);
-            mComplications.remove(complicationId);
-        });
+        removedComplicationIds.forEach(complicationId -> removeComplication(complicationId));
 
         // Add new complications
         final Collection<ComplicationViewModel> newComplications = complications
@@ -206,9 +208,9 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
 
     @Override
     public void destroy() {
-        mComplications.forEach((id, viewHolder) ->
-                mLayoutEngine.removeComplication(id));
-        mComplications.clear();
+        mLayoutEngine.onDestroyed();
+        mComplications.keySet().stream().collect(Collectors.toSet())
+                .forEach(id -> removeComplication(id));
         super.destroy();
     }
 

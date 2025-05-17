@@ -22,7 +22,7 @@ import android.platform.test.annotations.Presubmit
 import android.tools.flicker.junit.FlickerBuilderProvider
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.traces.component.ComponentNameMatcher
+import android.tools.flicker.rules.ClearAppCacheRule
 import android.tools.traces.executeShellCommand
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
@@ -30,6 +30,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.wm.shell.Flags
 import org.junit.Assume
 import org.junit.AssumptionViolatedException
+import org.junit.ClassRule
 import org.junit.Test
 
 /**
@@ -45,7 +46,7 @@ constructor(
     protected val tapl: LauncherInstrumentation = LauncherInstrumentation()
 ) {
     init {
-        tapl.setExpectedRotationCheckEnabled(true)
+        tapl.expectedRotationCheckEnabled = false
         executeShellCommand(
             "settings put system hide_rotation_lock_toggle_for_accessibility 1"
         )
@@ -223,5 +224,9 @@ constructor(
         } catch (e: AssumptionViolatedException) {
             Log.e(logTag, "Assumption violation on CUJ complete", e)
         }
+    }
+
+    companion object {
+        @ClassRule @JvmField val clearCache = ClearAppCacheRule()
     }
 }

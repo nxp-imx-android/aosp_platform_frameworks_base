@@ -28,6 +28,7 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.UiEventLogger
@@ -50,59 +51,6 @@ import com.google.android.material.materialswitch.MaterialSwitch
 class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
     NotificationInfo(context, attrs) {
 
-    @Throws(RemoteException::class)
-    override fun bindNotification(
-        pm: PackageManager,
-        iNotificationManager: INotificationManager,
-        appIconProvider: AppIconProvider,
-        iconStyleProvider: NotificationIconStyleProvider,
-        onUserInteractionCallback: OnUserInteractionCallback,
-        channelEditorDialogController: ChannelEditorDialogController,
-        packageDemotionInteractor: PackageDemotionInteractor,
-        pkg: String,
-        ranking: NotificationListenerService.Ranking,
-        sbn: StatusBarNotification,
-        entry: NotificationEntry?,
-        entryAdapter: EntryAdapter?,
-        onSettingsClick: OnSettingsClickListener?,
-        onAppSettingsClick: OnAppSettingsClickListener,
-        feedbackClickListener: OnFeedbackClickListener,
-        uiEventLogger: UiEventLogger,
-        isDeviceProvisioned: Boolean,
-        isNonblockable: Boolean,
-        isDismissable: Boolean,
-        wasShownHighPriority: Boolean,
-        assistantFeedbackController: AssistantFeedbackController,
-        metricsLogger: MetricsLogger,
-        onCloseClick: OnClickListener,
-    ) {
-        super.bindNotification(
-            pm,
-            iNotificationManager,
-            appIconProvider,
-            iconStyleProvider,
-            onUserInteractionCallback,
-            channelEditorDialogController,
-            null,
-            pkg,
-            ranking,
-            sbn,
-            entry,
-            entryAdapter,
-            onSettingsClick,
-            onAppSettingsClick,
-            feedbackClickListener,
-            uiEventLogger,
-            isDeviceProvisioned,
-            isDismissable,
-            isNonblockable,
-            wasShownHighPriority,
-            assistantFeedbackController,
-            metricsLogger,
-            onCloseClick,
-        )
-    }
-
     override fun bindInlineControls() {
         val enabled =
             mINotificationManager.isAdjustmentSupportedForPackage(
@@ -123,7 +71,7 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
             )
         }
 
-        val done = findViewById<View>(R.id.done)
+        val done = findViewById<TextView>(R.id.done)
         done.setOnClickListener {
             try {
                 if (NotificationBundleUi.isEnabled) {
@@ -144,17 +92,20 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
                 throw RuntimeException(e)
             }
         }
+        done.setText(
+            if (enabled)
+                R.string.inline_done_button
+            else
+                R.string.inline_ok_button
+        )
         done.setAccessibilityDelegate(mGutsContainer.accessibilityDelegate)
-        var label = ""
-        when (mSingleNotificationChannel.id) {
-            PROMOTIONS_ID -> label =
-                mContext.getString(R.string.notification_guts_promotions_summary)
-            RECS_ID -> label = mContext.getString(R.string.notification_guts_recs_summary)
-            NEWS_ID -> label = mContext.getString(R.string.notification_guts_news_summary)
-            SOCIAL_MEDIA_ID -> label =
-                mContext.getString(R.string.notification_guts_social_summary)
+        val toggleWrapper = findViewById<ViewGroup>(R.id.classification_toggle)
+        toggleWrapper.setOnClickListener {
+            toggle.performClick()
         }
-        findViewById<TextView>(R.id.feature_summary).text = label;
+
+        findViewById<TextView>(R.id.feature_summary).setText(
+            resources.getString(R.string.notification_guts_bundle_summary, mAppName));
 
         val dismissButton = findViewById<View>(R.id.inline_dismiss)
         dismissButton.setOnClickListener(mOnCloseClickListener)

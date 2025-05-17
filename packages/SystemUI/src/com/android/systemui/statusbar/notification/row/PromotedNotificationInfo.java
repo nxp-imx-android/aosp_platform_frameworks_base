@@ -17,15 +17,18 @@
 package com.android.systemui.statusbar.notification.row;
 
 import android.app.INotificationManager;
-import android.app.NotificationChannel;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.RemoteException;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.text.SpannableStringBuilder;
+import android.text.style.ImageSpan;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
@@ -47,6 +50,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
     private INotificationManager mNotificationManager;
     private PackageDemotionInteractor mPackageDemotionInteractor;
 
+    OnSettingsClickListener mOnSettingsClickListener;
     public PromotedNotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -77,22 +81,46 @@ public class PromotedNotificationInfo extends NotificationInfo {
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
                 onUserInteractionCallback, channelEditorDialogController,
-                 packageDemotionInteractor,pkg, ranking, sbn,
+                packageDemotionInteractor, pkg, ranking, sbn,
                 entry, entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
-                uiEventLogger, isDeviceProvisioned, isDismissable, isNonblockable,
+                uiEventLogger, isDeviceProvisioned, isNonblockable, isDismissable,
                 wasShownHighPriority, assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
 
+        mOnSettingsClickListener = onSettingsClick;
         mPackageDemotionInteractor = packageDemotionInteractor;
 
         bindDemote(sbn, pkg);
+
+        // Override the visibility of elements we don't want for the promoted notification
+        findViewById(R.id.interruptiveness_settings).setVisibility(GONE);
+        findViewById(R.id.turn_off_notifications).setVisibility(GONE);
     }
 
     protected void bindDemote(StatusBarNotification sbn, String packageName) {
-        View demoteButton = findViewById(R.id.promoted_demote);
+        TextView demoteButton = findViewById(R.id.promoted_demote);
         demoteButton.setOnClickListener(getDemoteClickListener(sbn, packageName));
         demoteButton.setVisibility(demoteButton.hasOnClickListeners() ? VISIBLE : GONE);
+
+        bindDemoteButtonContent(demoteButton);
+    }
+
+    private void bindDemoteButtonContent(TextView demoteButton) {
+        Resources res = mContext.getResources();
+        String buttonText = res.getString(R.string.notification_inline_disable_promotion);
+
+        Drawable iconDrawable = mContext.getDrawable(R.drawable.ic_keep_off);
+        iconDrawable.setTint(mContext.getColor(com.android.internal.R.color.materialColorPrimary));
+        int iconSizePx = res.getDimensionPixelSize(R.dimen.notification_demote_button_icon_size);
+        iconDrawable.setBounds(0, 0, iconSizePx, iconSizePx);
+        ImageSpan imageSpan = new ImageSpan(iconDrawable, ImageSpan.ALIGN_CENTER);
+
+        SpannableStringBuilder builder = new SpannableStringBuilder();
+        builder.append("  ", imageSpan, 0);
+        builder.append("  ");
+        builder.append(buttonText);
+        demoteButton.setText(builder);
     }
 
     @Override
@@ -103,13 +131,12 @@ public class PromotedNotificationInfo extends NotificationInfo {
 
     private OnClickListener getDemoteClickListener(StatusBarNotification sbn, String packageName) {
         return ((View v) -> {
-            try {
-                mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
-                mPackageDemotionInteractor.onPackageDemoted(packageName, sbn.getUid());
-                mGutsContainer.closeControls(v, true);
-            } catch (RemoteException e) {
-                Log.e(TAG, "Couldn't revoke live update permission", e);
-            }
+            // TODO(b/417258670) Remove detour through settings by using specialized permission.
+            // mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
+            // mPackageDemotionInteractor.onPackageDemoted(packageName, sbn.getUid());
+            // mGutsContainer.closeControls(v, true);
+
+            mOnSettingsClickListener.onClick(v, null, sbn.getUid());
         });
     }
 }

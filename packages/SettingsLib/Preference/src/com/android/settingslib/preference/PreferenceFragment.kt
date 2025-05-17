@@ -34,6 +34,9 @@ import com.android.settingslib.widget.SettingsBasePreferenceFragment
 open class PreferenceFragment :
     SettingsBasePreferenceFragment(), PreferenceScreenProvider, PreferenceScreenBindingKeyProvider {
 
+    private var preferenceScreenCreator: PreferenceScreenCreator? = null
+    private var preferenceScreenCreatorInitialized = false
+
     protected var preferenceScreenBindingHelper: PreferenceScreenBindingHelper? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -89,13 +92,19 @@ open class PreferenceFragment :
     /** Returns the xml resource to create preference screen. */
     @XmlRes protected open fun getPreferenceScreenResId(context: Context): Int = 0
 
-    protected fun getPreferenceScreenCreator(context: Context): PreferenceScreenCreator? =
-        (PreferenceScreenRegistry.create(
-                context,
-                getPreferenceScreenBindingKey(context),
-                getPreferenceScreenBindingArgs(context),
-            ) as? PreferenceScreenCreator)
-            ?.run { if (isFlagEnabled(context)) this else null }
+    protected fun getPreferenceScreenCreator(context: Context): PreferenceScreenCreator? {
+        if (preferenceScreenCreatorInitialized) return preferenceScreenCreator
+        preferenceScreenCreatorInitialized = true
+        val screenCreator =
+            (PreferenceScreenRegistry.create(
+                    context,
+                    getPreferenceScreenBindingKey(context),
+                    getPreferenceScreenBindingArgs(context),
+                ) as? PreferenceScreenCreator)
+                ?.run { if (isFlagEnabled(context)) this else null }
+        preferenceScreenCreator = screenCreator
+        return screenCreator
+    }
 
     override fun getPreferenceScreenBindingKey(context: Context): String? =
         arguments?.getString(EXTRA_BINDING_SCREEN_KEY)

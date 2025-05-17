@@ -87,7 +87,7 @@ public enum DesktopExperienceFlags {
             Flags::enableDesktopCloseTaskAnimationInDtcBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX),
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
-            Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, false,
+            Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),
     ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE(Flags::enableDesktopFirstBasedDragToMaximize, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE),
@@ -156,6 +156,10 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX),
     ENABLE_NON_DEFAULT_DISPLAY_SPLIT(Flags::enableNonDefaultDisplaySplit, true,
             Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT),
+    ENABLE_NO_WINDOW_DECORATION_FOR_DESKS(Flags::enableNoWindowDecorationForDesks, true,
+        Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS),
+    ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS(Flags::parallelCdTransitionsDuringRecents, false,
+            Flags.FLAG_PARALLEL_CD_TRANSITIONS_DURING_RECENTS),
     ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS(
             Flags::enablePersistingDisplaySizeForConnectedDisplays, true,
             Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS),
@@ -173,7 +177,7 @@ public enum DesktopExperienceFlags {
     ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS(Flags::enableRestartMenuForConnectedDisplays, true,
             Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS),
     ENABLE_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS(
-            Flags::restrictFreeformHiddenSystemBarsToFillingTasks, false,
+            Flags::restrictFreeformHiddenSystemBarsToFillingTasks, true,
             Flags.FLAG_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS),
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
             true, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
@@ -185,6 +189,8 @@ public enum DesktopExperienceFlags {
     ENABLE_TALL_APP_HEADERS(Flags::enableTallAppHeaders, false, Flags.FLAG_ENABLE_TALL_APP_HEADERS),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
+    ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX(Flags::enableTaskbarRecentTasksThrottleBugfix,
+            true, Flags.FLAG_ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
     ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX(
             Flags::enableWindowingTaskStackOrderBugfix, true,
@@ -202,6 +208,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
     REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
             Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
+    RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS(
+            Flags::respectFullscreenActivityOptionInDesktopLaunchParams, false,
+            Flags.FLAG_RESPECT_FULLSCREEN_ACTIVITY_OPTION_IN_DESKTOP_LAUNCH_PARAMS),
     USE_RESOURCES_FROM_CONTEXT_TO_CREATE_DRAWABLE_ICONS(
             com.android.graphics.flags.Flags::useResourcesFromContextToCreateDrawableIcons,
             true,
@@ -406,16 +415,9 @@ public enum DesktopExperienceFlags {
 
     /** Returns whether the toggle is overridden by the relevant system property.. */
     private static boolean isToggleOverriddenBySystem() {
-        // We never override if display content mode management is enabled.
-        if (enableDisplayContentModeManagement()) {
-            return false;
-        }
-        final Context context = getApplicationContext();
-        if (context == null) {
-            return false;
-        }
-        // If the developer option is not supported, we don't override.
-        if (!isDesktopExperienceDevOptionSupported()) {
+        // We never override if display content mode management is enabled or
+        // if the desktop experience dev option is not enabled in the build.
+        if (enableDisplayContentModeManagement() || !Flags.showDesktopExperienceDevOption()) {
             return false;
         }
         return SystemProperties.getBoolean(SYSTEM_PROPERTY_NAME, false);

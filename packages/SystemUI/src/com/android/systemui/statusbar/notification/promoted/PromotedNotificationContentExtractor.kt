@@ -36,12 +36,10 @@ import android.app.Notification.InboxStyle
 import android.app.Notification.ProgressStyle
 import android.app.Person
 import android.content.Context
-import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -69,6 +67,7 @@ interface PromotedNotificationContentExtractor {
         recoveredBuilder: Notification.Builder,
         @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
+        packageContext: Context,
     ): PromotedNotificationContentModels?
 }
 
@@ -76,7 +75,6 @@ interface PromotedNotificationContentExtractor {
 class PromotedNotificationContentExtractorImpl
 @Inject
 constructor(
-    @ShadeDisplayAware private val context: Context,
     private val notificationIconStyleProvider: NotificationIconStyleProvider,
     private val appIconProvider: AppIconProvider,
     private val skeletonImageTransform: SkeletonImageTransform,
@@ -88,6 +86,7 @@ constructor(
         recoveredBuilder: Notification.Builder,
         @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
+        packageContext: Context,
     ): PromotedNotificationContentModels? {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {
             if (LOG_NOT_EXTRACTED) {
@@ -118,6 +117,7 @@ constructor(
                 recoveredBuilder = recoveredBuilder,
                 lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs,
                 imageModelProvider = imageModelProvider,
+                packageContext = packageContext,
             )
         val publicVersion =
             if (redactionType == REDACTION_TYPE_NONE) {
@@ -128,6 +128,7 @@ constructor(
                         privateModel = privateVersion,
                         publicNotification = publicNotification,
                         imageModelProvider = imageModelProvider,
+                        packageContext = packageContext,
                     )
                 } ?: createDefaultPublicVersion(privateModel = privateVersion)
             }
@@ -147,7 +148,7 @@ constructor(
         publicBuilder.appName = privateModel.appName
         publicBuilder.time = privateModel.time
         publicBuilder.lastAudiblyAlertedMs = privateModel.lastAudiblyAlertedMs
-        publicBuilder.profileBadgeResId = privateModel.profileBadgeResId
+        publicBuilder.profileBadgeBitmap = privateModel.profileBadgeBitmap
         publicBuilder.colors = privateModel.colors
     }
 
@@ -166,6 +167,7 @@ constructor(
         privateModel: PromotedNotificationContentModel,
         publicNotification: Notification,
         imageModelProvider: ImageModelProvider,
+        packageContext: Context,
     ): PromotedNotificationContentModel =
         PromotedNotificationContentModel.Builder(key = privateModel.identity.key)
             .also { publicBuilder ->
@@ -198,6 +200,7 @@ constructor(
         recoveredBuilder: Notification.Builder,
         lastAudiblyAlertedMs: Long,
         imageModelProvider: ImageModelProvider,
+        packageContext: Context,
     ): PromotedNotificationContentModel {
         val notification = sbn.notification
 
@@ -210,15 +213,16 @@ constructor(
             notification.extras.getBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false)
 
         contentBuilder.skeletonNotifIcon =
-            sbn.skeletonAppIcon() ?: notification.skeletonSmallIcon(imageModelProvider)
+            sbn.skeletonAppIcon(packageContext)
+                ?: notification.skeletonSmallIcon(imageModelProvider)
 
         contentBuilder.iconLevel = notification.iconLevel
-        contentBuilder.appName = notification.loadHeaderAppName(context)
+        contentBuilder.appName = notification.loadHeaderAppName(packageContext)
         contentBuilder.subText = notification.subText()
         contentBuilder.time = notification.extractWhen()
         contentBuilder.shortCriticalText = notification.shortCriticalText()
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
-        contentBuilder.profileBadgeResId = null // TODO
+        contentBuilder.profileBadgeBitmap = Notification.getProfileBadge(packageContext)
         contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
         contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
@@ -241,19 +245,12 @@ constructor(
     ): NotifIcon.SmallIcon? =
         imageModelProvider.getImageModel(smallIcon, SmallSquare)?.let { NotifIcon.SmallIcon(it) }
 
-    private fun StatusBarNotification.skeletonAppIcon(): NotifIcon.AppIcon? {
+    private fun StatusBarNotification.skeletonAppIcon(packageContext: Context): NotifIcon.AppIcon? {
         if (!android.app.Flags.notificationsRedesignAppIcons()) return null
-        if (!notificationIconStyleProvider.shouldShowAppIcon(this, context)) return null
-        return try {
-            NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, context))
-        } catch (e: NameNotFoundException) {
-            // TODO: b/416215382 - Because we're passing the SystemUI context to AppIconProvider
-            //  instead of the app's context, the fetch method can throw a NameNotFoundException
-            //  if the app is not installed on the main profile. When this happens, we fall back to
-            //  the small icon here as a temporary workaround, but this will be removed when the
-            //  AppIconProvided is updated to receive a userId instead of a context.
-            null
-        }
+        if (!notificationIconStyleProvider.shouldShowAppIcon(this, packageContext)) return null
+        return NotifIcon.AppIcon(
+            appIconProvider.getOrFetchSkeletonAppIcon(packageName, packageContext)
+        )
     }
 
     private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)

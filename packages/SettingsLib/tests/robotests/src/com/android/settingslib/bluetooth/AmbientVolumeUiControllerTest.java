@@ -16,7 +16,6 @@
 
 package com.android.settingslib.bluetooth;
 
-import static android.bluetooth.AudioInputControl.MUTE_DISABLED;
 import static android.bluetooth.AudioInputControl.MUTE_MUTED;
 import static android.bluetooth.AudioInputControl.MUTE_NOT_MUTED;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
@@ -257,26 +256,14 @@ public class AmbientVolumeUiControllerTest {
     }
 
     @Test
-    public void refresh_oneSideNotMutable_controlNotMutableAndNotMuted() {
-        prepareRemoteData(mDevice, 10, MUTE_DISABLED);
-        prepareRemoteData(mMemberDevice, 20, MUTE_NOT_MUTED);
-
-        mController.refresh();
-
-        verify(mAmbientLayout).setMutable(false);
-        verify(mAmbientLayout).setMuted(false);
-    }
-
-    @Test
-    public void refresh_oneSideNotMuted_controlNotMutedAndSyncToRemote() {
+    public void refresh_leftAndRightDifferentMuteState_expandControl() {
         prepareRemoteData(mDevice, 10, MUTE_MUTED);
-        prepareRemoteData(mMemberDevice, 20, MUTE_NOT_MUTED);
+        prepareRemoteData(mMemberDevice, 10, MUTE_NOT_MUTED);
+        when(mAmbientLayout.isControlExpanded()).thenReturn(false);
 
         mController.refresh();
 
-        verify(mAmbientLayout).setMutable(true);
-        verify(mAmbientLayout).setMuted(false);
-        verify(mVolumeController).setMuted(mDevice, false);
+        verify(mAmbientLayout).setControlExpanded(true);
     }
 
     private void prepareDevice(boolean hasMember) {

@@ -80,6 +80,7 @@ import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IntArray;
+import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseBooleanArray;
@@ -469,6 +470,10 @@ public class PreferencesHelper implements RankingConfig {
             int channelImportance = parser.getAttributeInt(
                     null, ATT_IMPORTANCE, DEFAULT_IMPORTANCE);
             if (!TextUtils.isEmpty(id) && !TextUtils.isEmpty(channelName)) {
+                // Force IMPORTANCE_LOW for reserved channels
+                if (notificationClassification() && SYSTEM_RESERVED_IDS.contains(id)) {
+                    channelImportance = IMPORTANCE_LOW;
+                }
                 NotificationChannel channel = new NotificationChannel(
                         id, channelName, channelImportance);
                 if (forRestore) {
@@ -872,6 +877,11 @@ public class PreferencesHelper implements RankingConfig {
 
     @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean canBePromoted(String packageName, int uid) {
+        if (android.app.Flags.apiRichOngoingPermission()) {
+            Log.e(TAG, "Should not be checking here if apiRichOngoingPermission flag enabled");
+            return false;
+        }
+
         synchronized (mLock) {
             return getOrCreatePackagePreferencesLocked(packageName, uid).canHavePromotedNotifs;
         }
@@ -880,6 +890,12 @@ public class PreferencesHelper implements RankingConfig {
     @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean setCanBePromoted(String packageName, int uid, boolean promote,
             boolean fromUser) {
+
+        if (android.app.Flags.apiRichOngoingPermission()) {
+            Log.e(TAG, "Should not be writing here if apiRichOngoingPermission flag enabled");
+            return false;
+        }
+
         boolean changed = false;
         synchronized (mLock) {
             PackagePreferences pkgPrefs = getOrCreatePackagePreferencesLocked(packageName, uid);
@@ -896,6 +912,7 @@ public class PreferencesHelper implements RankingConfig {
         // no need to send a ranking update because we need to update the flag value on all pending
         // and posted notifs and NMS will take care of that
         return changed;
+
     }
 
     public boolean isInInvalidMsgState(String packageName, int uid) {

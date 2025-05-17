@@ -46,6 +46,7 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleBarUpdate;
 import com.android.wm.shell.shared.bubbles.RemovedBubble;
+import com.android.wm.shell.taskview.TaskViewTaskController;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -306,6 +307,11 @@ public class BubbleData {
 
     public boolean hasBubbles() {
         return !mBubbles.isEmpty();
+    }
+
+    boolean hasBubbleInStackWithTaskView(@NonNull TaskViewTaskController taskView) {
+        return getBubbleWithPredicate(mBubbles,
+                b -> b.getTaskView().getController() == taskView) != null;
     }
 
     public boolean hasOverflowBubbles() {

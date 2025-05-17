@@ -26,6 +26,7 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
 import android.util.ArrayMap
+import androidx.annotation.DrawableRes
 import com.android.app.tracing.traceSection
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.qualifiers.Main
@@ -116,7 +117,11 @@ private class ActiveNotificationsStoreBuilder(
     private fun addBundleEntry(entry: BundleEntry) {
         val childModels = entry.children.mapNotNull { it.toModel() }
         builder.addBundle(
-            existingModels.createOrReuseBundle(key = entry.key, children = childModels)
+            existingModels.createOrReuseBundle(
+                key = entry.key,
+                iconResId = entry.bundleRepository.bundleIcon,
+                children = childModels,
+            )
         )
     }
 
@@ -132,19 +137,21 @@ private class ActiveNotificationsStoreBuilder(
         builder.setRankingsMap(flatMapToRankingsMap(entries))
     }
 
-    fun flatMapToRankingsMap(entries: List<PipelineEntry>): Map<String, Int> {
+    private fun flatMapToRankingsMap(entries: List<PipelineEntry>): Map<String, Int> {
         val result = ArrayMap<String, Int>()
         for (entry in entries) {
             when (entry) {
-                is BundleEntry -> {
-                    // TODO(b/410815667): Handle BundleEntry
-                }
-                is ListEntry -> {
-                    flatMapToRankingsMap(entry, result)
-                }
+                is BundleEntry -> flatMapToRankingsMap(entry, result)
+                is ListEntry -> flatMapToRankingsMap(entry, result)
             }
         }
         return result
+    }
+
+    private fun flatMapToRankingsMap(entry: BundleEntry, result: ArrayMap<String, Int>) {
+        for (child in entry.children) {
+            flatMapToRankingsMap(child, result)
+        }
     }
 
     private fun flatMapToRankingsMap(entry: ListEntry, result: ArrayMap<String, Int>) {
@@ -396,17 +403,21 @@ private fun StatusBarNotification.toCallType(): CallType =
 
 private fun ActiveNotificationsStore.createOrReuseBundle(
     key: String,
+    @DrawableRes iconResId: Int,
     children: List<ActiveNotificationEntryModel>,
 ): ActiveBundleModel {
-    return bundles[key]?.takeIf { it.isCurrent(key, children) } ?: ActiveBundleModel(key, children)
+    return bundles[key]?.takeIf { it.isCurrent(key, iconResId, children) }
+        ?: ActiveBundleModel(key, iconResId, children)
 }
 
 private fun ActiveBundleModel.isCurrent(
     key: String,
+    @DrawableRes iconResId: Int,
     children: List<ActiveNotificationEntryModel>,
 ): Boolean {
     return when {
         key != this.key -> false
+        iconResId != this.iconResId -> false
         !hasSameInstances(children, this.children) -> false
         else -> true
     }

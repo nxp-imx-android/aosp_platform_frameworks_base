@@ -138,6 +138,7 @@ java_library {
     srcs: [
         "runtime-helper-src/framework/**/*.java",
         ":framework-graphics-srcs",
+        ":framework-ravenwood-sources",
     ],
     static_libs: [
         "ravenwood-runtime-common",
@@ -185,7 +186,6 @@ java_library {
         "ravenwood-helper-framework-runtime",
         "ravenwood-helper-libcore-runtime",
         "hoststubgen-helper-runtime.ravenwood",
-        "mockito-ravenwood-prebuilt",
     ],
     visibility: [":__subpackages__"],
     jarjar_rules: ":ravenwood-services-jarjar-rules",
@@ -641,32 +641,53 @@ filegroup {
 // JARs in "ravenwood-runtime" are set to the classpath, sorted alphabetically.
 // Rename some of the dependencies to make sure they're included in the intended order.
 
-java_library {
+java_import {
     name: "100-framework-minus-apex.ravenwood",
-    installable: false,
-    static_libs: ["framework-minus-apex.ravenwood"],
+    jars: [":framework-minus-apex.ravenwood"],
     visibility: ["//visibility:private"],
 }
 
-java_library {
+java_import {
     name: "200-kxml2-android",
-    installable: false,
-    static_libs: ["kxml2-android"],
+    jars: [":kxml2-android"],
     visibility: ["//visibility:private"],
 }
 
-java_library {
+java_import {
     name: "z00-50-framework-updatable-stubs-module_libs_api",
+    jars: [":framework-updatable-stubs-module_libs_api-for-host"],
+    visibility: ["//visibility:private"],
+}
+
+java_import {
+    name: "z00-all-updatable-modules-system-stubs",
+    jars: [":all-updatable-modules-system-stubs-for-host"],
+    visibility: ["//visibility:private"],
+}
+
+// We add empty jar files with specific names to overwrite stale jar files
+// that should be removed from ravenwood-runtime.
+// We need them until CleanSpec.mk gets fixed.
+//
+// TODO(b/418236847) Once CleanSpec.mk is fixed, delete the following
+// empty jars and instead delete the whole ravenwood-runtime/ directory,
+// using f/b/CleanSpec.mk.
+
+java_defaults {
+    name: "ravenwood-empty-jar",
     installable: false,
-    static_libs: ["framework-updatable-stubs-module_libs_api-for-host"],
+    sdk_version: "core_current",
     visibility: ["//visibility:private"],
 }
 
 java_library {
-    name: "z00-all-updatable-modules-system-stubs",
-    installable: false,
-    static_libs: ["all-updatable-modules-system-stubs-for-host"],
-    visibility: ["//visibility:private"],
+    name: "ravenwood-empty-framework-minus-apex.ravenwood",
+    stem: "framework-minus-apex.ravenwood",
+}
+
+java_library {
+    name: "ravenwood-empty-kxml2-android",
+    stem: "kxml2-android",
 }
 
 android_ravenwood_libgroup {
@@ -734,6 +755,9 @@ android_ravenwood_libgroup {
         // covered in framework-updatable-stubs-module_libs_api. Libcore
         // doesn't have MODULE_LIBRARIES APIs.)
         "z00-all-updatable-modules-system-stubs",
+
+        "ravenwood-empty-framework-minus-apex.ravenwood",
+        "ravenwood-empty-kxml2-android",
     ],
     jni_libs: [
         // Libraries has to be loaded in the following order

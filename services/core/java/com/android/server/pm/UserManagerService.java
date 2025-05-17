@@ -1013,7 +1013,7 @@ public class UserManagerService extends IUserManager.Stub {
                 if (user != null) {
                     user.startRealtime = SystemClock.elapsedRealtime();
                     if (targetUser.getUserIdentifier() == UserHandle.USER_SYSTEM
-                            && targetUser.isFull()) {
+                            && user.info.supportsSwitchTo()) {
                         mUms.setLastEnteredForegroundTimeToNow(user);
                     }
                 }
@@ -1053,6 +1053,10 @@ public class UserManagerService extends IUserManager.Stub {
                     user.unlockRealtime = 0;
                 }
             }
+        }
+
+        public UserManagerService getService() {
+            return mUms;
         }
     }
 
@@ -1381,7 +1385,7 @@ public class UserManagerService extends IUserManager.Stub {
         setBootUserIdUnchecked(userId);
     }
 
-    private void setBootUserIdUnchecked(@UserIdInt int userId) {
+    void setBootUserIdUnchecked(@UserIdInt int userId) {
         synchronized (mUsersLock) {
             // TODO(b/263381643): Change to EventLog.
             Slogf.i(LOG_TAG, "setBootUser %d", userId);
@@ -1431,6 +1435,31 @@ public class UserManagerService extends IUserManager.Stub {
         return UserHandle.USER_SYSTEM;
     }
 
+    @UserIdInt
+    int getBootUser(boolean waitUntilSet) throws UserManager.CheckedUserOperationException {
+        if (waitUntilSet) {
+            final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
+            t.traceBegin("wait-boot-user");
+            try {
+                if (mBootUserLatch.getCount() != 0) {
+                    Slogf.d(LOG_TAG,
+                            "Sleeping for boot user to be set. "
+                            + "Max sleep for Time: %d", BOOT_USER_SET_TIMEOUT_MS);
+                }
+                if (!mBootUserLatch.await(BOOT_USER_SET_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+                    Slogf.w(LOG_TAG, "Boot user not set. Timeout: %d",
+                            BOOT_USER_SET_TIMEOUT_MS);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Slogf.w(LOG_TAG, e, "InterruptedException during wait for boot user.");
+            }
+            t.traceEnd();
+        }
+
+        return getBootUserUnchecked();
+    }
+
     private @UserIdInt int getBootUserBasedOnProvisioning()
             throws UserManager.CheckedUserOperationException {
         final boolean provisioned = Settings.Global.getInt(mContext.getContentResolver(),
@@ -1454,7 +1483,7 @@ public class UserManagerService extends IUserManager.Stub {
     private @UserIdInt int getPreviousOrFirstSwitchableUser()
             throws UserManager.CheckedUserOperationException {
         // Return the previous foreground user, if there is one.
-        final int previousUser = getPreviousFullUserToEnterForeground();
+        final int previousUser = getPreviousUserToEnterForeground();
         if (previousUser != UserHandle.USER_NULL) {
             Slogf.i(LOG_TAG, "Boot user is previous user %d", previousUser);
             return previousUser;
@@ -1487,7 +1516,7 @@ public class UserManagerService extends IUserManager.Stub {
    }
 
     @Override
-    public @CanBeNULL @UserIdInt int getPreviousFullUserToEnterForeground() {
+    public @CanBeNULL @UserIdInt int getPreviousUserToEnterForeground() {
         checkQueryOrCreateUsersPermission("get previous user");
         int previousUser = UserHandle.USER_NULL;
         long latestEnteredTime = 0;
@@ -1497,8 +1526,8 @@ public class UserManagerService extends IUserManager.Stub {
             for (int i = 0; i < userSize; i++) {
                 final UserData userData = mUsers.valueAt(i);
                 final int userId = userData.info.id;
-                if (userId != currentUser && userData.info.isFull() && !userData.info.partial
-                        && userData.info.isEnabled() && !mRemovingUserIds.get(userId)) {
+                if (userId != currentUser && !userData.info.partial && userData.info.isEnabled()
+                        && !mRemovingUserIds.get(userId)) {
                     final long userEnteredTime = userData.mLastEnteredForegroundTimeMillis;
                     if (userEnteredTime > latestEnteredTime) {
                         latestEnteredTime = userEnteredTime;
@@ -1719,11 +1748,10 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     private boolean isProfileHidden(int userId) {
-        UserProperties userProperties = getUserPropertiesCopy(userId);
         if (android.os.Flags.allowPrivateProfile()
                 && android.multiuser.Flags.enableHidingProfiles()
                 && android.multiuser.Flags.enablePrivateSpaceFeatures()) {
-            return userProperties.getProfileApiVisibility()
+            return getUserPropertiesInternal(userId).getProfileApiVisibility()
                     == UserProperties.PROFILE_API_VISIBILITY_HIDDEN;
         }
         return false;
@@ -6010,7 +6038,7 @@ public class UserManagerService extends IUserManager.Stub {
                 /* preCreate= */ false, disallowedPackages, /* token= */ null);
     }
 
-    private @NonNull UserInfo createUserInternalUnchecked(
+    @NonNull UserInfo createUserInternalUnchecked(
             @Nullable String name, @NonNull String userType, @UserInfoFlag int flags,
             @CanBeNULL @UserIdInt int parentId, boolean preCreate,
             @Nullable String[] disallowedPackages, @Nullable Object token)
@@ -8010,6 +8038,9 @@ public class UserManagerService extends IUserManager.Stub {
         if (userInfo.convertedFromPreCreated) {
             pw.print(" <converted>");
         }
+        if (userInfo.guestToRemove) {
+            pw.print(" <guestToRemove>");
+        }
         pw.println();
         pw.print("    Type: "); pw.println(userInfo.userType);
         pw.print("    Flags: "); pw.print(userInfo.flags); pw.print(" (");
@@ -8592,32 +8623,7 @@ public class UserManagerService extends IUserManager.Stub {
         @Override
         public @UserIdInt int getBootUser(boolean waitUntilSet)
                 throws UserManager.CheckedUserOperationException {
-            if (waitUntilSet) {
-                final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
-                t.traceBegin("wait-boot-user");
-                try {
-                    if (mBootUserLatch.getCount() != 0) {
-                        Slogf.d(LOG_TAG,
-                                "Sleeping for boot user to be set. "
-                                + "Max sleep for Time: %d", BOOT_USER_SET_TIMEOUT_MS);
-                    }
-                    if (!mBootUserLatch.await(BOOT_USER_SET_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
-                        Slogf.w(LOG_TAG, "Boot user not set. Timeout: %d",
-                                BOOT_USER_SET_TIMEOUT_MS);
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    Slogf.w(LOG_TAG, e, "InterruptedException during wait for boot user.");
-                }
-                t.traceEnd();
-            }
-
-            return getBootUserUnchecked();
-        }
-
-        @Override
-        public void setBootUserId(@UserIdInt int userId) {
-            setBootUserIdUnchecked(userId);
+            return UserManagerService.this.getBootUser(waitUntilSet);
         }
 
         @Override

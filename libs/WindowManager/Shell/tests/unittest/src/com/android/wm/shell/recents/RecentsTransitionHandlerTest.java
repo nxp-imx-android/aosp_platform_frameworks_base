@@ -28,14 +28,12 @@ import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED;
-import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_STOP_REQUESTED;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -92,8 +90,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -223,7 +219,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         startRecentsTransition(/* synthetic= */ false);
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_REQUESTED);
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_REQUESTED);
     }
 
     @Test
@@ -237,7 +233,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_ANIMATING);
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_ANIMATING);
     }
 
     @Test
@@ -253,8 +249,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
-        assertTrue(listener.didStateGetProcessed(TRANSITION_STATE_STOP_REQUESTED));
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
     }
 
     @Test
@@ -266,7 +261,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mRecentsTransitionHandler.findController(transition).cancel("test");
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
     }
 
     @Test
@@ -277,7 +272,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         startRecentsTransition(/* synthetic= */ true);
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_ANIMATING);
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_ANIMATING);
     }
 
     @Test
@@ -290,7 +285,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
     }
 
     @Test
@@ -302,7 +297,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mRecentsTransitionHandler.findController(transition).cancel("test");
         mMainExecutor.flushAll();
 
-        assertThat(listener.getLastProcessedState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
+        assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_NOT_RUNNING);
     }
 
     @Test
@@ -483,21 +478,17 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     private static class TestTransitionStateListener implements RecentsTransitionStateListener {
-        private final List<Integer> mProcessedStates =
-                new ArrayList<>(TRANSITION_STATE_NOT_RUNNING);
+        @RecentsTransitionState
+        private int mState = TRANSITION_STATE_NOT_RUNNING;
 
         @Override
         public void onTransitionStateChanged(int state) {
-            mProcessedStates.add(state);
+            mState = state;
         }
 
         @RecentsTransitionState
-        int getLastProcessedState() {
-            return mProcessedStates.getLast();
-        }
-
-        boolean didStateGetProcessed(int state) {
-            return mProcessedStates.contains(state);
+        int getState() {
+            return mState;
         }
     }
 }

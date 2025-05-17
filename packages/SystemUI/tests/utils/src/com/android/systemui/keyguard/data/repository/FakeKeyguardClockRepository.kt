@@ -40,6 +40,10 @@ class FakeKeyguardClockRepository() : KeyguardClockRepository {
     private val _currentClockId = MutableStateFlow(DEFAULT_CLOCK_ID)
     override val currentClockId: Flow<ClockId> = _currentClockId
 
+    private var _currentClockFontAxesWidth: Float? = 0f
+    override val currentClockFontAxesWidth: Float?
+        get() = _currentClockFontAxesWidth
+
     private val _currentClock: MutableStateFlow<ClockController?> = MutableStateFlow(null)
     override val currentClock = _currentClock
 

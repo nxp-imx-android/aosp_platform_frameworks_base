@@ -215,7 +215,7 @@ public class BluetoothUtilsTest {
 
     @Test
     public void getBtClassDrawableWithDescription_typeHearingAid_returnHearingAidDrawable() {
-        when(mCachedBluetoothDevice.isHearingAidDevice()).thenReturn(true);
+        when(mCachedBluetoothDevice.isHearingDevice()).thenReturn(true);
         BluetoothUtils.getBtClassDrawableWithDescription(mContext, mCachedBluetoothDevice);
 
         verify(mContext).getDrawable(com.android.internal.R.drawable.ic_bt_hearing_aid);

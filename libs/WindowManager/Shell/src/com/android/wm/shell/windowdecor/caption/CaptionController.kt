@@ -35,6 +35,7 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isRtl
+import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 
 
 /**
@@ -52,15 +53,15 @@ abstract class CaptionController<T>(
     private var captionInsets: WindowDecorationInsets? = null
     private val insetsOwner = Binder()
     private var captionViewHost: WindowDecorViewHost? = null
-    private var rootView: T? = null
+    private var windowDecorationViewHolder: WindowDecorationViewHolder<*>? = null
 
     private var isCaptionVisible = false
 
-    /** Inflates the correct caption view. */
-    abstract fun inflateCaptionView(): T
+    /** Inflates the correct caption view and returns the view's view holder. */
+    abstract fun createCaptionView(): WindowDecorationViewHolder<*>
 
-    /** Resource Id of caption layout. */
-    abstract val captionResId: Int
+    /** Type of caption.*/
+    abstract val captionType: CaptionType
 
     /**
      * Returns the caption height given the additional padding that will be added to the top of the
@@ -79,10 +80,9 @@ abstract class CaptionController<T>(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
-    ): CaptionRelayoutResult? = traceSection("CaptionController#relayout") {
-        inflateViewsIfNeeded()
+    ): CaptionRelayoutResult = traceSection("CaptionController#relayout") {
+        val viewHolder = getOrCreateViewHolder()
         isCaptionVisible = params.isCaptionVisible
-        val view = rootView ?: return null
         val viewHost = getOrCreateViewHost(decorWindowContext, display)
         val resources = decorWindowContext.resources
         val taskBounds = taskInfo.getConfiguration().windowConfiguration.bounds
@@ -106,13 +106,8 @@ abstract class CaptionController<T>(
             updateCaptionInsets(params, decorWindowContext, wct, captionHeight, taskBounds)
 
         traceSection("CaptionController#relayout-updateViewHost") {
-            view.setPadding(
-                view.paddingLeft,
-                params.captionTopPadding,
-                view.paddingRight,
-                view.paddingBottom
-            )
-            view.setTaskFocusState(params.hasGlobalFocus)
+            viewHolder.setTopPadding(params.captionTopPadding)
+            viewHolder.setTaskFocusState(params.hasGlobalFocus)
             val localCaptionBounds = Rect(
                 captionX,
                 captionY,
@@ -129,7 +124,7 @@ abstract class CaptionController<T>(
             updateViewHierarchy(
                 params,
                 viewHost,
-                view,
+                viewHolder.rootView,
                 captionWidth,
                 captionHeight,
                 startT,
@@ -144,7 +139,6 @@ abstract class CaptionController<T>(
             captionY = captionY,
             captionTopPadding = captionTopPadding,
             customizableCaptionRegion = customizableCaptionRegion,
-            captionRootView = view,
         )
     }
 
@@ -377,10 +371,14 @@ abstract class CaptionController<T>(
         return customizableCaptionRegion
     }
 
-    private fun inflateViewsIfNeeded() {
-        if (rootView == null) {
-            rootView = inflateCaptionView()
-        }
+    /**
+     * Returns caption's view holder if not null. Otherwise, inflates caption view and returns new
+     * view holder.
+     */
+    private fun getOrCreateViewHolder(): WindowDecorationViewHolder<*> {
+        val viewHolder = windowDecorationViewHolder ?: createCaptionView()
+        windowDecorationViewHolder = viewHolder
+        return viewHolder
     }
 
     /** Releases all caption views. Returns true if caption view host is released. */
@@ -413,8 +411,12 @@ abstract class CaptionController<T>(
         val captionY: Int,
         val captionTopPadding: Int,
         val customizableCaptionRegion: Region,
-        val captionRootView: View,
     )
+
+    /** The type of caption added by this controller. */
+    enum class CaptionType {
+        APP_HANDLE, APP_HEADER
+    }
 
     companion object {
         /**

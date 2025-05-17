@@ -31,8 +31,12 @@ import static com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_K
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
@@ -68,6 +72,7 @@ import com.android.server.accessibility.magnification.MagnificationGestureHandle
 import com.android.server.accessibility.magnification.MagnificationKeyHandler;
 import com.android.server.accessibility.magnification.MagnificationProcessor;
 import com.android.server.accessibility.magnification.WindowMagnificationGestureHandler;
+import com.android.server.input.InputManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -120,6 +125,8 @@ public class AccessibilityInputFilterTest {
     @Mock private MagnificationProcessor mMockMagnificationProcessor;
     @Mock
     private IInputManager mMockInputManager;
+    @Mock
+    private InputManagerInternal mMockInputManagerInternal;
     private InputManagerGlobal.TestSession mInputManagerGlobalSession;
     private AccessibilityManagerService mAms;
     private AccessibilityInputFilter mA11yInputFilter;
@@ -166,6 +173,9 @@ public class AccessibilityInputFilterTest {
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
         LocalServices.addService(
                 WindowManagerInternal.class, mMockWindowManagerService);
+        LocalServices.removeServiceForTest(InputManagerInternal.class);
+        LocalServices.addService(
+                InputManagerInternal.class, mMockInputManagerInternal);
         when(mMockWindowManagerService.getAccessibilityController()).thenReturn(
                 mMockA11yController);
         when(mMockA11yController.isAccessibilityTracingEnabled()).thenReturn(false);
@@ -491,6 +501,35 @@ public class AccessibilityInputFilterTest {
 
         MagnificationKeyHandler handler = getMagnificationKeyHandlerFromEventHandler();
         assertNotNull(handler);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
+    public void testEnabledFeatures_fullscreenMagnificationMode_expectedPointerMotionFilter() {
+        prepareLooper();
+        doReturn(Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN).when(
+                mAms).getMagnificationMode(DEFAULT_DISPLAY);
+
+        mA11yInputFilter.setUserAndEnabledFeatures(0, mFeatures);
+
+        assertNotNull(mA11yInputFilter.getFullScreenMagnificationPointerMotionEventFilter());
+        verify(mMockInputManagerInternal, times(1)).registerAccessibilityPointerMotionFilter(
+                notNull());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
+    public void
+            testRegisterPointerMotionFilter_fullscreenMagnificationMode_delegatesToInputManager() {
+        mA11yInputFilter.registerPointerMotionFilter(true);
+        assertNotNull(mA11yInputFilter.getFullScreenMagnificationPointerMotionEventFilter());
+        verify(mMockInputManagerInternal, times(1)).registerAccessibilityPointerMotionFilter(
+                notNull());
+
+        mA11yInputFilter.registerPointerMotionFilter(false);
+        assertNull(mA11yInputFilter.getFullScreenMagnificationPointerMotionEventFilter());
+        verify(mMockInputManagerInternal, times(1)).registerAccessibilityPointerMotionFilter(
+                isNull());
     }
 
     private static void prepareLooper() {

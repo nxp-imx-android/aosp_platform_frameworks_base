@@ -35,6 +35,7 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
+import static android.os.UserHandle.USER_NULL;
 import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 import static android.util.RotationUtils.deltaRotation;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -123,12 +124,19 @@ import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_LAYERING_TA
 import static com.android.server.wm.DisplayContentProto.IS_SLEEPING;
 import static com.android.server.wm.DisplayContentProto.KEEP_CLEAR_AREAS;
 import static com.android.server.wm.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
+import static com.android.server.wm.DisplayContentProto.REMOTE_INSETS_CONTROL_TARGET;
 import static com.android.server.wm.DisplayContentProto.RESUMED_ACTIVITY;
 import static com.android.server.wm.DisplayContentProto.ROOT_DISPLAY_AREA;
 import static com.android.server.wm.DisplayContentProto.SLEEP_TOKENS;
 import static com.android.server.wm.EventLogTags.IMF_REMOVE_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_SHOW_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_UPDATE_IME_PARENT;
+import static com.android.server.wm.IdentifierProto.HASH_CODE;
+import static com.android.server.wm.IdentifierProto.TITLE;
+import static com.android.server.wm.IdentifierProto.USER_ID;
+import static com.android.server.wm.RemoteInsetsControlTargetProto.ANIMATING_TYPES;
+import static com.android.server.wm.RemoteInsetsControlTargetProto.IDENTIFIER;
+import static com.android.server.wm.RemoteInsetsControlTargetProto.REQUESTED_VISIBLE_TYPES;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
 import static com.android.server.wm.WindowContainerChildProto.DISPLAY_CONTENT;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
@@ -675,10 +683,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private InsetsControlTarget mImeControlTarget;
 
     /**
-     * The last {@link #mImeInputTarget} processed from {@link #setImeLayeringTargetInner}. This
-     * enables updating the {@link #mImeControlTarget} when the {@link #mImeLayeringTarget} remains
-     * the same, and only the {@link #mImeInputTarget} changes. For example, this can happen when
-     * the IME is moving to a SurfaceControlViewHost backed EmbeddedWindow.
+     * The last {@link #mImeInputTarget} processed from {@link #setImeLayeringTarget}. This enables
+     * updating the {@link #mImeControlTarget} when the {@link #mImeLayeringTarget} remains the
+     * same, and only the {@link #mImeInputTarget} changes. For example, this can happen when the
+     * IME is moving to a SurfaceControlViewHost backed EmbeddedWindow.
      */
     @Nullable
     private InputTarget mLastImeInputTarget;
@@ -3630,10 +3638,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mImeInputTarget.getWindowState().writeIdentifierToProto(
                     proto, INPUT_METHOD_INPUT_TARGET_IDENTIFIER);
         }
-        if (mImeControlTarget != null
-                && mImeControlTarget.getWindow() != null) {
-            mImeControlTarget.getWindow().writeIdentifierToProto(
-                    proto, INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
+        if (mImeControlTarget != null) {
+            if (mImeControlTarget.getWindow() != null) {
+                mImeControlTarget.getWindow().writeIdentifierToProto(
+                        proto, INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
+            } else if (mImeControlTarget instanceof RemoteInsetsControlTarget rict) {
+                rict.writeIdentifierToProto(proto,
+                        INPUT_METHOD_CONTROL_TARGET_IDENTIFIER);
+            }
+        }
+        if (mRemoteInsetsControlTarget != null) {
+            mRemoteInsetsControlTarget.dumpDebug(proto,
+                    REMOTE_INSETS_CONTROL_TARGET, logLevel);
         }
         if (mCurrentFocus != null) {
             mCurrentFocus.writeIdentifierToProto(proto, CURRENT_FOCUS_IDENTIFIER);
@@ -4148,52 +4164,24 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     @Nullable
     WindowState computeImeLayeringTarget(boolean update) {
+        final WindowState target;
         if (mInputMethodWindow == null) {
             // There isn't an IME so there shouldn't be a target...That was easy!
-            if (update) {
-                if (DEBUG_INPUT_METHOD) {
-                    Slog.w(TAG_WM, "Moving IME layering target from " + mImeLayeringTarget
-                            + " to null since mInputMethodWindow is null");
-                }
-                setImeLayeringTargetInner(null /* target */);
-            }
-            return null;
-        }
-
-        final WindowState curTarget = mImeLayeringTarget;
-        // TODO(multidisplay): Needs some serious rethought when the target and IME are not on the
-        // same display. Or even when the current IME/target are not on the same screen as the next
-        // IME/target. For now only look for input windows on the main screen.
-        mUpdateImeLayeringTarget = update;
-        final WindowState target = getWindow(mComputeImeLayeringTargetPredicate);
-
-        if (DEBUG_INPUT_METHOD && update) {
-            Slog.v(TAG_WM, "Proposed new IME target: " + target + " for display: "
-                    + getDisplayId());
+            target = null;
+        } else {
+            mUpdateImeLayeringTarget = update;
+            target = getWindow(mComputeImeLayeringTargetPredicate);
         }
 
         if (DEBUG_INPUT_METHOD) {
-            Slog.v(TAG_WM, "Desired IME layering target=" + target + " update=" + update);
-        }
-
-        if (target == null) {
-            if (update) {
-                if (DEBUG_INPUT_METHOD) {
-                    Slog.w(TAG_WM, "Moving IME layering target from " + curTarget + " to null."
-                            + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
-                }
-                setImeLayeringTargetInner(null /* target */);
-            }
-
-            return null;
+            Slog.v(TAG_WM, "computeImeLayeringTarget found: " + target + ", update: " + update
+                    + ", was: " + mImeLayeringTarget + ", IME window: " + mInputMethodWindow
+                    + ", displayId: " + getDisplayId()
+                    + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
         }
 
         if (update) {
-            if (DEBUG_INPUT_METHOD) {
-                Slog.w(TAG_WM, "Moving IME layering target from " + curTarget + " to "
-                        + target + (SHOW_STACK_CRAWLS ? " Callers=" + Debug.getCallers(4) : ""));
-            }
-            setImeLayeringTargetInner(target);
+            setImeLayeringTarget(target);
         }
 
         return target;
@@ -4334,11 +4322,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
     }
 
-    @VisibleForTesting
-    void setImeLayeringTarget(@Nullable WindowState target) {
-        mImeLayeringTarget = target;
-    }
-
     /**
      * Sets the IME layering target, and updates the IME control target. Also updates the IME parent
      * if necessary.
@@ -4346,7 +4329,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @param target the window to place the IME on top of. If {@code null}, the IME will be placed
      *               on top of its parent's surface.
      */
-    private void setImeLayeringTargetInner(@Nullable WindowState target) {
+    @VisibleForTesting
+    void setImeLayeringTarget(@Nullable WindowState target) {
         // This function is also responsible for updating the IME control target and so in the case
         // where the IME layering target does not change but the IME input target does (for example,
         // IME moving to a SurfaceControlViewHost) we have to continue executing this function,
@@ -4370,7 +4354,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
 
-        ProtoLog.i(WM_DEBUG_IME, "setImeLayeringTargetInner %s", target);
+        ProtoLog.i(WM_DEBUG_IME, "setImeLayeringTarget %s", target);
         boolean forceUpdateImeParent = target != mImeLayeringTarget;
         mImeLayeringTarget = target;
 
@@ -4419,6 +4403,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
             mImeInputTargetTokenListenerPair = null;
         }
+        ProtoLog.i(WM_DEBUG_IME, "setImeInputTarget %s", target);
         mImeInputTarget = target;
         // Notify listeners about IME input target window visibility by the target change.
         if (target != null) {
@@ -4744,6 +4729,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     void updateImeControlTarget(boolean forceUpdateImeParent) {
         final InsetsControlTarget prevImeControlTarget = mImeControlTarget;
         mImeControlTarget = computeImeControlTarget();
+        ProtoLog.i(WM_DEBUG_IME, "updateImeControlTarget %s", mImeControlTarget);
         mInsetsStateController.onImeControlTargetChanged(mImeControlTarget);
         // Update IME parent when IME insets leash created or the new IME layering target might
         // updated from setImeLayeringTarget, which is the best time that default IME visibility
@@ -4778,6 +4764,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final var newParentWindow = computeImeParent();
         final SurfaceControl newParent =
                 newParentWindow != null ? newParentWindow.getSurfaceControl() : null;
+        ProtoLog.i(WM_DEBUG_IME, "updateImeParent %s", newParent);
         if (newParent != null && newParent != mInputMethodSurfaceParent) {
             mInputMethodSurfaceParentWindow = newParentWindow;
             mInputMethodSurfaceParent = newParent;
@@ -5583,6 +5570,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                             && imeLayeringTarget.mToken == imeControlTargetToken
                             && !imeLayeringTarget.inMultiWindowMode();
             if (canImeTargetSetRelativeLayer) {
+                ProtoLog.i(WM_DEBUG_IME, "assignRelativeLayerForIme to IME layering target %s",
+                        imeLayeringTarget);
                 mImeWindowsContainer.assignRelativeLayer(t, imeLayeringTarget.getSurfaceControl(),
                         // TODO: We need to use an extra level on the app surface to ensure
                         // this is always above SurfaceView but always below attached window.
@@ -5594,6 +5583,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The IME surface parent may not be its window parent's surface
             // (@see #computeImeParent), so set relative layer here instead of letting the window
             // parent to assign layer.
+            ProtoLog.i(WM_DEBUG_IME, "assignRelativeLayerForIme to IME surface parent %s",
+                    mInputMethodSurfaceParent);
             mImeWindowsContainer.assignRelativeLayer(t, mInputMethodSurfaceParent, 1, forceUpdate);
         }
     }
@@ -7119,6 +7110,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         public void setAnimatingTypes(@InsetsType int animatingTypes,
                 @Nullable ImeTracker.Token statsToken) {
             if (mAnimatingTypes != animatingTypes) {
+                getInsetsPolicy().onAnimatingTypesChanged(this, mAnimatingTypes, animatingTypes);
                 mAnimatingTypes = animatingTypes;
 
                 if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
@@ -7126,6 +7118,28 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 }
             }
         }
+
+        public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
+            final long token = proto.start(fieldId);
+            proto.write(HASH_CODE, System.identityHashCode(this));
+            proto.write(USER_ID, USER_NULL);
+            proto.write(TITLE, "RemoteInsetsControlTarget(displayId=" + mDisplayId + ")");
+            proto.end(token);
+        }
+
+        public void dumpDebug(ProtoOutputStream proto, long fieldId,
+                @WindowTracingLogLevel int logLevel) {
+            if (logLevel == WindowTracingLogLevel.CRITICAL && !isVisible()) {
+                return;
+            }
+            final long token = proto.start(fieldId);
+            writeIdentifierToProto(proto, IDENTIFIER);
+
+            proto.write(REQUESTED_VISIBLE_TYPES, mRequestedVisibleTypes);
+            proto.write(ANIMATING_TYPES, mAnimatingTypes);
+            proto.end(token);
+        }
+
     }
 
     MagnificationSpec getMagnificationSpec() {

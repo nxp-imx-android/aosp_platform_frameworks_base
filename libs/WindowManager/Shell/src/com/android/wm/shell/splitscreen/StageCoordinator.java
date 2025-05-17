@@ -59,6 +59,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.splitPositionToString;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.splitStateToSnapPosition;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_A;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_B;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_MAIN;
@@ -1437,6 +1438,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                         mSplitLayout.populateTouchZones();
                         notifySplitAnimationStatus(false /*animationRunning*/);
 
+                        if (enableFlexibleTwoAppSplit() &&
+                                mSplitState.currentStateHasOffscreenApps()) {
+                            // Stages have changed positions, but layout hasn't so update
+                            // focus on the same layout type as before. NOTE: this needs to happen
+                            // AFTER we make the window's focusable, otherwise it's a no-op
+                            grantFocusForSnapPosition(splitStateToSnapPosition(mSplitState.get()));
+                        }
+
                         // updateSurfaceBounds(), above, officially puts the two apps in their new
                         // stages. Starting on the next frame, all calculations are made using the
                         // new layouts/insets. So any follow-up animations on the same leashes below
@@ -2027,6 +2036,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // TODO (b/336477473): Disallow enter PiP when launching a task in split by default;
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
+        // Set an empty rect as the requested launch bounds. This ensures that if an existing
+        // task is reused, and it has bounds set, they are cleared.
+        options.setLaunchBounds(new Rect());
+
         opts.putAll(options.toBundle());
     }
 
@@ -3182,6 +3195,32 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         } else {
             return mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0;
         }
+    }
+
+    /**
+     * This is used for mixed-transition scenarios (specifically when transitioning one split task
+     * into PIP). For such scenarios, just make sure to include exiting split or entering split when
+     * appropriate. This is an addition to
+     * {@link #addEnterOrExitForPipIfNeeded(TransitionRequestInfo, WindowContainerTransaction)},
+     * for PiP2 where PiP-able task can also come in through the pip change request field,
+     * and this method is provided to explicitly prepare an exit in that case.
+     *
+     * This is only called if requestImpliesSplitToPip() returns `true`.
+     */
+    public void removePipFromSplitIfNeeded(@NonNull TransitionRequestInfo request,
+            @NonNull WindowContainerTransaction outWCT) {
+        if (request.getPipChange() == null || request.getPipChange().getTaskInfo() == null) {
+            return;
+        }
+        final TaskInfo info = request.getPipChange().getTaskInfo();
+        @StageType int topStage = STAGE_TYPE_UNDEFINED;
+        @StageType int pipStage = getStageOfTask(info.taskId);
+        if (pipStage == STAGE_TYPE_MAIN) {
+            topStage = STAGE_TYPE_SIDE;
+        } else if (pipStage == STAGE_TYPE_SIDE) {
+            topStage = STAGE_TYPE_MAIN;
+        }
+        prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_CHILD_TASK_ENTER_PIP);
     }
 
     /**

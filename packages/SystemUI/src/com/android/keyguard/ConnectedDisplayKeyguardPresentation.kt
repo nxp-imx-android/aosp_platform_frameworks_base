@@ -37,6 +37,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 /** [Presentation] shown in connected displays while on keyguard. */
+@Deprecated("Use ConnectedDisplayConstraintLayoutKeyguardPresentation instead.")
 class ConnectedDisplayKeyguardPresentation
 @AssistedInject
 constructor(

@@ -302,6 +302,10 @@ class AppHandleViewHolder(
             } ?: false
     }
 
+    override fun setTaskFocusState(taskFocusState: Boolean) {
+        (rootView as WindowDecorLinearLayout).setTaskFocusState(taskFocusState)
+    }
+
     override fun close() {
         animator.cancel()
     }

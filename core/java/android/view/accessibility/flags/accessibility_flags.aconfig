@@ -182,6 +182,13 @@ flag {
 }
 
 flag {
+    name: "ignore_unimportant_root"
+    namespace: "accessibility"
+    description: "findViewByAccessibilityId will return null if the id matches the root but the root is unimportant."
+    bug: "407099631"
+}
+
+flag {
     name: "indeterminate_range_info"
     namespace: "accessibility"
     description: "Creates a way to create an INDETERMINATE RangeInfo"

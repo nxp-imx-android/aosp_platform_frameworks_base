@@ -80,8 +80,8 @@ import java.util.Objects;
      *
      * @return the selected route or {@code null} if there are no active routes.
      */
-    @NonNull
-    List<MediaRoute2Info> getSelectedRoutes();
+    @Nullable
+    MediaRoute2Info getSelectedRoute();
 
     /**
      * Returns transferable routes.
@@ -144,9 +144,9 @@ import java.util.Objects;
         }
 
         @Override
-        public List<MediaRoute2Info> getSelectedRoutes() {
+        public MediaRoute2Info getSelectedRoute() {
             // no op
-            return Collections.emptyList();
+            return null;
         }
 
         @Override

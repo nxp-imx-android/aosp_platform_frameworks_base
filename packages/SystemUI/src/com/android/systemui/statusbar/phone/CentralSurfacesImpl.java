@@ -198,7 +198,6 @@ import com.android.systemui.statusbar.PowerButtonReveal;
 import com.android.systemui.statusbar.PulseExpansionHandler;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
-import com.android.systemui.topui.TopUiController;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarInitializer;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
@@ -227,6 +226,7 @@ import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
+import com.android.systemui.topui.TopUiController;
 import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.WallpaperController;
@@ -1276,7 +1276,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
                         @Override
                         public void hide() {
-                            mStatusBarModeRepository.getDefaultDisplay().clearTransient();
                         }
                     });
         }
@@ -2711,6 +2710,11 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
         @Override
         public void onScreenTurnedOn() {
+            if (SceneContainerFlag.isEnabled()) {
+                // Already handled in ScrimStartable when the scene framework is enabled.
+                return;
+            }
+
             mScrimController.onScreenTurnedOn();
         }
 
@@ -2718,7 +2722,9 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         public void onScreenTurnedOff() {
             Trace.beginSection("CentralSurfaces#onScreenTurnedOff");
             mFalsingCollector.onScreenOff();
-            mScrimController.onScreenTurnedOff();
+            if (!SceneContainerFlag.isEnabled()) {
+                mScrimController.onScreenTurnedOff();
+            }
             if (mCloseQsBeforeScreenOff) {
                 mQsController.closeQs();
                 mCloseQsBeforeScreenOff = false;

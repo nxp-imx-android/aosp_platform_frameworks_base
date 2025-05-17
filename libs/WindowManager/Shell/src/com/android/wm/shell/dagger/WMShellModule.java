@@ -66,6 +66,8 @@ import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
 import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
 import com.android.wm.shell.bubbles.BubbleTransitions;
+import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
+import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
@@ -263,6 +265,10 @@ public abstract class WMShellModule {
         return bubbleController.map(controller -> controller);
     }
 
+    @Binds
+    abstract BubbleAppInfoProvider bindBubbleAppInfoProvider(
+            PackageManagerBubbleAppInfoProvider appInfoProvider);
+
     @WMSingleton
     @Provides
     static BubbleTransitions provideBubbleTransitions(
@@ -271,10 +277,11 @@ public abstract class WMShellModule {
             @NonNull ShellTaskOrganizer organizer,
             @NonNull TaskViewRepository repository,
             @NonNull BubbleData bubbleData,
-            @NonNull @Bubbles TaskViewTransitions taskViewTransitions
+            @NonNull @Bubbles TaskViewTransitions taskViewTransitions,
+            @NonNull BubbleAppInfoProvider appInfoProvider
     ) {
         return new BubbleTransitions(context, transitions, organizer, repository,
-                bubbleData, taskViewTransitions);
+                bubbleData, taskViewTransitions, appInfoProvider);
     }
 
     @WMSingleton
@@ -323,7 +330,9 @@ public abstract class WMShellModule {
             Transitions transitions,
             SyncTransactionQueue syncQueue,
             IWindowManager wmService,
-            HomeIntentProvider homeIntentProvider) {
+            HomeIntentProvider homeIntentProvider,
+            BubbleAppInfoProvider appInfoProvider,
+            Lazy<Optional<SplitScreenController>> splitScreenController) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -362,7 +371,9 @@ public abstract class WMShellModule {
                 syncQueue,
                 wmService,
                 new BubbleResizabilityChecker(),
-                homeIntentProvider);
+                homeIntentProvider,
+                appInfoProvider,
+                splitScreenController);
     }
 
     //
@@ -515,6 +526,7 @@ public abstract class WMShellModule {
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
+            DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
@@ -526,6 +538,7 @@ public abstract class WMShellModule {
                 windowDecorViewModel,
                 taskChangeListener,
                 focusTransitionObserver,
+                desksOrganizer,
                 desksTransitionObserver,
                 desktopState,
                 desktopImeHandler,
@@ -1194,13 +1207,8 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static MultiDisplayDragMoveIndicatorSurface.Factory
-            providesMultiDisplayDragMoveIndicatorSurfaceFactory(
-                    WindowDecorTaskResourceLoader windowDecorTaskResourceLoader,
-                    @ShellDesktopThread MainCoroutineDispatcher desktopDispatcher,
-                    @ShellBackgroundThread CoroutineScope bgScope) {
-        return new MultiDisplayDragMoveIndicatorSurface.Factory(
-                windowDecorTaskResourceLoader, desktopDispatcher, bgScope
-        );
+            providesMultiDisplayDragMoveIndicatorSurfaceFactory() {
+        return new MultiDisplayDragMoveIndicatorSurface.Factory();
     }
 
     @WMSingleton
@@ -1733,9 +1741,12 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             DisplayController displayController,
             DisplayLayout displayLayout,
-            @ShellMainThread ShellExecutor mainExecutor) {
+            @ShellMainThread ShellExecutor mainExecutor,
+            @ShellMainThread Handler mainHandler,
+            InteractionJankMonitor interactionJankMonitor) {
         return AppZoomOutController.create(context, shellInit, shellTaskOrganizer,
-                displayController, displayLayout, mainExecutor);
+                displayController, displayLayout, mainExecutor, mainHandler,
+                interactionJankMonitor);
     }
 
     //

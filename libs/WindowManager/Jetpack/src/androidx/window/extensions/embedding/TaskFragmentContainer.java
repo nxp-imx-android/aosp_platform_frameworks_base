@@ -28,6 +28,7 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.util.Size;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TaskFragmentInfo;
@@ -540,6 +541,8 @@ class TaskFragmentContainer {
             if (mPendingAppearedIntent != null || !mPendingAppearedActivities.isEmpty()) {
                 mAppearEmptyTimeout = () -> {
                     synchronized (mController.mLock) {
+                        Log.w(SplitController.TAG,
+                                "Fail to wait for activity start in TaskFragment=" + this);
                         mAppearEmptyTimeout = null;
                         // Call without the pass-in wct when timeout. We need to applyWct directly
                         // in this case.

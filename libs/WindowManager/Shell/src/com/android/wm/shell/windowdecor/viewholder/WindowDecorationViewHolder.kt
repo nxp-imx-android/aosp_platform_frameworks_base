@@ -44,4 +44,17 @@ abstract class WindowDecorationViewHolder<T : Data> : AutoCloseable {
 
   /** Data clas that contains the information needed to update the view holder. */
   abstract class Data
+
+  /** Sets task focused state. */
+  abstract fun setTaskFocusState(taskFocusState: Boolean)
+
+  /** Sets the view's top padding. */
+  fun setTopPadding(topPadding: Int) {
+    rootView.setPadding(
+      rootView.paddingLeft,
+      topPadding,
+      rootView.paddingRight,
+      rootView.paddingBottom
+    )
+  }
 }

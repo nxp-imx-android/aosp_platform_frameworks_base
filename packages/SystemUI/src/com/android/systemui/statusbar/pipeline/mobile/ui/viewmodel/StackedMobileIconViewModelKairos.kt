@@ -28,6 +28,7 @@ import com.android.systemui.kairos.map
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kairosBuilder
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.DualSim
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.MobileContentDescription
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.tryParseDualSim
@@ -41,6 +42,7 @@ class StackedMobileIconViewModelKairos
 constructor(
     mobileIcons: MobileIconsViewModelKairos,
     @ShadeDisplayAware private val context: Context,
+    private val mobileContextProvider: MobileContextProvider,
 ) : KairosBuilder by kairosBuilder(), StackedMobileIconViewModel {
 
     private val isStackable: Boolean by
@@ -87,6 +89,24 @@ constructor(
             "StackedMobileIconViewModelKairos.networkTypeIcon",
             iconList.flatMap { icons -> icons.firstOrNull()?.networkTypeIcon ?: stateOf(null) },
             initialValue = null,
+        )
+
+    override val mobileContext: Context? by
+        hydratedComposeStateOf(
+            "StackedMobileIconViewModelKairos.mobileContext",
+            iconList.map { icons ->
+                icons.firstOrNull()?.let {
+                    mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                }
+            },
+            initialValue = null,
+        )
+
+    override val roaming: Boolean by
+        hydratedComposeStateOf(
+            name = "roaming",
+            source = iconList.flatMap { icons -> icons.firstOrNull()?.roaming ?: stateOf(false) },
+            initialValue = false,
         )
 
     override val isIconVisible: Boolean

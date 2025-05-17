@@ -85,6 +85,7 @@ import com.android.systemui.wmshell.BubblesManager;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function2;
 
 import java.util.Optional;
 
@@ -491,18 +492,18 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                         : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
                 mAssistantFeedbackController,
                 mMetricsLogger,
-                row.getCloseButtonOnClickListener(row));
+                row.getDismissButtonOnClickListener());
     }
 
     /**
      * Sets up the {@link BundleHeaderGutsContent} inside the notification row's guts.
      * @param row view to set up the guts for
-     * @param gutsView view to set up/bind within {@code row}
+     * @param gutsContent view to set up/bind within {@code row}
      */
     @VisibleForTesting
     void initializeBundleHeaderGutsContent(
             final ExpandableNotificationRow row,
-            BundleHeaderGutsContent gutsView) {
+            BundleHeaderGutsContent gutsContent) {
 
         NotificationGuts guts = row.getGuts();
 
@@ -513,19 +514,22 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             return Unit.INSTANCE;
         };
 
-        Function0<Unit> onDismissClicked = () -> {
+        Function0<Unit> dismissBundle = () -> {
             guts.resetFalsingCheck();
-            // TODO(b/409748420): Not yet implemented
+            row.getDismissButtonOnClickListener().onClick(gutsContent.getContentView());
             return Unit.INSTANCE;
         };
 
-        Function0<Unit> onDoneClicked = () -> {
-            guts.resetFalsingCheck();
-            // TODO(b/409748420): Not yet implemented
+        Function2<Integer, Boolean, Unit> enableBundle = (type, enable) -> {
+            try {
+                mNotificationManager.setAssistantClassificationTypeState(type, enable);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Couldn't set bundle state", e);
+            }
             return Unit.INSTANCE;
         };
 
-        gutsView.bindNotification(row, onSettingsClicked, onDismissClicked, onDoneClicked);
+        gutsContent.bindNotification(row, onSettingsClicked, dismissBundle, enableBundle);
     }
 
     /**
@@ -596,7 +600,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                         : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
                 mAssistantFeedbackController,
                 mMetricsLogger,
-                row.getCloseButtonOnClickListener(row));
+                row.getDismissButtonOnClickListener());
     }
 
     /**
@@ -660,19 +664,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         UserHandle userHandle = sbn.getUser();
         PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(
                 mContext, userHandle.getIdentifier());
-        final NotificationConversationInfo.OnAppSettingsClickListener onAppSettingsClick =
-                (View v, Intent intent) -> {
-                    mMetricsLogger.action(MetricsProto.MetricsEvent.ACTION_APP_NOTE_SETTINGS);
-                    guts.resetFalsingCheck();
-                    mNotificationActivityStarter.startNotificationGutsIntent(intent, sbn.getUid(),
-                            row);
-                };
 
         final NotificationConversationInfo.OnConversationSettingsClickListener
                 onConversationSettingsListener =
-                () -> {
-                    startConversationSettingsActivity(sbn.getUid(), row);
-                };
+                () -> startConversationSettingsActivity(sbn.getUid(), row);
 
         if (!userHandle.equals(UserHandle.ALL)
                 || mLockscreenUserManager.getCurrentUserId() == UserHandle.USER_SYSTEM) {
@@ -716,7 +711,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mBubblesManagerOptional,
                 mShadeController,
                 row.canViewBeDismissed(),
-                row.getCloseButtonOnClickListener(row));
+                row.getDismissButtonOnClickListener());
     }
 
     /**
@@ -765,10 +760,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     @VisibleForTesting
     public void setExposedGuts(NotificationGuts guts) {
         mNotificationGutsExposed = guts;
-    }
-
-    public ExpandableNotificationRow.LongPressListener getNotificationLongClicker() {
-        return this::openGuts;
     }
 
     /**

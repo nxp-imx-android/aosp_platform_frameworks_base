@@ -31,6 +31,7 @@ import static android.content.pm.UserProperties.INHERIT_DEVICE_POLICY_FROM_PAREN
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.app.AppGlobals;
 import android.app.BroadcastOptions;
 import android.app.admin.BooleanPolicyValue;
@@ -2070,6 +2071,40 @@ final class DevicePolicyEngine {
                     if (policyState.getPoliciesSetByAdmins().containsKey(admin)) {
                         removeLocalPolicy(
                                 policyState.getPolicyDefinition(), admin, userId);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes all local and global policies set by enforcing admins with
+     * `packageName` and `userId`.
+     */
+    void removePoliciesForAdmins(
+            String packageName, @UserIdInt int userId) {
+        synchronized (mLock) {
+            Set<PolicyKey> globalPolicies = new HashSet<>(mGlobalPolicies.keySet());
+            for (PolicyKey policy : globalPolicies) {
+                PolicyState<?> policyState = mGlobalPolicies.get(policy);
+                for (EnforcingAdmin admin : policyState.getPoliciesSetByAdmins().keySet()) {
+                    if (admin.getPackageName().equals(packageName) &&
+                            admin.getUserId() == userId) {
+                        removeGlobalPolicy(policyState.getPolicyDefinition(), admin);
+                    }
+                }
+            }
+
+            if (mLocalPolicies.containsKey(userId)) {
+                Set<PolicyKey> localPolicies = new HashSet<>(mLocalPolicies.get(userId).keySet());
+                for (PolicyKey policy : localPolicies) {
+                    PolicyState<?> policyState = mLocalPolicies.get(userId).get(policy);
+                    for (EnforcingAdmin admin : policyState.getPoliciesSetByAdmins().keySet()) {
+                        if (admin.getPackageName().equals(packageName) &&
+                                admin.getUserId() == userId) {
+                            removeLocalPolicy(
+                                    policyState.getPolicyDefinition(), admin, userId);
+                        }
                     }
                 }
             }

@@ -727,12 +727,12 @@
     <string name="fingerprint_icon_content_description" msgid="4741068463175388817">"Ícone de impressão digital"</string>
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Desbloqueio do dispositivo"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Tente desbloquear de outra maneira"</string>
-    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"Use o Desbloqueio facial quando sua impressão digital não for reconhecida, como quando seus dedos estiverem molhados"</string>
-    <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Use o Desbloqueio por impressão digital quando seu rosto não for reconhecido, se estiver escuro, por exemplo"</string>
+    <string name="alternative_face_setup_notification_content" msgid="3384959224091897331">"Use o desbloqueio facial quando sua impressão digital não for reconhecida, como quando seus dedos estiverem molhados"</string>
+    <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Use o desbloqueio por impressão digital quando seu rosto não for reconhecido, se estiver escuro, por exemplo"</string>
     <string name="face_recalibrate_notification_name" msgid="7311163114750748686">"Desbloqueio facial"</string>
-    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"Problema com o Desbloqueio facial"</string>
+    <string name="face_recalibrate_notification_title" msgid="2524791952735579082">"Problema com o desbloqueio facial"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Toque para excluir seu modelo de rosto e crie um novo"</string>
-    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"Para usar o Desbloqueio facial, ative o "<b>"acesso à câmera"</b>" em Configurações &gt; Privacidade"</string>
+    <string name="face_sensor_privacy_enabled" msgid="7407126963510598508">"Para usar o desbloqueio facial, ative o "<b>"acesso à câmera"</b>" em Configurações &gt; Privacidade"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Desbloqueio por impressão digital"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Não foi possível usar o sensor de impressão digital"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Entre em contato com uma assistência técnica."</string>
@@ -766,7 +766,7 @@
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Impossível verificar rosto. Hardware indisponível."</string>
-    <string name="face_error_timeout" msgid="2598544068593889762">"Tente usar o Desbloqueio facial novamente"</string>
+    <string name="face_error_timeout" msgid="2598544068593889762">"Tente usar o desbloqueio facial novamente"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Não é possível salvar dados faciais. Exclua dados antigos."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Operação facial cancelada."</string>
     <string name="face_error_user_canceled" msgid="5766472033202928373">"Desbloqueio facial cancelado pelo usuário"</string>
@@ -774,11 +774,11 @@
     <string name="face_error_lockout_permanent" msgid="8533257333130473422">"Muitas tentativas. Desbloqueio facial indisponível."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Muitas tentativas. Como alternativa, use o bloqueio de tela."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Não é possível verificar o rosto. Tente novamente."</string>
-    <string name="face_error_not_enrolled" msgid="1134739108536328412">"O Desbloqueio facial não foi configurado"</string>
-    <string name="face_error_hw_not_present" msgid="7940978724978763011">"O dispositivo não é compatível com o Desbloqueio facial"</string>
+    <string name="face_error_not_enrolled" msgid="1134739108536328412">"O desbloqueio facial não foi configurado"</string>
+    <string name="face_error_hw_not_present" msgid="7940978724978763011">"O dispositivo não é compatível com o desbloqueio facial"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Sensor desativado temporariamente."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Rosto <xliff:g id="FACEID">%d</xliff:g>"</string>
-    <string name="face_app_setting_name" msgid="5854024256907828015">"Usar o Desbloqueio facial"</string>
+    <string name="face_app_setting_name" msgid="5854024256907828015">"Usar o desbloqueio facial"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Usar reconhecimento facial ou bloqueio de tela"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Use seu rosto para continuar"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Use seu rosto ou o bloqueio de tela para continuar"</string>
@@ -1033,7 +1033,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Tente novamente"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Tente novamente"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloqueio para todos os recursos e dados"</string>
-    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"O número máximo de tentativas de desbloqueio por reconhecimento facial foi excedido"</string>
+    <string name="faceunlock_multiple_failures" msgid="681991538434031708">"O número máximo de tentativas de desbloqueio facial foi excedido"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Sem chip"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Nenhum chip no tablet."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Nenhum chip no seu dispositivo Android TV."</string>
@@ -1805,8 +1805,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo para uma mão"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Tela ainda mais escura"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Aparelhos auditivos"</string>
-    <!-- no translation found for autoclick_feature_name (4056260617171267864) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Clique automático (tempo de permanência)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Teclas do mouse"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconectado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectado"</string>
@@ -1832,6 +1831,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"Desconectando <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Proprietário"</string>
     <string name="guest_name" msgid="8502103277839834324">"Visitante"</string>
+    <string name="headless_system_user_name" msgid="1849150903255530049">"Usuário do sistema"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Erro"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Esta alteração não é permitida pelo administrador"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Nenhum app encontrado para executar a ação"</string>
@@ -2269,32 +2269,21 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Botão direcional: para a esquerda"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Botão direcional: para a direita"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Botão direcional: centro"</string>
-    <!-- no translation found for accessibility_autoclick_type_settings_panel_title (2153131135765368397) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_left_click (8241237237588793835) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_right_click (6208390123529830506) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_double_click (2800154470129612873) -->
-    <skip />
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Menu de opções do clique automático"</string>
+    <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Clicar com o botão esquerdo do mouse"</string>
+    <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Clicar com o botão direito do mouse"</string>
+    <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Clicar duas vezes"</string>
     <string name="accessibility_autoclick_drag" msgid="1499559489796843224">"Arrastar"</string>
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Rolar"</string>
-    <!-- no translation found for accessibility_autoclick_long_press (6241367542788162585) -->
-    <skip />
+    <string name="accessibility_autoclick_long_press" msgid="6241367542788162585">"Tocar e pressionar"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausar"</string>
     <string name="accessibility_autoclick_resume" msgid="3213396544455349247">"Retomar"</string>
-    <!-- no translation found for accessibility_autoclick_position (5952428999227490977) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_up (4018950185625702489) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (7055049493005995473) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (7469540382570551732) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8395851755038161912) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (8766731873098339511) -->
-    <skip />
+    <string name="accessibility_autoclick_position" msgid="5952428999227490977">"Mudar a posição do menu"</string>
+    <string name="accessibility_autoclick_scroll_up" msgid="4018950185625702489">"Rolar para cima"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="7055049493005995473">"Rolar para baixo"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="7469540382570551732">"Rolar para a esquerda"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8395851755038161912">"Rolar para a direita"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="8766731873098339511">"Sair do modo de rolagem"</string>
     <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Painel de rolagem"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> foi colocado no intervalo \"RESTRITO\""</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
@@ -2548,13 +2537,13 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Para enviar mensagens via satélite, defina o Google Mensagens como seu app de mensagens padrão"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Mensagem via satélite indisponível"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Para verificar se a mensagem via satélite está disponível neste país ou região, ative as configurações de localização"</string>
-    <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configurar o Desbloqueio por impressão digital de novo"</string>
+    <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Configurar o desbloqueio por impressão digital de novo"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"A impressão digital <xliff:g id="FINGERPRINT">%s</xliff:g> não é mais reconhecida."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"As impressões digitais <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> não são mais reconhecidas."</string>
-    <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"A impressão digital <xliff:g id="FINGERPRINT">%s</xliff:g> não é mais reconhecida. Configure o \"Desbloqueio por impressão digital\" de novo."</string>
-    <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"As impressões digitais <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> não são mais reconhecidas. Configure o \"Desbloqueio por impressão digital\" de novo."</string>
-    <string name="face_dangling_notification_title" msgid="947852541060975473">"Configure o Desbloqueio facial de novo"</string>
-    <string name="face_dangling_notification_msg" msgid="746235263598985384">"Seu modelo de rosto não é mais reconhecido. Configure o \"Desbloqueio facial\" de novo."</string>
+    <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"A impressão digital <xliff:g id="FINGERPRINT">%s</xliff:g> não é mais reconhecida. Configure o desbloqueio por impressão digital de novo."</string>
+    <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"As impressões digitais <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> e <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> não são mais reconhecidas. Configure o desbloqueio por impressão digital de novo."</string>
+    <string name="face_dangling_notification_title" msgid="947852541060975473">"Configure o desbloqueio facial de novo"</string>
+    <string name="face_dangling_notification_msg" msgid="746235263598985384">"Seu modelo de rosto não é mais reconhecido. Configure o desbloqueio facial de novo."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Configuração"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Agora não"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Alarme para <xliff:g id="USER_NAME">%s</xliff:g>"</string>
@@ -2570,13 +2559,13 @@
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Calculadora"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapas"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
-    <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"As impressões digitais não são mais reconhecidas. Configure o Desbloqueio por impressão digital de novo."</string>
+    <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"As impressões digitais não são mais reconhecidas. Configure o desbloqueio por impressão digital de novo."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"O dispositivo USB foi conectado com o Android bloqueado"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"O dispositivo USB foi conectado com o Android bloqueado. Para usá-lo, primeiro desbloqueie o Android."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"O dispositivo USB foi conectado com o Android bloqueado. Para usá-lo, primeiro desbloqueie o Android e, em seguida, reconecte o dispositivo USB."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"A capacidade de carregamento pode ser reduzida ou ficar indisponível quando o dispositivo estiver bloqueado."</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Atividade suspeita do USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"O indicador de dados USB foi desativado."</string>
-    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Está tendo problemas com o Desbloqueio por Impressão Digital?"</string>
+    <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Está tendo problemas com o desbloqueio por impressão digital?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toque para ver dicas sobre como melhorar a experiência de desbloqueio"</string>
 </resources>

@@ -20,6 +20,7 @@ import static com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler
 import static com.android.systemui.shared.recents.utilities.Utilities.isLargeScreen;
 import static com.android.wm.shell.Flags.enableTaskbarNavbarUnification;
 import static com.android.wm.shell.Flags.enableTaskbarOnPhones;
+import static com.android.window.flags.Flags.enableSysDecorsCallbacksViaWm;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -41,6 +42,8 @@ import android.window.DesktopExperienceFlags;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.app.displaylib.DisplayDecorationListener;
+import com.android.app.displaylib.DisplaysWithDecorationsRepositoryCompat;
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.statusbar.RegisterStatusBarResult;
@@ -49,6 +52,7 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.LauncherProxyService;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.flags.WmCallbackForSysDecorFlag;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.views.NavigationBar;
@@ -66,6 +70,8 @@ import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.pip.Pip;
 
 import dalvik.annotation.optimization.NeverCompile;
+
+import kotlinx.coroutines.CoroutineDispatcher;
 
 import java.io.PrintWriter;
 import java.util.Optional;
@@ -132,7 +138,9 @@ public class NavigationBarControllerImpl implements
             Optional<BackAnimation> backAnimation,
             SecureSettings secureSettings,
             DisplayTracker displayTracker,
-            DeviceStateManager deviceStateManager) {
+            DeviceStateManager deviceStateManager,
+            DisplaysWithDecorationsRepositoryCompat displaysWithDecorationsRepositoryCompat,
+            @Main CoroutineDispatcher mainCoroutineDispatcher) {
         mContext = context;
         mExecutor = mainExecutor;
         mNavigationBarComponentFactory = navigationBarComponentFactory;
@@ -140,6 +148,10 @@ public class NavigationBarControllerImpl implements
         mDisplayTracker = displayTracker;
         mDisplayManager = mContext.getSystemService(DisplayManager.class);
         commandQueue.addCallback(mCommandQueueCallbacks);
+        if (enableSysDecorsCallbacksViaWm()) {
+            displaysWithDecorationsRepositoryCompat.registerDisplayDecorationListener(
+                    mDisplayDecorationListener, mainCoroutineDispatcher);
+        }
         configurationController.addCallback(this);
         mConfigChanges.applyNewConfig(mContext.getResources());
         mNavMode = navigationModeController.addListener(this);
@@ -271,26 +283,23 @@ public class NavigationBarControllerImpl implements
         return mIsLargeScreen || (foldedOrPhone && enableTaskbarNavbarUnification());
     }
 
+    // TODO: b/408503553 - Remove system decor callbacks once the flag is cleaned up.
     private final CommandQueue.Callbacks mCommandQueueCallbacks = new CommandQueue.Callbacks() {
         @Override
         public void onDisplayRemoved(int displayId) {
-            onDisplayRemoveSystemDecorations(displayId);
+            mDisplayDecorationListener.onDisplayRemoveSystemDecorations(displayId);
         }
 
         @Override
         public void onDisplayRemoveSystemDecorations(int displayId) {
-            removeNavigationBar(displayId);
-            mHasNavBar.delete(displayId);
+            WmCallbackForSysDecorFlag.assertInLegacyMode();
+            mDisplayDecorationListener.onDisplayRemoveSystemDecorations(displayId);
         }
 
         @Override
         public void onDisplayAddSystemDecorations(int displayId) {
-            if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                mHasNavBar.put(displayId, true);
-            }
-            Display display = mDisplayManager.getDisplay(displayId);
-            mIsLargeScreen = isLargeScreen(mContext);
-            createNavigationBar(display, null /* savedState */, null /* result */);
+            WmCallbackForSysDecorFlag.assertInLegacyMode();
+            mDisplayDecorationListener.onDisplayAddSystemDecorations(displayId);
         }
 
         @Override
@@ -319,6 +328,29 @@ public class NavigationBarControllerImpl implements
             }
         }
     };
+
+    private final DisplayDecorationListener mDisplayDecorationListener =
+            new DisplayDecorationListener() {
+                @Override
+                public void onDisplayRemoved(int displayId) {
+                    onDisplayRemoveSystemDecorations(displayId);
+                }
+
+                @Override
+                public void onDisplayRemoveSystemDecorations(int displayId) {
+                    removeNavigationBar(displayId);
+                    mHasNavBar.delete(displayId);
+                }
+
+                @Override
+                public void onDisplayAddSystemDecorations(int displayId) {
+                    if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                        mHasNavBar.put(displayId, true);
+                    }
+                    Display display = mDisplayManager.getDisplay(displayId);
+                    mIsLargeScreen = isLargeScreen(mContext);
+                    createNavigationBar(display, null /* savedState */, null /* result */);
+                }};
 
     /**
      * Recreates the navigation bar for the given display.

@@ -141,11 +141,19 @@ private fun <T : AppRecord> AppListModel<T>.AppListWidget(
     appListData.value?.let { (list, option) ->
         timeMeasurer.logFirst("app list first loaded")
         if (list.isEmpty()) {
-            header()
-            if (isSpaExpressiveEnabled) {
-                ZeroStatePreference(noAppInfo.icon, stringResource(noAppInfo.title))
-            } else {
-                PlaceholderTitle(noItemMessage ?: stringResource(R.string.no_applications))
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = rememberLazyListStateAndHideKeyboardWhenStartScroll(),
+                contentPadding = PaddingValues(bottom = bottomPadding)
+            ) {
+                item { header() }
+                item {
+                    if (isSpaExpressiveEnabled) {
+                        ZeroStatePreference(noAppInfo.icon, stringResource(noAppInfo.title))
+                    } else {
+                        PlaceholderTitle(noItemMessage ?: stringResource(R.string.no_applications))
+                    }
+                }
             }
             return
         }

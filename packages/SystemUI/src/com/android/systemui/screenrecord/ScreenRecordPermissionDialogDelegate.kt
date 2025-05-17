@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.os.UserHandle
 import android.view.View
 import androidx.annotation.StyleRes
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionContentManager
 import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionDialogDelegate
@@ -30,6 +29,7 @@ import com.android.systemui.mediaprojection.permission.ScreenShareMode
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -70,7 +70,7 @@ class ScreenRecordPermissionDialogDelegate(
         @Assisted onStartRecordingClicked: Runnable?,
         mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
         systemUIDialogFactory: SystemUIDialog.Factory,
-        @Application context: Context,
+        @ShadeDisplayAware context: Context,
         displayManager: DisplayManager,
     ) : this(
         hostUserHandle,

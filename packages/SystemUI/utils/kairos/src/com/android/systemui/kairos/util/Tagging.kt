@@ -16,7 +16,12 @@
 
 package com.android.systemui.kairos.util
 
-private const val TaggingEnabled = true
+import android.os.Build
+import android.os.SystemProperties
+
+private val TaggingEnabled: Boolean =
+    (Build.IS_ENG || Build.IS_USERDEBUG) &&
+        SystemProperties.getBoolean("persist.debug.kairos_name_tagging", false)
 
 /**
  * Developer-specified name used for debugging. Will only be used if Kairos is compiled with name
@@ -97,4 +102,12 @@ internal inline operator fun NameData.plus(name: String): NameData = appendNames
 
 internal inline operator fun NameData.plus(crossinline name: () -> String): NameData = mapName {
     "$it-${name()}"
+}
+
+internal fun NameData.forceInit() {
+    if (!TaggingEnabled) return
+    when (this) {
+        is FullNameTag -> name.value
+        NameTaggingDisabled -> Unit
+    }
 }

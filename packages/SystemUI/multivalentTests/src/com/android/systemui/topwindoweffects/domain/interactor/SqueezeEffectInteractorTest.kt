@@ -19,12 +19,9 @@ package com.android.systemui.topwindoweffects.domain.interactor
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
-import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
@@ -40,54 +37,54 @@ class SqueezeEffectInteractorTest : SysuiTestCase() {
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
-            SqueezeEffectInteractor(
-                squeezeEffectRepository = fakeSqueezeEffectRepository,
-                keyEventInteractor = KeyEventInteractor(fakeKeyEventRepository),
-                coroutineContext = testScope.testScheduler,
-            )
+            SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository)
         }
 
     @Test
     fun testIsSqueezeEffectDisabled_whenDisabledInRepository() =
         kosmos.runTest {
-            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = false
+            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
+                false
 
-            val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
+            val isEffectEnabledAndPowerButtonPressed by
+                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
 
-            assertThat(isSqueezeEffectEnabled).isFalse()
+            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
         }
 
     @Test
-    fun testIsSqueezeEffectEnabled_whenEnabledInRepository() =
+    fun testShowInvocationEffect_whenEnabledInRepository() =
         kosmos.runTest {
-            fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
+                true
 
-            val isSqueezeEffectEnabled by collectLastValue(underTest.isSqueezeEffectEnabled)
+            val isEffectEnabledAndPowerButtonPressed by
+                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
 
-            assertThat(isSqueezeEffectEnabled).isTrue()
+            assertThat(isEffectEnabledAndPowerButtonPressed).isTrue()
         }
 
     @Test
     fun testPowerKeyInKeyCombination_powerKeyNotDownAsSingleGesture() =
         kosmos.runTest {
-            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = true
-            fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
+                false
 
-            val isPowerButtonDownAsSingleKeyGesture by
-                collectLastValue(underTest.isPowerButtonDownAsSingleKeyGesture)
+            val isEffectEnabledAndPowerButtonPressed by
+                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
 
-            assertThat(isPowerButtonDownAsSingleKeyGesture).isFalse()
+            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
         }
 
     @Test
     fun testPowerKeyNotInKeyCombination_powerKeyDownAsSingleGesture() =
         kosmos.runTest {
-            fakeSqueezeEffectRepository.isPowerButtonDownInKeyCombination.value = false
-            fakeKeyEventRepository.setPowerButtonDown(true)
+            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
+                true
 
-            val isPowerButtonDownAsSingleKeyGesture by
-                collectLastValue(underTest.isPowerButtonDownAsSingleKeyGesture)
+            val isEffectEnabledAndPowerButtonPressed by
+                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
 
-            assertThat(isPowerButtonDownAsSingleKeyGesture).isTrue()
+            assertThat(isEffectEnabledAndPowerButtonPressed).isTrue()
         }
 }

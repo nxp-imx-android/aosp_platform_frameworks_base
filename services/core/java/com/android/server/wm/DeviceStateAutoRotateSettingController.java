@@ -22,6 +22,12 @@ import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_UNLOCK
 import static android.provider.Settings.System.ACCELEROMETER_ROTATION;
 import static android.provider.Settings.System.getUriFor;
 
+import static com.android.internal.view.RotationPolicy.NATURAL_ROTATION;
+import static com.android.internal.view.RotationPolicy.areAllRotationsAllowed;
+import static com.android.internal.view.RotationPolicy.useCurrentRotationOnRotationLockChange;
+import static com.android.server.wm.DisplayRotation.NO_UPDATE_USER_ROTATION;
+import static com.android.server.wm.DisplayRotation.USE_CURRENT_ROTATION;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.ContentResolver;
@@ -30,13 +36,15 @@ import android.database.ContentObserver;
 import android.hardware.devicestate.DeviceState;
 import android.os.Handler;
 import android.os.HandlerExecutor;
-import android.os.Looper;
 import android.os.Message;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.util.Log;
 import android.util.Slog;
 import android.util.SparseIntArray;
 
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.PersistedSettingUpdate;
 import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.UpdateAccelerometerRotationSetting;
 import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.UpdateDeviceState;
@@ -44,6 +52,8 @@ import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.Update
 import com.android.server.wm.DeviceStateController.DeviceStateEnum;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -68,6 +78,7 @@ public class DeviceStateAutoRotateSettingController {
     private static final String SEPARATOR_REGEX = ":";
     private static final int ACCELEROMETER_ROTATION_OFF = 0;
     private static final int ACCELEROMETER_ROTATION_ON = 1;
+    private static final int INVALID_DEVICE_STATE = -1;
     // TODO(b/413598268): Disable debugging after the
     //  com.android.window.flags.enable_device_state_auto_rotate_setting_refactor flag is rolled-out
     private static final boolean DEBUG = true;
@@ -78,20 +89,23 @@ public class DeviceStateAutoRotateSettingController {
     private final DeviceStateAutoRotateSettingManager mDeviceStateAutoRotateSettingManager;
     private final ContentResolver mContentResolver;
     private final DeviceStateController mDeviceStateController;
+    private final List<Event> mPendingEvents = new ArrayList<>();
+    private final WindowManagerService mWm;
+    private final Context mContext;
 
-    // TODO(b/413639166): Handle device state being missing until we receive first device state
-    //  update
-    private int mDeviceState = -1;
+    private int mDeviceState = INVALID_DEVICE_STATE;
     private boolean mAccelerometerSetting;
     private SparseIntArray mDeviceStateAutoRotateSetting;
 
     public DeviceStateAutoRotateSettingController(
-            Context context, Looper looper, Handler handler,
             DeviceStateController deviceStateController,
-            DeviceStateAutoRotateSettingManager deviceStateAutoRotateSettingManager) {
+            DeviceStateAutoRotateSettingManager deviceStateAutoRotateSettingManager,
+            WindowManagerService wmService) {
         mDeviceStateAutoRotateSettingManager = deviceStateAutoRotateSettingManager;
-        mHandler = handler;
-        mContentResolver = context.getContentResolver();
+        mWm = wmService;
+        mContext = mWm.mContext;
+        mHandler = getHandler();
+        mContentResolver = mContext.getContentResolver();
         mDeviceStateController = deviceStateController;
         mDeviceStateAutoRotateSetting = getDeviceStateAutoRotateSetting();
         if (mDeviceStateAutoRotateSetting == null) {
@@ -99,14 +113,27 @@ public class DeviceStateAutoRotateSettingController {
             mDeviceStateAutoRotateSetting = getDefaultDeviceStateAutoRotateSetting();
         }
         mAccelerometerSetting = getAccelerometerRotationSetting();
-        mEventHandler = new Handler(looper) {
+        mEventHandler = new Handler(mHandler.getLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 final Event event = (Event) msg.obj;
-                final boolean inMemoryStateUpdated = updateInMemoryState(event);
+                if (mDeviceState == INVALID_DEVICE_STATE && !(event instanceof UpdateDeviceState)) {
+                    mPendingEvents.add(event);
+                    Log.w(TAG, "Trying to write into auto-rotate settings, while "
+                            + "device-state is unavailable.\n" + "Could not process the event="
+                            + event.getClass().getSimpleName() + ".\n"
+                            + "This event will be queued and processed later once we receive "
+                            + "device-state update.");
+                    return;
+                }
 
-                if (inMemoryStateUpdated) {
-                    writeInMemoryStateIntoPersistedSetting();
+                handleEvent(event);
+
+                if (!mPendingEvents.isEmpty()) {
+                    for (int i = 0; i < mPendingEvents.size(); i++) {
+                        handleEvent(mPendingEvents.get(i));
+                    }
+                    mPendingEvents.clear();
                 }
             }
         };
@@ -116,20 +143,35 @@ public class DeviceStateAutoRotateSettingController {
         registerDeviceStateObserver();
     }
 
+    private void handleEvent(@NonNull Event event) {
+        final boolean persistedAccelerometerRotationSetting = getAccelerometerRotationSetting();
+        final SparseIntArray persistedDeviceStateAutoRotateSetting =
+                getDeviceStateAutoRotateSetting();
+
+        updateInMemoryState(event, persistedAccelerometerRotationSetting,
+                persistedDeviceStateAutoRotateSetting);
+
+        writeInMemoryStateIntoPersistedSetting(persistedAccelerometerRotationSetting,
+                persistedDeviceStateAutoRotateSetting);
+        writeUserRotationSettingIfNeeded(event, persistedAccelerometerRotationSetting);
+    }
+
     /** Request to change {@link DEVICE_STATE_ROTATION_LOCK} persisted setting. */
     public void requestDeviceStateAutoRotateSettingChange(int deviceState, boolean autoRotate) {
         postUpdate(new UpdateDeviceStateAutoRotateSetting(deviceState, autoRotate));
     }
 
-    /** Request to change {@link ACCELEROMETER_ROTATION} persisted setting. */
-    public void requestAccelerometerRotationSettingChange(boolean autoRotate) {
-        postUpdate(new UpdateAccelerometerRotationSetting(autoRotate));
+    /**
+     * Request to change {@link ACCELEROMETER_ROTATION} persisted setting. If needed, we might also
+     * write into {@link USER_ROTATION} with {@param userRotation}.
+     */
+    public void requestAccelerometerRotationSettingChange(boolean autoRotate, int userRotation) {
+        postUpdate(new UpdateAccelerometerRotationSetting(autoRotate, userRotation));
     }
 
     private void registerDeviceStateAutoRotateSettingObserver() {
         mDeviceStateAutoRotateSettingManager.registerListener(
-                () -> postUpdate(
-                        PersistedSettingUpdate.INSTANCE));
+                () -> postUpdate(PersistedSettingUpdate.INSTANCE));
     }
 
     private void registerAccelerometerRotationSettingObserver() {
@@ -156,28 +198,27 @@ public class DeviceStateAutoRotateSettingController {
         Message.obtain(mEventHandler, MSG_UPDATE_STATE, event).sendToTarget();
     }
 
-    private boolean updateInMemoryState(Event event) {
+    private void updateInMemoryState(Event event, boolean persistedAccelerometerRotationSetting,
+            SparseIntArray persistedDeviceStateAutoRotateSetting) {
         // Compare persisted setting value with in-memory state before making any changes to
         // in-memory state. This is to detect if persisted setting was changed directly, which is
         // not expected.
-        final boolean newAccelerometerRotationSetting = getAccelerometerRotationSetting();
-        SparseIntArray newDeviceStateAutoRotateSetting = getDeviceStateAutoRotateSetting();
         // Map would be null if string value of DEVICE_STATE_ROTATION_LOCK is corrupted.
         final boolean isDeviceStateAutoRotateSettingCorrupted =
-                newDeviceStateAutoRotateSetting == null;
+                persistedDeviceStateAutoRotateSetting == null;
         if (isDeviceStateAutoRotateSettingCorrupted) {
             // If string value of DEVICE_STATE_ROTATION_LOCK is corrupted, rewrite it with default
             // value while also respecting current ACCELEROMETER_ROTATION setting value.
-            newDeviceStateAutoRotateSetting = getDefaultDeviceStateAutoRotateSetting();
-            newDeviceStateAutoRotateSetting.put(mDeviceState,
+            persistedDeviceStateAutoRotateSetting = getDefaultDeviceStateAutoRotateSetting();
+            persistedDeviceStateAutoRotateSetting.put(mDeviceState,
                     mAccelerometerSetting ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
                             : DEVICE_STATE_ROTATION_LOCK_LOCKED);
         }
 
         final boolean wasAccelerometerRotationSettingChanged =
-                (newAccelerometerRotationSetting != mAccelerometerSetting);
+                (persistedAccelerometerRotationSetting != mAccelerometerSetting);
         final boolean wasDevicesStateAutoRotateSettingChanged = !equals(
-                mDeviceStateAutoRotateSetting, newDeviceStateAutoRotateSetting);
+                mDeviceStateAutoRotateSetting, persistedDeviceStateAutoRotateSetting);
 
         if (wasAccelerometerRotationSettingChanged || wasDevicesStateAutoRotateSettingChanged) {
             // System apps should only request changes via DeviceStateAutoRotateSettingManager's
@@ -186,14 +227,15 @@ public class DeviceStateAutoRotateSettingController {
             if (wasAccelerometerRotationSettingChanged) {
                 errorMessage.append("ACCELEROMETER_ROTATION setting changed from ").append(
                         mAccelerometerSetting).append(" to ").append(
-                        newAccelerometerRotationSetting).append(" via Settings API.\n");
+                        persistedAccelerometerRotationSetting).append(" via Settings API.\n");
             }
             if (wasDevicesStateAutoRotateSettingChanged) {
                 errorMessage.append(
                         "DEVICE_STATE_ROTATION_LOCK setting directly changed from ").append(
                         mDeviceStateAutoRotateSetting).append(" to ").append(
-                        newDeviceStateAutoRotateSetting).append("\nExpectation is for system-apps "
-                        + "to only use defined apis to change auto-rotate persisted settings.\n");
+                        persistedDeviceStateAutoRotateSetting).append(
+                        "\nExpectation is for system-apps to only use defined apis to change "
+                                + "auto-rotate persisted settings.\n");
             }
             Slog.e(TAG, errorMessage
                     + "Using Settings API to write auto-rotate persisted setting, could result "
@@ -212,24 +254,18 @@ public class DeviceStateAutoRotateSettingController {
         // prioritize ACCELEROMETER_ROTATION because it has a direct impact on the user visible
         // behavior.
         if (wasDevicesStateAutoRotateSettingChanged) {
-            // Clone the newDeviceStateAutoRotateSetting to avoid modifying it when updating
+            // Clone the persistedDeviceStateAutoRotateSetting to avoid modifying it when updating
             // mDeviceStateAutoRotateSetting in future
-            mDeviceStateAutoRotateSetting = newDeviceStateAutoRotateSetting.clone();
+            mDeviceStateAutoRotateSetting = persistedDeviceStateAutoRotateSetting.clone();
             mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDeviceState)
                     == DEVICE_STATE_ROTATION_LOCK_UNLOCKED;
         }
         if (wasAccelerometerRotationSettingChanged) {
-            mAccelerometerSetting = newAccelerometerRotationSetting;
+            mAccelerometerSetting = persistedAccelerometerRotationSetting;
             mDeviceStateAutoRotateSetting.put(mDeviceState,
                     mAccelerometerSetting ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
                             : DEVICE_STATE_ROTATION_LOCK_LOCKED);
         }
-
-        // Return true if the in-memory state was updated and write needs to be made in persisted
-        // settings.
-        return (mAccelerometerSetting != newAccelerometerRotationSetting
-                || !equals(mDeviceStateAutoRotateSetting, newDeviceStateAutoRotateSetting)
-                || isDeviceStateAutoRotateSettingCorrupted);
     }
 
     private void updateInMemoryStateFromEvent(Event event) {
@@ -259,6 +295,64 @@ public class DeviceStateAutoRotateSettingController {
         }
     }
 
+    private void writeInMemoryStateIntoPersistedSetting(
+            boolean persistedAccelerometerRotationSetting,
+            SparseIntArray persistedDeviceStateAutoRotateSetting) {
+        if (mAccelerometerSetting != persistedAccelerometerRotationSetting) {
+            Settings.System.putIntForUser(mContentResolver, ACCELEROMETER_ROTATION,
+                    mAccelerometerSetting ? ACCELEROMETER_ROTATION_ON : ACCELEROMETER_ROTATION_OFF,
+                    UserHandle.USER_CURRENT);
+
+            if (DEBUG) {
+                Slog.d(TAG, "Wrote into persisted setting:\n" + "ACCELEROMETER_ROTATION="
+                        + mAccelerometerSetting);
+            }
+        }
+
+        if (!equals(mDeviceStateAutoRotateSetting, persistedDeviceStateAutoRotateSetting)) {
+            final String serializedDeviceStateAutoRotateSetting =
+                    convertIntArrayToSerializedSetting(mDeviceStateAutoRotateSetting);
+            Settings.Secure.putStringForUser(mContentResolver, DEVICE_STATE_ROTATION_LOCK,
+                    serializedDeviceStateAutoRotateSetting, UserHandle.USER_CURRENT);
+
+            if (DEBUG) {
+                Slog.d(TAG, "Wrote into persisted setting:\n" + "DEVICE_STATE_ROTATION_LOCK="
+                        + serializedDeviceStateAutoRotateSetting);
+            }
+        }
+    }
+
+    private void writeUserRotationSettingIfNeeded(Event event,
+            boolean persistedAccelerometerRotationSetting) {
+        if (!(event instanceof UpdateAccelerometerRotationSetting)
+                && (mAccelerometerSetting == persistedAccelerometerRotationSetting)) {
+            return;
+        }
+        final int userRotation;
+        if (event instanceof UpdateAccelerometerRotationSetting) {
+            // If the event is `UpdateAccelerometerRotationSetting`, it means that the
+            // userRotation was provided, so we should set it.
+            userRotation = ((UpdateAccelerometerRotationSetting) event).mUserRotation;
+        } else {
+            // If the event is not `UpdateAccelerometerRotationSetting`, it means that the
+            // userRotation was not explicitly provided.
+            if (mAccelerometerSetting) {
+                userRotation = NO_UPDATE_USER_ROTATION;
+            } else {
+                userRotation = areAllRotationsAllowed(mContext)
+                        || useCurrentRotationOnRotationLockChange(mContext)
+                        ? USE_CURRENT_ROTATION
+                        : NATURAL_ROTATION;
+            }
+        }
+        synchronized (mWm.mRoot.mService.mGlobalLock) {
+            mWm.mRoot.getDefaultDisplay().getDisplayRotation().setUserRotationSetting(
+                    mAccelerometerSetting ? WindowManagerPolicy.USER_ROTATION_FREE
+                            : WindowManagerPolicy.USER_ROTATION_LOCKED, userRotation,
+                    "DSAutoRotateCtrl");
+        }
+    }
+
     private boolean getAccelerometerRotationSetting() {
         return Settings.System.getIntForUser(mContentResolver, ACCELEROMETER_ROTATION,
                 /* def= */ -1, UserHandle.USER_CURRENT) == ACCELEROMETER_ROTATION_ON;
@@ -274,20 +368,9 @@ public class DeviceStateAutoRotateSettingController {
         return mDeviceStateAutoRotateSettingManager.getDefaultRotationLockSetting();
     }
 
-    private void writeInMemoryStateIntoPersistedSetting() {
-        Settings.System.putIntForUser(mContentResolver, ACCELEROMETER_ROTATION,
-                mAccelerometerSetting ? ACCELEROMETER_ROTATION_ON : ACCELEROMETER_ROTATION_OFF,
-                UserHandle.USER_CURRENT);
-
-        final String serializedDeviceStateAutoRotateSetting =
-                convertIntArrayToSerializedSetting(mDeviceStateAutoRotateSetting);
-        Settings.Secure.putStringForUser(mContentResolver, DEVICE_STATE_ROTATION_LOCK,
-                serializedDeviceStateAutoRotateSetting, UserHandle.USER_CURRENT);
-        if (DEBUG) {
-            Slog.d(TAG, "Wrote into persisted setting:\n" + "ACCELEROMETER_ROTATION="
-                    + mAccelerometerSetting + "\nDEVICE_STATE_ROTATION_LOCK="
-                    + serializedDeviceStateAutoRotateSetting);
-        }
+    @VisibleForTesting
+    Handler getHandler() {
+        return mWm.mH;
     }
 
     private static String convertIntArrayToSerializedSetting(
@@ -316,15 +399,21 @@ public class DeviceStateAutoRotateSettingController {
         /**
          * Event sent when there is a request to update the current auto-rotate setting.
          * This occurs when actions like `freezeRotation` or `thawRotation` are triggered.
+         * It also contains the user rotation that should be set, if userRotation is -1 then
+         * {@link Settings.System#USER_ROTATION} setting will not be updated.
          */
         static final class UpdateAccelerometerRotationSetting extends Event {
             final boolean mAutoRotate;
+            final int mUserRotation;
 
             /**
-             * @param autoRotate The desired auto-rotate state to write into ACCELEROMETER_ROTATION.
+             * @param autoRotate   The desired auto-rotate state to write into
+             *                     ACCELEROMETER_ROTATION.
+             * @param userRotation The desired user rotation to write into USER_ROTATION.
              */
-            UpdateAccelerometerRotationSetting(boolean autoRotate) {
+            UpdateAccelerometerRotationSetting(boolean autoRotate, int userRotation) {
                 mAutoRotate = autoRotate;
+                mUserRotation = userRotation;
             }
         }
 

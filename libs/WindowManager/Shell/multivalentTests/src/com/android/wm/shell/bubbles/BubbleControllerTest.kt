@@ -70,20 +70,28 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import java.util.Optional
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-/** Tests for [BubbleController] */
+/** Tests for [BubbleController].
+ *
+ * Build/Install/Run:
+ *  atest WMShellRobolectricTests:BubbleControllerTest (on host)
+ *  atest WMShellMultivalentTestsOnDevice:BubbleControllerTest (on device)
+ */
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class BubbleControllerTest(flags: FlagsParameterization) {
@@ -320,6 +328,24 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     }
 
     @Test
+    fun setTaskViewVisible_lastBubbleRemoval_skipsTaskViewHiding() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
+
+        val baseTransitions = mock<TaskViewTransitions>()
+        val taskView = mock<TaskViewTaskController>()
+        val bubbleTaskViewController = bubbleController.BubbleTaskViewController(baseTransitions)
+
+        bubbleTaskViewController.setTaskViewVisible(taskView, false /* visible */)
+
+        verify(baseTransitions, never()).setTaskViewVisible(
+            any(), /* taskView */
+            any(), /* visible */
+            any(), /* reorder */
+            any(), /* syncHiddenWithVisibilityOnReorder */
+        )
+    }
+
+    @Test
     fun hasStableBubbleForTask_whenBubbleIsCollapsed_returnsTrue() {
         val taskId = 777
         val bubble = createBubble("key", taskId)
@@ -456,6 +482,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 mock<IWindowManager>(),
                 resizeChecker,
                 HomeIntentProvider(context),
+                FakeBubbleAppInfoProvider(),
+                { Optional.empty() },
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()

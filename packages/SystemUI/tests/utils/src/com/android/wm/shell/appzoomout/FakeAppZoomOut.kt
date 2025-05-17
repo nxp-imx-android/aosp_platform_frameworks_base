@@ -17,7 +17,7 @@
 package com.android.wm.shell.appzoomout
 
 class FakeAppZoomOut : AppZoomOut {
-    var lastTopLevelScale: Float = 1.0f
+    var lastTopLevelProgress: Float = 0f
         private set
 
     var lastAppZoomProgress: Float = 0f
@@ -27,7 +27,7 @@ class FakeAppZoomOut : AppZoomOut {
         lastAppZoomProgress = progress
     }
 
-    override fun setTopLevelScale(scale: Float) {
-        lastTopLevelScale = scale
+    override fun setTopLevelProgress(progress: Float) {
+        lastTopLevelProgress = progress
     }
 }

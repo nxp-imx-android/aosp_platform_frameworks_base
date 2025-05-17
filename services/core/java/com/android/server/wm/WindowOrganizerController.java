@@ -864,6 +864,14 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                                 ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
                                         "Resetting inset offsets for in-bounds task=%d",
                                         task.mTaskId);
+                                if (newBounds.height() != display.height()
+                                        && newBounds.top != display.top
+                                        && newBounds.bottom != display.bottom) {
+                                    task.mOffsetYForInsets = display.bottom - newBounds.bottom;
+                                    ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                                            "Applying inset offsets for task=%d offsetY=%d",
+                                            task.mTaskId, task.mOffsetYForInsets);
+                                }
                             }
                         } else {
                             task.mOffsetXForInsets = task.mOffsetYForInsets = 0;

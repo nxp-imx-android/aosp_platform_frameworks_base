@@ -24,6 +24,7 @@ import android.companion.virtualcamera.Format;
 import android.companion.virtualcamera.IVirtualCameraService;
 import android.companion.virtualcamera.SupportedStreamConfiguration;
 import android.companion.virtualcamera.VirtualCameraConfiguration;
+import android.companion.virtualdevice.flags.Flags;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.os.RemoteException;
@@ -60,6 +61,13 @@ public final class VirtualCameraConversionUtil {
     private static android.companion.virtualcamera.IVirtualCameraCallback convertCallback(
             @NonNull IVirtualCameraCallback camera) {
         return new android.companion.virtualcamera.IVirtualCameraCallback.Stub() {
+            @Override
+            public void onOpenCamera() throws RemoteException {
+                if (Flags.virtualCameraOnOpen()) {
+                    camera.onOpenCamera();
+                }
+            }
+
             @Override
             public void onStreamConfigured(int streamId, Surface surface, int width, int height,
                     int format) throws RemoteException {

@@ -19,11 +19,7 @@ package com.android.systemui.dreams.domain.interactor
 import com.android.systemui.dreams.data.repository.dreamSettingsRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.user.domain.interactor.selectedUserInteractor
 
 val Kosmos.dreamSettingsInteractorKosmos by Fixture {
-    DreamSettingsInteractor(
-        userInteractor = selectedUserInteractor,
-        repository = dreamSettingsRepository,
-    )
+    DreamSettingsInteractor(repository = dreamSettingsRepository)
 }

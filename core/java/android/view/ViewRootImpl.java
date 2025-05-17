@@ -212,6 +212,7 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.os.VibrationAttributes;
 import android.os.Vibrator;
 import android.sysprop.DisplayProperties;
 import android.sysprop.ViewProperties;
@@ -950,7 +951,7 @@ public final class ViewRootImpl implements ViewParent,
     AudioManager mAudioManager;
 
     /**
-     * see {@link #performHapticFeedback(int, int, int)}
+     * see {@link #performHapticFeedback(int, int, int, int)}
      */
     Vibrator mVibrator;
 
@@ -2057,6 +2058,21 @@ public final class ViewRootImpl implements ViewParent,
     public @ForceDarkType.ForceDarkTypeDef int determineForceDarkType() {
         TypedArray a = mContext.obtainStyledAttributes(R.styleable.Theme);
         try {
+            // Checking if the app choose to apply AutoDark for its dark theme before applying
+            // forceInvertDark from the system.
+            boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
+            if (useAutoDark) {
+                boolean forceDarkAllowedDefault =
+                        SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
+                useAutoDark = a.getBoolean(R.styleable.Theme_isLightTheme, true)
+                        && a.getBoolean(R.styleable.Theme_forceDarkAllowed,
+                            forceDarkAllowedDefault);
+
+                if (useAutoDark) {
+                    return ForceDarkType.FORCE_DARK;
+                }
+            }
+
             if (forceInvertColor()) {
                 // Force invert ignores all developer opt-outs.
                 // We also ignore dark theme, since the app developer can override the user's
@@ -2076,15 +2092,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
 
-            boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
-            if (useAutoDark) {
-                boolean forceDarkAllowedDefault =
-                        SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
-                useAutoDark = a.getBoolean(R.styleable.Theme_isLightTheme, true)
-                        && a.getBoolean(R.styleable.Theme_forceDarkAllowed,
-                            forceDarkAllowedDefault);
-            }
-            return useAutoDark ? ForceDarkType.FORCE_DARK : ForceDarkType.NONE;
+            return ForceDarkType.NONE;
         } finally {
             a.recycle();
         }
@@ -7729,7 +7737,8 @@ public final class ViewRootImpl implements ViewParent,
                     }
                 }
             }
-            if (keyEvent.getAction() == KeyEvent.ACTION_UP) {
+            // Do not cancel the keyEvent if no callback can handle the back event.
+            if (topCallback != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
                 // forward a cancelled event so that following stages cancel their back logic
                 keyEvent.cancel();
             }
@@ -9866,13 +9875,14 @@ public final class ViewRootImpl implements ViewParent,
      * {@inheritDoc}
      */
     @Override
-    public boolean performHapticFeedback(int effectId, int flags, int privFlags) {
+    public boolean performHapticFeedback(int effectId, @VibrationAttributes.Usage int usage,
+            int flags, int privFlags) {
         if ((mDisplay.getFlags() & Display.FLAG_TOUCH_FEEDBACK_DISABLED) != 0) {
             return false;
         }
 
         getSystemVibrator().performHapticFeedback(
-                effectId, "ViewRootImpl#performHapticFeedback", flags, privFlags);
+                effectId, usage, "ViewRootImpl#performHapticFeedback", flags, privFlags);
         return true;
     }
 

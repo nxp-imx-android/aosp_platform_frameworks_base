@@ -20,6 +20,9 @@ import static android.os.Trace.TRACE_TAG_VIBRATOR;
 import static android.os.VibrationAttributes.USAGE_CLASS_ALARM;
 import static android.os.VibrationEffect.VibrationParameter.targetAmplitude;
 import static android.os.VibrationEffect.VibrationParameter.targetFrequency;
+import static android.os.VibrationAttributes.USAGE_UNKNOWN;
+import static android.os.VibrationAttributes.USAGE_CLASS_FEEDBACK;
+import static android.os.VibrationAttributes.USAGE_CLASS_MASK;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -491,15 +494,15 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
     @Override // Binder call
     public void performHapticFeedback(int uid, int deviceId, String opPkg, int constant,
-            String reason, int flags, int privFlags) {
+            @VibrationAttributes.Usage int usage, String reason, int flags, int privFlags) {
         Trace.traceBegin(TRACE_TAG_VIBRATOR, "performHapticFeedback");
         // Note that the `performHapticFeedback` method does not take a token argument from the
         // caller, and instead, uses this service as the token. This is to mitigate performance
         // impact that would otherwise be caused due to marshal latency. Haptic feedback effects are
         // short-lived, so we don't need to cancel when the process dies.
         try {
-            performHapticFeedbackInternal(uid, deviceId, opPkg, constant, reason, /* token= */
-                    this, flags, privFlags);
+            performHapticFeedbackInternal(uid, deviceId, opPkg, constant, usage, reason,
+                    /* token= */ this, flags, privFlags);
         } finally {
             Trace.traceEnd(TRACE_TAG_VIBRATOR);
         }
@@ -527,20 +530,20 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     @VisibleForTesting
     @Nullable
     HalVibration performHapticFeedbackInternal(
-            int uid, int deviceId, String opPkg, int constant, String reason,
-            IBinder token, int flags, int privFlags) {
+            int uid, int deviceId, String opPkg, int constant, @VibrationAttributes.Usage int usage,
+            String reason, IBinder token, int flags, int privFlags) {
         // Make sure we report the constant id in the requested haptic feedback reason.
         reason = "performHapticFeedback(constant=" + constant + "): " + reason;
         HapticFeedbackVibrationProvider hapticVibrationProvider = getHapticVibrationProvider();
-        Status ignoreStatus = shouldIgnoreHapticFeedback(constant, reason, hapticVibrationProvider);
+        Status ignoreStatus = shouldIgnoreHapticFeedback(
+                constant, usage, reason, hapticVibrationProvider);
         if (ignoreStatus != null) {
             logAndRecordPerformHapticFeedbackAttempt(uid, deviceId, opPkg, reason, ignoreStatus);
             return null;
         }
         return performHapticFeedbackWithEffect(uid, deviceId, opPkg, constant, reason, token,
-                hapticVibrationProvider.getVibration(constant),
-                hapticVibrationProvider.getVibrationAttributes(
-                        constant, flags, privFlags));
+                hapticVibrationProvider.getVibration(constant, usage),
+                hapticVibrationProvider.getVibrationAttributes(constant, usage, flags, privFlags));
     }
 
     /**
@@ -557,15 +560,17 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         reason = "performHapticFeedbackForInputDevice(constant=" + constant + ", inputDeviceId="
                 + inputDeviceId + ", inputSource=" + inputSource + "): " + reason;
         HapticFeedbackVibrationProvider hapticVibrationProvider = getHapticVibrationProvider();
-        Status ignoreStatus = shouldIgnoreHapticFeedback(constant, reason, hapticVibrationProvider);
+        Status ignoreStatus =
+                shouldIgnoreHapticFeedback(
+                        constant, USAGE_UNKNOWN, reason, hapticVibrationProvider);
         if (ignoreStatus != null) {
             logAndRecordPerformHapticFeedbackAttempt(uid, deviceId, opPkg, reason, ignoreStatus);
             return null;
         }
         return performHapticFeedbackWithEffect(uid, deviceId, opPkg, constant, reason, token,
-                hapticVibrationProvider.getVibration(constant, inputSource),
-                hapticVibrationProvider.getVibrationAttributes(constant, inputSource, flags,
-                        privFlags));
+                hapticVibrationProvider.getVibrationForInputDevice(constant, inputSource),
+                hapticVibrationProvider.getVibrationAttributesForInputDevice(constant, inputSource,
+                        flags, privFlags));
     }
 
     private HalVibration performHapticFeedbackWithEffect(int uid, int deviceId, String opPkg,
@@ -616,7 +621,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
         enforceUpdateAppOpsStatsPermission(uid);
         if (!isEffectValid(effect)) {
-            logAndRecordVibrationAttempt(effect, callerInfo, Status.IGNORED_UNSUPPORTED);
+            logAndRecordVibrationAttempt(effect, callerInfo, Status.IGNORED_INVALID_REQUEST);
             return null;
         }
         if (effect.hasVendorEffects()) {
@@ -1452,11 +1457,21 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     }
 
     @Nullable
-    private Status shouldIgnoreHapticFeedback(int constant, String reason,
-            HapticFeedbackVibrationProvider hapticVibrationProvider) {
+    private Status shouldIgnoreHapticFeedback(int constant, @VibrationAttributes.Usage int usage,
+            String reason, HapticFeedbackVibrationProvider hapticVibrationProvider) {
         if (hapticVibrationProvider == null) {
             Slog.e(TAG, reason + "; haptic vibration provider not ready.");
             return Status.IGNORED_ERROR_SCHEDULING;
+        }
+
+        if (usage != USAGE_UNKNOWN
+                // If the usage is not USAGE_UNKNOWN, allow vibration only if the flag for custom
+                // haptic feedback usages is enabled AND the usage has USAGE_CLASS_FEEDBACK.
+                && (!Flags.hapticFeedbackWithCustomUsage()
+                        || (usage & USAGE_CLASS_MASK) != USAGE_CLASS_FEEDBACK)) {
+            Slog.e(TAG, reason + "; usage must be USAGE_UNKNOWN or have USAGE_CLASS_FEEDBACK. "
+                    + "Found " + VibrationAttributes.usageToString(usage));
+            return Status.IGNORED_INVALID_REQUEST;
         }
         if (hapticVibrationProvider.isRestrictedHapticFeedback(constant)
                 && !hasPermission(android.Manifest.permission.VIBRATE_SYSTEM_CONSTANTS)) {
@@ -2577,8 +2592,21 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             public boolean force = false;
             public String description = "Shell command";
             public boolean background = false;
+            @VibrationAttributes.Usage public int usage;
 
             CommonOptions() {
+                // USAGE_COMMUNICATION_REQUEST used by default to allow vibrations when the adb
+                // shell process is running in background. This will apply the
+                // NOTIFICATION_VIBRATION_INTENSITY setting.
+                this(VibrationAttributes.USAGE_COMMUNICATION_REQUEST);
+            }
+
+            CommonOptions(int defaultUsage) {
+                usage = defaultUsage;
+                populateFields();
+            }
+
+            private void populateFields() {
                 String nextArg;
                 while ((nextArg = peekNextArg()) != null) {
                     switch (nextArg) {
@@ -2593,6 +2621,10 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                         case "-d":
                             getNextArgRequired(); // consume "-d"
                             description = getNextArgRequired();
+                            break;
+                        case "-u":
+                            getNextArgRequired(); // consume "-u"
+                            usage = Integer.parseInt(getNextArgRequired());
                             break;
                         default:
                             // nextArg is not a common option, finish reading.
@@ -2725,7 +2757,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         private int runHapticFeedback() {
-            CommonOptions commonOptions = new CommonOptions();
+            CommonOptions commonOptions = new CommonOptions(/* defaultUsage= */ USAGE_UNKNOWN);
             int constant = parseInt(getNextArgRequired(), "Expected haptic feedback constant id");
 
             IBinder deathBinder = commonOptions.background ? VibratorManagerService.this
@@ -2733,7 +2765,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             int flags = commonOptions.force
                     ? HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING : 0;
             HalVibration vib = performHapticFeedbackInternal(Binder.getCallingUid(),
-                    Context.DEVICE_ID_DEFAULT, SHELL_PACKAGE_NAME, constant,
+                    Context.DEVICE_ID_DEFAULT, SHELL_PACKAGE_NAME, constant, commonOptions.usage,
                     /* reason= */ commonOptions.description, deathBinder, flags, /* privFlags */ 0);
             maybeWaitOnVibration(vib, commonOptions);
 
@@ -3049,9 +3081,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             final int flags = commonOptions.force ? ATTRIBUTES_ALL_BYPASS_FLAGS : 0;
             return new VibrationAttributes.Builder()
                     .setFlags(flags)
-                    // Used to allow vibrations when the adb shell process is running in background.
-                    // This will apply the NOTIFICATION_VIBRATION_INTENSITY setting.
-                    .setUsage(VibrationAttributes.USAGE_COMMUNICATION_REQUEST)
+                    .setUsage(commonOptions.usage)
                     .build();
         }
 
@@ -3184,6 +3214,8 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("  -B");
                 pw.println("    Run in the background; without this option the shell cmd will");
                 pw.println("    block until the vibration has completed.");
+                pw.println("  -u <usage>");
+                pw.println("    Specify the usage for the haptic feedback or vibration.");
                 pw.println("  -d <description>");
                 pw.println("    Add description to the vibration.");
                 pw.println("");

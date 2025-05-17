@@ -292,8 +292,24 @@ public final class SystemFonts {
                 b.addFont(font);
             }
         }
-        return b == null ? null : b.build(languageTags, variant, false /* isCustomFallback */,
-                isDefaultFallback, varFamilyType);
+        if (b == null) {
+            return null;
+        }
+
+        try {
+            return b.build(languageTags, variant, false /* isCustomFallback */,
+                    isDefaultFallback, varFamilyType);
+        } catch (Exception e) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < fonts.size(); ++i) {
+                if (i != 0) {
+                    sb.append(",");
+                }
+                sb.append(fonts.get(i));
+            }
+            Log.e(TAG, "Failed during creating FontFamily, possibly invalid font format: " + sb);
+        }
+        return null;
     }
 
     private static void appendNamedFamilyList(@NonNull FontConfig.NamedFamilyList namedFamilyList,

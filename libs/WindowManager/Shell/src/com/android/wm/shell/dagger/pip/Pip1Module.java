@@ -123,11 +123,15 @@ public abstract class Pip1Module {
     static PhonePipMenuController providesPipPhoneMenuController(Context context,
             PipBoundsState pipBoundsState, PipMediaController pipMediaController,
             SystemWindows systemWindows,
+            DisplayController displayController,
+            DisplayInsetsController displayInsetsController,
+            PipDisplayLayoutState pipDisplayLayoutState,
             PipUiEventLogger pipUiEventLogger,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler) {
         return new PhonePipMenuController(context, pipBoundsState, pipMediaController,
-                systemWindows, pipUiEventLogger, mainExecutor, mainHandler);
+                systemWindows, displayController, displayInsetsController, pipDisplayLayoutState,
+                pipUiEventLogger, mainExecutor, mainHandler);
     }
 
     @WMSingleton

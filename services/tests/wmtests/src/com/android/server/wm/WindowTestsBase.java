@@ -2161,6 +2161,11 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mLastRequest = request;
         }
 
+        @Override
+        public void removeStartingWindow(StartingWindowRemovalInfo removalInfo) {
+            // Temporary method, do nothing
+        }
+
         void startTransition() {
             mOrganizer.startTransition(mLastTransit.getToken(), null);
         }

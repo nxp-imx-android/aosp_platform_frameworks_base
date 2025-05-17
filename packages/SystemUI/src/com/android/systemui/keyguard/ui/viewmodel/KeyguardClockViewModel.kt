@@ -205,10 +205,23 @@ constructor(
                     hasCustomWeatherDataDisplay,
                     shadeModeInteractor.isShadeLayoutWide,
                     configurationInteractor.configurationValues,
-                ) { hasCustomWeatherDataDisplay, isShadeLayoutWide, configurationValues ->
+                    keyguardClockInteractor.currentClock,
+                ) { hasCustomWeatherDataDisplay, isShadeLayoutWide, configurationValues, _ ->
                     var fallBelow = false
                     if (hasCustomWeatherDataDisplay) {
                         return@combine true
+                    }
+
+                    keyguardClockInteractor.currentClockFontAxesWidth?.let { fontWidth ->
+                        if (fontWidth >= FONT_WIDTH_MAX_CUTOFF) {
+                            smallClockLogBuffer.log(
+                                TAG,
+                                LogLevel.INFO,
+                                { int1 = FONT_WIDTH_MAX_CUTOFF },
+                                { "fallBelowClock:true, FontAxesWidth:$int1" },
+                            )
+                            return@combine true
+                        }
                     }
 
                     val screenWidthDp = configurationValues.screenWidthDp
@@ -233,7 +246,10 @@ constructor(
                             bool1 = fallBelow
                             bool2 = isShadeLayoutWide
                         },
-                        { "fallBelowClock:$bool1, isShadeWide:$bool2, Width:$int1, Font:$double1" },
+                        {
+                            "fallBelowClock:$bool1, isShadeWide:$bool2, " +
+                                "Width:$int1, FontScale:$double1"
+                        },
                     )
                     fallBelow
                 }
@@ -257,7 +273,7 @@ constructor(
         // font size to display size
         // These values come from changing the font size and display size on a non-foldable.
         // Visually looked at which configs cause the date/weather to push off of the screen
-        val BREAKING_PAIRS =
+        private val BREAKING_PAIRS =
             listOf(
                 0.85f to 320, // tiny font size but large display size
                 1f to 346,
@@ -265,5 +281,10 @@ constructor(
                 1.5f to 376,
                 1.8f to 411, // large font size but tiny display size
             )
+
+        // Font axes width max cutoff
+        // A font with a wider font axes than this is at risk of being pushed off screen
+        // Value determined by the very robust and scientific process of eye-balling a few devices
+        private const val FONT_WIDTH_MAX_CUTOFF = 110
     }
 }

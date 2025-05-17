@@ -8,6 +8,7 @@ import com.android.systemui.ExpandHelper
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.FalsingCollectorFake
 import com.android.systemui.classifier.FalsingManagerFake
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.domain.interactor.NaturalScrollingSettingObserver
@@ -303,6 +304,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun testDragDownAmountDoesntCallOutInLockedDownShade() =
         testScope.runTest {
             whenever(nsslController.isInLockedDownShade).thenReturn(true)
@@ -317,6 +319,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun testDragDownAmountCallsOut() =
         testScope.runTest {
             transitionController.dragDownAmount = 10f
@@ -330,6 +333,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun testDragDownAmount_depthDistanceIsZero_setsProgressToZero() =
         testScope.runTest {
             context
@@ -343,6 +347,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun testDragDownAmount_depthDistanceNonZero_setsProgressBasedOnDistance() =
         testScope.runTest {
             context
@@ -356,6 +361,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragDownAmount_setsValueOnMediaHierarchyManager() =
         testScope.runTest {
             transitionController.dragDownAmount = 10f
@@ -364,6 +370,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragAmount_setsScrimProgressBasedOnScrimDistance() =
         testScope.runTest {
             val distance = 10
@@ -383,6 +390,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragAmount_setsNotificationsScrimProgressBasedOnNotificationsScrimDistanceAndDelay() =
         testScope.runTest {
             val distance = 100
@@ -407,6 +415,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragAmount_dragAmountLessThanNotifDelayDistance_setsNotificationsScrimProgressToZero() =
         testScope.runTest {
             val distance = 100
@@ -431,6 +440,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragAmount_dragAmountMoreThanTotalDistance_setsNotificationsScrimProgressToOne() =
         testScope.runTest {
             val distance = 100
@@ -455,6 +465,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragDownAmount_inSplitShade_setsValueOnMediaHierarchyManager() =
         testScope.runTest {
             enableSplitShade()
@@ -465,6 +476,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragAmount_notInSplitShade_forwardsToSingleShadeOverScroller() =
         testScope.runTest {
             disableSplitShade()
@@ -476,6 +488,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragAmount_inSplitShade_forwardsToSplitShadeOverScroller() =
         testScope.runTest {
             enableSplitShade()
@@ -487,6 +500,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragDownAmount_inSplitShade_setsKeyguardStatusBarAlphaBasedOnDistance() =
         testScope.runTest {
             val alphaDistance =
@@ -503,6 +517,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun setDragDownAmount_notInSplitShade_setsKeyguardStatusBarAlphaToMinusOne() =
         testScope.runTest {
             disableSplitShade()

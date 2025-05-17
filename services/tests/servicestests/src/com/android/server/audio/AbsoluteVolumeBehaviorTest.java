@@ -253,7 +253,7 @@ public class AbsoluteVolumeBehaviorTest {
 
         // Dispatched volume index is scaled to the range in the initial VolumeInfo
         verify(mMockDispatcher).dispatchDeviceVolumeChanged(DEVICE_SPEAKER_OUT,
-                new VolumeInfo.Builder(volumeInfo).setVolumeIndex(250).build());
+                new VolumeInfo.Builder(volumeInfo).setVolumeIndex(250).setMuted(false).build());
     }
 
     @Test
@@ -401,6 +401,7 @@ public class AbsoluteVolumeBehaviorTest {
         verify(mMockDispatcher, never()).dispatchDeviceVolumeChanged(eq(DEVICE_SPEAKER_OUT), any());
         // Volume changed dispatched for adjust-only absolute volume listener
         verify(mMockAdjustOnlyAbsoluteVolumeDispatcher).dispatchDeviceVolumeChanged(
-                DEVICE_SPEAKER_OUT, new VolumeInfo.Builder(volumeInfo).setVolumeIndex(250).build());
+                DEVICE_SPEAKER_OUT, new VolumeInfo.Builder(volumeInfo).setVolumeIndex(250).setMuted(
+                        false).build());
     }
 }

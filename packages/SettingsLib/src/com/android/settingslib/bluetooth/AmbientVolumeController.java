@@ -405,11 +405,5 @@ public class AmbientVolumeController implements LocalBluetoothProfileManager.Ser
     }
 
     public record RemoteAmbientState(int gainSetting, int mute) {
-        public boolean isMutable() {
-            return mute != MUTE_DISABLED;
-        }
-        public boolean isMuted() {
-            return mute == MUTE_MUTED;
-        }
     }
 }

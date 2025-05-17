@@ -201,12 +201,12 @@ class EditModeTest : SysuiTestCase() {
         composeRule.onNodeWithText("tileF").performClick() // Tap to add
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Undo").assertExists()
+        composeRule.onNodeWithContentDescription("Undo").assertExists()
 
-        composeRule.onNodeWithText("Undo").performClick() // Undo addition
+        composeRule.onNodeWithContentDescription("Undo").performClick() // Undo addition
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Undo").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Undo").assertDoesNotExist()
     }
 
     private fun ComposeContentTestRule.assertCurrentTilesGridContainsExactly(specs: List<String>) =
@@ -230,6 +230,7 @@ class EditModeTest : SysuiTestCase() {
                 icon =
                     Icon.Resource(android.R.drawable.star_on, ContentDescription.Loaded(tileSpec)),
                 label = AnnotatedString(tileSpec),
+                inlinedLabel = null,
                 appName = null,
                 isCurrent = isCurrent,
                 isDualTarget = false,

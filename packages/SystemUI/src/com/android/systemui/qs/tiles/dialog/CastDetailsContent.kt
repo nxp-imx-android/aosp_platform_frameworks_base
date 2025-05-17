@@ -19,6 +19,7 @@ package com.android.systemui.qs.tiles.dialog
 import android.content.Context
 import android.database.DataSetObserver
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ListAdapter
@@ -52,7 +53,7 @@ fun CastDetailsContent(castDetailsViewModel: CastDetailsViewModel) {
         val contentManager: MediaRouteChooserContentManager = remember {
             castDetailsViewModel.createChooserContentManager()
         }
-        CastChooserView(contentManager)
+        CastChooserView(contentManager, castDetailsViewModel)
         return
     }
 
@@ -75,7 +76,10 @@ fun CastDetailsContent(castDetailsViewModel: CastDetailsViewModel) {
 }
 
 @Composable
-fun CastChooserView(contentManager: MediaRouteChooserContentManager) {
+fun CastChooserView(
+    contentManager: MediaRouteChooserContentManager,
+    castDetailsViewModel: CastDetailsViewModel,
+) {
     var dataObserver: DataSetObserver? = null
     var adapter: ListAdapter? = null
 
@@ -102,12 +106,19 @@ fun CastChooserView(contentManager: MediaRouteChooserContentManager) {
 
             customizeView(listView)
 
+            // Hide the subtitle TextView in the empty view.
+            val emptyViewSubtitle = view.findViewById<TextView>(R.id.empty_subtitle)
+            emptyViewSubtitle.visibility = View.GONE
+
             // Listen to the adapter data change and `customizeView` when changes occur.
             adapter = listView.adapter
             dataObserver =
                 object : DataSetObserver() {
                     override fun onChanged() {
                         super.onChanged()
+                        if (adapter?.count != 0) {
+                            castDetailsViewModel.setMediaRouteDeviceSubTitle("")
+                        }
                         customizeView(listView)
                     }
                 }

@@ -100,23 +100,6 @@ constructor(
             .map { notifMap ->
                 notifMap.values
                     .filter { it.isOngoingCallNotification() }
-                    // TODO(b/415070395): Remove this filter once we inline the behavior of
-                    //  optInRichOngoing.
-                    .filter {
-                        if (PromotedNotificationUi.isEnabled && !Flags.optInRichOngoing()) {
-                            // When opt-*out* promoted notifications are enabled, CallStyle.Ongoing
-                            // notifications will be marked as promoted by default. If a user later
-                            // bans an app from showing promoted notifications (which would result
-                            // in promotedContent=null here), then we should stop showing call
-                            // notifications from that app as well.
-                            it.promotedContent != null
-                        } else {
-                            // When opt-*in* promoted notifications are enabled, ignore promotion
-                            // status for CallStyle.Ongoing notifications here. CallChipInteractor
-                            // will filter them correctly.
-                            true
-                        }
-                    }
                     // Once a call has started, its `whenTime` should stay the same, so we can use
                     // it as a stable sort value.
                     .minByOrNull { it.whenTime }

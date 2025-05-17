@@ -34,6 +34,8 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.plugins.qs.QSFactory
 import com.android.systemui.plugins.qs.QSTile
+import com.android.systemui.qs.footer.domain.interactor.FakeFooterActionInteractor
+import com.android.systemui.qs.footer.domain.interactor.FooterActionsInteractor
 import com.android.systemui.qs.footer.domain.interactor.FooterActionsInteractorImpl
 import com.android.systemui.qs.footer.foregroundServicesRepository
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsViewModel
@@ -41,7 +43,6 @@ import com.android.systemui.qs.panels.domain.interactor.textFeedbackInteractor
 import com.android.systemui.security.data.repository.securityRepository
 import com.android.systemui.settings.userTracker
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.policy.deviceProvisionedController
 import com.android.systemui.statusbar.policy.securityController
 import com.android.systemui.user.data.repository.userSwitcherRepository
@@ -75,7 +76,7 @@ val Kosmos.qsSecurityFooterUtils by Fixture {
     )
 }
 
-val Kosmos.footerActionsInteractor by Fixture {
+var Kosmos.footerActionsInteractor: FooterActionsInteractor by Fixture {
     FooterActionsInteractorImpl(
         activityStarter = activityStarter,
         metricsLogger = metricsLogger,
@@ -93,12 +94,14 @@ val Kosmos.footerActionsInteractor by Fixture {
     )
 }
 
+val FooterActionsInteractor.fake
+    get() = this as FakeFooterActionInteractor
+
 val Kosmos.footerActionsViewModelFactory by Fixture {
     FooterActionsViewModel.Factory(
         context = applicationContext,
         falsingManager = falsingManager,
         footerActionsInteractor = footerActionsInteractor,
-        shadeModeInteractor = shadeModeInteractor,
         globalActionsDialogLiteProvider = { mock() },
         activityStarter = activityStarter,
         textFeedbackInteractor = textFeedbackInteractor,

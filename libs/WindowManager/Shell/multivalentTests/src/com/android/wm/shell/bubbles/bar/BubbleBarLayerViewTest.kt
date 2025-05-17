@@ -52,6 +52,7 @@ import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker
 import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
+import com.android.wm.shell.bubbles.FakeBubbleAppInfoProvider
 import com.android.wm.shell.bubbles.FakeBubbleExpandedViewManager
 import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
@@ -80,6 +81,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -245,6 +247,8 @@ class BubbleBarLayerViewTest {
             mock<IWindowManager>(),
             BubbleResizabilityChecker(),
             HomeIntentProvider(context),
+            FakeBubbleAppInfoProvider(),
+            { Optional.empty() },
         )
     }
 

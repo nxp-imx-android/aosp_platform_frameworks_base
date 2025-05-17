@@ -20,7 +20,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.MediaRoute2Info;
 import android.media.MediaRouter2;
-import android.media.MediaRouter2.DeviceSuggestionsCallback;
+import android.media.MediaRouter2.DeviceSuggestionsUpdatesCallback;
 import android.media.MediaRouter2.RoutingController;
 import android.media.MediaRouter2Manager;
 import android.media.RouteDiscoveryPreference;
@@ -72,17 +72,23 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
                 notifyRouteListingPreferenceUpdated(preference);
                 refreshDevices();
             };
-    private final DeviceSuggestionsCallback mDeviceSuggestionsCallback =
-            new DeviceSuggestionsCallback() {
+
+    private final DeviceSuggestionsUpdatesCallback mDeviceSuggestionsUpdatesCallback =
+            new DeviceSuggestionsUpdatesCallback() {
                 @Override
-                public void onSuggestionUpdated(
+                public void onSuggestionsUpdated(
                         String suggestingPackageName,
                         List<SuggestedDeviceInfo> suggestedDeviceInfo) {
                     updateDeviceSuggestion(suggestingPackageName, suggestedDeviceInfo);
                 }
 
                 @Override
-                public void onSuggestionRequested() {} // no-op
+                public void onSuggestionsCleared(String suggestingPackageName) {
+                    updateDeviceSuggestion(suggestingPackageName, null);
+                }
+
+                @Override
+                public void onSuggestionsRequested() {} // no-op
             };
 
     @GuardedBy("this")
@@ -154,7 +160,8 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         mRouter.registerRouteCallback(mExecutor, mRouteCallback, RouteDiscoveryPreference.EMPTY);
         mRouter.registerRouteListingPreferenceUpdatedCallback(
                 mExecutor, mRouteListingPreferenceCallback);
-        mRouter.registerDeviceSuggestionsCallback(mExecutor, mDeviceSuggestionsCallback);
+        mRouter.registerDeviceSuggestionsUpdatesCallback(
+                mExecutor, mDeviceSuggestionsUpdatesCallback);
         if (Flags.enableSuggestedDeviceApi()) {
             for (Map.Entry<String, List<SuggestedDeviceInfo>> entry :
                     mRouter.getDeviceSuggestions().entrySet()) {
@@ -184,7 +191,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         mRouter.unregisterControllerCallback(mControllerCallback);
         mRouter.unregisterTransferCallback(mTransferCallback);
         mRouter.unregisterRouteListingPreferenceUpdatedCallback(mRouteListingPreferenceCallback);
-        mRouter.unregisterDeviceSuggestionsCallback(mDeviceSuggestionsCallback);
+        mRouter.unregisterDeviceSuggestionsUpdatesCallback(mDeviceSuggestionsUpdatesCallback);
         mRouter.unregisterRouteCallback(mRouteCallback);
     }
 
