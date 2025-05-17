@@ -18,8 +18,9 @@ package com.android.server.appop;
 
 /**
  * SQLite table for storing aggregated app op access events.
- * Each row summarizes the count of accessed and rejected events that occurred within a specific
- * time window (e.g., 1 or 15 minutes). This aggregation helps in efficiently storing the app op
+ * Each row summarizes the count of accessed, rejected events, and duration sum that occurred
+ * within a specific time window (e.g., 1 or 15 minutes). This aggregation helps in efficiently
+ * storing the app op
  * access events.
  *
  * <p>The following columns form a composite key to uniquely identify an aggregated record

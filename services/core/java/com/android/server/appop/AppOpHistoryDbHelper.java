@@ -28,6 +28,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteRawStatement;
+import android.os.Trace;
 import android.util.IntArray;
 import android.util.Slog;
 
@@ -81,7 +82,8 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         if (appOpEvents.isEmpty()) {
             return;
         }
-
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
+                "AppOpHistoryDbHelper_" + mAggregationTimeWindow + "_Write");
         try {
             SQLiteDatabase db = getWritableDatabase();
             db.beginTransaction();
@@ -118,7 +120,8 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                                 event.totalRejectCount());
                         statement.step();
                     } catch (Exception exception) {
-                        Slog.e(LOG_TAG, "Couldn't insert app op event: " + event, exception);
+                        Slog.e(LOG_TAG, "Couldn't insert app op event: " + event + ", database "
+                                + mDatabaseFile.getName(), exception);
                     } finally {
                         statement.reset();
                     }
@@ -128,12 +131,15 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                 try {
                     db.endTransaction();
                 } catch (SQLiteException exception) {
-                    Slog.e(LOG_TAG, "Couldn't commit transaction when inserting app ops, database"
-                            + " file size (bytes) : " + mDatabaseFile.length(), exception);
+                    Slog.e(LOG_TAG, "Couldn't commit transaction inserting app ops, database"
+                            + mDatabaseFile.getName() + ", file size (bytes) : "
+                            + mDatabaseFile.length(), exception);
                 }
             }
         } catch (Exception ex) {
             Slog.e(LOG_TAG, "Couldn't insert app op records in " + mDatabaseFile.getName(), ex);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
         }
     }
 

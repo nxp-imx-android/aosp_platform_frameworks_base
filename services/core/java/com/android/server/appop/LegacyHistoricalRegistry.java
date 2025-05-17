@@ -309,13 +309,16 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 switch (key) {
                     case Settings.Global.APPOP_HISTORY_MODE: {
                         modeValue = parts[1].trim();
-                    } break;
+                    }
+                    break;
                     case Settings.Global.APPOP_HISTORY_BASE_INTERVAL_MILLIS: {
                         baseSnapshotIntervalValue = parts[1].trim();
-                    } break;
+                    }
+                    break;
                     case Settings.Global.APPOP_HISTORY_INTERVAL_MULTIPLIER: {
                         intervalMultiplierValue = parts[1].trim();
-                    } break;
+                    }
+                    break;
                     default: {
                         Slog.w(LOG_TAG, "Unknown parameter: " + parameter);
                     }
@@ -330,7 +333,8 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 final int intervalCompressionMultiplier = Integer.parseInt(intervalMultiplierValue);
                 setHistoryParameters(mode, baseSnapshotInterval, intervalCompressionMultiplier);
                 return;
-            } catch (NumberFormatException ignored) { }
+            } catch (NumberFormatException ignored) {
+            }
         }
         Slog.w(LOG_TAG, "Bad value for" + Settings.Global.APPOP_HISTORY_PARAMETERS
                 + "=" + setting + " resetting!");
@@ -396,15 +400,15 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
     }
 
     @Override
-    public void dump(String prefix, PrintWriter pw, int filterUid,
-            @androidx.annotation.Nullable String filterPackage,
-            @androidx.annotation.Nullable String filterAttributionTag, int filterOp, int filter,
-            @androidx.annotation.NonNull SimpleDateFormat sdf,
-            @androidx.annotation.NonNull Date date, boolean includeDiscreteOps, int limit) {
+    public void dump(String prefix, PrintWriter pw, int filterUid, @Nullable String filterPackage,
+            @Nullable String filterAttributionTag, int filterOp, int filter,
+            @NonNull SimpleDateFormat sdf, @NonNull Date date,
+            boolean includeDiscreteOps, int limit) {
         // no-op, legacy registry dump discrete and aggregate data in separate methods.
     }
 
-    @HistoricalMode int getMode() {
+    @HistoricalMode
+    int getMode() {
         synchronized (mInMemoryLock) {
             return mMode;
         }
@@ -648,7 +652,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void offsetDiscreteHistory(long offsetMillis) {
-       mDiscreteRegistry.offsetHistory(offsetMillis);
+        mDiscreteRegistry.offsetHistory(offsetMillis);
     }
 
     @Override
@@ -935,7 +939,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 }
                 final Set<String> oldFileNames = getHistoricalFileNames(oldBaseDir);
                 handlePersistHistoricalOpsRecursiveDLocked(newBaseDir, oldBaseDir, ops,
-                        oldFileNames,  0);
+                        oldFileNames, 0);
                 if (DEBUG) {
                     filesInvariant.stopTracking(newBaseDir);
                 }
@@ -946,14 +950,16 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
             }
         }
 
-        @Nullable List<HistoricalOps> readHistoryRawDLocked() {
+        @Nullable
+        List<HistoricalOps> readHistoryRawDLocked() {
             return collectHistoricalOpsBaseDLocked(Process.INVALID_UID /*filterUid*/,
                     null /*filterPackageName*/, null /*filterAttributionTag*/,
                     null /*filterOpNames*/, 0 /*filter*/, 0 /*filterBeginTimeMills*/,
                     Long.MAX_VALUE /*filterEndTimeMills*/, AppOpsManager.OP_FLAGS_ALL);
         }
 
-        @Nullable List<HistoricalOps> readHistoryDLocked() {
+        @Nullable
+        List<HistoricalOps> readHistoryDLocked() {
             final List<HistoricalOps> result = readHistoryRawDLocked();
             // Take into account in memory state duration.
             if (result != null) {
@@ -1287,7 +1293,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                     cumulativeOverflowMillis);
         }
 
-        private @Nullable  List<HistoricalOps> readHistoricalOpsLocked(@NonNull File file,
+        private @Nullable List<HistoricalOps> readHistoricalOpsLocked(@NonNull File file,
                 int filterUid, @Nullable String filterPackageName,
                 @Nullable String filterAttributionTag, @Nullable String[] filterOpNames,
                 @HistoricalOpsRequestFilter int filter, long filterBeginTimeMillis,
@@ -1529,7 +1535,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 ops.increaseRejectCount(op, uid, packageName, attributionTag, uidState, flags,
                         rejectCount);
             }
-            long accessDuration =  parser.getAttributeLong(null, ATTR_ACCESS_DURATION, 0);
+            long accessDuration = parser.getAttributeLong(null, ATTR_ACCESS_DURATION, 0);
             if (accessDuration > 0) {
                 if (!Double.isNaN(filterScale)) {
                     accessDuration = (long) HistoricalOps.round(
@@ -1788,7 +1794,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
             return builder.toString();
         }
 
-        private static Set<String> getHistoricalFileNames(@NonNull File historyDir)  {
+        private static Set<String> getHistoricalFileNames(@NonNull File historyDir) {
             final File[] files = historyDir.listFiles();
             if (files == null) {
                 return Collections.emptySet();
@@ -1940,7 +1946,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
 
         @Override
         public void visitHistoricalOp(HistoricalOp ops) {
-            if ((mFilter & FILTER_BY_OP_NAMES) != 0  && mFilterOp != ops.getOpCode()) {
+            if ((mFilter & FILTER_BY_OP_NAMES) != 0 && mFilterOp != ops.getOpCode()) {
                 return;
             }
             mWriter.print(mEntryPrefix);

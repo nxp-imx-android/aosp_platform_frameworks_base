@@ -747,8 +747,8 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
     }
 
     // API for testing and migration
-    void deleteDatabase() {
+    boolean deleteDatabase() {
         mDiscreteOpsDbHelper.close();
-        mContext.deleteDatabase(mDatabaseFile.getAbsolutePath());
+        return mContext.deleteDatabase(mDatabaseFile.getAbsolutePath());
     }
 }

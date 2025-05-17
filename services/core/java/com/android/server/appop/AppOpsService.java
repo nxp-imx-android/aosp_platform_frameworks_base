@@ -6360,7 +6360,6 @@ public class AppOpsService extends IAppOpsService.Stub {
                         pw.println("Wrong parameter: " + args[i]);
                         return;
                     }
-                    includeDiscreteOps = true;
                 } else if ("--history".equals(arg)) {
                     dumpHistory = true;
                 } else if (arg.length() > 0 && arg.charAt(0) == '-') {
