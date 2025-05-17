@@ -124,7 +124,6 @@ public class PipTransition extends PipTransitionController implements
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final PipDesktopState mPipDesktopState;
     private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
-    private final PipInteractionHandler mPipInteractionHandler;
 
     //
     // Transition caches
@@ -185,7 +184,6 @@ public class PipTransition extends PipTransitionController implements
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipDesktopState = pipDesktopState;
         mDesktopPipTransitionController = desktopPipTransitionController;
-        mPipInteractionHandler = pipInteractionHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
                 pipBoundsState, pipBoundsAlgorithm,

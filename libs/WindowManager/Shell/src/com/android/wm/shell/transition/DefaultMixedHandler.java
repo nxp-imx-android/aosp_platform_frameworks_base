@@ -54,6 +54,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
+import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.sysui.ShellInit;
@@ -372,6 +373,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
 
             WindowContainerTransaction out = new WindowContainerTransaction();
             mPipHandler.augmentRequest(transition, request, out);
+            if (PipFlags.isPip2ExperimentEnabled() && mSplitHandler.isSplitScreenVisible()) {
+                mSplitHandler.removePipFromSplitIfNeeded(request, out);
+            }
             mSplitHandler.addEnterOrExitForPipIfNeeded(request, out);
             return out;
         } else if (request.getType() == TRANSIT_PIP

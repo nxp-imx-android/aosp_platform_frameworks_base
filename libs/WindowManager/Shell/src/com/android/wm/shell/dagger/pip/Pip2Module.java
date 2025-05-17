@@ -91,8 +91,6 @@ public abstract class Pip2Module {
             @NonNull Transitions transitions,
             PipBoundsState pipBoundsState,
             PipBoundsAlgorithm pipBoundsAlgorithm,
-            Optional<PipController> pipController,
-            PipTouchHandler pipTouchHandler,
             PipTaskListener pipTaskListener,
             @NonNull PipScheduler pipScheduler,
             @NonNull PipTransitionState pipStackListenerController,
