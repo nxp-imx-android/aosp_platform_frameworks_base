@@ -50,13 +50,17 @@ import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.lifecycle.repeatWhenAttached
+import com.android.systemui.lifecycle.viewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.POPUP
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.StatusBarRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
@@ -90,8 +94,10 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
+import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewModel
 import javax.inject.Inject
 import javax.inject.Named
+import kotlinx.coroutines.awaitCancellation
 
 /** Factory to simplify the dependency management for [StatusBarRoot] */
 class StatusBarRootFactory
@@ -108,6 +114,7 @@ constructor(
     @Named(POPUP) private val mediaHost: MediaHost,
     private val displaySubcomponentRepository:
         PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
+    private val statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
@@ -131,6 +138,8 @@ constructor(
                         eventAnimationInteractor = eventAnimationInteractor,
                         mediaHierarchyManager = mediaHierarchyManager,
                         mediaHost = mediaHost,
+                        statusBarRegionSamplingViewModelFactory =
+                            statusBarRegionSamplingViewModelFactory,
                         onViewCreated = andThen,
                         modifier = Modifier.sysUiResTagContainer(),
                     )
@@ -166,6 +175,7 @@ fun StatusBarRoot(
     eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     mediaHierarchyManager: MediaHierarchyManager,
     mediaHost: MediaHost,
+    statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
     onViewCreated: (ViewGroup) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -303,6 +313,14 @@ fun StatusBarRoot(
                         notificationIconContainer,
                         context.displayId,
                     )
+
+                    if (StatusBarRegionSampling.isEnabled) {
+                        bindRegionSamplingViewModel(
+                            context.displayId,
+                            phoneStatusBarView,
+                            statusBarRegionSamplingViewModelFactory,
+                        )
+                    }
 
                     // This binder handles everything else
                     statusBarViewBinder.bind(
@@ -525,6 +543,33 @@ fun Disambiguation(viewModel: HomeStatusBarViewModel) {
     if (clockVisibilityModel.value.visibility == View.VISIBLE) {
         Box(modifier = Modifier.fillMaxSize().alpha(0.5f), contentAlignment = Alignment.Center) {
             RetroText(text = "COMPOSE->BAR")
+        }
+    }
+}
+
+private fun bindRegionSamplingViewModel(
+    displayId: Int,
+    phoneStatusBarView: PhoneStatusBarView,
+    statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
+) {
+    phoneStatusBarView.repeatWhenAttached {
+        phoneStatusBarView.viewModel(
+            traceName = "StatusBarRegionSamplingViewModel",
+            minWindowLifecycleState = WindowLifecycleState.ATTACHED,
+            factory = {
+                statusBarRegionSamplingViewModelFactory.create(
+                    displayId = displayId,
+                    attachStateView = phoneStatusBarView,
+                    startSideContainerView =
+                        phoneStatusBarView.requireViewById(R.id.status_bar_start_side_container),
+                    startSideIconView = phoneStatusBarView.requireViewById(R.id.clock),
+                    endSideContainerView =
+                        phoneStatusBarView.requireViewById(R.id.status_bar_end_side_container),
+                    endSideIconView = phoneStatusBarView.requireViewById(R.id.system_icons),
+                )
+            },
+        ) {
+            awaitCancellation()
         }
     }
 }

@@ -66,6 +66,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_region_sampling"
+    namespace: "accessibility"
+    description: "Uses region sampling in the Status Bar to avoid contrast bugs in the status bar when expanded dark theme is enabled"
+    bug: "379760792"
+}
+
+flag {
     name: "update_corner_radius_on_display_changed"
     namespace: "accessibility"
     description: "Updates the corner radius to the magnification fullscreen border when the display changes."
