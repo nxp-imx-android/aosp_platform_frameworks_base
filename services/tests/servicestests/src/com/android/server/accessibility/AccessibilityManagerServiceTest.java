@@ -27,6 +27,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_
 import static android.provider.Settings.Secure.NAVIGATION_MODE;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
+import static android.view.accessibility.Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API;
 import static android.view.accessibility.Flags.FLAG_SKIP_ACCESSIBILITY_WARNING_DIALOG_FOR_TRUSTED_SERVICES;
 
 import static com.android.input.flags.Flags.FLAG_KEYBOARD_REPEAT_KEYS;
@@ -77,6 +78,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
@@ -275,6 +277,8 @@ public class AccessibilityManagerServiceTest {
                 UserManagerInternal.class, mMockUserManagerInternal);
         LocalServices.addService(StatusBarManagerInternal.class, mStatusBarManagerInternal);
         mTestableContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
+        // mock DPM#getPermittedAccessibilityServices=null means all A11yServices are permitted
+        when(mDevicePolicyManager.getPermittedAccessibilityServices(anyInt())).thenReturn(null);
 
         mInputManagerTestSession = InputManagerGlobal.createTestSession(mMockInputManagerService);
         InputManager mockInputManager = new InputManager(mTestableContext);
@@ -2400,6 +2404,87 @@ public class AccessibilityManagerServiceTest {
                 .containsExactly(setting_b);
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API)
+    public void enableTrustedAccessibilityService_meetsAllRequirements_enablesService() {
+        final AccessibilityServiceInfo info = getServiceInfoForEnableTrustedServiceTest(
+                /*preinstalled=*/ true, /*onAllowlist=*/ true, /*samePackage=*/ true);
+        // Do not actually start and bind the AccessibilityService
+        mTestableContext.mIgnoreBindService = true;
+
+        final boolean result = mA11yms.enableTrustedAccessibilityService(
+                info.getComponentName(), mA11yms.mCurrentUserId);
+
+        assertThat(result).isTrue();
+        final Set<String> enabledServices =
+                readStringsFromSetting(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        assertThat(enabledServices).containsExactly(info.getComponentName().flattenToString());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API)
+    public void enableTrustedAccessibilityService_notPreinstalled_doesNotEnableService() {
+        final AccessibilityServiceInfo info = getServiceInfoForEnableTrustedServiceTest(
+                /*preinstalled=*/ false, /*onAllowlist=*/ true, /*samePackage=*/ true);
+
+        final boolean result = mA11yms.enableTrustedAccessibilityService(
+                info.getComponentName(), mA11yms.mCurrentUserId);
+
+        assertThat(result).isFalse();
+        final Set<String> enabledServices =
+                readStringsFromSetting(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        assertThat(enabledServices).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API)
+    public void enableTrustedAccessibilityService_notAllowlisted_doesNotEnableService() {
+        final AccessibilityServiceInfo info = getServiceInfoForEnableTrustedServiceTest(
+                /*preinstalled=*/ true, /*onAllowlist=*/ false, /*samePackage=*/ true);
+
+        final boolean result = mA11yms.enableTrustedAccessibilityService(
+                info.getComponentName(), mA11yms.mCurrentUserId);
+
+        assertThat(result).isFalse();
+        final Set<String> enabledServices =
+                readStringsFromSetting(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        assertThat(enabledServices).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API)
+    public void enableTrustedAccessibilityService_notSamePackage_doesNotEnableService() {
+        final AccessibilityServiceInfo info = getServiceInfoForEnableTrustedServiceTest(
+                /*preinstalled=*/ true, /*onAllowlist=*/ true, /*samePackage=*/ false);
+
+        final boolean result = mA11yms.enableTrustedAccessibilityService(
+                info.getComponentName(), mA11yms.mCurrentUserId);
+
+        assertThat(result).isFalse();
+        final Set<String> enabledServices =
+                readStringsFromSetting(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        assertThat(enabledServices).isEmpty();
+    }
+
+    private AccessibilityServiceInfo getServiceInfoForEnableTrustedServiceTest(
+            boolean preinstalled, boolean onAllowlist, boolean samePackage) {
+        final AccessibilityServiceInfo info = mockAccessibilityServiceInfo(
+                new ComponentName("package", "class"),
+                /* isSystemApp= */ preinstalled);
+        if (onAllowlist) {
+            mTestableContext.getOrCreateTestableResources().addOverride(
+                    R.array.config_trustedAccessibilityServices,
+                    new String[]{info.getComponentName().flattenToString()});
+        }
+        when(mMockSecurityPolicy.isValidPackageForUid(
+                eq(info.getComponentName().getPackageName()), anyInt()))
+                .thenReturn(samePackage);
+        final AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        userState.mInstalledServices.clear();
+        userState.mInstalledServices.add(info);
+        return info;
+    }
+
     private Set<String> readStringsFromSetting(String setting) {
         final Set<String> result = new ArraySet<>();
         mA11yms.readColonDelimitedSettingToSet(
@@ -2425,6 +2510,12 @@ public class AccessibilityManagerServiceTest {
             ComponentName componentName) {
         return mockAccessibilityServiceInfo(
                 componentName, /* isSystemApp= */ false, /* isAlwaysOnService=*/ false);
+    }
+
+    private static AccessibilityServiceInfo mockAccessibilityServiceInfo(
+            ComponentName componentName, boolean isSystemApp) {
+        return mockAccessibilityServiceInfo(
+                componentName, isSystemApp, /* isAlwaysOnService=*/ false);
     }
 
     private static AccessibilityServiceInfo mockAccessibilityServiceInfo(
@@ -2539,6 +2630,7 @@ public class AccessibilityManagerServiceTest {
         private final Context mMockContext;
         private final Map<String, List<BroadcastReceiver>> mBroadcastReceivers = new ArrayMap<>();
         private ArrayMap<Integer, Context> mMockUserContexts = new ArrayMap<>();
+        private boolean mIgnoreBindService = false;
 
         A11yTestableContext(Context base) {
             super(base);
@@ -2554,6 +2646,15 @@ public class AccessibilityManagerServiceTest {
         @Override
         public void sendBroadcastAsUser(Intent intent, UserHandle user) {
             mMockContext.sendBroadcastAsUser(intent, user);
+        }
+
+        @Override
+        public boolean bindServiceAsUser(Intent service, ServiceConnection conn, int flags,
+                UserHandle user) {
+            if (mIgnoreBindService) {
+                return true;
+            }
+            return super.bindServiceAsUser(service, conn, flags, user);
         }
 
         @Override

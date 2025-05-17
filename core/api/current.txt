@@ -56407,6 +56407,7 @@ package android.view.accessibility {
     method @FlaggedApi("com.android.graphics.hwui.flags.high_contrast_text_small_text_rect") public void addHighContrastTextStateChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.view.accessibility.AccessibilityManager.HighContrastTextStateChangeListener);
     method public boolean addTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener);
     method public void addTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener, @Nullable android.os.Handler);
+    method @FlaggedApi("android.view.accessibility.enable_trusted_accessibility_service_api") public boolean enableTrustedAccessibilityService(@NonNull android.content.ComponentName);
     method @ColorInt public int getAccessibilityFocusColor();
     method public int getAccessibilityFocusStrokeWidth();
     method @Deprecated public java.util.List<android.content.pm.ServiceInfo> getAccessibilityServiceList();

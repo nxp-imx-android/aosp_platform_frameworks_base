@@ -85,6 +85,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -642,6 +643,68 @@ public final class AccessibilityManager {
         synchronized (mLock) {
             return mIsEnabled || hasAnyDirectConnection()
                     || (mAccessibilityPolicy != null && mAccessibilityPolicy.isEnabled(mIsEnabled));
+        }
+    }
+
+    /**
+     * Enables a trusted {@link AccessibilityService} identified by the provided component name.
+     *
+     * <p>In order to succeed, the provided service must:
+     * <ul>
+     *     <li>Belong to the same package name as the caller.</li>
+     *     <li>Belong to a preinstalled package on the device.</li>
+     *     <li>Belong to an allowlist defined by the device.</li>
+     * </ul>
+     *
+     * @param trustedAccessibilityService the component name of the {@link AccessibilityService}
+     * @return {@code true} if the system attempted to start the service, otherwise {@code false}
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API)
+    public boolean enableTrustedAccessibilityService(
+            @NonNull ComponentName trustedAccessibilityService) {
+        Objects.requireNonNull(trustedAccessibilityService);
+        final IAccessibilityManager service;
+        final int userId;
+        synchronized (mLock) {
+            service = getServiceLocked();
+            if (service == null) {
+                return false;
+            }
+            userId = mUserId;
+        }
+        try {
+            return service.enableTrustedAccessibilityService(trustedAccessibilityService, userId);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Set the given component name as a trusted accessibility service so that it bypasses
+     * the regular trust checks in the system.
+     *
+     * <p>This is only used for testing and must be permission-protected against non-system callers.
+     * @param trustedAccessibilityService The component name to set as trusted, or
+     *        {@code null} to clear.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_ENABLE_TRUSTED_ACCESSIBILITY_SERVICE_API)
+    @RequiresPermission(Manifest.permission.MANAGE_ACCESSIBILITY)
+    @VisibleForTesting
+    public void setTrustedAccessibilityServiceForTesting(
+            @Nullable ComponentName trustedAccessibilityService) {
+        final IAccessibilityManager service;
+        synchronized (mLock) {
+            service = getServiceLocked();
+            if (service == null) {
+                return;
+            }
+        }
+        try {
+            service.setTrustedAccessibilityServiceForTesting(trustedAccessibilityService);
+        } catch (RemoteException re) {
+            throw re.rethrowFromSystemServer();
         }
     }
 

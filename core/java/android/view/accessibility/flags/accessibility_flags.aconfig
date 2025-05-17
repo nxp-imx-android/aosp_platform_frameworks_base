@@ -125,6 +125,14 @@ flag {
 }
 
 flag {
+    name: "enable_trusted_accessibility_service_api"
+    namespace: "accessibility"
+    description: "API that allows an app to enable its own accessibility service if that service is trusted."
+    bug: "418057329"
+    is_exported: true
+}
+
+flag {
     name: "enable_type_window_control"
     namespace: "accessibility"
     is_exported: true
