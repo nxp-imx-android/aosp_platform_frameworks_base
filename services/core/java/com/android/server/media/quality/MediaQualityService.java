@@ -342,6 +342,9 @@ public class MediaQualityService extends SystemService {
                             .contains(values.getAsLong(BaseParameters.PARAMETER_ID))) {
                         updateDatabaseOnPictureProfileAndNotifyManager(
                                 values, pp.getParameters(), callingUid, callingPid, true);
+                    } else {
+                        updateDatabaseOnPictureProfileAndNotifyManager(
+                                values, pp.getParameters(), callingUid, callingPid, false);
                     }
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
