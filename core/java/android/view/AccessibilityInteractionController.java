@@ -963,11 +963,23 @@ public final class AccessibilityInteractionController {
         }
     }
 
-    private View getRootView() {
+    /**
+     * @hide
+     */
+    @VisibleForTesting
+    public View getRootView() {
         if (!isVisibleToAccessibilityService(mViewRootImpl.mView)) {
             return null;
         }
-        return mViewRootImpl.mView;
+        if (Flags.ignoreUnimportantRoot()) {
+            if (mViewRootImpl.mView == null || !mViewRootImpl.mView.includeForAccessibility()) {
+                return null;
+            } else {
+                return mViewRootImpl.mView;
+            }
+        } else {
+            return mViewRootImpl.mView;
+        }
     }
 
     private void setAccessibilityFetchFlags(int flags) {
