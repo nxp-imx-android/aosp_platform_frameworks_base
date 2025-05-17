@@ -31,9 +31,15 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
 
     val isPowerButtonLongPressed = squeezeEffectRepository.isPowerButtonLongPressed
 
-    suspend fun getInvocationEffectInitialDelayMs() =
-        squeezeEffectRepository.getInvocationEffectInitialDelayMs()
+    fun getInvocationEffectInitialDelayMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectInitialDelayMillis()
+    }
 
-    suspend fun getInvocationEffectInwardsAnimationDurationMs() =
-        squeezeEffectRepository.getInvocationEffectInwardsAnimationDurationMs()
+    fun getInvocationEffectInAnimationDurationMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectInAnimationDurationMillis()
+    }
+
+    fun getInvocationEffectOutAnimationDurationMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectOutAnimationDurationMillis()
+    }
 }

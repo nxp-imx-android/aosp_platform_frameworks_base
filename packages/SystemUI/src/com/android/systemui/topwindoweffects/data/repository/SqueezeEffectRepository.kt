@@ -26,7 +26,9 @@ interface SqueezeEffectRepository {
 
     val isPowerButtonLongPressed: Flow<Boolean>
 
-    suspend fun getInvocationEffectInitialDelayMs(): Long
+    fun getInvocationEffectInitialDelayMillis(): Long
 
-    suspend fun getInvocationEffectInwardsAnimationDurationMs(): Long
+    fun getInvocationEffectInAnimationDurationMillis(): Long
+
+    fun getInvocationEffectOutAnimationDurationMillis(): Long
 }

@@ -22,6 +22,7 @@ import android.app.role.RoleManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.UserHandle
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.edit
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
@@ -277,8 +278,8 @@ constructor(
     companion object {
         private const val TAG = "InvocationEffectPreferences"
         private const val SHARED_PREFERENCES_FILE_NAME = "assistant_invocation_effect_preferences"
-        private const val PERSISTED_FOR_ASSISTANT_PREFERENCE = "persisted_for_assistant"
-        private const val PERSISTED_FOR_USER_PREFERENCE = "persisted_for_user"
+        @VisibleForTesting const val PERSISTED_FOR_ASSISTANT_PREFERENCE = "persisted_for_assistant"
+        @VisibleForTesting const val PERSISTED_FOR_USER_PREFERENCE = "persisted_for_user"
         const val IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE =
             "is_invocation_effect_enabled"
         const val INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS =
@@ -287,6 +288,7 @@ constructor(
             "invocation_effect_animation_out_duration_ms"
         const val DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS = 450L
         const val DEFAULT_OUTWARD_EFFECT_DURATION_MS = 400L
+        const val DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE = true
     }
 }
 
