@@ -40,9 +40,9 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
     private static final int DEFAULT_RESOURCE = R.layout.settings_spinner_view;
     private static final int DEFAULT_DROPDOWN_RESOURCE = R.layout.settings_spinner_dropdown_view;
     private static final int DEFAULT_EXPRESSIVE_RESOURCE =
-            R.layout.settings_expressvie_spinner_view;
+            R.layout.settings_expressive_spinner_view;
     private static final int DEFAULT_EXPRESSIVE_DROPDOWN_RESOURCE =
-            R.layout.settings_expressvie_spinner_dropdown_view;
+            R.layout.settings_expressive_spinner_dropdown_view;
     private final LayoutInflater mDefaultInflater;
     private int mSelectedPosition = -1;
 
@@ -104,7 +104,7 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
                 return R.layout.settings_expressive_spinner_view_full;
             }
             case OUTLINED -> {
-                return R.layout.settings_expressvie_spinner_view_outlined;
+                return R.layout.settings_expressive_spinner_view_outlined;
             }
             case LARGE_OUTLINED -> {
                 return R.layout.settings_expressive_spinner_view_large_outlined;
