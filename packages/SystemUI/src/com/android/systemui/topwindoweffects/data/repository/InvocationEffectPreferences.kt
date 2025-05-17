@@ -16,17 +16,32 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import android.annotation.SuppressLint
+import android.app.role.OnRoleHoldersChangedListener
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.UserHandle
 import androidx.core.content.edit
+import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 
 interface InvocationEffectPreferences {
+
+    val activeUserOrAssistantChanged: Flow<Boolean>
 
     fun saveCurrentAssistant()
 
@@ -52,16 +67,55 @@ interface InvocationEffectPreferences {
 @SysUISingleton
 class InvocationEffectPreferencesImpl
 @Inject
-constructor(@Application context: Context, @Background private val bgScope: CoroutineScope) :
-    InvocationEffectPreferences {
-
-    // TODO(b/33606670): Detect change in current active user and assistant
-    private var activeUser: Int = Int.MIN_VALUE
-    private var activeAssistant = ""
+constructor(
+    @Application context: Context,
+    @Background private val bgScope: CoroutineScope,
+    private val userRepository: UserRepository,
+    roleManager: RoleManager,
+    @Background executor: Executor,
+    @Background coroutineContext: CoroutineContext,
+) : InvocationEffectPreferences {
 
     private val sharedPreferences by lazy {
         context.getSharedPreferences(SHARED_PREFERENCES_FILE_NAME, Context.MODE_PRIVATE)
     }
+
+    private var activeUser: Int = userRepository.selectedUserHandle.identifier
+    private var activeAssistant: String =
+        roleManager.getCurrentAssistantFor(userRepository.selectedUserHandle)
+
+    override val activeUserOrAssistantChanged: Flow<Boolean> =
+        conflatedCallbackFlow {
+                val listener = OnRoleHoldersChangedListener { roleName, _ ->
+                    if (roleName == RoleManager.ROLE_ASSISTANT) {
+                        trySendWithFailureLogging(
+                            roleManager.getCurrentAssistantFor(userRepository.selectedUserHandle),
+                            TAG,
+                            "updated currentlyActiveAssistantName due to role change",
+                        )
+                    }
+                }
+
+                roleManager.addOnRoleHoldersChangedListenerAsUser(
+                    executor,
+                    listener,
+                    UserHandle.ALL,
+                )
+
+                awaitClose {
+                    roleManager.removeOnRoleHoldersChangedListenerAsUser(listener, UserHandle.ALL)
+                }
+            }
+            .flowOn(coroutineContext)
+            .combine(userRepository.selectedUser) { assistant, user ->
+                val userId = user.userInfo.userHandle.identifier
+                val changed = activeUser != userId || activeAssistant != assistant
+                if (changed) {
+                    activeUser = userId
+                    activeAssistant = assistant
+                }
+                changed
+            }
 
     override fun saveCurrentAssistant() {
         setInPreferences { putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, activeAssistant) }
@@ -158,7 +212,7 @@ constructor(@Application context: Context, @Background private val bgScope: Coro
                     Long::class -> sharedPreferences.getLong(key, default as Long)
                     Boolean::class -> sharedPreferences.getBoolean(key, default as Boolean)
                     String::class -> sharedPreferences.getString(key, default as String)
-                    else -> null
+                    else -> /* type not supported */ null
                 }
             } catch (e: ClassCastException /* ignore */) {
                 null
@@ -204,3 +258,10 @@ constructor(@Application context: Context, @Background private val bgScope: Coro
         const val DEFAULT_OUTWARD_EFFECT_DURATION_MS = 400L
     }
 }
+
+private val UserRepository.selectedUserHandle
+    get() = selectedUser.value.userInfo.userHandle
+
+@SuppressLint("MissingPermission")
+private fun RoleManager.getCurrentAssistantFor(userHandle: UserHandle) =
+    getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT, userHandle).firstOrNull() ?: ""
