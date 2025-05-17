@@ -55,17 +55,19 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.mechanics.spec.BreakpointKey;
 import com.android.mechanics.spec.InputDirection;
 import com.android.mechanics.view.DistanceGestureContext;
 import com.android.mechanics.view.ViewMotionValue;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.common.split.DividerSnapAlgorithm.SnapTarget;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 
 import com.google.android.msdl.data.model.MSDLToken;
+
+import java.util.Objects;
 
 /**
  * Divider for multi window splits.
@@ -99,7 +101,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     // Calculation classes for "magnetic snap" user-controlled movement
     private DistanceGestureContext mDistanceGestureContext;
     private ViewMotionValue mViewMotionValue;
-    private BreakpointKey mCurrentHapticBreakpoint;
+    @Nullable private Integer mLastHoveredOverSnapPosition;
 
     /**
      * This is not the visible bounds you see on screen, but the actual behind-the-scenes window
@@ -193,7 +195,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 return true;
             }
 
-            DividerSnapAlgorithm.SnapTarget nextTarget = null;
+            SnapTarget nextTarget = null;
             DividerSnapAlgorithm snapAlgorithm = mSplitLayout.mDividerSnapAlgorithm;
             if (action == R.id.action_move_tl_full) {
                 nextTarget = snapAlgorithm.getDismissEndTarget();
@@ -379,20 +381,20 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                                 mDistanceGestureContext,
                                 mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
                                 "dividerView::pos" /* label */);
+                        mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
                         mViewMotionValue.addUpdateCallback(viewMotionValue -> {
+                            // Whenever MotionValue updates (from user moving the divider):
+                            // - Place divider in its new position
                             placeDivider((int) viewMotionValue.getOutput());
-                            // Each MotionValue "segment" has two "breakpoints", one on each end.
-                            // We can uniquely identify each segment by just one of its breakpoints,
-                            // so we arbitrarily listen for changes to the "min-side" breakpoint
-                            // to determine when the user has moved the onto a new segment (i.e.
-                            // moved the divider from the "free-drag" segment to the "snapped"
-                            // segment, or vice versa). We play a haptic when this happens.
-                            if (!viewMotionValue.getSegmentKey().getMinBreakpoint()
-                                    .equals(mCurrentHapticBreakpoint)) {
+                            // - Play a haptic if entering a magnetic zone
+                            Integer currentlyHoveredOverSnapZone = viewMotionValue.get(
+                                    MagneticDividerUtils.getSNAP_POSITION_KEY());
+                            if (currentlyHoveredOverSnapZone != null && !Objects.equals(
+                                    currentlyHoveredOverSnapZone, mLastHoveredOverSnapPosition)) {
                                 playHapticClick();
                             }
-                            mCurrentHapticBreakpoint =
-                                    viewMotionValue.getSegmentKey().getMinBreakpoint();
+                            // - Update the last-hovered-over snap zone
+                            mLastHoveredOverSnapPosition = currentlyHoveredOverSnapZone;
                         });
                     }
                 }
@@ -423,7 +425,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                         ? mVelocityTracker.getXVelocity()
                         : mVelocityTracker.getYVelocity();
                 final int position = mSplitLayout.getDividerPosition() + touchPos - mStartPos;
-                final DividerSnapAlgorithm.SnapTarget snapTarget =
+                final SnapTarget snapTarget =
                         mSplitLayout.findSnapTarget(position, velocity, false /* hardDismiss */);
                 mSplitLayout.snapToTarget(position, snapTarget);
                 mMoving = false;
@@ -467,7 +469,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         }
         mDistanceGestureContext = null;
         mViewMotionValue = null;
-        mCurrentHapticBreakpoint = null;
+        mLastHoveredOverSnapPosition = null;
     }
 
     private void setTouching() {
