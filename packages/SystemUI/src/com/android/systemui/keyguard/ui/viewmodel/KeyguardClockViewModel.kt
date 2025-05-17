@@ -169,6 +169,10 @@ constructor(
                     ),
                 clockTopMargin =
                     context.resources.getDimensionPixelSize(SysuiR.dimen.keyguard_clock_top_margin),
+                statusViewMarginHorizontal =
+                    context.resources.getDimensionPixelSize(
+                        clocksR.dimen.status_view_margin_horizontal
+                    ),
             )
             .getSmallClockTopPadding()
     }

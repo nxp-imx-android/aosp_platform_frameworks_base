@@ -22,6 +22,7 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.Display
 import com.android.internal.policy.SystemBarUtils
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.domain.interactor.KeyguardPreviewInteractor
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
 import com.android.systemui.res.R as SysuiR
@@ -78,6 +79,10 @@ constructor(@Assisted private val interactor: KeyguardPreviewInteractor) {
             clockTopMargin =
                 previewContext.resources.getDimensionPixelSize(
                     SysuiR.dimen.keyguard_clock_top_margin
+                ),
+            statusViewMarginHorizontal =
+                previewContext.resources.getDimensionPixelSize(
+                    clocksR.dimen.status_view_margin_horizontal
                 ),
         )
     }
