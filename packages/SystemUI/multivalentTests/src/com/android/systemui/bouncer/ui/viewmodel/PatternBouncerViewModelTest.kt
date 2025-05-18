@@ -79,7 +79,7 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onShown() =
         kosmos.runTest {
-            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val selectedDots by collectLastValue(underTest.selectedDots)
             val currentDot by collectLastValue(underTest.currentDot)
             lockDeviceAndOpenPatternBouncer()
@@ -93,7 +93,7 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onDragStart() =
         kosmos.runTest {
-            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val selectedDots by collectLastValue(underTest.selectedDots)
             val currentDot by collectLastValue(underTest.currentDot)
             lockDeviceAndOpenPatternBouncer()
@@ -111,8 +111,7 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onDragEnd_whenCorrect() =
         kosmos.runTest {
-            val authResult by
-                collectLastValue(kosmos.authenticationInteractor.onAuthenticationResult)
+            val authResult by collectLastValue(authenticationInteractor.onAuthenticationResult)
             val selectedDots by collectLastValue(underTest.selectedDots)
             val currentDot by collectLastValue(underTest.currentDot)
             lockDeviceAndOpenPatternBouncer()
@@ -145,7 +144,7 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onDragEnd_whenWrong() =
         kosmos.runTest {
-            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val selectedDots by collectLastValue(underTest.selectedDots)
             val currentDot by collectLastValue(underTest.currentDot)
             lockDeviceAndOpenPatternBouncer()
@@ -298,8 +297,7 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onDragEnd_whenPatternTooShort() =
         kosmos.runTest {
-            val dialogViewModel by
-                collectLastValue(kosmos.bouncerOverlayContentViewModel.dialogViewModel)
+            val dialogViewModel by collectLastValue(bouncerOverlayContentViewModel.dialogViewModel)
             lockDeviceAndOpenPatternBouncer()
 
             // Enter a pattern that's too short more than enough times that would normally trigger
@@ -307,14 +305,14 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
             val attempts = FakeAuthenticationRepository.MAX_FAILED_AUTH_TRIES_BEFORE_LOCKOUT + 1
             repeat(attempts) { attempt ->
                 underTest.onDragStart()
-                CORRECT_PATTERN.subList(0, kosmos.authenticationRepository.minPatternLength - 1)
-                    .forEach { coordinate ->
-                        underTest.onDrag(
-                            xPx = 30f * coordinate.x + 15,
-                            yPx = 30f * coordinate.y + 15,
-                            containerSizePx = 90,
-                        )
-                    }
+                CORRECT_PATTERN.subList(0, authenticationRepository.minPatternLength - 1).forEach {
+                    coordinate ->
+                    underTest.onDrag(
+                        xPx = 30f * coordinate.x + 15,
+                        yPx = 30f * coordinate.y + 15,
+                        containerSizePx = 90,
+                    )
+                }
 
                 underTest.onDragEnd()
 
@@ -325,8 +323,7 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     @Test
     fun onDragEnd_correctAfterWrong() =
         kosmos.runTest {
-            val authResult by
-                collectLastValue(kosmos.authenticationInteractor.onAuthenticationResult)
+            val authResult by collectLastValue(authenticationInteractor.onAuthenticationResult)
             val selectedDots by collectLastValue(underTest.selectedDots)
             val currentDot by collectLastValue(underTest.currentDot)
             lockDeviceAndOpenPatternBouncer()
@@ -352,9 +349,9 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             underTest.performDotFeedback(null)
 
-            assertThat(kosmos.fakeMSDLPlayer.latestTokenPlayed)
+            assertThat(fakeMSDLPlayer.latestTokenPlayed)
                 .isEqualTo(MSDLToken.DRAG_INDICATOR_DISCRETE)
-            assertThat(kosmos.fakeMSDLPlayer.latestPropertiesPlayed).isNull()
+            assertThat(fakeMSDLPlayer.latestPropertiesPlayed).isNull()
         }
 
     private fun dragOverCoordinates(vararg coordinatesDragged: Point) {
@@ -371,12 +368,10 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
     }
 
     private fun Kosmos.lockDeviceAndOpenPatternBouncer() {
-        val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
-        kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-            AuthenticationMethodModel.Pattern
-        )
+        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+        fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Pattern)
 
-        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+        sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
         runCurrent()
 
         assertThat(currentOverlays).contains(Overlays.Bouncer)
