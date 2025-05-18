@@ -29,27 +29,31 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 interface InvocationEffectPreferences {
 
-    val activeUserOrAssistantChanged: Flow<Boolean>
+    val isInvocationEffectEnabledByAssistant: StateFlow<Boolean>
 
     fun saveCurrentAssistant()
 
     fun saveCurrentUserId()
 
     fun setInvocationEffectEnabledByAssistant(enabled: Boolean)
-
-    fun isInvocationEffectEnabledByAssistant(): Boolean
 
     fun setInwardAnimationPaddingDurationMillis(duration: Long)
 
@@ -84,7 +88,7 @@ constructor(
     private var activeAssistant: String =
         roleManager.getCurrentAssistantFor(userRepository.selectedUserHandle)
 
-    override val activeUserOrAssistantChanged: Flow<Boolean> =
+    private val activeUserOrAssistantChanged: Flow<Boolean> =
         conflatedCallbackFlow {
                 val listener = OnRoleHoldersChangedListener { roleName, _ ->
                     if (roleName == RoleManager.ROLE_ASSISTANT) {
@@ -116,6 +120,33 @@ constructor(
                 }
                 changed
             }
+            .filter { it /* only emit if assistant or user changed */ }
+
+    override val isInvocationEffectEnabledByAssistant: StateFlow<Boolean> =
+        merge(
+                conflatedCallbackFlow {
+                        val listener =
+                            SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                                if (key == IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE) {
+                                    trySendWithFailureLogging(
+                                        isInvocationEffectEnabledByAssistant(),
+                                        TAG,
+                                        "updated isInvocationEffectEnabledByAssistantFlow due to enabled status change",
+                                    )
+                                }
+                            }
+                        registerOnChangeListener(listener)
+                        awaitClose { unregisterOnChangeListener(listener) }
+                    }
+                    .flowOn(coroutineContext),
+                activeUserOrAssistantChanged,
+            )
+            .mapLatestConflated { isInvocationEffectEnabledByAssistant() }
+            .stateIn(
+                scope = bgScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = isInvocationEffectEnabledByAssistant(),
+            )
 
     override fun saveCurrentAssistant() {
         setInPreferences { putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, activeAssistant) }
@@ -145,7 +176,7 @@ constructor(
         }
     }
 
-    override fun isInvocationEffectEnabledByAssistant(): Boolean =
+    private fun isInvocationEffectEnabledByAssistant(): Boolean =
         getOrDefault<Boolean>(
             key = IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
             default = true,
