@@ -37,6 +37,7 @@ import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPre
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -175,6 +176,28 @@ constructor(
             } else {
                 event.isGestureTypeAssistant() && event.isGestureStart()
             }
+    }
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        pw.println("$TAG:")
+        pw.println("  isPowerButtonLongPressed=${_isPowerButtonLongPressed.value}")
+        pw.println(
+            "  isPowerButtonDownAndPowerKeySingleGestureActive=$isPowerButtonDownAndPowerKeySingleGestureActive"
+        )
+        pw.println("  isSqueezeEffectHapticEnabled=$isSqueezeEffectHapticEnabled")
+        pw.println(
+            "  longPressPowerDurationFromSettings=${getLongPressPowerDurationFromSettings()}"
+        )
+        pw.println(
+            "  invocationEffectInitialDelayMillis=${getInvocationEffectInitialDelayMillis()}"
+        )
+        pw.println(
+            "  invocationEffectInAnimationDurationMillis=${getInvocationEffectInAnimationDurationMillis()}"
+        )
+        pw.println(
+            "  invocationEffectOutAnimationDurationMillis=${getInvocationEffectOutAnimationDurationMillis()}"
+        )
+        preferences.dump(pw, args)
     }
 
     companion object {

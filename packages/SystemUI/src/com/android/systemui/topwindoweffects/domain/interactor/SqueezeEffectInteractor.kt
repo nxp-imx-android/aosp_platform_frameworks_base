@@ -18,6 +18,7 @@ package com.android.systemui.topwindoweffects.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
+import java.io.PrintWriter
 import javax.inject.Inject
 
 @SysUISingleton
@@ -41,5 +42,9 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
 
     fun getInvocationEffectOutAnimationDurationMillis(): Long {
         return squeezeEffectRepository.getInvocationEffectOutAnimationDurationMillis()
+    }
+
+    fun dump(pw: PrintWriter, args: Array<out String>) {
+        squeezeEffectRepository.dump(pw, args)
     }
 }

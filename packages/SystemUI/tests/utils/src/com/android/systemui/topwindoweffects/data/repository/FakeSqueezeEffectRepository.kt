@@ -19,6 +19,7 @@ package com.android.systemui.topwindoweffects.data.repository
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INWARD_EFFECT_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
+import java.io.PrintWriter
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeSqueezeEffectRepository : SqueezeEffectRepository {
@@ -39,4 +40,8 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
 
     override fun getInvocationEffectOutAnimationDurationMillis() =
         invocationEffectOutwardsAnimationDurationMs
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        // empty
+    }
 }

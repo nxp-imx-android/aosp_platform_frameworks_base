@@ -168,6 +168,7 @@ constructor(
         pw.println("$TAG:")
         pw.println("  isAnimationInterruptible=$isAnimationInterruptible")
         pw.println("  squeezeProgress=$squeezeProgress")
+        squeezeEffectInteractor.dump(pw, args)
     }
 
     companion object {

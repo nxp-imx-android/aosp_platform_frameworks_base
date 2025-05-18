@@ -25,6 +25,7 @@ import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPre
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.PERSISTED_FOR_ASSISTANT_PREFERENCE
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.PERSISTED_FOR_USER_PREFERENCE
+import java.io.PrintWriter
 import kotlinx.coroutines.flow.MutableStateFlow
 
 val Kosmos.fakeInvocationEffectPreferences by Kosmos.Fixture { FakeInvocationEffectPreferences() }
@@ -100,6 +101,10 @@ class FakeInvocationEffectPreferences : InvocationEffectPreferences {
         listener: SharedPreferences.OnSharedPreferenceChangeListener
     ) {
         fakeSharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        // empty
     }
 }
 

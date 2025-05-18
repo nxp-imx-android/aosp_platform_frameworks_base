@@ -31,6 +31,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
+import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -67,6 +68,8 @@ interface InvocationEffectPreferences {
     fun registerOnChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener)
 
     fun unregisterOnChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener)
+
+    fun dump(pw: PrintWriter, args: Array<out String>)
 }
 
 @SysUISingleton
@@ -273,6 +276,22 @@ constructor(
         listener: SharedPreferences.OnSharedPreferenceChangeListener
     ) {
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        pw.println("$TAG:")
+        pw.println("  activeUser=$activeUser")
+        pw.println("  activeAssistant=$activeAssistant")
+        pw.println("  savedUser=${getSavedUserId()}")
+        pw.println("  savedAssistant=${getSavedAssistant()}")
+        pw.println("  isCurrentUserAndAssistantPersisted=${isCurrentUserAndAssistantPersisted()}")
+        pw.println(
+            "  isInvocationEffectEnabledByAssistant=${isInvocationEffectEnabledByAssistant.value}"
+        )
+        pw.println(
+            "  inwardAnimationPaddingDurationMillis=${getInwardAnimationPaddingDurationMillis()}"
+        )
+        pw.println("  outwardAnimationDurationMillis=${getOutwardAnimationDurationMillis()}")
     }
 
     companion object {
