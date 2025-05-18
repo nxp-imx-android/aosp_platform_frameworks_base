@@ -284,7 +284,7 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @DisableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
+    public void testMagnifyIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
@@ -300,7 +300,7 @@ public class WindowStateTests extends WindowTestsBase {
         imeDialogWindow.setHasSurface(true);
         navWindow.setHasSurface(true);
 
-        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
@@ -309,7 +309,7 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndSettingsDisabled_typeIsIme_shouldNotMagnify() {
+    public void testMagnifyIme_flagOnAndSettingsDisabled_typeIsIme_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0);
@@ -325,14 +325,14 @@ public class WindowStateTests extends WindowTestsBase {
         imeDialogWindow.setHasSurface(true);
         navWindow.setHasSurface(true);
 
-        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
     }
 
     @Test
-    public void testMagnifyNavAndIme_typeIsMagnification_shouldNotMagnify() {
+    public void testMagnifyIme_typeIsMagnification_shouldNotMagnify() {
         final WindowState a11yMagWindow = newWindowBuilder("a11yMagWindow",
                 TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY).build();
         final WindowState magWindow = newWindowBuilder("magWindow",
@@ -352,7 +352,7 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndSettingsEnabled_typeIsIme_shouldMagnify() {
+    public void testMagnifyIme_flagOnAndSettingsEnabled_typeIsIme_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
@@ -362,22 +362,19 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
 
-        assertTrue(mWm.isMagnifyNavAndImeEnabled());
+        assertTrue(mWm.isMagnifyImeEnabled());
         assertTrue(imeWindow.shouldMagnify());
         assertTrue(imeDialogWindow.shouldMagnify());
-        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndDefaultEnable_typeIsIme_shouldMagnify() {
+    public void testMagnifyIme_flagOnAndDefaultEnable_typeIsIme_shouldMagnify() {
         useFakeSettingsProvider();  // This resets the Settings.Secure value.
         spyOn(mContext.getResources());
         when(mContext.getResources().getBoolean(
@@ -386,24 +383,21 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
 
         mWm.mSettingsObserver.loadSettings();
 
-        assertTrue(mWm.isMagnifyNavAndImeEnabled());
+        assertTrue(mWm.isMagnifyImeEnabled());
         assertTrue(imeWindow.shouldMagnify());
         assertTrue(imeDialogWindow.shouldMagnify());
-        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndDefaultDisable_typeIsIme_shouldNotMagnify() {
+    public void testMagnifyIme_flagOnAndDefaultDisable_typeIsIme_shouldNotMagnify() {
         useFakeSettingsProvider();  // This resets the Settings.Secure value.
         spyOn(mContext.getResources());
         when(mContext.getResources().getBoolean(
@@ -420,7 +414,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         mWm.mSettingsObserver.loadSettings();
 
-        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
