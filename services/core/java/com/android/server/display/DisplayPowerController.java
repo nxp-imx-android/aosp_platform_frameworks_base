@@ -27,6 +27,7 @@ import static com.android.server.display.config.DisplayBrightnessMappingConfig.a
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.annotation.FloatRange;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
@@ -3027,6 +3028,16 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             }
             mLastStylusUsageEventTime = eventTimeMs;
         }
+    }
+
+    /**
+     * Set the brightness cap for this display. If present, this will replace the previously known
+     * value of the cap for the provided {@link BrightnessInfo.BrightnessMaxReason}
+     */
+    public void setBrightnessCap(
+            @FloatRange(from = 0f, to = 1f) float cap,
+            @BrightnessInfo.BrightnessMaxReason int reason) {
+        mBrightnessClamperController.setBrightnessCap(cap, reason);
     }
 
     private final class DisplayControllerHandler extends Handler {

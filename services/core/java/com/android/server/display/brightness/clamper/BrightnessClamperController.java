@@ -16,8 +16,10 @@
 
 package com.android.server.display.brightness.clamper;
 
+import static android.service.notification.Flags.applyBrightnessClampingForModes;
 import static android.view.Display.STATE_ON;
 
+import android.annotation.FloatRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -31,6 +33,7 @@ import android.os.PowerManager;
 import android.provider.DeviceConfig;
 import android.provider.DeviceConfigInterface;
 import android.util.IndentingPrintWriter;
+import android.util.Log;
 import android.util.Spline;
 import android.view.Display;
 
@@ -72,6 +75,7 @@ public class BrightnessClamperController {
     private final List<DeviceConfigListener> mDeviceConfigListeners = new ArrayList<>();
 
     private ModifiersAggregatedState mModifiersAggregatedState = new ModifiersAggregatedState();
+    @Nullable private ExternalBrightnessModifier mExternalBrightnessModifier;
 
     private final DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener;
 
@@ -114,20 +118,29 @@ public class BrightnessClamperController {
         mModifiers = injector.getModifiers(flags, context, handler, clamperChangeListenerInternal,
                 data, currentBrightness);
 
-        mModifiers.forEach(m -> {
-            if (m instanceof  DisplayDeviceDataListener l) {
-                mDisplayDeviceDataListeners.add(l);
-            }
-            if (m instanceof StatefulModifier s) {
-                mStatefulModifiers.add(s);
-            }
-            if (m instanceof UserSwitchListener l) {
-                mUserSwitchListeners.add(l);
-            }
-            if (m instanceof DeviceConfigListener l) {
-                mDeviceConfigListeners.add(l);
-            }
-        });
+        mModifiers.forEach(
+                m -> {
+                    if (m instanceof DisplayDeviceDataListener l) {
+                        mDisplayDeviceDataListeners.add(l);
+                    }
+                    if (m instanceof StatefulModifier s) {
+                        mStatefulModifiers.add(s);
+                    }
+                    if (m instanceof UserSwitchListener l) {
+                        mUserSwitchListeners.add(l);
+                    }
+                    if (m instanceof DeviceConfigListener l) {
+                        mDeviceConfigListeners.add(l);
+                    }
+                    if (applyBrightnessClampingForModes()
+                            && m instanceof ExternalBrightnessModifier l) {
+                        if (mExternalBrightnessModifier != null) {
+                            throw new IllegalStateException(
+                                    "Cannot have more than one external brightness cap modifier");
+                        }
+                        mExternalBrightnessModifier = l;
+                    }
+                });
         mOnPropertiesChangedListener = properties -> {
             mDeviceConfigListeners.forEach(DeviceConfigListener::onDeviceConfigChanged);
         };
@@ -251,6 +264,21 @@ public class BrightnessClamperController {
         }
     }
 
+    /** Replaces the brightness cap for the provided {@link BrightnessInfo.BrightnessMaxReason} */
+    public void setBrightnessCap(
+            @FloatRange(from = 0f, to = 1f) float cap,
+            @BrightnessInfo.BrightnessMaxReason int reason) {
+        if (!applyBrightnessClampingForModes()) {
+            return;
+        }
+
+        if (mExternalBrightnessModifier != null) {
+            mExternalBrightnessModifier.setBrightnessCap(cap, reason);
+        } else {
+            Log.e(TAG, "Unable to set brightness cap");
+        }
+    }
+
     /**
      * Clampers change listener
      */
@@ -275,6 +303,9 @@ public class BrightnessClamperController {
             if (flags.isBrightnessWearBedtimeModeClamperEnabled()) {
                 modifiers.add(new BrightnessWearBedtimeModeModifier(handler, context,
                         listener, data));
+            }
+            if (applyBrightnessClampingForModes()) {
+                modifiers.add(new ExternalBrightnessModifier(handler, listener));
             }
             if (flags.isPowerThrottlingClamperEnabled()) {
                 // Check if power-throttling config is present.
