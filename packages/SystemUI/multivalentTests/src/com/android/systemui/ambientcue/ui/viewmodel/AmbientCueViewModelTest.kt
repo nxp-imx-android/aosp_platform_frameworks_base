@@ -131,6 +131,48 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             assertThat(ambientCueRepository.isDeactivated.value).isTrue()
         }
 
+    fun pillStyle_gestureNav_isInNavbarMode() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(true)
+            ambientCueRepository.fake.setTaskBarVisible(false)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle).isEqualTo(PillStyleViewModel.NavBarPillStyle)
+        }
+
+    @Test
+    fun pillStyle_gestureNavAndTaskBar_shortPillEndAligned() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(true)
+            ambientCueRepository.fake.setTaskBarVisible(true)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle)
+                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
+        }
+
+    @Test
+    fun pillStyle_3ButtonNav_shortPill() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(false)
+            ambientCueRepository.fake.setTaskBarVisible(true)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle)
+                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
+        }
+
+    @Test
+    fun pillStyle_3ButtonNavAndTaskBar_shortPill() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(false)
+            ambientCueRepository.fake.setTaskBarVisible(false)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle)
+                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
+        }
+
     private fun testActions(applicationContext: Context) =
         listOf(
             ActionModel(

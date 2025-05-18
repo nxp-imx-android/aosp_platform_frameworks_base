@@ -31,18 +31,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 
 @Composable
-fun ActionList(actions: List<ActionViewModel>, visible: Boolean, modifier: Modifier = Modifier) {
+fun ActionList(
+    actions: List<ActionViewModel>,
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+) {
     val density = LocalDensity.current
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = horizontalAlignment,
     ) {
-        actions.fastForEachIndexed { index, action ->
+        actions.forEachIndexed { index, action ->
             AnimatedVisibility(
                 visible = visible,
                 enter =
