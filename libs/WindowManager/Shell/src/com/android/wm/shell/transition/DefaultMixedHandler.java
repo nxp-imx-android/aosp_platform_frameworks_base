@@ -134,8 +134,11 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         /** Transition of a visible app in a split pair into a bubble. */
         static final int TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE = 14;
 
+        /** Transition of a visible app in Pip into a bubble. */
+        static final int TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE = 15;
+
         /** Transition of a visible app into a bubble when launched from another bubble. */
-        static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE = 15;
+        static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE = 16;
 
         @IntDef(prefix = {"TYPE_"}, value = {
                 TYPE_ENTER_PIP_FROM_SPLIT,
@@ -152,6 +155,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 TYPE_OPEN_IN_DESKTOP,
                 TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE,
                 TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE,
+                TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE,
                 TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
         })
         @Retention(RetentionPolicy.SOURCE)
@@ -334,6 +338,14 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 WindowContainerTransaction out = new WindowContainerTransaction();
                 mSplitHandler.addExitForBubblesIfNeeded(request, out);
                 return out;
+            } else if (request.getTriggerTask() != null
+                    && mPipHandler.isTaskActiveInPip(request.getTriggerTask().taskId)) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        " Got a Bubble-enter request from a pip task");
+                mBubbleTransitions.storePendingEnterTransition(transition, request);
+                mActiveTransitions.add(createDefaultMixedTransition(
+                        MixedTransition.TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE, transition));
+                return new WindowContainerTransaction();
             } else {
                 // This check should happen after we've checked for split + bubble enter
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,

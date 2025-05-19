@@ -34,6 +34,7 @@ import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getF
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getLeash;
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getPipChange;
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getPipParams;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SPLIT;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
@@ -83,7 +84,6 @@ import com.android.wm.shell.pip2.animation.PipEnterAnimator;
 import com.android.wm.shell.pip2.phone.transition.PipDisplayChangeObserver;
 import com.android.wm.shell.pip2.phone.transition.PipExpandHandler;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
-import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -367,10 +367,39 @@ public class PipTransition extends PipTransitionController implements
             mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
             return startRemoveAnimation(info, startTransaction, finishTransaction, finishCallback);
         }
+
+        if (shouldCleanUp(info)) {
+            ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                    "Cleaning up previously pinned task since in a different windowing mode: %s",
+                    mPipTransitionState);
+            cleanUpState(finishCallback);
+            return true;
+        }
+
         // For any unhandled transition, make sure the PiP surface is properly updated,
         // i.e. corner and shadow radius.
         syncPipSurfaceState(info, startTransaction, finishTransaction);
         return false;
+    }
+
+    private boolean shouldCleanUp(TransitionInfo info) {
+        // Clean up state if task no longer in PIP windowing mode.
+        TransitionInfo.Change pipChange = getChangeByToken(info,
+                mPipTransitionState.getPipTaskToken());
+        return pipChange != null && pipChange.getTaskInfo() != null
+                && pipChange.getTaskInfo().getWindowingMode() != WINDOWING_MODE_PINNED;
+    }
+
+    @Override
+    public void cleanUpState() {
+        cleanUpState(/* finishCallback= */ null);
+    }
+
+    private void cleanUpState(@Nullable Transitions.TransitionFinishCallback finishCallback) {
+        mFinishCallback = finishCallback;
+        mPipBoundsState.setLastPipComponentName(null /* lastPipComponentName */);
+        mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+        finishTransition();
     }
 
     @Override
@@ -1004,7 +1033,7 @@ public class PipTransition extends PipTransitionController implements
             return;
         }
 
-        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+        ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
                 "cleanUpPrevPipIfPresent: Previous PiP with taskId=%d found with closing mode, "
                         + "clean up PiP state",
                 previousPipTaskInfo.getTaskId());
@@ -1120,5 +1149,12 @@ public class PipTransition extends PipTransitionController implements
         final TaskInfo inPipTask = mPipTransitionState.getPipTaskInfo();
         return packageName != null && inPipTask != null && mPipTransitionState.isInPip()
                 && packageName.equals(ComponentUtils.getPackageName(inPipTask.baseIntent));
+    }
+
+    @Override
+    public boolean isTaskActiveInPip(int taskId) {
+        final TaskInfo inPipTask = mPipTransitionState.getPipTaskInfo();
+        return inPipTask != null && mPipTransitionState.isInPip()
+                && taskId == inPipTask.getTaskId();
     }
 }

@@ -344,6 +344,12 @@ public abstract class PipTransitionController implements Transitions.TransitionH
         return false;
     }
 
+    /** Whether a particular task id the current pip task id. */
+    public boolean isTaskActiveInPip(int taskId) {
+        // No-op, to be handled differently in PIP1 and PIP2
+        return false;
+    }
+
     /** Add PiP-related changes to `outWCT` for the given request. */
     public void augmentRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request, @NonNull WindowContainerTransaction outWCT) {
@@ -411,6 +417,14 @@ public abstract class PipTransitionController implements Transitions.TransitionH
      */
     public void end(@Nullable Runnable onTransitionEnd) {
     }
+
+    /**
+     * Clean up stored PIP state.
+     * <p>
+     * Should only be called after a task has exited due to external reasons. Does not modify the
+     * task itself or move it out of PIP.
+     */
+    public void cleanUpState() {}
 
     /** Starts the {@link android.window.SystemPerformanceHinter.HighPerfSession}. */
     public void startHighPerfSession() {}
