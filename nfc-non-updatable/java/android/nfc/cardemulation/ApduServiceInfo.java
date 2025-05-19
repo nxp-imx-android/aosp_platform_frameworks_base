@@ -143,12 +143,12 @@ public final class ApduServiceInfo implements Parcelable {
     /**
      * Whether this service should only be started when the device is unlocked.
      */
-    private final boolean mRequiresDeviceUnlock;
+    private boolean mRequiresDeviceUnlock;
 
     /**
      * Whether this service should only be started when the device is screen on.
      */
-    private final boolean mRequiresDeviceScreenOn;
+    private boolean mRequiresDeviceScreenOn;
 
     /**
      * The id of the service banner specified in XML.
@@ -748,12 +748,32 @@ public final class ApduServiceInfo implements Parcelable {
     }
 
     /**
+     * Sets whether this service should only be activated when the device is unlocked.
+     * @param requiresUnlock True if the service should only be activated when the device is
+     *                       unlocked, false otherwise.
+     */
+    @FlaggedApi(Flags.FLAG_SCREEN_STATE_ATTRIBUTE_TOGGLE)
+    public void setRequiresUnlock(boolean requiresUnlock) {
+        mRequiresDeviceUnlock = requiresUnlock;
+    }
+
+    /**
      * Returns whether this service should only be started when the device is screen on.
      * @return whether the service requires screen on
      */
     @FlaggedApi(Flags.FLAG_ENABLE_NFC_MAINLINE)
     public boolean requiresScreenOn() {
         return mRequiresDeviceScreenOn;
+    }
+
+    /**
+     * Sets whether this service should only be activated when the device's screen is on.
+     * @param requiresScreenOn True if the service should only be activated when the device's screen
+     *                         is on, false otherwise
+     */
+    @FlaggedApi(Flags.FLAG_SCREEN_STATE_ATTRIBUTE_TOGGLE)
+    public void setRequiresScreenOn(boolean requiresScreenOn) {
+        mRequiresDeviceScreenOn = requiresScreenOn;
     }
 
     /**

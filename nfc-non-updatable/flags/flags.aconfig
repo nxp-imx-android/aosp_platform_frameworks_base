@@ -198,6 +198,14 @@ flag {
     bug: "380892385"
 }
 
+flag {
+    name: "screen_state_attribute_toggle"
+    is_exported: true
+    namespace: "nfc"
+    description: "API to toggle requireDeviceUnlock and requireDeviceScreenOn attributes for HCE service."
+    bug: "417742419"
+}
+
 # Unless you are adding a flag for a file under nfc-non-updatable, you should
 # not add a flag here for Android 16+ targeting features. Use the flags
 # in com.android.nfc.module.flags (packages/modules/Nfc/flags) instead.
