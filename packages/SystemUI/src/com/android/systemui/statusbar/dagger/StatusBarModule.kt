@@ -47,6 +47,7 @@ import com.android.systemui.statusbar.window.SingleDisplayStatusBarWindowControl
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerImpl
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
+import com.android.systemui.statusbar.window.StatusBarWindowLog
 import dagger.Binds
 import dagger.Lazy
 import dagger.Module
@@ -165,6 +166,13 @@ interface StatusBarModule {
         @OngoingCallLog
         fun provideOngoingCallLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create("OngoingCall", 75)
+        }
+
+        @Provides
+        @SysUISingleton
+        @StatusBarWindowLog
+        fun provideWindowLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("StatusBarWindow", 120)
         }
 
         @Provides

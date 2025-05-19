@@ -193,7 +193,8 @@ class OngoingCallControllerTest : SysuiTestCase() {
     fun notifRepoHasOngoingCallNotif_isOngoingCallNotif_windowControllerUpdated() {
         setCallNotifOnRepo()
 
-        verify(mockStatusBarWindowController).setOngoingProcessRequiresStatusBarVisible(true)
+        verify(mockStatusBarWindowController)
+            .setOngoingProcessRequiresStatusBarVisible(eq(true), any())
     }
 
     @Test
@@ -309,7 +310,8 @@ class OngoingCallControllerTest : SysuiTestCase() {
 
         setNoNotifsOnRepo()
 
-        verify(mockStatusBarWindowController).setOngoingProcessRequiresStatusBarVisible(false)
+        verify(mockStatusBarWindowController)
+            .setOngoingProcessRequiresStatusBarVisible(eq(false), any())
     }
 
     @Test
