@@ -1942,13 +1942,10 @@ public final class DisplayManager {
     /**
      * @return The current display topology that represents the relative positions of extended
      * displays.
-     *
-     * @hide
      */
     @RequiresPermission(MANAGE_DISPLAYS)
     @Nullable
-    @TestApi
-    @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY)
+    @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
     public DisplayTopology getDisplayTopology() {
         return mGlobal.getDisplayTopology();
     }
@@ -1968,10 +1965,9 @@ public final class DisplayManager {
      * Register a listener to receive display topology updates.
      * @param executor The executor specifying the thread on which the callbacks will be invoked
      * @param listener The listener
-     *
-     * @hide
      */
     @RequiresPermission(MANAGE_DISPLAYS)
+    @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener) {
         mGlobal.registerTopologyListener(executor, listener, ActivityThread.currentPackageName());
@@ -1980,10 +1976,9 @@ public final class DisplayManager {
     /**
      * Unregister a display topology listener.
      * @param listener The listener to unregister
-     *
-     * @hide
      */
     @RequiresPermission(MANAGE_DISPLAYS)
+    @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
         mGlobal.unregisterTopologyListener(listener);
     }
