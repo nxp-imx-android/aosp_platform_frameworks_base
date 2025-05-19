@@ -33,6 +33,7 @@ public class DataSourceParams {
     @IntDef(value = {
         PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_DROP,
         PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT,
+        PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PerfettoDsBufferExhausted {}
@@ -45,6 +46,11 @@ public class DataSourceParams {
     // it will stall, retry and eventually abort if a free chunk is not acquired
     // after a while.
     public static final int PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT = 1;
+
+    // If the data source runs out of space when trying to acquire a new chunk,
+    // it will stall, retry and eventually drop data if a free chunk is not
+    // acquired after a few seconds.
+    public static final int PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP = 2;
 
     public static DataSourceParams DEFAULTS = new DataSourceParams.Builder().build();
 
