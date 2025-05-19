@@ -28,9 +28,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteRawStatement;
+import android.os.SystemClock;
 import android.os.Trace;
 import android.util.IntArray;
 import android.util.Slog;
+
+import com.android.internal.util.FrameworkStatsLog;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,10 +81,12 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    void insertAppOpHistory(@NonNull List<AggregatedAppOpAccessEvent> appOpEvents) {
+    void insertAppOpHistory(@NonNull List<AggregatedAppOpAccessEvent> appOpEvents,
+            int writeSource) {
         if (appOpEvents.isEmpty()) {
             return;
         }
+        long startTime = SystemClock.elapsedRealtime();
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
                 "AppOpHistoryDbHelper_" + mAggregationTimeWindow + "_Write");
         try {
@@ -140,6 +145,18 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
             Slog.e(LOG_TAG, "Couldn't insert app op records in " + mDatabaseFile.getName(), ex);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+            long writeTimeMillis = SystemClock.elapsedRealtime() - startTime;
+            FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED, /* read_time= */
+                    -1, writeTimeMillis,
+                    mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow), writeSource);
+        }
+    }
+
+    private int getDatabaseType(AggregationTimeWindow aggregationTimeWindow) {
+        if (aggregationTimeWindow == AggregationTimeWindow.SHORT) {
+            return FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__DATABASE_TYPE__DB_SHORT_INTERVAL;
+        } else {
+            return FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__DATABASE_TYPE__DB_LONG_INTERVAL;
         }
     }
 
@@ -156,6 +173,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         String sql = AppOpHistoryQueryHelper.buildSqlQuery(
                 AppOpHistoryTable.SELECT_TABLE_DATA, conditions, orderByColumn, ascending, limit);
 
+        long startTime = SystemClock.elapsedRealtime();
         try {
             SQLiteDatabase db = getReadableDatabase();
             db.beginTransactionReadOnly();
@@ -171,6 +189,15 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
             }
         } catch (Exception ex) {
             Slog.e(LOG_TAG, "Couldn't read app op records from " + mDatabaseFile.getName(), ex);
+        } finally {
+            long readTimeMillis = SystemClock.elapsedRealtime() - startTime;
+            FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED,
+                    readTimeMillis, /* write_time= */ -1,
+                    mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow),
+                    FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_UNKNOWN);
+        }
+        if (HistoricalRegistry.DEBUG) {
+            Slog.i(LOG_TAG, "Read " + results.size() + " records from " + mDatabaseFile.getName());
         }
         return results;
     }
