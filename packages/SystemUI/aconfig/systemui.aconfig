@@ -2050,3 +2050,13 @@ flag {
     description: "Enables MinMode feature"
     bug: "411746510"
 }
+
+flag {
+   name: "ui_rich_ongoing_aod_skeleton_bg_inflation"
+   namespace: "systemui"
+   description: "Offload AOD Skeleton inflation to the background thread"
+   bug: "416714129"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
+}

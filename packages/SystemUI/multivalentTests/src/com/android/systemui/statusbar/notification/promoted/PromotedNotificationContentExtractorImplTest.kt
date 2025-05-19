@@ -654,6 +654,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             redactionType,
             imageModelProvider,
             context,
+            context,
         )
     }
 

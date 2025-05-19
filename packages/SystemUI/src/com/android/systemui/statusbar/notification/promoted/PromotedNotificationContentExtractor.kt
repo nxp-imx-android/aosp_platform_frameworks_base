@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
+import android.annotation.WorkerThread
+import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.app.Notification.BigPictureStyle
 import android.app.Notification.BigTextStyle
@@ -38,6 +40,9 @@ import android.app.Person
 import android.content.Context
 import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
+import android.view.LayoutInflater
+import androidx.compose.ui.util.trace
+import com.android.internal.R
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
@@ -62,12 +67,14 @@ import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 
 interface PromotedNotificationContentExtractor {
+    @WorkerThread
     fun extractContent(
         entry: NotificationEntry,
         recoveredBuilder: Notification.Builder,
         @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
         packageContext: Context,
+        systemUiContext: Context,
     ): PromotedNotificationContentModels?
 }
 
@@ -81,12 +88,15 @@ constructor(
     private val systemClock: SystemClock,
     private val logger: PromotedNotificationLogger,
 ) : PromotedNotificationContentExtractor {
+
+    @WorkerThread
     override fun extractContent(
         entry: NotificationEntry,
         recoveredBuilder: Notification.Builder,
         @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
         packageContext: Context,
+        systemUiContext: Context,
     ): PromotedNotificationContentModels? {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {
             if (LOG_NOT_EXTRACTED) {
@@ -118,6 +128,7 @@ constructor(
                 lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs,
                 imageModelProvider = imageModelProvider,
                 packageContext = packageContext,
+                systemUiContext = systemUiContext,
             )
         val publicVersion =
             if (redactionType == REDACTION_TYPE_NONE) {
@@ -128,9 +139,13 @@ constructor(
                         privateModel = privateVersion,
                         publicNotification = publicNotification,
                         imageModelProvider = imageModelProvider,
-                        packageContext = packageContext,
+                        systemUiContext = systemUiContext,
                     )
-                } ?: createDefaultPublicVersion(privateModel = privateVersion)
+                }
+                    ?: createDefaultPublicVersion(
+                        privateModel = privateVersion,
+                        systemUiContext = systemUiContext,
+                    )
             }
         return PromotedNotificationContentModels(
                 privateVersion = privateVersion,
@@ -153,13 +168,15 @@ constructor(
     }
 
     private fun createDefaultPublicVersion(
-        privateModel: PromotedNotificationContentModel
+        privateModel: PromotedNotificationContentModel,
+        systemUiContext: Context,
     ): PromotedNotificationContentModel =
         PromotedNotificationContentModel.Builder(key = privateModel.identity.key)
             .also {
                 it.style =
                     if (privateModel.style == Style.Ineligible) Style.Ineligible else Style.Base
                 copyNonSensitiveFields(privateModel, it)
+                inflateNotificationView(it, systemUiContext)
             }
             .build()
 
@@ -167,7 +184,7 @@ constructor(
         privateModel: PromotedNotificationContentModel,
         publicNotification: Notification,
         imageModelProvider: ImageModelProvider,
-        packageContext: Context,
+        systemUiContext: Context,
     ): PromotedNotificationContentModel =
         PromotedNotificationContentModel.Builder(key = privateModel.identity.key)
             .also { publicBuilder ->
@@ -191,6 +208,7 @@ constructor(
                 if (publicBuilder.style == Style.Call) {
                     extractCallStyleContent(publicNotification, publicBuilder, imageModelProvider)
                 }
+                inflateNotificationView(publicBuilder, systemUiContext)
             }
             .build()
 
@@ -201,6 +219,7 @@ constructor(
         lastAudiblyAlertedMs: Long,
         imageModelProvider: ImageModelProvider,
         packageContext: Context,
+        systemUiContext: Context,
     ): PromotedNotificationContentModel {
         val notification = sbn.notification
 
@@ -227,7 +246,6 @@ constructor(
         contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
         contentBuilder.oldProgress = notification.oldProgress()
-
         val colorsFromNotif = recoveredBuilder.getColors(/* isHeader= */ false)
         contentBuilder.colors =
             PromotedNotificationContentModel.Colors(
@@ -236,8 +254,54 @@ constructor(
             )
 
         recoveredBuilder.extractStyleContent(notification, contentBuilder, imageModelProvider)
+        inflateNotificationView(contentBuilder, systemUiContext)
 
         return contentBuilder.build()
+    }
+
+    private fun inflateNotificationView(
+        contentBuilder: PromotedNotificationContentModel.Builder,
+        systemUiContext: Context,
+    ) {
+        if (!Flags.uiRichOngoingAodSkeletonBgInflation()) return
+
+        val style = contentBuilder.style ?: return
+
+        val res = getLayoutSource(style) ?: return
+        // Inflating with `sysuiContext` is intentional here.
+        // As we transition to Jetpack Compose, the view layer will no longer have direct
+        // access to the application's context. Using `sysuiContext` ensures we can
+        // properly inflate this view while adhering to upcoming architectural constraints.
+        trace("AODPromotedNotification#inflate") {
+            contentBuilder.notificationView =
+                LayoutInflater.from(systemUiContext).inflate(res, /* root= */ null)
+        }
+    }
+
+    private fun getLayoutSource(style: Style): Int? {
+        return if (notificationsRedesignTemplates()) {
+            when (style) {
+                Style.Base -> R.layout.notification_2025_template_expanded_base
+                Style.CollapsedBase -> R.layout.notification_2025_template_collapsed_base
+                Style.BigPicture -> R.layout.notification_2025_template_expanded_big_picture
+                Style.BigText -> R.layout.notification_2025_template_expanded_big_text
+                Style.Call -> R.layout.notification_2025_template_expanded_call
+                Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
+                Style.Progress -> R.layout.notification_2025_template_expanded_progress
+                Style.Ineligible -> null
+            }
+        } else {
+            when (style) {
+                Style.Base -> R.layout.notification_template_material_big_base
+                Style.CollapsedBase -> R.layout.notification_template_material_base
+                Style.BigPicture -> R.layout.notification_template_material_big_picture
+                Style.BigText -> R.layout.notification_template_material_big_text
+                Style.Call -> R.layout.notification_template_material_big_call
+                Style.CollapsedCall -> R.layout.notification_template_material_call
+                Style.Progress -> R.layout.notification_template_material_progress
+                Style.Ineligible -> null
+            }
+        }
     }
 
     private fun Notification.skeletonSmallIcon(

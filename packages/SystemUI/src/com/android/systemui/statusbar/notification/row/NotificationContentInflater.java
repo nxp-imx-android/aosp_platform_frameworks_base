@@ -1421,7 +1421,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                 final PromotedNotificationContentModels promotedContent =
                         mPromotedNotificationContentExtractor.extractContent(mEntry,
                                 recoveredBuilder, mBindParams.redactionType, imageModelProvider,
-                                packageContext);
+                                packageContext, /* systemUiContext = */mContext);
                 mLogger.logAsyncTaskProgress(logKey, "extracted promoted notification content: "
                         + (promotedContent != null ? promotedContent.toRedactedString() : null));
 
