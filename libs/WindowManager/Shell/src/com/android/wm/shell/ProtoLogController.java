@@ -16,7 +16,6 @@
 
 package com.android.wm.shell;
 
-import com.android.internal.protolog.LegacyProtoLogImpl;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.common.ILogger;
 import com.android.internal.protolog.common.IProtoLog;
@@ -89,17 +88,8 @@ public class ProtoLogController implements ShellCommandHandler.ShellCommandActio
                 return mShellProtoLog.stopLoggingToLogcat(groups, logger) == 0;
             }
             case "save-for-bugreport": {
-                if (android.tracing.Flags.perfettoProtologTracing()) {
-                    pw.println("(Deprecated) legacy command");
-                    return false;
-                }
-                if (!mShellProtoLog.isProtoEnabled()) {
-                    pw.println("Logging to proto is not enabled for WMShell.");
-                    return false;
-                }
-                ((LegacyProtoLogImpl) mShellProtoLog).stopProtoLog(pw, true /* writeToFile */);
-                ((LegacyProtoLogImpl) mShellProtoLog).startProtoLog(pw);
-                return true;
+                pw.println("(Deprecated) legacy command");
+                return false;
             }
             default: {
                 pw.println("Invalid command: " + args[0]);
