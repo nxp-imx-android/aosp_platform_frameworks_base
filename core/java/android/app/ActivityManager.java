@@ -33,6 +33,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeCURRENT_OR_SELF;
 import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
@@ -5269,7 +5270,8 @@ public class ActivityManager {
      * user number, unless <var>allowAll</var> is true in which case it could also be
      * USER_ALL.
      */
-    public static int handleIncomingUser(int callingPid, int callingUid, int userId,
+    public static @CanBeALL @UserIdInt int handleIncomingUser(int callingPid, int callingUid,
+            @CanBeALL @CanBeCURRENT @CanBeCURRENT_OR_SELF @UserIdInt int userId,
             boolean allowAll, boolean requireFull, String name, String callerPackage) {
         if (UserHandle.getUserId(callingUid) == userId) {
             return userId;

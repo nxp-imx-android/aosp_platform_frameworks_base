@@ -67,6 +67,10 @@ import static com.android.server.pm.UserManagerInternal.userStartModeToString;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeCURRENT_OR_SELF;
+import android.annotation.SpecialUsers.CanBeNULL;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -1634,7 +1638,7 @@ class UserController implements Handler.Callback {
      * @return user id to lock. UserHandler.USER_NULL will be returned if no user should be locked.
      */
     @GuardedBy("mLock")
-    private int updateUserToLockLU(UserInfo userInfo, boolean allowDelayedLocking) {
+    private @CanBeNULL int updateUserToLockLU(UserInfo userInfo, boolean allowDelayedLocking) {
         final int userId = userInfo.id;
         if (!canDelayDataLockingForUser(userId)
                 || !allowDelayedLocking
@@ -2965,7 +2969,8 @@ class UserController implements Handler.Callback {
                 Binder.getCallingUid(), Binder.getCallingPid(), parentId);
     }
 
-    int handleIncomingUser(int callingPid, int callingUid, @UserIdInt int userId, boolean allowAll,
+    @CanBeALL @UserIdInt int handleIncomingUser(int callingPid, int callingUid,
+            @CanBeALL @CanBeCURRENT @CanBeCURRENT_OR_SELF @UserIdInt int userId, boolean allowAll,
             int allowMode, String name, String callerPackage) {
         final int callingUserId = UserHandle.getUserId(callingUid);
         if (callingUserId == userId) {
@@ -2978,7 +2983,7 @@ class UserController implements Handler.Callback {
         // the value the caller will receive and someone else changing it.
         // We assume that USER_CURRENT_OR_SELF will use the current user; later
         // we will switch to the calling user if access to the current user fails.
-        int targetUserId = unsafeConvertIncomingUser(userId);
+        @CanBeALL int targetUserId = unsafeConvertIncomingUser(userId);
 
         if (callingUid != 0 && callingUid != SYSTEM_UID) {
             final boolean allow;
@@ -3074,7 +3079,8 @@ class UserController implements Handler.Callback {
                 callingUid, callingPackage);
     }
 
-    int unsafeConvertIncomingUser(@UserIdInt int userId) {
+    @CanBeALL @UserIdInt int unsafeConvertIncomingUser(
+            @CanBeALL @CanBeCURRENT @CanBeCURRENT_OR_SELF @UserIdInt int userId) {
         return (userId == UserHandle.USER_CURRENT || userId == UserHandle.USER_CURRENT_OR_SELF)
                 ? getCurrentUserId(): userId;
     }
@@ -3409,7 +3415,7 @@ class UserController implements Handler.Callback {
      *
      * It doesn't handle other special user IDs such as {@link UserHandle#USER_CURRENT}.
      */
-    int[] expandUserId(@UserIdInt int userId) {
+    int[] expandUserId(@CanBeALL @UserIdInt int userId) {
         if (userId != UserHandle.USER_ALL) {
             return new int[] {userId};
         } else {
@@ -3564,30 +3570,26 @@ class UserController implements Handler.Callback {
     }
 
     // Called by AMS, must check permission
-    @Nullable
-    String getSwitchingFromUserMessage(@UserIdInt int userId) {
+    @Nullable String getSwitchingFromUserMessage(@UserIdInt int userId) {
         checkHasManageUsersPermission("getSwitchingFromUserMessage()");
 
         return getSwitchingFromUserMessageUnchecked(userId);
     }
 
     // Called by AMS, must check permission
-    @Nullable
-    String getSwitchingToUserMessage(@UserIdInt int userId) {
+    @Nullable String getSwitchingToUserMessage(@UserIdInt int userId) {
         checkHasManageUsersPermission("getSwitchingToUserMessage()");
 
         return getSwitchingToUserMessageUnchecked(userId);
     }
 
-    @Nullable
-    private String getSwitchingFromUserMessageUnchecked(@UserIdInt int userId) {
+    private @Nullable String getSwitchingFromUserMessageUnchecked(@UserIdInt int userId) {
         synchronized (mLock) {
             return mSwitchingFromUserMessage.get(userId);
         }
     }
 
-    @Nullable
-    private String getSwitchingToUserMessageUnchecked(@UserIdInt int userId) {
+    private @Nullable String getSwitchingToUserMessageUnchecked(@UserIdInt int userId) {
         synchronized (mLock) {
             return mSwitchingToUserMessage.get(userId);
         }

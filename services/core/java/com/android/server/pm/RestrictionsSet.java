@@ -18,6 +18,7 @@ package com.android.server.pm;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.os.Bundle;
 import android.os.UserHandle;
@@ -60,7 +61,7 @@ public class RestrictionsSet {
     public RestrictionsSet() {
     }
 
-    public RestrictionsSet(@UserIdInt int userId, @NonNull Bundle restrictions) {
+    public RestrictionsSet(@CanBeALL @UserIdInt int userId, @NonNull Bundle restrictions) {
         if (restrictions.isEmpty()) {
             throw new IllegalArgumentException("empty restriction bundle cannot be added.");
         }
@@ -74,7 +75,8 @@ public class RestrictionsSet {
      *
      * @return whether restrictions bundle is different from the old one.
      */
-    public boolean updateRestrictions(@UserIdInt int userId, @Nullable Bundle restrictions) {
+    public boolean updateRestrictions(
+            @CanBeALL @UserIdInt int userId, @Nullable Bundle restrictions) {
         final boolean changed =
                 !UserRestrictionsUtils.areEqual(mUserRestrictions.get(userId), restrictions);
         if (!changed) {
@@ -182,12 +184,12 @@ public class RestrictionsSet {
      * @return list of user restrictions for a given user. Null is returned if the user does not
      * have any restrictions.
      */
-    public @Nullable Bundle getRestrictions(@UserIdInt int userId) {
+    public @Nullable Bundle getRestrictions(@CanBeALL @UserIdInt int userId) {
         return mUserRestrictions.get(userId);
     }
 
     /** @return list of user restrictions for a given user that is not null. */
-    public @NonNull Bundle getRestrictionsNonNull(@UserIdInt int userId) {
+    public @NonNull Bundle getRestrictionsNonNull(@CanBeALL @UserIdInt int userId) {
         return UserRestrictionsUtils.nonNull(mUserRestrictions.get(userId));
     }
 
@@ -195,7 +197,7 @@ public class RestrictionsSet {
      * Removes a given user from the restrictions set, returning true if the user has non-empty
      * restrictions before removal.
      */
-    public boolean remove(@UserIdInt int userId) {
+    public boolean remove(@CanBeALL @UserIdInt int userId) {
         boolean hasUserRestriction = mUserRestrictions.contains(userId);
         mUserRestrictions.remove(userId);
         UserManager.invalidateUserRestriction();
@@ -273,7 +275,7 @@ public class RestrictionsSet {
         return userIds;
     }
 
-    public boolean containsKey(@UserIdInt int userId) {
+    public boolean containsKey(@CanBeALL @UserIdInt int userId) {
         return mUserRestrictions.contains(userId);
     }
 

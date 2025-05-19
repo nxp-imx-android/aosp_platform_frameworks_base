@@ -203,6 +203,7 @@ import android.annotation.PermissionName;
 import android.annotation.RequiresPermission;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeCURRENT_OR_SELF;
 import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.UserIdInt;
 import android.app.Activity;
@@ -3492,13 +3493,14 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     @Override
     public boolean clearApplicationUserData(final String packageName, boolean keepState,
-            final IPackageDataObserver observer, int userId) {
+            final IPackageDataObserver observer, @CanBeCURRENT @UserIdInt int userId) {
         return clearApplicationUserData(packageName, keepState, /*isRestore=*/ false, observer,
                 userId);
     }
 
     private boolean clearApplicationUserData(final String packageName, boolean keepState,
-            boolean isRestore, final IPackageDataObserver observer, int userId) {
+            boolean isRestore, final IPackageDataObserver observer,
+            @CanBeCURRENT @UserIdInt int userId) {
         enforceNotIsolatedCaller("clearApplicationUserData");
         int uid = Binder.getCallingUid();
         int pid = Binder.getCallingPid();
@@ -3637,7 +3639,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @Override
-    public void killBackgroundProcesses(final String packageName, int userId) {
+    public void killBackgroundProcesses(
+            final String packageName, @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         if (checkCallingPermission(android.Manifest.permission.KILL_BACKGROUND_PROCESSES)
                 != PackageManager.PERMISSION_GRANTED &&
                 checkCallingPermission(android.Manifest.permission.RESTART_PACKAGES)
@@ -3805,8 +3808,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         forceStopPackage(packageName, userId, ActivityManager.FLAG_OR_STOPPED, null);
     }
 
-    void forceStopPackage(final String packageName, int userId, int userRunningFlags,
-            String reason) {
+    void forceStopPackage(final String packageName, @CanBeALL @CanBeCURRENT @UserIdInt int userId,
+            int userRunningFlags, String reason) {
         if (checkCallingPermission(android.Manifest.permission.FORCE_STOP_PACKAGES)
                 != PackageManager.PERMISSION_GRANTED) {
             String msg = "Permission Denial: forceStopPackage() from pid="
@@ -10126,7 +10129,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     @Override
     public ParceledListSlice<ApplicationStartInfo> getHistoricalProcessStartReasons(
-            String packageName, int maxNum, int userId) {
+            String packageName, int maxNum, @CannotBeSpecialUser @UserIdInt int userId) {
         enforceNotIsolatedCaller("getHistoricalProcessStartReasons");
         // For the simplification, we don't support USER_ALL nor USER_CURRENT here.
         if (userId == UserHandle.USER_ALL || userId == UserHandle.USER_CURRENT) {
@@ -10157,7 +10160,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     @Override
     public void addApplicationStartInfoCompleteListener(
-            IApplicationStartInfoCompleteListener listener, int userId) {
+            IApplicationStartInfoCompleteListener listener,
+            @CannotBeSpecialUser @UserIdInt int userId) {
         enforceNotIsolatedCaller("setApplicationStartInfoCompleteListener");
 
         // For the simplification, we don't support USER_ALL nor USER_CURRENT here.
@@ -10176,7 +10180,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     @Override
     public void removeApplicationStartInfoCompleteListener(
-            IApplicationStartInfoCompleteListener listener, int userId) {
+            IApplicationStartInfoCompleteListener listener,
+            @CannotBeSpecialUser @UserIdInt int userId) {
         enforceNotIsolatedCaller("clearApplicationStartInfoCompleteListener");
 
         // For the simplification, we don't support USER_ALL nor USER_CURRENT here.
@@ -10193,7 +10198,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @Override
-    public void addStartInfoTimestamp(int key, long timestampNs, int userId) {
+    public void addStartInfoTimestamp(
+            int key, long timestampNs, @CannotBeSpecialUser @UserIdInt int userId) {
         enforceNotIsolatedCaller("addStartInfoTimestamp");
 
         // For the simplification, we don't support USER_ALL nor USER_CURRENT here.
@@ -10231,7 +10237,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     @Override
     public ParceledListSlice<ApplicationExitInfo> getHistoricalProcessExitReasons(
-            String packageName, int pid, int maxNum, int userId) {
+            String packageName, int pid, int maxNum, @CannotBeSpecialUser @UserIdInt int userId) {
         enforceNotIsolatedCaller("getHistoricalProcessExitReasons");
 
         // For the simplification, we don't support USER_ALL nor USER_CURRENT here.
@@ -13890,7 +13896,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @Override
-    public int handleIncomingUser(int callingPid, int callingUid, int userId, boolean allowAll,
+    public @CanBeALL @UserIdInt int handleIncomingUser(int callingPid, int callingUid,
+            @CanBeALL @CanBeCURRENT @CanBeCURRENT_OR_SELF @UserIdInt int userId, boolean allowAll,
             boolean requireFull, String name, String callerPackage) {
         return mUserController.handleIncomingUser(callingPid, callingUid, userId, allowAll,
                 requireFull ? ALLOW_FULL_ONLY : ALLOW_NON_FULL, name, callerPackage);
@@ -14269,7 +14276,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     // A backup agent has just come up
     @Override
-    public void backupAgentCreated(String agentPackageName, IBinder agent, int userId) {
+    public void backupAgentCreated(
+            String agentPackageName, IBinder agent, @CanBeCURRENT @UserIdInt int userId) {
         final int callingUid = Binder.getCallingUid();
         enforceCallingPackage(agentPackageName, callingUid);
 
@@ -14481,7 +14489,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     public boolean startInstrumentation(ComponentName className,
             String profileFile, int flags, Bundle arguments,
             IInstrumentationWatcher watcher, IUiAutomationConnection uiAutomationConnection,
-            int userId, String abiOverride) {
+            @CanBeCURRENT @UserIdInt int userId, String abiOverride) {
         enforceNotIsolatedCaller("startInstrumentation");
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
@@ -15578,7 +15586,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @Override
-    public void makePackageIdle(String packageName, int userId) {
+    public void makePackageIdle(String packageName, @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         if (checkCallingPermission(android.Manifest.permission.FORCE_STOP_PACKAGES)
                 != PackageManager.PERMISSION_GRANTED) {
             String msg = "Permission Denial: makePackageIdle() from pid="
@@ -17074,7 +17082,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public int handleIncomingUser(int callingPid, int callingUid, int userId,
+        public @CanBeALL @UserIdInt int handleIncomingUser(int callingPid, int callingUid,
+                @CanBeALL @CanBeCURRENT @CanBeCURRENT_OR_SELF @UserIdInt int userId,
                 boolean allowAll, int allowMode, String name, String callerPackage) {
             return mUserController.handleIncomingUser(callingPid, callingUid, userId, allowAll,
                     allowMode, name, callerPackage);
@@ -18187,7 +18196,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public boolean clearApplicationUserData(final String packageName, boolean keepState,
-                boolean isRestore, final IPackageDataObserver observer, int userId) {
+                boolean isRestore, final IPackageDataObserver observer,
+                @CanBeCURRENT @UserIdInt int userId) {
             return ActivityManagerService.this.clearApplicationUserData(packageName, keepState,
                     isRestore, observer, userId);
         }
@@ -18669,7 +18679,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      * Kill processes for the user with id userId and that depend on the package named packageName
      */
     @Override
-    public void killPackageDependents(String packageName, int userId) {
+    public void killPackageDependents(
+            String packageName, @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
         enforceCallingPermission(android.Manifest.permission.KILL_UID, "killPackageDependents()");
         if (packageName == null) {
             throw new NullPointerException(
