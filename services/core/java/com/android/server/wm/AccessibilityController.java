@@ -22,6 +22,7 @@ import static android.os.Build.IS_USER;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_MAGNIFICATION_OVERLAY;
 import static android.view.WindowManager.TRANSIT_FLAG_IS_RECENTS;
 
@@ -564,6 +565,8 @@ final class AccessibilityController {
         private boolean mIsFullscreenMagnificationActivated = false;
         private final Region mMagnificationRegion = new Region();
         private final Region mOldMagnificationRegion = new Region();
+        private final Region mImeRegion = new Region();
+        private final Region mOldImeRegion = new Region();
 
         private final MagnificationSpec mMagnificationSpec = new MagnificationSpec();
 
@@ -813,7 +816,8 @@ final class AccessibilityController {
             final int screenWidth = mScreenSize.x;
             final int screenHeight = mScreenSize.y;
 
-            mMagnificationRegion.set(0, 0, 0, 0);
+            mMagnificationRegion.setEmpty();
+            mImeRegion.setEmpty();
             final Region availableBounds = mTempRegion1;
             availableBounds.set(0, 0, screenWidth, screenHeight);
 
@@ -865,6 +869,13 @@ final class AccessibilityController {
                         -windowState.getFrame().top);
                 applyMatrixToRegion(matrix, touchableRegion);
                 windowBounds.set(touchableRegion);
+
+                if (windowType == TYPE_INPUT_METHOD) {
+                    // Track the bounds of IME windows separately. This region is unrelated to
+                    // mMagnificationRegion (these regions may overlap if the user chooses to
+                    // magnify their keyboard) so this does not affect other calculations.
+                    mImeRegion.op(windowBounds, Region.Op.UNION);
+                }
 
                 // Only update new regions
                 Region portionOfWindowAlreadyAccountedFor = mTempRegion3;
@@ -921,6 +932,14 @@ final class AccessibilityController {
                 args.arg1 = Region.obtain(mMagnificationRegion);
                 mHandler.obtainMessage(
                                 MyHandler.MESSAGE_NOTIFY_MAGNIFICATION_REGION_CHANGED, args)
+                        .sendToTarget();
+            }
+            if (com.android.server.accessibility.Flags.enableMagnificationMagnifyNavBarAndIme()
+                    && !mOldImeRegion.equals(mImeRegion)) {
+                mOldImeRegion.set(mImeRegion);
+                final SomeArgs args = SomeArgs.obtain();
+                args.arg1 = Region.obtain(mImeRegion);
+                mHandler.obtainMessage(MyHandler.MESSAGE_NOTIFY_IME_REGION_CHANGED, args)
                         .sendToTarget();
             }
         }
@@ -1000,6 +1019,7 @@ final class AccessibilityController {
             public static final int MESSAGE_NOTIFY_USER_CONTEXT_CHANGED = 3;
             public static final int MESSAGE_NOTIFY_DISPLAY_SIZE_CHANGED = 4;
             public static final int MESSAGE_NOTIFY_IME_WINDOW_VISIBILITY_CHANGED = 5;
+            public static final int MESSAGE_NOTIFY_IME_REGION_CHANGED = 6;
 
             MyHandler(Looper looper) {
                 super(looper);
@@ -1026,6 +1046,13 @@ final class AccessibilityController {
                     case MESSAGE_NOTIFY_IME_WINDOW_VISIBILITY_CHANGED: {
                         final boolean shown = message.arg1 == 1;
                         mCallbacks.onImeWindowVisibilityChanged(shown);
+                    } break;
+
+                    case MESSAGE_NOTIFY_IME_REGION_CHANGED: {
+                        final SomeArgs args = (SomeArgs) message.obj;
+                        final Region imeRegion = (Region) args.arg1;
+                        mCallbacks.onImeRegionChanged(imeRegion);
+                        imeRegion.recycle();
                     } break;
                 }
             }
