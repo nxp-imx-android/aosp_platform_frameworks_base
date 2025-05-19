@@ -141,6 +141,7 @@ import com.android.systemui.statusbar.notification.collection.render.Notificatio
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
 import com.android.systemui.statusbar.notification.people.PeopleHubModule;
+import com.android.systemui.statusbar.notification.row.dagger.BundleRowComponent;
 import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationRowComponent;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
@@ -306,6 +307,7 @@ import javax.inject.Named;
                 NotificationRowComponent.class,
                 WindowRootViewComponent.class,
                 SystemUIDisplaySubcomponent.class,
+                BundleRowComponent.class,
         })
 public abstract class SystemUIModule {
 

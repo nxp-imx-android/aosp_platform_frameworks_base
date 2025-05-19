@@ -24,10 +24,12 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.snapshotFlow
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -35,7 +37,10 @@ import kotlinx.coroutines.withContext
 private const val TAG = "BundleInteractor"
 
 /** Provides functionality for UI to interact with a Notification Bundle. */
-class BundleInteractor(
+@BundleRowScope
+class BundleInteractor
+@Inject
+constructor(
     private val repository: BundleRepository,
     private val appIconProvider: AppIconProvider,
     private val context: Context,
