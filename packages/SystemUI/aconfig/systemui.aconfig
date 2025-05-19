@@ -1649,16 +1649,6 @@ flag {
 }
 
 flag {
-    name: "unfold_latency_tracking_fix"
-    namespace: "systemui"
-    description: "New implementation to track unfold latency that excludes broken cases"
-    bug: "390649568"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
   name: "permission_helper_ui_rich_ongoing"
   namespace: "systemui"
   description: "[RONs] Guards inline permission helper for demoting RONs [Guts/card version]"
