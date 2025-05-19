@@ -137,7 +137,7 @@ private fun PopupChipModel.verifyShown(): PopupChipModel.Shown {
 }
 
 private fun PopupChipModel.Shown.verifyHasNoText() {
-    assertThat(this.chipText).isEqualTo("")
+    assertThat(this.chipText).isEqualTo(null)
 }
 
 private fun PopupChipModel.Shown.verifyHasIcon(res: Int) {
