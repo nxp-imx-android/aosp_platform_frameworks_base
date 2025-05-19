@@ -6960,11 +6960,11 @@ public abstract class Context {
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
-     * {@link android.media.quality.MediaQuality} for standardize picture and audio
-     * API parameters.
+     * {@link android.media.quality.MediaQualityManager} for standardize picture
+     * and audio API parameters.
      *
      * @see #getSystemService(String)
-     * @see android.media.quality.MediaQuality
+     * @see android.media.quality.MediaQualityManager
      */
     @FlaggedApi(android.media.tv.flags.Flags.FLAG_MEDIA_QUALITY_FW)
     public static final String MEDIA_QUALITY_SERVICE = "media_quality";
