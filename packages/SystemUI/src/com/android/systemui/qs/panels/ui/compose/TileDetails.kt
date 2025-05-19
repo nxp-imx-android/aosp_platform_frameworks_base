@@ -46,6 +46,8 @@ import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsViewModel
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
+import com.android.systemui.qs.tiles.dialog.AudioDetailsContent
+import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.CastDetailsContent
 import com.android.systemui.qs.tiles.dialog.CastDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDetailsContent
@@ -151,6 +153,7 @@ private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
             BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel)
         is ModesDetailsViewModel -> ModesDetailsContent(tileDetailsViewModel)
         is CastDetailsViewModel -> CastDetailsContent(tileDetailsViewModel)
+        is AudioDetailsViewModel -> AudioDetailsContent(tileDetailsViewModel)
     }
 }
 

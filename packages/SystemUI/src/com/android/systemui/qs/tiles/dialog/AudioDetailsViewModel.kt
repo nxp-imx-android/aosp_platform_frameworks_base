@@ -19,17 +19,32 @@ package com.android.systemui.qs.tiles.dialog
 import android.content.Intent
 import android.provider.Settings
 import com.android.systemui.lifecycle.ExclusiveActivatable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandler
+import com.android.systemui.volume.panel.ui.viewmodel.VolumePanelViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 class AudioDetailsViewModel
 @AssistedInject
-constructor(private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler) :
-    TileDetailsViewModel, ExclusiveActivatable() {
-    // TODO(b/378513663): Implement this AudioDetailsViewModel
+constructor(
+    private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
+    private val volumePanelViewModelFactory: VolumePanelViewModel.Factory,
+) : TileDetailsViewModel, ExclusiveActivatable() {
+    // Controls the current content that should be displayed
+    var contentViewModel: ContentViewModel? by mutableStateOf(null)
+
+    sealed interface ContentViewModel {
+        class DefaultPageViewModel(val viewModel: VolumePanelViewModel) : ContentViewModel
+
+        class SwitcherPageViewModel : ContentViewModel
+    }
 
     override val title: String
         get() = "Volume"
@@ -45,7 +60,12 @@ constructor(private val qsTileIntentUserActionHandler: QSTileIntentUserInputHand
     }
 
     override suspend fun onActivated(): Nothing {
-        // TODO(b/378513663): Create the VolumePanelViewModel here
+        coroutineScope {
+            launch {
+                contentViewModel =
+                    ContentViewModel.DefaultPageViewModel(volumePanelViewModelFactory.create(this))
+            }
+        }
         awaitCancellation()
     }
 
