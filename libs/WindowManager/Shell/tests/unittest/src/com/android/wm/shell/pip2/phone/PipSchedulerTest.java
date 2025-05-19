@@ -34,7 +34,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.testing.AndroidTestingRunner;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.TestableLooper;
 import android.view.SurfaceControl;
 import android.window.DisplayAreaInfo;
@@ -43,6 +45,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
@@ -58,6 +61,7 @@ import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.util.StubTransaction;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -66,7 +70,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
 import java.util.Optional;
+
 
 /**
  * Unit test against {@link PipScheduler}
@@ -74,7 +83,8 @@ import java.util.Optional;
 
 @SmallTest
 @TestableLooper.RunWithLooper
-@RunWith(AndroidTestingRunner.class)
+@EnableFlags(Flags.FLAG_ENABLE_PIP2)
+@RunWith(ParameterizedAndroidJunit4.class)
 public class PipSchedulerTest {
     private static final int TEST_BOUNDS_CHANGE_DURATION = 1;
     private static final Rect TEST_STARTING_BOUNDS = new Rect(0, 0, 10, 10);
@@ -115,6 +125,23 @@ public class PipSchedulerTest {
     private PipScheduler mPipScheduler;
     private DisplayAreaInfo mDisplayAreaInfo;
 
+    @Mock
+    private PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS);
+    }
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    public PipSchedulerTest(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -135,7 +162,7 @@ public class PipSchedulerTest {
         when(mMockDisplayLayout.densityDpi()).thenReturn(DEFAULT_DPI);
         when(mDisplayController.getDisplayLayout(anyInt())).thenReturn(mMockDisplayLayout);
         mPipScheduler = new PipScheduler(mMockContext,
-                new PipSurfaceTransactionHelper(mMockContext), mMockPipBoundsState,
+                mPipSurfaceTransactionHelper, mMockPipBoundsState,
                 mMockMainExecutor,
                 mMockPipTransitionState, Optional.of(mMockSplitScreenController),
                 Optional.of(mMockDesktopPipTransitionController), mMockPipDesktopState,

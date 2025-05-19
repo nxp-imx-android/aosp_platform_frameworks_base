@@ -42,6 +42,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
+import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.util.Rational;
@@ -49,12 +50,14 @@ import android.view.SurfaceControl;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PhoneSizeSpecSource;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 
 import org.junit.Before;
@@ -73,6 +76,7 @@ import java.util.List;
 @SmallTest
 @TestableLooper.RunWithLooper
 @RunWith(AndroidTestingRunner.class)
+@EnableFlags(Flags.FLAG_ENABLE_PIP2)
 public class PipTaskListenerTest {
 
     @Mock private Context mMockContext;
@@ -95,6 +99,9 @@ public class PipTaskListenerTest {
 
     private PipTaskListener mPipTaskListener;
 
+    @Mock
+    private PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -105,7 +112,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void constructor_addPipTransitionStateChangedListener() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
 
@@ -114,7 +122,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void constructor_addOnPipComponentChangedListener() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
 
@@ -124,7 +133,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void setPictureInPictureParams_updatePictureInPictureParams() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Rational aspectRatio = new Rational(4, 3);
@@ -142,7 +152,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void setPictureInPictureParams_withActionsChanged_callbackActionsChanged() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -164,7 +175,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void setPictureInPictureParams_withoutActionsChanged_doesNotCallbackActionsChanged() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -182,7 +194,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onTaskInfoChanged_withNullPipParams_doNothing() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -202,7 +215,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onTaskInfoChanged_withActionsChanged_callbackActionsChanged() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -226,7 +240,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onTaskInfoChanged_withAspectRatioChanged_callbackAspectRatioChanged() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -252,7 +267,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onTaskInfoChanged_withoutParamsChanged_doesNotCallbackAspectRatioChanged() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -271,7 +287,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onTaskInfoChanged_nonValidAspectRatio_doesNotCallbackAspectRatioChanged() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         mPipTaskListener.addParamsChangedListener(mMockPipParamsChangedCallback);
@@ -294,7 +311,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onPipTransitionStateChanged_scheduledBoundsChangeWithAspectRatioChange_schedule() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Bundle extras = new Bundle();
@@ -308,7 +326,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onPipTransitionStateChanged_scheduledBoundsChangeWithoutAspectRatioChange_noop() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         clearInvocations(mMockPipScheduler);
@@ -326,7 +345,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onPipTransitionStateChanged_changingPipBoundsWaitAspectRatioChange_animate() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Bundle extras = new Bundle();
@@ -353,7 +373,8 @@ public class PipTaskListenerTest {
 
     @Test
     public void onPipTransitionStateChanged_changingPipBoundsNotAspectRatioChange_noop() {
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Bundle extras = new Bundle();
@@ -385,7 +406,8 @@ public class PipTaskListenerTest {
                 mock(PhoneSizeSpecSource.class), mock(PipDisplayLayoutState.class));
         pipBoundsState.setLastPipComponentName(new ComponentName("org.test", "test1"));
 
-        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+        mPipTaskListener = new PipTaskListener(mMockContext, mPipSurfaceTransactionHelper,
+                mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, pipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
         Rational aspectRatio = new Rational(4, 3);

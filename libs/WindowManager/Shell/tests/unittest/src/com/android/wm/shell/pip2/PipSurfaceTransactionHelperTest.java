@@ -31,9 +31,10 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.gui.BorderSettings;
 import android.gui.BoxShadowSettings;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.SurfaceControl;
 
@@ -53,12 +54,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
+
+
 /**
  * Unit test against {@link PipSurfaceTransactionHelper}.
  */
 @SmallTest
 @TestableLooper.RunWithLooper
-@RunWith(AndroidTestingRunner.class)
+@EnableFlags(Flags.FLAG_ENABLE_PIP2)
+@RunWith(ParameterizedAndroidJunit4.class)
 public class PipSurfaceTransactionHelperTest {
 
     private static final int CORNER_RADIUS = 10;
@@ -93,6 +101,17 @@ public class PipSurfaceTransactionHelperTest {
             .mockStatic(BoxShadowHelper.class)
             .mockStatic(PipUtils.class)
             .build();
+
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS);
+    }
+
+    public PipSurfaceTransactionHelperTest(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
 
     @Before
     public void setUp() {
@@ -156,6 +175,7 @@ public class PipSurfaceTransactionHelperTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
     public void shadow_doNotApply_setZeroShadowRadius() {
         mPipSurfaceTransactionHelper.shadow(mMockTransaction, mTestLeash, false /* apply */);
 
@@ -163,6 +183,7 @@ public class PipSurfaceTransactionHelperTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_PIP_BOX_SHADOWS)
     public void shadow_doApply_setExactShadowRadius() {
         mPipSurfaceTransactionHelper.shadow(mMockTransaction, mTestLeash, true /* apply */);
 

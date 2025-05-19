@@ -75,6 +75,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
     private final @NonNull PipSurfaceTransactionHelper mSurfaceTransactionHelper;
 
     public PipTaskListener(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellTaskOrganizer shellTaskOrganizer,
             PipTransitionState pipTransitionState,
             PipScheduler pipScheduler,
@@ -103,7 +104,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
         mPipBoundsState.addOnPipComponentChangedListener(((oldPipComponent, newPipComponent) ->
                 mPictureInPictureParams = new PictureInPictureParams.Builder().build()));
 
-        mSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
+        mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
     }
 
     void setPictureInPictureParams(@Nullable PictureInPictureParams params) {
