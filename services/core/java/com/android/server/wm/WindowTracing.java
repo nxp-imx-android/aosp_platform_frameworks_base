@@ -16,13 +16,13 @@
 
 package com.android.server.wm;
 
-import static android.os.Build.IS_USER;
 
 import static com.android.server.wm.WindowManagerTraceProto.ELAPSED_REALTIME_NANOS;
 import static com.android.server.wm.WindowManagerTraceProto.WHERE;
 import static com.android.server.wm.WindowManagerTraceProto.WINDOW_MANAGER_SERVICE;
 
 import android.annotation.Nullable;
+import android.os.Build;
 import android.os.ShellCommand;
 import android.os.Trace;
 import android.util.Log;
@@ -69,16 +69,16 @@ abstract class WindowTracing {
     }
 
     void startTrace(@Nullable PrintWriter pw) {
-        if (IS_USER) {
-            logAndPrintln(pw, "Error: Tracing is not supported on user builds.");
+        if (!Build.isDebuggable()) {
+            logAndPrintln(pw, "Error: Tracing is not supported on non debuggable builds.");
             return;
         }
         startTraceInternal(pw);
     }
 
     void stopTrace(@Nullable PrintWriter pw) {
-        if (IS_USER) {
-            logAndPrintln(pw, "Error: Tracing is not supported on user builds.");
+        if (!Build.isDebuggable()) {
+            logAndPrintln(pw, "Error: Tracing is not supported on non debuggable builds.");
             return;
         }
         stopTraceInternal(pw);
@@ -93,8 +93,8 @@ abstract class WindowTracing {
      * @param pw Print writer
      */
     void saveForBugreport(@Nullable PrintWriter pw) {
-        if (IS_USER) {
-            logAndPrintln(pw, "Error: Tracing is not supported on user builds.");
+        if (!Build.isDebuggable()) {
+            logAndPrintln(pw, "Error: Tracing is not supported on non debuggable builds.");
             return;
         }
         if (!android.tracing.Flags.perfettoProtologTracing()

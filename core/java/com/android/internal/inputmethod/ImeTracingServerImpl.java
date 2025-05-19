@@ -16,10 +16,9 @@
 
 package com.android.internal.inputmethod;
 
-import static android.os.Build.IS_USER;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
@@ -173,8 +172,8 @@ class ImeTracingServerImpl extends ImeTracing {
     @GuardedBy("mEnabledLock")
     @Override
     public void startTrace(@Nullable PrintWriter pw) {
-        if (IS_USER) {
-            Log.w(TAG, "Warn: Tracing is not supported on user builds.");
+        if (!Build.isDebuggable()) {
+            Log.w(TAG, "Warn: Tracing is not supported on non debuggable builds.");
             return;
         }
 
@@ -193,8 +192,8 @@ class ImeTracingServerImpl extends ImeTracing {
 
     @Override
     public void stopTrace(@Nullable PrintWriter pw) {
-        if (IS_USER) {
-            Log.w(TAG, "Warn: Tracing is not supported on user builds.");
+        if (!Build.isDebuggable()) {
+            Log.w(TAG, "Warn: Tracing is not supported on non debuggable builds.");
             return;
         }
 
@@ -217,7 +216,7 @@ class ImeTracingServerImpl extends ImeTracing {
      */
     @Override
     public void saveForBugreport(@Nullable PrintWriter pw) {
-        if (IS_USER) {
+        if (!Build.isDebuggable()) {
             return;
         }
         synchronized (mEnabledLock) {
