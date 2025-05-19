@@ -4640,6 +4640,7 @@ public class InputMethodService extends AbstractInputMethodService {
                 + " touchableRegion=" + mTmpInsets.touchableRegion);
         p.println("  mSettingsObserver=" + mSettingsObserver);
         p.println("  mNavigationBarController=" + mNavigationBarController.toDebugString());
+        p.println("  mBackCallbackRegistered=" + mBackCallbackRegistered);
     }
 
     private final ImeTracing.ServiceDumper mDumper = new ImeTracing.ServiceDumper() {
