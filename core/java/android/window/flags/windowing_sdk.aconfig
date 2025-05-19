@@ -90,7 +90,7 @@ flag {
 }
 
 flag {
-    namespace: "car_framework"
+    namespace: "aaos_core_contrib"
     name: "safe_region_letterboxing"
     description: "Enables letterboxing for a safe region"
     bug: "380132497"
