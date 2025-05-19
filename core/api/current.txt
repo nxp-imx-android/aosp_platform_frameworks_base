@@ -11126,6 +11126,7 @@ package android.content {
     field public static final String CAMERA_SERVICE = "camera";
     field public static final String CAPTIONING_SERVICE = "captioning";
     field public static final String CARRIER_CONFIG_SERVICE = "carrier_config";
+    field @FlaggedApi("android.service.chooser.interactive_chooser") public static final String CHOOSER_SERVICE = "chooser";
     field public static final String CLIPBOARD_SERVICE = "clipboard";
     field public static final String COMPANION_DEVICE_SERVICE = "companiondevice";
     field public static final String CONNECTIVITY_DIAGNOSTICS_SERVICE = "connectivity_diagnostics";
@@ -41752,6 +41753,11 @@ package android.service.chooser {
     method @NonNull public android.service.chooser.ChooserAction build();
   }
 
+  @FlaggedApi("android.service.chooser.interactive_chooser") public class ChooserManager {
+    method @Nullable public android.service.chooser.ChooserSession getSession(@NonNull android.service.chooser.ChooserSessionToken);
+    method @NonNull public android.service.chooser.ChooserSession startSession(@NonNull android.content.Context, @NonNull android.content.Intent);
+  }
+
   public final class ChooserResult implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public android.content.ComponentName getSelectedComponent();
@@ -41763,6 +41769,30 @@ package android.service.chooser {
     field public static final int CHOOSER_RESULT_SELECTED_COMPONENT = 0; // 0x0
     field public static final int CHOOSER_RESULT_UNKNOWN = -1; // 0xffffffff
     field @NonNull public static final android.os.Parcelable.Creator<android.service.chooser.ChooserResult> CREATOR;
+  }
+
+  @FlaggedApi("android.service.chooser.interactive_chooser") public final class ChooserSession {
+    method public void addStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.service.chooser.ChooserSession.StateListener);
+    method public void close();
+    method @Nullable public android.graphics.Rect getSize();
+    method public int getState();
+    method @NonNull public android.service.chooser.ChooserSessionToken getToken();
+    method public void removeStateListener(@NonNull android.service.chooser.ChooserSession.StateListener);
+    method public void updateIntent(@NonNull android.content.Intent);
+    field public static final int STATE_CLOSED = 2; // 0x2
+    field public static final int STATE_INITIALIZED = 0; // 0x0
+    field public static final int STATE_STARTED = 1; // 0x1
+  }
+
+  public static interface ChooserSession.StateListener {
+    method public void onBoundsChanged(@NonNull android.graphics.Rect);
+    method public void onStateChanged(int);
+  }
+
+  @FlaggedApi("android.service.chooser.interactive_chooser") public final class ChooserSessionToken implements android.os.Parcelable {
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.chooser.ChooserSessionToken> CREATOR;
   }
 
   @Deprecated public final class ChooserTarget implements android.os.Parcelable {

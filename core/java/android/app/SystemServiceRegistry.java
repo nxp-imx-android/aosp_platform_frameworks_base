@@ -19,6 +19,7 @@ package android.app;
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
+import static android.service.chooser.Flags.interactiveChooser;
 
 import android.accounts.AccountManager;
 import android.accounts.IAccountManager;
@@ -245,6 +246,7 @@ import android.security.authenticationpolicy.IAuthenticationPolicyService;
 import android.security.intrusiondetection.IIntrusionDetectionService;
 import android.security.intrusiondetection.IntrusionDetectionManager;
 import android.security.keystore.KeyStoreManager;
+import android.service.chooser.ChooserManager;
 import android.service.oemlock.IOemLockService;
 import android.service.oemlock.OemLockManager;
 import android.service.persistentdata.IPersistentDataBlockService;
@@ -1838,6 +1840,16 @@ public final class SystemServiceRegistry {
                         return new IntrusionDetectionManager(service);
                     }
                 });
+
+        if (interactiveChooser()) {
+            registerService(Context.CHOOSER_SERVICE, ChooserManager.class,
+                    new StaticServiceFetcher<>() {
+                        @Override
+                        public ChooserManager createService() {
+                            return new ChooserManager();
+                        }
+                    });
+        }
 
         sInitializing = true;
         try {
