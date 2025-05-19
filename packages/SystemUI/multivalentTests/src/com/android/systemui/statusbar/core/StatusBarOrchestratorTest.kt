@@ -200,7 +200,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
     fun statusBarModeChange_transitionsToModeWithAnimation() =
         testScope.runTest {
             awakeDevice()
-            clearTransientStatusBar()
+            abortTransientStatusBar()
             setStatusBarWindowState(StatusBarWindowState.Showing)
             setStatusBarMode(TRANSPARENT)
 
@@ -214,7 +214,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
     fun statusBarModeChange_keepsTransitioningAsModeChanges() =
         testScope.runTest {
             awakeDevice()
-            clearTransientStatusBar()
+            abortTransientStatusBar()
             setStatusBarWindowState(StatusBarWindowState.Showing)
             setStatusBarMode(TRANSPARENT)
 
@@ -254,7 +254,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
     fun statusBarModeChange_windowIsHidden_transitionsToModeWithoutAnimation() =
         testScope.runTest {
             awakeDevice()
-            clearTransientStatusBar()
+            abortTransientStatusBar()
             setStatusBarWindowState(StatusBarWindowState.Hidden)
             setStatusBarMode(TRANSPARENT)
 
@@ -268,7 +268,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
     fun statusBarModeChange_deviceIsAsleep_transitionsToModeWithoutAnimation() =
         testScope.runTest {
             putDeviceToSleep()
-            clearTransientStatusBar()
+            abortTransientStatusBar()
             setStatusBarWindowState(StatusBarWindowState.Showing)
             setStatusBarMode(TRANSPARENT)
 
@@ -282,7 +282,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
     fun statusBarModeAnimationConditionsChange_withoutBarModeChange_noNewTransitionsHappen() =
         testScope.runTest {
             awakeDevice()
-            clearTransientStatusBar()
+            abortTransientStatusBar()
             setStatusBarWindowState(StatusBarWindowState.Showing)
             setStatusBarMode(TRANSPARENT)
 
@@ -291,7 +291,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
             putDeviceToSleep()
             awakeDevice()
             setTransientStatusBar()
-            clearTransientStatusBar()
+            abortTransientStatusBar()
 
             verify(fakeStatusBarInitializer.statusBarTransitions, times(1))
                 .transitionTo(TRANSPARENT.toTransitionModeInt(), /* animate= */ true)
@@ -347,8 +347,8 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
         fakeStatusBarModePerDisplayRepository.showTransient()
     }
 
-    private fun clearTransientStatusBar() {
-        fakeStatusBarModePerDisplayRepository.clearTransient()
+    private fun abortTransientStatusBar() {
+        fakeStatusBarModePerDisplayRepository.abortTransient()
     }
 
     private fun setStatusBarWindowState(state: StatusBarWindowState) {
