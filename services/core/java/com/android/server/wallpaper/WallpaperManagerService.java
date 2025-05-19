@@ -931,7 +931,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     mToken, (which & FLAG_LOCK) != 0);
             if (multiCrop() && mImageWallpaper.equals(wallpaper.getComponent())) {
                 mWindowManagerInternal.setWallpaperCropHints(mToken,
-                        mWallpaperCropper.getRelativeCropHints(wallpaper));
+                        WallpaperCropper.getRelativeCropHints(wallpaper));
             } else {
                 mWindowManagerInternal.setWallpaperCropHints(mToken, new SparseArray<>());
             }
@@ -2519,23 +2519,23 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             if (wallpaper == null || !mImageWallpaper.equals(wallpaper.getComponent())) {
                 return null;
             }
-            SparseArray<Rect> relativeSuggestedCrops =
-                    mWallpaperCropper.getRelativeCropHints(wallpaper);
-            Point croppedBitmapSize = new Point(
+            SparseArray<Rect> relativeCropHints =
+                    WallpaperCropper.getRelativeCropHints(wallpaper);
+            Point relativeCropSize = new Point(
                     (int) Math.ceil(wallpaper.cropHint.width() / wallpaper.mSampleSize),
                     (int) Math.ceil(wallpaper.cropHint.height() / wallpaper.mSampleSize));
-            if (croppedBitmapSize.equals(0, 0)) {
+            if (relativeCropSize.equals(0, 0)) {
                 // There is an ImageWallpaper, but there are no crop hints and the bitmap size is
                 // unknown (e.g. the default wallpaper). Return a special "null" value that will be
                 // handled by WallpaperManager, which will fetch the dimensions of the wallpaper.
                 return null;
             }
             SparseArray<Rect> relativeDefaultCrops =
-                    mWallpaperCropper.getDefaultCrops(relativeSuggestedCrops, croppedBitmapSize);
+                    mWallpaperCropper.getDefaultCrops(relativeCropHints, relativeCropSize);
             SparseArray<Rect> adjustedRelativeSuggestedCrops = new SparseArray<>();
             for (int i = 0; i < relativeDefaultCrops.size(); i++) {
                 int key = relativeDefaultCrops.keyAt(i);
-                if (relativeSuggestedCrops.contains(key)) {
+                if (relativeCropHints.contains(key)) {
                     adjustedRelativeSuggestedCrops.put(key, relativeDefaultCrops.get(key));
                 }
             }
@@ -2546,7 +2546,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     mWallpaperDisplayHelper.getDefaultDisplayInfo();
             for (Point displaySize : displaySizes) {
                 result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo,
-                        croppedBitmapSize, adjustedRelativeSuggestedCrops, rtl));
+                        relativeCropSize, adjustedRelativeSuggestedCrops, rtl));
             }
             if (originalBitmap) result = WallpaperCropper.getOriginalCropHints(wallpaper, result);
             return result;

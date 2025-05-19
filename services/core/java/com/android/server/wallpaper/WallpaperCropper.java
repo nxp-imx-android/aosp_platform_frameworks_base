@@ -372,7 +372,7 @@ public class WallpaperCropper {
      * The crops stored in {@link WallpaperData#mCropHints} are relative to the original image.
      * This computes the crops relative to the sub-image that will actually be rendered on a window.
      */
-    SparseArray<Rect> getRelativeCropHints(WallpaperData wallpaper) {
+    static SparseArray<Rect> getRelativeCropHints(WallpaperData wallpaper) {
         SparseArray<Rect> result = new SparseArray<>();
         for (int i = 0; i < wallpaper.mCropHints.size(); i++) {
             Rect adjustedRect = new Rect(wallpaper.mCropHints.valueAt(i));
