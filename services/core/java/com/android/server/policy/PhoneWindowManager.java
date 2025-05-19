@@ -1498,6 +1498,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void powerVeryLongPress() {
+        Slog.d(TAG, "powerVeryLongPress: "  + mVeryLongPressOnPowerBehavior);
         switch (mVeryLongPressOnPowerBehavior) {
             case VERY_LONG_PRESS_POWER_NOTHING:
                 break;
