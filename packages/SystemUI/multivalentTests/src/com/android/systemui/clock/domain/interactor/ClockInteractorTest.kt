@@ -23,31 +23,29 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.coroutines.collectValues
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.collectValues
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.plugins.activityStarter
-import com.android.systemui.statusbar.policy.NextAlarmController
+import com.android.systemui.statusbar.policy.NextAlarmController.NextAlarmChangeCallback
 import com.android.systemui.statusbar.policy.nextAlarmController
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.argThat
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.withArgCaptor
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import java.util.Date
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatcher
-import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -55,39 +53,35 @@ import org.mockito.Mockito
 class ClockInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
-    private val testScope = kosmos.testScope
-    private val activityStarter = kosmos.activityStarter
-    private val nextAlarmController = kosmos.nextAlarmController
-
     private val underTest = kosmos.clockInteractor
 
     @Test
     fun launchClockActivity_default() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.launchClockActivity()
-            Mockito.verify(activityStarter)
+            verify(activityStarter)
                 .postStartActivityDismissingKeyguard(
-                    argThat(IntentMatcherAction(AlarmClock.ACTION_SHOW_ALARMS)),
-                    any(),
+                    argThat { intent: Intent? -> intent?.action == AlarmClock.ACTION_SHOW_ALARMS },
+                    any<Int>(),
                 )
         }
 
     @Test
     fun launchClockActivity_nextAlarmIntent() =
-        testScope.runTest {
-            val callback =
-                withArgCaptor<NextAlarmController.NextAlarmChangeCallback> {
-                    Mockito.verify(nextAlarmController).addCallback(capture())
+        kosmos.runTest {
+            val captor =
+                argumentCaptor<NextAlarmChangeCallback> {
+                    verify(nextAlarmController).addCallback(capture())
                 }
-            callback.onNextAlarmChanged(AlarmManager.AlarmClockInfo(1L, mock()))
+            captor.firstValue.onNextAlarmChanged(AlarmManager.AlarmClockInfo(1L, mock()))
 
             underTest.launchClockActivity()
-            Mockito.verify(activityStarter).postStartActivityDismissingKeyguard(any())
+            verify(activityStarter).postStartActivityDismissingKeyguard(any())
         }
 
     @Test
     fun onTimezoneOrLocaleChanged_localeAndTimezoneChanged_emitsForEach() =
-        testScope.runTest {
+        kosmos.runTest {
             val timeZoneOrLocaleChanges by collectValues(underTest.onTimezoneOrLocaleChanged)
 
             sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
@@ -95,25 +89,25 @@ class ClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_LOCALE_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
 
-            Truth.assertThat(timeZoneOrLocaleChanges).hasSize(4)
+            assertThat(timeZoneOrLocaleChanges).hasSize(4)
         }
 
     @Test
     fun onTimezoneOrLocaleChanged_timeChanged_doesNotEmit() =
-        testScope.runTest {
+        kosmos.runTest {
             val timeZoneOrLocaleChanges by collectValues(underTest.onTimezoneOrLocaleChanged)
-            Truth.assertThat(timeZoneOrLocaleChanges).hasSize(1)
+            assertThat(timeZoneOrLocaleChanges).hasSize(1)
 
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
 
             // Expect only 1 event to have been emitted onStart, but no more.
-            Truth.assertThat(timeZoneOrLocaleChanges).hasSize(1)
+            assertThat(timeZoneOrLocaleChanges).hasSize(1)
         }
 
     @Test
     fun currentTime_timeChanged() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
 
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
@@ -125,12 +119,12 @@ class ClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
             val laterTime = checkNotNull(currentTime)
 
-            Truth.assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(3.seconds)
+            assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(3.seconds)
         }
 
     @Test
     fun currentTime_timeTicked() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentTime by collectLastValue(underTest.currentTime)
 
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
@@ -142,21 +136,15 @@ class ClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
             val laterTime = checkNotNull(currentTime)
 
-            Truth.assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(7.seconds)
+            assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(7.seconds)
         }
 
     private fun differenceBetween(date1: Date, date2: Date): Duration {
         return (date1.time - date2.time).milliseconds
     }
 
-    private fun TestScope.sendIntentActionBroadcast(intentAction: String) {
-        kosmos.broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, Intent(intentAction))
+    private fun Kosmos.sendIntentActionBroadcast(intentAction: String) {
+        broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, Intent(intentAction))
         runCurrent()
-    }
-}
-
-private class IntentMatcherAction(private val action: String) : ArgumentMatcher<Intent> {
-    override fun matches(argument: Intent?): Boolean {
-        return argument?.action == action
     }
 }
