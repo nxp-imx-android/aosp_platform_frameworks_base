@@ -470,6 +470,7 @@ interface IWindowManager
 
     /**
      * Used only for assist -- request a screenshot of the current application.
+     * @deprecated. Use WindowManagerInternal#requestAssistScreenshot instead.
      */
     void requestAssistScreenshot(IAssistDataReceiver receiver);
 

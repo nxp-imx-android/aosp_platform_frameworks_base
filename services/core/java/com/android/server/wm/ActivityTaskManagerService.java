@@ -3517,28 +3517,28 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 "enqueueAssistContext()");
 
         synchronized (mGlobalLock) {
-            final Task rootTask = getTopDisplayFocusedRootTask();
-            ActivityRecord activity =
+            final ActivityRecord activity = ActivityRecord.forTokenLocked(activityToken);
+            final DisplayContent dc =
+                    activity != null && activity.isAttached() ? activity.getDisplayContent()
+                            : mRootWindowContainer.getTopFocusedDisplayContent();
+            final Task rootTask = dc.getFocusedRootTask();
+            final ActivityRecord topActivity =
                     rootTask != null ? rootTask.getTopNonFinishingActivity() : null;
-            if (activity == null) {
+            if (topActivity == null) {
                 Slog.w(TAG, "getAssistContextExtras failed: no top activity");
                 return null;
             }
-            if (!activity.attachedToProcess()) {
-                Slog.w(TAG, "getAssistContextExtras failed: no process for " + activity);
+            if (!topActivity.attachedToProcess()) {
+                Slog.w(TAG, "getAssistContextExtras failed: no process for " + topActivity);
                 return null;
             }
             if (checkActivityIsTop) {
-                if (activityToken != null) {
-                    ActivityRecord caller = ActivityRecord.forTokenLocked(activityToken);
-                    if (activity != caller) {
-                        Slog.w(TAG, "enqueueAssistContext failed: caller " + caller
-                                + " is not current top " + activity);
-                        return null;
-                    }
+                if (topActivity != activity) {
+                    Slog.w(TAG, "enqueueAssistContext failed: caller " + activity
+                            + " is not current top " + topActivity);
+                    return null;
                 }
             } else {
-                activity = ActivityRecord.forTokenLocked(activityToken);
                 if (activity == null) {
                     Slog.w(TAG, "enqueueAssistContext failed: activity for token=" + activityToken
                             + " couldn't be found");
@@ -3654,29 +3654,60 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
 
             final ActivityRecord activity = focusedRootTask.getTopNonFinishingActivity();
-            if (activity == null) {
+            if (!isAssistDataForActivityAllowed(activity)) {
                 return false;
             }
             userId = activity.mUserId;
-            DisplayContent displayContent = activity.getDisplayContent();
-            if (displayContent == null) {
-                return false;
-            }
-            final long callingIdentity = Binder.clearCallingIdentity();
-            try {
-                hasRestrictedWindow = displayContent.forAllWindows(
-                        windowState -> windowState.isOnScreen() && (
-                                UserManager.isUserTypePrivateProfile(
-                                        getUserManager().getProfileType(windowState.mShowUserId))
-                                        || hasUserRestriction(
-                                        UserManager.DISALLOW_ASSIST_CONTENT,
-                                        windowState.mShowUserId)), true /* traverseTopToBottom */);
-            } finally {
-                Binder.restoreCallingIdentity(callingIdentity);
+        }
+        return DevicePolicyCache.getInstance().isScreenCaptureAllowed(userId);
+    }
+
+    private boolean isAssistDataForActivityAllowed(ActivityRecord activity) {
+        if (activity == null) {
+            return false;
+        }
+
+        boolean hasRestrictedWindow;
+        DisplayContent displayContent = activity.getDisplayContent();
+        if (displayContent == null) {
+            return false;
+        }
+        final long callingIdentity = Binder.clearCallingIdentity();
+        try {
+            hasRestrictedWindow = displayContent.forAllWindows(
+                    windowState -> windowState.isOnScreen() && (
+                            UserManager.isUserTypePrivateProfile(
+                                    getUserManager().getProfileType(windowState.mShowUserId))
+                                    || hasUserRestriction(
+                                    UserManager.DISALLOW_ASSIST_CONTENT,
+                                    windowState.mShowUserId)), true /* traverseTopToBottom */);
+        } finally {
+            Binder.restoreCallingIdentity(callingIdentity);
+        }
+        return !hasRestrictedWindow;
+    }
+
+    boolean isAssistDataForActivitiesAllowed(List<IBinder> activityTokens) {
+        final ArraySet<Integer> userIds = new ArraySet<>();
+        synchronized (mGlobalLock) {
+            for (int i = activityTokens.size() - 1; i >= 0; i--) {
+                final ActivityRecord r = ActivityRecord.isInRootTaskLocked(activityTokens.get(i));
+                if (!isAssistDataForActivityAllowed(r)) {
+                    Slog.w(TAG, "Assist Data not allowed for " + r);
+                    return false;
+                }
+                userIds.add(r.mUserId);
             }
         }
-        return DevicePolicyCache.getInstance().isScreenCaptureAllowed(userId)
-                && !hasRestrictedWindow;
+
+        for (int i = userIds.size() - 1; i >= 0; i--) {
+            int userId = userIds.valueAt(i);
+            if (!DevicePolicyCache.getInstance().isScreenCaptureAllowed(userId)) {
+                Slog.w(TAG, "Screen capture not allowed for user " + userId);
+                return false;
+            }
+        }
+        return true;
     }
 
     private void onLocalVoiceInteractionStartedLocked(IBinder activity,
@@ -6150,7 +6181,14 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public List<ActivityAssistInfo> getTopVisibleActivities() {
             synchronized (mGlobalLock) {
-                return mRootWindowContainer.getTopVisibleActivities();
+                return mRootWindowContainer.getTopVisibleActivities(INVALID_DISPLAY);
+            }
+        }
+
+        @Override
+        public List<ActivityAssistInfo> getTopVisibleActivities(int displayId) {
+            synchronized (mGlobalLock) {
+                return mRootWindowContainer.getTopVisibleActivities(displayId);
             }
         }
 
@@ -7670,6 +7708,11 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public boolean isAssistDataAllowed() {
             return ActivityTaskManagerService.this.isAssistDataAllowed();
+        }
+
+        @Override
+        public boolean isAssistDataForActivitiesAllowed(List<IBinder> activityTokens) {
+            return ActivityTaskManagerService.this.isAssistDataForActivitiesAllowed(activityTokens);
         }
     }
 

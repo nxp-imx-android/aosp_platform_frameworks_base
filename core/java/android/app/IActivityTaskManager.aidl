@@ -230,6 +230,7 @@ interface IActivityTaskManager {
             boolean focused, boolean newSessionId);
     boolean requestAutofillData(in IAssistDataReceiver receiver, in Bundle receiverExtras,
             in IBinder activityToken, int flags);
+    // @deprecated Use ActivityTaskManagerInternal#isAssistDataAllowed instead.
     boolean isAssistDataAllowed();
     boolean requestAssistDataForTask(in IAssistDataReceiver receiver, int taskId,
             in String callingPackageName, String callingAttributionTag, boolean fetchStructure);

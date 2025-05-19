@@ -2130,7 +2130,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                     notifyKeyGestureCompleted(event,
                             KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT);
-                    launchAssistAction(null, event.getDeviceId(), event.getEventTime(),
+                    launchAssistAction(null, event.getDeviceId(), event.getDisplayId(),
+                            event.getEventTime(),
                             AssistUtils.INVOCATION_TYPE_HOME_BUTTON_LONG_PRESS);
                     break;
                 case LONG_PRESS_HOME_NOTIFICATION_PANEL:
@@ -3502,7 +3503,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (shouldLaunchAssist) {
                     launchAssistAction(
                             isPowerLongPress ? null : Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD,
-                            deviceId, SystemClock.uptimeMillis(),
+                            deviceId, event.getDisplayId(), SystemClock.uptimeMillis(),
                             isPowerLongPress
                                     ? AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS
                                     : AssistUtils.INVOCATION_TYPE_UNKNOWN);
@@ -3972,8 +3973,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // There are several different flavors of "assistant" that can be launched from
     // various parts of the UI.
 
-    /** Asks the status bar to startAssist(), usually a full "assistant" interface */
+    /**
+     * Asks the status bar to startAssist(), usually a full "assistant" interface
+     * @deprecated Use {@link #launchAssistAction(String, int, int, long, int)} instead.
+     */
     private void launchAssistAction(String hint, int deviceId, long eventTime,
+            int invocationType) {
+        launchAssistAction(hint, deviceId, INVALID_DISPLAY, eventTime, invocationType);
+    }
+
+    private void launchAssistAction(String hint, int deviceId, int displayId, long eventTime,
             int invocationType) {
         sendCloseSystemWindows(SYSTEM_DIALOG_REASON_ASSIST);
         if (!isUserSetupComplete()) {
@@ -3992,6 +4001,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         args.putLong(Intent.EXTRA_TIME, eventTime);
         args.putInt(AssistUtils.INVOCATION_TYPE_KEY, invocationType);
+        if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
+            if (invocationType == AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS) {
+                args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID,
+                        displayId >= 0 ? displayId : DEFAULT_DISPLAY);
+            } else {
+                args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID, mTopFocusedDisplayId);
+            }
+        }
 
         SearchManager searchManager = mContext.getSystemService(SearchManager.class);
         if (searchManager != null) {
