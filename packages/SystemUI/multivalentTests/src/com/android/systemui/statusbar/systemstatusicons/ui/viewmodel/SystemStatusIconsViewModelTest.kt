@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepo
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
+import com.android.systemui.statusbar.policy.fakeDataSaverController
 import com.android.systemui.statusbar.policy.fakeHotspotController
 import com.android.systemui.statusbar.policy.fakeNextAlarmController
 import com.android.systemui.statusbar.policy.vpn.data.repository.vpnRepository
@@ -76,6 +77,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     private lateinit var slotAirplane: String
     private lateinit var slotBluetooth: String
     private lateinit var slotConnectedDisplay: String
+    private lateinit var slotDataSaver: String
     private lateinit var slotEthernet: String
     private lateinit var slotHotspot: String
     private lateinit var slotMute: String
@@ -91,6 +93,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         slotBluetooth = context.getString(com.android.internal.R.string.status_bar_bluetooth)
         slotConnectedDisplay =
             context.getString(com.android.internal.R.string.status_bar_connected_display)
+        slotDataSaver = context.getString(com.android.internal.R.string.status_bar_data_saver)
         slotEthernet = context.getString(com.android.internal.R.string.status_bar_ethernet)
         slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
@@ -193,6 +196,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             showZenMode()
             showBluetooth()
             showConnectedDisplay()
+            showDataSaver()
             showAirplaneMode()
             showNextAlarm()
             showEthernet()
@@ -205,6 +209,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotAirplane,
                     slotBluetooth,
                     slotConnectedDisplay,
+                    slotDataSaver,
                     slotEthernet,
                     slotHotspot,
                     slotNextAlarm,
@@ -224,6 +229,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotAirplane,
                     slotBluetooth,
                     slotConnectedDisplay,
+                    slotDataSaver,
                     slotHotspot,
                     slotMute,
                     slotNextAlarm,
@@ -310,6 +316,10 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private fun Kosmos.showHotspot() {
         fakeHotspotController.isHotspotEnabled = true
+    }
+
+    private fun Kosmos.showDataSaver() {
+        fakeDataSaverController.setDataSaverEnabled(true)
     }
 
     private fun Kosmos.showVpn() {

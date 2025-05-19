@@ -25,6 +25,7 @@ import com.android.systemui.statusbar.systemstatusicons.airplane.ui.viewmodel.Ai
 import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.NextAlarmIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.BluetoothIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.ConnectedDisplayIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.DataSaverIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.OrderedIconSlotNamesInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
@@ -55,6 +56,7 @@ constructor(
     airplaneModeIconViewModelFactory: AirplaneModeIconViewModel.Factory,
     bluetoothIconViewModelFactory: BluetoothIconViewModel.Factory,
     connectedDisplayIconViewModelFactory: ConnectedDisplayIconViewModel.Factory,
+    dataSaverIconViewModelFactory: DataSaverIconViewModel.Factory,
     ethernetIconViewModelFactory: EthernetIconViewModel.Factory,
     hotspotIconViewModelFactory: HotspotIconViewModel.Factory,
     muteIconViewModelFactory: MuteIconViewModel.Factory,
@@ -76,6 +78,7 @@ constructor(
     private val connectedDisplayIcon by lazy {
         connectedDisplayIconViewModelFactory.create(context)
     }
+    private val dataSaverIcon by lazy { dataSaverIconViewModelFactory.create(context) }
     private val ethernetIcon by lazy { ethernetIconViewModelFactory.create(context) }
     private val hotspotIcon by lazy { hotspotIconViewModelFactory.create(context) }
     private val muteIcon by lazy { muteIconViewModelFactory.create(context) }
@@ -90,6 +93,7 @@ constructor(
             airplaneModeIcon,
             bluetoothIcon,
             connectedDisplayIcon,
+            dataSaverIcon,
             ethernetIcon,
             hotspotIcon,
             muteIcon,
@@ -122,6 +126,7 @@ constructor(
             launch { airplaneModeIcon.activate() }
             launch { bluetoothIcon.activate() }
             launch { connectedDisplayIcon.activate() }
+            launch { dataSaverIcon.activate() }
             launch { ethernetIcon.activate() }
             launch { hotspotIcon.activate() }
             launch { muteIcon.activate() }
