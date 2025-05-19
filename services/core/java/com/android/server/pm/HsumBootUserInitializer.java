@@ -21,11 +21,13 @@ import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
+import android.multiuser.Flags;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.am.ActivityManagerService;
@@ -42,7 +44,10 @@ public final class HsumBootUserInitializer {
 
     private static final String TAG = HsumBootUserInitializer.class.getSimpleName();
 
-    private static final boolean DEBUG = false;
+    // NOTE: this class is small enough that it's ok to set DEBUG dynamically (it doesn't increase
+    // the binary too much and they're only called during boot). But if the number of Slogf.d()
+    // calls grows too much, we should change it to false.
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private final UserManagerService mUms;
     private final ActivityManagerService mAms;
@@ -92,16 +97,13 @@ public final class HsumBootUserInitializer {
         mContentResolver = contentResolver;
         mShouldAlwaysHaveMainUser = shouldAlwaysHaveMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
-        if (DEBUG) {
-            Slogf.d(TAG, "HsumBootUserInitializer(): shouldAlwaysHaveMainUser=%b, "
-                    + "shouldCreateInitialUser=%b",
-                    shouldAlwaysHaveMainUser, shouldCreateInitialUser);
-        }
     }
 
     // TODO(b/409650316): remove after flag's completely pushed
     private void preCreateInitialUserFlagInit(TimingsTraceAndSlog t) {
-        Slogf.d(TAG, "preCreateInitialUserFlagInit())");
+        if (DEBUG) {
+            Slogf.d(TAG, "preCreateInitialUserFlagInit())");
+        }
 
         if (mShouldAlwaysHaveMainUser) {
             t.traceBegin("createMainUserIfNeeded");
@@ -114,11 +116,13 @@ public final class HsumBootUserInitializer {
     private void preCreateInitialUserCreateMainUserIfNeeded() {
         final int mainUser = mUms.getMainUserId();
         if (mainUser != UserHandle.USER_NULL) {
-            Slogf.d(TAG, "Found existing MainUser, userId=%d", mainUser);
+            if (DEBUG) {
+                Slogf.d(TAG, "Found existing MainUser, userId=%d", mainUser);
+            }
             return;
         }
 
-        Slogf.d(TAG, "Creating a new MainUser");
+        Slogf.i(TAG, "Creating a new MainUser");
         try {
             final UserInfo newInitialUser = mUms.createUserInternalUnchecked(
                     /* name= */ null, // null will appear as "Owner" in on-demand localisation
@@ -148,9 +152,15 @@ public final class HsumBootUserInitializer {
      * creation.
      */
     public void init(TimingsTraceAndSlog t) {
-        Slogf.i(TAG, "init())");
+        if (DEBUG) {
+            Slogf.d(TAG, "init(): shouldAlwaysHaveMainUser=%b, "
+                    + "shouldCreateInitialUser=%b, Flags.createInitialUser=%b",
+                    mShouldAlwaysHaveMainUser, mShouldCreateInitialUser, Flags.createInitialUser());
+        } else {
+            Slogf.i(TAG, "Initializing");
+        }
 
-        if (!android.multiuser.Flags.createInitialUser()) {
+        if (!Flags.createInitialUser()) {
             preCreateInitialUserFlagInit(t);
             return;
         }
@@ -164,7 +174,9 @@ public final class HsumBootUserInitializer {
             createAdminUserIfNeeded(t);
             return;
         }
-        Slogf.d(TAG, "Not checking if initial user exists (should be handled externally)");
+        if (DEBUG) {
+            Slogf.d(TAG, "Not checking if initial user exists (should be handled externally)");
+        }
     }
 
     private void createMainUserIfNeeded(TimingsTraceAndSlog t) {
@@ -173,7 +185,10 @@ public final class HsumBootUserInitializer {
         try {
             int mainUserId = mUms.getMainUserId();
             if (mainUserId != UserHandle.USER_NULL) {
-                Slogf.d(TAG, "createMainUserIfNeeded(): found MainUser (userId=%d)", mainUserId);
+                if (DEBUG) {
+                    Slogf.d(TAG, "createMainUserIfNeeded(): found MainUser (userId=%d)",
+                            mainUserId);
+                }
                 return;
             }
             createInitialUser(/* isMainUser= */ true);
@@ -208,7 +223,7 @@ public final class HsumBootUserInitializer {
         } else {
             logName = "admin user";
         }
-        Slogf.d(TAG, "Creating %s", logName);
+        Slogf.i(TAG, "Creating %s", logName);
         try {
             final UserInfo newInitialUser = mUms.createUserInternalUnchecked(
                     /* name= */ null, // null will appear as "Owner" in on-demand localisation
