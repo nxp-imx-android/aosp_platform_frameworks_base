@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import android.annotation.NonNull;
 import android.app.usage.NetworkStatsManager;
 import android.net.NetworkStats;
+import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.SparseArray;
@@ -123,6 +124,12 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
         PowerProfile powerProfile = mock(PowerProfile.class);
         when(powerProfile.getNumDisplays()).thenReturn(1);
         return powerProfile;
+    }
+
+    public void awaitCompletion() {
+        ConditionVariable done = new ConditionVariable();
+        mHandler.post(done::open);
+        done.block();
     }
 
     public TimeBase getOnBatteryTimeBase() {
