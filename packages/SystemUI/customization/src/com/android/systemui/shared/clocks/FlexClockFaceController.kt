@@ -38,6 +38,7 @@ import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ClockFaceLayout
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
+import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
@@ -79,19 +80,6 @@ class FlexClockFaceController(
             }
         layerController.view.layoutParams =
             FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply { gravity = Gravity.CENTER }
-    }
-
-    /** See documentation at [FlexClockView.offsetGlyphsForStepClockAnimation]. */
-    private fun offsetGlyphsForStepClockAnimation(
-        clockStartLeft: Int,
-        direction: Int,
-        fraction: Float,
-    ) {
-        (view as? FlexClockView)?.offsetGlyphsForStepClockAnimation(
-            clockStartLeft,
-            direction,
-            fraction,
-        )
     }
 
     override val layout: ClockFaceLayout =
@@ -223,13 +211,9 @@ class FlexClockFaceController(
                 view.invalidate()
             }
 
-            override fun onPositionUpdated(fromLeft: Int, direction: Int, fraction: Float) {
-                layerController.animations.onPositionUpdated(fromLeft, direction, fraction)
-                if (isLargeClock) offsetGlyphsForStepClockAnimation(fromLeft, direction, fraction)
-            }
-
-            override fun onPositionUpdated(distance: Float, fraction: Float) {
-                layerController.animations.onPositionUpdated(distance, fraction)
+            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {
+                layerController.animations.onPositionAnimated(args)
+                if (isLargeClock) (view as? FlexClockView)?.offsetGlyphsForStepClockAnimation(args)
             }
 
             override fun onFidgetTap(x: Float, y: Float) {

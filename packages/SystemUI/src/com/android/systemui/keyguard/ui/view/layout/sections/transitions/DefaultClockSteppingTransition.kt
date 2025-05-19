@@ -23,6 +23,7 @@ import android.transition.TransitionValues
 import android.view.ViewGroup
 import com.android.app.animation.Interpolators
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.shared.R as sharedR
 
 class DefaultClockSteppingTransition(private val clock: ClockController) : Transition() {
@@ -66,10 +67,8 @@ class DefaultClockSteppingTransition(private val clock: ClockController) : Trans
         // toLeft - fromLeft is always positive, even when moving left.
         val direction = if (toWindowX - fromWindowX > 0) 1 else -1
         anim.addUpdateListener { animation: ValueAnimator ->
-            clock.largeClock.animations.onPositionUpdated(
-                fromLeft,
-                direction,
-                animation.animatedFraction,
+            clock.largeClock.animations.onPositionAnimated(
+                ClockPositionAnimationArgs(fromLeft, direction, animation.animatedFraction)
             )
         }
         return anim
