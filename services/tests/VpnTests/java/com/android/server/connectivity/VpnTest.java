@@ -2227,6 +2227,8 @@ public class VpnTest extends VpnTestBase {
                                 new LinkAddress(TEST_VPN_INTERNAL_IP6, IP6_PREFIX_LEN)),
                         address -> addresses.contains(address))));
         verify(mVpnConnectivityMetrics).setServerIpProtocol(TEST_VPN_SERVER_IP);
+        // Verify connection metrics notification.
+        verify(mVpnConnectivityMetrics).notifyVpnConnected();
         // Check LinkProperties
         final LinkProperties lp = lpCaptor.getValue();
         final List<RouteInfo> expectedRoutes =
@@ -3027,6 +3029,8 @@ public class VpnTest extends VpnTestBase {
         assertEquals(expectedRoutes, lp.getRoutes());
 
         verify(mMockNetworkAgent, timeout(TEST_TIMEOUT_MS)).unregister();
+        // Verify disconnection metrics notification.
+        verify(mVpnConnectivityMetrics).notifyVpnDisconnected();
     }
 
     @Test
@@ -3321,6 +3325,7 @@ public class VpnTest extends VpnTestBase {
         verify(mConnectivityManager, times(1)).registerNetworkProvider(argThat(
                 provider -> provider.getName().contains("VpnNetworkProvider")
         ));
+        doReturn(true).when(mVpnConnectivityMetrics).isPlatformVpn();
         return vpn;
     }
 

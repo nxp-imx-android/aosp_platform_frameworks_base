@@ -27,6 +27,7 @@ import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA384;
 import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA512;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CBC;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CTR;
+import static android.net.VpnManager.TYPE_VPN_PLATFORM;
 
 import android.net.ConnectivityManager;
 import android.net.LinkAddress;
@@ -38,6 +39,8 @@ import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+
+import com.android.internal.util.FrameworkStatsLog;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -66,6 +69,8 @@ public class VpnConnectivityMetrics {
     private final int mUserId;
     @NonNull
     private final ConnectivityManager mConnectivityManager;
+    @NonNull
+    private final Dependencies mDependencies;
     private int mVpnType = VPN_TYPE_UNKNOWN;
     private int mVpnProfileType = VPN_PROFILE_TYPE_UNKNOWN;
     private int mMtu = 0;
@@ -107,9 +112,33 @@ public class VpnConnectivityMetrics {
         sAlgorithms.put(10, CRYPT_AES_CTR);
     }
 
+    /**
+     * Dependencies of VpnConnectivityMetrics, for injection in tests.
+     */
+    public static class Dependencies {
+
+        /**
+         * @see FrameworkStatsLog
+         */
+        public void statsWrite(int vpnType, int vpnNetworkIpProtocol, int serverIpProtocol,
+                int vpnProfileType, int allowedAlgorithms, int mtu, int[] underlyingNetworkType,
+                boolean connected, int userId) {
+            FrameworkStatsLog.write(FrameworkStatsLog.VPN_CONNECTION_REPORTED, vpnType,
+                    vpnNetworkIpProtocol, serverIpProtocol, vpnProfileType, allowedAlgorithms, mtu,
+                    underlyingNetworkType, connected, userId);
+        }
+    }
+
     public VpnConnectivityMetrics(int userId, ConnectivityManager connectivityManager) {
+        this(userId, connectivityManager, new Dependencies());
+    }
+
+    @VisibleForTesting
+    VpnConnectivityMetrics(int userId, ConnectivityManager connectivityManager,
+            Dependencies dependencies) {
         mUserId = userId;
         mConnectivityManager = connectivityManager;
+        mDependencies = dependencies;
     }
 
     /**
@@ -264,5 +293,57 @@ public class VpnConnectivityMetrics {
             ipProtocol = IP_PROTOCOL_IPv6;
         }
         return ipProtocol;
+    }
+
+    /**
+     * Checks if the VPN associated with these metrics is a platform-managed VPN.
+     * The determination is based on the internal {@code mVpnType} field, which
+     * should be set during the VPN's configuration.
+     *
+     * @return {@code true} if the VPN type matches {@code TYPE_VPN_PLATFORM};
+     *         {@code false} otherwise.
+     */
+    public boolean isPlatformVpn() {
+        return mVpnType == TYPE_VPN_PLATFORM;
+    }
+
+
+
+    /**
+     * Notifies that a VPN connected event has occurred.
+     *
+     * This method gathers the current VPN state information from internal fields and reports it to
+     * the system's statistics logging service.
+     */
+    public void notifyVpnConnected() {
+        mDependencies.statsWrite(
+                mVpnType,
+                mVpnNetworkIpProtocol,
+                mServerIpProtocol,
+                mVpnProfileType,
+                mAllowedAlgorithms,
+                mMtu,
+                mUnderlyingNetworkTypes,
+                true /* connected */,
+                mUserId);
+    }
+
+    /**
+     * Notifies that a VPN disconnected event has occurred.
+     *
+     * This method gathers the current VPN state information from internal fields and reports it to
+     * the system's statistics logging service.
+     */
+    public void notifyVpnDisconnected() {
+        mDependencies.statsWrite(
+                mVpnType,
+                mVpnNetworkIpProtocol,
+                mServerIpProtocol,
+                mVpnProfileType,
+                mAllowedAlgorithms,
+                mMtu,
+                mUnderlyingNetworkTypes,
+                false /* connected */,
+                mUserId);
     }
 }

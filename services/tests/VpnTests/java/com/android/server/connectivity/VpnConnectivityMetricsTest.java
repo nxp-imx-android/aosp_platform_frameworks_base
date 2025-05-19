@@ -38,16 +38,28 @@ import static com.android.server.connectivity.VpnConnectivityMetrics.checkIpProt
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
+import android.net.ConnectivityManager;
 import android.net.Ikev2VpnProfile;
+import android.net.InetAddresses;
 import android.net.LinkAddress;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.VpnManager;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.net.VpnProfile;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,6 +67,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class VpnConnectivityMetricsTest {
+    private static final int USER_ID = 10;
+    private static final String VPN_CLIENT_IP_V4 = "192.0.2.1/32";
+    private static final String VPN_CLIENT_IP_V6 = "2001:db8:1:2::ffe/128";
+    private static final String VPN_SERVER_IP_V4 = "192.0.2.2";
+    private static final String VPN_SERVER_IP_V6 = "2001:db8::1";
+
+    @Mock
+    private ConnectivityManager mCm;
+    @Mock
+    private VpnConnectivityMetrics.Dependencies mDeps;
+    private VpnConnectivityMetrics mMetrics;
+
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        mMetrics = new VpnConnectivityMetrics(USER_ID, mCm, mDeps);
+    }
+
     @Test
     public void testBuildAllowedAlgorithmsBitmask() {
         assertEquals(1536, buildAllowedAlgorithmsBitmask(List.of(CRYPT_AES_CBC, CRYPT_AES_CTR)));
@@ -80,12 +111,73 @@ public class VpnConnectivityMetricsTest {
 
     @Test
     public void testCheckIpProtocol() {
-        final LinkAddress vpnClientIpv4 = new LinkAddress("192.0.2.1/32");
-        final LinkAddress vpnClientIpv6 = new LinkAddress("2001:db8:1:2::ffe/128");
+        final LinkAddress vpnClientIpv4 = new LinkAddress(VPN_CLIENT_IP_V4);
+        final LinkAddress vpnClientIpv6 = new LinkAddress(VPN_CLIENT_IP_V6);
 
         assertEquals(IP_PROTOCOL_UNKNOWN, checkIpProtocol(List.of()));
         assertEquals(IP_PROTOCOL_IPv4, checkIpProtocol(List.of(vpnClientIpv4)));
         assertEquals(IP_PROTOCOL_IPv6, checkIpProtocol(List.of(vpnClientIpv6)));
         assertEquals(IP_PROTOCOL_IPv4v6, checkIpProtocol(List.of(vpnClientIpv4, vpnClientIpv6)));
+    }
+
+    @Test
+    public void testNotifyVpnConnected() {
+        final Network cellNetwork = new Network(1234);
+        final NetworkCapabilities cellCap = new NetworkCapabilities();
+        cellCap.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        doReturn(cellCap).when(mCm).getNetworkCapabilities(cellNetwork);
+
+        // Fill in metrics data
+        mMetrics.setVpnType(VpnManager.TYPE_VPN_PLATFORM);
+        mMetrics.setMtu(1327);
+        mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS);
+        mMetrics.setAllowedAlgorithms(Ikev2VpnProfile.DEFAULT_ALGORITHMS);
+        mMetrics.setUnderlyingNetwork(new Network[] { cellNetwork });
+        mMetrics.setVpnNetworkIpProtocol(
+                List.of(new LinkAddress(VPN_CLIENT_IP_V4), new LinkAddress(VPN_CLIENT_IP_V6)));
+        mMetrics.setServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
+
+        // Verify a vpn connected event with the filled in data.
+        mMetrics.notifyVpnConnected();
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testNotifyDisconnected() {
+        final Network wifiNetwork = new Network(1235);
+        final NetworkCapabilities wifiCap = new NetworkCapabilities();
+        wifiCap.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        doReturn(wifiCap).when(mCm).getNetworkCapabilities(wifiNetwork);
+
+        // Fill in metrics data
+        mMetrics.setVpnType(VpnManager.TYPE_VPN_PLATFORM);
+        mMetrics.setMtu(1280);
+        mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS);
+        mMetrics.setAllowedAlgorithms(Ikev2VpnProfile.DEFAULT_ALGORITHMS);
+        mMetrics.setUnderlyingNetwork(new Network[] { wifiNetwork });
+        mMetrics.setVpnNetworkIpProtocol(List.of(new LinkAddress(VPN_CLIENT_IP_V6)));
+        mMetrics.setServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V6));
+
+        // Verify a vpn disconnected event with the filled in data.
+        mMetrics.notifyVpnDisconnected();
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv6,
+                IP_PROTOCOL_IPv6,
+                VpnProfile.TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS + 1,
+                1999 /* allowedAlgorithms */,
+                1280 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_WIFI },
+                false /* connected */,
+                USER_ID);
     }
 }

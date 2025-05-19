@@ -711,6 +711,10 @@ public class Vpn {
         return mEnableTeardown;
     }
 
+    private boolean isVpnMetricsLoggable() {
+        return mVpnConnectivityMetrics != null && mVpnConnectivityMetrics.isPlatformVpn();
+    }
+
     /**
      * Update current state, dispatching event to listeners.
      */
@@ -731,6 +735,9 @@ public class Vpn {
             case CONNECTED:
                 if (null != mNetworkAgent) {
                     mNetworkAgent.markConnected();
+                    if (isVpnMetricsLoggable()) {
+                        mVpnConnectivityMetrics.notifyVpnConnected();
+                    }
                 }
                 break;
             case DISCONNECTED:
@@ -738,6 +745,9 @@ public class Vpn {
                 if (null != mNetworkAgent) {
                     mNetworkAgent.unregister();
                     mNetworkAgent = null;
+                    if (isVpnMetricsLoggable()) {
+                        mVpnConnectivityMetrics.notifyVpnDisconnected();
+                    }
                 }
                 break;
             case CONNECTING:
@@ -2292,7 +2302,7 @@ public class Vpn {
     private void setMtu(int mtu) {
         synchronized (Vpn.this) {
             mConfig.mtu = mtu;
-            if (mVpnConnectivityMetrics != null) {
+            if (isVpnMetricsLoggable()) {
                 mVpnConnectivityMetrics.setMtu(mtu);
             }
         }
@@ -2301,7 +2311,7 @@ public class Vpn {
     private void setUnderlyingNetworksAndMetrics(@NonNull Network[] networks) {
         synchronized (Vpn.this) {
             mConfig.underlyingNetworks = networks;
-            if (mVpnConnectivityMetrics != null) {
+            if (isVpnMetricsLoggable()) {
                 mVpnConnectivityMetrics.setUnderlyingNetwork(mConfig.underlyingNetworks);
             }
         }
@@ -2992,7 +3002,7 @@ public class Vpn {
             // The update on VPN and the IPsec tunnel will be done when migration is fully complete
             // in onChildMigrated
             mIkeConnectionInfo = ikeConnectionInfo;
-            if (mVpnConnectivityMetrics != null) {
+            if (isVpnMetricsLoggable()) {
                 mVpnConnectivityMetrics.setServerIpProtocol(ikeConnectionInfo.getRemoteAddress());
             }
         }
@@ -3064,7 +3074,7 @@ public class Vpn {
 
                     mConfig.addresses.clear();
                     mConfig.addresses.addAll(internalAddresses);
-                    if (mVpnConnectivityMetrics != null) {
+                    if (isVpnMetricsLoggable()) {
                         mVpnConnectivityMetrics.setVpnNetworkIpProtocol(mConfig.addresses);
                     }
 
