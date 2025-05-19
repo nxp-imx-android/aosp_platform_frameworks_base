@@ -16,7 +16,7 @@
 
 package com.android.server.wm;
 
-import static android.tracing.perfetto.DataSourceParams.PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT;
+import static android.tracing.perfetto.DataSourceParams.PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -123,7 +123,7 @@ public final class WindowTracingDataSource extends DataSource<WindowTracingDataS
         DataSourceParams params =
                 new DataSourceParams.Builder()
                         .setBufferExhaustedPolicy(
-                                PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_ABORT)
+                                PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP)
                         .setPostponeStop(true)
                         .build();
         register(params);
