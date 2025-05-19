@@ -29,6 +29,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -68,6 +69,7 @@ public class AutoclickTypePanel {
     // Initial panel position in screen coordinates.
     private int mPanelStartX, mPanelStartY;
     private boolean mIsDragging = false;
+    private PointerIcon mCurrentCursor;
 
     // Types of click the AutoclickTypePanel supports.
     @IntDef({
@@ -195,11 +197,24 @@ public class AutoclickTypePanel {
         mLongPressButton =
                 mContentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
 
+        // Initialize the cursor icons.
+        mCurrentCursor = PointerIcon.getSystemIcon(context, PointerIcon.TYPE_ARROW);
+
         initializeButtonState();
 
         // Set up touch event handling for the panel to allow the user to drag and reposition the
         // panel by touching and moving it.
         mContentView.setOnTouchListener(this::onPanelTouch);
+
+        // Set hover behavior for the panel, show grab when hovering.
+        mContentView.setOnHoverListener((v, event) -> {
+            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
+            v.setPointerIcon(mCurrentCursor);
+            return false;
+        });
+
+        // Show default cursor when hovering over buttons.
+        setDefaultCursorForButtons();
     }
 
     /**
@@ -223,6 +238,13 @@ public class AutoclickTypePanel {
                 v.getLocationOnScreen(location);
                 mPanelStartX = location[0];
                 mPanelStartY = location[1];
+                // Show grabbing cursor when dragging starts.
+                boolean isSynthetic =
+                        (event.getFlags() & MotionEvent.FLAG_IS_GENERATED_GESTURE) != 0;
+                if (!isSynthetic) {
+                    mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
+                    v.setPointerIcon(mCurrentCursor);
+                }
                 return true;
             case MotionEvent.ACTION_MOVE:
                 mIsDragging = true;
@@ -248,6 +270,9 @@ public class AutoclickTypePanel {
                     snapToNearestEdge(mParams);
                 }
                 mIsDragging = false;
+                // Show grab cursor when dragging ends.
+                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
+                v.setPointerIcon(mCurrentCursor);
                 return true;
             case MotionEvent.ACTION_OUTSIDE:
                 if (mExpanded) {
@@ -678,6 +703,22 @@ public class AutoclickTypePanel {
         }
     }
 
+    private void setDefaultCursorForButtons() {
+        View[] buttons = {
+                mLeftClickButton, mRightClickButton, mDoubleClickButton,
+                mScrollButton, mDragButton, mLongPressButton,
+                mPauseButton, mPositionButton
+        };
+
+        for (View button : buttons) {
+            button.setOnHoverListener((v, event) -> {
+                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_ARROW);
+                v.setPointerIcon(mCurrentCursor);
+                return false;
+            });
+        }
+    }
+
     @VisibleForTesting
     boolean getExpansionStateForTesting() {
         return mExpanded;
@@ -703,6 +744,11 @@ public class AutoclickTypePanel {
     @VisibleForTesting
     boolean getIsDraggingForTesting() {
         return mIsDragging;
+    }
+
+    @VisibleForTesting
+    PointerIcon getCurrentCursorForTesting() {
+        return mCurrentCursor;
     }
 
     /**
