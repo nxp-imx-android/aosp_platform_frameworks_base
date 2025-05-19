@@ -858,6 +858,8 @@
     <!-- Added in 25Q4 -->
     <protected-broadcast android:name="android.intent.action.STOP_VOICE_COMMAND" />
 
+    <!-- Added in 26Q2 -->
+    <protected-broadcast android:name="android.telephony.action.STK_SETUP_EVENT_LIST" />
 
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
