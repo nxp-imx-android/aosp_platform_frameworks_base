@@ -18,6 +18,7 @@ package com.android.systemui.topwindoweffects.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
+import java.io.PrintWriter
 import javax.inject.Inject
 
 @SysUISingleton
@@ -31,9 +32,19 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
 
     val isPowerButtonLongPressed = squeezeEffectRepository.isPowerButtonLongPressed
 
-    suspend fun getInvocationEffectInitialDelayMs() =
-        squeezeEffectRepository.getInvocationEffectInitialDelayMs()
+    fun getInvocationEffectInitialDelayMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectInitialDelayMillis()
+    }
 
-    suspend fun getInvocationEffectInwardsAnimationDurationMs() =
-        squeezeEffectRepository.getInvocationEffectInwardsAnimationDurationMs()
+    fun getInvocationEffectInAnimationDurationMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectInAnimationDurationMillis()
+    }
+
+    fun getInvocationEffectOutAnimationDurationMillis(): Long {
+        return squeezeEffectRepository.getInvocationEffectOutAnimationDurationMillis()
+    }
+
+    fun dump(pw: PrintWriter, args: Array<out String>) {
+        squeezeEffectRepository.dump(pw, args)
+    }
 }

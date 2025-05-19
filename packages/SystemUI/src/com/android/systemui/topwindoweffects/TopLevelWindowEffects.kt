@@ -29,7 +29,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
@@ -89,10 +88,12 @@ constructor(
     }
 
     private suspend fun startSqueeze() {
-        delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMs())
+        delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMillis())
         setRequestTopUi(true)
         val inwardsAnimationDuration =
-            squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs()
+            squeezeEffectInteractor.getInvocationEffectInAnimationDurationMillis()
+        val outwardsAnimationDuration =
+            squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis()
         animateSqueezeProgressTo(
             targetProgress = 1f,
             duration = inwardsAnimationDuration,
@@ -100,13 +101,13 @@ constructor(
         ) {
             animateSqueezeProgressTo(
                 targetProgress = 0f,
-                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
+                duration = outwardsAnimationDuration,
                 interpolator = InterpolatorsAndroidX.LEGACY,
             ) {
                 finishAnimation()
             }
         }
-        hapticPlayer?.start(inwardsAnimationDuration.toInt() + DEFAULT_OUTWARD_EFFECT_DURATION)
+        hapticPlayer?.start(inwardsAnimationDuration.toInt() + outwardsAnimationDuration.toInt())
         squeezeEffectInteractor.isPowerButtonLongPressed.collectLatest { isLongPressed ->
             if (isLongPressed) {
                 isAnimationInterruptible = false
@@ -119,7 +120,7 @@ constructor(
             hapticPlayer?.cancel()
             animateSqueezeProgressTo(
                 targetProgress = 0f,
-                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
+                duration = squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis(),
                 interpolator = InterpolatorsAndroidX.LEGACY,
             ) {
                 finishAnimation()
@@ -167,6 +168,7 @@ constructor(
         pw.println("$TAG:")
         pw.println("  isAnimationInterruptible=$isAnimationInterruptible")
         pw.println("  squeezeProgress=$squeezeProgress")
+        squeezeEffectInteractor.dump(pw, args)
     }
 
     companion object {

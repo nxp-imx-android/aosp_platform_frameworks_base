@@ -16,16 +16,11 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
-import android.app.role.OnRoleHoldersChangedListener
-import android.app.role.RoleManager
-import android.content.pm.UserInfo
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
 import android.os.Bundle
-import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -37,10 +32,10 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmos
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_KEY
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.SET_INVOCATION_EFFECT_PARAMETERS_ACTION
-import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.util.settings.FakeGlobalSettings
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Executor
@@ -50,10 +45,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
-import org.mockito.Mockito.atLeast
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
 @SmallTest
@@ -63,13 +56,8 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val globalSettings = FakeGlobalSettings(StandardTestDispatcher())
     private val mainExecutor = Executor(Runnable::run)
-    private val userRepository = FakeUserRepository()
 
     @Mock private lateinit var inputManager: InputManager
-    @Mock private lateinit var roleManager: RoleManager
-
-    private val onRoleHoldersChangedListener =
-        ArgumentCaptor.forClass(OnRoleHoldersChangedListener::class.java)
 
     private val keyGestureEventListenerCaptor =
         ArgumentCaptor.forClass(InputManager.KeyGestureEventListener::class.java)
@@ -78,40 +66,47 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         Kosmos.Fixture {
             SqueezeEffectRepositoryImpl(
                 context = context,
-                coroutineScope = testScope.backgroundScope,
                 globalSettings = globalSettings,
-                userRepository = userRepository,
                 inputManager = inputManager,
                 coroutineContext = testScope.testScheduler,
-                roleManager = roleManager,
                 executor = mainExecutor,
+                preferences = fakeInvocationEffectPreferences,
             )
         }
 
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
+        kosmos.fakeInvocationEffectPreferences.apply {
+            clear()
+            activeAssistant = "a"
+            activeUserId = 0
+        }
     }
 
     @DisableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
     fun testSqueezeEffectDisabled_FlagDisabled() =
         kosmos.runTest {
-            underTest.tryHandleSetUiHints(createAssistantSettingBundle(true))
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(false)
+
             val isEffectEnabledAndPowerButtonPressed by
                 collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+
             assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testSqueezeEffectDisabled_GlobalSettingDisabled() =
+    fun testSqueezeEffectEnabled_DisabledFromPhoneWindowManager() =
         kosmos.runTest {
-            underTest.tryHandleSetUiHints(createAssistantSettingBundle(true))
-            globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 0)
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
 
             val isEffectEnabledAndPowerButtonPressed by
                 collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+
+            // no events sent from KeyGestureEvent to imitate it was disabled from PWM
+
             assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
         }
 
@@ -119,21 +114,11 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     @Test
     fun testSqueezeEffectDisabled_AssistantSettingDisabled() =
         kosmos.runTest {
-            globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 5)
-            underTest.tryHandleSetUiHints(createAssistantSettingBundle(false))
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(false)
 
             val isEffectEnabledAndPowerButtonPressed by
                 collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
-            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
-        }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
-    @Test
-    fun testSqueezeEffectEnabled_AllSettingsEnabled() =
-        kosmos.runTest {
-            underTest.tryHandleSetUiHints(createAssistantSettingBundle(true))
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
             verify(inputManager)
                 .registerKeyGestureEventListener(
                     eq(mainExecutor),
@@ -145,189 +130,85 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                     .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT)
                     .build()
             keyGestureEventListenerCaptor.value.onKeyGestureEvent(event)
+
+            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
+        }
+
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testSqueezeEffectEnabled_AllSettingsEnabled() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
+
+            val isEffectEnabledAndPowerButtonPressed by
+                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+
+            verify(inputManager)
+                .registerKeyGestureEventListener(
+                    eq(mainExecutor),
+                    keyGestureEventListenerCaptor.capture(),
+                )
+            val event =
+                KeyGestureEvent.Builder()
+                    .setAction(KeyGestureEvent.ACTION_GESTURE_START)
+                    .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT)
+                    .build()
+            keyGestureEventListenerCaptor.value.onKeyGestureEvent(event)
+
             assertThat(isEffectEnabledAndPowerButtonPressed).isTrue()
         }
 
-    private suspend fun Kosmos.initUserAndAssistant(
-        userInfos: List<UserInfo>,
-        userIndex: Int,
-        assistantName: String,
-    ) {
-        collectLastValue(
-            underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture
-        ) //  ensure flow is started
-        userRepository.setUserInfos(userInfos)
-        userRepository.setSelectedUserInfo(userInfos[userIndex])
-        verify(roleManager)
-            .addOnRoleHoldersChangedListenerAsUser(
-                eq(mainExecutor),
-                onRoleHoldersChangedListener.capture(),
-                eq(UserHandle.ALL),
-            )
-        `when`(
-                roleManager.getRoleHoldersAsUser(
-                    eq(RoleManager.ROLE_ASSISTANT),
-                    eq(userInfos[userIndex].userHandle),
-                )
-            )
-            .thenReturn(listOf(assistantName))
-        onRoleHoldersChangedListener.value.onRoleHoldersChanged(
-            RoleManager.ROLE_ASSISTANT,
-            userInfos[userIndex].userHandle,
-        )
-    }
-
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testAssistantEnabledStatusIsDefault_AssistantSwitched() =
+    fun testInvocationEffectInwardsAnimationDelay() =
         kosmos.runTest {
-            initUserAndAssistant(userInfos, 0, "a")
-            underTest.tryHandleSetUiHints(
-                createAssistantSettingBundle(
-                    !IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE
-                )
-            )
+            fakeInvocationEffectPreferences.setInwardAnimationPaddingDurationMillis(450)
 
-            `when`(
-                    roleManager.getRoleHoldersAsUser(
-                        eq(RoleManager.ROLE_ASSISTANT),
-                        eq(userInfos[0].userHandle),
-                    )
-                )
-                .thenReturn(listOf("b"))
-            onRoleHoldersChangedListener.value.onRoleHoldersChanged(
-                RoleManager.ROLE_ASSISTANT,
-                userInfos[0].userHandle,
-            )
-
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
-            verify(inputManager, atLeast(1))
-                .registerKeyGestureEventListener(
-                    eq(mainExecutor),
-                    keyGestureEventListenerCaptor.capture(),
-                )
-            val event =
-                KeyGestureEvent.Builder()
-                    .setAction(KeyGestureEvent.ACTION_GESTURE_START)
-                    .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT)
-                    .build()
-            keyGestureEventListenerCaptor.value.onKeyGestureEvent(event)
-
-            assertThat(isEffectEnabledAndPowerButtonPressed)
-                .isEqualTo(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE)
+            assertThat(underTest.getInvocationEffectInAnimationDurationMillis()).isEqualTo(800)
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testAssistantEnabledStatusIsDefault_UserSwitched() =
+    fun testInvocationEffectOutwardsAnimationDelay() =
         kosmos.runTest {
-            initUserAndAssistant(userInfos, 0, "a")
-            underTest.tryHandleSetUiHints(
-                createAssistantSettingBundle(
-                    !IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE
-                )
-            )
+            fakeInvocationEffectPreferences.setOutwardAnimationDurationMillis(400)
 
-            userRepository.setSelectedUserInfo(userInfos[1])
-
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
-            verify(inputManager, atLeast(1))
-                .registerKeyGestureEventListener(
-                    eq(mainExecutor),
-                    keyGestureEventListenerCaptor.capture(),
-                )
-            val event =
-                KeyGestureEvent.Builder()
-                    .setAction(KeyGestureEvent.ACTION_GESTURE_START)
-                    .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT)
-                    .build()
-            keyGestureEventListenerCaptor.value.onKeyGestureEvent(event)
-
-            assertThat(isEffectEnabledAndPowerButtonPressed)
-                .isEqualTo(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE)
+            assertThat(underTest.getInvocationEffectOutAnimationDurationMillis()).isEqualTo(400)
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testAssistantEnabledStatusIsRetained_AssistantSwitchedBackAndForth() =
+    fun testSetUiHintsShouldUpdatePreferences() =
         kosmos.runTest {
-            initUserAndAssistant(userInfos, 0, "a")
-            globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 5)
-            underTest.tryHandleSetUiHints(
-                createAssistantSettingBundle(
-                    !IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE
-                )
-            )
+            fakeInvocationEffectPreferences.activeUserId = 1
+            fakeInvocationEffectPreferences.activeAssistant = "A"
 
-            `when`(
-                    roleManager.getRoleHoldersAsUser(
-                        eq(RoleManager.ROLE_ASSISTANT),
-                        eq(UserHandle.CURRENT),
-                    )
-                )
-                .thenReturn(listOf("b"))
-            onRoleHoldersChangedListener.value.onRoleHoldersChanged(
-                RoleManager.ROLE_ASSISTANT,
-                UserHandle.CURRENT,
-            )
-            `when`(
-                    roleManager.getRoleHoldersAsUser(
-                        eq(RoleManager.ROLE_ASSISTANT),
-                        eq(UserHandle.CURRENT),
-                    )
-                )
-                .thenReturn(listOf("a"))
-            onRoleHoldersChangedListener.value.onRoleHoldersChanged(
-                RoleManager.ROLE_ASSISTANT,
-                UserHandle.CURRENT,
-            )
+            assertThat(fakeInvocationEffectPreferences.isActiveUserAndAssistantPersisted())
+                .isFalse()
+
+            val hints = createAssistantSettingBundle(false, 0, 1000)
+            underTest.tryHandleSetUiHints(hints)
 
             val isEffectEnabledAndPowerButtonPressed by
                 collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
-            assertThat(isEffectEnabledAndPowerButtonPressed)
-                .isEqualTo(!IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE)
+
+            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
+            assertThat(fakeInvocationEffectPreferences.getInwardAnimationPaddingDurationMillis())
+                .isEqualTo(0)
+            assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
+                .isEqualTo(1000)
+            assertThat(fakeInvocationEffectPreferences.isActiveUserAndAssistantPersisted()).isTrue()
         }
 
-    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
-    @Test
-    fun testAssistantEnabledStatusIsRetained_UserSwitchedBackAndForth() =
-        kosmos.runTest {
-            initUserAndAssistant(userInfos, 0, "a")
-            globalSettings.putInt(POWER_BUTTON_LONG_PRESS, 5)
-            underTest.tryHandleSetUiHints(
-                createAssistantSettingBundle(
-                    !IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE
-                )
-            )
-
-            userRepository.setSelectedUserInfo(userInfos[1])
-            userRepository.setSelectedUserInfo(userInfos[0])
-
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
-            assertThat(isEffectEnabledAndPowerButtonPressed)
-                .isEqualTo(!IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE)
-        }
-
-    private fun createAssistantSettingBundle(enableAssistantSetting: Boolean) =
+    private fun createAssistantSettingBundle(
+        enableAssistantSetting: Boolean,
+        inwardsPaddingDuration: Long,
+        outwardsAnimationDuration: Long,
+    ) =
         Bundle().apply {
             putString(AssistManager.ACTION_KEY, SET_INVOCATION_EFFECT_PARAMETERS_ACTION)
             putBoolean(IS_INVOCATION_EFFECT_ENABLED_KEY, enableAssistantSetting)
+            putLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, inwardsPaddingDuration)
+            putLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, outwardsAnimationDuration)
         }
-
-    companion object {
-        private val userInfos =
-            listOf(
-                UserInfo().apply {
-                    id = 0
-                    name = "User 0"
-                },
-                UserInfo().apply {
-                    id = 1
-                    name = "User 1"
-                },
-            )
-    }
 }

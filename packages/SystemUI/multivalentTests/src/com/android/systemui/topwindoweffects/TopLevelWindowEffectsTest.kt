@@ -34,10 +34,10 @@ import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.testKosmos
 import com.android.systemui.topui.TopUiControllerRefactor
 import com.android.systemui.topui.mockTopUiController
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INITIAL_DELAY_MILLIS
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INWARD_EFFECT_DURATION
+import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INWARD_EFFECT_DURATION_MILLIS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticsBuilder
@@ -45,10 +45,10 @@ import com.android.systemui.topwindoweffects.ui.viewmodel.squeezeEffectHapticPla
 import com.android.wm.shell.appzoomout.appZoomOutOptional
 import com.android.wm.shell.appzoomout.fakeAppZoomOut
 import com.google.common.truth.Truth.assertThat
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -78,7 +78,9 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             lowTickDuration = primitiveDurations[0],
             quickRiseDuration = primitiveDurations[1],
             tickDuration = primitiveDurations[2],
-            totalEffectDuration = DEFAULT_OUTWARD_EFFECT_DURATION + DEFAULT_INWARD_EFFECT_DURATION,
+            totalEffectDuration =
+                DEFAULT_OUTWARD_EFFECT_DURATION_MS.toInt() +
+                    DEFAULT_INWARD_EFFECT_DURATION_MILLIS.toInt(),
         )
 
     private val Kosmos.underTest by
@@ -308,12 +310,12 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
 
             // Animation continues: complete inward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION - 10L)
+            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS - 10L)
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(1f)
 
             // Animation continues: complete outward animation (triggered by inward animation's end)
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
 
@@ -339,7 +341,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             val timesCancelledBefore = vibratorHelper.timesCancelled
 
             // Complete inward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS)
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(1f) // Animation proceeds
 
@@ -348,7 +350,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
 
             // Complete outward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
 
@@ -378,12 +380,12 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             val timesCancelledBefore = vibratorHelper.timesCancelled
 
             // Complete inward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS)
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(1f)
 
             // Outward animation is triggered by the end of the inward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
 
@@ -412,7 +414,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             advanceTime((initialDelay + 1).milliseconds)
             val timesCancelledBefore = vibratorHelper.timesCancelled
             // Progress half-way into inward animation
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION.toLong() / 2)
+            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS / 2)
             runCurrent()
 
             val progressBeforeCancel = fakeAppZoomOut.lastTopLevelProgress
@@ -429,7 +431,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore + 1)
 
             // Complete the cancellation (outward) animation
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
             runCurrent()
 
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
@@ -473,9 +475,9 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             reset(kosmos.mockTopUiController, kosmos.notificationShadeWindowController)
 
             // Action: Complete the full animation cycle (inward + outward)
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION.toLong() - 1L)
+            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS - 1L)
             runCurrent()
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
             runCurrent()
 
             // Verification: setRequestTopUi(false) should be called upon completion
@@ -495,7 +497,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             underTest.start()
             advanceTime((initialDelay + 1).milliseconds) // Pass initial delay
             // Progress animation part way
-            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION.toLong() / 2)
+            animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS / 2)
             runCurrent()
 
             // Verification: Ensure TopUI was requested initially
@@ -508,7 +510,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 false
             runCurrent()
             // Allow cancellation animation to complete
-            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION.toLong())
+            animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
             runCurrent()
 
             // Verification: setRequestTopUi(false) should be called upon cancellation
