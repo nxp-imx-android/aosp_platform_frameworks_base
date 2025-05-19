@@ -18,6 +18,7 @@ package com.android.test.transactionflinger.activities
 
 import android.graphics.Color
 import com.android.test.transactionflinger.Scene
+import com.android.test.transactionflinger.checkerboardScene
 import com.android.test.transactionflinger.scene
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
@@ -29,41 +30,8 @@ class BlurOnOffActivity : SceneActivity() {
 
     override fun obtainScene(): Scene {
         return scene {
-            scene {
-                content { data, width, height ->
-                    drawColor(Color.BLACK, data, width, height)
-                }
-                x = 0.0
-                y = 0.0
-                width = 0.5
-                height = 0.5
-            }
-            scene {
-                content { data, width, height ->
-                    drawColor(Color.WHITE, data, width, height)
-                }
-                x = 0.0
-                y = 0.0
-                width = 0.5
-                height = 0.5
-            }
-            scene {
-                content { data, width, height ->
-                    drawColor(Color.WHITE, data, width, height)
-                }
-                x = 0.5
-                y = 0.0
-                width = 0.5
-                height = 0.5
-            }
-            scene {
-                content { data, width, height ->
-                    drawColor(Color.BLACK, data, width, height)
-                }
-                x = 0.5
-                y = 0.5
-                width = 0.5
-                height = 0.5
+            externalScene {
+                checkerboardScene(2, 2)
             }
             scene {
                 content { data, width, height ->

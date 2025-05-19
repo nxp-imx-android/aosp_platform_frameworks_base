@@ -16,6 +16,7 @@
 
 package com.android.test.transactionflinger
 
+import android.graphics.Color
 import android.graphics.ColorSpace
 import android.graphics.HardwareBufferRenderer
 import android.graphics.Paint
@@ -73,15 +74,18 @@ class Scene {
         return scene
     }
 
+    fun externalScene(sceneFunctor: () -> Scene): Scene {
+        val scene = sceneFunctor()
+        children.add(scene)
+        return scene
+    }
+
     fun content(draw: Scene.(Choreographer.FrameData, Int, Int) -> RenderNode?) {
         drawFunctor = draw
     }
 
     fun drawAndSubmit(data: Choreographer.FrameData, width: Int, height: Int) {
         val transaction = SurfaceControl.Transaction()
-        synchronized(transaction) {
-            transaction.setVisibility(surfaceControl, true)
-        }
         onDraw(data, transaction, width, height).get()
         synchronized(transaction) {
             transaction.apply()
@@ -110,14 +114,13 @@ class Scene {
         parentWidth: Int,
         parentHeight: Int
     ): CompletableFuture<Void> {
+        val physicalX = (parentWidth * x).toFloat()
+        val physicalY = (parentHeight * y).toFloat()
         if (startTime == 0L) {
             startTime = data.preferredFrameTimeline.deadlineNanos
             synchronized(transaction) {
-                transaction.setPosition(
-                    surfaceControl,
-                    (parentWidth * x).toFloat(),
-                    (parentHeight * y).toFloat()
-                )
+                transaction.setPosition(surfaceControl, physicalX, physicalY)
+                transaction.setVisibility(surfaceControl, true)
                 for (child in children) {
                     transaction.reparent(child.surfaceControl, surfaceControl)
                 }
@@ -132,6 +135,7 @@ class Scene {
                     surfaceControl,
                     arrayOf(getBlurRegion(parentWidth, parentHeight))
                 )
+                transaction.setPosition(surfaceControl, physicalX, physicalY)
             }
         }
 
@@ -202,4 +206,23 @@ fun scene(init: Scene.() -> Unit): Scene {
     val scene = Scene()
     scene.init()
     return scene
+}
+
+fun checkerboardScene(rows: Int, columns: Int): Scene {
+    return scene {
+        for (row in 0 until rows) {
+            for (column in 0 until columns) {
+                scene {
+                    content { data, width, height ->
+                        val color = if ((row + column) % 2 == 0) Color.BLACK else Color.WHITE
+                        drawColor(color, data, width, height)
+                    }
+                    x = row.toDouble() / rows
+                    y = column.toDouble() / columns
+                    width = 1.0 / rows
+                    height = 1.0 / columns
+                }
+            }
+        }
+    }
 }
