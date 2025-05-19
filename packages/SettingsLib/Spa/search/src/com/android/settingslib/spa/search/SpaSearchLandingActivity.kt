@@ -16,12 +16,12 @@
 
 package com.android.settingslib.spa.search
 
-import android.app.Activity
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.annotation.VisibleForTesting
 
-abstract class SpaSearchLandingActivity : Activity() {
+abstract class SpaSearchLandingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val keyString = intent.getStringExtra(EXTRA_FRAGMENT_ARG_KEY)
