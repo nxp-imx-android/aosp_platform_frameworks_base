@@ -14,6 +14,16 @@
     {
       "name": "ClockworkSettingsRoboTests",
       "host": true
+    },
+    {
+      "name": "ClockworkSetupWizardRoboTests",
+      "host": true
+    }
+  ],
+  "wear-robolectric-presubmit": [
+    {
+      "name": "ClockworkSettingsRoboTests",
+      "host": true
     }
   ]
 
