@@ -20,6 +20,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+import static android.app.Flags.fixGetBitmapCrops;
 import static android.app.Flags.fixWallpaperChanged;
 import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.Flags.notifyKeyguardEvents;
@@ -2519,11 +2520,14 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             if (wallpaper == null || !mImageWallpaper.equals(wallpaper.getComponent())) {
                 return null;
             }
-            SparseArray<Rect> relativeCropHints =
-                    WallpaperCropper.getRelativeCropHints(wallpaper);
-            Point relativeCropSize = new Point(
-                    (int) Math.ceil(wallpaper.cropHint.width() / wallpaper.mSampleSize),
-                    (int) Math.ceil(wallpaper.cropHint.height() / wallpaper.mSampleSize));
+
+            SparseArray<Rect> relativeCropHints = WallpaperCropper.getRelativeCropHints(
+                    wallpaper, fixGetBitmapCrops() && originalBitmap);
+            Point relativeCropSize = (fixGetBitmapCrops() && originalBitmap)
+                    ? new Point(wallpaper.cropHint.width(), wallpaper.cropHint.height())
+                    : new Point(
+                            (int) Math.ceil(wallpaper.cropHint.width() / wallpaper.mSampleSize),
+                            (int) Math.ceil(wallpaper.cropHint.height() / wallpaper.mSampleSize));
             if (relativeCropSize.equals(0, 0)) {
                 // There is an ImageWallpaper, but there are no crop hints and the bitmap size is
                 // unknown (e.g. the default wallpaper). Return a special "null" value that will be
@@ -2544,11 +2548,21 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     == View.LAYOUT_DIRECTION_RTL;
             WallpaperDefaultDisplayInfo defaultDisplayInfo =
                     mWallpaperDisplayHelper.getDefaultDisplayInfo();
+            SparseArray<Rect> cropHints = fixGetBitmapCrops()
+                    ? relativeCropHints
+                    : adjustedRelativeSuggestedCrops;
             for (Point displaySize : displaySizes) {
                 result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo,
-                        relativeCropSize, adjustedRelativeSuggestedCrops, rtl));
+                        relativeCropSize, cropHints, rtl));
             }
-            if (originalBitmap) result = WallpaperCropper.getOriginalCropHints(wallpaper, result);
+            if (originalBitmap) {
+                if (fixGetBitmapCrops()) {
+                    result.forEach(crop ->
+                            crop.offset(wallpaper.cropHint.left, wallpaper.cropHint.top));
+                } else {
+                    result = WallpaperCropper.getOriginalCropHints(wallpaper, result);
+                }
+            }
             return result;
         }
     }

@@ -369,18 +369,34 @@ public class WallpaperCropper {
     }
 
     /**
-     * The crops stored in {@link WallpaperData#mCropHints} are relative to the original image.
-     * This computes the crops relative to the sub-image that will actually be rendered on a window.
+     * @see #getRelativeCropHints(WallpaperData, boolean)
      */
     static SparseArray<Rect> getRelativeCropHints(WallpaperData wallpaper) {
+        return getRelativeCropHints(wallpaper, false);
+    }
+
+    /**
+     * The crops stored in {@link WallpaperData#mCropHints} are relative to the original image
+     * {@link WallpaperData#getWallpaperFile()}. Compute crops hints relative to the cropped image.
+     *
+     * @param ignoreSampleSize If true, do not divide crops by {@link WallpaperData#mSampleSize}.
+     *                        The resulting crops will be relative to the global crop defined by
+     *                        {@link WallpaperData#cropHint}.
+     *                         If false, the resulting crops will be relative to the cropped image
+     *                         {@link WallpaperData#getCropFile()}.
+     */
+    static SparseArray<Rect> getRelativeCropHints(WallpaperData wallpaper,
+            boolean ignoreSampleSize) {
         SparseArray<Rect> result = new SparseArray<>();
         for (int i = 0; i < wallpaper.mCropHints.size(); i++) {
             Rect adjustedRect = new Rect(wallpaper.mCropHints.valueAt(i));
             adjustedRect.offset(-wallpaper.cropHint.left, -wallpaper.cropHint.top);
-            adjustedRect.left = (int) (0.5f + adjustedRect.left / wallpaper.mSampleSize);
-            adjustedRect.top = (int) (0.5f + adjustedRect.top / wallpaper.mSampleSize);
-            adjustedRect.right = (int) Math.floor(adjustedRect.right / wallpaper.mSampleSize);
-            adjustedRect.bottom = (int) Math.floor(adjustedRect.bottom / wallpaper.mSampleSize);
+            if (!ignoreSampleSize) {
+                adjustedRect.left = (int) (0.5f + adjustedRect.left / wallpaper.mSampleSize);
+                adjustedRect.top = (int) (0.5f + adjustedRect.top / wallpaper.mSampleSize);
+                adjustedRect.right = (int) Math.floor(adjustedRect.right / wallpaper.mSampleSize);
+                adjustedRect.bottom = (int) Math.floor(adjustedRect.bottom / wallpaper.mSampleSize);
+            }
 
             result.put(wallpaper.mCropHints.keyAt(i), adjustedRect);
         }
@@ -388,7 +404,7 @@ public class WallpaperCropper {
     }
 
     /**
-     * Inverse operation of {@link #getRelativeCropHints}
+     * Inverse operation of {@link #getRelativeCropHints(WallpaperData)}
      */
     static List<Rect> getOriginalCropHints(
             WallpaperData wallpaper, List<Rect> relativeCropHints) {
