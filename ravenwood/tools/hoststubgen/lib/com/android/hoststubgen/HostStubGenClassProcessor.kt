@@ -187,6 +187,7 @@ class HostStubGenClassProcessor(
                 options.keepAnnotations,
                 options.keepClassAnnotations,
                 options.throwAnnotations,
+                options.throwButSupportedAnnotations,
                 options.removeAnnotations,
                 options.ignoreAnnotations,
                 options.substituteAnnotations,

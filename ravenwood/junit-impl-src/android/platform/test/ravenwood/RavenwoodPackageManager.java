@@ -17,7 +17,10 @@ package android.platform.test.ravenwood;
 
 import android.content.ComponentName;
 import android.content.pm.InstrumentationInfo;
+import android.content.pm.PackageManager;
+import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 
+@RavenwoodProvidingImplementation(target = PackageManager.class)
 public class RavenwoodPackageManager extends RavenwoodBasePackageManager {
 
     private final RavenwoodContext mContext;

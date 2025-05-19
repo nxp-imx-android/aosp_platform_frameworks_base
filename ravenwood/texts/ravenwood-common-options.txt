@@ -12,6 +12,9 @@
 --throw-annotation
     android.ravenwood.annotation.RavenwoodThrow
 
+--throw-but-supported-annotation
+    android.ravenwood.annotation.RavenwoodSupported
+
 --remove-annotation
     android.ravenwood.annotation.RavenwoodRemove
 

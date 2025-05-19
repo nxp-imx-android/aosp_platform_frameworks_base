@@ -26,6 +26,9 @@
 --throw-annotation
     android.hosttest.annotation.HostSideTestThrow
 
+--throw-but-supported-annotation
+    android.hosttest.annotation.HostSideTestThrowButSupported
+
 --remove-annotation
     android.hosttest.annotation.HostSideTestRemove
 
