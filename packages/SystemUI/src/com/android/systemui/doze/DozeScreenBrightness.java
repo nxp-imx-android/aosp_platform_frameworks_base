@@ -17,7 +17,6 @@
 package com.android.systemui.doze;
 
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_TIMEOUT;
-
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP;
 
 import android.annotation.Nullable;
@@ -33,12 +32,12 @@ import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemProperties;
-import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.IndentingPrintWriter;
 import android.view.Display;
 
+import com.android.app.tracing.TraceUtils;
 import com.android.internal.R;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.doze.dagger.BrightnessSensor;
@@ -56,6 +55,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
+
+import kotlin.Unit;
 
 /**
  * Controls the screen brightness when dozing.
@@ -194,18 +195,13 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (Trace.isEnabled()) {
-            Trace.traceBegin(
-                    Trace.TRACE_TAG_APP, "DozeScreenBrightness.onSensorChanged" + event.values[0]);
-        }
-        try {
+        TraceUtils.trace(() -> "DozeScreenBrightness.onSensorChanged" + event.values[0], () -> {
             if (mRegistered) {
                 mLastSensorValue = (int) event.values[0];
                 updateBrightnessAndReady(false /* force */);
             }
-        } finally {
-            Trace.endSection();
-        }
+            return Unit.INSTANCE;
+        });
     }
 
     public void updateBrightnessAndReady(boolean force) {
