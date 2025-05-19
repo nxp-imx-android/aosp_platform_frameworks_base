@@ -20,6 +20,8 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import com.android.systemui.res.R
 
 /**
  * Model representing how the popup chip in the status bar should be colored, accounting for whether
@@ -71,5 +73,33 @@ sealed interface ColorsModel {
         @Composable
         override fun iconBackgroundOnHover(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
             if (isPopupShown) colorScheme.onPrimary else colorScheme.onSurface
+    }
+
+    /** The colors for the AvControls (Privacy Indicator) Chip */
+    data object AvControlsTheme : ColorsModel {
+        @Composable private fun privacyGreen() = colorResource(R.color.privacy_chip_background)
+
+        @Composable
+        override fun chipBackground(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+            privacyGreen()
+
+        @Composable
+        override fun chipOutline(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+            privacyGreen()
+
+        @Composable
+        override fun chipContent(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+            colorScheme.onPrimary
+
+        @Composable
+        override fun icon(
+            isPopupShown: Boolean,
+            isHovered: Boolean,
+            colorScheme: ColorScheme,
+        ): Color = colorScheme.onPrimary
+
+        @Composable
+        override fun iconBackgroundOnHover(isPopupShown: Boolean, colorScheme: ColorScheme): Color =
+            colorScheme.onPrimary
     }
 }

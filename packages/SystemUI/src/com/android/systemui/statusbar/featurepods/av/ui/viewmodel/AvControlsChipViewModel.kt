@@ -16,11 +16,16 @@
 
 package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.featurepods.popups.ui.model.ChipIcon
+import com.android.systemui.statusbar.featurepods.popups.ui.model.ColorsModel
+import com.android.systemui.statusbar.featurepods.popups.ui.model.HoverBehavior
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipViewModel
@@ -34,8 +39,10 @@ import kotlinx.coroutines.flow.map
 /** ViewModel for the VC Privacy Chip */
 class AvControlsChipViewModel
 @AssistedInject
-constructor(avControlsChipInteractor: AvControlsChipInteractor) :
-    StatusBarPopupChipViewModel, ExclusiveActivatable() {
+constructor(
+    @Application applicationContext: Context,
+    avControlsChipInteractor: AvControlsChipInteractor,
+) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
         val CAMERA_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_camera
         val MICROPHONE_DRAWABLE: Int = com.android.internal.R.drawable.perm_group_microphone
@@ -61,11 +68,12 @@ constructor(avControlsChipInteractor: AvControlsChipInteractor) :
             is SensorActivityModel.Inactive -> PopupChipModel.Hidden(chipId)
             is SensorActivityModel.Active ->
                 PopupChipModel.Shown(
-                    // TODO: Pass in color when the api supports it
                     chipId = chipId,
                     icons = icons(sensorActivityModel = sensorActivityModel),
                     // TODO(405903665): Remove text after api change
                     chipText = "",
+                    colors = ColorsModel.AvControlsTheme,
+                    hoverBehavior = HoverBehavior.None,
                 )
         }
     }
