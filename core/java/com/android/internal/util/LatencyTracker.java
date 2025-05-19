@@ -84,6 +84,7 @@ import com.android.internal.os.BackgroundThread;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -441,7 +442,8 @@ public class LatencyTracker {
 
         static {
             sLatencyTracker = new LatencyTracker();
-            sLatencyTracker.startListeningForLatencyTrackerConfigChanges();
+            sLatencyTracker.startListeningForLatencyTrackerConfigChanges(
+                    BackgroundThread.getExecutor());
         }
     }
 
@@ -496,10 +498,13 @@ public class LatencyTracker {
      *
      * <p>This is not used for production usages of this class outside of testing as we are
      * using a single static object.
+     *
+     * @param executor used for reading initial properties, listener registration and running
+     *                 callbacks from that listener
      */
     @VisibleForTesting
     @RequiresPermission(Manifest.permission.READ_DEVICE_CONFIG)
-    public void startListeningForLatencyTrackerConfigChanges() {
+    public void startListeningForLatencyTrackerConfigChanges(Executor executor) {
         final Context context = ActivityThread.currentApplication();
         if (context == null) {
             Log.e(
@@ -521,12 +526,12 @@ public class LatencyTracker {
         }
 
         // Post initialization to the background in case we're running on the main thread.
-        BackgroundThread.getHandler().post(() -> {
+        executor.execute(() -> {
             try {
                 this.updateProperties(
                         DeviceConfig.getProperties(NAMESPACE_LATENCY_TRACKER));
                 DeviceConfig.addOnPropertiesChangedListener(NAMESPACE_LATENCY_TRACKER,
-                        BackgroundThread.getExecutor(), mOnPropertiesChangedListener);
+                        executor, mOnPropertiesChangedListener);
             } catch (SecurityException ex) {
                 // In case of running tests that the main thread passes the check,
                 // but the background thread doesn't have necessary permissions.
