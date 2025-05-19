@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 import android.app.ActivityManager;
 import android.content.res.Configuration;
 import android.hardware.display.AmbientDisplayConfiguration;
-import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.DisableFlags;
 import android.view.Display;
 
 import androidx.annotation.NonNull;
@@ -498,7 +498,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
+    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testTransitionToInitialized_carModeIsEnabled() {
         Configuration configuration = configWithCarNightUiMode();
 
@@ -511,7 +511,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
+    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testTransitionToFinish_carModeIsEnabled() {
         Configuration configuration = configWithCarNightUiMode();
 
@@ -523,7 +523,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
+    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testDozeToDozeSuspendTriggers_carModeIsEnabled() {
         Configuration configuration = configWithCarNightUiMode();
 
@@ -535,7 +535,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
+    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testDozeAoDToDozeSuspendTriggers_carModeIsEnabled() {
         Configuration configuration = configWithCarNightUiMode();
 
@@ -547,7 +547,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
+    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testDozePulsingBrightDozeSuspendTriggers_carModeIsEnabled() {
         Configuration configuration = configWithCarNightUiMode();
 
@@ -559,7 +559,7 @@ public class DozeMachineTest extends SysuiTestCase {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_AOD_CAR_MODE)
+    @DisableFlags(Flags.FLAG_REMOVE_AOD_CAR_MODE)
     public void testDozeAodDockedDozeSuspendTriggers_carModeIsEnabled() {
         Configuration configuration = configWithCarNightUiMode();
 
