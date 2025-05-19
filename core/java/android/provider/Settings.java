@@ -13129,6 +13129,14 @@ public final class Settings {
                 "accessibility_mouse_keys_max_speed";
 
         /**
+         * Whether the primary keys are selected to control the mouse keys.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS =
+                "accessibility_mouse_keys_use_primary_keys";
+
+        /**
          * Whether the Adaptive connectivity option is enabled.
          *
          * @hide
