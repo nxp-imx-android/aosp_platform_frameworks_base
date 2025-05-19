@@ -747,6 +747,7 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
      */
     @FlaggedApi(android.os.Flags.FLAG_IPC_DATA_CACHE_TESTMODE_APIS)
     @SystemApi(client=SystemApi.Client.MODULE_LIBRARIES)
+    @TestApi
     public static void setCacheTestMode(boolean mode) {
         // Trunk-stable flagging requires that this API have a name different from the existing
         // setTestMode() API.  However, the functionality is identical.
