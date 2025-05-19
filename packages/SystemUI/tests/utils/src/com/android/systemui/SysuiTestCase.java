@@ -203,7 +203,7 @@ public abstract class SysuiTestCase {
     private static void attemptToCreateTempFile() throws RuntimeException {
         // If I understand https://buganizer.corp.google.com/issues/123230176#comment11 correctly,
         // we may have to wait for the temp folder to become available.
-        int retriesRemaining = 20;
+        int retriesRemaining = 40;
         IOException latestFailure = null;
         while (sCanCreateTempFiles == null && retriesRemaining > 0) {
             retriesRemaining--;
