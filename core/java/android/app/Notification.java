@@ -3355,7 +3355,7 @@ public class Notification implements Parcelable
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
         if (Flags.uiRichOngoing()) {
-            return hasRequestedPromotedOngoing()
+            return isRequestPromotedOngoing()
                     && isOngoingEvent()
                     && hasTitle()
                     && hasPromotableStyle()
@@ -5526,7 +5526,7 @@ public class Notification implements Parcelable
          * <p>This is the first requirement of {@link Notification#hasPromotableCharacteristics()}.
          *
          * @see Notification#EXTRA_REQUEST_PROMOTED_ONGOING
-         * @see Notification#hasRequestedPromotedOngoing()
+         * @see Notification#isRequestPromotedOngoing()
          */
         @NonNull
         @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
@@ -8224,7 +8224,7 @@ public class Notification implements Parcelable
      * @see Notification.Builder#setRequestPromotedOngoing(boolean)
      */
     @FlaggedApi(Flags.FLAG_OPT_IN_RICH_ONGOING)
-    public boolean hasRequestedPromotedOngoing() {
+    public boolean isRequestPromotedOngoing() {
         return extras.getBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, false);
     }
 
