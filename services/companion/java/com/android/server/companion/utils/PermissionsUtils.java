@@ -19,6 +19,7 @@ package com.android.server.companion.utils;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
+import static android.Manifest.permission.ACCESS_COMPANION_INFO;
 import static android.Manifest.permission.ADD_VOICEMAIL;
 import static android.Manifest.permission.ANSWER_PHONE_CALLS;
 import static android.Manifest.permission.BLUETOOTH_ADVERTISE;
@@ -310,6 +311,19 @@ public final class PermissionsUtils {
         if (!hasRequirePermissions(context, packageName, userId)) {
             throw new SecurityException("Caller (uid=" + getCallingUid() + ") does not have "
                     + "permissions to request observing device presence base on the UUID");
+        }
+    }
+
+    /**
+     * Require the caller to hold necessary permission to observe device presence by device id.
+     */
+    public static void enforceCallerCanObserveDevicePresenceByDeviceId(@NonNull Context context) {
+        boolean hasRequirePermissions =
+                context.checkCallingPermission(ACCESS_COMPANION_INFO) == PERMISSION_GRANTED;
+
+        if (!hasRequirePermissions) {
+            throw new SecurityException("Caller (uid=" + getCallingUid() + ") does not have "
+                    + "permissions to request observing device presence base on the device id");
         }
     }
 

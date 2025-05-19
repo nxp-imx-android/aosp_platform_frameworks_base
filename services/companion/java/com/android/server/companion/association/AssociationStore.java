@@ -26,6 +26,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.companion.AssociationInfo;
+import android.companion.DeviceId;
 import android.companion.IOnAssociationsChangedListener;
 import android.content.Context;
 import android.content.pm.UserInfo;
@@ -407,6 +408,23 @@ public class AssociationStore {
         synchronized (mLock) {
             return mIdToAssociationMap.get(id);
         }
+    }
+
+    /**
+     * Get the association by device id.
+     */
+    @Nullable
+    public AssociationInfo getAssociationByDeviceId(
+            int userId, DeviceId deviceId) {
+        final List<AssociationInfo> associationsForPackage = getAssociationsByUser(userId);
+
+        for (AssociationInfo ai : associationsForPackage) {
+            if (ai.getDeviceId() != null && ai.getDeviceId().equals(deviceId)) {
+                return ai;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -198,6 +198,28 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     break;
                 }
 
+                case "start-observing-device-presence-association-id": {
+                    int userId = getNextIntArgRequired();
+                    String packageName = getNextArgRequired();
+                    int id = getNextIntArgRequired();
+                    ObservingDevicePresenceRequest request = new ObservingDevicePresenceRequest
+                            .Builder().setAssociationId(id).build();
+                    mDevicePresenceProcessor.startObservingDevicePresence(
+                            request, packageName, userId, /* enforcePermissions */ false);
+                    break;
+                }
+
+                case "stop-observing-device-presence-association-id": {
+                    int userId = getNextIntArgRequired();
+                    String packageName = getNextArgRequired();
+                    int id = getNextIntArgRequired();
+                    ObservingDevicePresenceRequest request = new ObservingDevicePresenceRequest
+                            .Builder().setAssociationId(id).build();
+                    mDevicePresenceProcessor.stopObservingDevicePresence(
+                            request, packageName, userId, /* enforcePermissions */ false);
+                    break;
+                }
+
                 case "start-observing-device-presence-uuid": {
                     if (Flags.devicePresence()) {
                         int userId = getNextIntArgRequired();

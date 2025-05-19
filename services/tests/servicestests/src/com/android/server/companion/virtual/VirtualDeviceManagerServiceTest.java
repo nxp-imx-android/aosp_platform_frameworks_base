@@ -1946,6 +1946,7 @@ public class VirtualDeviceManagerServiceTest {
                 /* associatedDevice= */ null, /* selfManaged= */ true,
                 /* notifyOnDeviceNearby= */ false, /* revoked= */ false, /* pending= */ false,
                 /* timeApprovedMs= */0, /* lastTimeConnectedMs= */0,
-                /* systemDataSyncFlags= */ -1, /* deviceIcon= */ null, /* deviceId= */ null);
+                /* systemDataSyncFlags= */ -1, /* deviceIcon= */ null, /* deviceId= */ null,
+                /* packageToNotify= */ null);
     }
 }
