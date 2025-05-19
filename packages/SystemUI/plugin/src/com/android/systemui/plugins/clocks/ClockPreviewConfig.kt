@@ -22,6 +22,7 @@ data class ClockPreviewConfig(
     val statusBarHeight: Int,
     val splitShadeTopMargin: Int,
     val clockTopMargin: Int,
+    val statusViewMarginHorizontal: Int,
     val lockViewId: Int? = null,
     val udfpsTop: Float? = null,
 ) {
