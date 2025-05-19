@@ -312,6 +312,11 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                     changeFooterColorForScroll();
                 }
             });
+            // Changes footer background when the list dimensions changed without scroll.
+            mDevicesRecyclerView.addOnLayoutChangeListener(
+                    (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                        changeFooterColorForScroll();
+                    });
         }
     }
 
