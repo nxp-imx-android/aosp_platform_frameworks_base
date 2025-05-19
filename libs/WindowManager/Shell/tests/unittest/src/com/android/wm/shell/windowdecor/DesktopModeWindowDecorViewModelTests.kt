@@ -29,12 +29,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_MAIN
+import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.Region
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.hardware.input.InputManager
 import android.net.Uri
+import android.os.IBinder
 import android.os.SystemClock
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -46,6 +48,7 @@ import android.view.InsetsSource
 import android.view.InsetsState
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.PointerIcon
 import android.view.Surface
 import android.view.SurfaceControl
 import android.view.SurfaceView
@@ -74,14 +77,13 @@ import com.android.wm.shell.util.StubTransaction
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
+import junit.framework.Assert.fail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
 import org.mockito.kotlin.KArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -90,13 +92,15 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.stub
-import org.mockito.kotlin.verify
-import org.mockito.quality.Strictness
 import org.mockito.kotlin.isNotNull
 import org.mockito.kotlin.isNull
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.mockito.quality.Strictness
 
 /**
  * Tests of [DesktopModeWindowDecorViewModel]
@@ -1320,6 +1324,194 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         verify(mockDecoration).close()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX)
+    fun testOnFreeformWindowDragEnd_toDesktopModeDisplay_updateBounds() {
+        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val decor =
+            createOpenTaskDecoration(
+                windowingMode = WINDOWING_MODE_FREEFORM,
+                onCaptionButtonTouchListener = onTouchListenerCaptor,
+            )
+
+        val touchListener = onTouchListenerCaptor.firstValue
+        if (touchListener is DesktopModeWindowDecorViewModel.DesktopModeTouchEventListener) {
+            val taskInfo = decor.mTaskInfo
+            mockDesktopTasksController.stub { on { getActiveDeskId(DEFAULT_DISPLAY) } doReturn 1 }
+            mockDesktopTasksController.stub { on { getActiveDeskId(SECOND_DISPLAY) } doReturn 2 }
+            val mockInputToken = mock<IBinder>()
+            val mockViewRootImpl = mock<ViewRootImpl> { on { inputToken } doReturn mockInputToken }
+            val view = mock<View> { on { getViewRootImpl() } doReturn mockViewRootImpl }
+            mockTaskPositioner.stub {
+                on { onDragPositioningStart(any(), any(), any(), any()) } doReturn INITIAL_BOUNDS
+                on { onDragPositioningMove(any(), any(), any()) } doReturn BOUNDS_AFTER_FIRST_MOVE
+                on { onDragPositioningEnd(any(), any(), any()) } doReturn
+                    BOUNDS_ON_DRAG_END_DESKTOP_ACCEPTED
+            }
+
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0).apply {
+                    displayId = DEFAULT_DISPLAY
+                },
+            )
+            // ACTION_MOVE on desktop-mode display
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 1L, MotionEvent.ACTION_MOVE, 10f, 10f, 0).apply {
+                    displayId = SECOND_DISPLAY
+                },
+            )
+
+            // Verify point icon does not change and bounds changes
+            verify(mockInputManager, never()).setPointerIcon(any(), any(), any(), any(), any())
+            verify(mockDesktopTasksController)
+                .onDragPositioningMove(
+                    eq(taskInfo),
+                    any<SurfaceControl>(),
+                    eq(SECOND_DISPLAY),
+                    eq(10f),
+                    eq(10f),
+                    eq(BOUNDS_AFTER_FIRST_MOVE),
+                )
+
+            // ACTION_UP on desktop-mode display
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 2L, MotionEvent.ACTION_UP, 20f, 20f, 0).apply {
+                    displayId = SECOND_DISPLAY
+                },
+            )
+
+            // Verify point icon does not change and bounds changes
+            verify(mockInputManager, never()).setPointerIcon(any(), any(), any(), any(), any())
+            verify(mockDesktopTasksController)
+                .onDragPositioningEnd(
+                    eq(taskInfo),
+                    any<SurfaceControl>(),
+                    eq(SECOND_DISPLAY),
+                    eq(PointF(20f, 20f)),
+                    eq(BOUNDS_ON_DRAG_END_DESKTOP_ACCEPTED),
+                    any<Rect>(),
+                    any<Rect>(),
+                    any<MotionEvent>(),
+                )
+        } else {
+            fail("touchListener was not a DesktopModeTouchEventListener as expected.")
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX)
+    fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIconAndKeepsBounds() {
+        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val decor =
+            createOpenTaskDecoration(
+                windowingMode = WINDOWING_MODE_FREEFORM,
+                onCaptionButtonTouchListener = onTouchListenerCaptor,
+            )
+
+        val touchListener = onTouchListenerCaptor.firstValue
+        if (touchListener is DesktopModeWindowDecorViewModel.DesktopModeTouchEventListener) {
+            val taskInfo = decor.mTaskInfo
+            mockDesktopTasksController.stub { on { getActiveDeskId(DEFAULT_DISPLAY) } doReturn 1 }
+            mockDesktopTasksController.stub { on { getActiveDeskId(SECOND_DISPLAY) } doReturn null }
+            val mockInputToken = mock<IBinder>()
+            val mockViewRootImpl = mock<ViewRootImpl> { on { inputToken } doReturn mockInputToken }
+            val view = mock<View> { on { getViewRootImpl() } doReturn mockViewRootImpl }
+            mockTaskPositioner.stub {
+                on { onDragPositioningStart(any(), any(), any(), any()) } doReturn INITIAL_BOUNDS
+                on { onDragPositioningMove(any(), any(), any()) } doReturn BOUNDS_AFTER_FIRST_MOVE
+                on { onDragPositioningEnd(any(), any(), any()) } doReturn
+                    BOUNDS_IGNORED_ON_NON_DESKTOP
+            }
+
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0).apply {
+                    displayId = DEFAULT_DISPLAY
+                },
+            )
+            // ACTION_MOVE on desktop-mode display
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 1L, MotionEvent.ACTION_MOVE, 10f, 10f, 0).apply {
+                    displayId = DEFAULT_DISPLAY
+                },
+            )
+
+            // Verify point icon does not change and bounds changes
+            verify(mockInputManager, never()).setPointerIcon(any(), any(), any(), any(), any())
+            verify(mockDesktopTasksController)
+                .onDragPositioningMove(
+                    eq(taskInfo),
+                    any(),
+                    eq(DEFAULT_DISPLAY),
+                    eq(10f),
+                    eq(10f),
+                    eq(BOUNDS_AFTER_FIRST_MOVE),
+                )
+
+            // ACTION_MOVE to non-desktop-mode display
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 2L, MotionEvent.ACTION_MOVE, 20f, 20f, 0).apply {
+                    displayId = SECOND_DISPLAY
+                },
+            )
+
+            // Verify point icon changes and bounds stays the same
+            verify(mockInputManager)
+                .setPointerIcon(
+                    argThat { icon -> icon.type == PointerIcon.TYPE_NO_DROP },
+                    eq(SECOND_DISPLAY),
+                    any(),
+                    eq(0),
+                    eq(mockInputToken),
+                )
+            verify(mockDesktopTasksController)
+                .onDragPositioningMove(
+                    eq(taskInfo),
+                    any(),
+                    eq(SECOND_DISPLAY),
+                    eq(20f),
+                    eq(20f),
+                    eq(BOUNDS_AFTER_FIRST_MOVE),
+                )
+
+            // ACTION_UP on non-desktop-mode display
+            touchListener.handleMotionEvent(
+                view,
+                MotionEvent.obtain(0L, 2L, MotionEvent.ACTION_UP, 30f, 30f, 0).apply {
+                    displayId = SECOND_DISPLAY
+                },
+            )
+
+            // Verify point icon changes and bounds resets to initial bounds
+            verify(mockInputManager)
+                .setPointerIcon(
+                    argThat { icon -> icon.type == PointerIcon.TYPE_ARROW },
+                    eq(SECOND_DISPLAY),
+                    any(),
+                    eq(0),
+                    eq(mockInputToken),
+                )
+            verify(mockDesktopTasksController)
+                .onDragPositioningEnd(
+                    eq(taskInfo),
+                    any<SurfaceControl>(),
+                    eq(SECOND_DISPLAY),
+                    eq(PointF(30f, 30f)),
+                    eq(INITIAL_BOUNDS),
+                    any<Rect>(),
+                    any<Rect>(),
+                    any<MotionEvent>(),
+                )
+        } else {
+            fail("touchListener was not a DesktopModeTouchEventListener as expected.")
+        }
+    }
+
     private fun createOpenTaskDecoration(
         @WindowingMode windowingMode: Int,
         taskSurface: SurfaceControl = SurfaceControl(),
@@ -1338,6 +1530,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             windowDecorationActions
         )
         onTaskOpening(decor.mTaskInfo, taskSurface)
+        decor.stub { on { leash } doReturn taskSurface }
         verify(decor).setCaptionListeners(
             onCaptionButtonClickListener.capture(), onCaptionButtonTouchListener.capture(),
             any(), any())
@@ -1363,5 +1556,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     private companion object {
         const val SECOND_DISPLAY = 2
+        private val BOUNDS_AFTER_FIRST_MOVE = Rect(10, 10, 110, 110)
+        private val BOUNDS_IGNORED_ON_NON_DESKTOP = Rect(20, 20, 120, 120)
+        private val BOUNDS_ON_DRAG_END_DESKTOP_ACCEPTED = Rect(50, 50, 150, 150)
     }
 }
