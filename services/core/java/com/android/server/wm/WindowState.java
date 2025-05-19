@@ -361,8 +361,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     private boolean mAppOpVisibility = true;
 
     boolean mPermanentlyHidden; // the window should never be shown again
-    // This is a non-system overlay window that is currently force hidden.
-    private boolean mForceHideNonSystemOverlayWindow;
+    /** This is a non-system overlay window that is currently force hidden. */
+    private boolean mIsForceHiddenNonSystemOverlayWindow;
     boolean mHidden = true;    // Used to determine if to show child windows.
     private boolean mDragResizing;
     private boolean mDragResizingChangeReported = true;
@@ -2910,7 +2910,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Being hidden due to owner package being suspended.
             return false;
         }
-        if (mForceHideNonSystemOverlayWindow) {
+        if (mIsForceHiddenNonSystemOverlayWindow) {
             // This is an alert window that is currently force hidden.
             return false;
         }
@@ -2987,6 +2987,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return true;
     }
 
+    boolean isForceHiddenNonSystemOverlayWindow() {
+        return mIsForceHiddenNonSystemOverlayWindow;
+    }
+
     void setForceHideNonSystemOverlayWindowIfNeeded(boolean forceHide) {
         final int baseType = getBaseType();
         if (mSession.mCanAddInternalSystemWindow
@@ -2999,10 +3003,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return;
         }
 
-        if (mForceHideNonSystemOverlayWindow == forceHide) {
+        if (mIsForceHiddenNonSystemOverlayWindow == forceHide) {
             return;
         }
-        mForceHideNonSystemOverlayWindow = forceHide;
+        mIsForceHiddenNonSystemOverlayWindow = forceHide;
         if (forceHide) {
             hide(true /* doAnimation */, true /* requestAnim */);
         } else {
@@ -4010,7 +4014,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
         }
         if (!isVisibleByPolicy() || !mLegacyPolicyVisibilityAfterAnim || !mAppOpVisibility
-                || isParentWindowHidden() || mPermanentlyHidden || mForceHideNonSystemOverlayWindow
+                || isParentWindowHidden() || mPermanentlyHidden
+                || mIsForceHiddenNonSystemOverlayWindow
                 || mHiddenWhileSuspended) {
             pw.println(prefix + "mPolicyVisibility=" + isVisibleByPolicy()
                     + " mLegacyPolicyVisibilityAfterAnim=" + mLegacyPolicyVisibilityAfterAnim
@@ -4018,7 +4023,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     + " parentHidden=" + isParentWindowHidden()
                     + " mPermanentlyHidden=" + mPermanentlyHidden
                     + " mHiddenWhileSuspended=" + mHiddenWhileSuspended
-                    + " mForceHideNonSystemOverlayWindow=" + mForceHideNonSystemOverlayWindow);
+                    + " mIsForceHiddenNonSystemOverlayWindow="
+                    + mIsForceHiddenNonSystemOverlayWindow);
         }
         if (!mRelayoutCalled || mLayoutNeeded) {
             pw.println(prefix + "mRelayoutCalled=" + mRelayoutCalled

@@ -1418,6 +1418,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     public void testUpdateOverlayWindows_multipleWindowsRequestHiding_hideOverlaysWithAnyUids() {
         WindowState overlayWindow = newWindowBuilder("overlay_window",
                 TYPE_APPLICATION_OVERLAY).build();
+        setFieldValue(overlayWindow.mSession, "mCanAddInternalSystemWindow", false);
         WindowState appWindow1 = newWindowBuilder("app_window_1", TYPE_APPLICATION).build();
         WindowState appWindow2 = newWindowBuilder("app_window_2", TYPE_APPLICATION).build();
         makeWindowVisible(appWindow1, appWindow2, overlayWindow);
@@ -1437,6 +1438,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         mWm.updateNonSystemOverlayWindowsVisibilityIfNeeded(appWindow2, true);
 
         verify(overlayWindow).setForceHideNonSystemOverlayWindowIfNeeded(true);
+        assertTrue(overlayWindow.isForceHiddenNonSystemOverlayWindow());
+        assertNotNull(overlayWindow.getAnimation());
+        assertEquals(mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_shortAnimTime),
+                overlayWindow.getAnimation().getDurationHint());
     }
 
     @Test
@@ -1462,6 +1468,10 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         doReturn(true).when(app2).hideNonSystemOverlayWindowsWhenVisible();
 
         makeWindowVisible(saw, app1, app2);
+        spyOn(saw.mWinAnimator);
+        // Disable animation so visibility policy flag can be set immediately to verify.
+        doReturn(false).when(saw.mWinAnimator).applyAnimationLocked(
+                anyInt(), anyBoolean());
         assertThat(saw.isVisibleByPolicy()).isTrue();
 
         // Two hideNonSystemOverlayWindows windows: SAW is hidden.
