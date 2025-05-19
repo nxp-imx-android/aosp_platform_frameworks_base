@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.data.repository
+package com.android.systemui.clock.domain.interactor
 
+import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.clock.data.repository.clockRepository
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.policy.nextAlarmController
+import com.android.systemui.plugins.activityStarter
+import com.android.systemui.util.time.systemClock
 
-var Kosmos.shadeHeaderClockRepository: ShadeHeaderClockRepository by
-    Kosmos.Fixture { ShadeHeaderClockRepository(nextAlarmController) }
+var Kosmos.clockInteractor: ClockInteractor by
+    Kosmos.Fixture {
+        ClockInteractor(
+            repository = clockRepository,
+            activityStarter = activityStarter,
+            broadcastDispatcher = broadcastDispatcher,
+            systemClock = systemClock,
+        )
+    }

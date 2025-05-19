@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.data.repository
+package com.android.systemui.clock.data.repository
 
 import android.app.PendingIntent
 import com.android.systemui.dagger.SysUISingleton
@@ -22,11 +22,7 @@ import com.android.systemui.statusbar.policy.NextAlarmController
 import javax.inject.Inject
 
 @SysUISingleton
-class ShadeHeaderClockRepository
-@Inject
-constructor(
-    nextAlarmController: NextAlarmController,
-) {
+class ClockRepository @Inject constructor(nextAlarmController: NextAlarmController) {
     private val nextAlarmCallback =
         NextAlarmController.NextAlarmChangeCallback { nextAlarm ->
             nextAlarmIntent = nextAlarm?.showIntent

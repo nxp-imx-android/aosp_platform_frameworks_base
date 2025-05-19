@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.domain.interactor
+package com.android.systemui.clock.domain.interactor
 
 import android.app.AlarmManager
 import android.content.Intent
@@ -27,14 +27,14 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.activityStarter
-import com.android.systemui.statusbar.policy.NextAlarmController.NextAlarmChangeCallback
+import com.android.systemui.statusbar.policy.NextAlarmController
 import com.android.systemui.statusbar.policy.nextAlarmController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argThat
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
-import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth
 import java.util.Date
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -47,25 +47,25 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatcher
-import org.mockito.Mockito.verify
+import org.mockito.Mockito
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ShadeHeaderClockInteractorTest : SysuiTestCase() {
+class ClockInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val activityStarter = kosmos.activityStarter
     private val nextAlarmController = kosmos.nextAlarmController
 
-    private val underTest = kosmos.shadeHeaderClockInteractor
+    private val underTest = kosmos.clockInteractor
 
     @Test
     fun launchClockActivity_default() =
         testScope.runTest {
             underTest.launchClockActivity()
-            verify(activityStarter)
+            Mockito.verify(activityStarter)
                 .postStartActivityDismissingKeyguard(
                     argThat(IntentMatcherAction(AlarmClock.ACTION_SHOW_ALARMS)),
                     any(),
@@ -76,13 +76,13 @@ class ShadeHeaderClockInteractorTest : SysuiTestCase() {
     fun launchClockActivity_nextAlarmIntent() =
         testScope.runTest {
             val callback =
-                withArgCaptor<NextAlarmChangeCallback> {
-                    verify(nextAlarmController).addCallback(capture())
+                withArgCaptor<NextAlarmController.NextAlarmChangeCallback> {
+                    Mockito.verify(nextAlarmController).addCallback(capture())
                 }
             callback.onNextAlarmChanged(AlarmManager.AlarmClockInfo(1L, mock()))
 
             underTest.launchClockActivity()
-            verify(activityStarter).postStartActivityDismissingKeyguard(any())
+            Mockito.verify(activityStarter).postStartActivityDismissingKeyguard(any())
         }
 
     @Test
@@ -95,20 +95,20 @@ class ShadeHeaderClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_LOCALE_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_TIMEZONE_CHANGED)
 
-            assertThat(timeZoneOrLocaleChanges).hasSize(4)
+            Truth.assertThat(timeZoneOrLocaleChanges).hasSize(4)
         }
 
     @Test
     fun onTimezoneOrLocaleChanged_timeChanged_doesNotEmit() =
         testScope.runTest {
             val timeZoneOrLocaleChanges by collectValues(underTest.onTimezoneOrLocaleChanged)
-            assertThat(timeZoneOrLocaleChanges).hasSize(1)
+            Truth.assertThat(timeZoneOrLocaleChanges).hasSize(1)
 
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
 
             // Expect only 1 event to have been emitted onStart, but no more.
-            assertThat(timeZoneOrLocaleChanges).hasSize(1)
+            Truth.assertThat(timeZoneOrLocaleChanges).hasSize(1)
         }
 
     @Test
@@ -125,7 +125,7 @@ class ShadeHeaderClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
             val laterTime = checkNotNull(currentTime)
 
-            assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(3.seconds)
+            Truth.assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(3.seconds)
         }
 
     @Test
@@ -142,7 +142,7 @@ class ShadeHeaderClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
             val laterTime = checkNotNull(currentTime)
 
-            assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(7.seconds)
+            Truth.assertThat(differenceBetween(laterTime, earlierTime)).isEqualTo(7.seconds)
         }
 
     private fun differenceBetween(date1: Date, date2: Date): Duration {

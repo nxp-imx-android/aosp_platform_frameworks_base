@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.domain.interactor
+package com.android.systemui.clock.domain.interactor
 
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.UserHandle
 import android.provider.AlarmClock
 import com.android.systemui.broadcast.BroadcastDispatcher
+import com.android.systemui.clock.data.repository.ClockRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.plugins.ActivityStarter
-import com.android.systemui.shade.data.repository.ShadeHeaderClockRepository
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.time.SystemClock
 import java.util.Date
@@ -32,10 +32,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 @SysUISingleton
-class ShadeHeaderClockInteractor
+class ClockInteractor
 @Inject
 constructor(
-    private val repository: ShadeHeaderClockRepository,
+    private val repository: ClockRepository,
     private val activityStarter: ActivityStarter,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val systemClock: SystemClock,
