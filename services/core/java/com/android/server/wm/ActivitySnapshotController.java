@@ -574,12 +574,18 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
         }, false /* traverseTopToBottom */);
     }
 
+    boolean invalidateSnapshot(ActivityRecord activity) {
+        if (shouldDisableSnapshots()) {
+            return false;
+        }
+        return removeIfUserSavedFileExist(activity);
+    }
+
     @Override
     void onAppRemoved(ActivityRecord activity) {
-        if (shouldDisableSnapshots()) {
+        if (!invalidateSnapshot(activity)) {
             return;
         }
-        removeIfUserSavedFileExist(activity);
         if (DEBUG) {
             Slog.d(TAG, "ActivitySnapshotController#onAppRemoved delete snapshot " + activity);
         }
@@ -587,10 +593,9 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
 
     @Override
     void onAppDied(ActivityRecord activity) {
-        if (shouldDisableSnapshots()) {
+        if (!invalidateSnapshot(activity)) {
             return;
         }
-        removeIfUserSavedFileExist(activity);
         if (DEBUG) {
             Slog.d(TAG, "ActivitySnapshotController#onAppDied delete snapshot " + activity);
         }
@@ -659,7 +664,7 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
         }
     }
 
-    private void removeIfUserSavedFileExist(ActivityRecord ar) {
+    private boolean removeIfUserSavedFileExist(ActivityRecord ar) {
         final UserSavedFile usf = findSavedFile(ar);
         if (usf != null) {
             final SparseArray<UserSavedFile> usfs = getUserFiles(ar.mUserId);
@@ -671,7 +676,9 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
             }
             mSavedFilesInOrder.remove(usf);
             mPersister.removeSnapshot(usf.mFileId, ar.mUserId);
+            return true;
         }
+        return false;
     }
 
     @VisibleForTesting

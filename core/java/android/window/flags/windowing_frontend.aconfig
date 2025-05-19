@@ -523,6 +523,17 @@ flag {
 }
 
 flag {
+    name: "exclude_non_main_window_from_snapshot"
+    namespace: "windowing_frontend"
+    description: "Exclude non-main windows during their removal from being captured in the snapshot."
+    bug: "412295455"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "current_animator_scale_uses_shared_memory"
     namespace: "wear_system_health"
     description: "WindowManagerService.getCurrentAnimatorScale() reads the animator scale from shared memory"

@@ -2285,6 +2285,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     mActivityRecord != null && mActivityRecord.inTransition(),
                     Debug.getCallers(6));
 
+            if (Flags.excludeNonMainWindowFromSnapshot()
+                    && mAttrs.type != TYPE_BASE_APPLICATION && mHasSurface
+                    && mActivityRecord != null && !mActivityRecord.isVisibleRequested()
+                    && mWinAnimator.getShown()) {
+                // Only remove the activity snapshot, because the user might still want to see the
+                // task snapshot during the recents animation.
+                mWmService.mSnapshotController.mActivitySnapshotController
+                        .invalidateSnapshot(mActivityRecord);
+            }
             // First, see if we need to run an animation. If we do, we have to hold off on removing the
             // window until the animation is done. If the display is frozen, just remove immediately,
             // since the animation wouldn't be seen.
