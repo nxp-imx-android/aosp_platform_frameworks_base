@@ -78,3 +78,11 @@ flag {
     is_fixed_read_only: true
     bug: "382369925"
 }
+
+flag {
+    name: "imetracker_protolog"
+    namespace: "windowing_tools"
+    description: "Execute protologging in IMETracker"
+    is_fixed_read_only: true
+    bug: "410517697"
+}
