@@ -74,6 +74,7 @@ import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.dump.LogBufferEulogizer;
+import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.coalescer.CoalescedEvent;
 import com.android.systemui.statusbar.notification.collection.coalescer.GroupCoalescer;
@@ -157,6 +158,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
     private final DumpManager mDumpManager;
     private final NotifCollectionInconsistencyTracker mInconsistencyTracker;
     private final NotificationDismissibilityProvider mDismissibilityProvider;
+    private final BundleInteractionLogger mBundleLogger;
 
     private final Map<String, NotificationEntry> mNotificationSet = new ArrayMap<>();
     private final Collection<NotificationEntry> mReadOnlyNotificationSet =
@@ -191,7 +193,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
             @Background Executor bgExecutor,
             LogBufferEulogizer logBufferEulogizer,
             DumpManager dumpManager,
-            NotificationDismissibilityProvider dismissibilityProvider) {
+            NotificationDismissibilityProvider dismissibilityProvider,
+            BundleInteractionLogger bundleLogger) {
         mStatusBarService = statusBarService;
         mClock = clock;
         mNotifPipelineFlags = notifPipelineFlags;
@@ -202,6 +205,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         mDumpManager = dumpManager;
         mInconsistencyTracker = new NotifCollectionInconsistencyTracker(mLogger);
         mDismissibilityProvider = dismissibilityProvider;
+        mBundleLogger = bundleLogger;
     }
 
     /** Initializes the NotifCollection and registers it to receive notification events. */
@@ -1124,6 +1128,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         BundleDismissalRunnable runnable = new BundleDismissalRunnable(bundleEntry,
                 cancellationReason, statsCreator);
         mLogger.logBundleDismissalRegistered(runnable);
+        mBundleLogger.logBundleDismissed(bundleEntry);
         return runnable;
     }
 
