@@ -23,13 +23,18 @@ import android.provider.AlarmClock
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.clock.data.repository.ClockRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.time.SystemClock
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
 class ClockInteractor
@@ -39,17 +44,27 @@ constructor(
     private val activityStarter: ActivityStarter,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val systemClock: SystemClock,
+    @Background private val coroutineScope: CoroutineScope,
 ) {
     /** [Flow] that emits `Unit` whenever the timezone or locale has changed. */
     val onTimezoneOrLocaleChanged: Flow<Unit> =
         broadcastFlowForActions(Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_LOCALE_CHANGED)
             .emitOnStart()
 
-    /** [Flow] that emits the current `Date` every minute, or when the system time has changed. */
-    val currentTime: Flow<Date> =
+    /**
+     * [StateFlow] that emits the current `Date` every minute, or when the system time has changed.
+     *
+     * TODO(b/390204943): Emits every second instead of every minute since the clock can show
+     *   seconds.
+     */
+    val currentTime: StateFlow<Date> =
         broadcastFlowForActions(Intent.ACTION_TIME_TICK, Intent.ACTION_TIME_CHANGED)
-            .emitOnStart()
             .map { Date(systemClock.currentTimeMillis()) }
+            .stateIn(
+                scope = coroutineScope,
+                started = SharingStarted.Eagerly,
+                initialValue = Date(systemClock.currentTimeMillis()),
+            )
 
     /** Launch the clock activity. */
     fun launchClockActivity() {
