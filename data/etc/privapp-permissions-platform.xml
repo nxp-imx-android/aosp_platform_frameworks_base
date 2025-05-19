@@ -632,6 +632,8 @@ applications that come with the platform
         <permission name="android.permission.ACCESS_TEXT_CLASSIFIER_BY_TYPE"/>
         <!-- Permission required for CTS test - CtsSecurityTestCases -->
         <permission name="android.permission.MANAGE_DEVICE_POLICY_MTE"/>
+        <!-- Permission required for integration test - InputTest -->
+        <permission name="android.permission.LISTEN_FOR_KEY_ACTIVITY"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

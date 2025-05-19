@@ -1031,6 +1031,9 @@
     <!-- Permission required to test mouse movement on display -->
     <uses-permission android:name="android.permission.SET_POINTER_SPEED" />
 
+    <!-- Permissions required for integration test - InputTest -->
+    <uses-permission android:name="android.permission.LISTEN_FOR_KEY_ACTIVITY" />
+
     <application
         android:label="@string/app_label"
         android:theme="@android:style/Theme.DeviceDefault.DayNight"
