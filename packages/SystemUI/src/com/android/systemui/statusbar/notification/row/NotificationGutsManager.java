@@ -462,6 +462,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
 
         NotificationInfo.OnFeedbackClickListener onNasFeedbackClick = (View v, Intent intent) -> {
             guts.resetFalsingCheck();
+            mUiEventLogger.log(NotificationFeedbackEvent.NOTIFICATION_FEEDBACK_BUNDLE,
+                    sbn.getInstanceId());
             mNotificationActivityStarter.startNotificationGutsIntent(intent, sbn.getUid(), row);
         };
 
@@ -685,6 +687,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
 
         NotificationInfo.OnFeedbackClickListener onNasFeedbackClick = (View v, Intent intent) -> {
             guts.resetFalsingCheck();
+            mUiEventLogger.log(NotificationFeedbackEvent.NOTIFICATION_FEEDBACK_CONVERSATION,
+                    sbn.getInstanceId());
             mNotificationActivityStarter.startNotificationGutsIntent(intent, sbn.getUid(), row);
         };
 
