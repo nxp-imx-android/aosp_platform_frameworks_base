@@ -22,6 +22,15 @@ import static android.security.Flags.FLAG_FRP_ENFORCEMENT;
 import static android.security.Flags.FLAG_PREVENT_INTENT_REDIRECT;
 import static android.security.Flags.preventIntentRedirect;
 
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__READ;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__WRITE;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__IMAGE_CAPTURE;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__SEND;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__SEND_MULTIPLE;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
+import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
+
 import android.Manifest;
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.AnyRes;
@@ -89,8 +98,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.XmlUtils;
-import com.android.modules.expresslog.Counter;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -13343,10 +13352,22 @@ public class Intent implements Parcelable, Cloneable {
                             null, new String[] { getType() },
                             new ClipData.Item(text, htmlText, null, stream));
                     setClipData(clipData);
-                    if (stream != null) {
-                        logCounterIfFlagsMissing(FLAG_GRANT_READ_URI_PERMISSION,
-                                "intents.value_explicit_uri_grant_for_send_action");
-                        addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                    if (stream != null && isMissingGrantFlag(FLAG_GRANT_READ_URI_PERMISSION)) {
+                        int grantType;
+                        if (android.security.Flags.implicitUriGrantsRestrictedForSendAction()) {
+                            Log.e(TAG, "Skipping implicit URI grants for " + ACTION_SEND
+                                    + " action because it is restricted");
+                            grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
+                        } else {
+                            addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                            grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
+                        }
+                        FrameworkStatsLog.write(
+                                IMPLICIT_URI_GRANT_EVENT_REPORTED,
+                                context.getApplicationInfo().uid,
+                                grantType,
+                                IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__READ,
+                                IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__SEND);
                     }
                     return true;
                 }
@@ -13386,10 +13407,23 @@ public class Intent implements Parcelable, Cloneable {
                     }
 
                     setClipData(clipData);
-                    if (streams != null) {
-                        logCounterIfFlagsMissing(FLAG_GRANT_READ_URI_PERMISSION,
-                                "intents.value_explicit_uri_grant_for_send_multiple_action");
-                        addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                    if (streams != null && isMissingGrantFlag(FLAG_GRANT_READ_URI_PERMISSION)) {
+                        int grantType;
+                        if (android.security.Flags
+                                .implicitUriGrantsRestrictedForSendmultipleImagecaptureActions()) {
+                            Log.e(TAG, "Skipping implicit URI grants for "
+                                    + ACTION_SEND_MULTIPLE + " action because it is restricted");
+                            grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
+                        } else {
+                            addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                            grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
+                        }
+                        FrameworkStatsLog.write(
+                                IMPLICIT_URI_GRANT_EVENT_REPORTED,
+                                context.getApplicationInfo().uid,
+                                grantType,
+                                IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__READ,
+                                IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__SEND_MULTIPLE);
                     }
                     return true;
                 }
@@ -13409,10 +13443,42 @@ public class Intent implements Parcelable, Cloneable {
 
                 setClipData(ClipData.newRawUri("", output));
 
-                logCounterIfFlagsMissing(
-                        FLAG_GRANT_WRITE_URI_PERMISSION | FLAG_GRANT_READ_URI_PERMISSION,
-                        "intents.value_explicit_uri_grant_for_image_capture_action");
-                addFlags(FLAG_GRANT_WRITE_URI_PERMISSION|FLAG_GRANT_READ_URI_PERMISSION);
+                if (isMissingGrantFlag(FLAG_GRANT_READ_URI_PERMISSION)) {
+                    int grantType;
+                    if (android.security.Flags
+                            .implicitUriGrantsRestrictedForSendmultipleImagecaptureActions()) {
+                        Log.e(TAG,
+                                "Skipping implicit URI read grants for ImageCapture action "
+                                        + "because it is restricted");
+                        grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
+                    } else {
+                        addFlags(FLAG_GRANT_READ_URI_PERMISSION);
+                        grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
+                    }
+                    FrameworkStatsLog.write(IMPLICIT_URI_GRANT_EVENT_REPORTED,
+                            context.getApplicationInfo().uid,
+                            grantType,
+                            IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__READ,
+                            IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__IMAGE_CAPTURE);
+                }
+                if (isMissingGrantFlag(FLAG_GRANT_WRITE_URI_PERMISSION)) {
+                    int grantType;
+                    if (android.security.Flags
+                            .implicitUriGrantsRestrictedForSendmultipleImagecaptureActions()) {
+                        Log.e(TAG,
+                                "Skipping implicit URI write grants for ImageCapture action "
+                                        + "because it is restricted");
+                        grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__RESTRICTED;
+                    } else {
+                        addFlags(FLAG_GRANT_WRITE_URI_PERMISSION);
+                        grantType = IMPLICIT_URI_GRANT_EVENT_REPORTED__GRANT_TYPE__GRANTED;
+                    }
+                    FrameworkStatsLog.write(IMPLICIT_URI_GRANT_EVENT_REPORTED,
+                            context.getApplicationInfo().uid,
+                            grantType,
+                            IMPLICIT_URI_GRANT_EVENT_REPORTED__ACCESS_TYPE__WRITE,
+                            IMPLICIT_URI_GRANT_EVENT_REPORTED__ACTION_TYPE__IMAGE_CAPTURE);
+                }
                 return true;
             }
         }
@@ -13420,10 +13486,8 @@ public class Intent implements Parcelable, Cloneable {
         return false;
     }
 
-    private void logCounterIfFlagsMissing(int requiredFlags, String metricId) {
-        if ((getFlags() & requiredFlags) != requiredFlags) {
-            Counter.logIncrement(metricId);
-        }
+    private boolean isMissingGrantFlag(int grantFlagToCheck) {
+        return ((getFlags() & grantFlagToCheck) != grantFlagToCheck);
     }
 
     @android.ravenwood.annotation.RavenwoodThrow
