@@ -83,7 +83,8 @@ interface IInputMethodManager {
             + "android.Manifest.permission.TEST_INPUT_METHOD)")
     void hideSoftInputFromServerForTest();
 
-    // TODO(b/293640003): Remove method once Flags.useZeroJankProxy() is enabled.
+    // TODO(b/418839448): merge with startInputOrWindowGainedFocus once
+    //                    WINDOW_FOCUS_GAIN_REPORT_ONLY uses async method.
     // If windowToken is null, this just does startInput().  Otherwise this reports that a window
     // has gained focus, and if 'editorInfo' is non-null then also does startInput.
     // @NonNull
