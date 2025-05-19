@@ -276,6 +276,23 @@ public class DozeSuppressorTest extends SysuiTestCase {
         verify(mDozeMachine).requestState(DOZE_AOD);
     }
 
+
+    @Test
+    public void testPowerSaveChanged_notActive_dozeMachineStateNull() {
+        // GIVEN DOZE (not showing aod content)
+        when(mConfig.alwaysOnEnabled(anyInt())).thenReturn(true);
+        mDozeSuppressor.transitionTo(UNINITIALIZED, INITIALIZED);
+        when(mDozeMachine.getState()).thenReturn(null);
+        captureDozeHostCallback();
+
+        // WHEN power save mode is no longer active
+        when(mDozeHost.isPowerSaveActive()).thenReturn(false);
+        mDozeHostCallback.onPowerSaveChanged(false);
+
+        // THEN the state doesn't change
+        verify(mDozeMachine, never()).requestState(DOZE_AOD);
+    }
+
     @Test
     public void testAlwaysOnSuppressedChanged_nowSuppressed() {
         // GIVEN DOZE_AOD
