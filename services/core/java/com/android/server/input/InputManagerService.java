@@ -138,6 +138,9 @@ import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.IShortcutService;
 import com.android.internal.policy.KeyInterceptionInfo;
+import com.android.internal.protolog.ProtoLog;
+import com.android.internal.protolog.ProtoLogGroup;
+import com.android.internal.protolog.common.IProtoLogGroup;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.Preconditions;
 import com.android.server.DisplayThread;
@@ -178,6 +181,9 @@ public class InputManagerService extends IInputManager.Stub
     static final String TAG = "InputManager";
     // To enable these logs, run: 'adb shell setprop log.tag.InputManager DEBUG' (requires restart)
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+
+    private static final IProtoLogGroup INPUT_STREAM_MODIFIER_LOG = new ProtoLogGroup(
+            "INPUT_STREAM_MODIFIER_LOG", "InputManagerService", true /*enabled*/);
 
     private static final String EXCLUDED_DEVICES_PATH = "etc/excluded-input-devices.xml";
     private static final String PORT_ASSOCIATIONS_PATH = "etc/input-port-associations.xml";
@@ -796,6 +802,7 @@ public class InputManagerService extends IInputManager.Stub
     public boolean transferTouch(@NonNull IBinder destChannelToken, int displayId) {
         // TODO(b/162194035): Replace this with a SPY window
         Objects.requireNonNull(destChannelToken, "destChannelToken must not be null");
+        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "transferTouch");
         return mNative.transferTouch(destChannelToken, displayId);
     }
 
@@ -1369,6 +1376,7 @@ public class InputManagerService extends IInputManager.Stub
      */
     public boolean startDragAndDrop(@NonNull IBinder fromChannelToken,
             @NonNull IBinder dragAndDropChannelToken) {
+        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "startDragAndDrop");
         return mNative.transferTouchGesture(fromChannelToken, dragAndDropChannelToken,
                 true /* isDragDrop */, false /* transferEntireGesture */);
     }
@@ -1397,6 +1405,8 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull IBinder toChannelToken, boolean transferEntireGesture) {
         Objects.requireNonNull(fromChannelToken);
         Objects.requireNonNull(toChannelToken);
+        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "transferTouchGesture: transferEntireGesture=%s",
+                transferEntireGesture);
         return mNative.transferTouchGesture(fromChannelToken, toChannelToken,
                 false /* isDragDrop */, transferEntireGesture);
     }
@@ -2129,6 +2139,7 @@ public class InputManagerService extends IInputManager.Stub
             throw new SecurityException("Requires MONITOR_INPUT permission");
         }
 
+        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "cancelCurrentTouch");
         mNative.cancelCurrentTouch();
     }
 
@@ -2166,6 +2177,11 @@ public class InputManagerService extends IInputManager.Stub
         super.pilferPointers_enforcePermission();
 
         Objects.requireNonNull(inputChannelToken);
+        pilferPointersInternal(inputChannelToken);
+    }
+
+    private void pilferPointersInternal(@NonNull IBinder inputChannelToken) {
+        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "pilferPointers");
         mNative.pilferPointers(inputChannelToken);
     }
 
@@ -3481,7 +3497,7 @@ public class InputManagerService extends IInputManager.Stub
 
         @Override
         public void pilferPointers() {
-            mNative.pilferPointers(mInputChannelToken);
+            pilferPointersInternal(mInputChannelToken);
         }
 
         @Override
@@ -3738,11 +3754,6 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public InputChannel createInputChannel(String inputChannelName) {
             return InputManagerService.this.createInputChannel(inputChannelName);
-        }
-
-        @Override
-        public void pilferPointers(IBinder token) {
-            mNative.pilferPointers(token);
         }
 
         @Override
