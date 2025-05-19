@@ -697,7 +697,6 @@ public class MediaSessionService extends SystemService implements Monitor {
 
         Log.d(TAG, "destroySessionLocked: record=" + session);
 
-        removeUserEngagedSession(session);
         reportMediaInteractionEvent(session, /* userEngaged= */ false);
         mHandler.postSessionsChanged(session);
     }

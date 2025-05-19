@@ -948,6 +948,8 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
                 return;
             }
         }
+        mService.onSessionUserEngagementStateChange(
+                /* mediaSessionRecord= */ this, /* isUserEngaged= */ false);
         performOnCallbackHolders(
                 "pushSessionDestroyed",
                 holder -> {
