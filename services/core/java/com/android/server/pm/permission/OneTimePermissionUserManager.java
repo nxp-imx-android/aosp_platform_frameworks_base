@@ -64,14 +64,16 @@ public class OneTimePermissionUserManager {
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_UID_REMOVED.equals(intent.getAction())) {
                 int uid = intent.getIntExtra(Intent.EXTRA_UID, -1);
-                PackageInactivityListener listener = mListeners.get(uid);
-                if (listener != null) {
-                    if (DEBUG) {
-                        Log.d(LOG_TAG, "Removing  the inactivity listener for " + uid);
+                synchronized (mLock) {
+                    PackageInactivityListener listener = mListeners.get(uid);
+                    if (listener != null) {
+                        if (DEBUG) {
+                            Log.d(LOG_TAG, "Removing  the inactivity listener for " + uid);
+                        }
+                        listener.cancel();
+                        mListeners.remove(uid);
                     }
-                    listener.cancel();
-                    mListeners.remove(uid);
-                }
+               }
             }
         }
     };
