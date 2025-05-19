@@ -2524,7 +2524,8 @@ public final class MessageQueue {
         STACK_NODE_MESSAGE,
         STACK_NODE_ACTIVE,
         STACK_NODE_PARKED,
-        STACK_NODE_TIMEDPARK})
+        STACK_NODE_TIMEDPARK,
+        STACK_NODE_QUITTING})
     @Retention(RetentionPolicy.SOURCE)
     private @interface StackNodeType {}
 
