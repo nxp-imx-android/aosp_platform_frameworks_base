@@ -232,6 +232,8 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     }
 
     @Test
+    // TODO: b/413441693 - After flag rollout: consolidate showSettingPanel_* tests to one per
+    //  capability+mode, i.e. one FULLSCREEN test that checks the expected state of all toggles.
     @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void showSettingPanel_fullScreenMode_showMagnifyKeyboardAndFollowTyping() {
         setupMagnificationCapabilityAndMode(
@@ -250,6 +252,20 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     public void showSettingPanel_windowOnlyCapability_hideMagnifyKeyboard_showFollowTyping() {
         setupMagnificationCapabilityAndMode(
                 /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW,
+                /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
+        mWindowMagnificationSettings.showSettingPanel();
+
+        final View magnifyKeyboard = getInternalView(R.id.magnifier_keyboard_view);
+        assertThat(magnifyKeyboard.getVisibility()).isEqualTo(View.GONE);
+        final View followTyping = getInternalView(R.id.magnifier_typing_view);
+        assertThat(followTyping.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void showSettingPanel_windowMode_hideMagnifyKeyboard_showFollowTyping() {
+        setupMagnificationCapabilityAndMode(
+                /* capability= */ ACCESSIBILITY_MAGNIFICATION_MODE_ALL,
                 /* mode= */ ACCESSIBILITY_MAGNIFICATION_MODE_WINDOW);
         mWindowMagnificationSettings.showSettingPanel();
 
