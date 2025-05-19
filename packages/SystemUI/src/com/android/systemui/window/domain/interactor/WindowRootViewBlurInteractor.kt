@@ -16,7 +16,6 @@
 
 package com.android.systemui.window.domain.interactor
 
-import android.util.Log
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -110,14 +109,11 @@ constructor(
      */
     fun requestBlurForShade(blurRadius: Int, blurScale: Float): Boolean {
         if (isPrimaryBouncerVisible.value) {
-            Log.d(TAG, "requestBlurForShade rejected, bouncer is visible.")
             return false
         }
         if (communalInteractor.isCommunalBlurring.value) {
-            Log.d(TAG, "requestBlurForShade rejected, glanceable hub is active.")
             return false
         }
-        Log.d(TAG, "requestingBlurForShade for radius=$blurRadius, scale=$blurScale")
         repository.blurRequestedByShade.value = blurRadius
         repository.scaleRequestedByShade.value = blurScale
         return true
