@@ -125,8 +125,7 @@ class PresentationController implements DisplayManager.DisplayListener {
         }
 
         final int displayId = displayContent.mDisplayId;
-        if (hasPresentationWindow(displayId)
-                && win != null && win != mPresentations.get(displayId).mWin) {
+        if (hasPresentationWindow(displayId) && win != mPresentations.get(displayId).mWin) {
             // A display can't have multiple presentations.
             return false;
         }
