@@ -18,6 +18,8 @@ package com.android.server.media;
 
 import static android.media.MediaRoute2Info.FEATURE_LIVE_AUDIO;
 import static android.media.MediaRoute2Info.FEATURE_LOCAL_PLAYBACK;
+import static android.media.MediaRoute2Info.TYPE_BUILTIN_SPEAKER;
+import static android.media.MediaRoute2Info.TYPE_HDMI;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -26,6 +28,7 @@ import android.annotation.RequiresPermission;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceCallback;
@@ -35,6 +38,7 @@ import android.media.MediaRoute2Info;
 import android.media.RoutingSessionInfo;
 import android.media.audio.Flags;
 import android.media.audiopolicy.AudioProductStrategy;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.Looper;
@@ -124,6 +128,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
     // A flag indicating if the start function has been called.
     private boolean mStarted = false;
 
+    // Whether this is a TV device.
+    private final boolean mIsTv;
+
     // Get the singleton AudioManagerRouteController. Create a new one if it's not available yet.
     public static AudioManagerRouteController getInstance(
             @NonNull Context context,
@@ -165,6 +172,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mAudioManager = Objects.requireNonNull(audioManager);
         mHandler = new Handler(Objects.requireNonNull(looper));
         mStrategyForMedia = Objects.requireNonNull(strategyForMedia);
+        mIsTv = mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
 
         mBuiltInSpeakerSuitabilityStatus =
                 DeviceRouteController.getBuiltInSpeakerSuitabilityStatus(mContext);
@@ -532,6 +540,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
             return null;
         }
         CharSequence humanReadableName = deviceName;
+        if (mIsTv) {
+            if (systemRouteInfo.mMediaRoute2InfoType == TYPE_BUILTIN_SPEAKER) {
+                humanReadableName = Build.MODEL;
+            } else if (systemRouteInfo.mMediaRoute2InfoType == TYPE_HDMI) {
+                humanReadableName = mContext.getResources().getText(
+                        R.string.default_audio_route_name_hdmi_tv);
+            }
+        }
         if (TextUtils.isEmpty(humanReadableName)) {
             humanReadableName = mContext.getResources().getText(systemRouteInfo.mNameResource);
         }
@@ -733,13 +749,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
                 new SystemRouteInfo(
                         MediaRoute2Info.TYPE_HDMI_ARC,
                         /* defaultRouteId= */ "ROUTE_ID_HDMI_ARC",
-                        /* nameResource= */ R.string.default_audio_route_name_external_device));
+                        /* nameResource= */ R.string.default_audio_route_name_arc));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_HDMI_EARC,
                 new SystemRouteInfo(
                         MediaRoute2Info.TYPE_HDMI_EARC,
                         /* defaultRouteId= */ "ROUTE_ID_HDMI_EARC",
-                        /* nameResource= */ R.string.default_audio_route_name_external_device));
+                        /* nameResource= */ R.string.default_audio_route_name_earc));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_HEARING_AID,
                 new SystemRouteInfo(
@@ -770,21 +786,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
                         com.android.media.flags.Flags.enableNewWiredMediaRoute2InfoTypes()
                                 ? MediaRoute2Info.TYPE_LINE_DIGITAL : MediaRoute2Info.TYPE_UNKNOWN,
                         /* defaultRouteId= */ "ROUTE_ID_LINE_DIGITAL",
-                        /* nameResource= */ R.string.default_audio_route_name_external_device));
+                        /* nameResource= */ R.string.default_audio_route_name_digital));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_LINE_ANALOG,
                 new SystemRouteInfo(
                         com.android.media.flags.Flags.enableNewWiredMediaRoute2InfoTypes()
                                 ? MediaRoute2Info.TYPE_LINE_ANALOG : MediaRoute2Info.TYPE_UNKNOWN,
                         /* defaultRouteId= */ "ROUTE_ID_LINE_ANALOG",
-                        /* nameResource= */ R.string.default_audio_route_name_external_device));
+                        /* nameResource= */ R.string.default_audio_route_name_analog));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_AUX_LINE,
                 new SystemRouteInfo(
                         com.android.media.flags.Flags.enableNewWiredMediaRoute2InfoTypes()
                                 ? MediaRoute2Info.TYPE_AUX_LINE : MediaRoute2Info.TYPE_UNKNOWN,
                         /* defaultRouteId= */ "ROUTE_ID_AUX_LINE",
-                        /* nameResource= */ R.string.default_audio_route_name_external_device));
+                        /* nameResource= */ R.string.default_audio_route_name_aux));
         AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO.put(
                 AudioDeviceInfo.TYPE_DOCK_ANALOG,
                 new SystemRouteInfo(

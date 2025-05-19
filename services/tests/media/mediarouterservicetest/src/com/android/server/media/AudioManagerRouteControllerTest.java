@@ -124,6 +124,8 @@ public class AudioManagerRouteControllerTest {
         // concrete class is package private, so we just return the application info through the
         // mock.
         when(mockContext.getApplicationInfo()).thenReturn(realContext.getApplicationInfo());
+        // Needed to check if it is a TV device.
+        when(mockContext.getPackageManager()).thenReturn(realContext.getPackageManager());
 
         // Setup the initial state so that the route controller is created in a sensible state.
         mSelectedAudioDeviceInfo = FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER;

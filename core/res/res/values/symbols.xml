@@ -1087,9 +1087,15 @@
   <java-symbol type="string" name="granularity_label_line" />
   <java-symbol type="string" name="default_audio_route_id" />
   <java-symbol type="string" name="default_audio_route_name" />
+  <java-symbol type="string" name="default_audio_route_name_analog" />
+  <java-symbol type="string" name="default_audio_route_name_arc" />
+  <java-symbol type="string" name="default_audio_route_name_aux" />
+  <java-symbol type="string" name="default_audio_route_name_digital" />
   <java-symbol type="string" name="default_audio_route_name_dock_speakers" />
+  <java-symbol type="string" name="default_audio_route_name_earc" />
   <java-symbol type="string" name="default_audio_route_name_external_device" />
   <java-symbol type="string" name="default_audio_route_name_headphones" />
+  <java-symbol type="string" name="default_audio_route_name_hdmi_tv" />
   <java-symbol type="string" name="default_audio_route_name_usb" />
   <java-symbol type="string" name="default_audio_route_category_name" />
   <java-symbol type="string" name="stk_cc_ss_to_dial" />
