@@ -3880,7 +3880,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     enterPipTransition.collect(r);
                     getTransitionController().requestStartTransition(enterPipTransition,
                             r.getTask(), null /* remoteTransition */, null /* displayChange */);
-                    mChainTracker.end();
+                    // can run during finish, so partial
+                    mChainTracker.endPartial();
                 });
             };
             if (r.isKeyguardLocked()) {
