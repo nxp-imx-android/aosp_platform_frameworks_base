@@ -1094,7 +1094,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         private void resetSelectedClickTypeIfNecessary() {
             if ((mRevertToLeftClick && mActiveClickType != AUTOCLICK_TYPE_LEFT_CLICK)
                     || mActiveClickType == AUTOCLICK_TYPE_LONG_PRESS) {
-                mAutoclickTypePanel.resetSelectedClickType();
+                mAutoclickTypePanel.collapsePanelWithClickType(AUTOCLICK_TYPE_LEFT_CLICK);
             }
         }
 

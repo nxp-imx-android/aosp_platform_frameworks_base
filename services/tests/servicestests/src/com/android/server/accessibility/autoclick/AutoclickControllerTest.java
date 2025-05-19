@@ -25,6 +25,7 @@ import static com.android.server.testutils.MockitoUtilsKt.eq;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -1209,7 +1210,9 @@ public class AutoclickControllerTest {
         mTestableLooper.processAllMessages();
 
         // Even after the click, the click type should not be reset.
-        verify(mockAutoclickTypePanel, Mockito.never()).resetSelectedClickType();
+        assertThat(mController.getActiveClickTypeForTest())
+                .isEqualTo(AutoclickTypePanel.AUTOCLICK_TYPE_DRAG);
+        verify(mockAutoclickTypePanel, Mockito.never()).collapsePanelWithClickType(anyInt());
     }
 
     @Test
@@ -1241,7 +1244,8 @@ public class AutoclickControllerTest {
         mController.exitScrollMode();
 
         // Verify click type is reset when exiting scroll mode.
-        verify(mockAutoclickTypePanel).resetSelectedClickType();
+        verify(mockAutoclickTypePanel).collapsePanelWithClickType(
+                AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK);
     }
 
     @Test
@@ -1349,7 +1353,8 @@ public class AutoclickControllerTest {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_BUTTON_PRESS,
                 MotionEvent.ACTION_BUTTON_RELEASE, MotionEvent.ACTION_UP);
 
-        verify(mockAutoclickTypePanel).resetSelectedClickType();
+        verify(mockAutoclickTypePanel).collapsePanelWithClickType(
+                AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK);
     }
 
     @Test
