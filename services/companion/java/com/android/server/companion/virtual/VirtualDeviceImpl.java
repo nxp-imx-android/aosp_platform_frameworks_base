@@ -1465,8 +1465,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             }
 
             return new GenericWindowPolicyController(
-                    WindowManager.LayoutParams.FLAG_SECURE,
-                    WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS,
                     mAttributionSource,
                     getAllowedUserHandles(),
                     activityLaunchAllowedByDefault,
@@ -1608,12 +1606,16 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             DisplayWindowPolicyController dwpc) {
         final boolean isMirrorDisplay =
                 mDisplayManagerInternal.getDisplayIdToMirror(displayId) != Display.INVALID_DISPLAY;
-        final boolean isTrustedDisplay =
-                (mDisplayManagerInternal.getDisplayInfo(displayId).flags & Display.FLAG_TRUSTED)
-                        == Display.FLAG_TRUSTED;
+        final int flags = mDisplayManagerInternal.getDisplayInfo(displayId).flags;
+        final boolean isTrustedDisplay = (flags & Display.FLAG_TRUSTED) == Display.FLAG_TRUSTED;
+        final boolean isSecureDisplay = (flags & Display.FLAG_SECURE) == Display.FLAG_SECURE;
 
         GenericWindowPolicyController gwpc = (GenericWindowPolicyController) dwpc;
-        gwpc.setDisplayId(displayId, isMirrorDisplay);
+        if (!isSecureDisplay) {
+            gwpc.setInterestedWindowFlags(WindowManager.LayoutParams.FLAG_SECURE,
+                    WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);
+        }
+        gwpc.setDisplayId(displayId, isMirrorDisplay, isSecureDisplay);
         PowerManager.WakeLock wakeLock =
                 isTrustedDisplay ? createWakeLockForDisplay(displayId) : null;
         synchronized (mVirtualDeviceLock) {

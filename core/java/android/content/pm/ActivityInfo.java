@@ -626,7 +626,8 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
      */
     public static final int FLAG_ENABLE_VR_MODE = 0x8000;
     /**
-     * Bit in {@link #flags} indicating if the activity can be displayed on a virtual display.
+     * Bit in {@link #flags} indicating if the activity can be displayed on an insecure virtual
+     * display.
      * Corresponds to {@link android.R.attr#canDisplayOnRemoteDevices}
      * @hide
      */

@@ -984,13 +984,13 @@ public class ActivityStarterTests extends WindowTestsBase {
     }
 
     /**
-     * This test ensures that activity launch on a secondary display is disallowed if the activity
-     * opted out from showing on remote devices.
+     * This test ensures that activity launch on an insecure secondary display is disallowed if the
+     * activity opted out from showing on remote devices.
      */
     @EnableFlags(android.companion.virtualdevice.flags.Flags
             .FLAG_ENFORCE_REMOTE_DEVICE_OPT_OUT_ON_ALL_VIRTUAL_DISPLAYS)
     @Test
-    public void testStartOptedOutActivityOnVirtualDisplay() {
+    public void testStartOptedOutActivityOnInsecureVirtualDisplay() {
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK,
                 false /* mockGetRootTask */);
         starter.mRequest.activityInfo.flags &= ~ActivityInfo.FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES;
@@ -999,6 +999,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         final TestDisplayContent secondaryDisplay =
                 new TestDisplayContent.Builder(mAtm, 1000, 1500)
                         .setType(Display.TYPE_VIRTUAL)
+                        .removeFlags(Display.FLAG_SECURE)
                         .setPosition(POSITION_BOTTOM).build();
         final TaskDisplayArea secondaryTaskContainer = secondaryDisplay.getDefaultTaskDisplayArea();
         final Task stack = secondaryTaskContainer.createRootTask(
@@ -1014,7 +1015,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // on secondary display.
         final ActivityOptions options = ActivityOptions.makeBasic()
                 .setLaunchDisplayId(secondaryDisplay.mDisplayId);
-        final int result = starter.setReason("testStartOptedOutActivityOnVirtualDisplay")
+        final int result = starter.setReason("testStartOptedOutActivityOnInsecureVirtualDisplay")
                 .setIntent(topActivityOnSecondaryDisplay.intent)
                 .setActivityOptions(options.toBundle(),
                         Binder.getCallingPid(), Binder.getCallingUid())
@@ -1022,6 +1023,51 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         // Ensure result is canceled.
         assertEquals(START_CANCELED, result);
+
+        // Ensure secondary display only creates one stack.
+        verify(secondaryTaskContainer, times(1)).createRootTask(anyInt(), anyInt(), anyBoolean());
+    }
+
+    /**
+     * This test ensures that activity launch on a secure secondary display is allowed event if the
+     * activity opted out from showing on remote devices.
+     */
+    @EnableFlags(android.companion.virtualdevice.flags.Flags
+            .FLAG_ENFORCE_REMOTE_DEVICE_OPT_OUT_ON_ALL_VIRTUAL_DISPLAYS)
+    @Test
+    public void testStartOptedOutActivityOnSecureVirtualDisplay() {
+        final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK,
+                false /* mockGetRootTask */);
+        starter.mRequest.activityInfo.flags &= ~ActivityInfo.FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES;
+
+        // Create a virtual display at bottom.
+        final TestDisplayContent secondaryDisplay =
+                new TestDisplayContent.Builder(mAtm, 1000, 1500)
+                        .setType(Display.TYPE_VIRTUAL)
+                        .addFlags(Display.FLAG_SECURE)
+                        .setPosition(POSITION_BOTTOM).build();
+        final TaskDisplayArea secondaryTaskContainer = secondaryDisplay.getDefaultTaskDisplayArea();
+        final Task stack = secondaryTaskContainer.createRootTask(
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
+
+        // Create an activity record on the top of secondary display.
+        final ActivityRecord topActivityOnSecondaryDisplay = createSingleTaskActivityOn(stack);
+
+        // Put an activity on default display as the top focused activity.
+        new ActivityBuilder(mAtm).setCreateTask(true).build();
+
+        // Start activity with the same intent as {@code topActivityOnSecondaryDisplay}
+        // on secondary display.
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchDisplayId(secondaryDisplay.mDisplayId);
+        final int result = starter.setReason("testStartOptedOutActivityOnSecureVirtualDisplay")
+                .setIntent(topActivityOnSecondaryDisplay.intent)
+                .setActivityOptions(options.toBundle(),
+                        Binder.getCallingPid(), Binder.getCallingUid())
+                .execute();
+
+        // Ensure result is delivering intent to top.
+        assertEquals(START_DELIVERED_TO_TOP, result);
 
         // Ensure secondary display only creates one stack.
         verify(secondaryTaskContainer, times(1)).createRootTask(anyInt(), anyInt(), anyBoolean());

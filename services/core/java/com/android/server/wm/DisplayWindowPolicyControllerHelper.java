@@ -136,7 +136,9 @@ class DisplayWindowPolicyControllerHelper {
         if (displayType != Display.TYPE_VIRTUAL && displayType != Display.TYPE_WIFI) {
             return true;
         }
-        if ((aInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0) {
+
+        if ((aInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0
+                && (mDisplayContent.getDisplay().getFlags() & Display.FLAG_SECURE) == 0) {
             Slog.d(TAG,
                     String.format("Checking activity launch on display %d, activity requires"
                                     + " android:canDisplayOnRemoteDevices=true",
