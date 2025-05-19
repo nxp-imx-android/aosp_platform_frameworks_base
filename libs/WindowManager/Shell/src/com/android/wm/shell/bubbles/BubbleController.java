@@ -941,6 +941,16 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
+    /**
+     * Show bubble bar pin view given location.
+     */
+    public void showBubbleBarPinAtLocation(BubbleBarLocation bubbleBarLocation) {
+        if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
+            // TODO(b/411505605) show bubble bar drop target in launcher since taskbar window is
+            // layered on top of the shell drag window
+        }
+    }
+
     @Override
     public void onDragItemOverBubbleBarDragZone(@Nullable BubbleBarLocation bubbleBarLocation) {
         if (bubbleBarLocation == null) return;
@@ -1435,7 +1445,6 @@ public class BubbleController implements ConfigurationChangeListener,
      * Whether or not there are bubbles present, regardless of them being visible on the
      * screen (e.g. if on AOD).
      */
-    @VisibleForTesting
     public boolean hasBubbles() {
         if (mStackView == null && mLayerView == null) {
             return false;
