@@ -17,6 +17,7 @@
 package android.app.supervision;
 
 import android.content.Intent;
+import android.app.supervision.ISupervisionListener;
 import android.app.supervision.SupervisionRecoveryInfo;
 
 /**
@@ -33,4 +34,6 @@ interface ISupervisionManager {
     oneway void setSupervisionRecoveryInfo(in SupervisionRecoveryInfo recoveryInfo);
     SupervisionRecoveryInfo getSupervisionRecoveryInfo();
     boolean hasSupervisionCredentials();
+    oneway void registerSupervisionListener(in ISupervisionListener listener);
+    oneway void unregisterSupervisionListener(in ISupervisionListener listener);
 }

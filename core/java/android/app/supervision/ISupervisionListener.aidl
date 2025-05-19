@@ -19,7 +19,6 @@ package android.app.supervision;
 /**
  * @hide
  */
-interface ISupervisionAppService {
-    void onEnabled();
-    void onDisabled();
+oneway interface ISupervisionListener {
+    oneway void onSetSupervisionEnabled(int userId, boolean enabled);
 }
