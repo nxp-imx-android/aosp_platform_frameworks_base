@@ -506,7 +506,7 @@ public class MediaQualityService extends SystemService {
                 if (currentDefaultPictureProfile != null) {
                     return currentDefaultPictureProfile;
                 } else {
-                    return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId);
+                    return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId, true);
                 }
             }
             return null;
@@ -694,7 +694,7 @@ public class MediaQualityService extends SystemService {
             if (profileHandle == -1) {
                 return null;
             }
-            return mMqDatabaseUtils.getPictureProfile(profileHandle);
+            return mMqDatabaseUtils.getPictureProfile(profileHandle, true);
         }
 
         public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId, int userId) {
@@ -705,7 +705,7 @@ public class MediaQualityService extends SystemService {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
             }
-            String[] columns = {BaseParameters.PARAMETER_ID};
+            String[] columns = MediaQualityUtils.getMediaProfileColumns(/* includeParams= */ true);
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
                     + BaseParameters.PARAMETER_INPUT_ID + " = ?";
             String[] selectionArguments = {
