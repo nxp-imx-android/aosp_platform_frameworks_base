@@ -287,6 +287,12 @@ public class CachedAppOptimizer {
     // Format of this string should be a comma separated list of integers.
     @VisibleForTesting static final String DEFAULT_COMPACT_PROC_STATE_THROTTLE =
             String.valueOf(ActivityManager.PROCESS_STATE_RECEIVER);
+    // The debounce timeout is a grace period for apps that run background cleanup operations
+    // outside their valid lifecycles.  A too-aggressive value (that is, a too-low value) may
+    // freeze these apps before the operations complete.  The default has been found to work on
+    // phones.  (A lower default has been found to work on Wear).  However, once these apps have
+    // been corrected to honor their valid lifecycles, this debounce default may be lowerered or
+    // set to zero.
     @VisibleForTesting static final long DEFAULT_FREEZER_DEBOUNCE_TIMEOUT = 10_000L;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_EXEMPT_INST_PKG = false;
     @VisibleForTesting static final boolean DEFAULT_FREEZER_BINDER_ENABLED = true;
