@@ -922,7 +922,7 @@ package android.appwidget {
 
 package android.companion {
 
-  @FlaggedApi("android.companion.new_association_builder") public static final class AssociationInfo.Builder {
+  public static final class AssociationInfo.Builder {
     ctor public AssociationInfo.Builder(int, int, @NonNull String);
     ctor public AssociationInfo.Builder(@NonNull android.companion.AssociationInfo);
     method @NonNull public android.companion.AssociationInfo build();
@@ -934,7 +934,7 @@ package android.companion {
     method @NonNull public android.companion.AssociationInfo.Builder setDisplayName(@Nullable CharSequence);
     method @NonNull public android.companion.AssociationInfo.Builder setLastTimeConnected(long);
     method @NonNull public android.companion.AssociationInfo.Builder setNotifyOnDeviceNearby(boolean);
-    method @NonNull public android.companion.AssociationInfo.Builder setPackagesToNotify(@Nullable java.util.List<java.lang.String>);
+    method @FlaggedApi("android.companion.association_verification") @NonNull public android.companion.AssociationInfo.Builder setPackagesToNotify(@Nullable java.util.List<java.lang.String>);
     method @NonNull public android.companion.AssociationInfo.Builder setRevoked(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setSelfManaged(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setSystemDataSyncFlags(int);

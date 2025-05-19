@@ -10377,11 +10377,11 @@ package android.companion {
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
     method @Deprecated @FlaggedApi("android.companion.association_verification") public void setDeviceId(int, @Nullable android.companion.DeviceId);
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
-    method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     method public void startSystemDataTransfer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.companion.CompanionException>) throws android.companion.DeviceNotAssociatedException;
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
-    method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
     field public static final int FLAG_CALL_METADATA = 1; // 0x1
@@ -10389,7 +10389,7 @@ package android.companion {
     field public static final int RESULT_DISCOVERY_TIMEOUT = 2; // 0x2
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3
     field public static final int RESULT_OK = -1; // 0xffffffff
-    field @FlaggedApi("android.companion.association_failure_code") public static final int RESULT_SECURITY_ERROR = 4; // 0x4
+    field public static final int RESULT_SECURITY_ERROR = 4; // 0x4
     field public static final int RESULT_USER_REJECTED = 1; // 0x1
   }
 
@@ -10399,7 +10399,7 @@ package android.companion {
     method public void onAssociationPending(@NonNull android.content.IntentSender);
     method @Deprecated public void onDeviceFound(@NonNull android.content.IntentSender);
     method public abstract void onFailure(@Nullable CharSequence);
-    method @FlaggedApi("android.companion.association_failure_code") public void onFailure(int, @Nullable CharSequence);
+    method public void onFailure(int, @Nullable CharSequence);
   }
 
   public abstract class CompanionDeviceService extends android.app.Service {
@@ -10408,10 +10408,10 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public final void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public final android.os.IBinder onBind(@NonNull android.content.Intent);
     method @Deprecated @MainThread public void onDeviceAppeared(@NonNull String);
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
+    method @Deprecated @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
     method @Deprecated @MainThread public void onDeviceDisappeared(@NonNull String);
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
-    method @FlaggedApi("android.companion.device_presence") @MainThread public void onDevicePresenceEvent(@NonNull android.companion.DevicePresenceEvent);
+    method @Deprecated @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
+    method @MainThread public void onDevicePresenceEvent(@NonNull android.companion.DevicePresenceEvent);
     field public static final String SERVICE_INTERFACE = "android.companion.CompanionDeviceService";
   }
 
@@ -10439,7 +10439,7 @@ package android.companion {
   public class DeviceNotAssociatedException extends java.lang.RuntimeException {
   }
 
-  @FlaggedApi("android.companion.device_presence") public final class DevicePresenceEvent implements android.os.Parcelable {
+  public final class DevicePresenceEvent implements android.os.Parcelable {
     ctor public DevicePresenceEvent(int, int, @Nullable android.os.ParcelUuid);
     method public int describeContents();
     method public int getAssociationId();
@@ -10457,7 +10457,7 @@ package android.companion {
     field public static final int NO_ASSOCIATION = -1; // 0xffffffff
   }
 
-  @FlaggedApi("android.companion.device_presence") public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
+  public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
     method public int describeContents();
     method public int getAssociationId();
     method @Nullable public android.os.ParcelUuid getUuid();

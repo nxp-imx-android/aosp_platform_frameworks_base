@@ -42,7 +42,6 @@ import java.util.Objects;
  * @see CompanionDeviceManager#startObservingDevicePresence(ObservingDevicePresenceRequest)
  */
 // TODO(b/371198526): Update the javadoc once the 25Q4 is released.
-@FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
 public final class ObservingDevicePresenceRequest implements Parcelable {
     private final int mAssociationId;
     @Nullable private final ParcelUuid mUuid;

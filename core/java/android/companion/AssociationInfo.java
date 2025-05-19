@@ -528,7 +528,6 @@ public final class AssociationInfo implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_NEW_ASSOCIATION_BUILDER)
     @TestApi
     public static final class Builder {
         private final int mId;
@@ -721,6 +720,7 @@ public final class AssociationInfo implements Parcelable {
         @TestApi
         @NonNull
         @SuppressLint("MissingGetterMatchingBuilder")
+        @SuppressWarnings("UnflaggedApi")
         public Builder setTransportFlags(int flags) {
             mTransportFlags = flags;
             return this;
@@ -740,6 +740,7 @@ public final class AssociationInfo implements Parcelable {
         @TestApi
         @NonNull
         @SuppressLint("MissingGetterMatchingBuilder")
+        @FlaggedApi(Flags.FLAG_ASSOCIATION_VERIFICATION)
         public Builder setPackagesToNotify(@Nullable List<String> packagesToNotify) {
             mPackagesToNotify = packagesToNotify;
             return this;

@@ -162,7 +162,6 @@ public final class CompanionDeviceManager {
      * association due to the security issue.
      * E.g. There are missing necessary permissions when creating association.
      */
-    @FlaggedApi(Flags.FLAG_ASSOCIATION_FAILURE_CODE)
     public static final int RESULT_SECURITY_ERROR = 4;
 
     /**
@@ -405,7 +404,6 @@ public final class CompanionDeviceManager {
          *                  could not be created.
          * @param error error message.
          */
-        @FlaggedApi(Flags.FLAG_ASSOCIATION_FAILURE_CODE)
         public void onFailure(@ResultCode int errorCode, @Nullable CharSequence error) {}
     }
 
@@ -1360,7 +1358,6 @@ public final class CompanionDeviceManager {
      * @deprecated use {@link #startObservingDevicePresence(ObservingDevicePresenceRequest)}
      * instead.
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @Deprecated
     @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE)
     public void startObservingDevicePresence(@NonNull String deviceAddress)
@@ -1409,7 +1406,6 @@ public final class CompanionDeviceManager {
      * @deprecated use {@link #stopObservingDevicePresence(ObservingDevicePresenceRequest)}
      * instead.
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @Deprecated
     @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE)
     public void stopObservingDevicePresence(@NonNull String deviceAddress)
@@ -1469,7 +1465,6 @@ public final class CompanionDeviceManager {
      * @see ObservingDevicePresenceRequest.Builder
      * @see CompanionDeviceService#onDevicePresenceEvent(DevicePresenceEvent)
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE)
     public void startObservingDevicePresence(@NonNull ObservingDevicePresenceRequest request) {
         if (mService == null) {
@@ -1495,7 +1490,6 @@ public final class CompanionDeviceManager {
      *
      * @param request A request for setting the types of device for observing device presence.
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE)
     public void stopObservingDevicePresence(@NonNull ObservingDevicePresenceRequest request) {
         if (mService == null) {
@@ -2002,10 +1996,7 @@ public final class CompanionDeviceManager {
 
         @Override
         public void onFailure(@ResultCode int errorCode, @Nullable CharSequence error) {
-            if (Flags.associationFailureCode()) {
-                execute(mCallback::onFailure, errorCode, error);
-            }
-
+            execute(mCallback::onFailure, errorCode, error);
             execute(mCallback::onFailure, error);
         }
 
