@@ -293,6 +293,17 @@ public class DisplayPolicyTests extends WindowTestsBase {
         assertFalse(wpc.isShowingUiWhileDozing());
     }
 
+    @Test
+    public void testNonSystemToastAnimation() {
+        final WindowState win = newWindowBuilder("Toast",
+                WindowManager.LayoutParams.TYPE_TOAST).build();
+        win.mAttrs.windowAnimations = android.R.style.Animation_InputMethod;
+        setFieldValue(win.mSession, "mCanAddInternalSystemWindow", false);
+        mDisplayContent.getDisplayPolicy().adjustWindowParamsLw(win, win.mAttrs);
+
+        assertEquals(android.R.style.Animation_Toast, win.mAttrs.windowAnimations);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testMainAppWindowDisallowFitSystemWindowTypes() {
         final DisplayPolicy policy = mDisplayContent.getDisplayPolicy();
