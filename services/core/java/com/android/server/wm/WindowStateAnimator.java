@@ -16,6 +16,9 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateAnimatorProto.DRAW_STATE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateAnimatorProto.SURFACE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowSurfaceControllerProto.SHOWN;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.SurfaceControl.METADATA_OWNER_PID;
 import static android.view.SurfaceControl.METADATA_OWNER_UID;
@@ -43,9 +46,6 @@ import static com.android.server.wm.WindowManagerDebugConfig.SHOW_LIGHT_TRANSACT
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.logWithStack;
-import static com.android.server.wm.WindowStateAnimatorProto.DRAW_STATE;
-import static com.android.server.wm.WindowStateAnimatorProto.SURFACE;
-import static com.android.server.wm.WindowSurfaceControllerProto.SHOWN;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.content.Context;

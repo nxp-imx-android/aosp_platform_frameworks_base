@@ -19,20 +19,20 @@ package com.android.server.wm;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.FEATURE_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.IS_IGNORING_ORIENTATION_REQUEST;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.IS_ORGANIZED;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.IS_ROOT_DISPLAY_AREA;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.IS_TASK_DISPLAY_AREA;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.NAME;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayAreaProto.WINDOW_CONTAINER;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.DISPLAY_AREA;
 import static android.view.WindowManagerPolicyConstants.APPLICATION_LAYER;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 import static android.window.DisplayAreaOrganizer.FEATURE_WINDOW_TOKENS;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.util.Preconditions.checkState;
-import static com.android.server.wm.DisplayAreaProto.FEATURE_ID;
-import static com.android.server.wm.DisplayAreaProto.IS_IGNORING_ORIENTATION_REQUEST;
-import static com.android.server.wm.DisplayAreaProto.IS_ORGANIZED;
-import static com.android.server.wm.DisplayAreaProto.IS_ROOT_DISPLAY_AREA;
-import static com.android.server.wm.DisplayAreaProto.IS_TASK_DISPLAY_AREA;
-import static com.android.server.wm.DisplayAreaProto.NAME;
-import static com.android.server.wm.DisplayAreaProto.WINDOW_CONTAINER;
-import static com.android.server.wm.WindowContainerChildProto.DISPLAY_AREA;
 
 import android.annotation.Nullable;
 import android.content.pm.ActivityInfo;

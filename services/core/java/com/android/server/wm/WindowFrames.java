@@ -16,10 +16,10 @@
 
 package com.android.server.wm;
 
-import static com.android.server.wm.WindowFramesProto.COMPAT_FRAME;
-import static com.android.server.wm.WindowFramesProto.DISPLAY_FRAME;
-import static com.android.server.wm.WindowFramesProto.FRAME;
-import static com.android.server.wm.WindowFramesProto.PARENT_FRAME;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowFramesProto.COMPAT_FRAME;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowFramesProto.DISPLAY_FRAME;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowFramesProto.FRAME;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowFramesProto.PARENT_FRAME;
 
 import android.annotation.NonNull;
 import android.graphics.Rect;

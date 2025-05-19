@@ -17,18 +17,18 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.WINDOW_TOKEN;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.PAUSED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowTokenProto.WINDOW_CONTAINER;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_MOVEMENT;
-import static com.android.server.wm.WindowContainerChildProto.WINDOW_TOKEN;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
-import static com.android.server.wm.WindowTokenProto.HASH_CODE;
-import static com.android.server.wm.WindowTokenProto.PAUSED;
-import static com.android.server.wm.WindowTokenProto.WINDOW_CONTAINER;
 
 import android.annotation.CallSuper;
 import android.annotation.NonNull;

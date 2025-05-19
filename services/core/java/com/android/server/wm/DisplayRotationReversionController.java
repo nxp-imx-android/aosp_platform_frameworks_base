@@ -23,7 +23,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATIO
 import static com.android.server.policy.WindowManagerPolicy.USER_ROTATION_LOCKED;
 
 import android.annotation.Nullable;
-import android.content.ActivityInfoProto;
+import android.internal.perfetto.protos.Activityinfo.ActivityInfoProto;
 import android.view.Surface;
 
 import com.android.internal.protolog.ProtoLog;

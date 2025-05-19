@@ -17,12 +17,13 @@
 package com.android.server.wm;
 
 
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.IDENTIFIER;
+
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_EMBEDDED_WINDOWS;
-import static com.android.server.wm.IdentifierProto.HASH_CODE;
-import static com.android.server.wm.IdentifierProto.TITLE;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
-import static com.android.server.wm.WindowStateProto.IDENTIFIER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

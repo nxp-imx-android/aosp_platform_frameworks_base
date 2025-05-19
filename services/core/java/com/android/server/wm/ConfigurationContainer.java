@@ -31,8 +31,11 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.app.WindowConfiguration.activityTypeToString;
 import static android.app.WindowConfiguration.isFloating;
 import static android.app.WindowConfiguration.windowingModeToString;
-import static android.app.WindowConfigurationProto.WINDOWING_MODE;
-import static android.content.ConfigurationProto.WINDOW_CONFIGURATION;
+import static android.internal.perfetto.protos.WindowConfiguration.WindowConfigurationProto.WINDOWING_MODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.ConfigurationContainerProto.FULL_CONFIGURATION;
+import static android.internal.perfetto.protos.Windowmanagerservice.ConfigurationContainerProto.MERGED_OVERRIDE_CONFIGURATION;
+import static android.internal.perfetto.protos.Windowmanagerservice.ConfigurationContainerProto.OVERRIDE_CONFIGURATION;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.WINDOW_CONFIGURATION;
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
@@ -42,9 +45,6 @@ import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
-import static com.android.server.wm.ConfigurationContainerProto.FULL_CONFIGURATION;
-import static com.android.server.wm.ConfigurationContainerProto.MERGED_OVERRIDE_CONFIGURATION;
-import static com.android.server.wm.ConfigurationContainerProto.OVERRIDE_CONFIGURATION;
 
 import android.annotation.CallSuper;
 import android.annotation.NonNull;
@@ -865,7 +865,7 @@ public abstract class ConfigurationContainer<E extends ConfigurationContainer> {
 
     /**
      * Write to a protocol buffer output stream. Protocol buffer message definition is at
-     * {@link com.android.server.wm.ConfigurationContainerProto}.
+     * {@link android.internal.perfetto.protos.Windowmanagerservice.ConfigurationContainerProto}.
      *
      * @param proto    Stream to write the ConfigurationContainer object to.
      * @param fieldId  Field Id of the ConfigurationContainer as defined in the parent
