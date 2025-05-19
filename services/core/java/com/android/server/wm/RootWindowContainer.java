@@ -1757,6 +1757,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     @Nullable
+    Task getTopDisplayFocusedLeafTask() {
+        final Task rootTask = getTopDisplayFocusedRootTask();
+        return rootTask != null
+                ? rootTask.getTopLeafTask(TaskFragment::isFocusableAndVisible)
+                : null;
+    }
+
+    @Nullable
     ActivityRecord getTopResumedActivity() {
         final Task focusedRootTask = getTopDisplayFocusedRootTask();
         if (focusedRootTask == null) {

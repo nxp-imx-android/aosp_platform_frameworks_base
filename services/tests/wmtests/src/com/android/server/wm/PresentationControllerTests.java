@@ -273,6 +273,14 @@ public class PresentationControllerTests extends WindowTestsBase {
         return dc;
     }
 
+    static ActivityRecord createActivityRecord(Task task) {
+        final ActivityRecord activity = createActivityRecord(task.getDisplayContent(), task);
+        // PresentationController finds a host task based on the top resumed activity, so make sure
+        // to set activity to be resumed in the parent task.
+        task.setResumedActivity(activity, "createActivityRecord");
+        return activity;
+    }
+
     private void completeTransition(@NonNull Transition transition, boolean abortSync) {
         final ActionChain chain = ActionChain.testFinish(transition);
         if (abortSync) {
