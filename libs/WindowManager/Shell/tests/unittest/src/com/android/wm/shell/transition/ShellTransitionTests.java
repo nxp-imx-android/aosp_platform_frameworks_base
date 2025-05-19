@@ -1325,7 +1325,8 @@ public class ShellTransitionTests extends ShellTestCase {
         doReturn(mContext).when(mockRecentsTaskController).getContext();
         final RecentsTransitionHandler recentsHandler =
                 new RecentsTransitionHandler(shellInit, mock(ShellTaskOrganizer.class), transitions,
-                        mockRecentsTaskController, mock(HomeTransitionObserver.class));
+                        mockRecentsTaskController, mock(HomeTransitionObserver.class),
+                        mock(DisplayController.class));
         recentsHandler.setFinishTransactionSupplier(
                 () -> mock(SurfaceControl.Transaction.class));
         transitions.replaceDefaultHandlerForTest(mDefaultHandler);

@@ -69,6 +69,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.TestShellExecutor;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.desktopmode.DesktopRepository;
@@ -102,6 +103,8 @@ import java.util.Optional;
 public class RecentsTransitionHandlerTest extends ShellTestCase {
 
     private static final int FREEFORM_TASK_CORNER_RADIUS = 32;
+    private static final int FREEFORM_TASK_CORNER_RADIUS_ON_CD = 24;
+    private static final int CONNECTED_DISPLAY_ID = 1;
 
     @Mock
     private Context mContext;
@@ -125,6 +128,9 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     private UserManager mUserManager;
 
     @Mock private DesktopRepository mDesktopRepository;
+    @Mock private DisplayController mDisplayController;
+    @Mock private Context mConnectedDisplayContext;
+    @Mock private Resources mConnectedDisplayResources;
 
     private ShellTaskOrganizer mShellTaskOrganizer;
     private RecentTasksController mRecentTasksController;
@@ -151,6 +157,12 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         when(mResources.getDimensionPixelSize(
                 R.dimen.desktop_windowing_freeform_rounded_corner_radius)
         ).thenReturn(FREEFORM_TASK_CORNER_RADIUS);
+        when(mDisplayController.getDisplayContext(CONNECTED_DISPLAY_ID)).thenReturn(
+                mConnectedDisplayContext);
+        when(mConnectedDisplayContext.getResources()).thenReturn(mConnectedDisplayResources);
+        when(mConnectedDisplayResources.getDimensionPixelSize(
+                R.dimen.desktop_windowing_freeform_rounded_corner_radius)
+        ).thenReturn(FREEFORM_TASK_CORNER_RADIUS_ON_CD);
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
@@ -165,7 +177,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
         doReturn(mMainExecutor).when(mTransitions).getMainExecutor();
         mRecentsTransitionHandler = new RecentsTransitionHandler(mShellInit, mShellTaskOrganizer,
-                mTransitions, mRecentTasksController, mock(HomeTransitionObserver.class));
+                mTransitions, mRecentTasksController, mock(HomeTransitionObserver.class),
+                mDisplayController);
         // By default use a mock finish transaction since we are sending transitions that don't have
         // real surface controls
         mRecentsTransitionHandler.setFinishTransactionSupplier(
@@ -438,6 +451,32 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
 
         verify(finishT).setCornerRadius(leash, FREEFORM_TASK_CORNER_RADIUS);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX)
+    public void testFinish_returningToFreeformTasks_setsCornerRadiusOnConnectedDisplay() {
+        ActivityManager.RunningTaskInfo freeformTask =
+                new TestRunningTaskInfoBuilder().setWindowingMode(
+                        WINDOWING_MODE_FREEFORM).setDisplayId(CONNECTED_DISPLAY_ID).build();
+        TransitionInfo transitionInfo = new TransitionInfoBuilder(TRANSIT_CLOSE)
+                .addChange(TRANSIT_CLOSE, freeformTask)
+                .build();
+        SurfaceControl leash = transitionInfo.getChanges().get(0).getLeash();
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.setFinishTransactionSupplier(() -> finishT);
+        mRecentsTransitionHandler.startAnimation(
+                transition, transitionInfo, new StubTransaction(),
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
+                false /* sendUserLeaveHint */, mock(IResultReceiver.class));
+        mMainExecutor.flushAll();
+
+
+        verify(finishT).setCornerRadius(leash, FREEFORM_TASK_CORNER_RADIUS_ON_CD);
     }
 
     private IBinder startRecentsTransition(boolean synthetic) {

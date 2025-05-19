@@ -79,6 +79,7 @@ import com.android.internal.os.IResultReceiver;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.R;
@@ -121,18 +122,21 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
     private final HomeTransitionObserver mHomeTransitionObserver;
     private @Nullable Color mBackgroundColor;
+    private final DisplayController mDisplayController;
 
     public RecentsTransitionHandler(
             @NonNull ShellInit shellInit,
             @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull Transitions transitions,
             @Nullable RecentTasksController recentTasksController,
-            @NonNull HomeTransitionObserver homeTransitionObserver) {
+            @NonNull HomeTransitionObserver homeTransitionObserver,
+            @NonNull DisplayController displayController) {
         mShellTaskOrganizer = shellTaskOrganizer;
         mTransitions = transitions;
         mExecutor = transitions.getMainExecutor();
         mRecentTasksController = recentTasksController;
         mHomeTransitionObserver = homeTransitionObserver;
+        mDisplayController = displayController;
         if (recentTasksController == null) return;
         shellInit.addInitCallback(this::onInit, this);
     }
@@ -1636,24 +1640,28 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             }
         }
 
-        private static void setCornerRadiusForFreeformTasks(
+        private void setCornerRadiusForFreeformTasks(
                 Context context,
                 SurfaceControl.Transaction t,
                 ArrayList<TaskState> tasks) {
             if (!ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue()) {
                 return;
             }
-            int cornerRadius = getCornerRadius(context);
             for (int i = 0; i < tasks.size(); ++i) {
                 TaskState task = tasks.get(i);
                 if (task.mTaskInfo != null && task.mTaskInfo.isFreeform()) {
+                    int cornerRadius = getCornerRadius(context, task.mTaskInfo.displayId);
                     t.setCornerRadius(task.mTaskSurface, cornerRadius);
                 }
             }
         }
 
-        private static int getCornerRadius(Context context) {
-            return context.getResources().getDimensionPixelSize(
+        private int getCornerRadius(Context context, int displayId) {
+            Context displayContext = mDisplayController.getDisplayContext(displayId);
+            if (displayContext == null) {
+                displayContext = context;
+            }
+            return displayContext.getResources().getDimensionPixelSize(
                     R.dimen.desktop_windowing_freeform_rounded_corner_radius);
         }
 
