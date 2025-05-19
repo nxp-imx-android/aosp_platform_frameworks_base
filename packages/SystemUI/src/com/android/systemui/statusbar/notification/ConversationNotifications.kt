@@ -197,8 +197,7 @@ constructor(
     private val notifCollection: CommonNotifCollection,
     @Main private val mainHandler: Handler,
 ) {
-    // Need this state to be thread safe, since it's accessed from the ui thread
-    // (NotificationEntryListener) and a bg thread (NotificationRowContentBinder)
+    // This state should be thread safe, since it may be accessed from different threads.
     private val states = ConcurrentHashMap<String, ConversationState>()
 
     private var notifPanelCollapsed = true
