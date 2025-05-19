@@ -77,6 +77,7 @@ import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteracto
 import com.android.systemui.biometrics.plugins.AuthContextPlugins;
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams;
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel;
+import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
@@ -192,6 +193,7 @@ public class AuthController implements
     private final DisplayInfo mCachedDisplayInfo = new DisplayInfo();
     @NonNull private final VibratorHelper mVibratorHelper;
     @NonNull private final MSDLPlayer mMSDLPlayer;
+    @NonNull private final PromptFallbackViewModel.Factory mPromptFallbackViewModelFactory;
 
     private final WindowManagerProvider mWindowManagerProvider;
 
@@ -693,7 +695,8 @@ public class AuthController implements
             @NonNull VibratorHelper vibratorHelper,
             @NonNull KeyguardManager keyguardManager,
             @NonNull MSDLPlayer msdlPlayer,
-            WindowManagerProvider windowManagerProvider) {
+            WindowManagerProvider windowManagerProvider,
+            @NonNull PromptFallbackViewModel.Factory promptFallbackViewModelFactory) {
         mContext = context;
         mExecution = execution;
         mUserManager = userManager;
@@ -717,6 +720,7 @@ public class AuthController implements
         mApplicationCoroutineScope = applicationCoroutineScope;
         mVibratorHelper = vibratorHelper;
         mMSDLPlayer = msdlPlayer;
+        mPromptFallbackViewModelFactory = promptFallbackViewModelFactory;
 
         mLogContextInteractor = logContextInteractor;
         mPromptSelectorInteractor = promptSelectorInteractorProvider;
@@ -1338,7 +1342,8 @@ public class AuthController implements
         return new AuthContainerView(config, mApplicationCoroutineScope, mFpProps, mFaceProps,
                 wakefulnessLifecycle, userManager, mContextPlugins, lockPatternUtils,
                 mInteractionJankMonitor, mPromptSelectorInteractor, viewModel,
-                mCredentialViewModelProvider, bgExecutor, mVibratorHelper, mMSDLPlayer);
+                mCredentialViewModelProvider, bgExecutor, mVibratorHelper, mMSDLPlayer,
+                mPromptFallbackViewModelFactory);
     }
 
     @Override

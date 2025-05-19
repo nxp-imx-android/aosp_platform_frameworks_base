@@ -91,6 +91,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.biometrics.domain.interactor.LogContextInteractor;
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor;
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel;
+import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel;
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.statusbar.CommandQueue;
@@ -132,6 +133,8 @@ public class AuthControllerTest extends SysuiTestCase {
 
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private PromptFallbackViewModel.Factory mFallbackViewModelFactory;
     @Mock
     private IBiometricSysuiReceiver mReceiver;
     @Mock
@@ -1256,7 +1259,7 @@ public class AuthControllerTest extends SysuiTestCase {
                     () -> mLogContextInteractor, () -> mPromptSelectionInteractor,
                     () -> mCredentialViewModel, () -> mPromptViewModel, mInteractionJankMonitor,
                     mHandler, mBackgroundExecutor, mUdfpsUtils, mVibratorHelper, mKeyguardManager,
-                    mMSDLPlayer, mWindowManagerProvider);
+                    mMSDLPlayer, mWindowManagerProvider, mFallbackViewModelFactory);
         }
 
         @Override
