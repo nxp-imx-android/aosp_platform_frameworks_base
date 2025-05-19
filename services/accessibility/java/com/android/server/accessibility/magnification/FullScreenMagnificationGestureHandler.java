@@ -924,6 +924,13 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
                         transitionToDelegatingStateAndClear();
 
+                    } else if (!isActivated() && !mShortcutTriggered
+                            && mFullScreenMagnificationController.imeRegionContains(
+                                    mDisplayId, event.getX(), event.getY())) {
+                        // Delegate new taps performed over the IME while unmagnified. This removes
+                        // any observable delay while typing on an unmagnified keyboard.
+                        transitionToDelegatingStateAndClear();
+
                     } else if (isMultiTapTriggered(2 /* taps */)) {
 
                         // 3tap and hold
@@ -963,7 +970,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                     } else {
                         transitionToDelegatingStateAndClear();
                     }
-                    // LINT.ThenChange(:action_pointer_down_with_multi_finger)
+                    // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_pointer_down_with_multi_finger)
                 }
                 break;
                 case ACTION_POINTER_UP: {
@@ -973,7 +980,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                     }
                     // LINT.IfChange(action_pointer_up)
                     transitionToDelegatingStateAndClear();
-                    // LINT.ThenChange(:action_pointer_up_with_multi_finger)
+                    // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_pointer_up_with_multi_finger)
                 }
                 break;
                 case ACTION_MOVE: {
@@ -1023,7 +1030,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                         //Second pointer is swiping, so transit to PanningScalingState
                         transitToPanningScalingStateAndClear();
                     }
-                    // LINT.ThenChange(:action_move_with_multi_finger)
+                    // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_move_with_multi_finger)
                 }
                 break;
                 case ACTION_UP: {
@@ -1041,6 +1048,15 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                             mDisplayId, event.getX(), event.getY())) {
                         transitionToDelegatingStateAndClear();
 
+                    } else if (isActivated() && !mShortcutTriggered
+                            && mFullScreenMagnificationController.imeRegionContains(
+                                    mDisplayId, event.getX(), event.getY())) {
+                        // Delegate completed taps performed over the IME while magnified. Benefits:
+                        // - Removes any observable delay while typing on a magnified keyboard.
+                        // - Ensures that quick taps (e.g. "www") do not accidentally trigger the
+                        //   triple-tap shortcut and deactivate magnification.
+                        transitionToDelegatingStateAndClear();
+
                     } else if (isMultiTapTriggered(3 /* taps */)) {
                         onTripleTap(/* up */ event);
 
@@ -1053,7 +1069,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                         transitionToDelegatingStateAndClear();
 
                     }
-                    // LINT.ThenChange(:action_up_with_multi_finger)
+                    // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_up_with_multi_finger)
                 }
                 break;
             }
@@ -1390,7 +1406,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 } else {
                     transitionToDelegatingStateAndClear();
                 }
-                // LINT.ThenChange(:action_pointer_down)
+                // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_pointer_down)
             }
 
             private void onMove(MotionEvent event) {
@@ -1447,7 +1463,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                             MESSAGE_TRANSITION_TO_PANNINGSCALING_STATE,
                             ViewConfiguration.getTapTimeout());
                 }
-                // LINT.ThenChange(:action_move)
+                // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_move)
             }
 
             private void onPointerUp() {
@@ -1458,13 +1474,22 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 if (!mIsTwoFingerCountReached) {
                     transitionToDelegatingStateAndClear();
                 }
-                // LINT.ThenChange(:action_pointer_up)
+                // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_pointer_up)
             }
 
             private void onUp(MotionEvent event) {
                 // LINT.IfChange(action_up_with_multi_finger)
                 if (!mFullScreenMagnificationController.magnificationRegionContains(
                         mDisplayId, event.getX(), event.getY())) {
+                    transitionToDelegatingStateAndClear();
+
+                } else if (isActivated() && !mShortcutTriggered
+                            && mFullScreenMagnificationController.imeRegionContains(
+                                    mDisplayId, event.getX(), event.getY())) {
+                    // Delegate completed taps performed over the IME while magnified. Benefits:
+                    // - Removes any observable delay while typing on a magnified keyboard.
+                    // - Ensures that quick taps (e.g. "www") do not accidentally trigger the
+                    //   triple-tap shortcut and deactivate magnification.
                     transitionToDelegatingStateAndClear();
 
                 } else if (isMultiFingerMultiTapTriggered(
@@ -1489,7 +1514,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                                 && mCompletedTapCount == 0) {
                     transitionToDelegatingStateAndClear();
                 }
-                // LINT.ThenChange(:action_up)
+                // LINT.ThenChange(FullScreenMagnificationGestureHandler.java:action_up)
             }
 
             private boolean isMultiFingerMultiTapTriggered(int targetTapCount, MotionEvent event) {

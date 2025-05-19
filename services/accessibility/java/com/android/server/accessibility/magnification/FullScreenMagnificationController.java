@@ -249,6 +249,7 @@ public class FullScreenMagnificationController implements
 
         private final Region mMagnificationRegion = Region.obtain();
         private final Rect mMagnificationBounds = new Rect();
+        private final Region mImeRegion = Region.obtain();
 
         private final Rect mTempRect = new Rect();
         private final Rect mTempRect1 = new Rect();
@@ -455,6 +456,14 @@ public class FullScreenMagnificationController implements
         }
 
         @Override
+        public void onImeRegionChanged(Region imeRegion) {
+            final Message m = PooledLambda.obtainMessage(
+                    DisplayMagnification::updateImeRegion, this,
+                    Region.obtain(imeRegion));
+            mControllerCtx.getHandler().sendMessage(m);
+        }
+
+        @Override
         public void onRectangleOnScreenRequested(int left, int top, int right, int bottom) {
             final Message m = PooledLambda.obtainMessage(
                     DisplayMagnification::requestRectangleOnScreen, this,
@@ -514,6 +523,15 @@ public class FullScreenMagnificationController implements
                     onMagnificationChangedLocked(/* isScaleTransient= */ false);
                 }
                 magnified.recycle();
+            }
+        }
+
+        void updateImeRegion(Region imeRegion) {
+            synchronized (mLock) {
+                if (!mRegistered) {
+                    return;
+                }
+                mImeRegion.set(imeRegion);
             }
         }
 
@@ -630,6 +648,18 @@ public class FullScreenMagnificationController implements
         @GuardedBy("mLock")
         boolean magnificationRegionContains(float x, float y) {
             return mMagnificationRegion.contains((int) x, (int) y);
+        }
+
+        @GuardedBy("mLock")
+        boolean imeRegionContains(float x, float y) {
+            if (!Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                return false;
+            }
+            // mImeRegion uses global unmagnified coordinates, so convert screen-relative
+            // coordinates (x,y) to global unmagnified coordinates first.
+            x = (x - mCurrentMagnificationSpec.offsetX) / mCurrentMagnificationSpec.scale;
+            y = (y - mCurrentMagnificationSpec.offsetY) / mCurrentMagnificationSpec.scale;
+            return mImeRegion.contains((int) x, (int) y);
         }
 
         @GuardedBy("mLock")
@@ -1361,6 +1391,25 @@ public class FullScreenMagnificationController implements
                 return false;
             }
             return display.magnificationRegionContains(x, y);
+        }
+    }
+
+    /**
+     * Returns whether the keyboard (IME) region contains the specified screen-relative coordinates.
+     *
+     * @param displayId The logical display id.
+     * @param x the screen-relative X coordinate to check
+     * @param y the screen-relative Y coordinate to check
+     * @return {@code true} if the coordinate is contained within the
+     *         keyboard region, otherwise {@code false}
+     */
+    public boolean imeRegionContains(int displayId, float x, float y) {
+        synchronized (mLock) {
+            final DisplayMagnification display = mDisplays.get(displayId);
+            if (display == null) {
+                return false;
+            }
+            return display.imeRegionContains(x, y);
         }
     }
 

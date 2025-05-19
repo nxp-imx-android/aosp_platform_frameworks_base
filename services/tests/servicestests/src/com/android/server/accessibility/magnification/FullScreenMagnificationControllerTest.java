@@ -54,9 +54,11 @@ import android.graphics.Region;
 import android.hardware.display.DisplayManagerInternal;
 import android.os.Looper;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.view.DisplayInfo;
@@ -79,6 +81,8 @@ import com.android.server.accessibility.test.MessageCapturingHandler;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 import com.android.server.wm.WindowManagerInternal.MagnificationCallbacks;
+
+import com.google.common.truth.Truth;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
@@ -110,6 +114,15 @@ public class FullScreenMagnificationControllerTest {
     static final Region INITIAL_MAGNIFICATION_REGION = new Region(INITIAL_MAGNIFICATION_BOUNDS);
     static final Region OTHER_REGION_COMPAT = new Region(OTHER_MAGNIFICATION_BOUNDS_COMPAT);
     static final Region OTHER_REGION = new Region(OTHER_MAGNIFICATION_BOUNDS);
+
+    // IME tests define bounds where the IME takes up the bottom half of the screen.
+    static final Rect SCREEN_BOUNDS = new Rect(0, 0, 1000, 2000);
+    static final Rect IME_BOUNDS = new Rect(
+            SCREEN_BOUNDS.left, SCREEN_BOUNDS.bottom / 2,
+            SCREEN_BOUNDS.right, SCREEN_BOUNDS.bottom);
+    static final PointF POINT_OUTSIDE_IME_BOUNDS = new PointF(
+            SCREEN_BOUNDS.right / 2, SCREEN_BOUNDS.bottom / 4);
+
     static final int SERVICE_ID_1 = 1;
     static final int SERVICE_ID_2 = 2;
     static final int DISPLAY_0 = 0;
@@ -120,6 +133,8 @@ public class FullScreenMagnificationControllerTest {
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     final FullScreenMagnificationController.ControllerContext mMockControllerCtx =
             mock(FullScreenMagnificationController.ControllerContext.class);
@@ -605,6 +620,64 @@ public class FullScreenMagnificationControllerTest {
                 /* centerX= */ anyFloat(),
                 /* centerY= */ anyFloat()
         );
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void imeRegionContains_pointInsideImeRegion_returnsTrue() {
+        for (int displayId = 0; displayId < DISPLAY_COUNT; displayId++) {
+            register(displayId);
+            final MagnificationCallbacks callbacks = getMagnificationCallbacks(displayId);
+            final PointF point = new PointF(IME_BOUNDS.centerX(), IME_BOUNDS.centerY());
+
+            callbacks.onImeRegionChanged(new Region(IME_BOUNDS));
+            mMessageCapturingHandler.sendAllMessages();
+
+            Truth.assertThat(mFullScreenMagnificationController.imeRegionContains(
+                    displayId, point.x, point.y)).isTrue();
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void imeRegionContains_pointOutsideImeRegion_returnsFalse() {
+        for (int displayId = 0; displayId < DISPLAY_COUNT; displayId++) {
+            register(displayId);
+            final MagnificationCallbacks callbacks = getMagnificationCallbacks(displayId);
+            final PointF point = POINT_OUTSIDE_IME_BOUNDS;
+
+            callbacks.onImeRegionChanged(new Region(IME_BOUNDS));
+            mMessageCapturingHandler.sendAllMessages();
+
+            Truth.assertThat(mFullScreenMagnificationController.imeRegionContains(
+                    displayId, point.x, point.y)).isFalse();
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void imeRegionContains_pointInsideMagnifiedImeRegion_returnsTrue() {
+        for (int displayId = 0; displayId < DISPLAY_COUNT; displayId++) {
+            register(displayId);
+            final MagnificationCallbacks callbacks = getMagnificationCallbacks(displayId);
+            final PointF point = POINT_OUTSIDE_IME_BOUNDS;
+            // Set the magnification region to the full screen.
+            callbacks.onMagnificationRegionChanged(new Region(SCREEN_BOUNDS));
+            mMessageCapturingHandler.sendAllMessages();
+            // Zoom far into the center of the IME. This in effect makes the IME fill the entire
+            // screen, so that a point on screen that was previously outside of unmagnified IME
+            // bounds is now inside of magnified IME bounds.
+            Truth.assertThat(mFullScreenMagnificationController
+                    .setScaleAndCenter(displayId, 8, IME_BOUNDS.centerX(), IME_BOUNDS.centerY(),
+                            false, false, SERVICE_ID_1)).isTrue();
+            mMessageCapturingHandler.sendAllMessages();
+
+            callbacks.onImeRegionChanged(new Region(IME_BOUNDS));
+            mMessageCapturingHandler.sendAllMessages();
+
+            Truth.assertThat(mFullScreenMagnificationController.imeRegionContains(
+                    displayId, point.x, point.y)).isTrue();
+        }
     }
 
     @Test
