@@ -246,7 +246,7 @@
     <item msgid="6946761421234586000">"400%"</item>
   </string-array>
     <string name="choose_profile" msgid="343803890897657450">"ເລືອກໂປຣໄຟລ໌"</string>
-    <string name="category_personal" msgid="6236798763159385225">"ສ່ວນຕົວ"</string>
+    <string name="category_personal" msgid="6236798763159385225">"ສ່ວນບຸກຄົນ"</string>
     <string name="category_work" msgid="4014193632325996115">"​ບ່ອນ​ເຮັດ​ວຽກ"</string>
     <string name="category_private" msgid="4244892185452788977">"ສ່ວນຕົວ"</string>
     <string name="category_clone" msgid="1554511758987195974">"ໂຄລນ"</string>
@@ -758,9 +758,6 @@
     <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="268234802198852753">"ຫາກທ່ານອອກອາກາດ <xliff:g id="SWITCHAPP">%1$s</xliff:g> ຫຼື ປ່ຽນເອົ້າພຸດ, ການອອກອາກາດປັດຈຸບັນຂອງທ່ານຈະຢຸດ"</string>
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"ອອກອາກາດ <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"ປ່ຽນເອົ້າພຸດ"</string>
-    <string name="back_navigation_animation" msgid="8105467568421689484">"ອະນິເມຊັນກັບຫຼັງແບບຄາດເດົາ"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"ເປີດການນຳໃຊ້ອະນິເມຊັນລະບົບສຳລັບການກັບຫຼັງແບບຄາດເດົາ."</string>
-    <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"ການຕັ້ງຄ່ານີ້ຈະເປີດການນຳໃຊ້ອະນິເມຊັນລະບົບສຳລັບອະນິເມຊັນທ່າທາງແບບຄາດເດົາ. ມັນຕ້ອງໃຊ້ການຕັ້ງຄ່າຕໍ່ແອັບ enableOnBackInvokedCallback ເປັນ true ໃນໄຟລ໌ manifest."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
     <string name="not_specified" msgid="5423502443185110328">"ບໍ່ໄດ້ລະບຸ"</string>
     <string name="neuter" msgid="2075249330106127310">"ບໍ່ມີເພດ"</string>
