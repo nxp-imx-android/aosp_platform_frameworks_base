@@ -29,7 +29,6 @@ import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.Choreographer;
 
-import com.android.internal.protolog.LegacyProtoLogImpl;
 import com.android.internal.protolog.ProtoLog;
 
 import java.io.PrintWriter;
@@ -96,11 +95,6 @@ abstract class WindowTracing {
         if (IS_USER) {
             logAndPrintln(pw, "Error: Tracing is not supported on user builds.");
             return;
-        }
-        if (!android.tracing.Flags.perfettoProtologTracing()
-                && ProtoLog.getSingleInstance().isProtoEnabled()) {
-            ((LegacyProtoLogImpl) ProtoLog.getSingleInstance()).stopProtoLog(pw, true);
-            ((LegacyProtoLogImpl) ProtoLog.getSingleInstance()).startProtoLog(pw);
         }
         saveForBugreportInternal(pw);
     }

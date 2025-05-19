@@ -138,14 +138,6 @@ public class ProtoLogImpl {
         return sServiceInstance;
     }
 
-    private static LegacyProtoLogImpl createLegacyProtoLogImpl(IProtoLogGroup[] groups) {
-        var protologImpl = new LegacyProtoLogImpl(
-                sLegacyOutputFilePath, sLegacyViewerConfigPath, sCacheUpdater);
-        protologImpl.registerGroups(groups);
-
-        return protologImpl;
-    }
-
     @VisibleForTesting
     public static synchronized void setSingleInstance(@Nullable IProtoLog instance) {
         sServiceInstance = instance;
