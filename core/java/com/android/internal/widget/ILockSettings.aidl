@@ -34,6 +34,7 @@ import com.android.internal.widget.VerifyCredentialResponse;
 import java.util.Map;
 
 /** {@hide} */
+@SensitiveData
 interface ILockSettings {
     @UnsupportedAppUsage
     void setBoolean(in String key, in boolean value, in int userId);
