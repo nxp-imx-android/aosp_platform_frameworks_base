@@ -123,15 +123,17 @@ open class SimpleDigitalHandLayerController(
             override var isReactiveTouchInteractionEnabled = false
 
             override fun onLocaleChanged(locale: Locale) {
-                timespec.formatter.updateLocale(locale)
+                timespec.formatter.locale = locale
                 refreshTime()
             }
 
             override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+                timespec.formatter.formatKind = formatKind
                 refreshTime()
             }
 
             override fun onTimeZoneChanged(timeZone: TimeZone) {
+                timespec.formatter.timeKeeper.timeZone = timeZone
                 refreshTime()
             }
 

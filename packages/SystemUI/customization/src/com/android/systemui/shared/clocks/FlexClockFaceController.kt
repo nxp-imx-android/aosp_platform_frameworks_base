@@ -129,7 +129,7 @@ class FlexClockFaceController(
         }
 
         override fun onLocaleChanged(locale: Locale) {
-            timeFormatter.updateLocale(locale)
+            timeFormatter.locale = locale
             layerController.events.onLocaleChanged(locale)
         }
 
