@@ -149,6 +149,40 @@ object KeyguardRootViewBinder {
         disposables +=
             view.repeatWhenAttached(mainImmediateDispatcher) {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
+                    if (deviceEntryHapticsInteractor != null && vibratorHelper != null) {
+                        launch {
+                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry.collect {
+                                if (msdlFeedback()) {
+                                    msdlPlayer?.playToken(
+                                        MSDLToken.UNLOCK,
+                                        authInteractionProperties,
+                                    )
+                                } else {
+                                    vibratorHelper.performHapticFeedback(
+                                        view,
+                                        HapticFeedbackConstants.BIOMETRIC_CONFIRM,
+                                    )
+                                }
+                            }
+                        }
+
+                        launch {
+                            deviceEntryHapticsInteractor.playErrorHaptic.collect {
+                                if (msdlFeedback()) {
+                                    msdlPlayer?.playToken(
+                                        MSDLToken.FAILURE,
+                                        authInteractionProperties,
+                                    )
+                                } else {
+                                    vibratorHelper.performHapticFeedback(
+                                        view,
+                                        HapticFeedbackConstants.BIOMETRIC_REJECT,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     launch("$TAG#topClippingBounds") {
                         val clipBounds = Rect()
                         viewModel.topClippingBounds.collect { clipTop ->
@@ -328,40 +362,6 @@ object KeyguardRootViewBinder {
                     }
 
                     launch { burnInParams.collect { viewModel.updateBurnInParams(it) } }
-
-                    if (deviceEntryHapticsInteractor != null && vibratorHelper != null) {
-                        launch {
-                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry.collect {
-                                if (msdlFeedback()) {
-                                    msdlPlayer?.playToken(
-                                        MSDLToken.UNLOCK,
-                                        authInteractionProperties,
-                                    )
-                                } else {
-                                    vibratorHelper.performHapticFeedback(
-                                        view,
-                                        HapticFeedbackConstants.BIOMETRIC_CONFIRM,
-                                    )
-                                }
-                            }
-                        }
-
-                        launch {
-                            deviceEntryHapticsInteractor.playErrorHaptic.collect {
-                                if (msdlFeedback()) {
-                                    msdlPlayer?.playToken(
-                                        MSDLToken.FAILURE,
-                                        authInteractionProperties,
-                                    )
-                                } else {
-                                    vibratorHelper.performHapticFeedback(
-                                        view,
-                                        HapticFeedbackConstants.BIOMETRIC_REJECT,
-                                    )
-                                }
-                            }
-                        }
-                    }
 
                     launch {
                         wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
