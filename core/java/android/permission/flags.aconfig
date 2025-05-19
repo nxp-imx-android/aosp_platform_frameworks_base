@@ -559,3 +559,9 @@ flag {
     bug: "413087113"
 }
 
+flag {
+    name: "permission_one_time_session_logging_enabled"
+    namespace: "permissions"
+    description: "Collect stats about permission one time sessions."
+    bug: "417779908"
+}
