@@ -88,16 +88,6 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         }
     }
 
-    override fun onToolbarShowTimeout(callingUid: Int) {
-        Slog.w(TAG, "onToolbarShowTimeout for callingUid = $callingUid")
-        toolbarCache[callingUid]?.let {
-            val remoteToolbar = it.second
-            remoteToolbar.dismiss(it.first)
-            remoteToolbar.onToolbarShowTimeout()
-            toolbarCache.remove(callingUid)
-        }
-    }
-
     override fun onUidDied(callingUid: Int) {
         toolbarCache[callingUid]?.let {
             val remoteToolbar = it.second

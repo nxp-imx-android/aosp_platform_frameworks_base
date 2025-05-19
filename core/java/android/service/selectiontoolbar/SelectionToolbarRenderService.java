@@ -28,13 +28,10 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
-import android.util.Pair;
 import android.util.SparseArray;
 import android.view.selectiontoolbar.ISelectionToolbarCallback;
 import android.view.selectiontoolbar.ShowInfo;
 import android.view.selectiontoolbar.WidgetInfo;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Service for rendering selection toolbar.
@@ -44,10 +41,6 @@ import java.util.concurrent.TimeUnit;
 public abstract class SelectionToolbarRenderService extends Service {
 
     private static final String TAG = "SelectionToolbarRenderService";
-
-    // TODO(b/215497659): read from DeviceConfig
-    // The timeout to clean the cache if the client forgot to call dismiss()
-    private static final long CACHE_CLEAN_AFTER_SHOW_TIMEOUT_IN_MS = TimeUnit.MINUTES.toMillis(10);
 
     /**
      * The {@link Intent} that must be declared as handled by the service.
@@ -63,45 +56,45 @@ public abstract class SelectionToolbarRenderService extends Service {
     private ISelectionToolbarRenderServiceCallback mServiceCallback;
 
     /**
-     * Maps the uid of the calling app who the toolbar is for to the callback for toolbar events
-     * and the runnable that cleans up the toolbar properly.
-     */
-    private final SparseArray<Pair<RemoteCallbackWrapper, CleanCacheRunnable>> mCache =
-            new SparseArray<>();
-
-    /**
      * Binder to receive calls from system server.
      */
     private final ISelectionToolbarRenderService mInterface =
             new ISelectionToolbarRenderService.Stub() {
 
+                /**
+                 * Maps the uid of the calling app who the toolbar is for to the callback for
+                 * toolbar events.
+                 */
+                private final SparseArray<RemoteCallbackWrapper> mCache =
+                        new SparseArray<>();
+
                 @Override
                 public void onShow(int callingUid, ShowInfo showInfo,
                         ISelectionToolbarCallback callback) {
-                    if (mCache.indexOfKey(callingUid) < 0) {
-                        try {
-                            DeathRecipient deathRecipient = () -> {
-                                mHandler.removeCallbacks(mCache.get(callingUid).second);
-                                mCache.remove(callingUid);
-                                onUidDied(callingUid);
-                            };
-                            callback.asBinder().linkToDeath(deathRecipient, 0);
-                            mCache.put(callingUid,
-                                    new Pair<>(new RemoteCallbackWrapper(callback, deathRecipient),
-                                            new CleanCacheRunnable(callingUid)));
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "ISelectionToolbarCallback has already died");
-                            return;
+                    RemoteCallbackWrapper remoteCallbackWrapper;
+                    synchronized (mCache) {
+                        remoteCallbackWrapper = mCache.get(callingUid);
+                        if (remoteCallbackWrapper == null) {
+                            try {
+                                DeathRecipient deathRecipient = () -> {
+                                    synchronized (mCache) {
+                                        mCache.remove(callingUid);
+                                    }
+                                    onUidDied(callingUid);
+                                };
+                                callback.asBinder().linkToDeath(deathRecipient, 0);
+                                remoteCallbackWrapper = new RemoteCallbackWrapper(callback,
+                                        deathRecipient);
+                                mCache.put(callingUid, remoteCallbackWrapper);
+                            } catch (RemoteException e) {
+                                Log.e(TAG, "ISelectionToolbarCallback has already died");
+                                return;
+                            }
                         }
                     }
-                    Pair<RemoteCallbackWrapper, CleanCacheRunnable> toolbarPair = mCache.get(
-                            callingUid);
-                    CleanCacheRunnable cleanRunnable = toolbarPair.second;
-                    mHandler.removeCallbacks(cleanRunnable);
                     mHandler.sendMessage(obtainMessage(SelectionToolbarRenderService::onShow,
                             SelectionToolbarRenderService.this, callingUid, showInfo,
-                            toolbarPair.first));
-                    mHandler.postDelayed(cleanRunnable, CACHE_CLEAN_AFTER_SHOW_TIMEOUT_IN_MS);
+                            remoteCallbackWrapper));
                 }
 
                 @Override
@@ -114,12 +107,12 @@ public abstract class SelectionToolbarRenderService extends Service {
                 public void onDismiss(int callingUid, long widgetToken) {
                     mHandler.sendMessage(obtainMessage(SelectionToolbarRenderService::onDismiss,
                             SelectionToolbarRenderService.this, widgetToken));
-                    Pair<RemoteCallbackWrapper, CleanCacheRunnable> toolbarPair = mCache.get(
-                            callingUid);
-                    if (toolbarPair != null) {
-                        mHandler.removeCallbacks(toolbarPair.second);
-                        mCache.remove(callingUid);
-                        toolbarPair.first.unlinkToDeath();
+                    synchronized (mCache) {
+                        RemoteCallbackWrapper remoteCallbackWrapper =
+                                mCache.removeReturnOld(callingUid);
+                        if (remoteCallbackWrapper != null) {
+                            remoteCallbackWrapper.unlinkToDeath();
+                        }
                     }
                 }
 
@@ -195,17 +188,10 @@ public abstract class SelectionToolbarRenderService extends Service {
      */
     public abstract void onHide(long widgetToken);
 
-
     /**
      * Called when dismissing the selection toolbar.
      */
     public abstract void onDismiss(long widgetToken);
-
-    /**
-     * Called when showing the selection toolbar for a specific timeout. This avoids the client
-     * forgot to call dismiss to clean the state.
-     */
-    public abstract void onToolbarShowTimeout(int callingUid);
 
     /**
      * Called when the client process dies.
@@ -242,16 +228,6 @@ public abstract class SelectionToolbarRenderService extends Service {
         }
 
         @Override
-        public void onToolbarShowTimeout() {
-            try {
-                unlinkToDeath();
-                mRemoteCallback.onToolbarShowTimeout();
-            } catch (RemoteException e) {
-                // no-op
-            }
-        }
-
-        @Override
         public void onWidgetUpdated(WidgetInfo widgetInfo) {
             try {
                 mRemoteCallback.onWidgetUpdated(widgetInfo);
@@ -272,29 +248,9 @@ public abstract class SelectionToolbarRenderService extends Service {
         @Override
         public void onError(int errorCode, int sequenceNumber) {
             try {
-                unlinkToDeath();
                 mRemoteCallback.onError(errorCode, sequenceNumber);
             } catch (RemoteException e) {
                 // no-op
-            }
-        }
-    }
-
-    private class CleanCacheRunnable implements Runnable {
-
-        int mCleanUid;
-
-        CleanCacheRunnable(int cleanUid) {
-            mCleanUid = cleanUid;
-        }
-
-        @Override
-        public void run() {
-            Pair<RemoteCallbackWrapper, CleanCacheRunnable> toolbarPair = mCache.get(mCleanUid);
-            if (toolbarPair != null) {
-                Log.w(TAG, "CleanCacheRunnable: remove " + mCleanUid + " from cache.");
-                mCache.remove(mCleanUid);
-                onToolbarShowTimeout(mCleanUid);
             }
         }
     }

@@ -316,10 +316,6 @@ public final class RemoteSelectionToolbar {
         updatePopupSize();
     }
 
-    public void onToolbarShowTimeout() {
-        mCallbackWrapper.onToolbarShowTimeout();
-    }
-
     /**
      * Show the specified selection toolbar.
      */
