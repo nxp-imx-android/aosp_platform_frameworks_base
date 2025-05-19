@@ -163,6 +163,10 @@ public final class CreateRequestSession extends RequestSession<CreateCredentialR
     @Override
     public void onFinalErrorReceived(ComponentName componentName, String errorType,
             String message) {
+        if (Flags.metricBugfixesContinued()) {
+            mRequestSessionMetric.updateMetricsOnResponseReceived(mProviders, componentName,
+                    isPrimaryProviderViaProviderInfo(componentName));
+        }
         respondToClientWithErrorAndFinish(errorType, message);
     }
 
@@ -199,6 +203,10 @@ public final class CreateRequestSession extends RequestSession<CreateCredentialR
                 getProviderDataAndInitiateUi();
             } else {
                 String exception = CreateCredentialException.TYPE_NO_CREATE_OPTIONS;
+                if (Flags.metricBugfixesContinued()) {
+                    mRequestSessionMetric.updateMetricsOnResponseReceived(mProviders, componentName,
+                            isPrimaryProviderViaProviderInfo(componentName));
+                }
                 mRequestSessionMetric.collectFrameworkException(exception);
                 respondToClientWithErrorAndFinish(exception,
                         "No create options available.");

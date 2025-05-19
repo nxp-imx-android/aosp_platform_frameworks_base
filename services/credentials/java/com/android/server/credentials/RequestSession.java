@@ -283,6 +283,9 @@ abstract class RequestSession<T, U, V> implements CredentialManagerUi.Credential
             mRequestSessionMetric.collectFinalPhaseProviderMetricStatus(/*hasException=*/ false,
                     ProviderStatusForMetrics.FINAL_SUCCESS);
         }
+        if (Flags.metricBugfixesContinued()) {
+            mRequestSessionMetric.captureMissingLogMetadata();
+        }
     }
 
     void cancelExistingPendingIntent() {
