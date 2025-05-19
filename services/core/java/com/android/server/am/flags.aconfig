@@ -259,3 +259,10 @@ flag {
     bug: "419753987"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "enable_activity_manager_structured_service"
+    namespace: "system_performance"
+    description: "Enable ActivityManagerStructured Service"
+    bug: "419409018"
+}

@@ -1972,6 +1972,12 @@ public class ActivityManagerService extends IActivityManager.Stub
             ServiceManager.addService("permission", new PermissionController(this));
             ServiceManager.addService("processinfo", new ProcessInfoService(this));
             ServiceManager.addService("cacheinfo", new CacheBinder(this));
+            if (Flags.enableActivityManagerStructuredService()) {
+                ServiceManager.addService(
+                        "activity_structured",
+                        new ActivityManagerStructured(this),
+                        /* allowIsolated= */ true);
+            }
 
             ApplicationInfo info = mContext.getPackageManager().getApplicationInfo(
                     "android", STOCK_PM_FLAGS | MATCH_SYSTEM_ONLY);
