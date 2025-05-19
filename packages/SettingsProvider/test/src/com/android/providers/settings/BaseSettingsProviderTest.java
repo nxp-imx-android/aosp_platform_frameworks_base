@@ -326,42 +326,39 @@ abstract class BaseSettingsProviderTest {
 
     protected static void setSettingViaShell(int type, String name, String value,
             String token, boolean makeDefault) throws IOException {
-        setSettingViaShell(type, name, value, token, makeDefault, UserHandle.USER_SYSTEM,
+        setSettingViaShell(type, name, value, token, makeDefault, null /* user */,
                 Context.DEVICE_ID_DEFAULT);
     }
 
     protected static void setSettingViaShell(int type, String name, String value,
             int userId, int deviceId) throws Exception {
-        setSettingViaShell(type, name, value, null /* token */, true /* makeDefault */, userId,
-                deviceId);
+        setSettingViaShell(type, name, value, null /* token */, true /* makeDefault */,
+                String.valueOf(userId), deviceId);
     }
 
-    protected static void setSettingViaShell(int type, String name, String value,
-            String token, boolean makeDefault, int userId, int deviceId) throws IOException {
+    private static void setSettingViaShell(int type, String name, String value,
+            String token, boolean makeDefault, String user, int deviceId) throws IOException {
+        String settingType;
         switch (type) {
             case SETTING_TYPE_GLOBAL: {
-                executeShellCommand("settings put --user " + userId + " --deviceId " + deviceId
-                        + " global " + name + " " + value + (token != null ? " " + token : "")
-                        + (makeDefault ? " default" : ""));
-
+                settingType = "global";
             } break;
 
             case SETTING_TYPE_SECURE: {
-                executeShellCommand("settings put --user " + userId + " --deviceId " + deviceId
-                        + " secure " + name + " " + value + (token != null ? " " + token : "")
-                        + (makeDefault ? " default" : ""));
+                settingType = "secure";
             } break;
 
             case SETTING_TYPE_SYSTEM: {
-                executeShellCommand("settings put --user " + userId + " --deviceId " + deviceId
-                        + " system " + name + " " + value + (token != null ? " " + token : "")
-                        + (makeDefault ? " default" : ""));
+                settingType = "system";
             } break;
 
             default: {
                 throw new IllegalArgumentException("Invalid type: " + type);
             }
         }
+        executeShellCommand("settings put" + (user != null ? (" --user " + user) : "")
+                + " --deviceId " + deviceId + " " + settingType + " " + name + " " + value
+                + (token != null ? " " + token : "") + (makeDefault ? " default" : ""));
     }
 
     protected Context getContext() {
