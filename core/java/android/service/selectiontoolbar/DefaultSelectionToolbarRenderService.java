@@ -106,18 +106,6 @@ public final class DefaultSelectionToolbarRenderService extends SelectionToolbar
     }
 
     @Override
-    public void onToolbarShowTimeout(int callingUid) {
-        Slog.w(TAG, "onToolbarShowTimeout for callingUid = " + callingUid);
-        Pair<Long, RemoteSelectionToolbar> toolbarPair = mToolbarCache.get(callingUid);
-        if (toolbarPair != null) {
-            RemoteSelectionToolbar remoteToolbar = toolbarPair.second;
-            remoteToolbar.dismiss(toolbarPair.first);
-            remoteToolbar.onToolbarShowTimeout();
-            mToolbarCache.remove(callingUid);
-        }
-    }
-
-    @Override
     public void onUidDied(int callingUid) {
         Slog.w(TAG, "onUidDied for callingUid = " + callingUid);
         Pair<Long, RemoteSelectionToolbar> toolbarPair = mToolbarCache.removeReturnOld(callingUid);
