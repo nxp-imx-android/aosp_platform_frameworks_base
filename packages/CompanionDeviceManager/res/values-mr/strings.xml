@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> हे तुमच्या <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> वरून अ‍ॅप्स आणि सिस्टीम वैशिष्ट्ये स्ट्रीम करण्यासाठी <xliff:g id="DEVICE_NAME">%2$s</xliff:g> च्या वतीने परवानगीची विनंती करत आहे"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; ला ही माहिती तुमच्या <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> वरून अ‍ॅक्सेस करण्यासाठी अनुमती द्या"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"तुमच्या <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> मधील फोटो, मीडिया आणि नोटिफिकेशन अ‍ॅक्सेस करण्यासाठी <xliff:g id="APP_NAME">%1$s</xliff:g> हे तुमच्या <xliff:g id="DEVICE_NAME">%2$s</xliff:g> च्या वतीने परवानगीची विनंती करत आहे"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ला तुमच्या <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ला अ‍ॅप्स &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;वर स्ट्रीम करण्याची अनुमती द्यायची आहे का?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ला ऑडिओ, फोटो, पेमेंट माहिती, पासवर्ड आणि मेसेज यांसह तुमच्या <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> वर दिसणाऱ्या किंवा प्ले होणाऱ्या सर्व गोष्टींचा अ‍ॅक्सेस असेल.&lt;br/&gt;&lt;br/&gt;तुम्ही या परवानगीचा अ‍ॅक्सेस काढून टाकेपर्यंत <xliff:g id="APP_NAME_2">%1$s</xliff:g> हे <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> वर ॲप्स स्ट्रीम करू शकेल."</string>
@@ -67,6 +66,14 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"मीडिया आउटपुट बदला"</string>
     <string name="permission_storage" msgid="6831099350839392343">"फोटो आणि मीडिया"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"नोटिफिकेशन"</string>
+    <!-- no translation found for permission_create_virtual_device (1102905050922460040) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display (3743433250535606288) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display (9052824856626276723) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display (241771924570133893) -->
+    <skip />
     <string name="permission_phone_summary" msgid="8246321093970051702">"फोन कॉल करणे आणि ते व्यवस्थापित करणे"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"फोन कॉल लॉग रीड अँड राइट करणे"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"एसएमएस पाठवणे आणि पाहणे"</string>
@@ -75,8 +82,19 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ऑडिओ रेकॉर्ड करणे"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"जवळपासची डिव्हाइस शोधणे, त्यांच्याशी कनेक्ट करणे आणि त्यांचे संबंधित स्थान निर्धारित करणे"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"संपर्क, मेसेज आणि फोटो यांसारख्या माहितीसह सर्व सूचना वाचणे"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• संपर्क, मेसेज आणि फोटोसारख्या माहितीसह सर्व सूचना वाचणे&lt;br/&gt;• सूचना पाठवणे&lt;br/&gt;&lt;br/&gt;तुम्ही या अ‍ॅपची सूचना वाचण्याची आणि पाठवण्याची क्षमता सेटिंग्ज &gt; सूचना मध्ये कधीही व्यवस्थापित करू शकता."</string>
+    <!-- no translation found for permission_notifications_summary (6819393427371255636) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_post_notifications_summary (1099188848900200165) -->
+    <skip />
+    <!-- no translation found for permission_create_virtual_device_summary (3570256456647725172) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display_summary (1385423940454941534) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display_summary (915796221330306051) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display_summary (4915600630073253190) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"उपलब्ध डिव्‍हाइसची सूची अ‍ॅक्सेस करा आणि इतर कोणत्‍या अ‍ॅप्सवरून ऑडिओ किंवा व्हिडिओ स्ट्रीम केला अथवा कास्‍ट केला हे नियंत्रित करा"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"फोन"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"टॅबलेट"</string>

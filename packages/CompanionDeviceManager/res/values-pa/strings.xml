@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ਦੀ ਤਰਫ਼ੋਂ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ਤੋਂ ਐਪਾਂ ਅਤੇ ਹੋਰ ਸਿਸਟਮ ਸੰਬੰਧੀ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਨੂੰ ਸਟ੍ਰੀਮ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਮੰਗ ਰਹੀ ਹੈ"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; ਨੂੰ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ਤੋਂ ਇਸ ਜਾਣਕਾਰੀ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਤੁਹਾਡੇ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ਦੀ ਤਰਫ਼ੋਂ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ਦੀਆਂ ਫ਼ੋਟੋਆਂ, ਮੀਡੀਆ ਅਤੇ ਸੂਚਨਾਵਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਮੰਗ ਰਹੀ ਹੈ"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"ਕੀ &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ਨੂੰ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ਦੀਆਂ ਐਪਾਂ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਸਟ੍ਰੀਮ ਕਰਨ ਦੀ ਆਗਿਆ ਦੇਣੀ ਹੈ?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> ਕੋਲ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡਾਂ ਅਤੇ ਸੁਨੇਹਿਆਂ ਸਮੇਤ, <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਕਿਸੇ ਵੀ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ।&lt;br/&gt;&lt;br/&gt;ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਇਸ ਇਜਾਜ਼ਤ ਤੱਕ ਪਹੁੰਚ ਨੂੰ ਹਟਾ ਨਹੀਂ ਦਿੰਦੇ, ਉਦੋਂ ਤੱਕ <xliff:g id="APP_NAME_2">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> \'ਤੇ ਐਪਾਂ ਨੂੰ ਸਟ੍ਰੀਮ ਕਰ ਸਕੇਗੀ।"</string>
@@ -67,6 +66,10 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"ਮੀਡੀਆ ਆਊਟਪੁੱਟ ਬਦਲੋ"</string>
     <string name="permission_storage" msgid="6831099350839392343">"ਫ਼ੋਟੋਆਂ ਅਤੇ ਮੀਡੀਆ"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"ਸੂਚਨਾਵਾਂ"</string>
+    <string name="permission_create_virtual_device" msgid="1102905050922460040">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> \'ਤੇ ਡਾਟਾ ਸਟ੍ਰੀਮ ਕਰੋ"</string>
+    <string name="permission_add_mirror_display" msgid="3743433250535606288">"ਆਪਣੀ ਸਕ੍ਰੀਨ ਪ੍ਰਤਿਬਿੰਬਿਤ ਕਰੋ"</string>
+    <string name="permission_add_trusted_display" msgid="9052824856626276723">"ਸਟ੍ਰੀਮ ਐਪਾਂ"</string>
+    <string name="permission_add_always_unlocked_display" msgid="241771924570133893">"ਲਾਕ ਹੋਣ \'ਤੇ ਸਟ੍ਰੀਮ ਕਰੋ"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"ਫ਼ੋਨ ਕਾਲਾਂ ਕਰਨ ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"ਫ਼ੋਨ ਦੇ ਕਾਲ ਲੌਗ ਨੂੰ ਪੜ੍ਹਣ ਅਤੇ ਲਿਖਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS ਸੁਨੇਹੇ ਭੇਜਣ ਅਤੇ ਦੇਖਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
@@ -75,8 +78,13 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ਆਡੀਓ ਰਿਕਾਰਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"ਨਜ਼ਦੀਕੀ ਡੀਵਾਈਸਾਂ ਨੂੰ ਲੱਭਣ, ਉਨ੍ਹਾਂ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਅਤੇ ਸੰਬੰਧਿਤ ਸਥਿਤੀ ਨਿਰਧਾਰਿਤ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ&lt;br/&gt;• ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ&lt;br/&gt;&lt;br/&gt;ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ &gt; ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਿਸੇ ਵੀ ਵੇਲੇ ਸੂਚਨਾਵਾਂ ਨੂੰ ਪੜ੍ਹਨ ਅਤੇ ਭੇਜਣ ਦੀ ਇਸ ਐਪ ਦੀ ਯੋਗਤਾ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹੋ।"</string>
+    <string name="permission_notifications_summary" msgid="6819393427371255636">"• ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ&lt;br/&gt;• ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ&lt;br/&gt;&lt;br/&gt;ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ &gt; ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਿਸੇ ਵੀ ਵੇਲੇ ਸੂਚਨਾਵਾਂ ਨੂੰ ਪੜ੍ਹਨ ਅਤੇ ਭੇਜਣ ਦੀ ਇਸ ਐਪ ਦੀ ਯੋਗਤਾ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹੋ।"</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
+    <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ਤੋਂ ਆਪਣੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> \'ਤੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਹੋਰ ਸੈਂਸਰ ਡਾਟਾ ਸਟ੍ਰੀਮ ਕਰੋ।"</string>
+    <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ਦੀ ਸਕ੍ਰੀਨ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਰਿਕਾਰਡ, ਕਾਸਟ ਜਾਂ ਸਾਂਝਾ ਕਰੋ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ਕੋਲ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ, ਜਿਸ ਵਿੱਚ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹੇ ਸ਼ਾਮਲ ਹਨ।"</string>
+    <string name="permission_add_trusted_display_summary" msgid="915796221330306051">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ਦੀਆਂ ਐਪਾਂ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME_0">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਸਟ੍ਰੀਮ ਕਰੋ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ਕੋਲ <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ, ਜਿਸ ਵਿੱਚ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹੇ ਸ਼ਾਮਲ ਹਨ।"</string>
+    <string name="permission_add_always_unlocked_display_summary" msgid="4915600630073253190">"ਲਾਕ ਹੋਣ \'ਤੇ ਵੀ, ਆਪਣੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ਦੀਆਂ ਐਪਾਂ ਨੂੰ ਸਟ੍ਰੀਮ ਕਰੋ।"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ਉਪਲਬਧ ਡੀਵਾਈਸਾਂ ਦੀ ਸੂਚੀ ਤੱਕ ਪਹੁੰਚ ਕਰੋ ਅਤੇ ਇਹ ਕੰਟਰੋਲ ਕਰੋ ਕਿ ਕਿਹੜਾ ਡੀਵਾਈਸ ਹੋਰ ਐਪਾਂ ਤੋਂ ਆਡੀਓ ਜਾਂ ਵੀਡੀਓ ਨੂੰ ਸਟ੍ਰੀਮ ਜਾਂ ਕਾਸਟ ਕਰ ਸਕਦਾ ਹੈ"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ਫ਼ੋਨ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ਟੈਬਲੈੱਟ"</string>
