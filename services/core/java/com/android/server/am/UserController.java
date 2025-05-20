@@ -1609,7 +1609,7 @@ class UserController implements Handler.Callback {
             } catch (RemoteException re) {
                 throw re.rethrowAsRuntimeException();
             }
-            if (com.android.server.flags.Flags.userDataRefactoring()) {
+            if (com.android.server.flags.Flags.keystoreInMemoryCleanup()) {
                 // Send communication to keystore to wipe key cache for the given userId.
                 mInjector.getKeyStoreAuthorization().onUserStorageLocked(userId);
             }

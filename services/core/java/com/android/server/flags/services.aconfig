@@ -59,8 +59,8 @@ flag {
 }
 
 flag {
-    name: "user_data_refactoring"
+    name: "keystore_in_memory_cleanup"
     namespace: "desktop_security"
-    description: "System services can use the SafePerUserDataCacheInterface and SafePerUserSystemService subclass for handling user data"
+    description: "Keystore cleans up all components of the UserSuperKeys when the user credential encrypted storage is locked"
     bug: "384030190"
 }
