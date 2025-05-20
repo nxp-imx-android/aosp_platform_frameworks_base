@@ -28,7 +28,7 @@
     <string name="invalid_charger_text" msgid="2339310107232691577">"మీ పరికరంతో వచ్చిన ఛార్జర్‌ను ఉపయోగించండి"</string>
     <string name="battery_saver_confirmation_title" msgid="1234998463717398453">"బ్యాటరీ సేవర్‌ను ఆన్ చేయాలా?"</string>
     <string name="battery_saver_confirmation_title_generic" msgid="2299231884234959849">"బ్యాటరీ సేవర్ గురించి"</string>
-    <string name="battery_saver_confirmation_ok" msgid="5042136476802816494">"ఆన్ చేయి"</string>
+    <string name="battery_saver_confirmation_ok" msgid="5042136476802816494">"ఆన్ చేయండి"</string>
     <string name="battery_saver_start_action" msgid="8353766979886287140">"ఆన్ చేయండి"</string>
     <string name="battery_saver_dismiss_action" msgid="7199342621040014738">"వద్దు, ధన్యవాదాలు"</string>
     <string name="standard_battery_saver_text" msgid="6855876746552374119">"స్టాండర్డ్"</string>
@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"అనుమతించండి"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"వైర్‌లెస్ డీబగ్గింగ్‌కి అనుమతి లేదు"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ఈ పరికరానికి ప్రస్తుతం సైన్ ఇన్ చేసిన యూజర్, వైర్‌లెస్ డీబగ్గింగ్ ఆన్ చేయలేరు. ఈ ఫీచర్ ఉపయోగించడానికి, అడ్మిన్ యూజర్‌కు స్విచ్ అవ్వండి."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"మీరు లాగిన్ అయిన తర్వాత ఈ సెట్టింగ్‌ను మార్చవచ్చు"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB పోర్ట్‌ నిలిపివేయబడింది"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"మీ పరికరంలోకి నీరు లేదా చెత్తాచెదారం చేరిపోకుండా కాపాడటానికి, USB పోర్ట్ నిలిపివేయబడుతుంది, అలాగే యాక్సెసరీలు వేటిని గుర్తించదు.\n\nUSB పోర్ట్‌ను ఉపయోగించడం సురక్షితమేనని నిర్ధారించుకున్న తర్వాత, మళ్లీ మీకో నోటిఫికేషన్‌ రూపంలో తెలియజేయబడుతుంది."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ఛార్జర్‌లు, యాక్సెసరీలను గుర్తించే విధంగా USB పోర్ట్ ప్రారంభించబడింది"</string>
@@ -271,6 +270,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"బ్యాటరీ ఛార్జ్ అవుతోంది, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> శాతం వద్ద ఉంది."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"బ్యాటరీ <xliff:g id="PERCENTAGE">%d</xliff:g> శాతం ఉంది, బ్యాటరీ ప్రొటెక్షన్ కోసం ఛార్జింగ్ పాజ్ చేయబడింది."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"బ్యాటరీ <xliff:g id="PERCENTAGE">%1$d</xliff:g> శాతం, <xliff:g id="TIME">%2$s</xliff:g> ఉంటుంది, బ్యాటరీ ప్రొటెక్షన్ కోసం ఛార్జింగ్ పాజ్ చేయబడింది."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"బ్యాటరీ <xliff:g id="NUMBER">%d</xliff:g> శాతం. బ్యాటరీ సేవర్ ఆన్‌లో ఉంది."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"అన్ని నోటిఫికేషన్‌లను చూడండి"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"టెలిటైప్‌రైటర్ ప్రారంభించబడింది."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"రింగర్ వైబ్రేట్‌లో ఉంది."</string>
@@ -813,6 +813,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ఆన్ చేయి"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"\'ముఖం ఆధారం\'ను - ఆన్ చేయండి"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"నిశ్శబ్దం, బండిల్"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> కోసం"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"సేల్స్, కొత్త ఫీచర్‌లు, మరెన్నో"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"టాప్ కథనాలు, ఎడిటోరియల్స్, మరెన్నో"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"లైక్‌లు, పోస్ట్‌లు, మరెన్నో"</string>
@@ -840,10 +841,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> సంభాషణ ఫీచర్‌లను సపోర్ట్ చేయదు"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ఫీడ్‌బ్యాక్"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"విస్మరించండి"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"పిన్ చేసినట్లు చూపవద్దు"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"ఆఫ్ చేయండి"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"యాప్‌లో లైవ్ అప్‌డేట్‌ల బ్లాక్"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"లైవ్ అప్‌డేట్‌లు చూపబడుతున్నాయి"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"పిన్ చేయబడిన నోటిఫికేషన్‌లు, యాప్‌ల నుండి ఎప్పటికప్పుడు తాజా సమాచారాన్ని చూపిస్తాయి, ఇంకా ఇవి ఎల్లప్పుడూ స్టేటస్ బార్, లాక్ స్క్రీన్‌లో కనిపిస్తాయి"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"లైవ్ అప్‌డేట్‌లు"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"ఆఫ్ చేసినప్పుడు, ఈ యాప్ నుండి వచ్చే నోటిఫికేషన్‌లు మీ లాక్ స్క్రీన్, స్టేటస్ బార్‌లో ప్రమోట్ చేయబడవు"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ఈ నోటిఫికేషన్‌లను ఎడిట్ చేయడం వీలుపడదు."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"కాల్ నోటిఫికేషన్‌లను ఎడిట్ చేయడం సాధ్యం కాదు."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ఈ నోటిఫికేషన్‌ల గ్రూప్‌ను ఇక్కడ కాన్ఫిగర్ చేయలేము"</string>
@@ -870,8 +871,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> వరకు తాత్కాలికంగా ఆపివేయబడింది"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# గంట}=2{# గంటలు}other{# గంటలు}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# నిమిషం}other{# నిమిషాలు}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"స్థాయి తగ్గింపు మెనూను తెరవడానికి"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"బ్యాటరీ సేవర్"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"బటన్ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1156,10 +1156,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"సవరణ మోడ్ నుండి ఎగ్జిట్ అవ్వండి"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"సైజ్ మార్చడానికి మూలను లాగండి"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"డయాగోనల్ స్క్రోలింగ్‌ను అనుమతించండి"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"టైపింగ్‌ను ఫాలో అవ్వండి"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"కీబోర్డ్‌ను మాగ్నిఫై చేయండి"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"సైజ్ మార్చండి"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"మ్యాగ్నిఫికేషన్ రకాన్ని మార్చండి"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"సైజ్‌ను మార్చడం ముగించండి"</string>
@@ -1275,7 +1273,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"గ్రూప్"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 పరికరం ఎంచుకోబడింది"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> పరికరాలు ఎంచుకోబడ్డాయి"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(డిస్కనెక్ట్ అయ్యింది)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"కనెక్ట్ చేయబడింది"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"స్విచ్ చేయడం సాధ్యం కాదు. మళ్ళీ ట్రై చేయడానికి ట్యాప్ చేయండి."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"డివైజ్‌ను కనెక్ట్ చేయండి"</string>
@@ -1286,8 +1284,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"కనెక్ట్ అయిన స్పీకర్‌లు"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"స్పీకర్‌లు &amp; డిస్‌ప్లేలు"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"సూచించినవి"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"సూచించబడిన పరికరాలు"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ఇన్‌పుట్"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"అవుట్‌పుట్"</string>

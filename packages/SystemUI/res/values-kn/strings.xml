@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ಅನುಮತಿಸಿ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ವೈರ್‌ಲೆಸ್ ಡೀಬಗ್ ಮಾಡುವಿಕೆಯನ್ನು ಅನುಮತಿಸಲಾಗಿಲ್ಲ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ಬಳಕೆದಾರರು ಪ್ರಸ್ತುತ ಈ ಸಾಧನಕ್ಕೆ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ ವೈರ್‌ಲೆಸ್ ಡೀಬಗ್ ಮಾಡುವುದನ್ನು ಆನ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಈ ಫೀಚರ್ ಅನ್ನು ಬಳಸಲು, ನಿರ್ವಾಹಕ ಬಳಕೆದಾರರಿಗೆ ಬದಲಾಯಿಸಿ."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"ಲಾಗಿನ್ ಆದ ನಂತರ ನೀವು ಈ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಬಹುದು"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ಪೋರ್ಟ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ದ್ರವ ಅಥವಾ ಧೂಳಿನ ಕಣಗಳಿಂದ ನಿಮ್ಮ ಸಾಧನವನ್ನು ರಕ್ಷಿಸಲು, USB ಪೋರ್ಟ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ ಹಾಗಾಗಿ ಅದು ಯಾವುದೇ ಪರಿಕರಗಳನ್ನು ಪತ್ತೆ ಮಾಡುವುದಿಲ್ಲ. \n\n USB ಪೋರ್ಟ್ ಬಳಸಲು ಸುರಕ್ಷಿತವಾಗಿದ್ದಾಗ ಮತ್ತೆ ನಿಮಗೆ ಸೂಚಿಸಲಾಗುವುದು."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ಚಾರ್ಜರ್‌ಗಳು ಮತ್ತು ಪರಿಕರಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಲು USB ಪೋರ್ಟ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
@@ -271,6 +270,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"ಬ್ಯಾಟರಿ <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> ಪ್ರತಿಶತ ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"ಬ್ಯಾಟರಿ <xliff:g id="PERCENTAGE">%d</xliff:g> ರಷ್ಟಿದೆ, ಬ್ಯಾಟರಿ ರಕ್ಷಣೆಗಾಗಿ ಚಾರ್ಜಿಂಗ್ ಅನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"ಬ್ಯಾಟರಿ <xliff:g id="PERCENTAGE">%1$d</xliff:g> ರಷ್ಟಿದ್ದು <xliff:g id="TIME">%2$s</xliff:g> ಗಳ ಕಾಲ ಇರುತ್ತದೆ, ಬ್ಯಾಟರಿ ರಕ್ಷಣೆಗಾಗಿ ಚಾರ್ಜಿಂಗ್ ಅನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"ಬ್ಯಾಟರಿ ಪ್ರಮಾಣ ಶೇಕಡಾ <xliff:g id="NUMBER">%d</xliff:g> ಇದೆ. ಬ್ಯಾಟರಿ ಸೇವರ್ ಆನ್ ಆಗಿದೆ."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"ಎಲ್ಲಾ ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಡಿ"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"ಟೆಲಿಟೈಪ್‌ರೈಟರ್ ಸಕ್ರಿಯವಾಗಿದೆ."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"ರಿಂಗರ್ ವೈಬ್ರೇಟ್‌."</string>
@@ -813,6 +813,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ಆನ್‌ ಮಾಡಿ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ಆನ್ ಆಗಿದೆ - ಮುಖ-ಆಧಾರಿತ"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ನಿಶ್ಯಬ್ದ ಮತ್ತು ಬಂಡಲ್"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗಾಗಿ"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ಮಾರಾಟ, ಹೊಸ ಫೀಚರ್‌ಗಳು ಹಾಗೂ ಇನ್ನಷ್ಟು"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ಟಾಪ್ ಸ್ಟೋರಿಗಳು, ಎಡಿಟೋರಿಯಲ್‌ಗಳು ಹಾಗೂ ಇನ್ನಷ್ಟು"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ಇಷ್ಟಗಳು, ಪೋಸ್ಟ್‌ಗಳು ಹಾಗೂ ಇನ್ನಷ್ಟು"</string>
@@ -840,10 +841,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"ಸಂವಾದ ಫೀಚರ್‌ಗಳನ್ನು <xliff:g id="APP_NAME">%1$s</xliff:g> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ಫೀಡ್‌ಬ್ಯಾಕ್"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ವಜಾಗೊಳಿಸಿ"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ಪಿನ್ ಮಾಡಿದ ಹಾಗೆ ತೋರಿಸಬೇಡಿ"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"ಆಫ್ ಮಾಡಿ"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"ಈ ಆ್ಯಪ್‌ನಿಂದ ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"ಪಿನ್ ಮಾಡಲಾದ ನೋಟಿಫಿಕೇಶನ್‌ಗಳು ಆ್ಯಪ್‌ಗಳಿಂದ ಲೈವ್ ಮಾಹಿತಿಯನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತವೆ ಹಾಗೂ ಅವುಗಳು ಯಾವಾಗಲೂ ಸ್ಥಿತಿ ಪಟ್ಟಿ ಮತ್ತು ಲಾಕ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳು"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"ಆಫ್ ಮಾಡಿದಾಗ, ಈ ಆ್ಯಪ್‌ನಲ್ಲಿನ ಜರುಗುತ್ತಿರುವ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ನಿಮ್ಮ ಲಾಕ್ ಸ್ಕ್ರೀನ್ ಮತ್ತು ಸ್ಥಿತಿ ಪಟ್ಟಿಯಲ್ಲಿ ಪ್ರದರ್ಶಿಸಲಾಗುವುದಿಲ್ಲ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ಈ ಅಧಿಸೂಚನೆಗಳನ್ನು ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ಕರೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ಈ ಗುಂಪಿನ ಅಧಿಸೂಚನೆಗಳನ್ನು ಇಲ್ಲಿ ಕಾನ್ಫಿಗರ್‌ ಮಾಡಲಾಗಿರುವುದಿಲ್ಲ"</string>
@@ -870,8 +871,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ಗೆ ಸ್ನೂಜ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ಗಂಟೆ}=2{# ಗಂಟೆಗಳು}one{# ಗಂಟೆಗಳು}other{# ಗಂಟೆಗಳು}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ನಿಮಿಷ}one{# ನಿಮಿಷಗಳು}other{# ನಿಮಿಷಗಳು}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ಕೆಳದರ್ಜೆ ಮೆನುವನ್ನು ತೆರೆಯಲು"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ಬ್ಯಾಟರಿ ಸೇವರ್‌‌"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> ಬಟನ್"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1156,10 +1156,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"ಎಡಿಟ್ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"ಮರುಗಾತ್ರಗೊಳಿಸಲು ಮೂಲೆಯನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"ಡಯಾಗನಲ್ ಸ್ಕ್ರೋಲಿಂಗ್ ಅನ್ನು ಅನುಮತಿಸಿ"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"ಟೈಪ್ ಮಾಡುತ್ತಾ ಹೋದಂತೆ ಅನುಸರಿಸಿ"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"ಕೀಬೋರ್ಡ್ ಅನ್ನು ಮ್ಯಾಗ್ನಿಫೈ ಮಾಡಿ"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"ಮರುಗಾತ್ರಗೊಳಿಸಿ"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ಹಿಗ್ಗಿಸುವಿಕೆಯ ಪ್ರಕಾರವನ್ನು ಬದಲಾಯಿಸಿ"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"ಮರುಗಾತ್ರಗೊಳಿಸುವಿಕೆಯನ್ನು ಅಂತ್ಯಗೊಳಿಸಿ"</string>
@@ -1275,7 +1273,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ಗುಂಪು"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 ಸಾಧನವನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ಡಿಸ್‌ಕನೆಕ್ಟ್ ಆಗಿದೆ)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ಬದಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ಸಾಧನವನ್ನು ಕನೆಕ್ಟ್ ಮಾಡಿ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ಸಾಧನವನ್ನು ಕನೆಕ್ಟ್ ಮಾಡಿ"</string>
@@ -1286,8 +1284,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ಕನೆಕ್ಟ್ ಮಾಡಿರುವ ಸ್ಪೀಕರ್‌ಗಳು"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ಸ್ಪೀಕರ್‌ಗಳು ಮತ್ತು ಡಿಸ್‌ಪ್ಲೇಗಳು"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ಸಲಹೆ ಮಾಡಿರುವುದು"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ಸೂಚಿಸಿದ ಸಾಧನಗಳು"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ಇನ್‌ಪುಟ್"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ಔಟ್‌ಪುಟ್"</string>
@@ -1493,7 +1490,7 @@
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"ಫೋನ್ ಕರೆ ಮೂಲಕ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"ಫೋನ್ ಕರೆಯಲ್ಲಿ ಇತ್ತೀಚಿಗೆ ಬಳಸಲಾಗಿದೆ"</string>
     <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಂದ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
-    <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"ಇತ್ತೀಚೆಗೆ <xliff:g id="APP_NAME">%1$s</xliff:g> ಇದನ್ನು ಬಳಸಿದೆ"</string>
+    <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಇತ್ತೀಚೆಗೆ ಇದನ್ನು ಬಳಸಿದೆ"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"<xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಂದ ಬಳಕೆಯಲ್ಲಿದೆ (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"ಇತ್ತೀಚೆಗೆ <xliff:g id="APP_NAME">%1$s</xliff:g> ಇದನ್ನು ಬಳಸಿದೆ (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_active_app_usage_2" msgid="2770926061339921767">"<xliff:g id="APP_NAME">%1$s</xliff:g> ನಿಂದ ಬಳಕೆಯಲ್ಲಿದೆ (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g> • <xliff:g id="PROXY_LABEL">%3$s</xliff:g>)"</string>

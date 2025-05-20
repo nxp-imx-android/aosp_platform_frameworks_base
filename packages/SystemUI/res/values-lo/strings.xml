@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ອະນຸຍາດ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ບໍ່ອະນຸຍາດໃຫ້ໃຊ້ການດີບັກໄຮ້ສາຍ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ຜູ້ໃຊ້ທີ່ເຂົ້າສູ່ລະບົບອຸປະກອນຢູ່ໃນຕອນນີ້ບໍ່ສາມາດເປີດໃຊ້ການດີບັກໄຮ້ສາຍໄດ້. ເພື່ອໃຊ້ຄຸນສົມບັດນີ້, ໃຫ້ປ່ຽນໄປເປັນຜູ້ໃຊ້ທີ່ເບິ່ງແຍງລະບົບ."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"ທ່ານສາມາດປ່ຽນການຕັ້ງຄ່ານີ້ໄດ້ເມື່ອເຂົ້າສູ່ລະບົບແລ້ວ"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"ປິດການນຳໃຊ້ຜອດ USB ແລ້ວ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ເພື່ອປົກປ້ອງອຸປະກອນຂອງທ່ານຈາກຂອງແຫລວ ຫຼື ເສດດິນຕ່າງໆ, ຜອດ USB ຈຶ່ງຖືກປິດການນຳໃຊ້ ແລະ ຈະບໍ່ກວດຫາອຸປະກອນເສີມໃດໆ.\n\nທ່ານຈະໄດ້ຮັບການແຈ້ງເຕືອນເມື່ອສາມາດໃຊ້ຜອດ USB ໄດ້ອີກເທື່ອໜຶ່ງ."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ເປີດນຳໃຊ້ USB ແລ້ວເພື່ອກວດຫາສາຍສາກ ແລະ ອຸປະກອນເສີມ"</string>
@@ -271,6 +270,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"ກຳລັງສາກແບັດເຕີຣີ, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> ເປີເຊັນ."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"ແບັດເຕີຣີ <xliff:g id="PERCENTAGE">%d</xliff:g> ເປີເຊັນ, ການສາກຢຸດໄວ້ຊົ່ວຄາວເພື່ອການຮັກສາແບັດເຕີຣີ."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"ແບັດເຕີຣີ <xliff:g id="PERCENTAGE">%1$d</xliff:g> ເປີເຊັນ, ໃຊ້ໄດ້ຈົນເຖິງ <xliff:g id="TIME">%2$s</xliff:g>, ການສາກຢຸດໄວ້ຊົ່ວຄາວເພື່ອການຮັກສາແບັດເຕີຣີ."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"ແບັດເຕີຣີ <xliff:g id="NUMBER">%d</xliff:g> ເປີເຊັນ. ຕົວປະຢັດແບັດເຕີຣີເປີດຢູ່."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"ເບິ່ງການແຈ້ງເຕືອນທັງໝົດ"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"TeleTypewriter ຖືກເປີດຢູ່."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"ສັ່ນເຕືອນພ້ອມສຽງເອີ້ນເຂົ້າ."</string>
@@ -813,6 +813,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ເປີດ​"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ເປີດ - ອ້າງອີງໃບໜ້າ"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ປິດສຽງ ແລະ ເປັນຊຸດ"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"ສຳລັບ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ການຂາຍ, ຄຸນສົມບັດໃໝ່ ແລະ ອື່ນໆອີກ"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ສະຕໍຣີເດັ່ນ, ບັນນາທິການ ແລະ ອື່ນໆອີກ"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ການຖືກໃຈ, ໂພສ ແລະ ອື່ນໆອີກ"</string>
@@ -840,10 +841,13 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ບໍ່ຮອງຮັບຄຸນສົມບັດການສົນທະນາ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ຄຳຕິຊົມ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ປິດໄວ້"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ຢ່າສະແດງເປັນປັກໝຸດ"</string>
+    <!-- no translation found for notification_inline_disable_promotion (8434781064426043662) -->
+    <skip />
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"ບລັອກຂໍ້ມູນອັບເດດສົດຈາກແອັບນີ້"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"ກຳລັງສະແດງອັບເດດສົດ"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"ການແຈ້ງເຕືອນທີ່ປັກໝຸດໄວ້ຈະສະແດງຂໍ້ມູນສົດຈາກແອັບຕ່າງໆ ແລະ ຈະປາກົດຢູ່ແຖບສະຖານະ ແລະ ໜ້າຈໍລັອກສະເໝີ"</string>
+    <!-- no translation found for live_notifications_title (5926318111951903878) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (2639662830862800119) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ບໍ່ສາມາດແກ້ໄຂການແຈ້ງເຕືອນເຫຼົ່ານີ້ໄດ້."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ບໍ່ສາມາດແກ້ໄຂການແຈ້ງເຕືອນການໂທໄດ້."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ບໍ່ສາມາດຕັ້ງຄ່າກຸ່ມການແຈ້ງເຕືອນນີ້ຢູ່ບ່ອນນີ້ໄດ້"</string>
@@ -870,8 +874,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"ເລື່ອນໄປ <xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ນາທີແລ້ວ"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ຊົ່ວໂມງ}=2{# ຊົ່ວໂມງ}other{# ຊົ່ວໂມງ}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ນາທີ}other{# ນາທີ}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ເພື່ອເປີດເມນູການຫຼຸດລະດັບ"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ຕົວປະຢັດ​ແບັດເຕີຣີ"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ປຸ່ມ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1156,10 +1159,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"ອອກຈາກໂໝດແກ້ໄຂ"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"ລາກຢູ່ມຸມເພື່ອປັບຂະໜາດ"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"ອະນຸຍາດໃຫ້ເລື່ອນທາງຂວາງ"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"ຕິດຕາມການພິມ"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"ຂະຫຍາຍແປ້ນພິມ"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"ປ່ຽນຂະໜາດ"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ປ່ຽນຮູບແບບການຂະຫຍາຍ"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"ສິ້ນສຸດການປັບຂະໜາດ"</string>
@@ -1275,7 +1276,8 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ກຸ່ມ"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"ເລືອກ 1 ອຸປະກອນແລ້ວ"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"ເລືອກ <xliff:g id="COUNT">%1$d</xliff:g> ອຸປະກອນແລ້ວ"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ຕັດການເຊື່ອມຕໍ່ແລ້ວ)"</string>
+    <!-- no translation found for media_output_item_connected_state (297439499870755458) -->
+    <skip />
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ບໍ່ສາມາດສະຫຼັບໄດ້. ແຕະເພື່ອລອງໃໝ່."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ເຊື່ອມຕໍ່ຫາອຸປະກອນ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ເຊື່ອມຕໍ່ອຸປະກອນ"</string>
@@ -1286,8 +1288,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ລຳໂພງທີ່ເຊື່ອມຕໍ່ແລ້ວ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ລຳໂພງ ແລະ ຈໍສະແດງຜົນ"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ແນະນຳ"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ອຸປະກອນທີ່ແນະນຳ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ອິນພຸດ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ເອົ້າພຸດ"</string>

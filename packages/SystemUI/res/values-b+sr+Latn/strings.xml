@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Dozvoli"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Bežično otklanjanje grešaka nije dozvoljeno"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Korisnik koji je trenutno prijavljen na ovaj uređaj ne može da uključi bežično otklanjanje grešaka. Da biste koristili ovu funkciju, pređite na korisnika sa administratorskim pravima."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Možete da promenite podešavanje kada se prijavite"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB port je onemogućen"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Da bi se uređaj zaštitio od tečnosti ili nečistoće, USB port je onemogućen i neće otkrivati dodatnu opremu.\n\nObavestićemo vas kada ponovo budete mogli da koristite USB port."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB port je omogućen radi otkrivanja punjača i dodatne opreme"</string>
@@ -271,6 +270,8 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Baterija se puni, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> posto."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Baterija je na <xliff:g id="PERCENTAGE">%d</xliff:g> posto, punjenje je pauzirano da bi se zaštitila baterija."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Baterija je na <xliff:g id="PERCENTAGE">%1$d</xliff:g> posto, <xliff:g id="TIME">%2$s</xliff:g>, punjenje je pauzirano da bi se zaštitila baterija."</string>
+    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
+    <skip />
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"Pogledajte sva obaveštenja"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"TeleTypewriter je omogućen."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Vibracija zvona."</string>
@@ -813,6 +814,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Uključi"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Uključeno – na osnovu lica"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Isključivanje zvuka i grupisanje"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Za: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Prodaja, nove funkcije i drugo"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Najvažnije vesti, uvodnici i drugo"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Sviđanja, postovi i drugo"</string>
@@ -840,10 +842,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ne podržava funkcije konverzacije"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Povratne informacije"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Odbaci"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ne prikazuj kao zakačeno"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"Isključi"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Blokiraj novosti uživo iz aplik."</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"Prikazuju se novosti uživo"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"Zakačena obaveštenja prikazuju informacije uživo iz aplikacija i uvek se pojavljuju na statusnoj traci i zaključanom ekranu"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"Novosti uživo"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"Kada je ovo isključeno, obaveštenja o tekućim aktivnostima iz ove aplikacije se neće prikazivati na zaključanom ekranu i statusnoj traci"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ova obaveštenja ne mogu da se menjaju."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Obaveštenja o pozivima ne mogu da se menjaju."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ova grupa obaveštenja ne može da se konfiguriše ovde"</string>
@@ -870,8 +872,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Odloženo je za <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# sat}=2{# sata}one{# sat}few{# sata}other{# sati}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minut}one{# minut}few{# minuta}other{# minuta}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"za otvaranje menija za niži nivo"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Ušteda baterije"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Dugme <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Taster Početna"</string>
@@ -1156,10 +1157,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Zatvori režim izmene"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Prevucite ugao da biste promenili veličinu"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Dozvoli dijagonalno skrolovanje"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Prati unos teksta"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Uvećaj tastaturu"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Promeni veličinu"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Promeni tip uvećanja"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Završi promenu veličine"</string>
@@ -1275,7 +1274,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Grupa"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"Izabran je 1 uređaj"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"Izabranih uređaja: <xliff:g id="COUNT">%1$d</xliff:g>"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(veza je prekinuta)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"Povezano"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Prebacivanje nije uspelo. Probajte ponovo."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Povežite uređaj"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Poveži uređaj"</string>
@@ -1286,8 +1285,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Povezani zvučnici"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Zvučnici i ekrani"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Predloženo"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Predloženi uređaji"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Ulaz"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Izlaz"</string>
