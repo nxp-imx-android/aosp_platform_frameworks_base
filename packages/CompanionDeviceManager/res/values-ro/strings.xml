@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> solicită permisiunea pentru <xliff:g id="DEVICE_NAME">%2$s</xliff:g> de a reda în stream aplicații și funcții de sistem de pe <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"Permite ca &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; să acceseze aceste informații de pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> solicită permisiunea pentru <xliff:g id="DEVICE_NAME">%2$s</xliff:g> de a accesa fotografiile, conținutul media și notificările de pe <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să redea în stream aplicații de pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> pe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> va putea să redea în stream aplicații pe <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> până când elimini accesul la această permisiune."</string>
@@ -67,6 +66,14 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Schimbă ieșirea media"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotografii și media"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notificări"</string>
+    <!-- no translation found for permission_create_virtual_device (1102905050922460040) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display (3743433250535606288) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display (9052824856626276723) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display (241771924570133893) -->
+    <skip />
     <string name="permission_phone_summary" msgid="8246321093970051702">"Să inițieze și să gestioneze apeluri telefonice"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Să citească și să scrie jurnalul de apeluri telefonice"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Să trimită și să vadă SMS-urile"</string>
@@ -75,8 +82,19 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Să înregistreze conținut audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Să găsească, să se conecteze la dispozitivele apropiate și să determine poziția relativă a acestora"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Să citească toate notificările, inclusiv informații cum ar fi agenda, mesajele și fotografiile"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• Să citească toate notificările, inclusiv informații cum ar fi agenda, mesajele și fotografiile&lt;br/&gt;• Să trimită notificări&lt;br/&gt;&lt;br/&gt;Poți să gestionezi oricând permisiunea acestei aplicații de a citi și trimite notificări în Setări &gt; Notificări."</string>
+    <!-- no translation found for permission_notifications_summary (6819393427371255636) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_post_notifications_summary (1099188848900200165) -->
+    <skip />
+    <!-- no translation found for permission_create_virtual_device_summary (3570256456647725172) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display_summary (1385423940454941534) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display_summary (915796221330306051) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display_summary (4915600630073253190) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accesează lista dispozitivelor disponibile și alege-l pe cel care redă în stream sau proiectează conținut audio sau video din alte aplicații"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletă"</string>

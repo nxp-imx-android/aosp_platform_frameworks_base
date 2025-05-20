@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> zahtijeva dopuštenje u ime uređaja <xliff:g id="DEVICE_NAME">%2$s</xliff:g> za streaming aplikacija i značajki sustava s vašeg uređaja <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"Dopustite aplikaciji &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; da pristupa informacijama s vašeg uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> zahtijeva dopuštenje u ime vašeg uređaja <xliff:g id="DEVICE_NAME">%2$s</xliff:g> za pristup fotografijama, medijskim sadržajima i obavijestima na uređaju <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Želite li dopustiti aplikaciji &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; da streama aplikacije uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> na uređaj &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"Aplikacija <xliff:g id="APP_NAME_0">%1$s</xliff:g> imat će pristup svemu što je vidljivo ili se reproducira na uređaju <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME_2">%1$s</xliff:g> moći će streamati aplikacije na uređaj <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> dok ne uklonite pristup za to dopuštenje."</string>
@@ -67,6 +66,10 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Promjena medijskog izlaza"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotografije i mediji"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Obavijesti"</string>
+    <string name="permission_create_virtual_device" msgid="1102905050922460040">"Streamanje podataka na uređaj <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="permission_add_mirror_display" msgid="3743433250535606288">"Zrcaljenje zaslona"</string>
+    <string name="permission_add_trusted_display" msgid="9052824856626276723">"Streamanje aplikacija"</string>
+    <string name="permission_add_always_unlocked_display" msgid="241771924570133893">"Streamanje dok je zaključano"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Uspostavljanje telefonskih poziva i upravljanje njima"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Čitanje i pisanje zapisnika poziva telefona"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Slanje i pregledavanje SMS poruka"</string>
@@ -75,8 +78,13 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Snimanje zvuka"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Pronalaženje i određivanje relativnog položaja uređaja u blizini i povezivanje s njima"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije&lt;br/&gt;• Slanje obavijesti&lt;br/&gt;&lt;br/&gt;Uvijek možete upravljati mogućnostima ove aplikacije da čita i šalje obavijesti u postavkama i obavijestima"</string>
+    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije&lt;br/&gt;• Slanje obavijesti&lt;br/&gt;&lt;br/&gt;Uvijek možete upravljati mogućnostima čitanja i slanja obavijesti ove aplikacije u odjeljku Postavke &gt; Obavijesti."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Slanje obavijesti"</string>
+    <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Streamajte mikrofon, kameru i druge podatke senzora s uređaja &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; na uređaj <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
+    <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Snimite, emitirajte ili podijelite zaslon uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> s uređajem &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> imat će pristup svemu što je vidljivo ili se reproducira na vašem uređaju <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke."</string>
+    <string name="permission_add_trusted_display_summary" msgid="915796221330306051">"Streamajte aplikacije s uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> na uređaj &lt;strong&gt;<xliff:g id="DEVICE_NAME_0">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> imat će pristup svemu što je vidljivo ili se reproducira na uređaju <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke."</string>
+    <string name="permission_add_always_unlocked_display_summary" msgid="4915600630073253190">"Streamajte aplikacije s uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> čak i ako je zaključan."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Pristupite popisu dostupnih uređaja i upravljajte time koji streama ili emitira zvuk ili videozapise iz drugih aplikacija"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefonu"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletu"</string>

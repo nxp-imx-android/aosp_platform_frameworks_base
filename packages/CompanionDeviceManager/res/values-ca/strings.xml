@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> demana permís en nom del dispositiu <xliff:g id="DEVICE_NAME">%2$s</xliff:g> per reproduir en continu aplicacions i funcions del sistema del teu dispositiu (<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>)"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"Permet que &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; accedeixi a aquesta informació del <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> demana permís en nom del teu dispositiu <xliff:g id="DEVICE_NAME">%2$s</xliff:g> per accedir a les fotos, el contingut multimèdia i les notificacions del <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Vols permetre que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; reprodueixi en continu les aplicacions del dispositiu (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> podrà accedir a qualsevol cosa que sigui visible o que es reprodueixi al dispositiu <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, inclosos àudios, fotos, informació de pagament, contrasenyes i missatges.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> podrà reproduir en continu aplicacions al dispositiu <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> fins que suprimeixis l\'accés a aquest permís."</string>
@@ -67,6 +66,14 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Canvia la sortida multimèdia"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotos i contingut multimèdia"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notificacions"</string>
+    <!-- no translation found for permission_create_virtual_device (1102905050922460040) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display (3743433250535606288) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display (9052824856626276723) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display (241771924570133893) -->
+    <skip />
     <string name="permission_phone_summary" msgid="8246321093970051702">"Fer i gestionar trucades telefòniques"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Llegir i escriure el registre de trucades del telèfon"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Enviar i llegir missatges SMS"</string>
@@ -75,8 +82,19 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Gravar àudio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Determinar la posició relativa dels dispositius propers, trobar-los i connectar-s\'hi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos.&lt;br/&gt;• Enviar notificacions.&lt;br/&gt;&lt;br/&gt;A Configuració &gt; Notificacions, pots gestionar en qualsevol moment els permisos de l\'aplicació per llegir i enviar notificacions."</string>
+    <!-- no translation found for permission_notifications_summary (6819393427371255636) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_post_notifications_summary (1099188848900200165) -->
+    <skip />
+    <!-- no translation found for permission_create_virtual_device_summary (3570256456647725172) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display_summary (1385423940454941534) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display_summary (915796221330306051) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display_summary (4915600630073253190) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accedeix a una llista de dispositius disponibles i controla quin reprodueix o emet àudio o vídeo des d\'altres aplicacions"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telèfon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tauleta"</string>

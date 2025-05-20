@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> žádá jménem zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> o oprávnění streamovat aplikace a systémové funkce z vašeho zařízení typu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"Povolte aplikaci &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; přístup k těmto informacím z vašeho zařízení typu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> požaduje za vaše zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> oprávnění k přístupu k fotkám, médiím a oznámením na zařízení typu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Povolit aplikaci &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamovat aplikace na zařízení typu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> do zařízení &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"Aplikace <xliff:g id="APP_NAME_0">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME_2">%1$s</xliff:g> bude moct streamovat aplikace do zařízení typu <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>, dokud přístup k tomuto oprávnění neodeberete."</string>
@@ -67,6 +66,14 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Změna mediálního výstupu"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotky a média"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Oznámení"</string>
+    <!-- no translation found for permission_create_virtual_device (1102905050922460040) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display (3743433250535606288) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display (9052824856626276723) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display (241771924570133893) -->
+    <skip />
     <string name="permission_phone_summary" msgid="8246321093970051702">"Uskutečňování a správa telefonních hovorů"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Čtení seznamu hovorů a zapisování do něj"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Odesílání a zobrazování zpráv SMS"</string>
@@ -75,8 +82,19 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Nahrávání zvuku"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Vyhledávání zařízení v okolí, připojování se k nim a zjišťování jejich relativní polohy"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Čtení veškerých oznámení včetně informací, jako jsou kontakty, zprávy a fotky"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• Čtení veškerých oznámení, včetně informací, jako jsou kontakty, zprávy a fotky&lt;br/&gt;• Odesílání oznámení&lt;br/&gt;&lt;br/&gt;Oprávnění této aplikace číst a odesílat oznámení můžete kdykoli změnit v Nastavení &gt; Oznámení."</string>
+    <!-- no translation found for permission_notifications_summary (6819393427371255636) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_post_notifications_summary (1099188848900200165) -->
+    <skip />
+    <!-- no translation found for permission_create_virtual_device_summary (3570256456647725172) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display_summary (1385423940454941534) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display_summary (915796221330306051) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display_summary (4915600630073253190) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Přístup k seznamu dostupných zařízení a určení, které bude streamovat nebo odesílat zvuk či video z ostatních aplikací"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefonu"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletu"</string>

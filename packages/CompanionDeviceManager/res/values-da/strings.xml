@@ -36,8 +36,7 @@
     <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> anmoder om tilladelse på vegne af <xliff:g id="DEVICE_NAME">%2$s</xliff:g> til at streame apps og systemfunktioner fra din <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"Giv &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; adgang til disse oplysninger fra din <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> anmoder om tilladelse på vegne af din <xliff:g id="DEVICE_NAME">%2$s</xliff:g> til at få adgang til billeder, medier og notifikationer på din <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Vil du give &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; tilladelse til at streame apps fra din <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> til &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> får adgang til alt, der er synligt eller afspilles på <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, herunder lyd, billeder, betalingsoplysninger, adgangskoder og beskeder.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> kan streame apps til <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>, indtil du fjerner adgangen til denne tilladelse."</string>
@@ -67,6 +66,14 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Skift medieoutput"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Billeder og medier"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notifikationer"</string>
+    <!-- no translation found for permission_create_virtual_device (1102905050922460040) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display (3743433250535606288) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display (9052824856626276723) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display (241771924570133893) -->
+    <skip />
     <string name="permission_phone_summary" msgid="8246321093970051702">"Foretage og administrere telefonopkald"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Læse og redigere opkaldshistorik"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Sende og se sms-beskeder"</string>
@@ -75,8 +82,19 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Optage lyd"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Finde, oprette forbindelse til og fastslå den omtrentlige lokation af enheder i nærheden"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Læse alle notifikationer, herunder oplysninger som f.eks. kontakter, beskeder og billeder"</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• Læse alle notifikationer, herunder oplysninger som f.eks. kontakter, beskeder og billeder&lt;br/&gt;• Sende notifikationer&lt;br/&gt;&lt;br/&gt;Du kan til enhver tid administrere appens mulighed for at læse og sende notifikationer under Indstillinger &gt; Notifikationer."</string>
+    <!-- no translation found for permission_notifications_summary (6819393427371255636) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <!-- no translation found for permission_post_notifications_summary (1099188848900200165) -->
+    <skip />
+    <!-- no translation found for permission_create_virtual_device_summary (3570256456647725172) -->
+    <skip />
+    <!-- no translation found for permission_add_mirror_display_summary (1385423940454941534) -->
+    <skip />
+    <!-- no translation found for permission_add_trusted_display_summary (915796221330306051) -->
+    <skip />
+    <!-- no translation found for permission_add_always_unlocked_display_summary (4915600630073253190) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Få adgang til en liste over tilgængelige enheder, og vælg, hvilken enhed der skal streame eller caste lyd eller video fra andre apps"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
