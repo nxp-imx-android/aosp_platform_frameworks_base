@@ -238,5 +238,10 @@ public interface EntryAdapter {
      * Returns whether this entry *is* a bundle.
      */
     boolean isBundle();
+
+    /**
+     * Processes when the bundle this entry is within is disabled.
+     */
+    void onBundleDisabled();
 }
 

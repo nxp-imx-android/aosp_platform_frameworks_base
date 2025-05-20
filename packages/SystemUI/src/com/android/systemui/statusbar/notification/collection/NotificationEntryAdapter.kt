@@ -288,4 +288,13 @@ class NotificationEntryAdapter(
     override fun isBundle(): Boolean {
         return false
     }
+
+    override fun onBundleDisabled() {
+        markForUserTriggeredMovement(true)
+        onImportanceChanged()
+
+        if (isGroupRoot()) {
+            row.attachedChildren?.forEach { it.entryAdapter.onBundleDisabled() }
+        }
+    }
 }
