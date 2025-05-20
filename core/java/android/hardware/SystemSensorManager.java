@@ -256,6 +256,13 @@ public class SystemSensorManager extends SensorManager {
             return false;
         }
         if (mSensorListeners.size() >= MAX_LISTENER_COUNT) {
+            Log.e(TAG, "Too many sensor listeners! Dump:");
+            synchronized (mSensorListeners) {
+                int i = 0;
+                for (SensorEventListener debugListener : mSensorListeners.keySet()) {
+                    Log.e(TAG, "  " + ++i + ": " + debugListener.toString());
+                }
+            }
             throw new IllegalStateException("register failed, "
                 + "the sensor listeners size has exceeded the maximum limit "
                 + MAX_LISTENER_COUNT);
