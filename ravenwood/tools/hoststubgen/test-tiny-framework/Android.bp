@@ -29,60 +29,59 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
-hoststubgen_common_options = "$(location hoststubgen) " +
-    // "--in-jar $(location :framework-all) " +
-    // "--policy-override-file $(location framework-policy-override.txt) " +
-    "@$(location :hoststubgen-standard-options) " +
-
-    "--out-jar $(location host.jar) " +
-
-    // "--keep-all-classes " + // Used it for an experiment. See KeepAllClassesFilter.
+tf_hsg_base_options = "@$(location :hoststubgen-standard-options) " +
+    "--in-jar $(location :hoststubgen-test-tiny-framework) " +
+    "--policy-override-file $(location policy-override-tiny-framework.txt) " +
+    "--package-redirect com.unsupported:com.supported " +
     "--gen-keep-all-file $(location hoststubgen_keep_all.txt) " +
-    "--gen-input-dump-file $(location hoststubgen_dump.txt) " +
-    ""
+    "--gen-input-dump-file $(location hoststubgen_dump.txt) "
 
-// Common defaults for stub generation.
-// This one is not specific to Android APIs.
+tf_hsg_base_options_with_out = tf_hsg_base_options +
+    "--out-jar $(location host.jar) "
+
 genrule_defaults {
-    name: "hoststubgen-command-defaults",
-    tools: ["hoststubgen"],
+    name: "tf_hsg_base-defaults",
+    tools: [
+        "hoststubgen",
+        "ravenhelper",
+    ],
     srcs: [
         ":hoststubgen-standard-options",
+        ":hoststubgen-test-tiny-framework",
+        "policy-override-tiny-framework.txt",
     ],
     out: [
-        "host.jar",
-
-        // Following files are created just as FYI.
         "hoststubgen_keep_all.txt",
         "hoststubgen_dump.txt",
     ],
     visibility: ["//visibility:private"],
 }
 
-// Create stub/impl jars from "hoststubgen-test-tiny-framework", using the following 3 rules.
+genrule_defaults {
+    name: "tf_hsg_base_with_out-defaults",
+    defaults: ["tf_hsg_base-defaults"],
+    out: [
+        "host.jar",
+    ],
+}
+
 java_genrule_host {
     name: "hoststubgen-test-tiny-framework-host-base",
-    defaults: ["hoststubgen-command-defaults"],
-    cmd: hoststubgen_common_options +
-        "--in-jar $(location :hoststubgen-test-tiny-framework) " +
-        "--policy-override-file $(location policy-override-tiny-framework.txt) " +
-        "--package-redirect com.unsupported:com.supported ",
-    srcs: [
-        ":hoststubgen-test-tiny-framework",
-        "policy-override-tiny-framework.txt",
-    ],
-    visibility: ["//visibility:private"],
+    defaults: ["tf_hsg_base_with_out-defaults"],
+    cmd: "$(location hoststubgen) " + tf_hsg_base_options_with_out,
+}
+
+java_genrule_host {
+    name: "hoststubgen-test-tiny-framework-stats",
+    defaults: ["tf_hsg_base-defaults"],
+    cmd: "$(location ravenhelper) stats " + tf_hsg_base_options,
 }
 
 java_genrule_host {
     name: "hoststubgen-test-tiny-framework-host",
     cmd: "cp $(in) $(out)",
-    srcs: [
-        ":hoststubgen-test-tiny-framework-host-base{host.jar}",
-    ],
-    out: [
-        "host.jar",
-    ],
+    srcs: [":hoststubgen-test-tiny-framework-host-base{host.jar}"],
+    out: ["host.jar"],
     visibility: ["//visibility:private"],
 }
 
@@ -90,31 +89,17 @@ java_genrule_host {
 // features.
 java_genrule_host {
     name: "hoststubgen-test-tiny-framework-host-ext-base",
-    defaults: ["hoststubgen-command-defaults"],
-    cmd: hoststubgen_common_options +
-        "--in-jar $(location :hoststubgen-test-tiny-framework) " +
-        "--policy-override-file $(location policy-override-tiny-framework.txt) " +
-        "--package-redirect com.unsupported:com.supported " +
-
-        // More options.
-        "--default-method-call-hook com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall " +
-        "--default-class-load-hook com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded ",
-    srcs: [
-        ":hoststubgen-test-tiny-framework",
-        "policy-override-tiny-framework.txt",
-    ],
-    visibility: ["//visibility:private"],
+    defaults: ["tf_hsg_base_with_out-defaults"],
+    cmd: "$(location hoststubgen) " + tf_hsg_base_options_with_out +
+    "--default-method-call-hook com.android.hoststubgen.hosthelper.HostTestUtils.logMethodCall " +
+    "--default-class-load-hook com.android.hoststubgen.hosthelper.HostTestUtils.logClassLoaded ",
 }
 
 java_genrule_host {
     name: "hoststubgen-test-tiny-framework-host-ext",
     cmd: "cp $(in) $(out)",
-    srcs: [
-        ":hoststubgen-test-tiny-framework-host-ext-base{host.jar}",
-    ],
-    out: [
-        "host.jar",
-    ],
+    srcs: [":hoststubgen-test-tiny-framework-host-ext-base{host.jar}"],
+    out: ["host.jar"],
     visibility: ["//visibility:private"],
 }
 
