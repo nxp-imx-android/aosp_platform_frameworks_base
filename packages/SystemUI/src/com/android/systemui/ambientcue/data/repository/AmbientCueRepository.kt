@@ -29,6 +29,7 @@ import android.util.Log
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.annotation.VisibleForTesting
+import androidx.tracing.trace
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.ambientcue.shared.model.ActionModel
@@ -127,45 +128,47 @@ constructor(
                                     label = title,
                                     attribution = chip.subtitle.toString(),
                                     onPerformAction = {
-                                        val intent = chip.intent
-                                        val pendingIntent = chip.pendingIntent
-                                        val activityId =
-                                            chip.extras?.getParcelable<ActivityId>(
-                                                EXTRA_ACTIVITY_ID
-                                            )
-                                        val autofillId =
-                                            chip.extras?.getParcelable<AutofillId>(
-                                                EXTRA_AUTOFILL_ID
-                                            )
-                                        val token = activityId?.token
-                                        Log.v(
-                                            TAG,
-                                            "Performing action: $activityId, $autofillId, " +
-                                                "$pendingIntent, $intent",
-                                        )
-                                        if (token != null && autofillId != null) {
-                                            autofillManager?.autofillRemoteApp(
-                                                autofillId,
-                                                title,
-                                                token,
-                                                activityId.taskId,
-                                            )
-                                        } else if (pendingIntent != null) {
-                                            val options = BroadcastOptions.makeBasic()
-                                            options.isInteractive = true
-                                            options.pendingIntentBackgroundActivityStartMode =
-                                                ActivityOptions
-                                                    .MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                            try {
-                                                pendingIntent.send(options.toBundle())
-                                            } catch (e: PendingIntent.CanceledException) {
-                                                Log.e(
-                                                    TAG,
-                                                    "pending intent of $pendingIntent was canceled",
+                                        trace("performAmbientCueAction") {
+                                            val intent = chip.intent
+                                            val pendingIntent = chip.pendingIntent
+                                            val activityId =
+                                                chip.extras?.getParcelable<ActivityId>(
+                                                    EXTRA_ACTIVITY_ID
                                                 )
+                                            val autofillId =
+                                                chip.extras?.getParcelable<AutofillId>(
+                                                    EXTRA_AUTOFILL_ID
+                                                )
+                                            val token = activityId?.token
+                                            Log.v(
+                                                TAG,
+                                                "Performing action: $activityId, $autofillId, " +
+                                                    "$pendingIntent, $intent",
+                                            )
+                                            if (token != null && autofillId != null) {
+                                                autofillManager?.autofillRemoteApp(
+                                                    autofillId,
+                                                    title,
+                                                    token,
+                                                    activityId.taskId,
+                                                )
+                                            } else if (pendingIntent != null) {
+                                                val options = BroadcastOptions.makeBasic()
+                                                options.isInteractive = true
+                                                options.pendingIntentBackgroundActivityStartMode =
+                                                    ActivityOptions
+                                                        .MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                                                try {
+                                                    pendingIntent.send(options.toBundle())
+                                                } catch (e: PendingIntent.CanceledException) {
+                                                    Log.e(
+                                                        TAG,
+                                                        "pending intent of $pendingIntent was canceled",
+                                                    )
+                                                }
+                                            } else if (intent != null) {
+                                                activityStarter.startActivity(intent, false)
                                             }
-                                        } else if (intent != null) {
-                                            activityStarter.startActivity(intent, false)
                                         }
                                     },
                                     taskId = activityId?.taskId ?: INVALID_TASK_ID,
