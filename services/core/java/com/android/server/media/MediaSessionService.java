@@ -122,6 +122,9 @@ public class MediaSessionService extends SystemService implements Monitor {
     private static final int WAKELOCK_TIMEOUT = 5000;
     private static final int MEDIA_KEY_LISTENER_TIMEOUT = 1000;
     private static final int SESSION_CREATION_LIMIT_PER_UID = 100;
+    private static final int LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout()
+            + /* Buffer for delayed delivery of key event */ 50;
+    private static final int MULTI_TAP_TIMEOUT = ViewConfiguration.getMultiPressTimeout();
     /**
      * Copied from Settings.System.MEDIA_BUTTON_RECEIVER
      */
@@ -205,9 +208,6 @@ public class MediaSessionService extends SystemService implements Monitor {
     private MediaSessionRecord mGlobalPrioritySession;
     private AudioPlayerStateMonitor mAudioPlayerStateMonitor;
 
-    private final int mLongPressTimeoutMillis;
-    private final int mMultiPressTimeoutMillis;
-
     // Used to notify System UI and Settings when remote volume was changed.
     @GuardedBy("mLock")
     final RemoteCallbackList<IRemoteSessionCallback> mRemoteVolumeControllers =
@@ -253,16 +253,6 @@ public class MediaSessionService extends SystemService implements Monitor {
         mNotificationManager = mContext.getSystemService(NotificationManager.class);
         mAudioManager = mContext.getSystemService(AudioManager.class);
         mNotificationListener = new NotificationListener();
-        if (android.companion.virtualdevice.flags.Flags.viewconfigurationApis()) {
-            ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
-            mLongPressTimeoutMillis = viewConfiguration.getLongPressTimeoutMillis()
-                    + /* Buffer for delayed delivery of key event */ 50;
-            mMultiPressTimeoutMillis = viewConfiguration.getMultiPressTimeoutMillis();
-        } else {
-            mLongPressTimeoutMillis = ViewConfiguration.getLongPressTimeout()
-                    + /* Buffer for delayed delivery of key event */ 50;
-            mMultiPressTimeoutMillis = ViewConfiguration.getMultiPressTimeout();
-        }
     }
 
     @Override
@@ -3010,7 +3000,7 @@ public class MediaSessionService extends SystemService implements Monitor {
                                 mMultiTapTimeoutRunnable.run();
                             } else {
                                 mHandler.postDelayed(mMultiTapTimeoutRunnable,
-                                        mMultiPressTimeoutMillis);
+                                        MULTI_TAP_TIMEOUT);
                                 mMultiTapCount = 1;
                                 mMultiTapKeyCode = keyEvent.getKeyCode();
                             }
@@ -3021,8 +3011,7 @@ public class MediaSessionService extends SystemService implements Monitor {
                                     stream, musicOnly, isSingleTapOverridden(overriddenKeyEvents),
                                     isDoubleTapOverridden(overriddenKeyEvents));
                             if (isTripleTapOverridden(overriddenKeyEvents)) {
-                                mHandler.postDelayed(mMultiTapTimeoutRunnable,
-                                        mMultiPressTimeoutMillis);
+                                mHandler.postDelayed(mMultiTapTimeoutRunnable, MULTI_TAP_TIMEOUT);
                                 mMultiTapCount = 2;
                             } else {
                                 mMultiTapTimeoutRunnable.run();
@@ -3136,7 +3125,7 @@ public class MediaSessionService extends SystemService implements Monitor {
                         if (mLongPressTimeoutRunnable == null) {
                             mLongPressTimeoutRunnable = createLongPressTimeoutRunnable(keyEvent);
                         }
-                        mHandler.postDelayed(mLongPressTimeoutRunnable, mLongPressTimeoutMillis);
+                        mHandler.postDelayed(mLongPressTimeoutRunnable, LONG_PRESS_TIMEOUT);
                     } else {
                         resetLongPressTracking();
                     }

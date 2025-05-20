@@ -16,7 +16,6 @@
 
 package com.android.internal.view.menu;
 
-import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.res.Resources;
@@ -126,8 +125,6 @@ public final class IconMenuView extends ViewGroup implements ItemInvoker, MenuVi
      * The number of rows in the current layout. 
      */
     private int mLayoutNumRows;
-
-    private final int mLongPressTimeoutMillis;
     
     /**
      * Instantiates the IconMenuView that is linked with the provided MenuBuilder.
@@ -174,10 +171,6 @@ public final class IconMenuView extends ViewGroup implements ItemInvoker, MenuVi
         setFocusableInTouchMode(true);
         // This is so our children can still be arrow-key focused
         setDescendantFocusability(FOCUS_AFTER_DESCENDANTS);
-
-        mLongPressTimeoutMillis = Flags.viewconfigurationApis()
-                ? ViewConfiguration.get(context).getLongPressTimeoutMillis()
-                : ViewConfiguration.getLongPressTimeout();
     }
 
     int getMaxItems() {
@@ -551,7 +544,7 @@ public final class IconMenuView extends ViewGroup implements ItemInvoker, MenuVi
         if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
             if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
                 removeCallbacks(this);
-                postDelayed(this, mLongPressTimeoutMillis);
+                postDelayed(this, ViewConfiguration.getLongPressTimeout());
             } else if (event.getAction() == KeyEvent.ACTION_UP) {
                 
                 if (mMenuBeingLongpressed) {
