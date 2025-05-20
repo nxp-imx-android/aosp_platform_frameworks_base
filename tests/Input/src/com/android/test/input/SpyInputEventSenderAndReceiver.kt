@@ -16,7 +16,6 @@
 
 package com.android.test.input
 
-import android.os.IBinder
 import android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS
 import android.os.Looper
 import android.view.InputChannel
@@ -44,17 +43,9 @@ private fun <T> assertNoEvents(queue: LinkedBlockingQueue<T>) {
 
 open class SpyInputEventReceiver(channel: InputChannel, looper: Looper) :
     InputEventReceiver(channel, looper) {
-    companion object {
-        @JvmStatic external fun createNativeService(): IBinder
-
-        init {
-            System.loadLibrary("inputtests_jni")
-        }
-    }
 
     private val inputEvents = LinkedBlockingQueue<InputEvent>()
     private val verifier = BlockingQueueEventVerifier(inputEvents)
-    private val service = IInputTests.Stub.asInterface(createNativeService())
 
     override fun onInputEvent(event: InputEvent) {
         addInputEvent(event)
@@ -71,15 +62,6 @@ open class SpyInputEventReceiver(channel: InputChannel, looper: Looper) :
 
     fun assertNoEvents() {
         assertNoEvents(inputEvents)
-    }
-
-    fun reportTimeline(inputEventId: Int, gpuCompletedTime: Long, presentTime: Long) {
-        service.reportTimeline(
-            nativeFrameMetricsObserver,
-            inputEventId,
-            gpuCompletedTime,
-            presentTime,
-        )
     }
 
     fun assertReceivedKey(matcher: Matcher<KeyEvent>) {
