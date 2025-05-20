@@ -77,6 +77,11 @@ public class NoViewerConfigProtoLogImpl implements IProtoLog {
         return List.of();
     }
 
+    @Override
+    public void registerGroups(IProtoLogGroup... groups) {
+        // No-op
+    }
+
     private void logMessage(LogLevel logLevel, String tag, String message) {
         switch (logLevel) {
             case VERBOSE -> Log.v(tag, message);

@@ -47,7 +47,14 @@ interface IProtoLogConfigurationService {
         String viewerConfigFile;
     }
 
+    parcelable RegisterGroupsArgs {
+        String[] groups;
+        boolean[] groupsDefaultLogcatStatus;
+    }
+
     oneway void registerClient(IProtoLogClient client, in RegisterClientArgs args);
+
+    oneway void registerGroups(IProtoLogClient client, in RegisterGroupsArgs args);
 
     oneway void unregisterClient(IProtoLogClient  client);
 }

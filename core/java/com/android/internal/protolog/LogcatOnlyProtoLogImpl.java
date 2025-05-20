@@ -95,4 +95,9 @@ public class LogcatOnlyProtoLogImpl implements IProtoLog {
     public List<IProtoLogGroup> getRegisteredGroups() {
         return Collections.emptyList();
     }
+
+    @Override
+    public void registerGroups(IProtoLogGroup... groups) {
+        // No-op
+    }
 }

@@ -16,6 +16,7 @@
 
 package com.android.internal.protolog;
 
+import android.annotation.NonNull;
 import android.os.ServiceManager;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodReplace;
@@ -23,12 +24,14 @@ import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
 import com.android.internal.protolog.common.LogLevel;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * ProtoLog API - exposes static logging methods. Usage of this API is similar
@@ -64,22 +67,58 @@ public class ProtoLog {
 
     private static final Object sInitLock = new Object();
 
+    @GuardedBy("sInitLock")
+    private static final Set<IProtoLogGroup> sGroups = new HashSet<>();
+
+    /**
+     * Registers ProtoLog groups in the current process.
+     * This method allows for registering {@link IProtoLogGroup} that will be used for logging
+     * within the current process.
+     *
+     * @param groups A varargs array of {@link IProtoLogGroup} instances to be registered.
+     */
+    public static void registerLogGroupInProcess(@NonNull IProtoLogGroup... groups) {
+        synchronized (sInitLock) {
+            var newGroups = Arrays.stream(groups)
+                    .filter(group -> !sGroups.contains(group))
+                    .toArray(IProtoLogGroup[]::new);
+            if (newGroups.length == 0) {
+                return;
+            }
+
+            sGroups.addAll(Arrays.stream(newGroups).toList());
+
+            if (sProtoLogInstance != null) {
+                sProtoLogInstance.registerGroups(newGroups);
+            }
+        }
+    }
+
     /**
      * Initialize ProtoLog in this process.
      * <p>
      * This method MUST be called before any protologging is performed in this process.
      * Ensure that all groups that will be used for protologging are registered.
-     *
-     * @param groups The ProtoLog groups that will be used in the process.
      */
-    public static void init(IProtoLogGroup... groups) {
-        // These tracing instances are only used when we cannot or do not preprocess the source
-        // files to extract out the log strings. Otherwise, the trace calls are replaced with calls
-        // directly to the generated tracing implementations.
-        if (logOnlyToLogcat()) {
-            sProtoLogInstance = new LogcatOnlyProtoLogImpl();
-        } else {
-            initializePerfettoProtoLog(groups);
+    public static void init(@NonNull IProtoLogGroup... groups) {
+        registerLogGroupInProcess(groups);
+
+        synchronized (sInitLock) {
+            if (sProtoLogInstance != null) {
+                return;
+            }
+
+            // These tracing instances are only used when we cannot or do not preprocess the source
+            // files to extract out the log strings. Otherwise, the trace calls are replaced with
+            // calls directly to the generated tracing implementations.
+            if (logOnlyToLogcat()) {
+                sProtoLogInstance = new LogcatOnlyProtoLogImpl();
+            } else {
+                var datasource = getSharedSingleInstanceDataSource();
+
+                sProtoLogInstance = createAndEnableNewPerfettoProtoLogImpl(
+                        datasource, sGroups.toArray(new IProtoLogGroup[0]));
+            }
         }
     }
 
@@ -95,28 +134,8 @@ public class ProtoLog {
         return true;
     }
 
-    private static void initializePerfettoProtoLog(IProtoLogGroup... groups) {
-        var datasource = getSharedSingleInstanceDataSource();
-
-        synchronized (sInitLock) {
-            final var allGroups = new HashSet<>(Arrays.stream(groups).toList());
-            final var previousProtoLogImpl = sProtoLogInstance;
-            if (previousProtoLogImpl != null) {
-                // The ProtoLog instance has already been initialized in this process
-                final var alreadyRegisteredGroups = previousProtoLogImpl.getRegisteredGroups();
-                allGroups.addAll(alreadyRegisteredGroups);
-            }
-
-            sProtoLogInstance = createAndEnableNewPerfettoProtoLogImpl(
-                    datasource, allGroups.toArray(new IProtoLogGroup[0]));
-            if (previousProtoLogImpl instanceof PerfettoProtoLogImpl) {
-                ((PerfettoProtoLogImpl) previousProtoLogImpl).disable();
-            }
-        }
-    }
-
     private static PerfettoProtoLogImpl createAndEnableNewPerfettoProtoLogImpl(
-            ProtoLogDataSource datasource, IProtoLogGroup[] groups) {
+            @NonNull ProtoLogDataSource datasource, @NonNull IProtoLogGroup[] groups) {
         try {
             var unprocessedPerfettoProtoLogImpl =
                     new UnprocessedPerfettoProtoLogImpl(datasource, groups);

@@ -88,6 +88,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 
 /**
  * A service for the ProtoLog logging system.
@@ -175,6 +176,17 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mDataSource.registerOnStopCallback(this);
     }
 
+    @Override
+    public void registerGroups(IProtoLogGroup... groups) {
+        registerGroupsLocally(groups);
+
+        if (mConfigurationService != null) {
+            registerGroupsWithConfigurationServiceAsync(groups);
+        } else {
+            Log.w(LOG_TAG, "Missing configuration service... Not registering groups with it.");
+        }
+    }
+
     private void connectToConfigurationService() {
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
@@ -196,6 +208,28 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 mConfigurationService.registerClient(this, args);
             } catch (RemoteException e) {
                 throw new RuntimeException("Failed to register ProtoLog client", e);
+            }
+        });
+    }
+
+    private void registerGroupsWithConfigurationServiceAsync(IProtoLogGroup... groups) {
+        Objects.requireNonNull(mConfigurationService,
+                "A null ProtoLog Configuration Service was provided!");
+
+        mBackgroundHandler.post(() -> {
+            try {
+                var args = new IProtoLogConfigurationService.RegisterGroupsArgs();
+                args.groups = new String[groups.length];
+                args.groupsDefaultLogcatStatus = new boolean[groups.length];
+                var i = 0;
+                for (var group : groups) {
+                    args.groups[i] = group.name();
+                    args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                    i++;
+                }
+                mConfigurationService.registerGroups(this, args);
+            } catch (RemoteException e) {
+                throw new RuntimeException("Failed to register ProtoLog groups", e);
             }
         });
     }
@@ -332,7 +366,11 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     private void registerGroupsLocally(@NonNull IProtoLogGroup[] protoLogGroups) {
         // Verify we don't have id collisions, if we do we want to know as soon as possible and
         // we might want to manually specify an id for the group with a collision
-        verifyNoCollisionsOrDuplicates(protoLogGroups);
+        IProtoLogGroup[] allGroups = Stream.concat(
+                mLogGroups.values().stream(),
+                Arrays.stream(protoLogGroups)
+        ).toArray(IProtoLogGroup[]::new);
+        verifyNoCollisionsOrDuplicates(allGroups);
 
         for (IProtoLogGroup protoLogGroup : protoLogGroups) {
             mLogGroups.put(protoLogGroup.name(), protoLogGroup);
