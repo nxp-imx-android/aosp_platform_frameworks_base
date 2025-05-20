@@ -21,13 +21,14 @@ import android.graphics.Rect
 import com.android.wm.shell.desktopmode.CaptionState.AppHandle
 import com.android.wm.shell.desktopmode.CaptionState.AppHeader
 import com.android.wm.shell.desktopmode.CaptionState.NoCaption
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /** Repository to observe caption state. */
-class WindowDecorCaptionHandleRepository {
-    private val _captionStateFlow = MutableStateFlow<CaptionState>(CaptionState.NoCaption)
+class WindowDecorCaptionRepository {
+    private val _captionStateFlow = MutableStateFlow<CaptionState>(NoCaption())
     /** Observer for app handle state changes. */
     val captionStateFlow: StateFlow<CaptionState> = _captionStateFlow
     private val _appToWebUsageFlow = MutableSharedFlow<Unit>()
@@ -51,14 +52,18 @@ class WindowDecorCaptionHandleRepository {
  * It can be one of three options:
  * * [AppHandle]: Indicating that there is at least one visible app handle on the screen.
  * * [AppHeader]: Indicating that there is at least one visible app chip on the screen.
- * * [NoCaption]: Signifying that no caption handle is currently visible on the device.
+ * * [NoCaption]: Signifying that no caption handle visible for the given task.
  */
 sealed class CaptionState {
+    abstract val isFocused: Boolean
+
     data class AppHandle(
         val runningTaskInfo: RunningTaskInfo,
         val isHandleMenuExpanded: Boolean,
         val globalAppHandleBounds: Rect,
         val isCapturedLinkAvailable: Boolean,
+        val appHandleIdentifier: AppHandleIdentifier,
+        override val isFocused: Boolean,
     ) : CaptionState()
 
     data class AppHeader(
@@ -66,7 +71,14 @@ sealed class CaptionState {
         val isHeaderMenuExpanded: Boolean,
         val globalAppChipBounds: Rect,
         val isCapturedLinkAvailable: Boolean,
+        override val isFocused: Boolean,
     ) : CaptionState()
 
-    data object NoCaption : CaptionState()
+    data class NoCaption(val taskId: Int = INVALID_TASK_ID) : CaptionState() {
+        override val isFocused = false
+    }
+
+    private companion object {
+        private const val INVALID_TASK_ID = -1
+    }
 }

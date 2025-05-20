@@ -65,7 +65,7 @@ import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController
 import com.android.wm.shell.desktopmode.education.AppToWebEducationController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
@@ -89,7 +89,6 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
-import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import java.util.Optional
@@ -161,11 +160,10 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockAppHandleEducationController = mock<AppHandleEducationController>()
     protected val mockAppToWebEducationController = mock<AppToWebEducationController>()
     protected val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
-    protected val mockCaptionHandleRepository = mock<WindowDecorCaptionHandleRepository>()
+    protected val mockCaptionHandleRepository = mock<WindowDecorCaptionRepository>()
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
     protected val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     protected val mockTilingWindowDecoration = mock<DesktopTilingDecorViewModel>()
-    protected val mockAppHandleNotifier = mock<AppHandleNotifier>()
     protected val motionEvent = mock<MotionEvent>()
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
@@ -270,7 +268,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockDesksOrganizer,
             desktopState,
             desktopConfig,
-            mockAppHandleNotifier,
         )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)

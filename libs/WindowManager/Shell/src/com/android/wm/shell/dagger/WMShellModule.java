@@ -123,7 +123,7 @@ import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
 import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
@@ -1154,7 +1154,7 @@ public abstract class WMShellModule {
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
             AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
             DesktopModeEventLogger desktopModeEventLogger,
@@ -1167,8 +1167,7 @@ public abstract class WMShellModule {
             Optional<CompatUIHandler> compatUI,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            DesktopConfig desktopConfig,
-            AppHandleNotifier appHandleNotifier
+            DesktopConfig desktopConfig
     ) {
         if (!desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1182,12 +1181,12 @@ public abstract class WMShellModule {
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 assistContentRequester, windowDecorViewHostSupplier, multiInstanceHelper,
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
-                appHandleAndHeaderVisibilityHelper, windowDecorCaptionHandleRepository,
+                appHandleAndHeaderVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
-                desksOrganizer, desktopState, desktopConfig, appHandleNotifier));
+                desksOrganizer, desktopState, desktopConfig));
     }
 
     @WMSingleton
@@ -1525,8 +1524,11 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static AppHandleNotifier provideAppHandleNotifier(
-            @ShellMainThread ShellExecutor shellExecutor) {
-        return new AppHandleNotifier(shellExecutor);
+            @ShellMainThread ShellExecutor shellExecutor,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
+            @ShellMainThread CoroutineScope mainScope) {
+        return new AppHandleNotifier(
+                shellExecutor, windowDecorCaptionRepository, mainScope);
     }
 
     @WMSingleton
@@ -1546,8 +1548,8 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static WindowDecorCaptionHandleRepository provideAppHandleRepository() {
-        return new WindowDecorCaptionHandleRepository();
+    static WindowDecorCaptionRepository provideAppHandleRepository() {
+        return new WindowDecorCaptionRepository();
     }
 
     @WMSingleton
@@ -1582,7 +1584,7 @@ public abstract class WMShellModule {
             Context context,
             AppHandleEducationFilter appHandleEducationFilter,
             AppHandleEducationDatastoreRepository appHandleEducationDatastoreRepository,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             DesktopWindowingEducationTooltipController desktopWindowingEducationTooltipController,
             @ShellMainThread CoroutineScope applicationScope,
             @ShellBackgroundThread MainCoroutineDispatcher backgroundDispatcher,
@@ -1592,7 +1594,7 @@ public abstract class WMShellModule {
                 context,
                 appHandleEducationFilter,
                 appHandleEducationDatastoreRepository,
-                windowDecorCaptionHandleRepository,
+                windowDecorCaptionRepository,
                 desktopWindowingEducationTooltipController,
                 applicationScope,
                 backgroundDispatcher,
@@ -1622,13 +1624,13 @@ public abstract class WMShellModule {
             Context context,
             AppToWebEducationFilter appToWebEducationFilter,
             AppToWebEducationDatastoreRepository appToWebEducationDatastoreRepository,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             DesktopWindowingEducationPromoController desktopWindowingEducationPromoController,
             @ShellMainThread CoroutineScope applicationScope,
             @ShellBackgroundThread MainCoroutineDispatcher backgroundDispatcher,
             DesktopState desktopState) {
         return new AppToWebEducationController(context, appToWebEducationFilter,
-                appToWebEducationDatastoreRepository, windowDecorCaptionHandleRepository,
+                appToWebEducationDatastoreRepository, windowDecorCaptionRepository,
                 desktopWindowingEducationPromoController, applicationScope,
                 backgroundDispatcher, desktopState);
     }

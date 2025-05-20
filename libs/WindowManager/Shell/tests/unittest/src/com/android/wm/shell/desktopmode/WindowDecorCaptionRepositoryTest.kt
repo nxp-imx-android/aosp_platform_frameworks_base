@@ -22,7 +22,10 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.graphics.Rect
 import android.testing.AndroidTestingRunner
+import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -30,18 +33,18 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
-class WindowDecorCaptionHandleRepositoryTest {
-    private lateinit var captionHandleRepository: WindowDecorCaptionHandleRepository
+class WindowDecorCaptionRepositoryTest {
+    private lateinit var captionRepository: WindowDecorCaptionRepository
 
     @Before
     fun setUp() {
-        captionHandleRepository = WindowDecorCaptionHandleRepository()
+        captionRepository = WindowDecorCaptionRepository()
     }
 
     @Test
     fun initialState_noAction_returnsNoCaption() {
         // Check the initial value of `captionStateFlow`.
-        assertThat(captionHandleRepository.captionStateFlow.value).isEqualTo(CaptionState.NoCaption)
+        assertThat(captionRepository.captionStateFlow.value).isEqualTo(CaptionState.NoCaption())
     }
 
     @Test
@@ -54,11 +57,13 @@ class WindowDecorCaptionHandleRepositoryTest {
                 globalAppHandleBounds =
                     Rect(/* left= */ 0, /* top= */ 1, /* right= */ 2, /* bottom= */ 3),
                 isCapturedLinkAvailable = false,
+                appHandleIdentifier = createHandleIdentifier(taskInfo.taskId),
+                isFocused = true,
             )
 
-        captionHandleRepository.notifyCaptionChanged(appHandleCaptionState)
+        captionRepository.notifyCaptionChanged(appHandleCaptionState)
 
-        assertThat(captionHandleRepository.captionStateFlow.value).isEqualTo(appHandleCaptionState)
+        assertThat(captionRepository.captionStateFlow.value).isEqualTo(appHandleCaptionState)
     }
 
     @Test
@@ -71,18 +76,19 @@ class WindowDecorCaptionHandleRepositoryTest {
                 globalAppChipBounds =
                     Rect(/* left= */ 0, /* top= */ 1, /* right= */ 2, /* bottom= */ 3),
                 isCapturedLinkAvailable = false,
+                isFocused = true,
             )
 
-        captionHandleRepository.notifyCaptionChanged(appHeaderCaptionState)
+        captionRepository.notifyCaptionChanged(appHeaderCaptionState)
 
-        assertThat(captionHandleRepository.captionStateFlow.value).isEqualTo(appHeaderCaptionState)
+        assertThat(captionRepository.captionStateFlow.value).isEqualTo(appHeaderCaptionState)
     }
 
     @Test
     fun notifyCaptionChange_toNoCaption_updatesState() {
-        captionHandleRepository.notifyCaptionChanged(CaptionState.NoCaption)
+        captionRepository.notifyCaptionChanged(CaptionState.NoCaption())
 
-        assertThat(captionHandleRepository.captionStateFlow.value).isEqualTo(CaptionState.NoCaption)
+        assertThat(captionRepository.captionStateFlow.value).isEqualTo(CaptionState.NoCaption())
     }
 
     private fun createTaskInfo(
@@ -93,6 +99,14 @@ class WindowDecorCaptionHandleRepositoryTest {
             configuration.windowConfiguration.apply { windowingMode = deviceWindowingMode }
             topActivityInfo?.apply { packageName = runningTaskPackageName }
         }
+
+    private fun createHandleIdentifier(
+        taskId: Int,
+        handleBounds: Rect = Rect(),
+        displayId: Int = DEFAULT_DISPLAY,
+        windowingMode: AppHandleWindowingMode =
+            AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+    ): AppHandleIdentifier = AppHandleIdentifier(handleBounds, displayId, taskId, windowingMode)
 
     private companion object {
         const val GMAIL_PACKAGE_NAME = "com.google.android.gm"

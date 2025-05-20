@@ -120,7 +120,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
@@ -155,7 +155,6 @@ import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
-import com.android.wm.shell.windowdecor.viewholder.AppHandleNotifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 
@@ -207,7 +206,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final InputManager mInputManager;
     private final InteractionJankMonitor mInteractionJankMonitor;
     private final MultiInstanceHelper mMultiInstanceHelper;
-    private final WindowDecorCaptionHandleRepository mWindowDecorCaptionHandleRepository;
+    private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
     private final Optional<DesktopTasksLimiter> mDesktopTasksLimiter;
     private final AppHandleEducationController mAppHandleEducationController;
     private final AppToWebEducationController mAppToWebEducationController;
@@ -292,7 +291,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
             AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
             DesktopModeEventLogger desktopModeEventLogger,
@@ -305,8 +304,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIHandler compatUI,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            DesktopConfig desktopConfig,
-            AppHandleNotifier appHandleNotifier) {
+            DesktopConfig desktopConfig) {
         this(
                 context,
                 shellExecutor,
@@ -343,7 +341,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 appHandleEducationController,
                 appToWebEducationController,
                 appHandleAndHeaderVisibilityHelper,
-                windowDecorCaptionHandleRepository,
+                windowDecorCaptionRepository,
                 activityOrientationChangeHandler,
                 new TaskPositionerFactory(),
                 focusTransitionObserver,
@@ -357,8 +355,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 compatUI,
                 desksOrganizer,
                 desktopState,
-                desktopConfig,
-                appHandleNotifier);
+                desktopConfig);
     }
 
     @VisibleForTesting
@@ -398,7 +395,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
             AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             TaskPositionerFactory taskPositionerFactory,
             FocusTransitionObserver focusTransitionObserver,
@@ -412,8 +409,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIHandler compatUI,
             DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            DesktopConfig desktopConfig,
-            AppHandleNotifier appHandleNotifier) {
+            DesktopConfig desktopConfig) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -450,7 +446,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mAppHandleEducationController = appHandleEducationController;
         mAppToWebEducationController = appToWebEducationController;
         mAppHandleAndHeaderVisibilityHelper = appHandleAndHeaderVisibilityHelper;
-        mWindowDecorCaptionHandleRepository = windowDecorCaptionHandleRepository;
+        mWindowDecorCaptionRepository = windowDecorCaptionRepository;
         mActivityOrientationChangeHandler = activityOrientationChangeHandler;
         mAssistContentRequester = assistContentRequester;
         mWindowDecorViewHostSupplier = windowDecorViewHostSupplier;
@@ -1875,7 +1871,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mAssistContentRequester,
                         mWindowDecorViewHostSupplier,
                         mMultiInstanceHelper,
-                        mWindowDecorCaptionHandleRepository,
+                        mWindowDecorCaptionRepository,
                         mDesktopModeEventLogger,
                         mDesktopModeUiEventLogger,
                         mDesktopModeCompatPolicy,

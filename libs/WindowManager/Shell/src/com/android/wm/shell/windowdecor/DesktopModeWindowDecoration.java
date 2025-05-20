@@ -37,6 +37,7 @@ import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getFineR
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getLargeResizeCornerSize;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getResizeEdgeHandleSize;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.getResizeHandleEdgeInset;
+import static com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -96,9 +97,10 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum;
 import com.android.wm.shell.desktopmode.DesktopModeUtils;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
@@ -111,6 +113,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier;
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder;
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder;
@@ -204,7 +207,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     // to cancel the close.
     private final Runnable mCloseMaximizeWindowRunnable = this::closeMaximizeMenu;
     private final MultiInstanceHelper mMultiInstanceHelper;
-    private final WindowDecorCaptionHandleRepository mWindowDecorCaptionHandleRepository;
+    private final WindowDecorCaptionRepository mWindowDecorCaptionRepository;
     private final DesktopUserRepositories mDesktopUserRepositories;
     private final DesktopModeUiEventLogger mDesktopModeUiEventLogger;
     private boolean mIsRecentsTransitionRunning = false;
@@ -247,7 +250,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             AssistContentRequester assistContentRequester,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MultiInstanceHelper multiInstanceHelper,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
@@ -266,7 +269,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 windowDecorViewHostSupplier,
                 DefaultMaximizeMenuFactory.INSTANCE,
                 DefaultHandleMenuFactory.INSTANCE, multiInstanceHelper,
-                windowDecorCaptionHandleRepository, desktopModeEventLogger,
+                windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
                 desktopState, desktopConfig, windowDecorationActions);
     }
@@ -304,7 +307,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             MaximizeMenuFactory maximizeMenuFactory,
             HandleMenuFactory handleMenuFactory,
             MultiInstanceHelper multiInstanceHelper,
-            WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+            WindowDecorCaptionRepository windowDecorCaptionRepository,
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
@@ -334,7 +337,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mHandleMenuFactory = handleMenuFactory;
         mMultiInstanceHelper = multiInstanceHelper;
         mWindowManagerWrapper = windowManagerWrapper;
-        mWindowDecorCaptionHandleRepository = windowDecorCaptionHandleRepository;
+        mWindowDecorCaptionRepository = windowDecorCaptionRepository;
         mDesktopUserRepositories = desktopUserRepositories;
         mTaskResourceLoader = taskResourceLoader;
         mTaskResourceLoader.onWindowDecorCreated(taskInfo);
@@ -509,7 +512,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (mResult.mRootView == null) {
             // This means something blocks the window decor from showing, e.g. the task is hidden.
             // Nothing is set up in this case including the decoration surface.
-            if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
+            if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
                 notifyNoCaptionHandle();
             }
             mExclusionRegionListener.onExclusionRegionDismissed(mTaskInfo.taskId);
@@ -529,14 +532,15 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 if (appHeader != null) {
                     appHeader.setAppName(name);
                     appHeader.setAppIcon(icon);
-                    if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
+                    if (mDesktopState.canEnterDesktopMode()
+                            && isEducationOrHandleReportingEnabled()) {
                         notifyCaptionStateChanged();
                     }
                 }
             });
         }
 
-        if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
+        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
             notifyCaptionStateChanged();
         }
 
@@ -552,7 +556,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             closeHandleMenu();
             closeManageWindowsMenu();
             closeMaximizeMenu();
-            notifyNoCaptionHandle();
+            if (!DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
+                notifyNoCaptionHandle();
+            }
         }
         updateDragResizeListenerIfNeeded(oldDecorationSurface, inFullImmersive);
         updateMaximizeMenu(startT, inFullImmersive);
@@ -718,7 +724,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private void notifyCaptionStateChanged() {
-        if (!mDesktopState.canEnterDesktopMode() || !isEducationEnabled()) {
+        if (!mDesktopState.canEnterDesktopMode() || !isEducationOrHandleReportingEnabled()) {
             return;
         }
         if (!isCaptionVisible()) {
@@ -727,8 +733,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             // App handle is visible since `mWindowDecorViewHolder` is of type
             // [AppHandleViewHolder].
             final CaptionState captionState = new CaptionState.AppHandle(mTaskInfo,
-                    isHandleMenuActive(), getCurrentAppHandleBounds(), isCapturedLinkAvailable());
-            mWindowDecorCaptionHandleRepository.notifyCaptionChanged(captionState);
+                    isHandleMenuActive(), getCurrentAppHandleBounds(), isCapturedLinkAvailable(),
+                    getAppHandleIdentifier(), mHasGlobalFocus);
+            mWindowDecorCaptionRepository.notifyCaptionChanged(captionState);
         } else {
             // App header is visible since `mWindowDecorViewHolder` is of type
             // [AppHeaderViewHolder].
@@ -754,19 +761,49 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     private void notifyNoCaptionHandle() {
-        if (!mDesktopState.canEnterDesktopMode() || !isEducationEnabled()) {
+        if (!mDesktopState.canEnterDesktopMode() || !isEducationOrHandleReportingEnabled()) {
             return;
         }
-        mWindowDecorCaptionHandleRepository.notifyCaptionChanged(
-                CaptionState.NoCaption.INSTANCE);
+        mWindowDecorCaptionRepository.notifyCaptionChanged(
+                new CaptionState.NoCaption(mTaskInfo.taskId));
     }
 
+    /**
+     * Returns app handle bounds if app handle is visible. Otherwise, returns empty Rect.
+     */
     private Rect getCurrentAppHandleBounds() {
-        return new Rect(
+        if (!DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
+            return new Rect(
+                    mResult.mCaptionX,
+                    /* top= */ 0,
+                    mResult.mCaptionX + mResult.mCaptionWidth,
+                    mResult.mCaptionHeight);
+        }
+
+        if (!isAppHandle(mWindowDecorViewHolder) || !isCaptionVisible()) {
+            return new Rect();
+        }
+
+        final Rect handleBounds = new Rect(
                 mResult.mCaptionX,
-                /* top= */0,
+                mResult.mCaptionY,
                 mResult.mCaptionX + mResult.mCaptionWidth,
-                mResult.mCaptionHeight);
+                mResult.mCaptionY + mResult.mCaptionHeight);
+        if (mSplitScreenController.getSplitPosition(mTaskInfo.taskId)
+                == SPLIT_POSITION_BOTTOM_OR_RIGHT
+        ) {
+            if (mSplitScreenController.isLeftRightSplit()) {
+                final Rect rightStageBounds = new Rect();
+                mSplitScreenController.getStageBounds(new Rect(), rightStageBounds);
+                handleBounds.offset(rightStageBounds.left, 0);
+            } else {
+                final Rect bottomStageBounds = new Rect();
+                mSplitScreenController.getRefStageBounds(new Rect(), bottomStageBounds);
+                handleBounds.offset(0, bottomStageBounds.top);
+            }
+        }
+
+        return handleBounds;
     }
 
     private void notifyAppHeaderStateChanged() {
@@ -785,9 +822,39 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mTaskInfo,
                 isHandleMenuActive(),
                 appChipGlobalPosition,
-                isCapturedLinkAvailable());
+                isCapturedLinkAvailable(),
+                mHasGlobalFocus);
 
-        mWindowDecorCaptionHandleRepository.notifyCaptionChanged(captionState);
+        mWindowDecorCaptionRepository.notifyCaptionChanged(captionState);
+    }
+
+    /** Updates app handle position and notifies [AppHandleNotifier] of any changes. */
+    private AppHandleIdentifier getAppHandleIdentifier() {
+        return new AppHandleIdentifier(
+                getCurrentAppHandleBounds(),
+                mTaskInfo.displayId,
+                mTaskInfo.taskId,
+                getAppHandleIdentifierWindowingMode()
+        );
+    }
+
+    /**
+     * Returns the windowing mode of the App Handle. Throws an {@link IllegalArgumentException} if
+     * task does not have an app handle
+     */
+    private AppHandleWindowingMode getAppHandleIdentifierWindowingMode() {
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+                && !mDesktopState.isDesktopModeSupportedOnDisplay(mDisplay)) {
+            return AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_BUBBLE;
+        }
+        if (mSplitScreenController.isTaskInSplitScreen(mTaskInfo.taskId)) {
+            return AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN;
+        }
+        if (isAppHandle(mWindowDecorViewHolder)) {
+            return AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_FULLSCREEN;
+        }
+        throw new IllegalArgumentException("Attempting to get the AppHandleWindowingMode of a task "
+                + "that does not have an app handle");
     }
 
     private void updateMaximizeMenu(SurfaceControl.Transaction startT, boolean inFullImmersive) {
@@ -1508,7 +1575,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mWindowDecorationActions.onOpenInBrowser(mTaskInfo.taskId, intent);
                     onCapturedLinkUsed();
                     if (Flags.enableDesktopWindowingAppToWebEducationIntegration()) {
-                        mWindowDecorCaptionHandleRepository.onAppToWebUsage();
+                        mWindowDecorCaptionRepository.onAppToWebUsage();
                     }
                     return Unit.INSTANCE;
                 },
@@ -1521,7 +1588,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 /* onHandleMenuClickedListener= */ mCloseHandleMenuFunction,
                 /* forceShowSystemBars= */ inDesktopImmersive
         );
-        if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
+        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
             notifyCaptionStateChanged();
         }
         mMinimumInstancesFound = false;
@@ -1602,7 +1669,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mWindowDecorViewHolder.onHandleMenuClosed();
         mHandleMenu.close();
         mHandleMenu = null;
-        if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
+        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
             notifyCaptionStateChanged();
         }
     }
@@ -1768,10 +1835,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 && v.getTop() <= y && v.getBottom() >= y;
     }
 
-    /** Returns true if at least one education flag is enabled. */
-    private boolean isEducationEnabled() {
+    /**
+     * Returns true if caption state should be updated either due to education or app handle
+     * reporting being enabled.
+     */
+    private boolean isEducationOrHandleReportingEnabled() {
         return Flags.enableDesktopWindowingAppHandleEducation()
-                || Flags.enableDesktopWindowingAppToWebEducationIntegration();
+                || Flags.enableDesktopWindowingAppToWebEducationIntegration()
+                || DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue();
     }
 
     @Override
@@ -1793,7 +1864,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             mWindowDecorViewHolder.close();
             mWindowDecorViewHolder = null;
         }
-        if (mDesktopState.canEnterDesktopMode() && isEducationEnabled()) {
+        if (mDesktopState.canEnterDesktopMode() && isEducationOrHandleReportingEnabled()) {
             notifyNoCaptionHandle();
         }
         super.close();
@@ -1965,7 +2036,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost>
                         windowDecorViewHostSupplier,
                 MultiInstanceHelper multiInstanceHelper,
-                WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
+                WindowDecorCaptionRepository windowDecorCaptionRepository,
                 DesktopModeEventLogger desktopModeEventLogger,
                 DesktopModeUiEventLogger desktopModeUiEventLogger,
                 DesktopModeCompatPolicy desktopModeCompatPolicy,
@@ -1997,7 +2068,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     assistContentRequester,
                     windowDecorViewHostSupplier,
                     multiInstanceHelper,
-                    windowDecorCaptionHandleRepository,
+                    windowDecorCaptionRepository,
                     desktopModeEventLogger,
                     desktopModeUiEventLogger,
                     desktopModeCompatPolicy,
