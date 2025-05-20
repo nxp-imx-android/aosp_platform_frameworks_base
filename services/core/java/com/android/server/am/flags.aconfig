@@ -251,3 +251,10 @@ flag {
     description: "If a connection has flag BIND_SCHEDULE_LIKE_TOP_APP but the host process has not set the corresponding flag, do not skip the connection recompute."
     bug: "417720000"
 }
+
+flag {
+    name: "use_memcg_for_compaction"
+    namespace: "system_performance"
+    description: "Update CachedAppOptimizer to use memcg reclaim for compaction"
+    bug: "377479218"
+}
