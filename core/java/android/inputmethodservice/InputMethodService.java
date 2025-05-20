@@ -60,7 +60,6 @@ import static android.view.inputmethod.Flags.FLAG_VERIFY_KEY_EVENT;
 import static android.view.inputmethod.Flags.ctrlShiftShortcut;
 import static android.view.inputmethod.Flags.predictiveBackIme;
 
-import android.annotation.AnyThread;
 import android.annotation.CallSuper;
 import android.annotation.DrawableRes;
 import android.annotation.DurationMillisLong;
@@ -99,7 +98,6 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
-import android.os.SystemProperties;
 import android.os.Trace;
 import android.provider.Settings;
 import android.text.InputType;
@@ -345,26 +343,6 @@ public class InputMethodService extends AbstractInputMethodService {
     static final boolean DEBUG = false;
 
     /**
-     * Key for a boolean value that tells whether {@link InputMethodService} is responsible for
-     * rendering the back button and the IME switcher button or not when the gestural navigation is
-     * enabled.
-     *
-     * <p>This sysprop is just ignored when the gestural navigation mode is not enabled.</p>
-     *
-     * <p>
-     * To avoid complexity that is not necessary for production, you always need to reboot the
-     * device after modifying this flag as follows:
-     * <pre>
-     * $ adb root
-     * $ adb shell setprop persist.sys.ime.can_render_gestural_nav_buttons true
-     * $ adb reboot
-     * </pre>
-     * </p>
-     */
-    private static final String PROP_CAN_RENDER_GESTURAL_NAV_BUTTONS =
-            "persist.sys.ime.can_render_gestural_nav_buttons";
-
-    /**
      * Number of {@link MotionEvent} to buffer if IME is not ready with Ink view.
      * This number may be configured eventually based on device's touch sampling frequency.
      */
@@ -412,32 +390,6 @@ public class InputMethodService extends AbstractInputMethodService {
      * {@link #setStylusHandwritingRegion(Region)}.
      */
     private Region mLastHandwritingRegion;
-
-    /**
-     * Returns whether {@link InputMethodService} is responsible for rendering the back button and
-     * the IME switcher button or not when the gestural navigation is enabled.
-     *
-     * <p>This method is supposed to be used with an assumption that the same value is returned in
-     * other processes. It is developers' responsibility for rebooting the device when the sysprop
-     * is modified.</p>
-     *
-     * @return {@code true} if {@link InputMethodService} is responsible for rendering the back
-     * button and the IME switcher button when the gestural navigation is enabled.
-     *
-     * @hide
-     */
-    @AnyThread
-    public static boolean canImeRenderGesturalNavButtons() {
-        if (Flags.disallowDisablingImeNavigationBar()) {
-            return true;
-        }
-        return SystemProperties.getBoolean(PROP_CAN_RENDER_GESTURAL_NAV_BUTTONS, true);
-    }
-
-    /**
-     * Cached value of {@link #canImeRenderGesturalNavButtons}, as it doesn't change at runtime.
-     */
-    private final boolean mCanImeRenderGesturalNavButtons = canImeRenderGesturalNavButtons();
 
     /**
      * Allows the system to optimize the back button affordance based on the presence of software
@@ -568,9 +520,6 @@ public class InputMethodService extends AbstractInputMethodService {
     @NonNull
     private final NavigationBarController mNavigationBarController =
             new NavigationBarController(this);
-
-    /** Whether a custom IME Switcher button was requested to be visible. */
-    private boolean mCustomImeSwitcherButtonRequestedVisible;
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     int mTheme = 0;
@@ -924,20 +873,6 @@ public class InputMethodService extends AbstractInputMethodService {
         @Override
         public void onNavButtonFlagsChanged(@InputMethodNavButtonFlags int navButtonFlags) {
             mNavigationBarController.onNavButtonFlagsChanged(navButtonFlags);
-            if (!mCanImeRenderGesturalNavButtons) {
-                final boolean showImeSwitcher = (navButtonFlags
-                        & InputMethodNavButtonFlags.SHOW_IME_SWITCHER_WHEN_IME_IS_SHOWN) != 0;
-                // The IME cannot draw the IME nav bar, so this will never be visible. In this case
-                // the system nav bar hosts the IME buttons.
-                // The system nav bar will be hidden when the IME is shown and the config is set.
-                final boolean navBarNotVisible = getApplicationContext().getResources()
-                        .getBoolean(com.android.internal.R.bool.config_hideNavBarForKeyboard);
-                final boolean visible = showImeSwitcher && navBarNotVisible;
-                if (visible != mCustomImeSwitcherButtonRequestedVisible) {
-                    mCustomImeSwitcherButtonRequestedVisible = visible;
-                    onCustomImeSwitcherButtonRequestedVisible(visible);
-                }
-            }
         }
 
         /**
@@ -4705,8 +4640,6 @@ public class InputMethodService extends AbstractInputMethodService {
                 + " touchableRegion=" + mTmpInsets.touchableRegion);
         p.println("  mSettingsObserver=" + mSettingsObserver);
         p.println("  mNavigationBarController=" + mNavigationBarController.toDebugString());
-        p.println("  mCustomImeSwitcherButtonRequestedVisible="
-                + mCustomImeSwitcherButtonRequestedVisible);
     }
 
     private final ImeTracing.ServiceDumper mDumper = new ImeTracing.ServiceDumper() {
