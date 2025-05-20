@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shade.data.repository
+package com.android.systemui.clock.data.repository
 
 import android.app.AlarmManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -30,17 +30,16 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ShadeHeaderClockRepositoryTest : SysuiTestCase() {
+class ClockRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val nextAlarmController = kosmos.nextAlarmController
 
-    val underTest = kosmos.shadeHeaderClockRepository
+    val underTest = kosmos.clockRepository
 
     @Test
     fun nextAlarmIntent_updates() =
