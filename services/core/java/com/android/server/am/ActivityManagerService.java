@@ -2656,6 +2656,29 @@ public class ActivityManagerService extends IActivityManager.Stub
         return true;
     }
 
+    /**
+     * Returns true if the package has a restricted set of associations.
+     */
+    boolean hasRestrictedAssociations(String pkg) {
+        ensureAllowedAssociations();
+        // Check for associations on the target package
+        PackageAssociationInfo pai = mAllowedAssociations.get(pkg);
+        if (pai == null) {
+            // if there is no package association info then the package is allowed association
+            // with any package
+            return false;
+        }
+        final ArraySet<String> allowedAssociations = pai.getAllowedPackageAssociations();
+        if (allowedAssociations == null || allowedAssociations.size() == 0) {
+            // if there is are no allowed associations then the package is allowed association
+            // with any package
+            return false;
+        }
+        // one or more allowed associations was found, therefore the package is restricted.
+        return true;
+    }
+
+
     /** Sets up allowed associations for system prebuilt packages from system config (if needed). */
     private void ensureAllowedAssociations() {
         if (mAllowedAssociations == null) {

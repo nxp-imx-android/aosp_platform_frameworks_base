@@ -4732,12 +4732,21 @@ public final class ActiveServices {
     // TODO(b/265746493): Special case for HotwordDetectionService,
     // VisualQueryDetectionService, WearableSensingService and OnDeviceSandboxedInferenceService
     // Need a cleaner way to append this seInfo.
-    private String generateAdditionalSeInfoFromService(Intent service) {
-        if (service != null && service.getAction() != null
-                && (service.getAction().equals(HotwordDetectionService.SERVICE_INTERFACE)
-                || service.getAction().equals(VisualQueryDetectionService.SERVICE_INTERFACE)
-                || service.getAction().equals(WearableSensingService.SERVICE_INTERFACE)
-            || service.getAction().equals(OnDeviceSandboxedInferenceService.SERVICE_INTERFACE))) {
+    private String generateAdditionalSeInfoFromService(Intent service, String packageName) {
+        if (service == null || service.getAction() == null) {
+            return "";
+        }
+        final String action = service.getAction();
+        if (action.equals(HotwordDetectionService.SERVICE_INTERFACE)
+                || action.equals(VisualQueryDetectionService.SERVICE_INTERFACE)
+                || action.equals(OnDeviceSandboxedInferenceService.SERVICE_INTERFACE)) {
+            return ":isolatedComputeApp";
+        }
+
+        // WearableSensingService needs additional SeInfo unless it is restricted at the package
+        // level via allow-association restrictions.
+        if (action.equals(WearableSensingService.SERVICE_INTERFACE)
+                && !mAm.hasRestrictedAssociations(packageName)) {
             return ":isolatedComputeApp";
         }
         return "";
@@ -4879,7 +4888,7 @@ public final class ActiveServices {
                 r.mRecentCallingPackage = callingPackage;
                 r.mRecentCallingUid = callingUid;
             }
-            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service);
+            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r.packageName);
             return new ServiceLookupResult(r, resolution.getAlias());
         }
 
@@ -5134,7 +5143,8 @@ public final class ActiveServices {
                     return null;
                 }
             }
-            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service);
+
+            r.appInfo.seInfo += generateAdditionalSeInfoFromService(service, r.packageName);
             return new ServiceLookupResult(r, resolution.getAlias());
         }
         return null;
