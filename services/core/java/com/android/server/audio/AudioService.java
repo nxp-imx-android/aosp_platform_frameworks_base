@@ -539,6 +539,8 @@ public class AudioService extends IAudioService.Stub
      **/
     private SparseArray<VolumeStreamState> mStreamStates;
 
+    private final AtomicBoolean mStreamStatesCreated = new AtomicBoolean(false);
+
     /**
      * @see InputDeviceVolumeHelper
      */
@@ -565,6 +567,10 @@ public class AudioService extends IAudioService.Stub
      */
     @Nullable
     /*package*/ VolumeStreamState getVssForStream(int stream) {
+        if (!mStreamStatesCreated.get()) {
+            Slog.e(TAG, "VSS not created!");
+            return null;
+        }
         return mStreamStates.get(stream);
     }
 
@@ -2303,6 +2309,14 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void onReinitVolumes(@NonNull String caller) {
+        if (!mSystemReady || !mStreamStatesCreated.get()) {
+            Slog.e(TAG, "Stream states not ready, retry onReinitVolumes()");
+            sLifecycleLogger.enqueue(new EventLogger.StringEvent("onReinitVolumes() retry"));
+            sendMsg(mAudioHandler, MSG_REINIT_VOLUMES, SENDMSG_REPLACE, 0, 0,
+                    null, 500);
+            return;
+        }
+
         final int numStreamTypes = AudioSystem.getNumStreamTypes();
         // keep track of any error during stream volume initialization
         int status = AudioSystem.AUDIO_STATUS_OK;
@@ -2696,6 +2710,7 @@ public class AudioService extends IAudioService.Stub
                         new VolumeStreamState(System.VOLUME_SETTINGS_INT[streamAlias], i));
             }
         }
+        mStreamStatesCreated.set(true);
 
         checkAllFixedVolumeDevices();
         checkAllAliasStreamVolumes();
