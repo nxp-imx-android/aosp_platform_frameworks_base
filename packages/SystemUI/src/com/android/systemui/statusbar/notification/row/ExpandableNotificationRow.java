@@ -1366,12 +1366,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             setUserExpanded(true);
         }
 
-        // With row transparency, when the shade is expanded while a HUN is pinned,
-        // that HUN will become unpinned, so it must update its bg (opaque --> transparent)
-        if (notificationRowTransparency() && !isPinned()) {
-            updateBackgroundColors();
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
         }
-
         setChronometerRunning(mLastChronometerRunning);
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
@@ -1937,6 +1934,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
+        }
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
         }
     }
 
@@ -4809,6 +4809,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Row background should be opaque when it's displayed as a heads-up notification or
         // displayed on keyguard.
         // Also, for an unpinned HUN on the unlocked shade, the row bg should be transparent.
-        return (super.usesTransparentBackground() && !isPinned() && !mOnKeyguard);
+        return super.usesTransparentBackground()
+                && !mustStayOnScreen()
+                && !mHeadsupDisappearRunning
+                && !mOnKeyguard;
     }
 }
