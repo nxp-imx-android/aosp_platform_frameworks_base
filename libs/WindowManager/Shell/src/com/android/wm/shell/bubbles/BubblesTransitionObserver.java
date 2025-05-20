@@ -72,7 +72,9 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             @NonNull SurfaceControl.Transaction finishTransaction) {
         collapseBubbleIfNeeded(info);
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            removeBubbleIfLaunchingToSplit(info);
+            if (TransitionUtil.isOpeningType(info.getType()) && mBubbleData.hasBubbles()) {
+                removeBubbleIfLaunchingToSplit(info);
+            }
         }
     }
 

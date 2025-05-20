@@ -68,6 +68,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
     private val bubbleData = mock<BubbleData> {
         on { isExpanded } doReturn true
         on { selectedBubble } doReturn bubble
+        on { hasBubbles() } doReturn true
     }
     private val bubbleController = mock<BubbleController> {
         on { isStackAnimating } doReturn false
