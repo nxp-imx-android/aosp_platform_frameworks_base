@@ -3057,6 +3057,29 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals("reason1", condition1.mAlternate);
     }
 
+    @Test
+    public void testCommonAncestor_excludeOrderOnlyDisplay() {
+        DisplayContent otherDisplay = createNewDisplay();
+
+        final Task display0Task = createTask(mDisplayContent);
+        final Task display1Task = createTask(otherDisplay);
+        display0Task.setVisibleRequested(true);
+        display1Task.setVisibleRequested(true);
+
+        // Build target-list as-if originally task 0 was focused/front and then the user focused
+        // task 1 (bringing it and display 1 to front).
+        final ArrayList<Transition.ChangeInfo> sortedTargets = new ArrayList<>();
+        sortedTargets.add(
+                new Transition.ChangeInfo(display1Task, true /* vis */, false /* exChg */));
+        sortedTargets.getLast().mFlags |= Transition.ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP;
+        sortedTargets.add(
+                new Transition.ChangeInfo(otherDisplay, true /* vis */, false /* exChg */));
+        sortedTargets.getLast().mFlags |= Transition.ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP;
+
+        WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, display1Task);
+        assertTrue(ancestor.isDescendantOf(otherDisplay.getParent()));
+    }
+
     private void tryFinishTransitionSyncSet(Transition transition) {
         transition.setAllReady();
         transition.start();

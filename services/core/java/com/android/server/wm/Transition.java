@@ -3312,6 +3312,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
     }
 
+    /** Mirrors {@link com.android.wm.shell.shared.TransitionUtil#isOrderOnly}. */
+    private static boolean isOrderOnly(ChangeInfo chgInfo) {
+        final WindowContainer wc = chgInfo.mContainer;
+        return (chgInfo.mFlags & ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP) != 0
+                    && chgInfo.getTransitMode(wc) == TRANSIT_CHANGE
+                    && wc.getBounds().equals(chgInfo.mAbsoluteBounds);
+    }
+
     /**
      * Finds the top-most common ancestor of app targets.
      *
@@ -3319,8 +3327,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      * be covered by other windows below the previous parent. For example, when reparenting an
      * activity from PiP Task to split screen Task.
      */
+    @VisibleForTesting
     @NonNull
-    private static WindowContainer<?> findCommonAncestor(
+    static WindowContainer<?> findCommonAncestor(
             @NonNull ArrayList<ChangeInfo> targets,
             @NonNull WindowContainer<?> topApp) {
         final int displayId = getDisplayId(topApp);
@@ -3332,6 +3341,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             final WindowContainer wc = change.mContainer;
             if (isWallpaper(wc) || getDisplayId(wc) != displayId) {
                 // Skip the non-app window or windows on a different display
+                continue;
+            }
+            // Skip order-only display-level changes since the display itself isn't changing.
+            if (wc.asDisplayContent() != null && isOrderOnly(change)) {
                 continue;
             }
             // Re-initiate the last parent as the initial ancestor instead of the top target.
@@ -3592,7 +3605,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         private static final int FLAG_CHANGE_YES_ANIMATION = 0x10;
 
         /** Whether this change's container moved to the top. */
-        private static final int FLAG_CHANGE_MOVED_TO_TOP = 0x20;
+        @VisibleForTesting
+        static final int FLAG_CHANGE_MOVED_TO_TOP = 0x20;
 
         /** Whether this change contains config-at-end members. */
         private static final int FLAG_CHANGE_CONFIG_AT_END = 0x40;

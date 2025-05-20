@@ -32,6 +32,7 @@ import static android.view.WindowManager.fixScale;
 import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
+import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
@@ -667,6 +668,10 @@ public class Transitions implements RemoteCallable<Transitions>,
 
             // Don't reparent anything that isn't independent within its parents
             if (!TransitionInfo.isIndependent(change, info)) {
+                continue;
+            }
+            // Don't reparent display level if only changing order (since root will be inside it).
+            if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)) {
                 continue;
             }
 
