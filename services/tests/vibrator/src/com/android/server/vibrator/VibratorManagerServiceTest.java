@@ -809,7 +809,6 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.os.vibrator.Flags.FLAG_CANCEL_BY_APPOPS)
     public void vibrate_thenDeniedAppOps_getsCancelled() throws Throwable {
         mockVibrators(1);
         VibratorManagerService service = createSystemReadyService();

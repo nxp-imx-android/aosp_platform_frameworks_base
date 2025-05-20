@@ -287,9 +287,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         mBatteryStatsService = injector.getBatteryStatsService();
 
         mAppOps = mContext.getSystemService(AppOpsManager.class);
-        if (Flags.cancelByAppops()) {
-            mAppOps.startWatchingMode(AppOpsManager.OP_VIBRATE, null, mAppOpsChangeListener);
-        }
+        mAppOps.startWatchingMode(AppOpsManager.OP_VIBRATE, null, mAppOpsChangeListener);
 
         PowerManager pm = context.getSystemService(PowerManager.class);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "*vibrator*");
