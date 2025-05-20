@@ -1,0 +1,21 @@
+package {
+    default_applicable_licenses: ["frameworks_base_license"],
+}
+
+android_app {
+    name: "SettingsLibGraphShell",
+    platform_apis: true,
+}
+
+android_robolectric_test {
+    name: "SettingsLibGraphTest",
+    srcs: ["src/**/*.kt"],
+    static_libs: [
+        "SettingsLibGraph",
+        "androidx.test.ext.junit",
+        "truth",
+    ],
+    instrumentation_for: "SettingsLibGraphShell",
+    coverage_libs: ["SettingsLibGraph"],
+    upstream: true,
+}

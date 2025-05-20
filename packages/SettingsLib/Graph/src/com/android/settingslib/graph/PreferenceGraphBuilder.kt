@@ -319,18 +319,23 @@ private constructor(
         metadata: PreferenceMetadata,
         isRoot: Boolean,
     ) =
-        metadata
-            .toProto(context, callingPid, callingUid, screenMetadata, isRoot, request.flags)
-            .also {
-                if (metadata is PreferenceScreenMetadata) {
-                    @Suppress("CheckReturnValue") addPreferenceScreen(metadata)
-                }
-                metadata.intent(context)?.resolveActivity(context.packageManager)?.let {
-                    if (it.packageName == context.packageName) {
-                        add(it.className)
+        try {
+            metadata
+                .toProto(context, callingPid, callingUid, screenMetadata, isRoot, request.flags)
+                .also {
+                    if (metadata is PreferenceScreenMetadata) {
+                        @Suppress("CheckReturnValue") addPreferenceScreen(metadata)
+                    }
+                    metadata.intent(context)?.resolveActivity(context.packageManager)?.let {
+                        if (it.packageName == context.packageName) {
+                            add(it.className)
+                        }
                     }
                 }
-            }
+        } catch (e: RuntimeException) {
+            Log.e(TAG, "Fail to convert $screenMetadata $metadata", e)
+            throw e
+        }
 
     private suspend fun String?.toActionTarget(extras: Bundle?): ActionTarget? {
         if (this.isNullOrEmpty()) return null
