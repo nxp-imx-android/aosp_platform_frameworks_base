@@ -42,9 +42,11 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
+import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.PendingIntent;
+import android.content.AttributionSource;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.Intent;
@@ -61,6 +63,7 @@ import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.permission.PermissionManager;
 import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Slog;
@@ -156,7 +159,13 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                 || service.mContext.checkCallingOrSelfPermission(HIDE_OVERLAY_WINDOWS)
                 == PERMISSION_GRANTED;
         mCanCreateSystemApplicationOverlay =
-                service.mContext.checkCallingOrSelfPermission(SYSTEM_APPLICATION_OVERLAY)
+                com.android.media.projection.flags.Flags.recordingOverlay()
+                ? service.mContext.getSystemService(
+                        PermissionManager.class).checkPermissionForPreflight(
+                        Manifest.permission.SYSTEM_APPLICATION_OVERLAY,
+                        new AttributionSource(mUid, mPackageName, null))
+                        == PermissionManager.PERMISSION_GRANTED
+                : service.mContext.checkCallingOrSelfPermission(SYSTEM_APPLICATION_OVERLAY)
                         == PERMISSION_GRANTED;
         mCanStartTasksFromRecents = service.mContext.checkCallingOrSelfPermission(
                 START_TASKS_FROM_RECENTS) == PERMISSION_GRANTED;

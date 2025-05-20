@@ -99,8 +99,10 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INSET_PARENT_
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPTIMIZE_MEASURE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OVERRIDE_LAYOUT_IN_DISPLAY_CUTOUT_MODE;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_ADDITIONAL;
@@ -149,6 +151,7 @@ import android.annotation.Size;
 import android.annotation.UiContext;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
+import android.app.AppOpsManager;
 import android.app.ResourcesManager;
 import android.app.UiModeManager;
 import android.app.UiModeManager.ForceInvertStateChangeListener;
@@ -1594,6 +1597,14 @@ public final class ViewRootImpl implements ViewParent,
                     mWindowAttributes.privateFlags |= PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED;
                 }
 
+                // TODO(b/395054309): Replace with calls to LayoutParams#setSystemApplicationOverlay
+                //  in next API bump
+                if (com.android.media.projection.flags.Flags.recordingOverlay()
+                        && mWindowAttributes.type == TYPE_APPLICATION_OVERLAY
+                        && hasSystemApplicationOverlayAppOp()) {
+                    mWindowAttributes.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+                }
+
                 try {
                     mOrigWindowType = mWindowAttributes.type;
                     mAttachInfo.mRecomputeGlobalAttributes = true;
@@ -2143,6 +2154,13 @@ public final class ViewRootImpl implements ViewParent,
             // Calling this before copying prevents redundant LAYOUT_CHANGED.
             final int layoutInDisplayCutoutModeFromCaller = adjustLayoutInDisplayCutoutMode(attrs);
 
+            // Keep PRIVATE_FLAG_SYSTEM_APPLICATION overlay if AppOp is granted
+            // TODO(b/395054309): Replace with calls to LayoutParams#setSystemApplicationOverlay
+            //  in next API bump
+            if (shouldKeepSystemApplicationOverlay(mWindowAttributes, attrs)) {
+                attrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+            }
+
             final int changes = mWindowAttributes.copyFrom(attrs);
             if ((changes & WindowManager.LayoutParams.TRANSLUCENT_FLAGS_CHANGED) != 0) {
                 // Recompute system ui visibility.
@@ -2202,6 +2220,35 @@ public final class ViewRootImpl implements ViewParent,
             scheduleTraversals();
             setAccessibilityWindowAttributesIfNeeded();
         }
+    }
+
+    private boolean shouldKeepSystemApplicationOverlay(WindowManager.LayoutParams current,
+            WindowManager.LayoutParams incoming) {
+        if (!com.android.media.projection.flags.Flags.recordingOverlay()) {
+            return false;
+        }
+        final boolean hasSystemApplicationOverlay =
+                (current.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0;
+        if (!hasSystemApplicationOverlay) {
+            return false;
+        }
+
+        if ((incoming.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0) {
+            return false;
+        }
+
+        if (!hasSystemApplicationOverlayAppOp()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean hasSystemApplicationOverlayAppOp() {
+        return mContext.getSystemService(AppOpsManager.class).checkOpRawNoThrow(
+                AppOpsManager.OPSTR_SYSTEM_APPLICATION_OVERLAY,
+                mView.mContext.getAttributionSource().getUid(),
+                mView.mContext.getPackageName(), null) == AppOpsManager.MODE_ALLOWED;
     }
 
     private int adjustLayoutInDisplayCutoutMode(WindowManager.LayoutParams attrs) {

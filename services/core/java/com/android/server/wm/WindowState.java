@@ -1140,11 +1140,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     boolean isWindowTrustedOverlay() {
-        return InputMonitor.isTrustedOverlay(mAttrs.type)
-                || ((mAttrs.privateFlags & PRIVATE_FLAG_TRUSTED_OVERLAY) != 0
-                        && mSession.mCanAddInternalSystemWindow)
-                || ((mAttrs.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0
-                        && mSession.mCanCreateSystemApplicationOverlay);
+        if (InputMonitor.isTrustedOverlay(mAttrs.type)) {
+            return true;
+        }
+        if (((mAttrs.privateFlags & PRIVATE_FLAG_TRUSTED_OVERLAY) != 0
+                && mSession.mCanAddInternalSystemWindow)) {
+            return true;
+        }
+        if (((mAttrs.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0
+                && mSession.mCanCreateSystemApplicationOverlay)) {
+            return true;
+        }
+        return false;
     }
 
     int getTouchOcclusionMode() {
