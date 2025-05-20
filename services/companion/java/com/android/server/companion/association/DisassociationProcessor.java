@@ -30,6 +30,7 @@ import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.companion.AssociationInfo;
+import android.companion.Flags;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
@@ -167,18 +168,20 @@ public class DisassociationProcessor {
             removeRoleHolderForAssociation(mContext, association.getUserId(),
                     association.getPackageName(), association.getDeviceProfile());
         }
-
-        // Unbind the app if needed.
-        final boolean wasPresent = mDevicePresenceMonitor.isDevicePresent(id);
-        if (!wasPresent || !association.isNotifyOnDeviceNearby()) {
-            return;
-        }
-        final boolean shouldStayBound = any(
-                mAssociationStore.getActiveAssociationsByPackage(userId, packageName),
-                it -> it.isNotifyOnDeviceNearby()
-                        && mDevicePresenceMonitor.isDevicePresent(it.getId()));
-        if (!shouldStayBound) {
-            mCompanionAppController.unbindCompanionApp(userId, packageName);
+        // Handle unbind in DevicePresenceProcessor instead.
+        if (!Flags.notifyAssociationRemoved()) {
+            // Unbind the app if needed.
+            final boolean wasPresent = mDevicePresenceMonitor.isDevicePresent(id);
+            if (!wasPresent || !association.isNotifyOnDeviceNearby()) {
+                return;
+            }
+            final boolean shouldStayBound = any(
+                    mAssociationStore.getActiveAssociationsByPackage(userId, packageName),
+                    it -> it.isNotifyOnDeviceNearby()
+                            && mDevicePresenceMonitor.isDevicePresent(it.getId()));
+            if (!shouldStayBound) {
+                mCompanionAppController.unbindCompanionApp(userId, packageName);
+            }
         }
     }
 
