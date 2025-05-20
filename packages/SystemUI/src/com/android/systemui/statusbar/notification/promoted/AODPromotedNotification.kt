@@ -120,7 +120,7 @@ fun AODPromotedNotificationView(
 
     val boxModifier = modifier.padding(sidePaddingValues)
 
-    val borderStroke = BorderStroke(1.dp, SecondaryText.brush)
+    val borderStroke = BorderStroke(0.5.dp, SecondaryText.brush.value.copy(alpha = 0.32f))
 
     val borderRadius = dimensionResource(systemuiR.dimen.notification_corner_radius)
     val borderShape = RoundedCornerShape(borderRadius)
