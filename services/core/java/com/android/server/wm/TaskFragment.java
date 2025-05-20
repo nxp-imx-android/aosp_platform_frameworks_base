@@ -2528,8 +2528,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                         && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
                     final Task task = getTask();
                     if (task != null) {
-                        // TODO(b/407669465): Update isAppBubble usage once migrated.
-                        shouldUseTaskBounds |= task.getTaskInfo().isAppBubble;
+                        // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
+                        shouldUseTaskBounds |= task.mLaunchNextToBubble;
                     }
                 }
                 if (shouldUseTaskBounds && !inPipTransition) {
