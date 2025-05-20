@@ -127,7 +127,21 @@ class ApiDumper(
         }
 
         // Use heuristics to override the label.
-        if (!mn.isPublic() || mn.isAbstract()) {
+        if (!mn.isPublic()) {
+            return StatsLabel.SupportedButBoring
+        }
+
+        // If the policy is "not supported" but the statsLabel explicitly says "supported"
+        // then that's "throw-but-supported". In that case, let's not mark it as "boring"
+        // even if it's abstract, and show it. (if the statsLabel doesn't say "supported",
+        // we'd be returning earlier already.)
+        if (!methodPolicy.policy.isSupported) {
+            return StatsLabel.Supported
+        }
+
+        if (mn.isAbstract()) {
+            // An abstract method is normally boring -- but if it's a throw-but-interesting,
+            // that's actually not boring.
             return StatsLabel.SupportedButBoring
         }
 
