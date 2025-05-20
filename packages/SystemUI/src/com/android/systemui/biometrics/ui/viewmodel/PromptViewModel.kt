@@ -27,6 +27,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.biometrics.BiometricFingerprintConstants
 import android.hardware.biometrics.BiometricPrompt
+import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentView
 import android.os.UserHandle
 import android.text.TextPaint
@@ -41,7 +42,6 @@ import com.android.launcher3.icons.IconProvider
 import com.android.systemui.Flags.msdlFeedback
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.biometrics.UdfpsUtils
-import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.Utils.isSystem
 import com.android.systemui.biometrics.domain.interactor.BiometricStatusInteractor
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
@@ -89,7 +89,11 @@ constructor(
     private val activityTaskManager: ActivityTaskManager,
     private val accessibilityInteractor: AccessibilityInteractor,
     accessibilityManager: AccessibilityManager,
+    private val promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
 ) {
+    /** Viewmodel for the fallback view */
+    val promptFallbackViewModel = promptFallbackViewModelFactory.create()
+
     // When a11y enabled, increase message delay to ensure messages get read
     private val messageDelay =
         accessibilityManager
@@ -227,9 +231,19 @@ constructor(
     /** Whether the sensor icon on biometric prompt ui should be hidden. */
     val hideSensorIcon: Flow<Boolean> = modalities.map { it.isEmpty }.distinctUntilChanged()
 
+    /** If one fallback option set, use as the negative button */
+    val usingFallbackAsNegative: Flow<Boolean> =
+        promptSelectorInteractor.prompt.map {
+            Flags.bpFallbackOptions() && it?.fallbackOptions?.size == 1
+        }
+
     /** The label to use for the cancel button. */
     val negativeButtonText: Flow<String> =
-        promptSelectorInteractor.prompt.map { it?.negativeButtonText ?: "" }
+        promptSelectorInteractor.prompt.map {
+            if (Flags.bpFallbackOptions() && it?.fallbackOptions?.size == 1)
+                it.fallbackOptions[0].text.toString()
+            else it?.negativeButtonText ?: ""
+        }
 
     private val _message: MutableStateFlow<PromptMessage> = MutableStateFlow(PromptMessage.Empty)
 
@@ -263,6 +277,10 @@ constructor(
             hasFingerBeenAcquired || overlayTouched
         }
 
+    private val _fallbackShowing: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    /** Whether the fallback options screen is currently showing, auth view if false */
+    val fallbackShowing: Flow<Boolean> = _fallbackShowing.asStateFlow()
+
     private val _forceLargeSize = MutableStateFlow(false)
     private val _forceMediumSize = MutableStateFlow(false)
 
@@ -280,11 +298,13 @@ constructor(
                 promptKind,
                 displayStateInteractor.isLargeScreen,
                 displayStateInteractor.currentRotation,
+                fallbackShowing,
                 modalities,
-            ) { forceLarge, promptKind, isLargeScreen, rotation, modalities ->
+            ) { forceLarge, promptKind, isLargeScreen, rotation, fallbackShowing, modalities ->
                 when {
                     forceLarge ||
                         isLargeScreen ||
+                        fallbackShowing ||
                         promptKind.isOnePaneNoSensorLandscapeBiometric() -> PromptPosition.Bottom
                     rotation == DisplayRotation.ROTATION_90 -> PromptPosition.Right
                     rotation == DisplayRotation.ROTATION_270 -> PromptPosition.Left
@@ -469,23 +489,6 @@ constructor(
             }
         }
 
-    /** Padding for prompt UI elements */
-    val promptPadding: Flow<Rect> =
-        combine(size, displayStateInteractor.currentRotation) { size, rotation ->
-            if (size != PromptSize.LARGE) {
-                val navBarInsets = Utils.getNavbarInsets(context)
-                if (rotation == DisplayRotation.ROTATION_90) {
-                    Rect(0, 0, navBarInsets.right, 0)
-                } else if (rotation == DisplayRotation.ROTATION_270) {
-                    Rect(navBarInsets.left, 0, 0, 0)
-                } else {
-                    Rect(0, 0, 0, navBarInsets.bottom)
-                }
-            } else {
-                Rect(0, 0, 0, 0)
-            }
-        }
-
     /** (logoIcon, logoDescription) for the prompt. */
     val logoInfo: Flow<Pair<Drawable?, String>> =
         promptSelectorInteractor.prompt
@@ -611,14 +614,41 @@ constructor(
     val isIconConfirmButton: Flow<Boolean> =
         combine(modalities, size) { modalities, size -> modalities.hasUdfps && size.isNotSmall }
 
+    private val isIdentityCheckEnabled: Flow<Boolean> =
+        promptSelectorInteractor.isIdentityCheckActive
+
+    val isFallbackButtonVisible: Flow<Boolean> =
+        combine(
+            size,
+            position,
+            isAuthenticated,
+            promptSelectorInteractor.isCredentialAllowed,
+            isIdentityCheckEnabled,
+            promptSelectorInteractor.prompt.map { it?.fallbackOptions?.size ?: 0 },
+        ) { size, _, isAuthenticated, credentialAllowed, identityCheck, fallbackOptionsCount ->
+            if (!Flags.bpFallbackOptions()) {
+                return@combine false
+            }
+
+            size.isNotSmall &&
+                isAuthenticated.isNotAuthenticated &&
+                (if (credentialAllowed && identityCheck) 2 else (if (credentialAllowed) 1 else 0)) +
+                    fallbackOptionsCount >= 2
+        }
+
     /** If the negative button should be shown. */
     val isNegativeButtonVisible: Flow<Boolean> =
-        combine(size, position, isAuthenticated, promptSelectorInteractor.isCredentialAllowed) {
+        combine(
             size,
-            _,
-            authState,
-            credentialAllowed ->
-            size.isNotSmall && authState.isNotAuthenticated && !credentialAllowed
+            position,
+            isAuthenticated,
+            isFallbackButtonVisible,
+            promptSelectorInteractor.isCredentialAllowed,
+        ) { size, _, authState, fallbackVisible, credentialAllowed ->
+            size.isNotSmall &&
+                authState.isNotAuthenticated &&
+                !credentialAllowed &&
+                !fallbackVisible
         }
 
     /** If the cancel button should be shown (. */
@@ -655,12 +685,14 @@ constructor(
 
     /** If the credential fallback button show be shown. */
     val isCredentialButtonVisible: Flow<Boolean> =
-        combine(size, position, isAuthenticated, promptSelectorInteractor.isCredentialAllowed) {
+        combine(
             size,
-            _,
-            authState,
-            credentialAllowed ->
-            size.isMedium && authState.isNotAuthenticated && credentialAllowed
+            position,
+            isAuthenticated,
+            promptSelectorInteractor.isCredentialAllowed,
+            isFallbackButtonVisible,
+        ) { size, _, authState, credentialAllowed, fallbackVisible ->
+            size.isMedium && authState.isNotAuthenticated && credentialAllowed && !fallbackVisible
         }
 
     private val history = PromptHistoryImpl()
@@ -900,6 +932,20 @@ constructor(
     fun onSwitchToCredential() {
         _forceLargeSize.value = true
         promptSelectorInteractor.onSwitchToCredential()
+    }
+
+    /** Switch to the fallback view. */
+    fun onSwitchToFallback() {
+        if (Flags.bpFallbackOptions()) {
+            _fallbackShowing.value = true
+        }
+    }
+
+    /** Switch to the auth view. */
+    fun onSwitchToAuth() {
+        if (Flags.bpFallbackOptions()) {
+            _fallbackShowing.value = false
+        }
     }
 
     private fun vibrateOnSuccess() {

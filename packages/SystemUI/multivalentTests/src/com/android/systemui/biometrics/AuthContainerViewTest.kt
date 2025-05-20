@@ -22,6 +22,7 @@ import android.hardware.biometrics.BiometricAuthenticator
 import android.hardware.biometrics.BiometricConstants
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricPrompt
+import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
@@ -30,6 +31,8 @@ import android.hardware.fingerprint.FingerprintSensorPropertiesInternal
 import android.os.IBinder
 import android.os.UserManager
 import android.os.userManager
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.testing.ViewUtils
@@ -46,6 +49,7 @@ import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.domain.interactor.promptSelectorInteractor
 import com.android.systemui.biometrics.ui.viewmodel.credentialViewModel
+import com.android.systemui.biometrics.ui.viewmodel.fallbackViewModelFactory
 import com.android.systemui.biometrics.ui.viewmodel.promptViewModel
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.haptics.msdl.msdlPlayer
@@ -63,11 +67,11 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyLong
-import org.mockito.Mockito.eq
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -178,6 +182,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     fun testIgnoresAnimatedInWhenDialogAnimatingOut() {
         val container = initializeFingerprintContainer(addToView = false)
         container.mContainerState = 4 // STATE_ANIMATING_OUT
@@ -266,6 +271,24 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    fun testActionFallbackOption_sendsFallbackOption() {
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
+            )
+        container.mBiometricCallback.onFallbackOptionPressed(0)
+        waitForIdleSync()
+
+        verify(callback)
+            .onDismissed(
+                eq(BiometricPrompt.DISMISSED_REASON_FALLBACK_OPTION_BASE),
+                eq<ByteArray?>(null),
+                eq(authContainer?.requestId ?: 0L),
+            )
+    }
+
+    @Test
     fun testActionError_sendsDismissedError() {
         val container = initializeFingerprintContainer()
         container.mBiometricCallback.onError()
@@ -297,6 +320,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     fun testAnimateToCredentialUI_invokesStartTransitionToCredentialUI() {
         val container =
             initializeFingerprintContainer(
@@ -318,6 +342,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     fun testAnimateToCredentialUI_rotateCredentialUI() {
         val container =
             initializeFingerprintContainer(
@@ -592,6 +617,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
             kosmos.fakeExecutor,
             kosmos.vibratorHelper,
             kosmos.msdlPlayer,
+            kosmos.fallbackViewModelFactory,
         ) {
         override fun postOnAnimation(runnable: Runnable) {
             runnable.run()

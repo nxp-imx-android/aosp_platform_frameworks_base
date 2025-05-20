@@ -44,6 +44,7 @@ val Kosmos.promptViewModel by Fixture {
         activityTaskManager = activityTaskManager,
         accessibilityInteractor = accessibilityInteractor,
         accessibilityManager = accessibilityManager,
+        promptFallbackViewModelFactory = promptFallbackViewModelFactory,
     )
 }
 

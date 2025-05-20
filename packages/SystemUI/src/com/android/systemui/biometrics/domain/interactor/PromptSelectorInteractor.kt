@@ -16,6 +16,7 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
+import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptInfo
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.biometrics.Utils
@@ -29,6 +30,8 @@ import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.biometrics.shared.model.FallbackOptionModel
+import com.android.systemui.biometrics.shared.model.IconType
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import javax.inject.Inject
@@ -59,6 +62,12 @@ interface PromptSelectorInteractor {
 
     /** If using a credential is allowed. */
     val isCredentialAllowed: Flow<Boolean>
+
+    /** If Identity Check is active */
+    val isIdentityCheckActive: Flow<Boolean>
+
+    /** List of fallback options provided by prompt caller */
+    val fallbackOptions: Flow<List<FallbackOptionModel>>
 
     /**
      * The kind of credential the user may use as a fallback or [PromptKind.None] if unknown or not
@@ -148,8 +157,30 @@ constructor(
 
     override val isCredentialAllowed: Flow<Boolean> =
         promptRepository.promptInfo
-            .map { info -> if (info != null) isDeviceCredentialAllowed(info) else false }
+            .map { info ->
+                if (Flags.bpFallbackOptions()) {
+                    info?.isDeviceCredentialAllowed ?: false
+                } else if (info != null) {
+                    isDeviceCredentialAllowed(info)
+                } else {
+                    false
+                }
+            }
             .distinctUntilChanged()
+
+    override val isIdentityCheckActive: Flow<Boolean> =
+        promptRepository.promptInfo
+            .map { info -> info?.isIdentityCheckActive ?: false }
+            .distinctUntilChanged()
+
+    override val fallbackOptions: Flow<List<FallbackOptionModel>> =
+        prompt.map { prompt ->
+            prompt?.fallbackOptions?.map { fallbackOption ->
+                FallbackOptionModel(
+                    fallbackOption.text,
+                    IconType.entries.first { it.ordinal == fallbackOption.iconType })
+            } ?: emptyList()
+        }
 
     override val credentialKind: Flow<PromptKind> =
         combine(prompt, isCredentialAllowed) { prompt, isAllowed ->

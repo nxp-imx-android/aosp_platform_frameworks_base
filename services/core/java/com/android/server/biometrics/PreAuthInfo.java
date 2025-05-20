@@ -125,6 +125,7 @@ class PreAuthInfo {
             effectiveUserId = userId;
         }
 
+        promptInfo.setDeviceCredentialAllowed(Utils.isCredentialRequested(promptInfo));
         final boolean isMandatoryBiometricsAuthentication =
                 updateAuthenticatorsIfIdentityCheckIsActive(promptInfo, effectiveUserId,
                         trustManager, settingObserver, context);
@@ -188,6 +189,7 @@ class PreAuthInfo {
                 settingObserver.getMandatoryBiometricsEnabledAndRequirementsSatisfiedForUser(
                         effectiveUserId), trustManager)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+            promptInfo.setIdentityCheckActive(true);
             if (promptInfo.getNegativeButtonText() == null) {
                 promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
             }
@@ -196,6 +198,7 @@ class PreAuthInfo {
                 && (promptInfo.getAuthenticators() & BiometricManager.Authenticators.IDENTITY_CHECK)
                 != 0 && settingObserver.isIdentityCheckActive(effectiveUserId)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+            promptInfo.setIdentityCheckActive(true);
             if (promptInfo.getNegativeButtonText() == null) {
                 promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
             }

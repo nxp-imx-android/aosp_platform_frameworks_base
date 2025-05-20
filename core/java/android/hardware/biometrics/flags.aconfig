@@ -17,6 +17,13 @@ flag {
 }
 
 flag {
+  name: "bp_fallback_options"
+  namespace: "biometrics_framework"
+  description: "Adds fallback options UI to biometric prompt"
+  bug: "377774089"
+}
+
+flag {
   name: "get_op_id_crypto_object"
   is_exported: true
   namespace: "biometrics_framework"
