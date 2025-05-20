@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.util.Log
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -28,6 +29,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+
+private const val TAG = "SwipeToDismissInteractor"
 
 /**
  * Handles logic around the swipe to dismiss gesture, where the user swipes up on the dismissable
@@ -53,14 +56,28 @@ constructor(
     val dismissFling: StateFlow<FlingInfo?> =
         shadeRepository.currentFling
             .map { flingInfo ->
-                if (
+                val isDismiss =
                     flingInfo != null &&
                         !flingInfo.expand &&
                         keyguardInteractor.statusBarState.value != StatusBarState.SHADE_LOCKED &&
                         transitionInteractor.startedKeyguardTransitionStep.value.to ==
                             KeyguardState.LOCKSCREEN &&
                         keyguardInteractor.isKeyguardDismissible.value
-                ) {
+
+                // Extra verbose logging to help debug a < 1% test flake that seemingly only repros
+                // in presubmit. We can remove this after that's figured out.
+                Log.d(
+                    TAG,
+                    "Received fling $flingInfo, isDismiss: $isDismiss." +
+                        "expand: ${flingInfo?.expand}, " +
+                        "statusBarState: ${keyguardInteractor.statusBarState.value}, " +
+                        "startedKeyguardTransitionStep: " +
+                        "${transitionInteractor.startedKeyguardTransitionStep.value.to ==
+                        KeyguardState.LOCKSCREEN}, " +
+                        "isKeyguardDismissible: ${keyguardInteractor.isKeyguardDismissible.value}",
+                )
+
+                if (isDismiss) {
                     flingInfo
                 } else {
                     null

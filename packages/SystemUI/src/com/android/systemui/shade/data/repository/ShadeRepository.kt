@@ -16,6 +16,7 @@
 package com.android.systemui.shade.data.repository
 
 import android.annotation.SuppressLint
+import android.util.Log
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import javax.inject.Inject
@@ -312,6 +313,7 @@ class ShadeRepositoryImpl @Inject constructor(@Background val backgroundScope: C
     }
 
     override fun setCurrentFling(info: FlingInfo?) {
+        Log.d(TAG, "setCurrentFling: $info")
         backgroundScope.launch { currentFling.emit(info) }
     }
 
