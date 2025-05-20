@@ -48,7 +48,6 @@ import android.content.Context;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Looper;
 import android.os.UserManager;
-import android.provider.DeviceConfig;
 import android.testing.TestableLooper;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
@@ -214,10 +213,6 @@ public class KeyguardIndicationControllerBaseTest extends SysuiTestCase {
         mTextView = new KeyguardIndicationTextView(mContext);
         mTextView.setAnimationsEnabled(false);
 
-        // TODO(b/259908270): remove
-        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                DevicePolicyManager.ADD_ISFINANCED_DEVICE_FLAG, "true",
-                /* makeDefault= */ false);
         mContext.addMockSystemService(Context.DEVICE_POLICY_SERVICE, mDevicePolicyManager);
         mContext.addMockSystemService(UserManager.class, mUserManager);
         mContext.addMockSystemService(Context.TRUST_SERVICE, mock(TrustManager.class));

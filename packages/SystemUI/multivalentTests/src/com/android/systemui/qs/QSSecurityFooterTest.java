@@ -42,7 +42,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
@@ -124,10 +123,6 @@ public class QSSecurityFooterTest extends SysuiTestCase {
         Looper looper = mTestableLooper.getLooper();
         mShadeDialogContextInteractor = new FakeShadeDialogContextInteractor(mContext);
         Handler mainHandler = new Handler(looper);
-        // TODO(b/259908270): remove
-        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_DEVICE_POLICY_MANAGER,
-                DevicePolicyManager.ADD_ISFINANCED_DEVICE_FLAG, "true",
-                /* makeDefault= */ false);
         when(mUserTracker.getUserInfo()).thenReturn(mock(UserInfo.class));
         mFooterUtils = new QSSecurityFooterUtils(getContext(),
                 getContext().getSystemService(DevicePolicyManager.class), mUserTracker,
