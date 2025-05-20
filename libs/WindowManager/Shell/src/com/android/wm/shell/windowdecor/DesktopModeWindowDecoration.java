@@ -1527,7 +1527,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void createManageWindowsMenu(@NonNull List<Pair<Integer, TaskSnapshot>> snapshotList) {
         final Function1<Integer, Unit> onOpenInstanceListener = (requestedTaskId) -> {
             closeManageWindowsMenu();
-            mWindowDecorationActions.onOpenInstance(mTaskInfo, requestedTaskId);
+            if (mTaskInfo.taskId != requestedTaskId) {
+                mWindowDecorationActions.onOpenInstance(mTaskInfo, requestedTaskId);
+            }
             return Unit.INSTANCE;
         };
         if (mTaskInfo.isFreeform()) {

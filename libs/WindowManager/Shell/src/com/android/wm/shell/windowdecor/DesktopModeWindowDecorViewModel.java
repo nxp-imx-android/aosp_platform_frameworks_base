@@ -850,7 +850,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mBgExecutor.execute(() -> {
             final ArrayList<Pair<Integer, TaskSnapshot>> snapshotList =
                     getTaskSnapshots(decor.mTaskInfo);
-            mMainExecutor.execute(() -> decor.createManageWindowsMenu(snapshotList));
+            if (!snapshotList.isEmpty()) {
+                mMainExecutor.execute(() -> decor.createManageWindowsMenu(snapshotList));
+            }
         });
     }
 
@@ -915,30 +917,30 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     ActivityManager.RECENT_WITH_EXCLUDED,
                     activityManager.getCurrentUser().id);
         } catch (RemoteException e) {
-            throw new RuntimeException(e);
+            ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                    "%s: Error getting recent tasks: %s", TAG, e);
+            return new ArrayList<>();
         }
         final String callerPackageName = callerTaskInfo.baseActivity.getPackageName();
         for (ActivityManager.RecentTaskInfo info : recentTasks) {
-            if (info.taskId == callerTaskInfo.taskId || info.baseActivity == null) continue;
+            if (info.baseActivity == null) continue;
             final String infoPackageName = info.baseActivity.getPackageName();
             if (!infoPackageName.equals(callerPackageName)) {
                 continue;
             }
-            if (info.baseActivity != null) {
-                if (callerPackageName.equals(infoPackageName)) {
-                    // TODO(b/337903443): Fix this returning null for freeform tasks.
-                    try {
-                        TaskSnapshot screenshot = activityTaskManagerService
-                                .getTaskSnapshot(info.taskId, false);
-                        if (screenshot == null) {
-                            screenshot = activityTaskManagerService
-                                    .takeTaskSnapshot(info.taskId, false);
-                        }
-                        snapshotList.add(new Pair(info.taskId, screenshot));
-                    } catch (RemoteException e) {
-                        throw new RuntimeException(e);
-                    }
+            // TODO(b/337903443): Fix this returning null for freeform tasks.
+            try {
+                TaskSnapshot screenshot = activityTaskManagerService
+                        .getTaskSnapshot(info.taskId, false);
+                if (screenshot == null) {
+                    screenshot = activityTaskManagerService
+                            .takeTaskSnapshot(info.taskId, false);
                 }
+                snapshotList.add(new Pair(info.taskId, screenshot));
+            } catch (RemoteException e) {
+                ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                        "%s: Error getting task snapshot for task %d: %s", TAG, info.taskId, e);
+                return new ArrayList<>();
             }
         }
         return snapshotList;
