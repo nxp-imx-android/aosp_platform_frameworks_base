@@ -29,9 +29,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.Flags
-import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
-import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
-import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
@@ -91,42 +88,56 @@ constructor(
         return preferences.getOutwardAnimationDurationMillis()
     }
 
+    private fun setInvocationEffectPreferences(
+        isEnabled: Boolean? = null,
+        inwardsEffectDurationPadding: Long? = null,
+        outwardsEffectDuration: Long? = null,
+    ) {
+
+        preferences.setInvocationEffectConfig(
+            config =
+                InvocationEffectPreferences.Config(
+                    isEnabled = isEnabled ?: preferences.isInvocationEffectEnabledInPreferences(),
+                    inwardsEffectDurationPadding =
+                        inwardsEffectDurationPadding
+                            ?: preferences.getInwardAnimationPaddingDurationMillis(),
+                    outwardsEffectDuration =
+                        outwardsEffectDuration ?: preferences.getOutwardAnimationDurationMillis(),
+                ),
+            saveActiveUserAndAssistant = !preferences.isCurrentUserAndAssistantPersisted(),
+        )
+    }
+
     override fun tryHandleSetUiHints(hints: Bundle): Boolean {
         return when (hints.getString(AssistManager.ACTION_KEY)) {
             SET_INVOCATION_EFFECT_PARAMETERS_ACTION -> {
 
-                preferences.saveCurrentUserId()
-                preferences.saveCurrentAssistant()
-
-                if (hints.containsKey(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)) {
-                    preferences.setInvocationEffectEnabledByAssistant(
+                val isEnabled: Boolean? =
+                    if (hints.containsKey(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)) {
                         hints.getBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)
-                    )
-                } else {
-                    preferences.setInvocationEffectEnabledByAssistant(
-                        DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
-                    )
-                }
+                    } else {
+                        null
+                    }
 
-                if (hints.containsKey(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS)) {
-                    preferences.setInwardAnimationPaddingDurationMillis(
+                val inwardsEffectDurationPadding: Long? =
+                    if (hints.containsKey(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS)) {
                         hints.getLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS)
-                    )
-                } else {
-                    preferences.setInwardAnimationPaddingDurationMillis(
-                        DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
-                    )
-                }
+                    } else {
+                        null
+                    }
 
-                if (hints.containsKey(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS)) {
-                    preferences.setOutwardAnimationDurationMillis(
+                val outwardsEffectDuration: Long? =
+                    if (hints.containsKey(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS)) {
                         hints.getLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS)
-                    )
-                } else {
-                    preferences.setOutwardAnimationDurationMillis(
-                        DEFAULT_OUTWARD_EFFECT_DURATION_MS
-                    )
-                }
+                    } else {
+                        null
+                    }
+
+                setInvocationEffectPreferences(
+                    isEnabled = isEnabled,
+                    inwardsEffectDurationPadding = inwardsEffectDurationPadding,
+                    outwardsEffectDuration = outwardsEffectDuration,
+                )
 
                 true
             }

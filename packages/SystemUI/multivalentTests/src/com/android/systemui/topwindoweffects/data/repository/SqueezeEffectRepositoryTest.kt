@@ -32,6 +32,9 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmos
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_KEY
@@ -162,7 +165,14 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     @Test
     fun testInvocationEffectInwardsAnimationDelay() =
         kosmos.runTest {
-            fakeInvocationEffectPreferences.setInwardAnimationPaddingDurationMillis(450)
+            fakeInvocationEffectPreferences.setInvocationEffectConfig(
+                InvocationEffectPreferences.Config(
+                    isEnabled = true,
+                    inwardsEffectDurationPadding = 450,
+                    outwardsEffectDuration = 400,
+                ),
+                true,
+            )
 
             assertThat(underTest.getInvocationEffectInAnimationDurationMillis()).isEqualTo(800)
         }
@@ -171,44 +181,120 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     @Test
     fun testInvocationEffectOutwardsAnimationDelay() =
         kosmos.runTest {
-            fakeInvocationEffectPreferences.setOutwardAnimationDurationMillis(400)
+            fakeInvocationEffectPreferences.setInvocationEffectConfig(
+                InvocationEffectPreferences.Config(
+                    isEnabled = true,
+                    inwardsEffectDurationPadding = 450,
+                    outwardsEffectDuration = 400,
+                ),
+                true,
+            )
 
             assertThat(underTest.getInvocationEffectOutAnimationDurationMillis()).isEqualTo(400)
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
     @Test
-    fun testSetUiHintsShouldUpdatePreferences() =
+    fun testSetUiHints_whenSuppliedAllConfigs_allUpdatedInPreferences() =
         kosmos.runTest {
             fakeInvocationEffectPreferences.activeUserId = 1
             fakeInvocationEffectPreferences.activeAssistant = "A"
 
-            assertThat(fakeInvocationEffectPreferences.isActiveUserAndAssistantPersisted())
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
                 .isFalse()
 
-            val hints = createAssistantSettingBundle(false, 0, 1000)
+            val hints =
+                createAssistantSettingBundle(
+                    enableAssistantSetting = false,
+                    inwardsPaddingDuration = 0,
+                    outwardsAnimationDuration = 1000,
+                )
             underTest.tryHandleSetUiHints(hints)
 
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
-
-            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
             assertThat(fakeInvocationEffectPreferences.getInwardAnimationPaddingDurationMillis())
                 .isEqualTo(0)
             assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
                 .isEqualTo(1000)
-            assertThat(fakeInvocationEffectPreferences.isActiveUserAndAssistantPersisted()).isTrue()
+            assertThat(fakeInvocationEffectPreferences.isInvocationEffectEnabledInPreferences())
+                .isFalse()
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
+                .isTrue()
+        }
+
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testSetUiHints_whenSuppliedPartialConfig() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.activeUserId = 1
+            fakeInvocationEffectPreferences.activeAssistant = "A"
+
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
+                .isFalse()
+
+            underTest.tryHandleSetUiHints(
+                createAssistantSettingBundle(
+                    enableAssistantSetting = false,
+                    inwardsPaddingDuration = 0,
+                    outwardsAnimationDuration = 1000,
+                )
+            )
+
+            assertThat(fakeInvocationEffectPreferences.getInwardAnimationPaddingDurationMillis())
+                .isEqualTo(0)
+            assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
+                .isEqualTo(1000)
+            assertThat(fakeInvocationEffectPreferences.isInvocationEffectEnabledInPreferences())
+                .isFalse()
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
+                .isTrue()
+
+            underTest.tryHandleSetUiHints(
+                createAssistantSettingBundle(enableAssistantSetting = true)
+            )
+
+            assertThat(fakeInvocationEffectPreferences.getInwardAnimationPaddingDurationMillis())
+                .isEqualTo(0)
+            assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
+                .isEqualTo(1000)
+            assertThat(fakeInvocationEffectPreferences.isInvocationEffectEnabledInPreferences())
+                .isTrue()
+        }
+
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testSetUiHints_whenSuppliedNoConfig_shouldSetDefaults() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.activeUserId = 1
+            fakeInvocationEffectPreferences.activeAssistant = "A"
+
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
+                .isFalse()
+
+            underTest.tryHandleSetUiHints(createAssistantSettingBundle())
+
+            assertThat(fakeInvocationEffectPreferences.getInwardAnimationPaddingDurationMillis())
+                .isEqualTo(DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS)
+            assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
+                .isEqualTo(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
+            assertThat(fakeInvocationEffectPreferences.isInvocationEffectEnabledInPreferences())
+                .isEqualTo(DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
+                .isTrue()
         }
 
     private fun createAssistantSettingBundle(
-        enableAssistantSetting: Boolean,
-        inwardsPaddingDuration: Long,
-        outwardsAnimationDuration: Long,
+        enableAssistantSetting: Boolean? = null,
+        inwardsPaddingDuration: Long? = null,
+        outwardsAnimationDuration: Long? = null,
     ) =
         Bundle().apply {
             putString(AssistManager.ACTION_KEY, SET_INVOCATION_EFFECT_PARAMETERS_ACTION)
-            putBoolean(IS_INVOCATION_EFFECT_ENABLED_KEY, enableAssistantSetting)
-            putLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, inwardsPaddingDuration)
-            putLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, outwardsAnimationDuration)
+            enableAssistantSetting?.let { putBoolean(IS_INVOCATION_EFFECT_ENABLED_KEY, it) }
+            inwardsPaddingDuration?.let {
+                putLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, it)
+            }
+            outwardsAnimationDuration?.let {
+                putLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, it)
+            }
         }
 }
