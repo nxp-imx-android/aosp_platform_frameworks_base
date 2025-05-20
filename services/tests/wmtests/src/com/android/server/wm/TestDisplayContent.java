@@ -28,6 +28,8 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -226,6 +228,7 @@ class TestDisplayContent extends DisplayContent {
                 doReturn(false).when(displayPolicy).hasStatusBar();
                 doReturn(false).when(newDisplay).isSystemDecorationsSupported();
             }
+            doReturn(true).when(newDisplay).isWindowingModeSupported(anyInt());
             // Update the display policy to make the screen fully turned on so animation is allowed
             displayPolicy.screenTurningOn(null /* screenOnListener */);
             displayPolicy.finishKeyguardDrawn();

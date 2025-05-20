@@ -1845,7 +1845,11 @@ class Task extends TaskFragment {
      *         {@link TaskDisplayArea}.
      */
     boolean supportsFreeformInDisplayArea(@Nullable TaskDisplayArea tda) {
-        return mAtmService.mSupportsFreeformWindowManagement
+        return tda != null
+                && tda.isWindowingModeSupported(WINDOWING_MODE_FREEFORM,
+                        mAtmService.mSupportsMultiWindow,
+                        mAtmService.mSupportsFreeformWindowManagement,
+                        mAtmService.mSupportsPictureInPicture)
                 && supportsMultiWindowInDisplayArea(tda);
     }
 
@@ -4630,6 +4634,10 @@ class Task extends TaskFragment {
      * activity manifest. This flag is set by WM Shell to disable PiP for the current Task status.
      */
     boolean isDisablePip() {
+        final DisplayContent dc = getDisplayContent();
+        if (dc == null || !dc.isWindowingModeSupported(WINDOWING_MODE_PINNED)) {
+            return true;
+        }
         if (!Flags.disallowBubbleToEnterPip()) {
             return false;
         }
@@ -6283,6 +6291,9 @@ class Task extends TaskFragment {
         }
 
         if (canBeLaunchedOnDisplay(newParent.getDisplayId())) {
+            if (!newParent.isWindowingModeSupported(getRequestedOverrideWindowingMode())) {
+                setWindowingMode(WINDOWING_MODE_UNDEFINED);
+            }
             reparent(newParent, onTop ? POSITION_TOP : POSITION_BOTTOM);
             newParent.onTaskMoved(this, onTop, !onTop);
         } else {
@@ -6782,7 +6793,7 @@ class Task extends TaskFragment {
                 }
             }
 
-            if (!TaskDisplayArea.isWindowingModeSupported(mWindowingMode,
+            if (!tda.isWindowingModeSupported(mWindowingMode,
                     mAtmService.mSupportsMultiWindow,
                     mAtmService.mSupportsFreeformWindowManagement,
                     mAtmService.mSupportsPictureInPicture)) {
