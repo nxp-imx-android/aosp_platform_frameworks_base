@@ -18,6 +18,7 @@ package com.android.server.security.authenticationpolicy;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
+import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.security.Flags.disableAdaptiveAuthCounterLock;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
@@ -44,6 +45,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.proximity.IProximityResultCallback;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
@@ -481,6 +483,15 @@ public class AuthenticationPolicyService extends SystemService {
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public void startWatchRangingForIdentityCheck(
+                IProximityResultCallback resultCallback) {
+            startWatchRangingForIdentityCheck_enforcePermission();
+            Slog.d(TAG, "startWatchRangingForIdentityCheck");
+            //TODO (b/397954948) : Bind to IProximityProviderService and start ranging
         }
     };
 }

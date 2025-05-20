@@ -16,6 +16,8 @@
 package android.security.authenticationpolicy;
 
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
+import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
+import static android.hardware.biometrics.Flags.FLAG_IDENTITY_CHECK_WATCH;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
 
@@ -29,7 +31,9 @@ import android.annotation.SystemService;
 import android.content.Context;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.RemoteException;
+import android.proximity.IProximityResultCallback;
 import android.util.Log;
 
 import java.lang.annotation.Retention;
@@ -494,5 +498,28 @@ public final class AuthenticationPolicyManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    /**
+     * This function will start watch ranging for Identity Check. We will remove specific
+     * Identity Check implementation when this is generalized.
+     *
+     * @param resultCallback callback used to return the ranging result
+     * @param handler handler to start the ranging request
+     *
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @FlaggedApi(FLAG_IDENTITY_CHECK_WATCH)
+    public void startWatchRangingForIdentityCheck(
+            @NonNull IProximityResultCallback resultCallback, Handler handler) {
+        //TODO (b/397954948) : Update callback results to trigger in the handler
+        handler.post(() -> {
+            try {
+                mAuthenticationPolicyService.startWatchRangingForIdentityCheck(resultCallback);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        });
     }
 }

@@ -93,3 +93,10 @@ flag {
   description: "This flag applies Identity Check to all biometric prompt requests"
   bug: "402534668"
 }
+
+flag {
+  name: "identity_check_watch"
+  namespace: "biometrics_framework"
+  description: "This flag is for the integration of Identity Check with Watch"
+  bug: "397954948"
+}

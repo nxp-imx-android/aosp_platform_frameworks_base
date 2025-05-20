@@ -28,6 +28,7 @@ import static com.android.server.biometrics.BiometricServiceStateProto.STATE_AUT
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
 import android.app.UserSwitchObserver;
@@ -75,8 +76,10 @@ import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.proximity.IProximityResultCallback;
 import android.security.GateKeeper;
 import android.security.KeyStoreAuthorization;
+import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.service.gatekeeper.IGateKeeperService;
 import android.text.TextUtils;
 import android.util.ArraySet;
@@ -124,6 +127,7 @@ public class BiometricService extends SystemService {
     @NonNull private final Supplier<Long> mRequestCounter;
     @NonNull private final BiometricContext mBiometricContext;
     private final UserManager mUserManager;
+    private final AuthenticationPolicyManager mAuthenticationPolicyManager;
 
     @VisibleForTesting
     IStatusBarService mStatusBarService;
@@ -1434,6 +1438,11 @@ public class BiometricService extends SystemService {
         public BiometricNotificationLogger getNotificationLogger() {
             return new BiometricNotificationLogger();
         }
+
+        public AuthenticationPolicyManager getAuthenticationPolicyManager(Context context) {
+            return (AuthenticationPolicyManager)
+                    context.getSystemService(Context.AUTHENTICATION_POLICY_SERVICE);
+        }
     }
 
     /**
@@ -1468,6 +1477,7 @@ public class BiometricService extends SystemService {
         mKeyStoreAuthorization = injector.getKeyStoreAuthorization();
         mGateKeeper = injector.getGateKeeperService();
         mBiometricNotificationLogger = injector.getNotificationLogger();
+        mAuthenticationPolicyManager = mInjector.getAuthenticationPolicyManager(context);
 
         try {
             injector.getActivityManagerService().registerUserSwitchObserver(
@@ -1820,10 +1830,48 @@ public class BiometricService extends SystemService {
                 operationId, userId, createBiometricSensorReceiver(requestId), receiver,
                 opPackageName, promptInfo, debugEnabled,
                 mInjector.getFingerprintSensorProperties(getContext()));
+        startWatchRangingIfIdentityCheckActive(promptInfo);
+
         try {
             mAuthSession.goToInitialState();
         } catch (RemoteException e) {
             Slog.e(TAG, "RemoteException", e);
+        }
+    }
+
+    /**
+     * This is invoked only if Identity Check is active and the device is considered at risk. If the
+     * watch is in range, it will re-enable device credential if it was originally requested.
+     *
+     * @param promptInfo biometric prompt info
+     */
+    @SuppressLint("MissingPermission")
+    private void startWatchRangingIfIdentityCheckActive(PromptInfo promptInfo) {
+        if (android.hardware.biometrics.Flags.identityCheckWatch()
+                && promptInfo.isIdentityCheckActive() && promptInfo.isDeviceCredentialAllowed()) {
+            if (mAuthenticationPolicyManager == null) {
+                Slog.e(TAG, "Authentication policy manager is null. Skipping watch ranging");
+                return;
+            }
+
+            //TODO (b/397954948) : Update callback results to handle System UI changes
+            mAuthenticationPolicyManager.startWatchRangingForIdentityCheck(
+                    new IProximityResultCallback() {
+                        @Override
+                        public void onError(int error) throws RemoteException {
+
+                        }
+
+                        @Override
+                        public void onSuccess(int result) throws RemoteException {
+
+                        }
+
+                        @Override
+                        public IBinder asBinder() {
+                            return null;
+                        }
+                    }, mHandler);
         }
     }
 
