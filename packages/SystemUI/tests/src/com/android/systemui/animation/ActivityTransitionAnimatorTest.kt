@@ -12,6 +12,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.IRemoteAnimationFinishedCallback
+import android.view.IRemoteAnimationRunner
 import android.view.RemoteAnimationAdapter
 import android.view.RemoteAnimationTarget
 import android.view.RemoteAnimationTarget.MODE_CLOSING
@@ -104,7 +105,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         kosmos.activityTransitionAnimator.removeListener(listener)
     }
 
-    private fun startIntentWithAnimation(
+    private fun startIntentWithAnimationLegacy(
         controller: ActivityTransitionAnimator.Controller?,
         animator: ActivityTransitionAnimator = kosmos.activityTransitionAnimator,
         animate: Boolean = true,
@@ -123,12 +124,12 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun animationAdapterIsNullIfControllerIsNull() {
+    fun animationAdapterIsNullIfControllerIsNull_withLegacyAPI() {
         kosmos.runTest {
             var startedIntent = false
             var animationAdapter: RemoteAnimationAdapter? = null
 
-            startIntentWithAnimation(controller = null) { adapter ->
+            startIntentWithAnimationLegacy(controller = null) { adapter ->
                 startedIntent = true
                 animationAdapter = adapter
 
@@ -141,12 +142,12 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun animatesIfActivityOpens() {
+    fun animatesIfActivityOpens_withLegacyAPI() {
         kosmos.runTest {
             val controller = createController()
             val willAnimateCaptor = ArgumentCaptor.forClass(Boolean::class.java)
             var animationAdapter: RemoteAnimationAdapter? = null
-            startIntentWithAnimation(controller) { adapter ->
+            startIntentWithAnimationLegacy(controller) { adapter ->
                 animationAdapter = adapter
                 ActivityManager.START_SUCCESS
             }
@@ -159,11 +160,11 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun doesNotAnimateIfActivityIsAlreadyOpen() {
+    fun doesNotAnimateIfActivityIsAlreadyOpen_withLegacyAPI() {
         kosmos.runTest {
             val controller = createController()
             val willAnimateCaptor = ArgumentCaptor.forClass(Boolean::class.java)
-            startIntentWithAnimation(controller) { ActivityManager.START_DELIVERED_TO_TOP }
+            startIntentWithAnimationLegacy(controller) { ActivityManager.START_DELIVERED_TO_TOP }
 
             waitForIdleSync()
             verify(controller).onIntentStarted(willAnimateCaptor.capture())
@@ -172,7 +173,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun animatesIfActivityIsAlreadyOpenAndIsOnKeyguard() {
+    fun animatesIfActivityIsAlreadyOpenAndIsOnKeyguard_withLegacyAPI() {
         kosmos.runTest {
             `when`(callback.isOnKeyguard()).thenReturn(true)
 
@@ -180,14 +181,14 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             val willAnimateCaptor = ArgumentCaptor.forClass(Boolean::class.java)
             var animationAdapter: RemoteAnimationAdapter? = null
 
-            startIntentWithAnimation(controller, underTest) { adapter ->
+            startIntentWithAnimationLegacy(controller, underTest) { adapter ->
                 animationAdapter = adapter
                 ActivityManager.START_DELIVERED_TO_TOP
             }
 
             waitForIdleSync()
             verify(controller).onIntentStarted(willAnimateCaptor.capture())
-            verify(callback).hideKeyguardWithAnimation(any())
+            verify(callback).hideKeyguardWithAnimation(any<IRemoteAnimationRunner>())
 
             assertTrue(willAnimateCaptor.value)
             assertNull(animationAdapter)
@@ -195,11 +196,13 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun doesNotAnimateIfAnimateIsFalse() {
+    fun doesNotAnimateIfAnimateIsFalse_withLegacyAPI() {
         kosmos.runTest {
             val controller = createController()
             val willAnimateCaptor = ArgumentCaptor.forClass(Boolean::class.java)
-            startIntentWithAnimation(controller, animate = false) { ActivityManager.START_SUCCESS }
+            startIntentWithAnimationLegacy(controller, animate = false) {
+                ActivityManager.START_SUCCESS
+            }
 
             waitForIdleSync()
             verify(controller).onIntentStarted(willAnimateCaptor.capture())
@@ -209,12 +212,12 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
 
     @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY)
     @Test
-    fun registersReturnIffCookieIsPresent() {
+    fun registersReturnIffCookieIsPresent_withLegacyAPI() {
         kosmos.runTest {
             `when`(callback.isOnKeyguard()).thenReturn(false)
 
             val controller = createController()
-            startIntentWithAnimation(controller, underTest) {
+            startIntentWithAnimationLegacy(controller, underTest) {
                 ActivityManager.START_DELIVERED_TO_TOP
             }
 
@@ -228,7 +231,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                         get() = ActivityTransitionAnimator.TransitionCookie("testCookie")
                 }
 
-            startIntentWithAnimation(controllerWithCookie, underTest) {
+            startIntentWithAnimationLegacy(controllerWithCookie, underTest) {
                 ActivityManager.START_DELIVERED_TO_TOP
             }
 

@@ -295,6 +295,22 @@ constructor(
         showOverLockscreen: Boolean = false,
         intentStarter: (RemoteAnimationAdapter?) -> Int,
     ) {
+        startIntentWithAnimationInternal(
+            controller,
+            animate,
+            packageName,
+            showOverLockscreen,
+            intentStarter,
+        )
+    }
+
+    private fun startIntentWithAnimationInternal(
+        controller: Controller?,
+        animate: Boolean = true,
+        packageName: String? = null,
+        showOverLockscreen: Boolean = false,
+        intentStarter: (RemoteAnimationAdapter?) -> Int,
+    ) {
         if (controller == null || !animate) {
             Log.i(TAG, "Starting intent with no animation")
             intentStarter(null)
