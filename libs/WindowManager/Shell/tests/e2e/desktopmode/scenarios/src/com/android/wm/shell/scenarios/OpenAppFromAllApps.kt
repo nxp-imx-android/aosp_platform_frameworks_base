@@ -37,7 +37,7 @@ open class OpenAppFromAllApps() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val calculatorApp = CalculatorAppHelper(instrumentation)
+    val calculatorApp = CalculatorAppHelper(instrumentation)
 
     @Before
     fun setup() {
@@ -61,6 +61,4 @@ open class OpenAppFromAllApps() : TestScenarioBase() {
         calculatorApp.exit(wmHelper)
         testApp.exit(wmHelper)
     }
-
-    fun getOpenedApp() = calculatorApp
 }

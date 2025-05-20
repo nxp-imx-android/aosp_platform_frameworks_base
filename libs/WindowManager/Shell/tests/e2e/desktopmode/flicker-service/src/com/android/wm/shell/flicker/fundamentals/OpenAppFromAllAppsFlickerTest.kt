@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker
+package com.android.wm.shell.flicker.fundamentals
 
 import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
@@ -24,6 +24,7 @@ import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.DesktopModeBaseTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,7 +43,7 @@ class OpenAppFromAllAppsFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBas
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
     val scenario = OpenAppFromAllApps()
-    private val openedApp = scenario.getOpenedApp()
+    private val openedApp = scenario.calculatorApp
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
