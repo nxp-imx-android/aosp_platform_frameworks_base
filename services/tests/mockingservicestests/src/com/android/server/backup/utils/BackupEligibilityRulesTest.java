@@ -16,6 +16,8 @@
 
 package com.android.server.backup.utils;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,6 +44,7 @@ import android.platform.test.annotations.Presubmit;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.backup.UserBackupManagerService;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
@@ -53,7 +56,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.quality.Strictness;
 
 @SmallTest
 @Presubmit
@@ -66,9 +69,15 @@ public class BackupEligibilityRulesTest {
     private static final Signature SIGNATURE_2 = generateSignature((byte) 2);
     private static final Signature SIGNATURE_3 = generateSignature((byte) 3);
     private static final Signature SIGNATURE_4 = generateSignature((byte) 4);
+
     private static final int NON_SYSTEM_USER_ID = 10;
+    private static final UserHandle NON_SYSTEM_USER = UserHandle.of(NON_SYSTEM_USER_ID);
 
     @Rule public TestRule compatChangeRule = new PlatformCompatChangeRule();
+
+    @Rule
+    public final ExtendedMockitoRule extendedMockitoRule = new ExtendedMockitoRule.Builder(this)
+            .setStrictness(Strictness.LENIENT).spyStatic(UserManager.class).build();
 
     @Mock private PackageManagerInternal mMockPackageManagerInternal;
     @Mock private PackageManager mPackageManager;
@@ -80,9 +89,8 @@ public class BackupEligibilityRulesTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-
         mUserId = UserHandle.USER_SYSTEM;
+        mockHeadlessSystemUserMode(false);
         mockContextForFullUser();
         mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
     }
@@ -100,6 +108,7 @@ public class BackupEligibilityRulesTest {
     @Test
     public void appIsEligibleForBackup_systemUid_nonSystemUser_notAllowedPackage_returnsFalse()
             throws Exception {
+        mockHeadlessSystemUserMode(false);
         setUpForNonSystemUser();
 
         ApplicationInfo applicationInfo =
@@ -113,6 +122,7 @@ public class BackupEligibilityRulesTest {
     @Test
     public void appIsEligibleForBackup_systemUid_nonSystemUser_allowedPackage_returnsTrue()
             throws Exception {
+        mockHeadlessSystemUserMode(false);
         setUpForNonSystemUser();
 
         ApplicationInfo applicationInfo = getApplicationInfo(
@@ -122,6 +132,50 @@ public class BackupEligibilityRulesTest {
         boolean isEligible = mBackupEligibilityRules.appIsEligibleForBackup(applicationInfo);
 
         assertThat(isEligible).isTrue();
+    }
+
+    @Test
+    public void appIsEligibleForBackup_systemUid_hsumMainUser_telephonyPackage_returnsTrue()
+            throws Exception {
+        mockHeadlessSystemUserMode(true);
+
+        // Current user is the main user.
+        when(mUserManager.getMainUser()).thenReturn(NON_SYSTEM_USER);
+        mUserId = NON_SYSTEM_USER_ID;
+
+        mockContextForFullUser();
+        mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
+
+        ApplicationInfo applicationInfo = getApplicationInfo(
+                Process.SYSTEM_UID, ApplicationInfo.FLAG_ALLOW_BACKUP,
+                CUSTOM_BACKUP_AGENT_NAME, UserBackupManagerService.TELEPHONY_PROVIDER_PACKAGE);
+
+        boolean isEligible = mBackupEligibilityRules.appIsEligibleForBackup(applicationInfo);
+
+        // Telephony package is allowed for the main user in HSUM.
+        assertThat(isEligible).isTrue();
+    }
+
+    @Test
+    public void appIsEligibleForBackup_systemUid_hsumNonMainUser_telephonyPackage_returnsFalse()
+            throws Exception {
+        mockHeadlessSystemUserMode(true);
+
+        // Current user is a non-main user.
+        when(mUserManager.getMainUser()).thenReturn(NON_SYSTEM_USER);
+        mUserId = NON_SYSTEM_USER_ID + 1;
+
+        mockContextForFullUser();
+        mBackupEligibilityRules = getBackupEligibilityRules(BackupDestination.CLOUD);
+
+        ApplicationInfo applicationInfo = getApplicationInfo(
+                Process.SYSTEM_UID, ApplicationInfo.FLAG_ALLOW_BACKUP,
+                CUSTOM_BACKUP_AGENT_NAME, UserBackupManagerService.TELEPHONY_PROVIDER_PACKAGE);
+
+        boolean isEligible = mBackupEligibilityRules.appIsEligibleForBackup(applicationInfo);
+
+        // Telephony package is not allowed for non-main users in HSUM.
+        assertThat(isEligible).isFalse();
     }
 
     @Test
@@ -863,6 +917,10 @@ public class BackupEligibilityRulesTest {
         return new BackupEligibilityRules(
                 mPackageManager, mMockPackageManagerInternal, mUserId, mContext,
                 backupDestination, skipRestoreForLaunchedApps);
+    }
+
+    private static void mockHeadlessSystemUserMode(boolean isHeadless) {
+        doReturn(isHeadless).when(UserManager::isHeadlessSystemUserMode);
     }
 
     private static Signature generateSignature(byte i) {
