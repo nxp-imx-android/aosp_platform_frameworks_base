@@ -996,6 +996,7 @@ public final class ViewRootImpl implements ViewParent,
     private final ImeFocusController mImeFocusController;
 
     private boolean mIsSurfaceOpaque;
+    private boolean mIsSurfaceColorSpaceAgnostic;
 
     private final BackgroundBlurDrawable.Aggregator mBlurRegionAggregator =
             new BackgroundBlurDrawable.Aggregator(this);
@@ -3858,12 +3859,19 @@ public final class ViewRootImpl implements ViewParent,
                     }
 
                     if (setScPropertiesInClient()) {
+                        if (surfaceControlChanged) {
+                            // Reset to default for a new SurfaceControl.
+                            mIsSurfaceColorSpaceAgnostic = false;
+                        }
                         if (surfaceControlChanged || windowAttributesChanged) {
                             boolean colorSpaceAgnostic = (lp.privateFlags
                                     & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
                                     != 0;
-                            mTransaction.setColorSpaceAgnostic(mSurfaceControl, colorSpaceAgnostic)
-                                    .apply();
+                            if (colorSpaceAgnostic != mIsSurfaceColorSpaceAgnostic) {
+                                mIsSurfaceColorSpaceAgnostic = colorSpaceAgnostic;
+                                mTransaction.setColorSpaceAgnostic(
+                                        mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
+                            }
                         }
                     }
                 }
