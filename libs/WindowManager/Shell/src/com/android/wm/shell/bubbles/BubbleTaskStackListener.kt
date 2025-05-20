@@ -20,6 +20,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
@@ -64,7 +65,7 @@ class BubbleTaskStackListener(
             when {
                 isBubbleToFullscreen(task) -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
                 isBubbleToSplit(task) -> return // skip split task restarts
-                else -> selectAndExpandInStackBubble(bubble, task)
+                !isAppBubbleMovingToFront(task) -> selectAndExpandInStackBubble(bubble, task)
             }
         }
     }
@@ -73,6 +74,17 @@ class BubbleTaskStackListener(
         return task.hasParentTask() && splitScreenController.get()
             .map { it.isTaskRootOrStageRoot(task.parentTaskId) }
             .orElse(false)
+    }
+
+    /**
+     * Returns whether the given bubble task restart should move the app bubble to front
+     * and be handled in DefaultMixedTransition#animateEnterBubblesFromBubble.
+     * This occurs when a startActivity call resolves to an existing activity, causing the
+     * task to move to front, and the mixed transition will then expand the bubble.
+     */
+    private fun isAppBubbleMovingToFront(task: ActivityManager.RunningTaskInfo): Boolean {
+        return task.activityType == ACTIVITY_TYPE_STANDARD
+                && bubbleController.shouldBeAppBubble(task)
     }
 
     /** Selects and expands a bubble that is currently in the stack. */

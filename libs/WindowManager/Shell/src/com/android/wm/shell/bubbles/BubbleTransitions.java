@@ -165,12 +165,6 @@ public class BubbleTransitions {
         }
         for (IBinder cookie : info.getTriggerTask().launchCookies) {
             if (mPendingEnterTransitions.containsKey(cookie)) {
-                if (hasBubbleWithTaskId(info.getTriggerTask().taskId)) {
-                    // We'll let this transition fall through and let the normal TaskViewTransitions
-                    // play it
-                    mPendingEnterTransitions.remove(cookie);
-                    return false;
-                }
                 return true;
             }
         }
@@ -245,11 +239,11 @@ public class BubbleTransitions {
     }
 
     /**
-     * Called to initiate axed bubble-to-bubble launch/convert for the given transition.
+     * Initiates axed bubble-to-bubble launch/existing bubble convert for the given transition.
      *
      * @return whether a new transition was started for the launch
      */
-    public boolean startBubbleToBubbleLaunch(@NonNull IBinder transition,
+    public boolean startBubbleToBubbleLaunchOrExistingBubbleConvert(@NonNull IBinder transition,
             @NonNull ActivityManager.RunningTaskInfo launchingTask,
             @NonNull Consumer<TransitionHandler> onInflatedCallback) {
         TransitionHandler handler =
@@ -538,6 +532,9 @@ public class BubbleTransitions {
                 state.mVisible = true;
             }
             mTransitionProgress.setInflated();
+            // Remove any intermediate queued transitions that were started as a result of the
+            // inflation (the task view will be in the right bounds)
+            mTaskViewTransitions.removePendingTransitions(tv.getController());
             mTaskViewTransitions.enqueueExternal(tv.getController(), () -> {
                 return mTransition;
             });
@@ -681,7 +678,8 @@ public class BubbleTransitions {
         }
 
         private void playAnimation() {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.playAnimation()");
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.playAnimation(): playConvert=%b",
+                    mPlayConvertTaskAnimation);
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
             final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
             // Set task position to 0,0 as it will be placed inside the TaskView

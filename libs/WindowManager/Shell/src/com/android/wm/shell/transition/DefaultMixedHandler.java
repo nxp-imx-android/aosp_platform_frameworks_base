@@ -137,7 +137,10 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         /** Transition of a visible app in Pip into a bubble. */
         static final int TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE = 15;
 
-        /** Transition of a visible app into a bubble when launched from another bubble. */
+        /**
+         * Transition of a visible app into a bubble when launched from another bubble or for an
+         * existing bubble.
+         */
         static final int TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE = 16;
 
         @IntDef(prefix = {"TYPE_"}, value = {
@@ -355,7 +358,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition));
                 return new WindowContainerTransaction();
             }
-        } else if (requestHasBubbleEnterFromAppBubble(request)) {
+        } else if (requestHasBubbleEnterFromAppBubbleOrExistingBubble(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
 
             if (mSplitHandler.requestImpliesSplitToBubble(request)) {
@@ -364,8 +367,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 // Note: This will currently "intercept" launches even while the bubble is collapsed
                 // but we will not actually play any animation in DefaultMixedTransition unless the
                 // launch contains an appBubble task as well
-                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                        " Got a Bubble-enter request from an app bubble");
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a Bubble-enter request "
+                        + "from an app bubble or for an existing bubble");
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
                         transition));
@@ -824,14 +827,14 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
     }
 
     /**
-     * Returns whether the given request for a launching task is from an app bubble and should be
-     * handled by the bubbles transition.
+     * Returns whether the given request for a launching task is from an app bubble or for an
+     * existing bubble and should be handled by the bubbles transition.
      */
-    public boolean requestHasBubbleEnterFromAppBubble(@NonNull TransitionRequestInfo request) {
+    public boolean requestHasBubbleEnterFromAppBubbleOrExistingBubble(
+            @NonNull TransitionRequestInfo request) {
         return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && request.getTriggerTask() != null
                 && mBubbleTransitions.shouldBeAppBubble(request.getTriggerTask())
-                && !mBubbleTransitions.hasBubbleWithTaskId(request.getTriggerTask().taskId)
                 // TODO(b/408453889): To be removed once we handle transitions with stack view
                 && mBubbleTransitions.isShowingAsBubbleBar();
     }

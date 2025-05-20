@@ -1693,8 +1693,14 @@ public class BubbleController implements ConfigurationChangeListener,
             Consumer<Transitions.TransitionHandler> onInflatedCallback) {
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) return null;
 
-        // Create a new bubble and show it
-        Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
+        Bubble b = mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
+        if (b != null) {
+            // Reuse the existing bubble
+            mBubbleData.setSelectedBubbleAndExpandStack(b, BubbleBarLocation.DEFAULT);
+        } else {
+            // Create a new bubble and show it, remove from overflow
+            b = mBubbleData.getOrCreateBubble(taskInfo);
+        }
         ProtoLog.v(WM_SHELL_BUBBLES, "expandStackAndSelectBubbleForExistingTransition() taskId=%s",
                 taskInfo.taskId);
         b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
