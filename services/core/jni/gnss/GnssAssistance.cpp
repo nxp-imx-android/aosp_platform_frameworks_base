@@ -1020,6 +1020,7 @@ void GnssAssistanceUtil::setGnssAssistance(JNIEnv* env, jobject gnssAssistanceOb
 
 void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceObj,
                                            std::optional<QzssAssistance>& qzssAssistanceOpt) {
+    if (qzssAssistanceObj == nullptr) return;
     QzssAssistance qzssAssistance;
     jobject qzssAlmanacObj =
             env->CallObjectMethod(qzssAssistanceObj, method_qzssAssistanceGetAlmanac);
@@ -1061,6 +1062,7 @@ void GnssAssistanceUtil::setQzssAssistance(JNIEnv* env, jobject qzssAssistanceOb
 void GnssAssistanceUtil::setGlonassAssistance(
         JNIEnv* env, jobject glonassAssistanceObj,
         std::optional<GlonassAssistance>& glonassAssistanceOpt) {
+    if (glonassAssistanceObj == nullptr) return;
     GlonassAssistance glonassAssistance;
     jobject glonassAlmanacObj =
             env->CallObjectMethod(glonassAssistanceObj, method_glonassAssistanceGetAlmanac);
@@ -1266,6 +1268,7 @@ void GnssAssistanceUtil::setGlonassSatelliteEphemeris(
 void GnssAssistanceUtil::setGalileoAssistance(
         JNIEnv* env, jobject galileoAssistanceObj,
         std::optional<GalileoAssistance>& galileoAssistanceOpt) {
+    if (galileoAssistanceObj == nullptr) return;
     GalileoAssistance galileoAssistance;
     jobject galileoAlmanacObj =
             env->CallObjectMethod(galileoAssistanceObj, method_galileoAssistanceGetAlmanac);
@@ -1448,6 +1451,7 @@ void GnssAssistanceUtil::setGalileoSatelliteEphemeris(
 
 void GnssAssistanceUtil::setBeidouAssistance(JNIEnv* env, jobject beidouAssistanceObj,
                                              std::optional<BeidouAssistance>& beidouAssistanceOpt) {
+    if (beidouAssistanceObj == nullptr) return;
     BeidouAssistance beidouAssistance;
     jobject beidouAlmanacObj =
             env->CallObjectMethod(beidouAssistanceObj, method_beidouAssistanceGetAlmanac);
