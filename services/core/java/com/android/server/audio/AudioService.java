@@ -8859,6 +8859,14 @@ public class AudioService extends IAudioService.Stub
         getVssForStreamOrDefault(AudioSystem.STREAM_MUSIC).muteInternally(mute);
     }
 
+    /** Mute or unmute call audio */
+    /*package*/ void setCallMute(boolean mute) {
+        getVssForStreamOrDefault(AudioSystem.STREAM_VOICE_CALL).muteInternally(mute);
+        if (!replaceStreamBtSco()) {
+            getVssForStreamOrDefault(AudioSystem.STREAM_BLUETOOTH_SCO).muteInternally(mute);
+        }
+    }
+
     private static final Set<Integer> DEVICE_MEDIA_UNMUTED_ON_PLUG_SET;
     static {
         DEVICE_MEDIA_UNMUTED_ON_PLUG_SET = new HashSet<>();
