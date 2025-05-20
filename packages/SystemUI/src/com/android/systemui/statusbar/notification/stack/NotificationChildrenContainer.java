@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.notification.stack;
 
 import static android.app.Flags.notificationsRedesignTemplates;
 
+import static com.android.systemui.Flags.notificationRowIsRemovedFix;
+
 import android.app.Notification;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -432,13 +434,14 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     private static boolean shouldRestoreChild(ExpandableNotificationRow row) {
-        // TODO: b/417457086 - We're only checking for isChangingPosition here as a quick-and-dirty
-        //  fix for b/415665263, but the real issue is that isRemoved is currently ALWAYS false.
-        //  We need to fix that behind a flag, so this hack is temporary.
-        if (USE_IS_CHANGING_POSITION_TO_RESTORE) {
-            return !row.isRemoved() && row.isChangingPosition();
-        } else {
+        if (notificationRowIsRemovedFix() || !USE_IS_CHANGING_POSITION_TO_RESTORE) {
             return !row.isRemoved();
+        } else {
+            // TODO: b/417457086 - We're only checking for isChangingPosition here as a
+            //  quick-and-dirty fix for b/415665263, but the real issue is that isRemoved is
+            //  currently ALWAYS false. This should be fixed when notification_row_is_removed_fix
+            //  is enabled.
+            return !row.isRemoved() && row.isChangingPosition();
         }
     }
 
