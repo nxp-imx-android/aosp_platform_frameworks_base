@@ -61,12 +61,8 @@ class MultiDisplayDragMoveIndicatorController(
                 displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return@execute
             val transaction = transactionSupplier()
             for (displayId in displayIds) {
-                if (
-                    displayId == startDisplayId ||
-                        !desktopState.isDesktopModeSupportedOnDisplay(displayId)
-                ) {
-                    // No need to render indicators on the original display where the drag started,
-                    // or on displays that do not support desktop mode.
+                if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+                    // No need to render indicators on displays that do not support desktop mode.
                     continue
                 }
                 val displayLayout = displayController.getDisplayLayout(displayId) ?: continue
