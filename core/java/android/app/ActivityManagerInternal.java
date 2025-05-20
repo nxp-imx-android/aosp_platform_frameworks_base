@@ -162,11 +162,21 @@ public abstract class ActivityManagerInternal {
     public abstract void onUserRemoved(@UserIdInt int userId);
 
     /**
-     * Start user, if it is not already running, but don't bring it to foreground.
+     * Start user in the background but only temporarily; if the user hasn't left the background
+     * in the provided duration, it may be automatically stopped (at the system's discretion).
+     *
+     * The automatic stopping is not guaranteed, and there are many cases in which it won't be.
+     *
+     * Conversely, there is no guarantee that the user will not be stopped prior to the given
+     * duration; e.g. if the default inactive stopping time (from
+     * config_backgroundUserScheduledStopTimeSecs) is sooner, then we may stop it then
+     * instead. There is no guarantee about this implementation.
+     *
      * @param userId ID of the user to start
+     * @param durSecs in how many seconds we should attempt to stop the user
      * @return true if the user has been successfully started
      */
-    public abstract boolean startUserInBackground(int userId);
+    public abstract boolean startUserInBackgroundTemporarily(@UserIdInt int userId, int durSecs);
 
     /**
      * Kill foreground apps from the specified user.

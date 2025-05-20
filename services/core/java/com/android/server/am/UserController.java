@@ -87,6 +87,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackagePartitions;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
+import android.media.AudioManagerInternal;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.Bundle;
@@ -201,7 +202,7 @@ class UserController implements Handler.Callback {
     static final int START_USER_SWITCH_FG_MSG = 120;
     static final int COMPLETE_USER_SWITCH_MSG = 130;
     static final int USER_COMPLETED_EVENT_MSG = 140;
-    static final int SCHEDULED_STOP_BACKGROUND_USER_MSG = 150;
+    static final int SCHEDULE_STOP_BACKGROUND_USER_MSG = 150;
     static final int USER_SWITCHING_DIALOG_ANIMATION_TIMEOUT_MSG = 160;
 
     private static final int NO_ARG2 = 0;
@@ -1275,7 +1276,7 @@ class UserController implements Handler.Callback {
             KeyEvictedCallback keyEvictedCallback) {
         Slogf.i(TAG, "stopSingleUserLU userId=" + userId);
         if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-            mHandler.removeEqualMessages(SCHEDULED_STOP_BACKGROUND_USER_MSG,
+            mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
                     Integer.valueOf(userId));
         }
         final UserState uss = mStartedUsers.get(userId);
@@ -1575,8 +1576,10 @@ class UserController implements Handler.Callback {
             for (PendingUserStart userStart: mPendingUserStarts) {
                 if (userStart.userId == userId) {
                     Slogf.i(TAG, "resumePendingUserStart for" + userStart);
-                    mHandler.post(() -> startUser(userStart.userId,
-                            userStart.userStartMode, userStart.unlockListener));
+                    // TODO(b/416746742): Don't we need to track the displayId, not use the DEFAULT?
+                    mHandler.post(() -> startUserNoChecks(userStart.userId, Display.DEFAULT_DISPLAY,
+                            userStart.userStartMode, userStart.autoStopUserInSecs,
+                            userStart.unlockListener));
 
                     handledUserStarts.add(userStart);
                 }
@@ -1883,6 +1886,11 @@ class UserController implements Handler.Callback {
                 USER_START_MODE_BACKGROUND_VISIBLE, unlockListener);
     }
 
+    boolean startUserInBackgroundTemporarily(@UserIdInt int userId, int durationSecs) {
+        return startUserNoChecks(userId, Display.DEFAULT_DISPLAY, USER_START_MODE_BACKGROUND,
+                durationSecs, /* unlockListener= */ null);
+    }
+
     @VisibleForTesting
     boolean startUser(@UserIdInt int userId, @UserStartMode int userStartMode) {
         return startUser(userId, userStartMode, /* unlockListener= */ null);
@@ -1965,22 +1973,30 @@ class UserController implements Handler.Callback {
 
     private boolean startUserNoChecks(@UserIdInt int userId, int displayId,
             @UserStartMode int userStartMode, @Nullable IProgressListener unlockListener) {
+        return startUserNoChecks(userId, displayId, userStartMode, -1, unlockListener);
+    }
+
+    private boolean startUserNoChecks(@UserIdInt int userId, int displayId,
+            @UserStartMode int userStartMode, int autoStopUserInSecs,
+            @Nullable IProgressListener unlockListener) {
         TimingsTraceAndSlog t = new TimingsTraceAndSlog();
 
         t.traceBegin("UserController.startUser-" + userId
                 + (displayId == Display.DEFAULT_DISPLAY ? "" : "-display-" + displayId)
                 + "-" + (userStartMode == USER_START_MODE_FOREGROUND ? "fg" : "bg")
+                + (autoStopUserInSecs > 0 ? "-for-" + autoStopUserInSecs + "s" : "")
                 + "-start-mode-" + userStartMode);
         try {
-            return startUserInternal(userId, displayId, userStartMode, unlockListener, t);
+            return startUserInternal(userId, displayId, userStartMode, autoStopUserInSecs,
+                    unlockListener, t);
         } finally {
             t.traceEnd();
         }
     }
 
     private boolean startUserInternal(@UserIdInt int userId, int displayId,
-            @UserStartMode int userStartMode, @Nullable IProgressListener unlockListener,
-            TimingsTraceAndSlog t) {
+            @UserStartMode int userStartMode, int autoStopUserInSecs,
+            @Nullable IProgressListener unlockListener, TimingsTraceAndSlog t) {
         if (DEBUG_MU) {
             Slogf.i(TAG, "Starting user %d on display %d with mode  %s", userId, displayId,
                     userStartModeToString(userStartMode));
@@ -1992,6 +2008,11 @@ class UserController implements Handler.Callback {
             Preconditions.checkArgument(!foreground, "Cannot start user %d in foreground AND "
                     + "on secondary display (%d)", userId, displayId);
         }
+        if (autoStopUserInSecs > 0) {
+            Preconditions.checkArgument(userStartMode == USER_START_MODE_BACKGROUND,
+                    "Cannot auto-stop a non-bg (%d) user %d in %d s",
+                    userStartMode, userId, autoStopUserInSecs);
+        }
         EventLog.writeEvent(EventLogTags.UC_START_USER_INTERNAL, userId, foreground ? 1 : 0,
                 displayId);
 
@@ -2000,8 +2021,8 @@ class UserController implements Handler.Callback {
         final long ident = Binder.clearCallingIdentity();
         try {
             t.traceBegin("getStartedUserState");
-            final int oldUserId = getCurrentUserId();
-            if (oldUserId == userId) {
+            final int oldCurrentUserId = getCurrentUserId();
+            if (oldCurrentUserId == userId) {
                 // The user we're requested to start is already the current user.
                 final UserState state = getStartedUserState(userId);
                 if (state == null) {
@@ -2081,8 +2102,9 @@ class UserController implements Handler.Callback {
                         || mDoNotAbortShutdownUserIds.contains(userId)) {
                     Slogf.i(TAG, "User #" + userId
                             + " is shutting down - will start after full shutdown");
+                    // TODO(b/416746742): Don't we need to track the displayId too?
                     mPendingUserStarts.add(new PendingUserStart(userId, userStartMode,
-                            unlockListener));
+                            autoStopUserInSecs, unlockListener));
                     t.traceEnd(); // updateStartedUserArrayStarting
                     return true;
                 }
@@ -2091,10 +2113,6 @@ class UserController implements Handler.Callback {
             // No matter what, the fact that we're requested to start the user (even if it is
             // already running) puts it towards the end of the mUserLru list.
             addUserToUserLru(userId);
-            if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
-                mHandler.removeEqualMessages(SCHEDULED_STOP_BACKGROUND_USER_MSG,
-                        Integer.valueOf(userId));
-            }
 
             if (unlockListener != null) {
                 uss.mUnlockProgress.addListener(unlockListener);
@@ -2119,7 +2137,8 @@ class UserController implements Handler.Callback {
             UserState finalUss = uss;
             boolean finalNeedStart = needStart;
             final Runnable continueStartUserInternal = () -> continueStartUserInternal(userInfo,
-                    oldUserId, userStartMode, finalUss, finalNeedStart, callingUid, callingPid);
+                    oldCurrentUserId, userStartMode, autoStopUserInSecs, finalUss, finalNeedStart,
+                    callingUid, callingPid);
             if (foreground) {
                 mHandler.post(() -> dispatchOnBeforeUserSwitching(userId, () ->
                         mHandler.post(continueStartUserInternal)));
@@ -2133,8 +2152,9 @@ class UserController implements Handler.Callback {
         return true;
     }
 
-    private void continueStartUserInternal(UserInfo userInfo, int oldUserId, int userStartMode,
-            UserState uss, boolean needStart, int callingUid, int callingPid) {
+    private void continueStartUserInternal(UserInfo userInfo, int oldCurUserId,
+            int userStartMode, int autoStopUserInSecs, UserState uss, boolean needStart,
+            int callingUid, int callingPid) {
         final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
         final boolean foreground = userStartMode == USER_START_MODE_FOREGROUND;
         final int userId = userInfo.id;
@@ -2168,9 +2188,6 @@ class UserController implements Handler.Callback {
             // We are starting a non-foreground user. They have already been added to the end
             // of mUserLru, so we need to ensure that the foreground user isn't displaced.
             addUserToUserLru(mCurrentUserId);
-        }
-        if (userStartMode == USER_START_MODE_BACKGROUND && userInfo.isFull()) {
-            scheduleStopOfBackgroundUser(userId);
         }
         t.traceEnd();
 
@@ -2214,15 +2231,33 @@ class UserController implements Handler.Callback {
             t.traceEnd();
         }
 
+        if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
+            if (userStartMode == USER_START_MODE_BACKGROUND && userInfo.isFull() &&
+                    (autoStopUserInSecs = determineWhenToScheduleStop(autoStopUserInSecs)) > 0) {
+                if (!needStart
+                        && !mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
+                                Integer.valueOf(userId))) {
+                    Slogf.d(TAG, "Not scheduling background user stop: user %d is already running"
+                            + " in background in perpetuity, so keep it that way", userId);
+                } else {
+                    scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
+                }
+            } else {
+                // This start shouldn't be scheduled for stopping. Clear existing scheduled stops.
+                mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
+                        Integer.valueOf(userId));
+            }
+        }
+
         t.traceBegin("sendMessages");
         if (foreground) {
-            mHandler.sendMessage(mHandler.obtainMessage(USER_CURRENT_MSG, userId, oldUserId));
+            mHandler.sendMessage(mHandler.obtainMessage(USER_CURRENT_MSG, userId, oldCurUserId));
             mHandler.removeMessages(REPORT_USER_SWITCH_MSG);
             mHandler.removeMessages(USER_SWITCH_TIMEOUT_MSG);
             mHandler.sendMessage(mHandler.obtainMessage(REPORT_USER_SWITCH_MSG,
-                    oldUserId, userId, uss));
+                    oldCurUserId, userId, uss));
             mHandler.sendMessageDelayed(mHandler.obtainMessage(USER_SWITCH_TIMEOUT_MSG,
-                    oldUserId, userId, uss), getUserSwitchTimeoutMs());
+                    oldCurUserId, userId, uss), getUserSwitchTimeoutMs());
         }
 
         if (userInfo.preCreated) {
@@ -2258,6 +2293,22 @@ class UserController implements Handler.Callback {
             sendUserStartingBroadcast(userId, callingUid, callingPid);
             t.traceEnd();
         }
+    }
+
+    /**
+     * Determines when to schedule stopping a background user, balancing between the provided
+     * parameter and the default {@link #mBackgroundUserScheduledStopTimeSecs}. It is the smallest
+     * positive value among them.
+     * Returns a non-positive value (i.e. don't schedule) if both are non-positive.
+     */
+    private int determineWhenToScheduleStop(int autoStopUserInSecs) {
+        if (autoStopUserInSecs <= 0) {
+            return mBackgroundUserScheduledStopTimeSecs;
+        }
+        if (mBackgroundUserScheduledStopTimeSecs <= 0) {
+            return autoStopUserInSecs;
+        }
+        return Math.min(mBackgroundUserScheduledStopTimeSecs, autoStopUserInSecs);
     }
 
     /**
@@ -2587,14 +2638,21 @@ class UserController implements Handler.Callback {
 
     /**
      * Possibly schedules the user to be stopped at a future point. To be used to stop background
-     * users that haven't been actively used in a long time.
+     * users that haven't been actively used in a long time, using the default delay for that.
      * This is only intended for full users that are currently in the background.
      */
-    private void scheduleStopOfBackgroundUser(@UserIdInt int oldUserId) {
+    private void scheduleStopOfInactiveBackgroundUser(@UserIdInt int oldUserId) {
+        scheduleStopOfBackgroundUser(oldUserId, mBackgroundUserScheduledStopTimeSecs);
+    }
+
+    /**
+     * Possibly schedules the user to be stopped at after the given number of seconds.
+     * This is only intended for full users that are currently in the background.
+     */
+    private void scheduleStopOfBackgroundUser(@UserIdInt int oldUserId, int delayUptimeSecs) {
         if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
             return;
         }
-        final int delayUptimeSecs = mBackgroundUserScheduledStopTimeSecs;
         if (delayUptimeSecs <= 0 || UserManager.isVisibleBackgroundUsersEnabled()) {
             // Feature is not enabled on this device.
             return;
@@ -2620,9 +2678,8 @@ class UserController implements Handler.Callback {
         Slogf.d(TAG, "Scheduling to stop user %d in %d seconds", oldUserId, delayUptimeSecs);
         final int delayUptimeMs = delayUptimeSecs * 1000;
         final Object msgObj = oldUserId;
-        mHandler.removeEqualMessages(SCHEDULED_STOP_BACKGROUND_USER_MSG, msgObj);
         mHandler.sendMessageDelayed(
-                mHandler.obtainMessage(SCHEDULED_STOP_BACKGROUND_USER_MSG, msgObj),
+                mHandler.obtainMessage(SCHEDULE_STOP_BACKGROUND_USER_MSG, msgObj),
                 delayUptimeMs);
     }
 
@@ -2631,7 +2688,7 @@ class UserController implements Handler.Callback {
      * There is no guarantee of stopping the user; it is done discretionarily.
      *
      * This should never be called for background visible users; devices that support this should
-     * not use {@link #scheduleStopOfBackgroundUser(int)}.
+     * not use {@link #scheduleStopOfBackgroundUser(int, int)}.
      *
      * @param userIdInteger a full user to be stopped if it is still in the background
      */
@@ -2640,13 +2697,25 @@ class UserController implements Handler.Callback {
         final int userId = userIdInteger;
         Slogf.d(TAG, "Considering stopping background user %d due to inactivity", userId);
 
+        if (mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG, userIdInteger)) {
+            Slogf.i(TAG, "User %d is scheduled for bg stopping later, so wait until then", userId);
+            return;
+        }
         if (avoidStoppingUserDueToUpcomingAlarm(userId)) {
             // We want this user running soon for alarm-purposes, so don't stop it now. Reschedule.
-            scheduleStopOfBackgroundUser(userId);
+            Slogf.d(TAG, "User %d will fire an alarm soon, so reschedule bg stopping", userId);
+            scheduleStopOfInactiveBackgroundUser(userId);
+            return;
+        }
+        if (mInjector.getAudioManagerInternal().isUserPlayingAudio(userId)) {
+            // User is audible (even if invisibly, e.g. via an alarm), so don't stop it. Reschedule.
+            Slogf.d(TAG, "User %d is playing audio, so reschedule bg stopping", userId);
+            scheduleStopOfInactiveBackgroundUser(userId);
             return;
         }
         synchronized (mLock) {
             if (getCurrentOrTargetUserIdLU() == userId) {
+                // User is (somehow) already in the foreground, or we're currently switching to it.
                 return;
             }
             if (mPendingTargetUserIds.contains(userIdInteger)) {
@@ -2656,7 +2725,7 @@ class UserController implements Handler.Callback {
             final UserInfo currentOrTargetUser = getCurrentUserLU();
             if (currentOrTargetUser != null && currentOrTargetUser.isGuest()) {
                 // Don't kill any background users for the sake of a Guest. Just reschedule instead.
-                scheduleStopOfBackgroundUser(userId);
+                scheduleStopOfInactiveBackgroundUser(userId);
                 return;
             }
             Slogf.i(TAG, "Stopping background user %d due to inactivity", userId);
@@ -2671,9 +2740,9 @@ class UserController implements Handler.Callback {
     private boolean avoidStoppingUserDueToUpcomingAlarm(@UserIdInt int userId) {
         final long alarmWallclockMs
                 = mInjector.getAlarmManagerInternal().getNextAlarmTriggerTimeForUser(userId);
-        return System.currentTimeMillis() <  alarmWallclockMs
-                && (alarmWallclockMs
-                    < System.currentTimeMillis() + TIME_BEFORE_USERS_ALARM_TO_AVOID_STOPPING_MS);
+        final long now = System.currentTimeMillis();
+        return now < alarmWallclockMs
+                && (alarmWallclockMs < now + TIME_BEFORE_USERS_ALARM_TO_AVOID_STOPPING_MS);
     }
 
     private void timeoutUserSwitch(UserState uss, int oldUserId, int newUserId) {
@@ -2805,7 +2874,7 @@ class UserController implements Handler.Callback {
         uss.switching = false;
         stopGuestOrEphemeralUserIfBackground(oldUserId);
         stopUserOnSwitchIfEnforced(oldUserId);
-        scheduleStopOfBackgroundUser(oldUserId);
+        scheduleStopOfInactiveBackgroundUser(oldUserId);
 
         t.traceEnd(); // end continueUserSwitch
     }
@@ -3812,7 +3881,7 @@ class UserController implements Handler.Callback {
             case COMPLETE_USER_SWITCH_MSG:
                 completeUserSwitch(msg.arg1, msg.arg2);
                 break;
-            case SCHEDULED_STOP_BACKGROUND_USER_MSG:
+            case SCHEDULE_STOP_BACKGROUND_USER_MSG:
                 processScheduledStopOfBackgroundUser((Integer) msg.obj);
                 break;
         }
@@ -3991,12 +4060,14 @@ class UserController implements Handler.Callback {
     private static class PendingUserStart {
         public final @UserIdInt int userId;
         public final @UserStartMode int userStartMode;
+        public final int autoStopUserInSecs;
         public final IProgressListener unlockListener;
 
-        PendingUserStart(int userId, @UserStartMode int userStartMode,
+        PendingUserStart(int userId, @UserStartMode int userStartMode, int autoStopUserInSecs,
                 IProgressListener unlockListener) {
             this.userId = userId;
             this.userStartMode = userStartMode;
+            this.autoStopUserInSecs = autoStopUserInSecs;
             this.unlockListener = unlockListener;
         }
 
@@ -4005,6 +4076,7 @@ class UserController implements Handler.Callback {
             return "PendingUserStart{"
                     + "userId=" + userId
                     + ", userStartMode=" + userStartModeToString(userStartMode)
+                    + ", autoStopUserInSecs=" + autoStopUserInSecs
                     + ", unlockListener=" + unlockListener
                     + '}';
         }
@@ -4110,6 +4182,10 @@ class UserController implements Handler.Callback {
                 mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
             }
             return mPowerManagerInternal;
+        }
+
+        AudioManagerInternal getAudioManagerInternal() {
+            return LocalServices.getService(AudioManagerInternal.class);
         }
 
         AlarmManagerInternal getAlarmManagerInternal() {
