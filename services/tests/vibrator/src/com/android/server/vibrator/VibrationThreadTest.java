@@ -247,7 +247,6 @@ public class VibrationThreadTest {
         assertThat(mVibratorProviders.get(VIBRATOR_ID).getAmplitudes()).isEmpty();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorWaveform_runsVibrationAndChangesAmplitudes() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -270,10 +269,7 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED,
-            Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING,
-    })
+    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_singleWaveformWithAdaptiveHapticsScaling_scalesAmplitudesProperly() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -300,10 +296,7 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags({
-            Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED,
-            Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING,
-    })
+    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
     public void vibrate_withVibrationParamsRequestStalling_timeoutRequestAndApplyNoScaling() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -364,7 +357,6 @@ public class VibrationThreadTest {
         }
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorRepeatingShortAlwaysOnWaveform_turnsVibratorOnForLonger()
             throws Exception {
@@ -388,7 +380,6 @@ public class VibrationThreadTest {
                 .containsExactly(expectedOneShot(5000)).inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPatternWithZeroDurationSteps_skipsZeroDurationSteps() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -408,7 +399,6 @@ public class VibrationThreadTest {
                 .containsExactlyElementsIn(expectedOneShots(100L, 150L)).inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPatternWithZeroDurationAndAmplitude_skipsZeroDurationSteps() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -430,7 +420,6 @@ public class VibrationThreadTest {
                 .containsExactlyElementsIn(expectedOneShots(200L, 50L)).inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @LargeTest
     @Test
     public void vibrate_singleVibratorRepeatingPatternWithZeroDurationSteps_repeatsEffectCorrectly()
@@ -463,7 +452,6 @@ public class VibrationThreadTest {
                 .inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPatternWithCallbackDelay_oldCallbacksIgnored() {
         FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(VIBRATOR_ID);
@@ -547,7 +535,6 @@ public class VibrationThreadTest {
         assertThat(fakeVibrator.getEffectSegments(vibration.id)).hasSize(10);
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorRepeatingLongAlwaysOnWaveform_turnsVibratorOnForACycle()
             throws Exception {
@@ -711,7 +698,6 @@ public class VibrationThreadTest {
                 .containsExactly(expectedPrebaked(VibrationEffect.EFFECT_THUD)).inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPrebakedAndUnsupportedEffectWithFallback_runsFallback() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -1259,7 +1245,6 @@ public class VibrationThreadTest {
                 .containsExactly(expected).inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_multipleStereo_runsVibrationOnRightVibrators() {
         mockVibrators(1, 2, 3, 4);
@@ -1492,7 +1477,6 @@ public class VibrationThreadTest {
         assertThat(mVibratorProviders.get(1).getAmplitudes()).isEmpty();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_multipleWaveforms_playsWaveformsInParallel() throws Exception {
         mockVibrators(1, 2, 3);
@@ -1811,7 +1795,6 @@ public class VibrationThreadTest {
         assertThat(mControllers.get(VIBRATOR_ID).isVibrating()).isFalse();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_waveformWithRampDown_addsRampDownAfterVibrationCompleted() {
         when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
@@ -1839,7 +1822,6 @@ public class VibrationThreadTest {
         }
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_waveformWithRampDown_triggersCallbackWhenOriginalVibrationEnds()
             throws Exception {
@@ -1870,7 +1852,6 @@ public class VibrationThreadTest {
         verify(mManagerHooks).onVibrationThreadReleased(vibration.id);
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_waveformCancelledWithRampDown_addsRampDownAfterVibrationCancelled()
             throws Exception {
@@ -2065,7 +2046,6 @@ public class VibrationThreadTest {
                 .containsExactly(expectedPrebaked(EFFECT_CLICK)).inOrder();
     }
 
-    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_multipleVibratorsSequentialInSession_runsInOrderWithoutDelaysAndNoOffs() {
         mockVibrators(1, 2, 3);
