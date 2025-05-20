@@ -1494,9 +1494,6 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
 
     private Boolean isSystemAppProtectionRoleHolder(
             @NonNull Computer snapshot, int userId, int callingUid) {
-        if (!Flags.deletePackagesSilentlyBackport()) {
-            return false;
-        }
         String holderPackageName = Binder.withCleanCallingIdentity(() -> {
             RoleManager roleManager = mPm.mContext.getSystemService(RoleManager.class);
             if (roleManager == null) {
