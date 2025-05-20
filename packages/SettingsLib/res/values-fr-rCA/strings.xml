@@ -758,9 +758,6 @@
     <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="268234802198852753">"Si vous diffusez <xliff:g id="SWITCHAPP">%1$s</xliff:g> ou changez la sortie, votre diffusion actuelle s\'arrêtera"</string>
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"Diffuser <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"Changer la sortie"</string>
-    <string name="back_navigation_animation" msgid="8105467568421689484">"Animations de prévisualisation du retour"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Activez les animations système de prévisualisation du retour."</string>
-    <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"Ce paramètre permet d\'activer les animations du système pour l\'animation des gestes prédictifs. Cela exige de définir le paramètre enableOnBackInvokedCallback à Vrai pour chaque appli dans le fichier de configuration."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
     <string name="not_specified" msgid="5423502443185110328">"Non précisé"</string>
     <string name="neuter" msgid="2075249330106127310">"Neutre"</string>

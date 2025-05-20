@@ -179,7 +179,7 @@
     <string name="bluetooth_talkback_headset" msgid="3406852564400882682">"Headset"</string>
     <string name="bluetooth_talkback_phone" msgid="868393783858123880">"Telefoon"</string>
     <string name="bluetooth_talkback_imaging" msgid="8781682986822514331">"Replicatieapparaat"</string>
-    <string name="bluetooth_talkback_headphone" msgid="8613073829180337091">"Hoofdtelefoon"</string>
+    <string name="bluetooth_talkback_headphone" msgid="8613073829180337091">"Koptelefoon"</string>
     <string name="bluetooth_talkback_input_peripheral" msgid="5133944817800149942">"Randapparaat voor invoer"</string>
     <string name="bluetooth_talkback_hearing_aids" msgid="3983279945542595479">"Hoortoestellen"</string>
     <string name="bluetooth_talkback_bluetooth" msgid="1143241359781999989">"Bluetooth"</string>
@@ -758,9 +758,6 @@
     <string name="bt_le_audio_broadcast_dialog_sub_title" msgid="268234802198852753">"Als je <xliff:g id="SWITCHAPP">%1$s</xliff:g> uitzendt of de uitvoer wijzigt, wordt je huidige uitzending gestopt"</string>
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="5749813313369517812">"<xliff:g id="SWITCHAPP">%1$s</xliff:g> uitzenden"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="2638402023060391333">"Uitvoer wijzigen"</string>
-    <string name="back_navigation_animation" msgid="8105467568421689484">"Voorspellende animaties voor gebaren voor terug"</string>
-    <string name="back_navigation_animation_summary" msgid="741292224121599456">"Systeemanimaties aanzetten voor voorspellende acties voor terug"</string>
-    <string name="back_navigation_animation_dialog" msgid="8696966520944625596">"Met deze instelling zet je systeemanimaties aan voor voorspellende gebaaranimaties. Je moet enableOnBackInvokedCallback per app instellen op True in het manifestbestand."</string>
     <string name="font_scale_percentage" msgid="2624057443622817886">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="not_specified" msgid="5423502443185110328">"Niet opgegeven"</string>
     <string name="neuter" msgid="2075249330106127310">"Onzijdig"</string>
