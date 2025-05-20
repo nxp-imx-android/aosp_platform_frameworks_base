@@ -294,13 +294,15 @@
             </intent-filter>
         </activity-alias>
 
-        <receiver android:name="com.android.server.appwidget.DummyAppWidget"
+        <receiver android:name="com.android.server.appwidget.TestAppWidgetProvider"
              android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                  android:resource="@xml/dummy_appwidget_info"/>
+            <meta-data android:name="info_with_config"
+                android:resource="@xml/dummy_config_appwidget_info"/>
         </receiver>
     </application>
 
