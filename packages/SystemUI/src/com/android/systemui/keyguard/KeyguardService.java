@@ -395,36 +395,6 @@ public class KeyguardService extends Service {
     @Override
     public void onCreate() {
         ((SystemUIApplication) getApplication()).startSystemUserServicesIfNeeded();
-
-        if (mShellTransitions == null || !Transitions.ENABLE_SHELL_TRANSITIONS) {
-            RemoteAnimationDefinition definition = new RemoteAnimationDefinition();
-            final RemoteAnimationAdapter exitAnimationAdapter =
-                    new RemoteAnimationAdapter(
-                            mKeyguardViewMediator.getExitAnimationRunner(), 0, 0);
-            definition.addRemoteAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY,
-                    exitAnimationAdapter);
-            definition.addRemoteAnimation(TRANSIT_OLD_KEYGUARD_GOING_AWAY_ON_WALLPAPER,
-                    exitAnimationAdapter);
-            final RemoteAnimationAdapter occludeAnimationAdapter =
-                    new RemoteAnimationAdapter(
-                            mKeyguardViewMediator.getOccludeAnimationRunner(), 0, 0);
-            definition.addRemoteAnimation(TRANSIT_OLD_KEYGUARD_OCCLUDE,
-                    occludeAnimationAdapter);
-
-            final RemoteAnimationAdapter occludeByDreamAnimationAdapter =
-                    new RemoteAnimationAdapter(
-                            mKeyguardViewMediator.getOccludeByDreamAnimationRunner(), 0, 0);
-            definition.addRemoteAnimation(TRANSIT_OLD_KEYGUARD_OCCLUDE_BY_DREAM,
-                    occludeByDreamAnimationAdapter);
-
-            final RemoteAnimationAdapter unoccludeAnimationAdapter =
-                    new RemoteAnimationAdapter(
-                            mKeyguardViewMediator.getUnoccludeAnimationRunner(), 0, 0);
-            definition.addRemoteAnimation(TRANSIT_OLD_KEYGUARD_UNOCCLUDE,
-                    unoccludeAnimationAdapter);
-            ActivityTaskManager.getInstance().registerRemoteAnimationsForDisplay(
-                    mDisplayTracker.getDefaultDisplayId(), definition);
-        }
     }
 
     @Override
