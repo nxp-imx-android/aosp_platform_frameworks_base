@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"ऐप को, स्टेटस बार खोलकर बड़ा करने या उसे छोटा करने की अनुमति देता है."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"लॉक किए गए किसी डिवाइस पर सूचनाओं को फ़ुल स्क्रीन पर दिखाता है"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"यह अनुमति मिलने के बाद ऐप्लिकेशन, लॉक किए गए डिवाइस में सूचनाओं को फ़ुल स्क्रीन मोड में दिखाता है"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"लाइव अपडेट दिखाएं"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"इस ऐप्लिकेशन को अनुमति दें कि इसके बैकग्राउंड में जारी गतिविधि और प्राथमिकता वाली सूचनाएं, स्टेटस बार और लॉक स्क्रीन पर दिखें"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"शॉर्टकट इंस्‍टॉल करें"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"ऐप्‍लिकेशन को उपयोगकर्ता की रोक के बिना होमस्‍क्रीन शॉर्टकट जोड़ने की अनुमति देता है."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"शॉर्टकट अनइंस्टॉल करें"</string>
@@ -1709,6 +1711,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"बाहरी डिवाइस"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"हेडफ़ोन"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"यूएसबी"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"सिस्‍टम"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"ब्लूटूथ ऑडियो"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"वायरलेस डिसप्ले"</string>
@@ -1830,8 +1844,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> द्वारा प्रस्‍थान किया जा रहा है…"</string>
     <string name="owner_name" msgid="8713560351570795743">"मालिक"</string>
     <string name="guest_name" msgid="8502103277839834324">"मेहमान"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"सिस्टम यूज़र"</string>
     <string name="error_message_title" msgid="4082495589294631966">"गड़बड़ी"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"आपका एडमिन इस बदलाव की अनुमति नहीं देता"</string>
     <string name="app_not_found" msgid="3429506115332341800">"इस कार्यवाही को प्रबंधित करने के लिए कोई ऐप्स  नहीं मिला"</string>

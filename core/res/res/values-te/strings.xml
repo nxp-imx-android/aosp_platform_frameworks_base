@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"స్టేటస్‌ బార్‌ను విస్తరింపజేయడానికి లేదా కుదించడానికి యాప్‌ను అనుమతిస్తుంది."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"లాక్ చేసి ఉన్న పరికరంలో నోటిఫికేషన్‌లను ఫుల్ స్క్రీన్ యాక్టివిటీలుగా డిస్‌ప్లే చేస్తుంది"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"లాక్ చేసి ఉన్న పరికరంలో నోటిఫికేషన్‌లను ఫుల్ స్క్రీన్ యాక్టివిటీలుగా డిస్‌ప్లే చేయడానికి యాప్‌ను అనుమతిస్తుంది"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"లైవ్ అప్‌డేట్‌లను చూడండి"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"స్టేట‌స్ బార్, లాక్ స్క్రీన్‌లపై రియల్ టైమ్, టైమ్ సెన్సిటివ్ నోటిఫికేషన్‌లను చూపడానికి యాప్‌ను అనుమతిస్తుంది"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"షార్ట్‌కట్‌లను ఇన్‌స్టాల్ చేయడం"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"వినియోగదారు ప్రమేయం లేకుండానే హోమ్‌స్క్రీన్ షార్ట్‌కట్‌లను జోడించడానికి యాప్‌ను అనుమతిస్తుంది."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"షార్ట్‌కట్‌లను అన్ఇన్‌స్టాల్ చేయడం"</string>
@@ -683,11 +685,11 @@
     <string name="biometric_error_generic" msgid="6784371929985434439">"ప్రామాణీకరిస్తున్నప్పుడు ఎర్రర్ ఏర్పడింది"</string>
     <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"స్క్రీన్ లాక్‌ను ఉపయోగించండి"</string>
     <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"కొనసాగించడానికి మీ స్క్రీన్ లాక్‌ను ఎంటర్ చేయండి"</string>
-    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"సెన్సార్ మీద గట్టిగా నొక్కండి"</string>
+    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"సెన్సర్ మీద గట్టిగా నొక్కండి"</string>
     <string name="fingerprint_acquired_insufficient" msgid="2410176550915730974">"వేలిముద్ర గుర్తించబడలేదు. మళ్లీ ట్రై చేయండి."</string>
     <string name="fingerprint_acquired_imager_dirty" msgid="1770676120848224250">"వేలిముద్ర సెన్సార్‌ను క్లీన్ చేసి, మళ్లీ ట్రై చేయండి"</string>
     <string name="fingerprint_acquired_imager_dirty_alt" msgid="9169582140486372897">"సెన్సార్‌ను క్లీన్ చేసి, మళ్లీ ట్రై చేయండి"</string>
-    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"సెన్సార్ మీద గట్టిగా నొక్కండి"</string>
+    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"సెన్సర్ మీద గట్టిగా నొక్కండి"</string>
     <string name="fingerprint_acquired_too_slow" msgid="6683510291554497580">"వేలిని చాలా నెమ్మదిగా కదిలించారు. దయచేసి మళ్లీ ట్రై చేయండి."</string>
     <string name="fingerprint_acquired_already_enrolled" msgid="2285166003936206785">"మరొక వేలిముద్రను ట్రై చేయండి"</string>
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"వెలుతురు అధికంగా ఉంది"</string>
@@ -1709,6 +1711,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"బాహ్య పరికరం"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"హెడ్‌ఫోన్‌లు"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"సిస్టమ్"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"బ్లూటూత్ ఆడియో"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"వైర్‌లెస్ డిస్‌ప్లే"</string>

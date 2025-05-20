@@ -382,6 +382,10 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Lar appen utvide eller skjule statuslinjen."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"vis varsler som aktiviteter i fullskjerm på en låst enhet"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Gir appen tillatelse til å vise varsler som aktiviteter i fullskjerm på en låst enhet"</string>
+    <!-- no translation found for permlab_postPromotedNotifications (4873499297871691102) -->
+    <skip />
+    <!-- no translation found for permdesc_postPromotedNotifications (4530634734172420651) -->
+    <skip />
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"installere snarveier"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Lar appen legge til snarveier på startsiden uten å involvere brukeren."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"avinstallere snarveier"</string>
@@ -1709,6 +1713,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Ekstern enhet"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Hodetelefoner"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"System"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Bluetooth-lyd"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Trådløs skjerm"</string>
@@ -1830,8 +1846,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"Logger av <xliff:g id="NAME">%1$s</xliff:g> …"</string>
     <string name="owner_name" msgid="8713560351570795743">"Eier"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gjest"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"Systembruker"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Feil"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Denne endringen er ikke tillatt av administratoren"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Finner ingen apper som kan utføre denne handlingen"</string>
