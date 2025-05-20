@@ -44,7 +44,7 @@ data class ClockFaceConfig(
 
     /**
      * Whether this clock has a custom position update animation. If true, the keyguard will call
-     * `onPositionUpdated` to notify the clock of a position update animation. If false, a default
+     * `onPositionAnimated` to notify the clock of a position update animation. If false, a default
      * animation will be used (e.g. a simple translation).
      */
     val hasCustomPositionUpdatedAnimation: Boolean = false,

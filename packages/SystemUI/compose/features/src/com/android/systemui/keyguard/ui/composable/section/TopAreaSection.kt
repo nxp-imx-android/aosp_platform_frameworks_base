@@ -187,7 +187,7 @@ constructor(
                             // the clock to be on one half of the screen.
                             Modifier.offset {
                                 IntOffset(
-                                    x = -clockSection.getClockCenteringDistance().toInt(),
+                                    x = -DefaultClockSection.getClockCenteringDistance().toInt(),
                                     y = 0,
                                 )
                             }

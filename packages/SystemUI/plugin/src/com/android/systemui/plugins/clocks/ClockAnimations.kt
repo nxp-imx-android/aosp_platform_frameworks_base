@@ -13,7 +13,6 @@
  */
 package com.android.systemui.plugins.clocks
 
-import android.view.View
 import com.android.systemui.plugins.annotations.ProtectedInterface
 
 /** Methods which trigger various clock animations */
@@ -31,27 +30,8 @@ interface ClockAnimations {
     /** Runs the battery animation (if any). */
     fun charge()
 
-    /**
-     * Runs when the clock's position changed during the move animation.
-     *
-     * @param fromLeft the [View.getLeft] position of the clock, before it started moving.
-     * @param direction the direction in which it is moving. A positive number means right, and
-     *   negative means left.
-     * @param fraction fraction of the clock movement. 0 means it is at the beginning, and 1 means
-     *   it finished moving.
-     * @deprecated use {@link #onPositionUpdated(float, float)} instead.
-     */
-    fun onPositionUpdated(fromLeft: Int, direction: Int, fraction: Float)
-
-    /**
-     * Runs when the clock's position changed during the move animation.
-     *
-     * @param distance is the total distance in pixels to offset the glyphs when animation
-     *   completes. Negative distance means we are animating the position towards the center.
-     * @param fraction fraction of the clock movement. 0 means it is at the beginning, and 1 means
-     *   it finished moving.
-     */
-    fun onPositionUpdated(distance: Float, fraction: Float)
+    /** Runs when the clock's position changed during the move animation. */
+    fun onPositionAnimated(anim: ClockPositionAnimationArgs)
 
     /**
      * Runs when swiping clock picker, swipingFraction: 1.0 -> clock is scaled up in the preview,
@@ -65,3 +45,5 @@ interface ClockAnimations {
     /** Update reactive axes for this clock */
     fun onFontAxesChanged(style: ClockAxisStyle)
 }
+
+data class ClockPositionAnimationArgs(val fromLeft: Int, val direction: Int, val fraction: Float)
