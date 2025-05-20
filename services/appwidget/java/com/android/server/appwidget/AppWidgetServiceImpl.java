@@ -767,40 +767,44 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             for (int i = 0; i < N; i++) {
                 Provider provider = mProviders.get(i);
                 int providerUserId = provider.getUserId();
-                if (providerUserId != userId) {
+                if (providerUserId != userId || provider.zombie) {
                     continue;
                 }
-
-                boolean changed = provider.setMaskedByLockedProfileLocked(lockedProfile);
-                changed |= provider.setMaskedByQuietProfileLocked(quietProfile);
-                try {
-                    boolean suspended;
-                    boolean stopped;
-                    try {
-                        suspended = mPackageManager.isPackageSuspendedForUser(
-                                provider.id.componentName.getPackageName(), provider.getUserId());
-                        stopped = mPackageManager.isPackageStoppedForUser(
-                                provider.id.componentName.getPackageName(), provider.getUserId());
-                    } catch (IllegalArgumentException ex) {
-                        // Package not found.
-                        suspended = false;
-                        stopped = false;
-                    }
-                    changed |= provider.setMaskedBySuspendedPackageLocked(suspended);
-                    changed |= provider.setMaskedByStoppedPackageLocked(stopped);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to query application info", e);
-                }
-                if (changed) {
-                    if (provider.isMaskedLocked()) {
-                        maskWidgetsViewsLocked(provider, null);
-                    } else {
-                        unmaskWidgetsViewsLocked(provider);
-                    }
-                }
+                reloadProviderMaskedStateLocked(provider, lockedProfile, quietProfile);
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private void reloadProviderMaskedStateLocked(@NonNull Provider provider,
+            boolean isProfileLocked, boolean isQuietModeEnabled) {
+        final int userId = provider.getUserId();
+        boolean changed = provider.setMaskedByLockedProfileLocked(isProfileLocked);
+        changed |= provider.setMaskedByQuietProfileLocked(isQuietModeEnabled);
+
+        boolean suspended;
+        boolean stopped;
+        try {
+            suspended = mPackageManager.isPackageSuspendedForUser(
+                provider.id.componentName.getPackageName(), userId);
+            stopped = mPackageManager.isPackageStoppedForUser(
+                provider.id.componentName.getPackageName(), userId);
+        } catch (Exception e) {
+            Slog.e(TAG, "Could not get package suspended/stopped state for "
+                    + provider.id.componentName.getPackageName() + " " + provider.getUserId(), e);
+            suspended = false;
+            stopped = false;
+        }
+        changed |= provider.setMaskedBySuspendedPackageLocked(suspended);
+        changed |= provider.setMaskedByStoppedPackageLocked(stopped);
+
+        if (changed) {
+            if (provider.isMaskedLocked()) {
+                maskWidgetsViewsLocked(provider, null);
+            } else {
+                unmaskWidgetsViewsLocked(provider);
+            }
         }
     }
 
@@ -3338,6 +3342,11 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     existing.id = providerId;
                     existing.zombie = false;
                     existing.setPartialInfoLocked(info);
+                    final int userId = existing.getUserId();
+                    final boolean isLockedProfile = !mUserManager.isUserUnlockingOrUnlocked(userId);
+                    final boolean isQuietProfile = mUserManager.getUserInfo(userId)
+                            .isQuietModeEnabled();
+                    reloadProviderMaskedStateLocked(existing, isLockedProfile, isQuietProfile);
                     if (DEBUG) {
                         Slog.i(TAG, "Provider placeholder now reified: " + existing);
                     }
