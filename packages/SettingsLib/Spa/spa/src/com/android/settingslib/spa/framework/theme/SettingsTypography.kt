@@ -183,7 +183,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             displayLargeEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.displayLargeEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 57.sp,
                     lineHeight = 64.sp,
@@ -201,7 +201,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             displayMediumEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.displayMediumEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 45.sp,
                     lineHeight = 52.sp,
@@ -219,7 +219,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             displaySmallEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.displaySmallEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 36.sp,
                     lineHeight = 44.sp,
@@ -237,7 +237,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             headlineLargeEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.headlineLargeEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 32.sp,
                     lineHeight = 40.sp,
@@ -255,7 +255,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             headlineMediumEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.headlineMediumEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 28.sp,
                     lineHeight = 36.sp,
@@ -273,7 +273,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             headlineSmallEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.headlineSmallEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 24.sp,
                     lineHeight = 32.sp,
@@ -291,7 +291,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             titleLargeEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.titleLargeEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 22.sp,
                     lineHeight = 28.sp,
@@ -309,7 +309,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             titleMediumEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.titleMediumEmphasized,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     lineHeight = 24.sp,
@@ -327,7 +327,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             titleSmallEmphasized =
                 TextStyle(
-                    fontFamily = brand,
+                    fontFamily = settingsFontFamily.titleSmallEmphasized,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
@@ -345,7 +345,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             bodyLargeEmphasized =
                 TextStyle(
-                    fontFamily = plain,
+                    fontFamily = settingsFontFamily.bodyLargeEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp,
                     lineHeight = 24.sp,
@@ -363,7 +363,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             bodyMediumEmphasized =
                 TextStyle(
-                    fontFamily = plain,
+                    fontFamily = settingsFontFamily.bodyMediumEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
@@ -381,7 +381,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             bodySmallEmphasized =
                 TextStyle(
-                    fontFamily = plain,
+                    fontFamily = settingsFontFamily.bodySmallEmphasized,
                     fontWeight = FontWeight.Medium,
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
@@ -399,7 +399,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             labelLargeEmphasized =
                 TextStyle(
-                    fontFamily = plain,
+                    fontFamily = settingsFontFamily.labelLargeEmphasized,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
@@ -417,7 +417,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             labelMediumEmphasized =
                 TextStyle(
-                    fontFamily = plain,
+                    fontFamily = settingsFontFamily.labelMediumEmphasized,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
@@ -435,7 +435,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                 ),
             labelSmallEmphasized =
                 TextStyle(
-                    fontFamily = plain,
+                    fontFamily = settingsFontFamily.labelSmallEmphasized,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
                     lineHeight = 16.sp,
