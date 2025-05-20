@@ -13072,7 +13072,7 @@ public final class Settings {
                 "accessibility_mouse_keys_enabled";
 
         /**
-         * The current acceleration for mouse keys movement.
+         * The current float acceleration value for mouse keys movement.
          *
          * @hide
          */
