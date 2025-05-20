@@ -225,3 +225,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "virtual_camera_metadata"
+    namespace: "virtual_devices"
+    description: "API for enabling metadata support for virtual cameras"
+    bug: "371167033"
+    is_exported: true
+}
