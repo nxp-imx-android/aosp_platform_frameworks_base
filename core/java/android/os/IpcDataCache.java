@@ -24,26 +24,10 @@ import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.PropertyInvalidatedCache;
 import android.app.PropertyInvalidatedCache.Args;
-import android.text.TextUtils;
 import android.util.ArraySet;
-
-import com.android.internal.annotations.GuardedBy;
-import com.android.internal.util.FastPrintWriter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * LRU cache that's invalidated when an opaque value in a property changes. Self-synchronizing,
@@ -411,7 +395,7 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
      * 1. Instance-per-cache: create a static instance of this class using the same
      *    parameters as would have been given to IpcDataCache (or
      *    PropertyInvalidatedCache).  This static instance provides a hook for the
-     *    invalidateCache() and disableForLocalProcess() calls, which, generally, must
+     *    invalidateCache() and disableForCurrentProcess() calls, which, generally, must
      *    also be static.
      *
      * 2. Short-hand for shared configuration parameters: create an instance of this class
