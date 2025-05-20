@@ -1968,6 +1968,16 @@ flag {
 }
 
 flag {
+   name: "new_dozing_keyguard_states"
+   namespace: "systemui"
+   description: "Adds new dozing keyguard states for more robust animations to/from dozing."
+   bug: "415704030"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "qs_compose_fragment_early_expansion"
    namespace: "systemui"
    description: "Start expansion from QQS into QS early when touching the shade."
