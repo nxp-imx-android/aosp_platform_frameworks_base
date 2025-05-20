@@ -650,8 +650,7 @@ public class WindowStateTests extends WindowTestsBase {
         final int statusBarId = InsetsSource.createId(null, 0, statusBars());
         mDisplayContent.getInsetsStateController()
                 .getOrCreateSourceProvider(statusBarId, statusBars())
-                .setWindowContainer(statusBar, null /* frameProvider */,
-                        null /* imeFrameProvider */);
+                .setWindow(statusBar, null /* frameProvider */, null /* imeFrameProvider */);
         mDisplayContent.getInsetsStateController().onBarControlTargetChanged(
                 app, null /* fakeTopControlling */, app, null /* fakeNavControlling */);
         app.setRequestedVisibleTypes(0, statusBars());
@@ -675,8 +674,8 @@ public class WindowStateTests extends WindowTestsBase {
         final int statusBarId = InsetsSource.createId(null, 0, statusBars());
         final var statusBarProvider = mDisplayContent.getInsetsStateController()
                 .getOrCreateSourceProvider(statusBarId, statusBars());
-        statusBarProvider.setWindowContainer(statusBar, null /* frameProvider */,
-                        null /* imeFrameProvider */);
+        statusBarProvider.setWindow(statusBar, null /* frameProvider */,
+                null /* imeFrameProvider */);
 
         statusBar.updateSourceFrame(new Rect(0, 0, 500, 200));
         assertTrue("InsetsSourceProvider frame should not be updated before relayout",
@@ -1330,7 +1329,7 @@ public class WindowStateTests extends WindowTestsBase {
         makeWindowVisibleAndDrawn(mImeWindow);
 
         final InsetsStateController controller = mDisplayContent.getInsetsStateController();
-        controller.getImeSourceProvider().setWindowContainer(mImeWindow, null, null);
+        controller.getImeSourceProvider().setWindow(mImeWindow, null, null);
 
         // Simulate appWin2 requests IME.
         appWin2.setRequestedVisibleTypes(ime(), ime());
@@ -1371,7 +1370,7 @@ public class WindowStateTests extends WindowTestsBase {
         mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
 
         final InsetsStateController controller = mDisplayContent.getInsetsStateController();
-        controller.getImeSourceProvider().setWindowContainer(mImeWindow, null, null);
+        controller.getImeSourceProvider().setWindow(mImeWindow, null, null);
 
         // Simulate appWin1 in multi-window mode is going to background to switch to the
         // fullscreen appWin2 which requests IME.
@@ -1447,7 +1446,7 @@ public class WindowStateTests extends WindowTestsBase {
         mNotificationShadeWindow.mAttrs.flags &= ~FLAG_NOT_FOCUSABLE;
         assertTrue(mNotificationShadeWindow.canBeImeLayeringTarget());
         mDisplayContent.getInsetsStateController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         mDisplayContent.computeImeLayeringTarget(true /* update */);
         assertEquals(mNotificationShadeWindow, mDisplayContent.getImeLayeringTarget());

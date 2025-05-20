@@ -85,11 +85,11 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         ime.mAttrs.flags |= FLAG_NOT_FOCUSABLE;
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(ime, null, null);
+                .setWindow(ime, null, null);
 
         assertNull(navBar.getInsetsState().peekSource(ID_IME));
         assertNull(navBar.getInsetsState().peekSource(ID_STATUS_BAR));
@@ -102,9 +102,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
         app.setWindowingMode(WINDOWING_MODE_PINNED);
 
         assertNull(app.getInsetsState().peekSource(ID_STATUS_BAR));
@@ -119,9 +119,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
         app.setWindowingMode(WINDOWING_MODE_FREEFORM);
 
         assertNull(app.getInsetsState().peekSource(ID_STATUS_BAR));
@@ -135,9 +135,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
         app.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         app.setAlwaysOnTop(true);
 
@@ -149,7 +149,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
     @Test
     public void testStripForDispatch_independentSources() {
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         final WindowState app1 = newWindowBuilder("app1", TYPE_APPLICATION).build();
         final WindowState app2 = newWindowBuilder("app2", TYPE_APPLICATION).build();
@@ -165,7 +165,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
     @Test
     public void testStripForDispatch_belowIme() {
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         app.mAboveInsetsState.getOrCreateSource(ID_IME, ime())
@@ -180,7 +180,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
     @Test
     public void testStripForDispatch_aboveIme() {
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
 
@@ -200,7 +200,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         // Make IME and stay visible during the test.
         mImeWindow.setHasSurface(true);
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
         getController().onImeControlTargetChanged(base);
         final @InsetsType int changedTypes = base.setRequestedVisibleTypes(ime(), ime());
         getController().onRequestedVisibleTypesChanged(base, changedTypes, null /* statsToken */);
@@ -249,7 +249,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
     @Test
     public void testStripForDispatch_childWindow_altFocusable() {
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         final WindowState child = newWindowBuilder("child", TYPE_APPLICATION).setParent(
@@ -271,7 +271,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
     @Test
     public void testStripForDispatch_childWindow_splitScreen() {
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         final WindowState child = newWindowBuilder("child", TYPE_APPLICATION).setParent(
@@ -301,15 +301,15 @@ public class InsetsStateControllerTest extends WindowTestsBase {
 
         InsetsSourceProvider statusBarProvider =
                 getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars());
-        final SparseArray<TriFunction<DisplayFrames, WindowContainer, Rect, Integer>>
+        final SparseArray<TriFunction<DisplayFrames, WindowState, Rect, Integer>>
                 imeOverrideProviders = new SparseArray<>();
         imeOverrideProviders.put(TYPE_INPUT_METHOD, ((displayFrames, windowState, rect) -> {
             rect.set(0, 1, 2, 3);
             return 0;
         }));
-        statusBarProvider.setWindowContainer(statusBar, null, imeOverrideProviders);
+        statusBarProvider.setWindow(statusBar, null, imeOverrideProviders);
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(ime, null, null);
+                .setWindow(ime, null, null);
         statusBar.setControllableInsetProvider(statusBarProvider);
         statusBar.updateSourceFrame(statusBar.getFrame());
 
@@ -327,13 +327,13 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState extraNavBar = newWindowBuilder("extraNavBar", TYPE_APPLICATION).build();
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
         getController().getOrCreateSourceProvider(ID_CLIMATE_BAR, statusBars())
-                .setWindowContainer(climateBar, null, null);
+                .setWindow(climateBar, null, null);
         getController().getOrCreateSourceProvider(ID_EXTRA_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(extraNavBar, null, null);
+                .setWindow(extraNavBar, null, null);
         getController().onBarControlTargetChanged(app, null, app, null);
         InsetsSourceControl[] controls = getController().getControlsForDispatch(app);
         assertEquals(4, controls.length);
@@ -344,7 +344,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().onBarControlTargetChanged(app, null, null, null);
         assertNotNull(getController().getControlsForDispatch(app));
         getController().onBarControlTargetChanged(null, null, null, null);
@@ -356,7 +356,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().onBarControlTargetChanged(app, null, null, null);
         assertNotNull(getController().getControlsForDispatch(app));
         statusBar.cancelAnimation();
@@ -375,7 +375,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
 
         // Set app as IME control target
         final var imeInsetsProvider = getController().getOrCreateSourceProvider(ID_IME, ime());
-        imeInsetsProvider.setWindowContainer(ime, null, null);
+        imeInsetsProvider.setWindow(ime, null, null);
         getController().onImeControlTargetChanged(app);
         assertTrue("App has IME as pending control, is at is being set",
                 getController().hasPendingControls(app));
@@ -424,7 +424,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
                 ID_STATUS_BAR, statusBars());
         getController().onBarControlTargetChanged(app, null, null, null);
         assertNull(getController().getControlsForDispatch(app));
-        provider.setWindowContainer(newWindowBuilder("statusBar", TYPE_APPLICATION).build(), null,
+        provider.setWindow(newWindowBuilder("statusBar", TYPE_APPLICATION).build(), null,
                 null);
         assertNotNull(getController().getControlsForDispatch(app));
     }
@@ -435,7 +435,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         final InsetsSourceProvider provider = getController()
                 .getOrCreateSourceProvider(ID_STATUS_BAR, statusBars());
-        provider.setWindowContainer(statusBar, null, null);
+        provider.setWindow(statusBar, null, null);
 
         final InsetsState rotatedState = new InsetsState(app.getInsetsState(),
                 true /* copySources */);
@@ -462,7 +462,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState navBar = createTestWindow("navBar");
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
 
         assertNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
         assertNull(statusBar.mAboveInsetsState.peekSource(ID_STATUS_BAR));
@@ -484,9 +484,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState navBar = createTestWindow("navBar");
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
 
         assertNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
         assertNull(app.mAboveInsetsState.peekSource(ID_NAVIGATION_BAR));
@@ -508,7 +508,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
 
         final InsetsSourceProvider imeSourceProvider =
                 getController().getOrCreateSourceProvider(ID_IME, ime());
-        imeSourceProvider.setWindowContainer(ime, null, null);
+        imeSourceProvider.setWindow(ime, null, null);
         imeSourceProvider.setServerVisible(true);
 
         waitUntilHandlersIdle();
@@ -521,9 +521,9 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         verify(mDisplayContent).notifyInsetsChanged(any());
 
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
 
         getController().updateAboveInsetsState(false /* notifyInsetsChange */);
 
@@ -558,7 +558,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState app = createTestWindow("app");
 
         getController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(ime, null, null);
+                .setWindow(ime, null, null);
         ime.getControllableInsetProvider().setServerVisible(true);
 
         app.mActivityRecord.setVisibility(true);
@@ -600,7 +600,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
     public void testDispatchGlobalInsets() {
         final WindowState navBar = newWindowBuilder("navBar", TYPE_APPLICATION).build();
         getController().getOrCreateSourceProvider(ID_NAVIGATION_BAR, navigationBars())
-                .setWindowContainer(navBar, null, null);
+                .setWindow(navBar, null, null);
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         assertNull(app.getInsetsState().peekSource(ID_NAVIGATION_BAR));
         app.mAttrs.receiveInsetsIgnoringZOrder = true;
@@ -616,7 +616,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         makeWindowVisible(mImeWindow);
         final InsetsSourceProvider imeInsetsProvider =
                 getController().getOrCreateSourceProvider(ID_IME, ime());
-        imeInsetsProvider.setWindowContainer(mImeWindow, null, null);
+        imeInsetsProvider.setWindow(mImeWindow, null, null);
         imeInsetsProvider.updateSourceFrame(mImeWindow.getFrame());
 
         imeInsetsProvider.updateControlForTarget(app1, false, null /* statsToken */);
@@ -643,7 +643,7 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
         getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
-                .setWindowContainer(statusBar, null, null);
+                .setWindow(statusBar, null, null);
         // No controls dispatched yet.
         assertFalse(getController().hasPendingControls(app));
 

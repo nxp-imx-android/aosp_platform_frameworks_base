@@ -67,7 +67,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         statusBar.setBounds(0, 0, 500, 1000);
         statusBar.getFrame().set(0, 0, 500, 100);
         statusBar.mHasSurface = true;
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateSourceFrame(statusBar.getFrame());
         mProvider.onPostLayout();
         assertEquals(new Rect(0, 0, 500, 100), mProvider.getSource().getFrame());
@@ -84,7 +84,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         statusBar.setBounds(0, 0, 500, 1000);
         statusBar.getFrame().set(0, 0, 500, 100);
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateSourceFrame(statusBar.getFrame());
         mProvider.onPostLayout();
         assertTrue(mProvider.getSource().getFrame().isEmpty());
@@ -96,7 +96,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         statusBar.getFrame().set(0, 0, 500, 100);
         statusBar.mHasSurface = true;
-        mProvider.setWindowContainer(statusBar,
+        mProvider.setWindow(statusBar,
                 (displayFrames, windowState, rect) -> {
                     rect.set(10, 10, 20, 20);
                     return 0;
@@ -118,7 +118,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         assertNull(mProvider.getControlTarget());
 
         // We can have the control or the control target after we have the insets source window.
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         assertNotNull(mProvider.getControl(target));
         assertNotNull(mProvider.getControlTarget());
@@ -156,7 +156,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState target = newWindowBuilder("target", TYPE_APPLICATION).build();
         statusBar.getFrame().set(0, 0, 500, 100);
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateFakeControlTarget(target);
         assertNotNull(mProvider.getControl(target));
         assertNull(mProvider.getControl(target).getLeash());
@@ -181,7 +181,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
 
         // We can have the control or the control target after we have the insets source window,
         // but no leash as this is not yet ready for dispatching.
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         assertNotNull(mProvider.getControl(target));
         assertNotNull(mProvider.getControlTarget());
@@ -209,7 +209,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
     @Test
     public void testUpdateSourceFrame() {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         statusBar.setBounds(0, 0, 500, 1000);
 
         mProvider.setServerVisible(true);
@@ -242,7 +242,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
 
         inputMethod.getFrame().set(new Rect(0, 400, 500, 500));
 
-        mImeProvider.setWindowContainer(inputMethod, null, null);
+        mImeProvider.setWindow(inputMethod, null, null);
         mImeProvider.setServerVisible(false);
         mImeSource.setVisible(true);
         mImeProvider.updateSourceFrame(inputMethod.getFrame());
@@ -266,7 +266,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
 
         final WindowState ime1 = newWindowBuilder("ime1", TYPE_INPUT_METHOD).build();
         ime1.getFrame().set(new Rect(0, 0, 0, 0));
-        mImeProvider.setWindowContainer(ime1, null, null);
+        mImeProvider.setWindow(ime1, null, null);
         mImeProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         ime1.getFrame().set(new Rect(0, 400, 500, 500));
         mImeProvider.updateInsetsControlPosition(ime1);
@@ -274,7 +274,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
 
         final WindowState ime2 = newWindowBuilder("ime2", TYPE_INPUT_METHOD).build();
         ime2.getFrame().set(new Rect(0, 0, 0, 0));
-        mImeProvider.setWindowContainer(ime2, null, null);
+        mImeProvider.setWindow(ime2, null, null);
         mImeProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         ime2.getFrame().set(new Rect(0, 400, 500, 500));
         mImeProvider.updateInsetsControlPosition(ime2);
@@ -286,7 +286,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState target = newWindowBuilder("target", TYPE_APPLICATION).build();
         statusBar.getFrame().set(0, 0, 500, 100);
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateControlForTarget(target, false /* force */, null /* statsToken */);
         target.setRequestedVisibleTypes(0, statusBars());
         mProvider.updateClientVisibility(target, null /* statsToken */);
@@ -298,7 +298,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         final WindowState target = newWindowBuilder("target", TYPE_APPLICATION).build();
         statusBar.getFrame().set(0, 0, 500, 100);
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         target.setRequestedVisibleTypes(0, statusBars());
         mProvider.updateClientVisibility(target, null /* statsToken */);
         assertTrue(mSource.isVisible());
@@ -309,7 +309,7 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         final WindowState statusBar = newWindowBuilder("statusBar", TYPE_APPLICATION).build();
         statusBar.getFrame().set(0, 0, 500, 100);
         statusBar.mHasSurface = true;
-        mProvider.setWindowContainer(statusBar, null, null);
+        mProvider.setWindow(statusBar, null, null);
         mProvider.updateSourceFrame(statusBar.getFrame());
         mProvider.onPostLayout();
         assertEquals(new Rect(0, 0, 500, 100), mProvider.getSource().getFrame());

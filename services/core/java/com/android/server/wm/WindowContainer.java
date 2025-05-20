@@ -144,14 +144,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     @Nullable
     SparseArray<InsetsSource> mLocalInsetsSources = null;
 
-    @Nullable
-    protected InsetsSourceProvider mControllableInsetProvider;
-
-    /**
-     * The {@link InsetsSourceProvider}s provided by this window container.
-     */
-    protected SparseArray<InsetsSourceProvider> mInsetsSourceProviders = null;
-
     /**
      * The combined excluded insets types (combined mExcludeInsetsTypes and the
      * mMergedExcludeInsetsTypes from its parent)
@@ -328,7 +320,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * {@link WindowState#mMergedLocalInsetsSources} by visiting the entire hierarchy.
      *
      * {@link WindowState#mAboveInsetsState} is updated by visiting all the windows in z-order
-     * top-to-bottom manner and considering the {@link WindowContainer#mInsetsSourceProviders}
+     * top-to-bottom manner and considering the {@link WindowState#mInsetsSourceProviders}
      * provided by the {@link WindowState}s at the top.
      * {@link WindowState#updateAboveInsetsState(InsetsState, SparseArray, ArraySet)} visits the
      * IME container in the correct order to make sure the IME insets are passed correctly to the
@@ -510,24 +502,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             return false;
         }
         return true;
-    }
-
-    /**
-     * Sets an {@link InsetsSourceProvider} to be associated with this {@code WindowContainer},
-     * but only if the provider itself is controllable, as one window can be the provider of more
-     * than one inset type (i.e. gesture insets). If this {code WindowContainer} is controllable,
-     * all its animations must be controlled by its control target, and the visibility of this
-     * {code WindowContainer} should be taken account into the state of the control target.
-     *
-     * @param insetProvider the provider which should not be visible to the client.
-     * @see WindowState#getInsetsState()
-     */
-    void setControllableInsetProvider(InsetsSourceProvider insetProvider) {
-        mControllableInsetProvider = insetProvider;
-    }
-
-    InsetsSourceProvider getControllableInsetProvider() {
-        return mControllableInsetProvider;
     }
 
     /**
@@ -1129,23 +1103,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
     }
 
-    /**
-     * Returns {@code true} if this node provides insets.
-     */
-    public boolean hasInsetsSourceProvider() {
-        return mInsetsSourceProviders != null;
-    }
-
-    /**
-     * Returns {@link InsetsSourceProvider}s provided by this node.
-     */
-    public SparseArray<InsetsSourceProvider> getInsetsSourceProviders() {
-        if (mInsetsSourceProviders == null) {
-            mInsetsSourceProviders = new SparseArray<>();
-        }
-        return mInsetsSourceProviders;
-    }
-
     public final DisplayContent getDisplayContent() {
         return mDisplayContent;
     }
@@ -1176,9 +1133,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     void onResize() {
-        if (mControllableInsetProvider != null) {
-            mControllableInsetProvider.onWindowContainerBoundsChanged();
-        }
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final WindowContainer wc = mChildren.get(i);
             wc.onParentResize();
@@ -1198,9 +1152,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     void onMovedByResize() {
-        if (mControllableInsetProvider != null) {
-            mControllableInsetProvider.onWindowContainerBoundsChanged();
-        }
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final WindowContainer wc = mChildren.get(i);
             wc.onMovedByResize();
@@ -3045,16 +2996,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     @Override
     public void commitPendingTransaction() {
         scheduleAnimation();
-    }
-
-    void transformFrameToSurfacePosition(int left, int top, Point outPoint) {
-        outPoint.set(left, top);
-        final WindowContainer parentWindowContainer = getParent();
-        if (parentWindowContainer == null) {
-            return;
-        }
-        final Rect parentBounds = parentWindowContainer.getBounds();
-        outPoint.offset(-parentBounds.left, -parentBounds.top);
     }
 
     void reassignLayer(Transaction t) {
