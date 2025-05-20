@@ -42748,7 +42748,13 @@ package android.service.quicksettings {
     method public final void unlockAndRun(Runnable);
     field public static final String ACTION_QS_TILE = "android.service.quicksettings.action.QS_TILE";
     field public static final String ACTION_QS_TILE_PREFERENCES = "android.service.quicksettings.action.QS_TILE_PREFERENCES";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_ACCESSIBILITY = "android.service.quicksettings.CATEGORY_ACCESSIBILITY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_CONNECTIVITY = "android.service.quicksettings.CATEGORY_CONNECTIVITY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_DISPLAY = "android.service.quicksettings.CATEGORY_DISPLAY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_PRIVACY = "android.service.quicksettings.CATEGORY_PRIVACY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_UTILITIES = "android.service.quicksettings.CATEGORY_UTILITIES";
     field public static final String META_DATA_ACTIVE_TILE = "android.service.quicksettings.ACTIVE_TILE";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String META_DATA_TILE_CATEGORY = "android.service.quicksettings.TILE_CATEGORY";
     field public static final String META_DATA_TOGGLEABLE_TILE = "android.service.quicksettings.TOGGLEABLE_TILE";
   }
 
