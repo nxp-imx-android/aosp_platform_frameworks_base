@@ -217,6 +217,13 @@ flag {
 }
 
 flag {
+    name: "count_class_instances_api"
+    namespace: "system_performance"
+    description: "Guards the new count instances of classes api"
+    bug: "337354084"
+}
+
+flag {
     name: "cpu_gpu_headrooms"
     namespace: "game"
     description: "Feature flag for adding CPU/GPU headroom API"
