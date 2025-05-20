@@ -102,7 +102,7 @@ constructor(
             animateSqueezeProgressTo(
                 targetProgress = 0f,
                 duration = outwardsAnimationDuration,
-                interpolator = InterpolatorsAndroidX.LEGACY,
+                interpolator = InterpolatorsAndroidX.EMPHASIZED,
             ) {
                 finishAnimation()
             }
@@ -121,7 +121,7 @@ constructor(
             animateSqueezeProgressTo(
                 targetProgress = 0f,
                 duration = squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis(),
-                interpolator = InterpolatorsAndroidX.LEGACY,
+                interpolator = InterpolatorsAndroidX.EMPHASIZED,
             ) {
                 finishAnimation()
             }
