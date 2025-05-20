@@ -97,7 +97,7 @@ public enum DesktopExperienceFlags {
             Flags::enableDesktopTabTearingLaunchAnimation, true,
             Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),
     ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS(Flags::enableDesktopTaskbarOnFreeformDisplays,
-            false, Flags.FLAG_ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS),
+            true, Flags.FLAG_ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS),
     ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION(
             Flags::enableDesktopTaskLimitSeparateTransition, true,
             Flags.FLAG_ENABLE_DESKTOP_TASK_LIMIT_SEPARATE_TRANSITION),
