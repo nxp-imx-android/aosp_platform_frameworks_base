@@ -3604,9 +3604,8 @@ public interface WindowManager extends ViewManager {
         public static final int PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION = 1 << 21;
 
         /**
-         * Flag to prevent the window from being magnified by the accessibility magnifier.
+         * Flag to prevent the window from being magnified by the accessibility magnification.
          *
-         * TODO(b/190623172): This is a temporary solution and need to find out another way instead.
          * @hide
          */
         public static final int PRIVATE_FLAG_NOT_MAGNIFIABLE = 1 << 22;
@@ -3640,6 +3639,15 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         public static final int PRIVATE_FLAG_OPT_OUT_EDGE_TO_EDGE = 1 << 26;
+
+        /**
+         * Flag to indicate that this window is part of input method for being magnified by the
+         * accessibility magnification
+         *
+         * TODO(b/190623172): This is a temporary solution and need to find out another way instead.
+         * @hide
+         */
+        public static final int PRIVATE_FLAG_INPUT_METHOD_WINDOW = 1 << 27;
 
         /**
          * Flag to indicate that the window is controlling how it fits window insets on its own.
@@ -3711,6 +3719,7 @@ public interface WindowManager extends ViewManager {
                 SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS,
                 PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY,
                 PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION,
+                PRIVATE_FLAG_INPUT_METHOD_WINDOW,
                 PRIVATE_FLAG_NOT_MAGNIFIABLE,
                 PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC,
                 PRIVATE_FLAG_CONSUME_IME_INSETS,
@@ -3806,6 +3815,10 @@ public interface WindowManager extends ViewManager {
                         mask = PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION,
                         equals = PRIVATE_FLAG_EXCLUDE_FROM_SCREEN_MAGNIFICATION,
                         name = "EXCLUDE_FROM_SCREEN_MAGNIFICATION"),
+                @ViewDebug.FlagToString(
+                        mask = PRIVATE_FLAG_INPUT_METHOD_WINDOW,
+                        equals = PRIVATE_FLAG_INPUT_METHOD_WINDOW,
+                        name = "INPUT_METHOD_WINDOW"),
                 @ViewDebug.FlagToString(
                         mask = PRIVATE_FLAG_NOT_MAGNIFIABLE,
                         equals = PRIVATE_FLAG_NOT_MAGNIFIABLE,
