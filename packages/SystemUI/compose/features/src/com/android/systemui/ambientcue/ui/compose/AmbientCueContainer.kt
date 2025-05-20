@@ -20,6 +20,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,13 +37,11 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.android.compose.windowsizeclass.calculateWindowSizeClass
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.PillStyleViewModel
 import com.android.systemui.lifecycle.rememberViewModel
-
-// TODO: b/414507396 - Replace with the height of the navbar
-private val chipsBottomPadding = 46.dp
 
 @Composable
 fun AmbientCueContainer(
@@ -159,10 +158,16 @@ private fun NavBarAmbientCue(
     expanded: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val windowWidthSizeClass = calculateWindowSizeClass().widthSizeClass
+
+    val navBarWidth =
+        if (windowWidthSizeClass == WindowWidthSizeClass.Compact) NAV_BAR_WIDTH_DP.dp
+        else NAV_BAR_LARGE_WIDTH_DP.dp
+
     BackgroundGlow(visible = visible, expanded = expanded, modifier = modifier)
     NavBarPill(
         actions = actions,
-        navBarWidth = 110.dp, // TODO: b/414507396 - Replace with the width of the navbar
+        navBarWidth = navBarWidth,
         visible = visible,
         expanded = expanded,
         modifier = modifier,
@@ -175,3 +180,9 @@ private fun NavBarAmbientCue(
         modifier = modifier.padding(bottom = chipsBottomPadding),
     )
 }
+
+private const val NAV_BAR_WIDTH_DP = 108 // R.dimen.taskbar_stashed_small_screen from Launcher
+private const val NAV_BAR_LARGE_WIDTH_DP = 220 // R.dimen.taskbar_stashed_handle_width from Launcher
+
+private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from Launcher
+private val chipsBottomPadding = NAV_BAR_HEIGHT_DP.dp + 22.dp
