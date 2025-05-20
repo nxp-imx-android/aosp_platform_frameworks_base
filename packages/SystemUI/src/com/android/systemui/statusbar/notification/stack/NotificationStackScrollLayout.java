@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
-import static android.app.Flags.notificationsRedesignTemplates;
 import static android.os.Trace.TRACE_TAG_APP;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_UP;
@@ -63,7 +62,6 @@ import android.util.MathUtils;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
 import android.view.MotionEvent;
-import android.view.NotificationHeaderView;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -6777,39 +6775,8 @@ public class NotificationStackScrollLayout
 
         changedRow.setChildrenExpanded(expanded);
         onChildHeightChanged(changedRow, false /* needsAnimation */);
-        updateGroupHeaderAlignment(changedRow, expanded);
 
         runAfterAnimationFinished(changedRow::onFinishedExpansionChange);
-    }
-
-    private void updateGroupHeaderAlignment(ExpandableNotificationRow row, boolean expanded) {
-        if (!notificationsRedesignTemplates()) {
-            return;
-        }
-
-        NotificationChildrenContainer childrenContainer = row.getChildrenContainer();
-        if (childrenContainer == null) {
-            Log.wtf(TAG, "Tried to update group header alignment for something that's "
-                    + "not a group; key = " + row.getKey());
-            return;
-        }
-        NotificationHeaderView header = childrenContainer.getGroupHeader();
-        if (header != null) {
-            resetYTranslation(header.getTopLineView());
-            resetYTranslation(header.getExpandButton());
-            header.centerTopLine(expanded);
-        }
-    }
-
-    /**
-     * Reset the y translation of the {@code view} via the {@link ViewState}, to ensure that the
-     * animation state is updated correctly.
-     */
-    private static void resetYTranslation(View view) {
-        ViewState viewState = new ViewState();
-        viewState.initFrom(view);
-        viewState.setYTranslation(0);
-        viewState.applyToView(view);
     }
 
     private final ExpandHelper.Callback mExpandHelperCallback = new ExpandHelper.Callback() {

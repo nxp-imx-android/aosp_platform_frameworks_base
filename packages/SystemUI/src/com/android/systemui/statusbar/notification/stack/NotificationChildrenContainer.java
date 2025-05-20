@@ -964,13 +964,25 @@ public class NotificationChildrenContainer extends ViewGroup
             mHeaderViewState.setAlpha(mHeaderVisibleAmount);
 
             if (notificationsRedesignTemplates()) {
+                // While mUserLocked, the expandFactor reflects where in the drag-to-expand gesture
+                // we are so that we can calculate the intermediary translation needed for the
+                // header components. Otherwise, we just set the final desired translation based
+                // on whether the group is expanded or not.
+                float topLineTranslation = 0, expandButtonTranslation = 0;
+                if (mUserLocked) {
+                    topLineTranslation = mGroupHeader.getTopLineTranslation() * expandFactor;
+                    expandButtonTranslation =
+                            mGroupHeader.getExpandButtonTranslation() * expandFactor;
+                } else if (mChildrenExpanded) {
+                    topLineTranslation = mGroupHeader.getTopLineTranslation();
+                    expandButtonTranslation = mGroupHeader.getExpandButtonTranslation();
+                }
+
                 mTopLineViewState = initStateForGroupHeader(mTopLineViewState);
-                mTopLineViewState.setYTranslation(
-                        mGroupHeader.getTopLineTranslation() * expandFactor);
+                mTopLineViewState.setYTranslation(topLineTranslation);
 
                 mExpandButtonViewState = initStateForGroupHeader(mExpandButtonViewState);
-                mExpandButtonViewState.setYTranslation(
-                        mGroupHeader.getExpandButtonTranslation() * expandFactor);
+                mExpandButtonViewState.setYTranslation(expandButtonTranslation);
             }
         }
     }
@@ -1183,10 +1195,10 @@ public class NotificationChildrenContainer extends ViewGroup
         int childCount = mAttachedChildren.size();
         ViewState tmpState = new ViewState();
         float expandFraction = getGroupExpandFraction();
-        final boolean isExpanding = !showingAsLowPriority()
+        final boolean isExpansionChanging = !showingAsLowPriority()
                 && (mUserLocked || mContainingNotification.isGroupExpansionChanging());
         final boolean dividersVisible = (mChildrenExpanded && mShowDividersWhenExpanded)
-                || (isExpanding && !mHideDividersDuringExpand);
+                || (isExpansionChanging && !mHideDividersDuringExpand);
         for (int i = childCount - 1; i >= 0; i--) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
             ExpandableViewState viewState = child.getViewState();
@@ -1217,10 +1229,21 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
         }
-        if (mGroupHeader != null && mHeaderViewState != null) {
-            // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
-            //  but mHeaderViewState is null.
-            mHeaderViewState.applyToView(mGroupHeader);
+        if (mGroupHeader != null) {
+            if (mHeaderViewState != null) {
+                // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
+                //  but mHeaderViewState is null.
+                mHeaderViewState.applyToView(mGroupHeader);
+            }
+
+            if (notificationsRedesignTemplates()) {
+                if (mTopLineViewState != null) {
+                    mTopLineViewState.animateTo(mGroupHeader.getTopLineView(), properties);
+                }
+                if (mExpandButtonViewState != null) {
+                    mExpandButtonViewState.animateTo(mGroupHeader.getExpandButton(), properties);
+                }
+            }
         }
         updateChildrenClipping();
     }
