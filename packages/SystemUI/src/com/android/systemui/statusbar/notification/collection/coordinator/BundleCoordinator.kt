@@ -224,7 +224,7 @@ constructor(
                         else -> error("Unexpected ListEntry type: ${listEntry::class.simpleName}")
                     }
                 }
-            bundleEntry.bundleRepository.appDataList = newAppDataList
+            bundleEntry.bundleRepository.appDataList.value = newAppDataList
         }
     }
 

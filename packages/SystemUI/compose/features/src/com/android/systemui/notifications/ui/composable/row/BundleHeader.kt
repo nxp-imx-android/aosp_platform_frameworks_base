@@ -60,7 +60,6 @@ import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -195,11 +194,9 @@ private fun ContentScope.BundleHeaderContent(
         )
 
         if (collapsed) {
-            val currentPreviewIcons: List<Drawable> by
-                viewModel.previewIcons.collectAsStateWithLifecycle(initialValue = emptyList())
-            if (currentPreviewIcons.isNotEmpty()) {
+            if (viewModel.previewIcons.isNotEmpty()) {
                 BundlePreviewIcons(
-                    previewDrawables = currentPreviewIcons,
+                    previewDrawables = viewModel.previewIcons,
                     modifier = Modifier.padding(start = 8.dp),
                 )
             }

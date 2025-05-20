@@ -26,6 +26,7 @@ import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.currentValue
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.InternalNotificationsApi
@@ -37,6 +38,7 @@ import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertEquals
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -116,18 +118,18 @@ class BundleCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testUpdateAppData_emptyChildren_setsEmptyAppList() {
+    fun testUpdateAppData_emptyChildren_setsEmptyAppList() = runTest {
         val bundle = BundleEntry(TEST_BUNDLE_SPEC)
         assertThat(bundle.children).isEmpty()
 
         coordinator.bundleAppDataUpdater.onBeforeRenderList(listOf(bundle))
 
-        assertThat(bundle.bundleRepository.appDataList).isEmpty()
+        assertThat(currentValue(bundle.bundleRepository.appDataList)).isEmpty()
     }
 
     @OptIn(InternalNotificationsApi::class)
     @Test
-    fun testUpdateAppData_twoNotifs() {
+    fun testUpdateAppData_twoNotifs() = runTest {
         val bundle = BundleEntry(TEST_BUNDLE_SPEC)
 
         val notif1 = NotificationEntryBuilder().setPkg(pkg1).setUser(user1).build()
@@ -138,13 +140,13 @@ class BundleCoordinatorTest : SysuiTestCase() {
 
         coordinator.bundleAppDataUpdater.onBeforeRenderList(listOf(bundle))
 
-        assertThat(bundle.bundleRepository.appDataList)
+        assertThat(currentValue(bundle.bundleRepository.appDataList))
             .containsExactly(AppData(pkg1, user1), AppData(pkg2, user2))
     }
 
     @OptIn(InternalNotificationsApi::class)
     @Test
-    fun testUpdateAppData_notifAndGroup() {
+    fun testUpdateAppData_notifAndGroup() = runTest {
         val bundle = BundleEntry(TEST_BUNDLE_SPEC)
 
         val notif1 = NotificationEntryBuilder().setPkg(pkg1).setUser(user1).build()
@@ -164,7 +166,7 @@ class BundleCoordinatorTest : SysuiTestCase() {
 
         coordinator.bundleAppDataUpdater.onBeforeRenderList(listOf(bundle))
 
-        assertThat(bundle.bundleRepository.appDataList)
+        assertThat(currentValue(bundle.bundleRepository.appDataList))
             .containsExactly(AppData(pkg1, user1), AppData(pkg2, user2))
     }
 
