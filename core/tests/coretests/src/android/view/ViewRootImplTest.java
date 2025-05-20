@@ -106,6 +106,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests for {@link ViewRootImpl}
@@ -1626,6 +1627,40 @@ public class ViewRootImplTest {
         assertThat(bounds.centerY()).isEqualTo(originalBounds.centerY());
         assertThat(bounds.width()).isAtLeast(strokeWidth * 2);
         assertThat(bounds.height()).isAtLeast(strokeWidth * 2);
+    }
+
+    @Test
+    public void testOffThreadRendererViewsAccess() throws Throwable {
+        mView = new View(sContext);
+        attachViewToWindow(mView);
+        AtomicInteger threadRunning = new AtomicInteger(1);
+        View[] views = new View[10];
+        for (int i = 0; i < 10; i++) {
+            views[i] = new View(sContext);
+        }
+        Thread offThread = new Thread(() -> {
+            while (threadRunning.get() > 0) {
+                for (int i = 0; i < 10; i++) {
+                    mViewRootImpl.addThreadedRendererView(views[i]);
+                }
+                for (int i = 0; i < 10; i++) {
+                    mViewRootImpl.removeThreadedRendererView(views[i]);
+                }
+            }
+        });
+        offThread.start();
+        try {
+            for (int i = 0; i < 1000; i++) {
+                sInstrumentation.runOnMainSync(() -> {
+                    mView.invalidate();
+                    runAfterDraw(() -> {
+                    });
+                });
+                waitForAfterDraw();
+            }
+        } finally {
+            threadRunning.set(0);
+        }
     }
 
     static class InputView extends View {

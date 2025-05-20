@@ -671,6 +671,7 @@ public final class ViewRootImpl implements ViewParent,
     private boolean mInvalidationIdleMessagePosted = false;
     // VRR: List of all Views that are animating with the threaded render
     private ArrayList<View> mThreadedRendererViews = new ArrayList();
+    private ArrayList<View> mThreadedRendererViewsCache = new ArrayList();
 
     /**
      * Update the Choreographer's FrameInfo object with the timing information for the current
@@ -4540,10 +4541,7 @@ public final class ViewRootImpl implements ViewParent,
             }
 
             mDrawnThisFrame = false;
-            if (!mInvalidationIdleMessagePosted) {
-                mInvalidationIdleMessagePosted = true;
-                mHandler.sendEmptyMessageDelayed(MSG_CHECK_INVALIDATION_IDLE, IDLE_TIME_MILLIS);
-            }
+            sendCheckInvalidationIdle();
             setCategoryFromCategoryCounts();
             updateInfrequentCount();
             updateFrameRateFromThreadedRendererViews();
@@ -4573,6 +4571,19 @@ public final class ViewRootImpl implements ViewParent,
             // From MSG_FRAME_RATE_SETTING, where mPreferredFrameRate is set to 0
             setPreferredFrameRate(0);
             mPreferredFrameRate = -1;
+        }
+    }
+
+    private void sendCheckInvalidationIdle() {
+        if (shouldEnableDvrr()) {
+            boolean wasPosted;
+            synchronized (mThreadedRendererViews) {
+                wasPosted = mInvalidationIdleMessagePosted;
+                mInvalidationIdleMessagePosted = true;
+            }
+            if (!wasPosted) {
+                mHandler.sendEmptyMessageDelayed(MSG_CHECK_INVALIDATION_IDLE, IDLE_TIME_MILLIS);
+            }
         }
     }
 
@@ -13174,16 +13185,22 @@ public final class ViewRootImpl implements ViewParent,
      * from those views.
      */
     private void updateFrameRateFromThreadedRendererViews() {
-        ArrayList<View> views = mThreadedRendererViews;
+        ArrayList<View> views = mThreadedRendererViewsCache;
+        synchronized (mThreadedRendererViews) {
+            views.addAll(mThreadedRendererViews);
+        }
         for (int i = views.size() - 1; i >= 0; i--) {
             View view = views.get(i);
             View.AttachInfo attachInfo = view.mAttachInfo;
             if (attachInfo == null || attachInfo.mViewRootImpl != this) {
-                views.remove(i);
+                synchronized (mThreadedRendererViews) {
+                    mThreadedRendererViews.remove(view);
+                }
             } else {
                 view.votePreferredFrameRate();
             }
         }
+        views.clear();
     }
 
     /**
@@ -13392,8 +13409,12 @@ public final class ViewRootImpl implements ViewParent,
      * @param view The View with the ThreadedRenderer animation that started.
      */
     public void addThreadedRendererView(View view) {
-        if (shouldEnableDvrr() && !mThreadedRendererViews.contains(view)) {
-            mThreadedRendererViews.add(view);
+        if (shouldEnableDvrr()) {
+            synchronized (mThreadedRendererViews) {
+                if (!mThreadedRendererViews.contains(view)) {
+                    mThreadedRendererViews.add(view);
+                }
+            }
         }
     }
 
@@ -13403,10 +13424,11 @@ public final class ViewRootImpl implements ViewParent,
      * @param view The View whose ThreadedRender animation has stopped.
      */
     public void removeThreadedRendererView(View view) {
-        mThreadedRendererViews.remove(view);
-        if (shouldEnableDvrr() && !mInvalidationIdleMessagePosted) {
-            mInvalidationIdleMessagePosted = true;
-            mHandler.sendEmptyMessageDelayed(MSG_CHECK_INVALIDATION_IDLE, IDLE_TIME_MILLIS);
+        if (shouldEnableDvrr()) {
+            synchronized (mThreadedRendererViews) {
+                mThreadedRendererViews.remove(view);
+            }
+            sendCheckInvalidationIdle();
         }
     }
 
@@ -13625,10 +13647,10 @@ public final class ViewRootImpl implements ViewParent,
         mHandler.removeMessages(MSG_TOUCH_BOOST_TIMEOUT);
         mHandler.removeMessages(MSG_FRAME_RATE_SETTING);
         mHandler.removeMessages(MSG_SURFACE_REPLACED_TIMEOUT);
-        if (mInvalidationIdleMessagePosted) {
+        synchronized (mThreadedRendererViews) {
             mInvalidationIdleMessagePosted = false;
-            mHandler.removeMessages(MSG_CHECK_INVALIDATION_IDLE);
         }
+        mHandler.removeMessages(MSG_CHECK_INVALIDATION_IDLE);
     }
 
     /**
@@ -13647,7 +13669,11 @@ public final class ViewRootImpl implements ViewParent,
         mMinusOneFrameIntervalMillis = timeIntervalMillis;
 
         mLastUpdateTimeMillis = currentTimeMillis;
-        if (mThreadedRendererViews.isEmpty() && timeIntervalMillis + mMinusTwoFrameIntervalMillis
+        boolean isThreadedRendererViewsEmpty;
+        synchronized (mThreadedRendererViews) {
+            isThreadedRendererViewsEmpty = mThreadedRendererViews.isEmpty();
+        }
+        if (isThreadedRendererViewsEmpty && timeIntervalMillis + mMinusTwoFrameIntervalMillis
                 >= INFREQUENT_UPDATE_INTERVAL_MILLIS) {
             int infrequentUpdateCount = mInfrequentUpdateCount;
             mInfrequentUpdateCount = infrequentUpdateCount == INFREQUENT_UPDATE_COUNTS
