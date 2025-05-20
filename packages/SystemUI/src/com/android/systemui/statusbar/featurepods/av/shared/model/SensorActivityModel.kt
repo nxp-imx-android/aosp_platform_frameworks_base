@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.featurepods.vc.shared.model
 
 /** Model that describes which sensors are active */
 sealed class SensorActivityModel {
-    class Inactive : SensorActivityModel()
+    object Inactive : SensorActivityModel()
 
     data class Active(val sensors: Sensors) : SensorActivityModel() {
         enum class Sensors {
