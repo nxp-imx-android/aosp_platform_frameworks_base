@@ -43,12 +43,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.BAKLAVA)
-class SettingsPreferenceService(
+class SettingsPreferenceService
+@JvmOverloads
+constructor(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
-    metricsLogger: PreferenceRemoteOpMetricsLogger?,
+    metricsLogger: PreferenceRemoteOpMetricsLogger? = null,
 ) : android.service.settings.preferences.SettingsPreferenceService() {
-
-    constructor() : this(CoroutineScope(SupervisorJob() + Dispatchers.IO), null)
 
     private val getApiHandler: PreferenceGetterApiHandler
     private val setApiHandler: PreferenceSetterApiHandler
@@ -81,16 +81,21 @@ class SettingsPreferenceService(
         val callingUid = Binder.getCallingUid()
         Log.i(TAG, "GetAllPreferenceMetadata pid=$callingPid uid=$callingUid")
         scope.launch {
-            val graphProto =
-                graphApi.invoke(
-                    application,
-                    callingPid,
-                    callingUid,
-                    GetPreferenceGraphRequest(flags = PreferenceGetterFlags.METADATA),
-                )
-            val result =
-                transformCatalystGetMetadataResponse(this@SettingsPreferenceService, graphProto)
-            callback.onResult(result)
+            try {
+                val graphProto =
+                    graphApi.invoke(
+                        application,
+                        callingPid,
+                        callingUid,
+                        GetPreferenceGraphRequest(flags = PreferenceGetterFlags.METADATA),
+                    )
+                val result =
+                    transformCatalystGetMetadataResponse(this@SettingsPreferenceService, graphProto)
+                callback.onResult(result)
+            } catch (e: RuntimeException) {
+                Log.e(TAG, "GetAllPreferenceMetadata pid=$callingPid uid=$callingUid", e)
+                callback.onError(e)
+            }
         }
     }
 
@@ -103,14 +108,23 @@ class SettingsPreferenceService(
         val callingUid = Binder.getCallingUid()
         Log.i(TAG, "GetPreferenceValue pid=$callingPid uid=$callingUid")
         scope.launch {
-            val apiRequest = transformFrameworkGetValueRequest(request)
-            val response = getApiHandler.invoke(application, callingPid, callingUid, apiRequest)
-            val result =
-                transformCatalystGetValueResponse(this@SettingsPreferenceService, request, response)
-            if (result == null) {
-                callback.onError(IllegalStateException("No response"))
-            } else {
-                callback.onResult(result)
+            try {
+                val apiRequest = transformFrameworkGetValueRequest(request)
+                val response = getApiHandler.invoke(application, callingPid, callingUid, apiRequest)
+                val result =
+                    transformCatalystGetValueResponse(
+                        this@SettingsPreferenceService,
+                        request,
+                        response,
+                    )
+                if (result == null) {
+                    callback.onError(IllegalStateException("No response"))
+                } else {
+                    callback.onResult(result)
+                }
+            } catch (e: RuntimeException) {
+                Log.e(TAG, "GetPreferenceValue pid=$callingPid uid=$callingUid", e)
+                callback.onError(e)
             }
         }
     }
@@ -124,15 +138,20 @@ class SettingsPreferenceService(
         val callingUid = Binder.getCallingUid()
         Log.i(TAG, "SetPreferenceValue pid=$callingPid uid=$callingUid")
         scope.launch {
-            val apiRequest = transformFrameworkSetValueRequest(request)
-            if (apiRequest == null) {
-                callback.onResult(
-                    SetValueResult.Builder(SetValueResult.RESULT_INVALID_REQUEST).build()
-                )
-            } else {
-                val response = setApiHandler.invoke(application, callingPid, callingUid, apiRequest)
-
-                callback.onResult(transformCatalystSetValueResponse(response))
+            try {
+                val apiRequest = transformFrameworkSetValueRequest(request)
+                if (apiRequest == null) {
+                    callback.onResult(
+                        SetValueResult.Builder(SetValueResult.RESULT_INVALID_REQUEST).build()
+                    )
+                } else {
+                    val response =
+                        setApiHandler.invoke(application, callingPid, callingUid, apiRequest)
+                    callback.onResult(transformCatalystSetValueResponse(response))
+                }
+            } catch (e: RuntimeException) {
+                Log.e(TAG, "SetPreferenceValue pid=$callingPid uid=$callingUid", e)
+                callback.onError(e)
             }
         }
     }
