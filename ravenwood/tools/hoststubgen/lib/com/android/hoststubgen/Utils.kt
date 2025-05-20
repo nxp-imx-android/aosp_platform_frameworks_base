@@ -40,6 +40,11 @@ fun normalizeTextLine(s: String): String {
     return uncommented.trim()
 }
 
+// Note, Soong clears unknown env vars, so $HSG_ALWAYS_SHOW_STACKTRACE doesn't work
+// if the command is executed on soong. In that case, you need to change this flag directly.
+val ALWAYS_SHOW_STACKTRACE: Boolean = false ||
+    "1".equals(System.getenv("HSG_ALWAYS_SHOW_STACKTRACE"))
+
 /**
  * Concatenate list [a] and [b] and return it. As an optimization, it returns an input
  * [List] as-is if the other [List] is empty, so do not modify input [List]'s.
@@ -109,7 +114,7 @@ inline fun runMainWithBoilerplate(realMain: () -> Unit) {
         success = true
     } catch (e: Throwable) {
         log.e("$executableName: Error: ${e.message}")
-        if (e !is UserErrorException) {
+        if (e !is UserErrorException || ALWAYS_SHOW_STACKTRACE) {
             e.printStackTrace(PrintWriter(log.getWriter(LogLevel.Error)))
         }
     } finally {

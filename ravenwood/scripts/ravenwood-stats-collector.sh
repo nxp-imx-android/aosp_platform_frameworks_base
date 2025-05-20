@@ -171,7 +171,7 @@ flatten() {
 
     echo "Flattening $csv to $to ..."
     # "grep -v" to remove timestamps.
-    "$SCRIPT_DIR"/csv-flattener "$csv" | grep -v "^  20[0-9][0-9]-[0-9][0-9]" > "$to"
+    "$SCRIPT_DIR"/csv-flattener.py "$csv" | grep -v "^  20[0-9][0-9]-[0-9][0-9]" > "$to"
 }
 
 do_diff() {

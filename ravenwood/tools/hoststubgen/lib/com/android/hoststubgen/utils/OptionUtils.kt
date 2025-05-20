@@ -228,6 +228,10 @@ class FileOrResource(val path: String) {
             FileReader(path)
         }
     }
+
+    override fun toString(): String {
+        return path
+    }
 }
 
 fun String.ensureFileExists(): String {

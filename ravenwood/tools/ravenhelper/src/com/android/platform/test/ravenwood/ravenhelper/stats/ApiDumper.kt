@@ -161,6 +161,11 @@ class ApiDumper(
         if (classPolicy.statsLabel == StatsLabel.Ignored) {
             return
         }
+        // See below comment on REMOVE'd method -- ideally we want to show it, but for now,
+        // we don't.
+        if (classPolicy.policy == FilterPolicy.Remove) {
+            return
+        }
         log.d("Class ${dumpClass.name} -- policy $classPolicy")
         val classLabel = getClassLabel(dumpClass, classPolicy)
 

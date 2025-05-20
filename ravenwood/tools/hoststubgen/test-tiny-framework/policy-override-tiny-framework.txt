@@ -81,5 +81,7 @@ rename ^.*/TinyFrameworkToBeRenamed$ /rename_prefix/
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted allow-annotation
     method foo2 allow-annotation
 
+# The following classes contain an invalid use of HostSideTestPartiallyAllowlisted, so we need to delete it.
+# It's used in invoke test.
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad remove
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad remove
