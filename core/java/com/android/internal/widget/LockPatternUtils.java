@@ -189,14 +189,10 @@ public class LockPatternUtils {
     public static final int USER_REPAIR_MODE = UserHandle.USER_NULL + 2;
 
     public final static String PASSWORD_TYPE_KEY = "lockscreen.password_type";
-    @Deprecated
-    public final static String PASSWORD_TYPE_ALTERNATE_KEY = "lockscreen.password_type_alternate";
     public final static String LOCK_PASSWORD_SALT_KEY = "lockscreen.password_salt";
     public final static String DISABLE_LOCKSCREEN_KEY = "lockscreen.disabled";
     public final static String LOCKSCREEN_POWER_BUTTON_INSTANTLY_LOCKS
             = "lockscreen.power_button_instantly_locks";
-    @Deprecated
-    public final static String LOCKSCREEN_WIDGETS_ENABLED = "lockscreen.widgets_enabled";
 
     public final static String PASSWORD_HISTORY_KEY = "lockscreen.passwordhistory";
 
@@ -218,12 +214,6 @@ public class LockPatternUtils {
     public static final String PASSWORD_HISTORY_DELIMITER = ",";
 
     private static final String GSI_RUNNING_PROP = "ro.gsid.image_running";
-
-    /**
-     * drives the pin auto confirmation feature availability in code logic.
-     */
-    public static final String FLAG_ENABLE_AUTO_PIN_CONFIRMATION =
-            "AutoPinConfirmation__enable_auto_pin_confirmation";
 
     @UnsupportedAppUsage
     private final Context mContext;
