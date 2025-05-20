@@ -124,6 +124,7 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     // and waitAndGetIsMirrorDisplay()
     private int mDisplayId = Display.INVALID_DISPLAY;
     private boolean mIsMirrorDisplay = false;
+    private boolean mIsSecureDisplay = false;
     private final CountDownLatch mDisplayIdSetLatch = new CountDownLatch(1);
 
     // Used for detecting changes in the window flags.
@@ -148,8 +149,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
      * Creates a window policy controller that is generic to the different use cases of virtual
      * device.
      *
-     * @param windowFlags The window flags that this controller is interested in.
-     * @param systemWindowFlags The system window flags that this controller is interested in.
      * @param attributionSource The AttributionSource of the VirtualDevice owner application.
      * @param allowedUsers The set of users that are allowed to stream in this display.
      * @param activityLaunchAllowedByDefault Whether activities are default allowed to be launched
@@ -170,8 +169,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
      *   virtual display flag.
      */
     public GenericWindowPolicyController(
-            int windowFlags,
-            int systemWindowFlags,
             AttributionSource attributionSource,
             @NonNull ArraySet<UserHandle> allowedUsers,
             boolean activityLaunchAllowedByDefault,
@@ -191,7 +188,6 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
         mActivityPolicyPackageExemptions = new ArraySet<>(activityPolicyPackageExemptions);
         mCrossTaskNavigationAllowedByDefault = crossTaskNavigationAllowedByDefault;
         mCrossTaskNavigationExemptions = new ArraySet<>(crossTaskNavigationExemptions);
-        setInterestedWindowFlags(windowFlags, systemWindowFlags);
         mActivityListener = activityListener;
         mDisplayCategories = displayCategories;
         mShowTasksInHostDeviceRecents = showTasksInHostDeviceRecents;
@@ -201,9 +197,10 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
     /**
      * Expected to be called once this object is associated with a newly created display.
      */
-    void setDisplayId(int displayId, boolean isMirrorDisplay) {
+    void setDisplayId(int displayId, boolean isMirrorDisplay, boolean isSecureDisplay) {
         mDisplayId = displayId;
         mIsMirrorDisplay = isMirrorDisplay;
+        mIsSecureDisplay = isSecureDisplay;
         mDisplayIdSetLatch.countDown();
     }
 
@@ -324,9 +321,8 @@ public class GenericWindowPolicyController extends DisplayWindowPolicyController
                     "Virtual device doesn't support windowing mode " + windowingMode);
             return false;
         }
-        if ((activityInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0) {
-            logActivityLaunchBlocked(
-                    "Activity requires android:canDisplayOnRemoteDevices=true");
+        if (!mIsSecureDisplay && (activityInfo.flags & FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES) == 0) {
+            logActivityLaunchBlocked("Display requires android:canDisplayOnRemoteDevices=true");
             return false;
         }
         final UserHandle activityUser =

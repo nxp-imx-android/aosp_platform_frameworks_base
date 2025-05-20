@@ -16,9 +16,7 @@
 
 package com.android.server.companion.virtual.audio;
 
-import static android.media.AudioAttributes.FLAG_SECURE;
 import static android.media.AudioPlaybackConfiguration.PLAYER_STATE_STARTED;
-import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -77,8 +75,6 @@ public class VirtualAudioControllerTest {
                 AttributionSource.myAttributionSource());
         mGenericWindowPolicyController =
                 new GenericWindowPolicyController(
-                        FLAG_SECURE,
-                        SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS,
                         AttributionSource.myAttributionSource(),
                         /* allowedUsers= */ new ArraySet<>(),
                         /* activityLaunchAllowedByDefault= */ true,

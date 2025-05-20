@@ -146,6 +146,14 @@ class TestDisplayContent extends DisplayContent {
             mInfo.type = type;
             return this;
         }
+        Builder addFlags(int flags) {
+            mInfo.flags |= flags;
+            return this;
+        }
+        Builder removeFlags(int flags) {
+            mInfo.flags &= ~flags;
+            return this;
+        }
         Builder setOwnerUid(int ownerUid) {
             mInfo.ownerUid = ownerUid;
             return this;
