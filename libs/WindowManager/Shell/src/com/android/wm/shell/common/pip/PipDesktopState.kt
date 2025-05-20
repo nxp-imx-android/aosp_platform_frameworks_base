@@ -115,6 +115,10 @@ class PipDesktopState(
                 rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
     }
 
+    /** Returns whether the display with the given id is a Desktop-first display. */
+    fun isDisplayDesktopFirst(displayId: Int) =
+        rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
+
     /** Returns the windowing mode to restore to when resizing out of PIP direction. */
     fun getOutPipWindowingMode(): Int {
         val isInDesktop = isPipInDesktopMode()
