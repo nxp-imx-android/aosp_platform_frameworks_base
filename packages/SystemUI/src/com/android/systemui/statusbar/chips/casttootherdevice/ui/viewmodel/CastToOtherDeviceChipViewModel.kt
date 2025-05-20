@@ -63,7 +63,6 @@ class CastToOtherDeviceChipViewModel
 @Inject
 constructor(
     @Application private val scope: CoroutineScope,
-    private val context: Context,
     private val mediaProjectionChipInteractor: MediaProjectionChipInteractor,
     private val mediaRouterChipInteractor: MediaRouterChipInteractor,
     private val systemClock: SystemClock,
@@ -217,9 +216,11 @@ constructor(
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
-                    createCastScreenToOtherDeviceDialogDelegate(state),
-                    dialogTransitionAnimator,
-                    DIALOG_CUJ,
+                    dialogDelegateCreator = { context ->
+                        createCastScreenToOtherDeviceDialogDelegate(context, state)
+                    },
+                    dialogTransitionAnimator = dialogTransitionAnimator,
+                    cuj = DIALOG_CUJ,
                     key = KEY,
                     instanceId = instanceId,
                     uiEventLogger = uiEventLogger,
@@ -230,9 +231,11 @@ constructor(
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     onClick =
                         createDialogLaunchOnClickCallback(
-                            createCastScreenToOtherDeviceDialogDelegate(state),
-                            dialogTransitionAnimator,
-                            DIALOG_CUJ,
+                            dialogDelegateCreator = { context ->
+                                createCastScreenToOtherDeviceDialogDelegate(context, state)
+                            },
+                            dialogTransitionAnimator = dialogTransitionAnimator,
+                            cuj = DIALOG_CUJ,
                             key = KEY,
                             instanceId = instanceId,
                             uiEventLogger = uiEventLogger,
@@ -260,9 +263,11 @@ constructor(
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
-                    createGenericCastToOtherDeviceDialogDelegate(deviceName),
-                    dialogTransitionAnimator,
-                    DIALOG_CUJ_AUDIO_ONLY,
+                    dialogDelegateCreator = { context ->
+                        createGenericCastToOtherDeviceDialogDelegate(context, deviceName)
+                    },
+                    dialogTransitionAnimator = dialogTransitionAnimator,
+                    cuj = DIALOG_CUJ_AUDIO_ONLY,
                     key = KEY,
                     instanceId = instanceId,
                     uiEventLogger = uiEventLogger,
@@ -272,9 +277,11 @@ constructor(
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     createDialogLaunchOnClickCallback(
-                        createGenericCastToOtherDeviceDialogDelegate(deviceName),
-                        dialogTransitionAnimator,
-                        DIALOG_CUJ_AUDIO_ONLY,
+                        dialogDelegateCreator = { context ->
+                            createGenericCastToOtherDeviceDialogDelegate(context, deviceName)
+                        },
+                        dialogTransitionAnimator = dialogTransitionAnimator,
+                        cuj = DIALOG_CUJ_AUDIO_ONLY,
                         key = KEY,
                         instanceId = instanceId,
                         uiEventLogger = uiEventLogger,
@@ -286,7 +293,10 @@ constructor(
         )
     }
 
-    private fun createCastScreenToOtherDeviceDialogDelegate(state: ProjectionChipModel.Projecting) =
+    private fun createCastScreenToOtherDeviceDialogDelegate(
+        context: Context,
+        state: ProjectionChipModel.Projecting,
+    ) =
         EndCastScreenToOtherDeviceDialogDelegate(
             endMediaProjectionDialogHelper,
             context,
@@ -294,7 +304,10 @@ constructor(
             state,
         )
 
-    private fun createGenericCastToOtherDeviceDialogDelegate(deviceName: String?) =
+    private fun createGenericCastToOtherDeviceDialogDelegate(
+        context: Context,
+        deviceName: String?,
+    ) =
         EndGenericCastToOtherDeviceDialogDelegate(
             endMediaProjectionDialogHelper,
             context,

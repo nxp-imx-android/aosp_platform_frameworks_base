@@ -59,7 +59,6 @@ class ScreenRecordChipViewModel
 @Inject
 constructor(
     @Application private val scope: CoroutineScope,
-    private val context: Context,
     private val interactor: ScreenRecordChipInteractor,
     private val shareToAppChipViewModel: ShareToAppChipViewModel,
     private val systemClock: SystemClock,
@@ -112,7 +111,7 @@ constructor(
                             colors = ColorsModel.Red,
                             onClickListenerLegacy =
                                 createDialogLaunchOnClickListener(
-                                    createDelegate(state.recordedTask),
+                                    { context -> createDelegate(context, state.recordedTask) },
                                     dialogTransitionAnimator,
                                     DIALOG_CUJ,
                                     key = KEY,
@@ -124,7 +123,9 @@ constructor(
                             clickBehavior =
                                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                                     createDialogLaunchOnClickCallback(
-                                        dialogDelegate = createDelegate(state.recordedTask),
+                                        dialogDelegateCreator = { context ->
+                                            createDelegate(context, state.recordedTask)
+                                        },
                                         dialogTransitionAnimator = dialogTransitionAnimator,
                                         DIALOG_CUJ,
                                         key = KEY,
@@ -171,7 +172,8 @@ constructor(
         chipTransitionHelper.createChipFlow(chipWithConsistentTimer)
 
     private fun createDelegate(
-        recordedTask: ActivityManager.RunningTaskInfo?
+        context: Context,
+        recordedTask: ActivityManager.RunningTaskInfo?,
     ): EndScreenRecordingDialogDelegate {
         return EndScreenRecordingDialogDelegate(
             endMediaProjectionDialogHelper,
