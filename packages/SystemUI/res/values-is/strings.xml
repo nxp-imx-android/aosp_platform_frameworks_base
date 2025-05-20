@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Leyfa"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Þráðlaus villuleit er ekki leyfð"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Notandinn sem er skráður inn í þetta tæki núna getur ekki kveikt á þráðlausri villuleit. Skiptu yfir í stjórnanda til að nota þennan eiginleika."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Þú getur breytt þessari stillingu þegar þú hefur skráð þig inn"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-tengi gert óvirkt"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Til að vernda tækið fyrir vökva og óhreinindum er USB-tengið óvirkt og mun ekki greina aukabúnað.\n\nÞú færð tilkynningu þegar öruggt er að nota USB-tengið aftur."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Kveikt var á USB-tengi til að greina hleðslutæki og aukabúnað"</string>
@@ -271,6 +270,8 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Rafhlaða í hleðslu, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g>%%."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Rafhleðsla er <xliff:g id="PERCENTAGE">%d</xliff:g> prósent, hlé gert á hleðslu til að vernda rafhlöðuna."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Rafhleðsla er <xliff:g id="PERCENTAGE">%1$d</xliff:g> prósent, <xliff:g id="TIME">%2$s</xliff:g>, hlé gert á hleðslu til að vernda rafhlöðuna."</string>
+    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
+    <skip />
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"Sjá allar tilkynningar"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"Fjarriti virkur."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Titrar við hringingu."</string>
@@ -813,6 +814,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Kveikja"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Kveikt – út frá andliti"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Þagga og flokka"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Fyrir <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sölur, nýir eiginleikar og fleira"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Aðalfréttir, leiðarar og fleira"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Læk, færslur og fleira"</string>
@@ -840,10 +842,13 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> styður ekki samtalseiginleika"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Ábendingar"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Loka"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ekki sýna sem fest"</string>
+    <!-- no translation found for notification_inline_disable_promotion (8434781064426043662) -->
+    <skip />
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Loka á uppfærslur í beinni í þessu forriti"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"Sýna uppfærslur í beinni"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"Festar tilkynningar sýna upplýsingar frá forritum í rauntíma og birtast ávallt á stöðustikunni og lásskjánum"</string>
+    <!-- no translation found for live_notifications_title (5926318111951903878) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (2639662830862800119) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ekki er hægt að breyta þessum tilkynningum."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Ekki er hægt að breyta tilkynningum um símtöl."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ekki er hægt að stilla þessar tilkynningar hér"</string>
@@ -870,8 +875,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Þaggað í <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# klukkustund}=2{# klukkustundir}one{# klukkustund}other{# klukkustundir}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# mínúta}one{# mínúta}other{# mínútur}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"til að opna lækkunarvalmynd"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Rafhlöðusparnaður"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Hnappur <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1156,10 +1160,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Loka breytingastillingu"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Dragðu horn til að breyta stærð"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Leyfa skáflettingu"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Fylgja innslætti"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Stækka lyklaborð"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Breyta stærð"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Breyta gerð stækkunar"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Hætta að breyta stærð"</string>
@@ -1275,7 +1277,8 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Hópur"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 tæki valið"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> tæki valin"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(aftengt)"</string>
+    <!-- no translation found for media_output_item_connected_state (297439499870755458) -->
+    <skip />
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Ekki er hægt að skipta. Ýttu til að reyna aftur."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Tengja tæki"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Tengja tæki"</string>
@@ -1286,8 +1289,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Tengdir hátalarar"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Hátalarar og skjáir"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Tillögur"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Tillögur að tækjum"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Inntak"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Úttak"</string>

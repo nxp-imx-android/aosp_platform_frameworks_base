@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Engedélyezés"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"A vezeték nélküli hibakeresés nem engedélyezett"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Az eszközre jelenleg bejelentkezett felhasználó nem engedélyezheti a vezeték nélküli hibakeresést. A funkció használatához váltson adminisztrátor felhasználóra."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Ezt a beállítást a bejelentkezés után módosíthatja"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB-port letiltva"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Az eszköz folyadéktól és szennyeződésektől való megóvása érdekében az USB-portot letiltottuk, így az nem észleli a kiegészítőket.\n\nÉrtesítést küldünk, amikor ismét rendben használhatja az USB-portot."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Az USB-csatlakozó számára engedélyezve van a töltők és más tartozékok észlelése"</string>
@@ -271,6 +270,8 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Tölt az akkumulátor, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> százalék."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Az akkumulátor töltöttségi szintje <xliff:g id="PERCENTAGE">%d</xliff:g> százalék; töltés szüneteltetve az akkumulátor védelme érdekében."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Az akkumulátor töltöttségi szintje <xliff:g id="PERCENTAGE">%1$d</xliff:g> százalék; <xliff:g id="TIME">%2$s</xliff:g>. Töltés szüneteltetve az akkumulátor védelme érdekében."</string>
+    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
+    <skip />
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"Összes értesítés megtekintése"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"TeleTypewriter engedélyezve."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Csengő rezeg."</string>
@@ -813,6 +814,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Bekapcsolás"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Be: Arcalapú"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Némítás és csomagolás"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> számára"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Értékesítés, új funkciók és egyebek"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Népszerű történetek, vezércikkek és egyebek"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Lájkok, bejegyzések és egyebek"</string>
@@ -840,10 +842,13 @@
     <string name="no_shortcut" msgid="8257177117568230126">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> nem támogatja a beszélgetési funkciókat"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Visszajelzés"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Elvetés"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ne jelenjen meg kitűzöttként"</string>
+    <!-- no translation found for notification_inline_disable_promotion (8434781064426043662) -->
+    <skip />
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"App élő frissítéseinek letiltása"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"Friss hírek megjelenítése…"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"A kitűzött értesítések alkalmazásokból származó élő információkat jelenítenek meg, és mindig az állapotsoron és a lezárási képernyőn jelennek meg"</string>
+    <!-- no translation found for live_notifications_title (5926318111951903878) -->
+    <skip />
+    <!-- no translation found for live_notifications_desc (2639662830862800119) -->
+    <skip />
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ezeket az értesítéseket nem lehet módosítani."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"A hívásértesítéseket nem lehet módosítani."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Az értesítések jelen csoportját itt nem lehet beállítani"</string>
@@ -870,8 +875,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"Elhalasztva: <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# óra}=2{# óra}other{# óra}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# perc}other{# perc}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"a Lefokozás menü megnyitásához"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Akkumulátorkímélő mód"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> gomb"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Kezdőképernyő"</string>
@@ -1156,10 +1160,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"Kilépés a szerkesztési módból"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"Az átméretezéshez húzza a kívánt sarkot"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"Átlós görgetés engedélyezése"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"Gépelés követése"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"Billentyűzet nagyítása"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"Átméretezés"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Nagyítási típus módosítása"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Átméretezés befejezése"</string>
@@ -1275,7 +1277,8 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Csoport"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 eszköz kiválasztva"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> eszköz kiválasztva"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(leválasztva)"</string>
+    <!-- no translation found for media_output_item_connected_state (297439499870755458) -->
+    <skip />
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"A váltás nem sikerült. Próbálja újra."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Eszköz csatlakoztatása"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Eszköz csatlakoztatása"</string>
@@ -1286,8 +1289,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Csatlakoztatott hangfalak"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Hangfalak és kijelzők"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Javasolt"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Javasolt eszközök"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Bemenet"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Kimenet"</string>

@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ୱାୟାରଲେସ୍ ଡିବଗିଂ ପାଇଁ ଅନୁମତି ନାହିଁ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ୟୁଜର ବର୍ତ୍ତମାନ ସାଇନ-ଇନ କରିଥିବା ଏହି ଡିଭାଇସରେ ୱାୟାରଲେସ ଡିବଗିଂ ଚାଲୁ କରିପାରିବେ ନାହିଁ। ଏହି ଫିଚର ବ୍ୟବହାର କରିବା ପାଇଁ ଜଣେ ଆଡମିନ ୟୁଜର ଭାବେ ସ୍ୱିଚ କରନ୍ତୁ।"</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"ଆପଣ ଲଗ ଇନ କରିବା ପରେ ଏହି ସେଟିଂକୁ ବଦଳାଇପାରିବେ"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ପୋର୍ଟକୁ ଅକ୍ଷମ କରାଯାଇଛି"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ଆପଣଙ୍କ ଡିଭାଇସ୍‌କୁ ତରଳ ପଦାର୍ଥ ଏବଂ ଧୂଳିରୁ ସୁରକ୍ଷିତ ରଖିବା ପାଇଁ, USB ପୋର୍ଟକୁ ଅକ୍ଷମ କରାଯାଇଛି ଏବଂ ଏହା କୌଣସି ଉପକରଣ ଚିହ୍ନଟ କରିବ ନାହିଁ। \n\n ଯେତେବେଳେ USB ପୋର୍ଟ ପୁଣିି ବ୍ୟବହାର କରିବାକୁ ସୁରକ୍ଷିତ ହେବ, ସେତେବେଳେ ଆପଣଙ୍କୁ ସୂଚିତ କରାଯିବ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ଚାର୍ଜର୍‍ ଏବଂ ଆକ୍ସେସରିଗୁଡ଼ିକୁ ଚିହ୍ନଟ କରିବାକୁ USB ପୋର୍ଟ ସକ୍ଷମ କରାଯାଇଛି"</string>
@@ -271,6 +270,8 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"ବ୍ୟାଟେରୀ ଚାର୍ଜ ହେଉଛି, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> ଶତକଡ଼ା।"</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"ବେଟେରୀ <xliff:g id="PERCENTAGE">%d</xliff:g> ଶତକଡ଼ା, ବେଟେରୀର ସୁରକ୍ଷା ପାଇଁ ଚାର୍ଜିଂକୁ ବିରତ କରାଯାଇଛି।"</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"ବେଟେରୀ <xliff:g id="PERCENTAGE">%1$d</xliff:g> ଶତକଡ଼ା, <xliff:g id="TIME">%2$s</xliff:g>, ବେଟେରୀର ସୁରକ୍ଷା ପାଇଁ ଚାର୍ଜିଂକୁ ବିରତ କରାଯାଇଛି।"</string>
+    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
+    <skip />
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"ସମସ୍ତ ବିଜ୍ଞପ୍ତି ଦେଖନ୍ତୁ"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"ଟେଲି-ଟାଇପରାଇଟର୍ ସକ୍ଷମ ଅଛି।"</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"ରିଙ୍ଗର୍‌ କମ୍ପନରେ ଅଛି।"</string>
@@ -813,6 +814,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ଚାଲୁ ଅଛି - ଫେସ-ଆଧାରିତ"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ସାଇଲେନ୍ସ ଏବଂ ବଣ୍ଡଲ"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> ପାଇଁ"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ସେଲ୍ସ, ନୂଆ ଫିଚର ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ଟପ ଷ୍ଟୋରୀ, ଏଡିଟୋରିଆଲ ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ପସନ୍ଦ, ପୋଷ୍ଟ ଏବଂ ଆହୁରି ଅନେକ କିଛି"</string>
@@ -840,10 +842,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ବାର୍ତ୍ତାଳାପ ଫିଚରଗୁଡ଼ିକୁ ସମର୍ଥନ କରେ ନାହିଁ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ମତାମତ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ଖାରଜ କରନ୍ତୁ"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ପିନ ଥିବା ଭାବେ ଦେଖାନ୍ତୁ ନାହିଁ"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"ଏହି ଆପରୁ ଲାଇଭ ଅପଡେଟ ବ୍ଲକ କର"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"ଲାଇଭ ଅପଡେଟଗୁଡ଼ିକୁ ଦେଖାଉଛି"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"ପିନ କରାଯାଇଥିବା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଆପ୍ସରୁ ଲାଇଭ ସୂଚନା ଡିସପ୍ଲେ କରେ ଏବଂ ସର୍ବଦା ଷ୍ଟାଟସ ବାର ଓ ଲକ ସ୍କ୍ରିନରେ ଦେଖାଯାଏ"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"ଲାଇଭ ଅପଡେଟ"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"ବନ୍ଦ ଥିଲେ, ଏହି ଆପରୁ ଚାଲୁଥିବା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଆପଣଙ୍କ ଲକ ସ୍କ୍ରିନ ଏବଂ ଷ୍ଟାଟସ ବାରରେ ପ୍ରଚାର କରାଯିବ ନାହିଁ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ଏହି ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ପରିବର୍ତ୍ତନ କରିହେବ ନାହିଁ।"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"କଲ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପରିବର୍ତ୍ତନ କରାଯାଇପାରିବ ନାହିଁ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ଏଠାରେ ଏହି ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକର ଗ୍ରୁପ୍ କନଫ୍ୟୁଗର୍ କରାଯାଇପାରିବ ନାହିଁ"</string>
@@ -870,8 +872,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ପାଇଁ ସ୍ନୁଜ୍‍ କରାଗଲା"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ଘଣ୍ଟା}=2{# ଘଣ୍ଟା}other{# ଘଣ୍ଟା}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ମିନିଟ}other{# ମିନିଟ}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ଡିମୋସନ ମେନୁ ଖୋଲିବାକୁ"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ବେଟେରୀ ସେଭର"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ବଟନ୍‍ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ହୋମ"</string>
@@ -1156,10 +1157,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"ଏଡିଟ ମୋଡରୁ ବାହାରି ଯାଆନ୍ତୁ"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"ରିସାଇଜ କରିବା ପାଇଁ କୋଣକୁ ଡ୍ରାଗ କରନ୍ତୁ"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"ଡାଏଗୋନାଲ ସ୍କ୍ରୋଲିଂକୁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"ଟାଇପିଂକୁ ଫଲୋ କରନ୍ତୁ"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"କୀବୋର୍ଡକୁ ମେଗ୍ନିଫାଏ କରନ୍ତୁ"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"ରିସାଇଜ କରନ୍ତୁ"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ମ୍ୟାଗ୍ନିଫିକେସନ ପ୍ରକାରକୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"ରିସାଇଜ କରିବାକୁ ସମାପ୍ତ କରନ୍ତୁ"</string>
@@ -1275,7 +1274,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ଗୋଷ୍ଠୀ"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1ଟି ଡିଭାଇସ୍ ଚୟନ କରାଯାଇଛି"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g>ଟି ଡିଭାଇସ୍ ଚୟନ କରାଯାଇଛି"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ବିଚ୍ଛିନ୍ନ କରାଯାଇଛି)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"କନେକ୍ଟ କରାଯାଇଛି"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ସ୍ୱିଚ କରାଯାଇପାରିବ ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରିବାକୁ ଟାପ କରନ୍ତୁ।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ଗୋଟିଏ ଡିଭାଇସ କନେକ୍ଟ କରନ୍ତୁ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ଡିଭାଇସ କନେକ୍ଟ କରନ୍ତୁ"</string>
@@ -1286,8 +1285,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"କନେକ୍ଟେଡ ସ୍ପିକର"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ସ୍ପିକର ଏବଂ ଡିସପ୍ଲେ"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ପ୍ରସ୍ତାବିତ"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ପ୍ରସ୍ତାବିତ ଡିଭାଇସଗୁଡ଼ିକ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ଇନପୁଟ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ଆଉଟପୁଟ"</string>
