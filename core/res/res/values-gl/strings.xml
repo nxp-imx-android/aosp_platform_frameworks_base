@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Permite á aplicación ampliar ou contraer a barra de estado."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"mostrar notificacións como actividades a pantalla completa nun dispositivo bloqueado"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Permite que a aplicación mostre notificacións como actividades a pantalla completa nun dispositivo bloqueado"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Mostrar as novidades en tempo real"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Permite que a aplicación mostre notificacións de actividade en curso urxentes na barra de estado e na pantalla de bloqueo"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"instalar atallos"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Permite a unha aplicación engadir atallos na pantalla de inicio sen intervención do usuario."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"desinstalar atallos"</string>
@@ -658,7 +660,7 @@
     <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"facer un seguimento da dirección da mirada"</string>
     <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"Permite que a aplicación acceda aos datos precisos da mirada."</string>
     <string name="permlab_face_tracking" msgid="2272048395128283324">"facer un seguimento da cara"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Permite que a aplicación acceda aos datos de seguimento da cara."</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Permite que a aplicación acceda aos datos de seguimento facial."</string>
     <string name="permlab_hand_tracking" msgid="6478233866595566940">"facer un seguimento das mans"</string>
     <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Permite que a aplicación acceda aos datos de seguimento das mans."</string>
     <string name="permlab_head_tracking" msgid="1309731456372087270">"facer un seguimento da cabeza"</string>
@@ -1709,6 +1711,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Dispositivo externo"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Auriculares"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Sistema"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Audio por Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Visualización sen fíos"</string>
@@ -1830,8 +1844,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"Pechando sesión de <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Propietario"</string>
     <string name="guest_name" msgid="8502103277839834324">"Convidado"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"Usuario do sistema"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Erro"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"O administrador non admite este cambio"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Non se atopou ningunha aplicación para procesar esta acción"</string>

@@ -383,6 +383,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Permite que o app expanda ou recolha a barra de status."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"exibir notificações como atividades em tela cheia em um dispositivo bloqueado"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Permite que o app exiba notificações como atividades em tela cheia em um dispositivo bloqueado"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Mostrar atualizações em tempo real"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Permite que o app mostre notificações em andamento e imediatas na barra de status e na tela de bloqueio"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Instalar atalhos"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Permite que um app adicione atalhos da tela inicial sem a intervenção do usuário."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"desinstalar atalhos"</string>
@@ -1710,6 +1712,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Dispositivo externo"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Fones de ouvido"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Sistema"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Áudio Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Display sem fio"</string>
@@ -2218,8 +2232,8 @@
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Notificação de informação do modo rotina"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Economia de bateria ativada"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Reduzindo o uso da bateria para prolongar a duração dela"</string>
-    <string name="dynamic_mode_notification_title_v2" msgid="5072385242078021152">"A Economia de bateria está ativada"</string>
-    <string name="dynamic_mode_notification_summary_v2" msgid="2142444344663147938">"A Economia de bateria está ativada para prolongar a duração da carga"</string>
+    <string name="dynamic_mode_notification_title_v2" msgid="5072385242078021152">"Economia de bateria ativada"</string>
+    <string name="dynamic_mode_notification_summary_v2" msgid="2142444344663147938">"A economia de bateria está ativada para prolongar a duração da carga"</string>
     <string name="battery_saver_notification_channel_name" msgid="3918243458067916913">"Economia de bateria"</string>
     <string name="battery_saver_off_notification_title" msgid="7637255960468032515">"\"Economia de bateria\" desativada"</string>
     <string name="battery_saver_charged_notification_summary" product="default" msgid="5544457317418624367">"Não há carga suficiente no smartphone. Os recursos não estão mais restritos."</string>

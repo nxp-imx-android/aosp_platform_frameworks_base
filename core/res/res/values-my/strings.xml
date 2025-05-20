@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"အက်ပ်အား အခြေအနေပြ ဘားကို ချဲ့ခွင့် သို့မဟုတ် ခေါက်သိမ်းခွင့် ပြုသည်။"</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"လော့ခ်ချထားသော စက်ပစ္စည်းပေါ်တွင် အကြောင်းကြားချက်များကို ဖန်သားပြင်အပြည့် လုပ်ဆောင်ချက်များအဖြစ် ပြခြင်း"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"လော့ခ်ချထားသော စက်ပစ္စည်းပေါ်တွင် အကြောင်းကြားချက်များကို ဖန်သားပြင်အပြည့် လုပ်ဆောင်ချက်များအဖြစ် ပြရန် အက်ပ်ကို ခွင့်ပြုသည်"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"တိုက်ရိုက် အပ်ဒိတ်များ ပြပါ"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"လုပ်ဆောင်နေဆဲ အချိန်နှင့်တစ်ပြေးညီ အကြောင်းကြားချက်များကို အခြေအနေပြဘားနှင့် လော့ခ်မျက်နှာပြင်တို့တွင် အက်ပ်အား ပြခွင့်ပြုသည်"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"ဖြတ်လမ်းလင့်ခ်များ ထည့်သွင်းခြင်း"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"အပလီကေးရှင်းအား အသုံးပြုသူ၏ လုပ်ဆောင်ချက်မပါဘဲ ပင်မစာမျက်နှာ ဖြတ်လမ်းလင့်ခ်များကို ထည့်သွင်းခွင့်ပေးသည်။"</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"အတိုကောက်များ ဖယ်ထုတ်ခြင်း"</string>
@@ -1709,6 +1711,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"ပြင်ပစက်"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"နားကြပ်"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"စနစ်"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"ဘလူးတုသ် အသံ"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"ကြိုးမဲ့ပြသခြင်း"</string>
@@ -1830,8 +1844,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g>ကို ထွက်ပစ်ပါတော့မည်..."</string>
     <string name="owner_name" msgid="8713560351570795743">"ပိုင်ရှင်"</string>
     <string name="guest_name" msgid="8502103277839834324">"ဧည့်သည်"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"စနစ် အသုံးပြုသူ"</string>
     <string name="error_message_title" msgid="4082495589294631966">"အမှား"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ဤပြောင်းလဲမှုကို သင်၏ စီမံခန့်ခွဲသူက ခွင့်မပြုပါ"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ဤလုပ်ဆောင်ချက်ကို ပြုလုပ်ပေးမည့် အပလီကေးရှင်းမရှိပါ။"</string>
