@@ -505,7 +505,7 @@ constructor(
             isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
         }
 
-    private val chipsVisibilityModel: Flow<ChipsVisibilityModel> =
+    private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
         combine(ongoingActivityChipsViewModel.chips, canShowOngoingActivityChips) { chips, canShow
                 ->
                 ChipsVisibilityModel(chips, areChipsAllowed = canShow)
@@ -513,6 +513,14 @@ constructor(
             .traceEach(trackGroup(TRACK_GROUP, "chips"), logcat = true) {
                 "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
             }
+            .stateIn(
+                bgScope,
+                SharingStarted.WhileSubscribed(),
+                ChipsVisibilityModel(
+                    chips = MultipleOngoingActivityChipsModel(),
+                    areChipsAllowed = false,
+                ),
+            )
 
     override val ongoingActivityChips: ChipsVisibilityModel by
         hydrator.hydratedStateOf(
