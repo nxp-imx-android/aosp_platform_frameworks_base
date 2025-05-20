@@ -8069,10 +8069,6 @@ public class UserManagerService extends IUserManager.Stub {
         pw.print("    Last entered foreground: ");
         dumpTimeAgo(pw, tempStringBuilder, now, userData.mLastEnteredForegroundTimeMillis);
 
-        // bedstead relies on this being here, even though since Android 14 this has always been
-        // false. TODO(b/258213147) update bedstead and remove this.
-        pw.println("    Has profile owner: false");
-
         pw.println("    Restrictions:");
         synchronized (mRestrictionsLock) {
             UserRestrictionsUtils.dumpRestrictions(
