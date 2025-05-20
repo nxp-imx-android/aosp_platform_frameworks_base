@@ -23,12 +23,23 @@ import android.os.Parcelable;
 /** @hide */
 public final class RangingParams implements Parcelable {
 
+    private static final double DEFAULT_THRESHOLD_METERS = 1.5;
+    private static final int DEFAULT_TIMEOUT_MILLIS = 5000;
+
     private final double mThresholdMeters;
     private final int mTimeoutMillis;
 
     private RangingParams(double thresholdMeters, int timeoutMillis) {
         this.mThresholdMeters = thresholdMeters;
         this.mTimeoutMillis = timeoutMillis;
+    }
+
+    public double getDefaultThresholdMeters() {
+        return DEFAULT_THRESHOLD_METERS;
+    }
+
+    public int getDefaultTimeoutMillis() {
+        return DEFAULT_TIMEOUT_MILLIS;
     }
 
     public double getThresholdMeters() {
@@ -78,8 +89,8 @@ public final class RangingParams implements Parcelable {
         private int mTimeoutMillis = 0;
 
         public Builder() {
-            mThresholdMeters = 1.5;
-            mTimeoutMillis = 5000;
+            mThresholdMeters = DEFAULT_THRESHOLD_METERS;
+            mTimeoutMillis = DEFAULT_TIMEOUT_MILLIS;
         }
 
         public Builder(@NonNull RangingParams src) {
