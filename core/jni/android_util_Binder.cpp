@@ -496,6 +496,9 @@ public:
                     b.get()->setExtension(extensionFromJava);
                 }
             }
+            if (mInheritRt) {
+                b.get()->setInheritRt(mInheritRt);
+            }
             mBinder = b;
             ALOGV("Creating JavaBinder %p (refs %p) for Object %p, weakCount=%" PRId32 "\n",
                  b.get(), b->getWeakRefs(), obj, b->getWeakRefs()->getWeakCount());
@@ -529,6 +532,15 @@ public:
         }
     }
 
+    void setInheritRt(bool inheritRt) {
+        AutoMutex _l(mLock);
+        mInheritRt = inheritRt;
+        sp<JavaBBinder> b = mBinder.promote();
+        if (b != nullptr) {
+            b.get()->setInheritRt(inheritRt);
+        }
+    }
+
 private:
     Mutex           mLock;
     wp<JavaBBinder> mBinder;
@@ -538,6 +550,7 @@ private:
     // sp here (avoid recreating it)
     bool            mVintf = false;
     bool            mSetExtensionCalled = false;
+    bool            mInheritRt = false;
 };
 
 // ----------------------------------------------------------------------------
@@ -1262,6 +1275,15 @@ static void android_os_Binder_setExtension(JNIEnv* env, jobject obj, jobject ext
     jbh->setExtension(extension);
 }
 
+static void android_os_Binder_setInheritRt(JNIEnv* env, jobject obj, jboolean inheritRt) {
+    JavaBBinderHolder* jbh = (JavaBBinderHolder*) env->GetLongField(obj, gBinderOffsets.mObject);
+    jbh->setInheritRt(inheritRt);
+}
+
+static void android_os_Binder_setGlobalInheritRt(CRITICAL_JNI_PARAMS_COMMA jboolean enabled) {
+    BBinder::setGlobalInheritRt(enabled);
+}
+
 // ----------------------------------------------------------------------------
 
 // clang-format off
@@ -1290,6 +1312,8 @@ static const JNINativeMethod gBinderMethods[] = {
     { "getCallingWorkSourceUid", "()I", (void*)android_os_Binder_getCallingWorkSourceUid },
     // @CriticalNative
     { "clearCallingWorkSource", "()J", (void*)android_os_Binder_clearCallingWorkSource },
+    // @CriticalNative
+    { "setGlobalInheritRt", "(Z)V", (void*)android_os_Binder_setGlobalInheritRt },
     { "restoreCallingWorkSource", "(J)V", (void*)android_os_Binder_restoreCallingWorkSource },
     { "markVintfStability", "()V", (void*)android_os_Binder_markVintfStability},
     { "forceDowngradeToSystemStability", "()V", (void*)android_os_Binder_forceDowngradeToSystemStability},
@@ -1298,6 +1322,7 @@ static const JNINativeMethod gBinderMethods[] = {
     { "getNativeFinalizer", "()J", (void*)android_os_Binder_getNativeFinalizer },
     { "blockUntilThreadAvailable", "()V", (void*)android_os_Binder_blockUntilThreadAvailable },
     { "setExtensionNative", "(Landroid/os/IBinder;)V", (void*)android_os_Binder_setExtension },
+    { "setInheritRt", "(Z)V", (void*)android_os_Binder_setInheritRt },
 };
 // clang-format on
 
