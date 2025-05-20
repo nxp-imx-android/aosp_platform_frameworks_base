@@ -1589,7 +1589,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         if (mAccessibilityManager.isEnabled()) {
             // TODO (b/265193930): remove dependency on NPVC
-            mPanelView.setAccessibilityPaneTitle(
+            mPanelView.getRootView().setAccessibilityPaneTitle(
                     mPanelViewControllerLazy.get().determineAccessibilityPaneTitle());
         }
         mNotificationStackScrollLayoutController.setMaxTopPadding(mMaxExpansionHeight);

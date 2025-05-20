@@ -745,7 +745,7 @@ public final class NotificationPanelViewController implements
         mWakeUpCoordinator = coordinator;
         mMainDispatcher = mainDispatcher;
         mAccessibilityManager = accessibilityManager;
-        mView.setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
+        mView.getRootView().setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
         setAlpha(255, false /* animate */);
         mCommandQueue = commandQueue;
         mDisplayId = displayId;
@@ -3382,7 +3382,7 @@ public final class NotificationPanelViewController implements
         }
 
         if (mAccessibilityManager.isEnabled()) {
-            mView.setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
+            mView.getRootView().setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
         }
 
         if (!mFalsingManager.isUnlockingDisabled() && qsFullyExpanded
