@@ -524,3 +524,10 @@ flag {
     description: "Use seq-id for all client config changes"
     bug: "385976595"
 }
+
+flag {
+    name: "unify_shell_binders"
+    namespace: "windowing_frontend"
+    description: "Use a single binder for task-org/transition messaging to shell"
+    bug: "410930250"
+}
