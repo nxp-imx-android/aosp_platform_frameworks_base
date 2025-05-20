@@ -16,7 +16,6 @@
 
 package android.inputmethodservice;
 
-import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -221,7 +220,6 @@ public class KeyboardView extends View implements View.OnClickListener {
     private SwipeTracker mSwipeTracker = new SwipeTracker();
     private int mSwipeThreshold;
     private boolean mDisambiguateSwipe;
-    private final int mLongPressTimeoutMillis;
 
     // Variables for dealing with multiple pointers
     private int mOldPointerCount = 1;
@@ -233,6 +231,7 @@ public class KeyboardView extends View implements View.OnClickListener {
 
     private static final int REPEAT_INTERVAL = 50; // ~20 keys per second
     private static final int REPEAT_START_DELAY = 400;
+    private static final int LONGPRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout();
 
     private static int MAX_NEARBY_KEYS = 12;
     private int[] mDistances = new int[MAX_NEARBY_KEYS];
@@ -368,12 +367,6 @@ public class KeyboardView extends View implements View.OnClickListener {
 
         mAccessibilityManager = AccessibilityManager.getInstance(context);
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-
-        if (Flags.viewconfigurationApis()) {
-            mLongPressTimeoutMillis = ViewConfiguration.get(context).getLongPressTimeoutMillis();
-        } else {
-            mLongPressTimeoutMillis = ViewConfiguration.getLongPressTimeout();
-        }
 
         resetMultiTap();
     }
@@ -1299,7 +1292,7 @@ public class KeyboardView extends View implements View.OnClickListener {
                 }
                 if (mCurrentKey != NOT_A_KEY) {
                     Message msg = mHandler.obtainMessage(MSG_LONGPRESS, me);
-                    mHandler.sendMessageDelayed(msg, mLongPressTimeoutMillis);
+                    mHandler.sendMessageDelayed(msg, LONGPRESS_TIMEOUT);
                 }
                 showPreview(keyIndex);
                 break;
@@ -1332,7 +1325,7 @@ public class KeyboardView extends View implements View.OnClickListener {
                     // Start new longpress if key has changed
                     if (keyIndex != NOT_A_KEY) {
                         Message msg = mHandler.obtainMessage(MSG_LONGPRESS, me);
-                        mHandler.sendMessageDelayed(msg, mLongPressTimeoutMillis);
+                        mHandler.sendMessageDelayed(msg, LONGPRESS_TIMEOUT);
                     }
                 }
                 showPreview(mCurrentKey);

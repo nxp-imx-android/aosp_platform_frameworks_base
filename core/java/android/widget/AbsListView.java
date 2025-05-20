@@ -687,7 +687,6 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
     @UnsupportedAppUsage
     private int mTouchSlop;
     private int mTapTimeoutMillis;
-    private int mLongPressTimeoutMillis;
     private float mDensityScale;
 
     private float mVerticalScrollFactor;
@@ -1011,13 +1010,8 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
         final ViewConfiguration configuration = ViewConfiguration.get(mContext);
         mTouchSlop = configuration.getScaledTouchSlop();
-        if (Flags.viewconfigurationApis()) {
-            mTapTimeoutMillis = configuration.getTapTimeoutMillis();
-            mLongPressTimeoutMillis = configuration.getLongPressTimeoutMillis();
-        } else {
-            mTapTimeoutMillis = ViewConfiguration.getTapTimeout();
-            mLongPressTimeoutMillis = ViewConfiguration.getLongPressTimeout();
-        }
+        mTapTimeoutMillis = Flags.viewconfigurationApis()
+                ? configuration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
         mVerticalScrollFactor = configuration.getScaledVerticalScrollFactor();
         mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
@@ -2996,7 +2990,8 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
             Drawable d = selector.getCurrent();
             if (d != null && d instanceof TransitionDrawable) {
                 if (longClickable) {
-                    ((TransitionDrawable) d).startTransition(mLongPressTimeoutMillis);
+                    ((TransitionDrawable) d).startTransition(
+                            ViewConfiguration.getLongPressTimeout());
                 } else {
                     ((TransitionDrawable) d).resetTransition();
                 }
@@ -3006,7 +3001,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                     mPendingCheckForKeyLongPress = new CheckForKeyLongPress();
                 }
                 mPendingCheckForKeyLongPress.rememberWindowAttachCount();
-                postDelayed(mPendingCheckForKeyLongPress, mLongPressTimeoutMillis);
+                postDelayed(mPendingCheckForKeyLongPress, ViewConfiguration.getLongPressTimeout());
             }
         }
     }
@@ -3608,14 +3603,14 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                         positionSelector(mMotionPosition, child);
                         refreshDrawableState();
 
+                        final int longPressTimeout = ViewConfiguration.getLongPressTimeout();
                         final boolean longClickable = isLongClickable();
 
                         if (mSelector != null) {
                             final Drawable d = mSelector.getCurrent();
                             if (d != null && d instanceof TransitionDrawable) {
                                 if (longClickable) {
-                                    ((TransitionDrawable) d).startTransition(
-                                            mLongPressTimeoutMillis);
+                                    ((TransitionDrawable) d).startTransition(longPressTimeout);
                                 } else {
                                     ((TransitionDrawable) d).resetTransition();
                                 }
@@ -3629,7 +3624,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                             }
                             mPendingCheckForLongPress.setCoords(x, y);
                             mPendingCheckForLongPress.rememberWindowAttachCount();
-                            postDelayed(mPendingCheckForLongPress, mLongPressTimeoutMillis);
+                            postDelayed(mPendingCheckForLongPress, longPressTimeout);
                         } else {
                             mTouchMode = TOUCH_MODE_DONE_WAITING;
                         }

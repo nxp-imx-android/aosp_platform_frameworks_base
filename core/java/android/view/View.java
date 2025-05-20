@@ -6012,7 +6012,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         final ViewConfiguration configuration = ViewConfiguration.get(context);
         mTouchSlop = configuration.getScaledTouchSlop();
-
+        mTapTimeoutMillis = Flags.viewconfigurationApis()
+                ? configuration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
         mAmbiguousGestureMultiplier = configuration.getScaledAmbiguousGestureMultiplier();
 
         setOverScrollMode(OVER_SCROLL_IF_CONTENT_SCROLLS);
@@ -17572,7 +17573,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         setPressed(true, x, y);
                     }
                     checkForLongClick(
-                            getLongPressTimeoutMillis(),
+                            ViewConfiguration.getLongPressTimeout(),
                             x,
                             y,
                             // This is not a touch gesture -- do not classify it as one.
@@ -18380,7 +18381,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
                     if (!clickable) {
                         checkForLongClick(
-                                getLongPressTimeoutMillis(),
+                                ViewConfiguration.getLongPressTimeout(),
                                 x,
                                 y,
                                 TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS);
@@ -18408,7 +18409,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         // Not inside a scrolling container, so show the feedback right away
                         setPressed(true, x, y);
                         checkForLongClick(
-                                getLongPressTimeoutMillis(),
+                                ViewConfiguration.getLongPressTimeout(),
                                 x,
                                 y,
                                 TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS);
@@ -18442,7 +18443,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                             // just extend the timeout here, in case the classification
                             // stays ambiguous.
                             removeLongPressCallback();
-                            long delay = (long) (getLongPressTimeoutMillis()
+                            long delay = (long) (ViewConfiguration.getLongPressTimeout()
                                     * mAmbiguousGestureMultiplier);
                             // Subtract the time already spent
                             delay -= event.getEventTime() - event.getDownTime();
@@ -18528,12 +18529,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         if (mPendingCheckForLongPress != null) {
             removeCallbacks(mPendingCheckForLongPress);
         }
-    }
-
-    private int getLongPressTimeoutMillis() {
-        return Flags.viewconfigurationApis()
-                ? ViewConfiguration.get(getContext()).getLongPressTimeoutMillis()
-                : ViewConfiguration.getLongPressTimeout();
     }
 
     /**
@@ -31774,7 +31769,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         public void run() {
             mPrivateFlags &= ~PFLAG_PREPRESSED;
             setPressed(true, x, y);
-            final int delay = getLongPressTimeoutMillis() - mTapTimeoutMillis;
+            final long delay =
+                    (long) ViewConfiguration.getLongPressTimeout() - mTapTimeoutMillis;
             checkForLongClick(delay, x, y, TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS);
         }
     }

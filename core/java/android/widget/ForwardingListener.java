@@ -64,19 +64,11 @@ public abstract class ForwardingListener
 
         final ViewConfiguration viewConfiguration = ViewConfiguration.get(src.getContext());
         mScaledTouchSlop = viewConfiguration.getScaledTouchSlop();
-        final int longPressTimeout;
-        if (Flags.viewconfigurationApis()) {
-            mTapTimeout = Flags.viewconfigurationApis()
-                    ? viewConfiguration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
-            longPressTimeout = viewConfiguration.getLongPressTimeoutMillis();
-        } else {
-            mTapTimeout = Flags.viewconfigurationApis()
-                    ? viewConfiguration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
-            longPressTimeout = ViewConfiguration.getLongPressTimeout();
-        }
+        mTapTimeout = Flags.viewconfigurationApis()
+                ? viewConfiguration.getTapTimeoutMillis() : ViewConfiguration.getTapTimeout();
 
         // Use a medium-press timeout. Halfway between tap and long-press.
-        mLongPressTimeout = (mTapTimeout + longPressTimeout) / 2;
+        mLongPressTimeout = (mTapTimeout + ViewConfiguration.getLongPressTimeout()) / 2;
     }
 
     /**
