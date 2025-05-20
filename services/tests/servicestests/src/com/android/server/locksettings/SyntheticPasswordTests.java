@@ -26,6 +26,8 @@ import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSW
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD_OR_PIN;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
 import static com.android.internal.widget.LockPatternUtils.PIN_LENGTH_UNAVAILABLE;
+import static com.android.server.locksettings.SyntheticPasswordManager.WRONG_GUESS_COUNTER_FILE_SIZE;
+import static com.android.server.locksettings.SyntheticPasswordManager.WRONG_GUESS_COUNTER_NAME;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,6 +68,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * atest FrameworksServicesTests:SyntheticPasswordTests
@@ -872,6 +875,76 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final byte[] raw = new byte[] { (byte)0xAB, (byte)0xCD, (byte)0xEF };
         final byte[] expected = new byte[] { 'A', 'B', 'C', 'D', 'E', 'F' };
         assertArrayEquals(expected, SyntheticPasswordManager.bytesToHex(raw));
+    }
+
+    @Test
+    public void testWrongGuessCounter_initialStateIsAbsent() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        initSpAndSetCredential(userId, pin);
+        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+
+        // Initially the counter file does not exist, and a missing counter file reads as 0.
+        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertNull(
+                mStorage.readSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME));
+    }
+
+    @Test
+    public void testWrongGuessCounter_canBeWrittenAndRead() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        initSpAndSetCredential(userId, pin);
+        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+
+        for (int count = 0; count < 20; count++) {
+            mSpManager.writeWrongGuessCounter(lskfId, count);
+            assertEquals(count, mSpManager.readWrongGuessCounter(lskfId));
+        }
+    }
+
+    @Test
+    public void testDeletedWrongGuessCounter_readsAsZero() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        initSpAndSetCredential(userId, pin);
+        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+
+        mSpManager.writeWrongGuessCounter(lskfId, 1);
+        assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        assertNotNull(
+                mStorage.readSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME));
+
+        mStorage.deleteSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME);
+        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertNull(
+                mStorage.readSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME));
+    }
+
+    @Test
+    public void testCorruptedWrongGuessCounter_readsAsZero() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        initSpAndSetCredential(userId, pin);
+        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+
+        // Test files both shorter and longer than the expected length.
+        for (int len = 0; len <= 2 * WRONG_GUESS_COUNTER_FILE_SIZE; len++) {
+            mSpManager.writeWrongGuessCounter(lskfId, 1);
+            assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+
+            // Fill the file with all 1 bits, making it obviously corrupt. This assumes that the
+            // checksum field doesn't just happen to be valid in this case, and indeed it isn't.
+            final byte[] corruptedData = new byte[len];
+            Arrays.fill(corruptedData, (byte) 0xff);
+            mStorage.writeSyntheticPasswordState(
+                    userId, protectorId, WRONG_GUESS_COUNTER_NAME, corruptedData);
+            assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        }
     }
 
     // b/62213311

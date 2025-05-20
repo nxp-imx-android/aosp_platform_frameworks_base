@@ -25,6 +25,7 @@ import android.util.Slog;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
 
 /**
  * Response object for a ILockSettings credential verification request.
@@ -113,6 +114,11 @@ public final class VerifyCredentialResponse implements Parcelable {
                 0L /* gatekeeperPasswordHandle */);
     }
 
+    /** Like {@link #fromTimeout(int)}, but takes a Duration instead of a raw milliseconds value. */
+    public static VerifyCredentialResponse fromTimeout(Duration timeout) {
+        return fromTimeout((int) Math.min(timeout.toMillis(), (long) Integer.MAX_VALUE));
+    }
+
     /**
      * Since error (incorrect password) should never result in any of the other fields from
      * being populated, provide a default method to return a VerifyCredentialResponse.
@@ -165,6 +171,10 @@ public final class VerifyCredentialResponse implements Parcelable {
 
     public int getTimeout() {
         return mTimeout;
+    }
+
+    public Duration getTimeoutAsDuration() {
+        return Duration.ofMillis(mTimeout);
     }
 
     public @ResponseCode int getResponseCode() {

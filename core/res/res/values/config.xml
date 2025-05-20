@@ -1546,6 +1546,14 @@
          necessary, though it is still better than not using Weaver at all. -->
     <bool name="config_disableWeaverOnUnsecuredUsers">false</bool>
 
+    <!-- If true, then the Android system server will rate-limit guesses of lock screen knowledge
+         factors such as PINs. This does not replace the hardware (Gatekeeper or Weaver)
+         rate-limiter, but rather applies concurrently to it. The software rate-limiter uses
+         exponential backoff and allows up to 20 guesses in theory, but practically about 10-15
+         before the delays get very long. The software rate-limiter also does not count duplicate
+         wrong guesses, improving usability. -->
+    <bool name="config_softwareLskfRateLimiterEnforcing">false</bool>
+
     <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
             1 - Launch all apps intent

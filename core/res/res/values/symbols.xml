@@ -4149,6 +4149,7 @@
 
   <java-symbol type="bool" name="config_enableCredentialFactoryResetProtection" />
   <java-symbol type="bool" name="config_disableWeaverOnUnsecuredUsers" />
+  <java-symbol type="bool" name="config_softwareLskfRateLimiterEnforcing" />
 
   <!-- ETWS primary messages -->
   <java-symbol type="string" name="etws_primary_default_message_earthquake" />

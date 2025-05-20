@@ -34,7 +34,7 @@ import javax.crypto.spec.PBEKeySpec;
 public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
 
     private FakeGateKeeperService mGateKeeper;
-    private IWeaver mWeaverService;
+    private MockWeaverService mWeaverService;
 
     public MockSyntheticPasswordManager(Context context, LockSettingsStorage storage,
             FakeGateKeeperService gatekeeper, UserManager userManager,
@@ -119,5 +119,9 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
 
     public void enableWeaver() {
         mWeaverService = new MockWeaverService();
+    }
+
+    public int getSumOfWeaverFailureCounters() {
+        return mWeaverService.getSumOfFailureCounters();
     }
 }

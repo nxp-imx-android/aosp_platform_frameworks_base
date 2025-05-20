@@ -42,6 +42,13 @@ flag {
 }
 
 flag {
+    name: "software_ratelimiter"
+    namespace: "security"
+    description: "Enable support for SoftwareRateLimiter in LockSettingsService"
+    bug: "395976735"
+}
+
+flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"
