@@ -557,6 +557,11 @@ class DesktopTasksController(
             userId,
             enforceDeskLimit,
         )
+        if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+            // Display does not support desktops, no-op.
+            logW("createDesk displayId $displayId does not support desktops, ignoring request")
+            return
+        }
         val repository = userRepositories.getProfile(userId)
         if (enforceDeskLimit && !canCreateDesks(repository)) {
             // At the limit, no-op.

@@ -9593,6 +9593,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         val currentDeskCount = taskRepository.getNumberOfDesks(DEFAULT_DISPLAY)
         whenever(desksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
             invocation ->
@@ -9607,6 +9608,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk_invalidDisplay_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         controller.createDesk(INVALID_DISPLAY)
 
         verify(desksOrganizer, never()).createDesk(any(), any(), any())
@@ -9615,6 +9617,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk_systemUser_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         assumeTrue(UserManager.isHeadlessSystemUserMode())
 
         controller.createDesk(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM)
@@ -9625,9 +9628,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk_enforceLimitAndOverLimit_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         desktopConfig.maxDeskLimit = 2
         // Add a second desk to bring the number up to the limit.
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+
+        controller.createDesk(DEFAULT_DISPLAY)
+
+        verify(desksOrganizer, never()).createDesk(any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testCreateDesk_displayDoesNotSupportDesks_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
 
         controller.createDesk(DEFAULT_DISPLAY)
 

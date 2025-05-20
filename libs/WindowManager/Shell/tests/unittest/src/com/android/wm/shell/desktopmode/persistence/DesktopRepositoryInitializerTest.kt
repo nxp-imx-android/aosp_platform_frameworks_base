@@ -79,6 +79,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 persistentRepository,
                 datastoreScope,
                 desktopConfig,
+                desktopState,
             )
         desktopUserRepositories =
             DesktopUserRepositories(
@@ -116,6 +117,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     )
     fun initWithPersistence_multipleUsers_addedCorrectly() =
         runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
             whenever(persistentRepository.getUserDesktopRepositoryMap())
                 .thenReturn(
                     mapOf(
@@ -202,6 +204,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun initWithPersistence_singleUser_addedCorrectly() =
         runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
             whenever(persistentRepository.getUserDesktopRepositoryMap())
                 .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState1))
             whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
@@ -269,6 +272,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     )
     fun initWithPersistence_deskRecreationFailed_deskNotAdded() =
         runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
             whenever(persistentRepository.getUserDesktopRepositoryMap())
                 .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState1))
             whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
@@ -289,6 +293,27 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             assertThat(desktopUserRepositories.getProfile(USER_ID_1).getDeskIds(DEFAULT_DISPLAY))
                 .containsExactly(DESKTOP_ID_1)
+        }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        FLAG_ENABLE_DESKTOP_WINDOWING_HSUM,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun initWithPersistence_defaultDisplayDoesNotSupportDesks_deskNotAdded() =
+        runTest(StandardTestDispatcher()) {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState1))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(desktopRepositoryState1)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_1)).thenReturn(desktop1)
+
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            assertThat(desktopUserRepositories.getProfile(USER_ID_1).getDeskIds(DEFAULT_DISPLAY))
+                .isEmpty()
         }
 
     @After

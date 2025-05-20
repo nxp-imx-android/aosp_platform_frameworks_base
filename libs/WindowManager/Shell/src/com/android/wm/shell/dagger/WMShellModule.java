@@ -1633,9 +1633,10 @@ public abstract class WMShellModule {
             Context context,
             DesktopPersistentRepository desktopPersistentRepository,
             @ShellMainThread CoroutineScope mainScope,
-            DesktopConfig desktopConfig) {
+            DesktopConfig desktopConfig,
+            DesktopState desktopState) {
         return new DesktopRepositoryInitializerImpl(context, desktopPersistentRepository,
-                mainScope, desktopConfig);
+                mainScope, desktopConfig, desktopState);
     }
 
     @WMSingleton
