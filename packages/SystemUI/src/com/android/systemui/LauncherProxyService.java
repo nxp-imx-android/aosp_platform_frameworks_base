@@ -51,6 +51,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ResolveInfo;
+import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManagerGlobal;
@@ -410,6 +411,12 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         public void notifyTaskbarAutohideSuspend(boolean suspend) {
             verifyCallerAndClearCallingIdentityPostMain("notifyTaskbarAutohideSuspend", () ->
                     onTaskbarAutohideSuspend(suspend));
+        }
+
+        @Override
+        public void notifyRecentsButtonPositionChanged(Rect position) {
+            verifyCallerAndClearCallingIdentityPostMain("notifyRecentsButtonPositionChanged", () ->
+                    onRecentsButtonPositionChanged(position));
         }
 
         private boolean sendEvent(int action, int code, int displayId) {
@@ -1156,6 +1163,12 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         }
     }
 
+    public void onRecentsButtonPositionChanged(Rect position) {
+        for (int i = mConnectionCallbacks.size() - 1; i >= 0; --i) {
+            mConnectionCallbacks.get(i).onRecentsButtonPositionChanged(position);
+        }
+    }
+
     private void notifyConnectionChanged() {
         for (int i = mConnectionCallbacks.size() - 1; i >= 0; --i) {
             mConnectionCallbacks.get(i).onConnectionChanged(mLauncherProxy != null);
@@ -1362,6 +1375,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         default void onTaskbarAutohideSuspend(boolean suspend) {}
         default void onAssistantProgress(@FloatRange(from = 0.0, to = 1.0) float progress) {}
         default void onAssistantGestureCompletion(float velocity) {}
+        default void onRecentsButtonPositionChanged(Rect position) {}
         default void startAssistant(Bundle bundle) {}
         default void setAssistantOverridesRequested(int[] invocationTypes) {}
         default void animateNavBarLongPress(boolean isTouchDown, boolean shrink, long durationMs) {}

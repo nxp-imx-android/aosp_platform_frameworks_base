@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
@@ -84,16 +85,16 @@ fun AmbientCueContainer(
                 )
             }
             is PillStyleViewModel.ShortPillStyle -> {
-                val pillCenterInWindow = pillStyle.position
+                val pillPositionInWindow = pillStyle.position
                 TaskBarAnd3ButtonAmbientCue(
                     viewModel = viewModel,
                     actions = actions,
                     visible = visible,
                     expanded = expanded,
-                    pillCenterInWindow = pillCenterInWindow,
+                    pillPositionInWindow = pillPositionInWindow,
                     modifier =
-                        if (pillCenterInWindow == null) {
-                            Modifier.align(Alignment.BottomCenter)
+                        if (pillPositionInWindow == null) {
+                            Modifier.align(Alignment.BottomEnd)
                         } else {
                             Modifier
                         },
@@ -110,17 +111,23 @@ private fun TaskBarAnd3ButtonAmbientCue(
     actions: List<ActionViewModel>,
     visible: Boolean,
     expanded: Boolean,
-    pillCenterInWindow: Rect?,
+    pillPositionInWindow: Rect?,
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
     val portrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     var pillCenter by remember { mutableStateOf(Offset.Zero) }
+    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
     BackgroundGlow(
         visible = visible,
         expanded = expanded,
         collapsedOffset = IntOffset(0, 110),
-        modifier = modifier.graphicsLayer { translationX = -size.width / 2 + pillCenter.x },
+        modifier =
+            modifier.graphicsLayer {
+                translationX = -size.width / 2 + pillCenter.x
+                translationY = screenHeightPx - size.height
+            },
     )
     ShortPill(
         actions = actions,
@@ -128,17 +135,21 @@ private fun TaskBarAnd3ButtonAmbientCue(
         horizontal = portrait,
         expanded = expanded,
         modifier =
-            if (pillCenterInWindow == null) {
+            if (pillPositionInWindow == null) {
                 modifier.padding(bottom = 12.dp, end = 24.dp).onGloballyPositioned {
                     pillCenter = it.boundsInParent().center
                 }
             } else {
                 Modifier.graphicsLayer {
-                    val center = pillCenterInWindow.center
-                    translationX = center.x - size.width / 2
-                    translationY = center.y - size.height / 2
-                    pillCenter = center
-                }
+                        translationX = pillCenter.x - size.width / 2
+                        translationY = pillCenter.y - size.height / 2
+                    }
+                    .onGloballyPositioned { layoutCoordinates ->
+                        layoutCoordinates.parentCoordinates?.let { parentCoordinates ->
+                            pillCenter =
+                                parentCoordinates.screenToLocal(pillPositionInWindow.center)
+                        }
+                    }
             },
         onClick = { viewModel.expand() },
         onCloseClick = { viewModel.hide() },

@@ -25,6 +25,7 @@ import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.content.Context
+import android.graphics.Rect
 import android.util.Log
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
@@ -50,6 +51,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -80,6 +82,8 @@ interface AmbientCueRepository {
 
     /** True if in gesture nav mode, false when in 3-button navbar. */
     val isGestureNav: StateFlow<Boolean>
+
+    val recentsButtonPosition: StateFlow<Rect?>
 }
 
 @SysUISingleton
@@ -90,12 +94,26 @@ constructor(
     private val smartSpaceManager: SmartspaceManager?,
     private val autofillManager: AutofillManager?,
     private val activityStarter: ActivityStarter,
-    private val launcherProxyService: LauncherProxyService,
     private val navigationModeController: NavigationModeController,
     @Background executor: Executor,
     @Application applicationContext: Context,
     focusdDisplayRepository: FocusedDisplayRepository,
+    launcherProxyService: LauncherProxyService,
 ) : AmbientCueRepository {
+
+    init {
+        val callback =
+            object : LauncherProxyListener {
+                override fun onTaskbarStatusUpdated(visible: Boolean, stashed: Boolean) {
+                    _isTaskBarVisible.update { visible && !stashed }
+                }
+
+                override fun onRecentsButtonPositionChanged(position: Rect?) {
+                    _recentsButtonPosition.update { position }
+                }
+            }
+        launcherProxyService.addCallback(callback)
+    }
 
     override val actions: StateFlow<List<ActionModel>> =
         conflatedCallbackFlow {
@@ -201,23 +219,6 @@ constructor(
                 initialValue = emptyList(),
             )
 
-    override val isTaskBarVisible: StateFlow<Boolean> =
-        conflatedCallbackFlow {
-                val callback =
-                    object : LauncherProxyListener {
-                        override fun onTaskbarStatusUpdated(visible: Boolean, stashed: Boolean) {
-                            trySend(visible && !stashed)
-                        }
-                    }
-                launcherProxyService.addCallback(callback)
-                awaitClose { launcherProxyService.removeCallback(callback) }
-            }
-            .stateIn(
-                scope = backgroundScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
-            )
-
     override val isGestureNav: StateFlow<Boolean> =
         conflatedCallbackFlow {
                 val listener =
@@ -229,6 +230,12 @@ constructor(
                 awaitClose { navigationModeController.removeListener(listener) }
             }
             .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), false)
+
+    private val _isTaskBarVisible = MutableStateFlow(false)
+    override val isTaskBarVisible: StateFlow<Boolean> = _isTaskBarVisible.asStateFlow()
+
+    private val _recentsButtonPosition = MutableStateFlow<Rect?>(null)
+    override val recentsButtonPosition: StateFlow<Rect?> = _recentsButtonPosition.asStateFlow()
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 

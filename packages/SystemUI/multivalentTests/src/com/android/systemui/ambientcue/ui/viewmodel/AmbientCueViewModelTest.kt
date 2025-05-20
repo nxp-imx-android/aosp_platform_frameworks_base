@@ -18,6 +18,8 @@ package com.android.systemui.ambientcue.ui.viewmodel
 
 import android.content.Context
 import android.content.applicationContext
+import android.graphics.Rect
+import androidx.compose.ui.graphics.toComposeRect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -154,12 +156,14 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun pillStyle_3ButtonNav_shortPill() =
         kosmos.runTest {
+            val recentsButtonPosition = Rect(10, 20, 30, 40)
             ambientCueRepository.fake.setIsGestureNav(false)
             ambientCueRepository.fake.setTaskBarVisible(true)
+            ambientCueRepository.fake.setRecentsButtonPosition(recentsButtonPosition)
 
             runCurrent()
-            assertThat(viewModel.pillStyle)
-                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
+            assertThat((viewModel.pillStyle as PillStyleViewModel.ShortPillStyle).position)
+                .isEqualTo(recentsButtonPosition.toComposeRect())
         }
 
     @Test
