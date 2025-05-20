@@ -78,7 +78,7 @@ public class GroupEntry extends ListEntry {
     /**
      * @return modifiable list of NotificationEntry children
      */
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public List<NotificationEntry> getRawChildren() {
         return mChildren;
     }

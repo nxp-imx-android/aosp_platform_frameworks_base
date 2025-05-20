@@ -1440,6 +1440,26 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_pruneIncompleteGroup_postFinalizeFilter() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+
+        // GIVEN a group w/ summary and two children
+        addGroupSummary(0, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1);
+
+        // GIVEN children are filtered out
+        mFinalizeFilter.mIndicesToFilter.addAll(List.of(1, 2));
+
+        // WHEN we run the pipeline
+        dispatchBuild();
+
+        // THEN the entire group is pruned
+        verifyBuiltList();
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_pruneEmptyBundle() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
