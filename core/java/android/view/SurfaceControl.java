@@ -3121,19 +3121,11 @@ public final class SurfaceControl implements Parcelable {
             mNativeObject = nativeObject;
             mFreeNativeResources = sRegistry.registerNativeAllocation(this, mNativeObject);
             setUpForSurfaceControlRegistry();
-            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
-                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
-                        "ctor", this, null, null);
-            }
         }
 
         private Transaction(Parcel in) {
-            setUpForSurfaceControlRegistry();
             readFromParcel(in);
-            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
-                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
-                        "ctor", this, null, null);
-            }
+            setUpForSurfaceControlRegistry();
         }
 
         /**
@@ -3146,6 +3138,10 @@ public final class SurfaceControl implements Parcelable {
             mCalls = SurfaceControlRegistry.sLogAllTxCallsOnApply
                     ? new ArrayList<>()
                     : null;
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
+                        "ctor", this, null, null);
+            }
         }
 
         /**
@@ -5405,12 +5401,6 @@ public final class SurfaceControl implements Parcelable {
 
             dest.writeInt(1);
             nativeWriteTransactionToParcel(mNativeObject, dest);
-            if (mCalls != null) {
-                dest.writeInt(1);
-                dest.writeStringList(mCalls);
-            } else {
-                dest.writeInt(0);
-            }
             if ((flags & Parcelable.PARCELABLE_WRITE_RETURN_VALUE) != 0) {
                 nativeClearTransaction(mNativeObject);
             }
@@ -5420,9 +5410,6 @@ public final class SurfaceControl implements Parcelable {
             mNativeObject = 0;
             if (in.readInt() != 0) {
                 mNativeObject = nativeReadTransactionFromParcel(in);
-                if (in.readInt() != 0) {
-                    in.readStringList(mCalls);
-                }
                 mFreeNativeResources = sRegistry.registerNativeAllocation(this, mNativeObject);
             }
         }
