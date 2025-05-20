@@ -53,16 +53,6 @@ flag {
 
 flag {
     namespace: "haptics"
-    name: "fix_audio_coupled_haptics_scaling"
-    description: "Fix the audio-coupled haptics scaling to use same function as VibrationEffect"
-    bug: "356144312"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "haptics"
     name: "load_haptic_feedback_vibration_customization_from_resources"
     description: "Load haptic feedback vibrations customization from resources."
     is_fixed_read_only: true
