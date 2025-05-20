@@ -23,6 +23,7 @@ import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 
 import android.Manifest;
+import android.annotation.CallbackExecutor;
 import android.annotation.ColorInt;
 import android.annotation.DrawableRes;
 import android.annotation.FlaggedApi;
@@ -70,6 +71,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.IpcDataCache;
 import android.os.LocaleList;
+import android.os.OutcomeReceiver;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PowerExemptionManager;
@@ -6187,6 +6189,59 @@ public class ActivityManager {
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
+        }
+
+        /**
+         * Repositions the task to the specified {@link TaskLocation}.
+         * <p>
+         * If the {@link TaskLocation}'s bounds are invalid (i.e. too small or not fully inside the
+         * target display), the request will be rejected.
+         * <p>
+         * When the repositioning request is approved or rejected, the {@code callback} will be
+         * invoked. If the request is approved, the callback will receive a {@link TaskLocation}
+         * containing the new display ID and bounds of the task. The final display ID and bounds may
+         * be adjusted to the closest acceptable states from the requested ones at the system's
+         * discretion.
+         * <p>
+         * If the request is rejected, the callback will receive an exception with a descriptive
+         * message accessible via {@link Exception#getMessage()}. This exception will be one of
+         * the following:
+         * <ul>
+         * <li>{@link SecurityException} if the requester doesn't hold the permission required to
+         * use this method;</li>
+         * <li>{@link IllegalStateException} if the task is not in a state that allows it to
+         * change its {@link TaskLocation} programmatically at runtime of the request;</li>
+         * <li>{@link SecurityException} if this task cannot be placed on the target display
+         * requested. This can happen when the display is not trusted and not owned by the calling
+         * app;</li>
+         * <li>{@link IllegalArgumentException} if the {@link TaskLocation} provided does not
+         * include a valid display ID or the bounds provided are not fully contained inside the
+         * given display or the bounds provided are smaller than the minimum size defined in the <a
+         * href="https://source.android.com/docs/compatibility/16/android-16-cdd#3814_multi-windows">
+         * CDD</a> in either direction.</li>
+         * </ul>
+         * <p>
+         * It is allowed to move a task to a display with which the call of
+         * {@link ActivityManager#isTaskMoveAllowedOnDisplay()} returns {@code false}, but the task
+         * won't be allowed to be programmatically moved again until users take actions to make the
+         * same task movable again.
+         * <p>
+         * If the task stays on its original display, its z-order will not be affected. Otherwise,
+         * if the task moves to a different display, it will become focused.
+         *
+         * @param location {@link TaskLocation} with the target display or {@link
+         * Display#INVALID_DISPLAY} if the target display is the current display,
+         * and the new desired bounds
+         * @param executor an Executor used to invoke the callback
+         * @param callback a callback to receive the result of the request
+         */
+        @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+        @RequiresPermission(Manifest.permission.REPOSITION_SELF_WINDOWS)
+        public void moveTaskTo(
+                @NonNull TaskLocation location,
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull OutcomeReceiver<TaskLocation, Exception> callback) {
+            TaskMoveRequestHandler.moveTaskTo(location, executor, callback, mAppTaskImpl);
         }
 
         /**
