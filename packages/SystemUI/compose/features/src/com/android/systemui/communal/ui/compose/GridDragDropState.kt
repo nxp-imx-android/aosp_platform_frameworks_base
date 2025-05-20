@@ -208,7 +208,8 @@ private class GridDragDropStateV1(
 ) : GridDragDropStateInternal(gridState) {
     private val scrollChannel = Channel<Float>()
 
-    private val spacer = CommunalContentModel.Spacer(CommunalContentSize.Responsive(1))
+    private val spacer =
+        CommunalContentModel.Spacer(CommunalContentSize.fixedThirdOrResponsiveSize())
 
     private var previousTargetItemKey: Any? = null
 
@@ -394,7 +395,8 @@ private class GridDragDropStateV2(
     // and no longer in the list of visible items).
     private var draggingItemWhileScrolling: LazyGridItemInfo? by mutableStateOf(null)
 
-    private val spacer = CommunalContentModel.Spacer(CommunalContentSize.Responsive(1))
+    private val spacer =
+        CommunalContentModel.Spacer(CommunalContentSize.fixedThirdOrResponsiveSize())
 
     private var previousTargetItemKey: Any? = null
 
