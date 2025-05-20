@@ -86,6 +86,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactory;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactoryLooperImpl;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
+import com.android.systemui.statusbar.notification.row.NotificationRebindingTrackerModule;
 import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.ActivatableNotificationViewModelModule;
 import com.android.systemui.statusbar.notification.stack.MagneticNotificationRowManager;
@@ -123,6 +124,7 @@ import javax.inject.Provider;
         NotificationMemoryModule.class,
         NotificationStatsLoggerModule.class,
         NotificationsLogModule.class,
+        NotificationRebindingTrackerModule.class,
 })
 public interface NotificationsModule {
     @Binds
