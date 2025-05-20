@@ -201,7 +201,7 @@ public class AudioDeviceBroker {
 
     /** Indicates if headset profile connection and SCO audio control use the new implementation
      * aligned with other BT profiles. True if both the feature flag Flags.scoManagedByAudio() and
-     * the system property audio.sco.managed.by.audio are true.
+     * the system property bluetooth.sco.managed_by_audio are true.
      */
     private final boolean mScoManagedByAudio;
     /*package*/ boolean isScoManagedByAudio() {
