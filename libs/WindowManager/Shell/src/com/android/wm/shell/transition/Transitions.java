@@ -775,7 +775,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         for (TransitionInfo.Change change : info.getChanges()) {
             if (change.getTaskInfo() != null
                     && DesktopWallpaperActivity.isWallpaperTask(change.getTaskInfo())) {
-                change.setFlags(FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY);
+                change.setFlags(change.getFlags() | FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY);
             }
         }
 
