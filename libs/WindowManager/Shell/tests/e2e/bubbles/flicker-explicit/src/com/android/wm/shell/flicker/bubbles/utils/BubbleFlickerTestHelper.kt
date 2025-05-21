@@ -16,7 +16,7 @@
 
 @file:JvmName("BubbleFlickerTestHelper")
 
-package com.android.wm.shell.flicker.bubbles
+package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
 import android.tools.Rotation
@@ -25,11 +25,15 @@ import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
 import android.tools.io.Reader
 import android.tools.traces.ConditionsFactory
-import android.tools.traces.component.ComponentNameMatcher
+import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.monitors.withTracing
 import android.tools.traces.parsers.WindowManagerStateHelper
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
+import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
 
 // TODO(b/396020056): Verify bubble bar on the large screen devices.
@@ -84,13 +88,7 @@ fun launchBubbleViaBubbleMenu(
     // Open the bubble menu and click.
     simpleAppIcon.openMenu().bubbleMenuItem.click()
 
-    // Wait for bubble shown.
-    wmHelper
-        .StateSyncBuilder()
-        .add(ConditionsFactory.isWMStateComplete())
-        .withAppTransitionIdle()
-        .withTopVisibleApp(testApp)
-        .waitForAndVerify()
+    waitAndAssertBubbleInExpandedState(testApp, wmHelper)
 }
 
 /**
@@ -105,7 +103,33 @@ fun collapseBubbleViaBackKey(
     tapl: LauncherInstrumentation,
     wmHelper: WindowManagerStateHelper,
 ) {
-    // Ensure Bubble is shown and in expanded state.
+    // Ensure Bubble is in expanded state.
+    waitAndAssertBubbleInExpandedState(testApp, wmHelper)
+
+    // Press back key to collapse bubble
+    tapl.pressBack()
+
+    waitAndAssertBubbleInCollapseState(wmHelper)
+}
+
+fun expandBubbleViaTapOnBubbleStack(
+    uiDevice: UiDevice,
+    testApp: StandardAppHelper,
+    wmHelper: WindowManagerStateHelper,
+) {
+    // Ensure Bubble is in collapse state.
+    waitAndAssertBubbleInCollapseState(wmHelper)
+
+    // Click bubble to expand
+    uiDevice.bubble?.click() ?: error("Can't find bubble view")
+
+    waitAndAssertBubbleInExpandedState(testApp, wmHelper)
+}
+
+private fun waitAndAssertBubbleInExpandedState(
+    testApp: StandardAppHelper,
+    wmHelper: WindowManagerStateHelper,
+) {
     wmHelper
         .StateSyncBuilder()
         .add(ConditionsFactory.isWMStateComplete())
@@ -113,15 +137,24 @@ fun collapseBubbleViaBackKey(
         .withTopVisibleApp(testApp)
         .withBubbleShown()
         .waitForAndVerify()
+}
 
-    // Press back key to collapse bubble
-    tapl.pressBack()
-
-    // Ensure Bubble is in the collapse state.
+private fun waitAndAssertBubbleInCollapseState(wmHelper: WindowManagerStateHelper) {
     wmHelper
         .StateSyncBuilder()
         .add(ConditionsFactory.isWMStateComplete())
         .withAppTransitionIdle()
-        .withTopVisibleApp(ComponentNameMatcher.LAUNCHER)
+        .withTopVisibleApp(LAUNCHER)
+        .withBubbleShown()
         .waitForAndVerify()
 }
+
+private val UiDevice.bubble: UiObject2?
+    get() = wait(
+        Until.findObject(By.pkg(SYSUI_PACKAGE).res(SYSUI_PACKAGE, RES_ID_BUBBLE_VIEW)),
+        FIND_OBJECT_TIMEOUT
+    )
+
+private const val FIND_OBJECT_TIMEOUT = 4000L
+private const val SYSUI_PACKAGE = "com.android.systemui"
+private const val RES_ID_BUBBLE_VIEW = "bubble_view"

@@ -20,12 +20,15 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.flicker.subject.events.EventLogSubject
-import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
 import com.android.wm.shell.Flags
-import com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest.Companion.testApp
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleStackAlwaysVisibleTestCases
+import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
+import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleViaBackKey
+import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
+import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -46,13 +49,18 @@ import org.junit.runners.MethodSorters
  * ```
  *     Collapse bubble via back key
  * ```
+ *
+ * Verified tests:
+ * - [BubbleFlickerTestBase]
+ * - [BubbleStackAlwaysVisibleTestCases]
+ * - The focus changes to [LAUNCHER] from [testApp] and [LAUNCHER] becomes the top window
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class CollapseBubbleViaBackTest : BubbleFlickerTestBase() {
+class CollapseBubbleViaBackTest : BubbleFlickerTestBase(), BubbleStackAlwaysVisibleTestCases {
 
     companion object : FlickerPropertyInitializer() {
 
@@ -70,29 +78,6 @@ class CollapseBubbleViaBackTest : BubbleFlickerTestBase() {
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    // TODO(b/396020056): Verify bubble scenarios in 3-button mode.
-    override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
-
-// region Bubble related tests
-
-    /**
-     * Verifies the bubble window is visible at the end of transition.
-     */
-    @Test
-    fun bubbleWindowIsAlwaysVisible() {
-        wmTraceSubject.isAboveAppWindowVisible(ComponentNameMatcher.BUBBLE)
-    }
-
-    /**
-     * Verifies the bubble layer is visible at the end of transition.
-     */
-    @Test
-    fun bubbleLayerIsAlwaysVisible() {
-        layersTraceSubject.isVisible(ComponentNameMatcher.BUBBLE)
-    }
-
-// endregion
 
 // region launcher related tests
 
@@ -126,7 +111,7 @@ class CollapseBubbleViaBackTest : BubbleFlickerTestBase() {
      * Verifies [LAUNCHER] is the top window at the end of transition.
      */
     @Test
-    fun appWindowAsTopWindowAtEnd() {
+    fun launcherWindowAsTopWindowAtEnd() {
         wmStateSubjectAtEnd.isAppWindowOnTop(LAUNCHER)
     }
 
@@ -136,7 +121,6 @@ class CollapseBubbleViaBackTest : BubbleFlickerTestBase() {
     @Test
     fun launcherWindowBecomesTopWindow() {
         wmTraceSubject
-            .skipUntilFirstAssertion()
             .isAppWindowNotOnTop(LAUNCHER)
             .then()
             .isAppWindowOnTop(LAUNCHER)

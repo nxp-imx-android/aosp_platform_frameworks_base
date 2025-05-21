@@ -19,8 +19,8 @@ package com.android.wm.shell.flicker.bubbles.samples
 import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.flicker.subject.wm.WindowManagerTraceSubject
-import com.android.wm.shell.flicker.bubbles.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.runTransitionWithTrace
+import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.runTransitionWithTrace
 
 /**
  * Sample to illustrate how to use [runTransitionWithTrace].
