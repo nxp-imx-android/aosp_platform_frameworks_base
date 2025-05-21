@@ -56,6 +56,7 @@ import com.android.systemui.screenrecord.data.model.ScreenRecordModel;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.util.Utils;
 
 import java.util.function.Consumer;
 
@@ -127,8 +128,12 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
 
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
-        // TODO(b/409330121): call mController.onScreenRecordQsTileClick() instead.
-        handleClick(() -> showDialog(expandable));
+        if (Utils.isDesktopScreenCaptureEnabled(mContext)) {
+            // TODO(b/412723197): open screen capture toolbar when it becomes available.
+        } else {
+            // TODO(b/409330121): call mController.onScreenRecordQsTileClick() instead.
+            handleClick(() -> showDialog(expandable));
+        }
     }
 
     private void showDialog(@Nullable Expandable expandable) {
