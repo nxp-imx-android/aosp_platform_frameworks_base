@@ -23,6 +23,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.RemoteException
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.view.View
 import android.widget.FrameLayout
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
@@ -30,6 +32,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.ActivityIntentHelper
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.LaunchableView
@@ -139,6 +142,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
                 userTracker = userTracker,
                 activityIntentHelper = activityIntentHelper,
                 mainExecutor = mainExecutor,
+                applicationScope = kosmos.testScope,
                 communalSceneInteractor = communalSceneInteractor,
                 communalSettingsInteractor = communalSettingsInteractor,
             )
@@ -194,8 +198,39 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         verify(statusBarKeyguardViewManager).addAfterKeyguardGoneRunnable(any())
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startActivityDismissingKeyguard_dismissShadeWhenOccluded_runImmediately() {
+        val intent = mock(Intent::class.java)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(keyguardStateController.isOccluded).thenReturn(true)
+        `when`(communalSceneInteractor.isCommunalVisible).thenReturn(MutableStateFlow(true))
+        `when`(communalSettingsInteractor.isCommunalFlagEnabled()).thenReturn(true)
+
+        underTest.startActivityDismissingKeyguard(intent, dismissShade = true)
+        mainExecutor.runAllReady()
+
+        val actionCaptor = argumentCaptor<OnDismissAction>()
+        verify(statusBarKeyguardViewManager)
+            .dismissWithAction(actionCaptor.capture(), any(), anyBoolean(), eq(null))
+        actionCaptor.firstValue.onDismiss()
+        mainExecutor.runAllReady()
+
+        verify(statusBarKeyguardViewManager, never()).addAfterKeyguardGoneRunnable(any())
+        verify(activityTransitionAnimator)
+            .startIntentWithAnimation(
+                eq(null),
+                eq(kosmos.testScope),
+                eq(false),
+                eq(false),
+                eq(false),
+                any(),
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startActivityDismissingKeyguard_dismissShadeWhenOccluded_runImmediatelyLegacy() {
         val intent = mock(Intent::class.java)
         `when`(keyguardStateController.isShowing).thenReturn(true)
         `when`(keyguardStateController.isOccluded).thenReturn(true)
@@ -249,8 +284,44 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             .dismissWithAction(any(), eq(null), anyBoolean(), eq(customMessage))
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startPendingIntentMaybeDismissingKeyguard_keyguardShowing_showOverLs_launchAnimator() {
+        val pendingIntent = mock(PendingIntent::class.java)
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)
+        `when`(pendingIntent.isActivity).thenReturn(true)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(deviceProvisionedController.isDeviceProvisioned).thenReturn(true)
+        `when`(activityIntentHelper.wouldPendingShowOverLockscreen(eq(pendingIntent), anyInt()))
+            .thenReturn(true)
+
+        startPendingIntentMaybeDismissingKeyguard(
+            intent = pendingIntent,
+            animationController = controller,
+            intentSentUiThreadCallback = null,
+        )
+        mainExecutor.runAllReady()
+
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                eq(true),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startPendingIntentMaybeDismissingKeyguard_keyguardShowing_showOverLs_launchAnimatorLegacy() {
         val pendingIntent = mock(PendingIntent::class.java)
         val parent = FrameLayout(context)
         val view =
@@ -282,6 +353,8 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             )
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
     fun startPendingIntentDismissingKeyguard_fillInIntentAndExtraOptions_sendAndReturnResult() {
         val pendingIntent = mock(PendingIntent::class.java)
         val fillInIntent = mock(Intent::class.java)
@@ -301,7 +374,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         // extra activity options to set on pending intent
         val activityOptions = mock(ActivityOptions::class.java)
         activityOptions.splashScreenStyle = SPLASH_SCREEN_STYLE_SOLID_COLOR
-        val bundleCaptor = argumentCaptor<Bundle>()
 
         startPendingIntentMaybeDismissingKeyguard(
             intent = pendingIntent,
@@ -312,7 +384,32 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         )
         mainExecutor.runAllReady()
 
+        val actionCaptor = argumentCaptor<OnDismissAction>()
+        verify(statusBarKeyguardViewManager)
+            .dismissWithAction(
+                actionCaptor.capture(),
+                nullable(Runnable::class.java),
+                anyBoolean(),
+                eq(null),
+            )
+        actionCaptor.firstValue.onDismiss()
+        mainExecutor.runAllReady()
+
+        verify(statusBarKeyguardViewManager, never()).addAfterKeyguardGoneRunnable(any())
+        val intentStarterCaptor = argumentCaptor<ActivityTransitionAnimator.PendingIntentStarter>()
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                any(),
+                eq(kosmos.testScope),
+                eq(true),
+                eq(false),
+                anyBoolean(),
+                intentStarterCaptor.capture(),
+            )
+        intentStarterCaptor.firstValue.startPendingIntent(null)
+
         // Fill-in intent is passed and options contain extra values specified
+        val bundleCaptor = argumentCaptor<Bundle>()
         verify(pendingIntent)
             .sendAndReturnResult(
                 eq(context),
@@ -325,7 +422,80 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             )
         val options = ActivityOptions.fromBundle(bundleCaptor.firstValue)
         assertThat(options.getPendingIntentBackgroundActivityStartMode())
-            .isEqualTo(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS)
+            .isEqualTo(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
+        assertThat(options.splashScreenStyle).isEqualTo(SPLASH_SCREEN_STYLE_SOLID_COLOR)
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startPendingIntentDismissingKeyguard_fillInIntentAndExtraOptions_sendAndReturnResultLegacy() {
+        val pendingIntent = mock(PendingIntent::class.java)
+        val fillInIntent = mock(Intent::class.java)
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)
+        `when`(pendingIntent.isActivity).thenReturn(true)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(deviceProvisionedController.isDeviceProvisioned).thenReturn(true)
+        `when`(activityIntentHelper.wouldPendingShowOverLockscreen(eq(pendingIntent), anyInt()))
+            .thenReturn(false)
+
+        // extra activity options to set on pending intent
+        val activityOptions = mock(ActivityOptions::class.java)
+        activityOptions.splashScreenStyle = SPLASH_SCREEN_STYLE_SOLID_COLOR
+
+        startPendingIntentMaybeDismissingKeyguard(
+            intent = pendingIntent,
+            animationController = controller,
+            intentSentUiThreadCallback = null,
+            fillInIntent = fillInIntent,
+            extraOptions = activityOptions.toBundle(),
+        )
+        mainExecutor.runAllReady()
+
+        val actionCaptor = argumentCaptor<OnDismissAction>()
+        verify(statusBarKeyguardViewManager)
+            .dismissWithAction(
+                actionCaptor.capture(),
+                nullable(Runnable::class.java),
+                anyBoolean(),
+                eq(null),
+            )
+        actionCaptor.firstValue.onDismiss()
+        mainExecutor.runAllReady()
+
+        verify(statusBarKeyguardViewManager, never()).addAfterKeyguardGoneRunnable(any())
+        val intentStarterCaptor =
+            argumentCaptor<ActivityTransitionAnimator.LegacyPendingIntentStarter>()
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                any(),
+                eq(true),
+                nullable(String::class.java),
+                anyBoolean(),
+                intentStarterCaptor.capture(),
+            )
+        intentStarterCaptor.firstValue.startPendingIntent(null)
+
+        // Fill-in intent is passed and options contain extra values specified
+        val bundleCaptor = argumentCaptor<Bundle>()
+        verify(pendingIntent)
+            .sendAndReturnResult(
+                eq(context),
+                eq(0),
+                eq(fillInIntent),
+                nullable(PendingIntent.OnFinished::class.java),
+                nullable(Handler::class.java),
+                nullable(String::class.java),
+                bundleCaptor.capture(),
+            )
+        val options = ActivityOptions.fromBundle(bundleCaptor.firstValue)
+        assertThat(options.getPendingIntentBackgroundActivityStartMode())
+            .isEqualTo(ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED)
         assertThat(options.splashScreenStyle).isEqualTo(SPLASH_SCREEN_STYLE_SOLID_COLOR)
     }
 
@@ -344,8 +514,44 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         verify(centralSurfaces).getAnimatorControllerFromNotification(associatedView)
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startPendingIntentDismissingKeyguard_transitionAnimator_animateOverOcclusion() {
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)
+        val pendingIntent = mock(PendingIntent::class.java)
+        `when`(pendingIntent.isActivity).thenReturn(true)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(keyguardStateController.isOccluded).thenReturn(true)
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = true,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = true,
+        )
+        mainExecutor.runAllReady()
+
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                eq(true),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startPendingIntentDismissingKeyguard_transitionAnimator_animateOverOcclusionLegacy() {
         val parent = FrameLayout(context)
         val view =
             object : View(context), LaunchableView {
@@ -377,8 +583,57 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             )
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startPendingIntentDismissingKeyguard_transitionAnimator_animateCommunal() {
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)
+        val pendingIntent = mock(PendingIntent::class.java)
+        `when`(pendingIntent.isActivity).thenReturn(true)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(keyguardStateController.isOccluded).thenReturn(true)
+        `when`(communalSettingsInteractor.isCommunalFlagEnabled()).thenReturn(true)
+        `when`(communalSceneInteractor.isCommunalVisible).thenReturn(MutableStateFlow(true))
+        `when`(communalSceneInteractor.isLaunchingWidget).thenReturn(MutableStateFlow(true))
+        `when`(activityIntentHelper.wouldPendingLaunchResolverActivity(eq(pendingIntent), anyInt()))
+            .thenReturn(false)
+        `when`(activityIntentHelper.wouldPendingShowOverLockscreen(eq(pendingIntent), anyInt()))
+            .thenReturn(false)
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = false,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = false,
+        )
+        mainExecutor.runAllReady()
+
+        val actionCaptor = argumentCaptor<OnDismissAction>()
+        verify(statusBarKeyguardViewManager)
+            .dismissWithAction(actionCaptor.capture(), eq(null), anyBoolean(), eq(null))
+        actionCaptor.firstValue.onDismiss()
+        mainExecutor.runAllReady()
+
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                eq(true),
+                eq(false),
+                eq(false),
+                any(),
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startPendingIntentDismissingKeyguard_transitionAnimator_animateCommunalLegacy() {
         val parent = FrameLayout(context)
         val view =
             object : View(context), LaunchableView {
@@ -423,8 +678,60 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
             )
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startPendingIntentDismissingKeyguard_transitionAnimator_doNotAnimateCommunal() {
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)
+        val pendingIntent = mock(PendingIntent::class.java)
+        `when`(pendingIntent.isActivity).thenReturn(true)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(keyguardStateController.isOccluded).thenReturn(true)
+        `when`(communalSceneInteractor.isCommunalVisible).thenReturn(MutableStateFlow(true))
+        `when`(communalSceneInteractor.isLaunchingWidget).thenReturn(MutableStateFlow(true))
+        `when`(activityIntentHelper.wouldPendingLaunchResolverActivity(eq(pendingIntent), anyInt()))
+            .thenReturn(false)
+        `when`(activityIntentHelper.wouldPendingShowOverLockscreen(eq(pendingIntent), anyInt()))
+            .thenReturn(false)
+
+        underTest.startPendingIntentDismissingKeyguard(
+            intent = pendingIntent,
+            dismissShade = false,
+            animationController = controller,
+            showOverLockscreen = true,
+            skipLockscreenChecks = false,
+        )
+        mainExecutor.runAllReady()
+
+        val actionCaptor = argumentCaptor<OnDismissAction>()
+        verify(statusBarKeyguardViewManager)
+            .dismissWithAction(actionCaptor.capture(), eq(null), anyBoolean(), eq(null))
+        actionCaptor.firstValue.onDismiss()
+        mainExecutor.runAllReady()
+
+        val runnableCaptor = argumentCaptor<Runnable>()
+        verify(statusBarKeyguardViewManager).addAfterKeyguardGoneRunnable(runnableCaptor.capture())
+        runnableCaptor.firstValue.run()
+
+        verify(activityTransitionAnimator)
+            .startPendingIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                eq(false),
+                eq(false),
+                eq(false),
+                any(),
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startPendingIntentDismissingKeyguard_transitionAnimator_doNotAnimateCommunalLegacy() {
         val parent = FrameLayout(context)
         val view =
             object : View(context), LaunchableView {
@@ -481,8 +788,37 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         verify(userTracker).userHandle
     }
 
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
     fun startActivity_transitionAnimator_animateOverOcclusion() {
+        val intent = mock(Intent::class.java)
+        val parent = FrameLayout(context)
+        val view =
+            object : View(context), LaunchableView {
+                override fun setShouldBlockVisibilityChanges(block: Boolean) {}
+            }
+        parent.addView(view)
+        val controller = ActivityTransitionAnimator.Controller.fromView(view)
+        `when`(keyguardStateController.isShowing).thenReturn(true)
+        `when`(keyguardStateController.isOccluded).thenReturn(true)
+
+        mainExecutor.runAllReady()
+        underTest.startActivity(intent, true, controller, true, null)
+
+        verify(activityTransitionAnimator)
+            .startIntentWithAnimation(
+                nullable(ActivityTransitionAnimator.Controller::class.java),
+                eq(kosmos.testScope),
+                eq(true),
+                eq(false),
+                eq(true),
+                any(),
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun startActivity_transitionAnimator_animateOverOcclusionLegacy() {
         val intent = mock(Intent::class.java)
         val parent = FrameLayout(context)
         val view =
