@@ -64,7 +64,7 @@ open class ProtectedPackagesMockedTest {
             .thenReturn(listOf(SUPERVISION_PKG))
         whenever(rule.mocks().context.getSystemService(RoleManager::class.java))
             .thenReturn(roleManager)
-        whenever(supervisionManager.isSupervisionEnabled()).thenReturn(true)
+        whenever(supervisionManager.isSupervisionEnabledForUser(any())).thenReturn(true)
         whenever(rule.mocks().context.getSystemService(SupervisionManager::class.java))
             .thenReturn(supervisionManager)
         protectedPackages = ProtectedPackages(rule.mocks().context)
@@ -110,7 +110,7 @@ open class ProtectedPackagesMockedTest {
     @Throws(Exception::class)
     @EnableFlags(Flags.FLAG_PROTECT_SUPERVISION_PACKAGES)
     fun testIsPackageProtected_supervisionDisabled_flagEnabled_returnsFalse() {
-        whenever(supervisionManager.isSupervisionEnabled()).thenReturn(false)
+        whenever(supervisionManager.isSupervisionEnabledForUser(any())).thenReturn(false)
 
         val stateProtected =
             protectedPackages.isPackageStateProtected(TEST_USER_ID, SUPERVISION_PKG)
