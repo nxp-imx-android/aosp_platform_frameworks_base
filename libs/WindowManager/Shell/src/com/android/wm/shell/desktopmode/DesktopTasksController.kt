@@ -1173,7 +1173,7 @@ class DesktopTasksController(
             } else {
                 taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
             }
-
+        snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val isMinimizingToPip =
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
                 (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
@@ -1219,7 +1219,6 @@ class DesktopTasksController(
             val transition = freeformTaskTransitionStarter.startPipTransition(wct)
             desktopExitRunnable?.invoke(transition)
         } else {
-            snapEventHandler.removeTaskIfTiled(displayId, taskId)
             val willExitDesktop =
                 if (
                     DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
@@ -3035,11 +3034,11 @@ class DesktopTasksController(
         )
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(transition, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
+            snapEventHandler.removeTaskIfTiled(task.displayId, taskIdToMinimize)
             return wct
         }
         addPendingTaskLimitTransition(transition, deskId, task.taskId)
         if (!wct.isEmpty) {
-            snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             return wct
         }
         return null

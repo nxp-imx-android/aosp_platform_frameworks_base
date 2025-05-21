@@ -3992,6 +3992,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun tilingBroken_onTaskMinimised() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.TASK_LIMIT)
+
+        verify(snapEventHandler, times(1)).removeTaskIfTiled(task.displayId, task.taskId)
+    }
+
+    @Test
     fun onDesktopWindowClose_multipleActiveTasks() {
         val task1 = setUpFreeformTask()
         setUpFreeformTask()
