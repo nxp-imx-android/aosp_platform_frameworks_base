@@ -235,8 +235,13 @@ public class AdbService extends IAdbManager.Stub {
     private final ContentResolver mContentResolver;
     private final ArrayMap<IBinder, IAdbTransport> mTransports = new ArrayMap<>();
 
+    /*
+     * mIsAdb*Enabled variables are owned by setAdbEnabled, do not write to them
+     * directly: they track the adbd state from the AdbService perspective.
+     */
     private boolean mIsAdbUsbEnabled;
     private boolean mIsAdbWifiEnabled;
+
     private final AdbDebuggingManager mDebuggingManager;
 
     private AdbSettingsObserver mObserver;
@@ -261,21 +266,24 @@ public class AdbService extends IAdbManager.Stub {
          * Use the normal bootmode persistent prop to maintain state of adb across
          * all boot modes.
          */
-        mIsAdbUsbEnabled = containsFunction(
-                SystemProperties.get(USB_PERSISTENT_CONFIG_PROPERTY, ""),
-                UsbManager.USB_FUNCTION_ADB);
-        boolean shouldEnableAdbUsb = mIsAdbUsbEnabled
+        final boolean shouldEnableAdbUsb =
+                containsFunction(SystemProperties.get(USB_PERSISTENT_CONFIG_PROPERTY, ""),
+                                 UsbManager.USB_FUNCTION_ADB)
                 || SystemProperties.getBoolean(
                         TestHarnessModeService.TEST_HARNESS_MODE_PROPERTY, false);
-        mIsAdbWifiEnabled = "1".equals(
+
+        final boolean shouldEnableAdbWifi = "1".equals(
                 SystemProperties.get(WIFI_PERSISTENT_CONFIG_PROPERTY, "0"));
 
-        // make sure the ADB_ENABLED setting value matches the current state
+        // These writes will trigger AdbSettingsObserver which will call setAdbEnabled.
         try {
-            Settings.Global.putInt(mContentResolver,
-                    Settings.Global.ADB_ENABLED, shouldEnableAdbUsb ? 1 : 0);
-            Settings.Global.putInt(mContentResolver,
-                    Settings.Global.ADB_WIFI_ENABLED, mIsAdbWifiEnabled ? 1 : 0);
+            if (shouldEnableAdbUsb) {
+                Settings.Global.putInt(mContentResolver, Settings.Global.ADB_ENABLED, 1);
+            }
+
+            if (shouldEnableAdbWifi) {
+                Settings.Global.putInt(mContentResolver, Settings.Global.ADB_WIFI_ENABLED, 1);
+            }
         } catch (SecurityException e) {
             // If UserManager.DISALLOW_DEBUGGING_FEATURES is on, that this setting can't be changed.
             Slog.d(TAG, "ADB_ENABLED is restricted.");
@@ -287,8 +295,6 @@ public class AdbService extends IAdbManager.Stub {
      */
     public void bootCompleted() {
         Slog.d(TAG, "boot completed");
-        mDebuggingManager.setAdbEnabled(mIsAdbUsbEnabled, AdbTransportType.USB);
-        mDebuggingManager.setAdbEnabled(mIsAdbWifiEnabled, AdbTransportType.WIFI);
     }
 
     @Override
