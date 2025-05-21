@@ -564,7 +564,9 @@ public class TaskInfo {
                     == that.topActivityRequestOpenInBrowserEducationTimestamp
                 && appCompatTaskInfo.equalsForTaskOrganizer(that.appCompatTaskInfo)
                 && Objects.equals(topActivityMainWindowFrame, that.topActivityMainWindowFrame)
-                && isAppBubble == that.isAppBubble;
+                && isAppBubble == that.isAppBubble
+                && (!com.android.window.flags.Flags.updateTaskMinDimensionsWithRootActivity()
+                || (minWidth == that.minWidth && minHeight == that.minHeight));
     }
 
     /**
