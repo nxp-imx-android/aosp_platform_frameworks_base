@@ -333,14 +333,13 @@ object OngoingActivityChipBinder {
             }
             is OngoingActivityChipModel.Content.ShortTimeDelta -> {
                 chipShortTimeDeltaView.setTime(chipModel.time)
-                chipShortTimeDeltaView.visibility = View.VISIBLE
+                // Note: DateTimeView's relative time doesn't quite match the format we want
+                // in the status bar chips. But, the only chips using ShortTimeDelta are
+                // notification chips, which are launching in the same release as when the
+                // chips being displayed in Compose is launching. So, we don't expect any end
+                // users to see the wrong format.
                 chipShortTimeDeltaView.isShowRelativeTime = true
-                chipShortTimeDeltaView.setRelativeTimeDisambiguationTextMask(
-                    DateTimeView.DISAMBIGUATION_TEXT_PAST
-                )
-                chipShortTimeDeltaView.setRelativeTimeUnitDisplayLength(
-                    DateTimeView.UNIT_DISPLAY_LENGTH_MEDIUM
-                )
+                chipShortTimeDeltaView.visibility = View.VISIBLE
 
                 chipTextView.visibility = View.GONE
                 chipTimeView.hide()
