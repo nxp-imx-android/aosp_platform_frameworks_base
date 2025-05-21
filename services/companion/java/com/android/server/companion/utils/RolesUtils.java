@@ -19,15 +19,18 @@ package com.android.server.companion.utils;
 import static android.app.role.RoleManager.MANAGE_HOLDERS_FLAG_DONT_KILL_APP;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
 import static android.companion.CompanionResources.PERMISSION_CHANGE_MEDIA_OUTPUT;
 import static android.companion.CompanionResources.PERMISSION_CONTACTS;
+import static android.companion.CompanionResources.PERMISSION_CREATE_VIRTUAL_DEVICE;
 import static android.companion.CompanionResources.PERMISSION_MICROPHONE;
 import static android.companion.CompanionResources.PERMISSION_NEARBY_DEVICES;
 import static android.companion.CompanionResources.PERMISSION_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_PHONE;
+import static android.companion.CompanionResources.PERMISSION_POST_NOTIFICATIONS;
 import static android.companion.CompanionResources.PERMISSION_SMS;
 import static android.companion.CompanionResources.PERMISSION_STORAGE;
 
@@ -65,7 +68,9 @@ public final class RolesUtils {
                     PERMISSION_NEARBY_DEVICES, PERMISSION_CHANGE_MEDIA_OUTPUT),
             DEVICE_PROFILE_GLASSES, Arrays.asList(
                     PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_SMS, PERMISSION_CONTACTS,
-                    PERMISSION_MICROPHONE, PERMISSION_NEARBY_DEVICES)
+                    PERMISSION_MICROPHONE, PERMISSION_NEARBY_DEVICES),
+            DEVICE_PROFILE_VIRTUAL_DEVICE, Arrays.asList(PERMISSION_CREATE_VIRTUAL_DEVICE,
+                            PERMISSION_NEARBY_DEVICES, PERMISSION_POST_NOTIFICATIONS)
     );
 
     private static final Set<String> ROLELESS_DEVICE_PROFILES;

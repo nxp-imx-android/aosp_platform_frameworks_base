@@ -109,7 +109,7 @@
     <string name="title_virtual_device">Allow &lt;strong&gt;<xliff:g id="app_name" example="Exo">%1$s</xliff:g>&lt;/strong&gt; to stream audio and system features between your <xliff:g id="device_type" example="phone">%3$s</xliff:g> and &lt;strong&gt;<xliff:g id="device_name" example="Chromebook">%2$s</xliff:g>&lt;/strong&gt;?</string>
 
     <!-- Summary for associating an application with a companion device of VIRTUAL_DEVICE profile [CHAR LIMIT=NONE] -->
-    <string name="summary_virtual_device"><xliff:g id="app_name" example="Exo">%2$s</xliff:g> will have access to anything that’s played on <xliff:g id="device_name" example="Chromebook">%3$s</xliff:g>.&lt;br/>&lt;br/><xliff:g id="app_name" example="Exo">%2$s</xliff:g> will be able to stream audio to <xliff:g id="device_name" example="Chromebook">%3$s</xliff:g> until you remove access to this permission.</string>
+    <string name="summary_virtual_device"><xliff:g id="app_name" example="Exo">%2$s</xliff:g> will be granted the following permissions:</string>
 
     <!-- ================= null profile ================= -->
 
