@@ -555,6 +555,9 @@ cc_library_host_shared {
     stem: "libandroid_runtime",
     installable: false,
     visibility: ["//frameworks/base/ravenwood"],
+    cflags: [
+        "-D__RAVENWOOD__",
+    ],
     shared_libs: [
         "libbase",
         "libcutils",

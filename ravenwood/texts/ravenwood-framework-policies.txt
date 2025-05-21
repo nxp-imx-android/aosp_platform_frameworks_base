@@ -138,14 +138,8 @@ class android.graphics.HardwareRenderer exp
 class android.hardware.input.InputSettings
     method isStylusPointerIconEnabled exp
 
-class android.view.InputChannel
-    method nativeGetFinalizer i #exprimental -- ignore native methods
-
 class android.tracing.perfetto.DataSource exp
     method nativeCreate i #exprimental -- ignore native methods
-
-class android.view.InputEventReceiver exp
-    method nativeInit i #exprimental -- ignore native methods
 
 class android.tracing.perfetto.DataSource exp
     method nativeRegisterDataSource i #exprimental -- ignore native methods
