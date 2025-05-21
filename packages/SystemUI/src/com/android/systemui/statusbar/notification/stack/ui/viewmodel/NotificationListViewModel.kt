@@ -98,20 +98,26 @@ constructor(
                     .distinctUntilChanged(),
                 shadeModeInteractor.shadeMode.map { it == ShadeMode.Split },
                 notificationStackInteractor.isShowingOnLockscreen,
-            ) { hasNotifications, qsExpandedEnough, isSplitShade, isShowingOnLockscreen ->
+            ) { hasNotifications, qsExpandedEnough, splitShade, isShowingOnLockscreen ->
                 when {
-                    hasNotifications -> false
+                    hasNotifications -> VisibilityChange.DISAPPEAR_WITH_ANIMATION
                     // Hide the empty shade when QS is close to being full screen. We use this
                     // instead of isQsFullscreen to avoid some flickering.
-                    qsExpandedEnough && !isSplitShade -> false
+                    qsExpandedEnough && !splitShade -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
                     // Do not show the empty shade if the lockscreen is visible (including AOD
                     // b/228790482 and bouncer b/267060171), except if the shade is opened on
                     // top.
-                    isShowingOnLockscreen -> false
-                    else -> true
+                    isShowingOnLockscreen -> VisibilityChange.DISAPPEAR_WITHOUT_ANIMATION
+                    else -> VisibilityChange.APPEAR_WITH_ANIMATION
                 }
             }
-            .distinctUntilChanged()
+            .distinctUntilChanged(
+                // Equivalent unless visibility changes
+                areEquivalent = { a: VisibilityChange, b: VisibilityChange ->
+                    a.visible == b.visible
+                }
+            )
+            // Should we animate the visibility change?
             .sample(
                 // TODO(b/322167853): This check is currently duplicated in FooterViewModel
                 //  but instead it should be a field in ShadeAnimationInteractor.
@@ -121,9 +127,10 @@ constructor(
                         ::Pair,
                     )
                     .onStart { emit(Pair(false, false)) }
-            ) { visible, (isShadeFullyExpanded, animationsEnabled) ->
-                val shouldAnimate = isShadeFullyExpanded && animationsEnabled
-                AnimatableEvent(visible, shouldAnimate)
+            ) { visibilityChange, (isShadeFullyExpanded, animationsEnabled) ->
+                val shouldAnimate =
+                    isShadeFullyExpanded && animationsEnabled && visibilityChange.canAnimate
+                AnimatableEvent(visibilityChange.visible, shouldAnimate)
             }
             .toAnimatedValueFlow()
             .dumpWhileCollecting("shouldShowEmptyShadeViewAnimated")
