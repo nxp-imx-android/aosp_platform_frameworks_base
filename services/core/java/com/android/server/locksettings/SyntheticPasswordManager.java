@@ -1802,13 +1802,14 @@ class SyntheticPasswordManager {
         return result;
     }
 
-    private byte[] transformUnderWeaverSecret(byte[] data, byte[] secret) {
-        final byte[] weaverSecret = SyntheticPasswordCrypto.personalizedHash(
-                PERSONALIZATION_WEAVER_PASSWORD, secret);
+    private byte[] transformUnderWeaverSecret(byte[] data, byte[] weaverSecret) {
+        final byte[] hashedWeaverSecret =
+                SyntheticPasswordCrypto.personalizedHash(
+                        PERSONALIZATION_WEAVER_PASSWORD, weaverSecret);
         try {
-            return secureConcat(data, weaverSecret);
+            return secureConcat(data, hashedWeaverSecret);
         } finally {
-            ArrayUtils.zeroize(weaverSecret);
+            ArrayUtils.zeroize(hashedWeaverSecret);
         }
     }
 
