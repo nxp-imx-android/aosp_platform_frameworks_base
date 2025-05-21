@@ -296,23 +296,13 @@ public final class MessageQueue {
             return false;
         }
 
-        MessageNode msgNode = null;
-        MessageNode asyncMsgNode = null;
-
-        if (!mPriorityQueue.isEmpty()) {
-            try {
-                msgNode = mPriorityQueue.first();
-            } catch (NoSuchElementException e) { }
+        final MessageNode msgNode = first(mPriorityQueue);
+        if (msgNode != null && msgNode.getWhen() <= now) {
+            return false;
         }
 
-        if (!mAsyncPriorityQueue.isEmpty()) {
-            try {
-                asyncMsgNode = mAsyncPriorityQueue.first();
-            } catch (NoSuchElementException e) { }
-        }
-
-        if ((msgNode != null && msgNode.getWhen() <= now)
-                || (asyncMsgNode != null && asyncMsgNode.getWhen() <= now)) {
+        final MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
+        if (asyncMsgNode != null && asyncMsgNode.getWhen() <= now) {
             return false;
         }
 
@@ -730,10 +720,8 @@ public final class MessageQueue {
              */
 
             /* Get the first node from each queue */
-            Iterator<MessageNode> queueIter = mPriorityQueue.iterator();
-            MessageNode msgNode = iterateNext(queueIter);
-            Iterator<MessageNode> asyncQueueIter = mAsyncPriorityQueue.iterator();
-            MessageNode asyncMsgNode = iterateNext(asyncQueueIter);
+            MessageNode msgNode = first(mPriorityQueue);
+            MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
 
             if (DEBUG) {
                 if (msgNode != null) {
@@ -1260,16 +1248,10 @@ public final class MessageQueue {
 
     private void removeSyncBarrierConcurrent(int token) {
         boolean removed;
-        MessageNode first;
         final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
 
-        try {
-            /* Retain the first element to see if we are currently stuck on a barrier. */
-            first = mPriorityQueue.first();
-        } catch (NoSuchElementException e) {
-            /* The queue is empty */
-            first = null;
-        }
+        // Retain the first element to see if we are currently stuck on a barrier.
+        final MessageNode first = first(mPriorityQueue);
 
         removed = findOrRemoveMessages(null, 0, null, null, 0, matchBarrierToken, true);
         if (removed && first != null) {
@@ -1535,8 +1517,7 @@ public final class MessageQueue {
             // Call nextMessage to get the stack drained into our priority queues
             nextMessage(true, false);
 
-            Iterator<MessageNode> queueIter = mPriorityQueue.iterator();
-            MessageNode queueNode = iterateNext(queueIter);
+            MessageNode queueNode = first(mPriorityQueue);
 
             return (queueNode != null && queueNode.isBarrier());
         } else {
@@ -2447,15 +2428,12 @@ public final class MessageQueue {
         return nodeA != null ? nodeA : nodeB;
     }
 
-    private MessageNode iterateNext(Iterator<MessageNode> iter) {
-        if (iter.hasNext()) {
-            try {
-                return iter.next();
-            } catch (NoSuchElementException e) {
-                /* The queue is empty - this can happen if we race with remove */
-            }
+    private static MessageNode first(ConcurrentSkipListSet<MessageNode> queue) {
+        try {
+            return queue.first();
+        } catch (NoSuchElementException e) {
+            return null;
         }
-        return null;
     }
 
     /* Move any non-cancelled messages into the priority queue */
