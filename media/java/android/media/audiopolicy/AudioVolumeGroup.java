@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -86,6 +87,8 @@ public final class AudioVolumeGroup implements Parcelable {
             Log.w(TAG, ": listAudioVolumeGroups failed");
         }
         avgList.removeIf(avg -> avg.isInternalGroup());
+        avgList.removeIf(avg -> avg.getLegacyStreamTypes().length == 1
+                && avg.getLegacyStreamTypes()[0] == AudioManager.STREAM_BLUETOOTH_SCO);
         return avgList;
     }
 
