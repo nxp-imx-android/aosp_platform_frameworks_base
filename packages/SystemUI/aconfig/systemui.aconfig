@@ -1643,6 +1643,16 @@ flag {
 }
 
 flag {
+    name: "remove_nearby_share_tile_animation"
+    namespace: "systemui"
+    description: "Removing Activity Transition animation for nearby share tile as Activity's view is a bottomsheet"
+    bug: "415738157"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "disable_shade_trackpad_two_finger_swipe"
   namespace: "systemui"
   description: "Disables expansion of the shade via two finger swipe on a trackpad"
