@@ -140,6 +140,15 @@ public final class DeviceStateRotationLockSettingsManager implements
     }
 
     @Override
+    public void updateSetting(SparseIntArray proposedSetting,
+            SparseIntArray currentSetting) {
+        // This method is not supported in this implementation. Use updateSetting(int, boolean)
+        // instead. This overload is intended for a refactored settings manager.
+        throw new UnsupportedOperationException(
+                "This API is only support by refactored settings manager.");
+    }
+
+    @Override
     public SparseIntArray getRotationLockSetting() {
         return mPostureRotationLockSettings.clone();
     }
