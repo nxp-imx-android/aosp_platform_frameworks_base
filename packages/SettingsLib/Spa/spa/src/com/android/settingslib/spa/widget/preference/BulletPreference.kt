@@ -43,13 +43,13 @@ fun BulletPreference(title: String, summary: String, icon: ImageVector) {
             Modifier
                 .fillMaxWidth()
                 .semantics(mergeDescendants = true) {}
-                .padding(SettingsDimension.paddingSmall1),
+                .padding(SettingsDimension.small1),
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier
-                .padding(end = SettingsDimension.paddingSmall1)
+                .padding(end = SettingsDimension.small1)
                 .size(SettingsDimension.itemIconSize),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
