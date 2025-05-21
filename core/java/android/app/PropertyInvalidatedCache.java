@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -2394,9 +2393,11 @@ public class PropertyInvalidatedCache<Query, Result> {
      * provided {@link PrintWriter}.  Optional switches allow the caller to choose
      * specific caches (selection is by cache name or property name); if these switches
      * are used then the output includes both cache statistics and cache entries.
+     * @hide
      */
+    @VisibleForTesting
     @NeverCompile
-    private static void dumpCacheInfo(@NonNull PrintWriter pw, @NonNull String[] args) {
+    public static void dumpCacheInfo(@NonNull PrintWriter pw, @NonNull String[] args) {
         if (!sEnabled) {
             pw.println("  Caching is disabled in this process.");
             return;
