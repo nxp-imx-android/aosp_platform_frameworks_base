@@ -18,6 +18,8 @@ package com.android.systemui.notifications.ui.composable.row
 
 import android.content.Context
 import android.graphics.drawable.Drawable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -80,8 +82,11 @@ object BundleHeader {
     }
 
     object Elements {
+        // The right most PreviewIcon
         val PreviewIcon1 = ElementKey("PreviewIcon1")
+        // The middle PreviewIcon
         val PreviewIcon2 = ElementKey("PreviewIcon2")
+        // The left most PreviewIcon
         val PreviewIcon3 = ElementKey("PreviewIcon3")
         val TitleText = ElementKey("TitleText")
     }
@@ -111,12 +116,32 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
             transitions =
                 transitions {
                     from(BundleHeader.Scenes.Collapsed, to = BundleHeader.Scenes.Expanded) {
-                        spec = tween(500)
-                        translate(BundleHeader.Elements.PreviewIcon3, x = 32.dp)
-                        translate(BundleHeader.Elements.PreviewIcon2, x = 16.dp)
-                        fade(BundleHeader.Elements.PreviewIcon1)
-                        fade(BundleHeader.Elements.PreviewIcon2)
-                        fade(BundleHeader.Elements.PreviewIcon3)
+                        spec = tween(350, easing = LinearEasing)
+                        val scale = 0.6f
+                        timestampRange(endMillis = 250, easing = FastOutSlowInEasing) {
+                            scaleDraw(BundleHeader.Elements.PreviewIcon1, scale, scale)
+                        }
+                        timestampRange(startMillis = 150, endMillis = 250, easing = LinearEasing) {
+                            fade(BundleHeader.Elements.PreviewIcon1)
+                        }
+                        timestampRange(
+                            startMillis = 50,
+                            endMillis = 300,
+                            easing = FastOutSlowInEasing,
+                        ) {
+                            translate(BundleHeader.Elements.PreviewIcon2, x = 16.dp)
+                            scaleDraw(BundleHeader.Elements.PreviewIcon2, scale, scale)
+                        }
+                        timestampRange(startMillis = 150, endMillis = 300, easing = LinearEasing) {
+                            fade(BundleHeader.Elements.PreviewIcon2)
+                        }
+                        timestampRange(startMillis = 100, easing = FastOutSlowInEasing) {
+                            translate(BundleHeader.Elements.PreviewIcon3, x = 32.dp)
+                            scaleDraw(BundleHeader.Elements.PreviewIcon3, scale, scale)
+                        }
+                        timestampRange(startMillis = 200, endMillis = 350, easing = LinearEasing) {
+                            fade(BundleHeader.Elements.PreviewIcon3)
+                        }
                     }
                 },
         )
