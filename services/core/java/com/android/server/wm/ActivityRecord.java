@@ -7569,8 +7569,8 @@ final class ActivityRecord extends WindowToken {
             final Task task = getTask();
             if (task != null) {
                 // Similar to floating windows, an app bubble should not apply legacy insets.
-                // TODO(b/407669465): Update isAppBubble usage once migrated to the new approach.
-                shouldApplyLegacyInsets &= !task.getTaskInfo().isAppBubble;
+                // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
+                shouldApplyLegacyInsets &= !task.mLaunchNextToBubble;
             }
         }
         mResolveConfigHint.resolveTmpOverrides(mDisplayContent, newParentConfiguration,
