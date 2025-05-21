@@ -20,6 +20,7 @@ package com.android.systemui.shade;
 import static android.view.WindowInsets.Type.ime;
 
 import static com.android.systemui.Flags.qsComposeFragmentEarlyExpansion;
+import static com.android.systemui.Flags.shadeQsvisibleLogic;
 import static com.android.systemui.classifier.Classifier.QS_COLLAPSE;
 import static com.android.systemui.shade.NotificationPanelViewController.COUNTER_PANEL_OPEN_QS;
 import static com.android.systemui.shade.NotificationPanelViewController.FLING_COLLAPSE;
@@ -1196,13 +1197,18 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     void setClippingBounds() {
         float qsExpansionFraction = computeExpansionFraction();
         final int qsPanelBottomY = calculateBottomPosition(qsExpansionFraction);
+        int top = calculateTopClippingBound(qsPanelBottomY);
         // Split shade has no QQS
-        final boolean qqsVisible =
-                !mSplitShadeEnabled && qsExpansionFraction == 0 && qsPanelBottomY > 0;
+        final boolean qqsVisible;
+        if (shadeQsvisibleLogic()) {
+            qqsVisible = !mSplitShadeEnabled && qsExpansionFraction == 0 && top > 0;
+        } else {
+            qqsVisible = !mSplitShadeEnabled && qsExpansionFraction == 0 && qsPanelBottomY > 0;
+        }
+
         final boolean qsVisible = qsExpansionFraction > 0;
         final boolean qsOrQqsVisible = qqsVisible || qsVisible;
 
-        int top = calculateTopClippingBound(qsPanelBottomY);
         int bottom = calculateBottomClippingBound(top);
         int left = calculateLeftClippingBound();
         int right = calculateRightClippingBound();
