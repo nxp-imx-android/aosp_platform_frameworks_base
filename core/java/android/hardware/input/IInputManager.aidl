@@ -31,8 +31,10 @@ import android.hardware.input.IKeyGestureEventListener;
 import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;
+import android.hardware.input.VirtualKeyboardConfig;
 import android.os.CombinedVibration;
 import android.hardware.input.IInputSensorEventListener;
 import android.hardware.input.IKeyEventActivityListener;
@@ -83,6 +85,10 @@ interface IInputManager {
     // This method exists only for compatibility purposes and may be removed in a future release.
     @UnsupportedAppUsage
     boolean injectInputEvent(in InputEvent ev, int mode);
+
+    @EnforcePermission(anyOf = {"INJECT_KEY_EVENTS", "INJECT_EVENTS"})
+    IVirtualInputDevice createVirtualKeyboard(in IBinder token,
+            in VirtualKeyboardConfig config);
 
     // Injects an input event into the system. The caller must have the INJECT_EVENTS permission.
     // The caller can target windows owned by a certain UID by providing a valid UID, or by

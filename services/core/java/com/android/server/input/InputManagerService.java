@@ -114,6 +114,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.IInputFilter;
 import android.view.IInputFilterHost;
 import android.view.IInputMonitorHost;
@@ -1058,6 +1059,33 @@ public class InputManagerService extends IInputManager.Stub
         }
     }
 
+    @NonNull
+    @Override
+    @EnforcePermission(anyOf = {
+            Manifest.permission.INJECT_KEY_EVENTS,
+            Manifest.permission.INJECT_EVENTS
+    })
+    public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+            @NonNull VirtualKeyboardConfig config) {
+        super.createVirtualKeyboard_enforcePermission();
+
+        int displayId = config.getAssociatedDisplayId();
+        if (displayId != Display.INVALID_DISPLAY && displayId != Display.DEFAULT_DISPLAY) {
+            DisplayInfo displayInfo =
+                    mDisplayManagerInternal.getDisplayInfo(displayId);
+            int callingUid = Binder.getCallingUid();
+            // Explicit display association requires either the caller to own the display or if
+            // it's from the system.
+            if (callingUid != displayInfo.ownerUid && callingUid != Process.SYSTEM_UID
+                    && callingUid != 0) {
+                throw new SecurityException(
+                        "Explicit display association requires caller to own the display");
+            }
+        }
+
+        return createVirtualKeyboardInternal(token, config);
+    }
+
     @Override // Binder call
     public VerifiedInputEvent verifyInputEvent(@NonNull InputEvent event) {
         Objects.requireNonNull(event, "event must not be null");
@@ -1466,6 +1494,17 @@ public class InputManagerService extends IInputManager.Stub
 
     private void setDisplayEligibilityForPointerCapture(int displayId, boolean isEligible) {
         mNative.setDisplayEligibilityForPointerCapture(displayId, isEligible);
+    }
+
+    // For display mirroring, we want to dispatch all key events to the source (default)
+    // display, as the virtual display doesn't have any focused windows. Hence, call this for
+    // associating any input device to the source display if the input device emits any key
+    // events.
+    private int getTargetDisplayIdForInput(int displayId) {
+        DisplayManagerInternal displayManager = LocalServices.getService(
+                DisplayManagerInternal.class);
+        int mirroredDisplayId = displayManager.getDisplayIdToMirror(displayId);
+        return mirroredDisplayId == Display.INVALID_DISPLAY ? displayId : mirroredDisplayId;
     }
 
     private static class VibrationInfo {
@@ -1928,6 +1967,16 @@ public class InputManagerService extends IInputManager.Stub
             mVirtualDevicePorts.remove(inputPort);
         }
         mNative.changeVirtualDevices();
+    }
+
+    @NonNull
+    IVirtualInputDevice createVirtualKeyboardInternal(@NonNull IBinder token,
+            @NonNull VirtualKeyboardConfig config) {
+        return mVirtualInputDeviceController.createKeyboard(config.getInputDeviceName(),
+                config.getVendorId(), config.getProductId(), token,
+                InputManagerService.this.getTargetDisplayIdForInput(
+                        config.getAssociatedDisplayId()),
+                config.getLanguageTag(), config.getLayoutType());
     }
 
     @Override // Binder call
@@ -3873,10 +3922,7 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
                 @NonNull VirtualKeyboardConfig config) {
-            return mVirtualInputDeviceController.createKeyboard(config.getInputDeviceName(),
-                    config.getVendorId(), config.getProductId(), token,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
-                    config.getLanguageTag(), config.getLayoutType());
+            return InputManagerService.this.createVirtualKeyboardInternal(token, config);
         }
 
         @NonNull
@@ -3904,7 +3950,8 @@ public class InputManagerService extends IInputManager.Stub
             return mVirtualInputDeviceController.createNavigationTouchpad(
                     config.getInputDeviceName(), config.getVendorId(),
                     config.getProductId(), token,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
+                    InputManagerService.this.getTargetDisplayIdForInput(
+                            config.getAssociatedDisplayId()),
                     config.getHeight(), config.getWidth());
         }
 
@@ -3914,7 +3961,8 @@ public class InputManagerService extends IInputManager.Stub
                 @NonNull VirtualDpadConfig config) {
             return mVirtualInputDeviceController.createDpad(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
+                    InputManagerService.this.getTargetDisplayIdForInput(
+                            config.getAssociatedDisplayId()));
         }
 
         @NonNull
@@ -3933,23 +3981,13 @@ public class InputManagerService extends IInputManager.Stub
                 @NonNull VirtualRotaryEncoderConfig config) {
             return mVirtualInputDeviceController.createRotaryEncoder(config.getInputDeviceName(),
                     config.getVendorId(), config.getProductId(), token,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
+                    InputManagerService.this.getTargetDisplayIdForInput(
+                            config.getAssociatedDisplayId()));
         }
 
         @Override
         public void closeVirtualInputDevice(IBinder token) {
             mVirtualInputDeviceController.unregisterInputDevice(token);
-        }
-
-        // For display mirroring, we want to dispatch all key events to the source (default)
-        // display, as the virtual display doesn't have any focused windows. Hence, call this for
-        // associating any input device to the source display if the input device emits any key
-        // events.
-        private int getTargetDisplayIdForInput(int displayId) {
-            DisplayManagerInternal displayManager = LocalServices.getService(
-                    DisplayManagerInternal.class);
-            int mirroredDisplayId = displayManager.getDisplayIdToMirror(displayId);
-            return mirroredDisplayId == Display.INVALID_DISPLAY ? displayId : mirroredDisplayId;
         }
     }
 
