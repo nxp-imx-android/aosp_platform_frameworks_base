@@ -579,7 +579,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             if (!valid) {
                 Slog.w(TAG, "Remove old session: " + session.sessionId);
                 // Remove expired sessions as well as child sessions if any
-                removeActiveSession(session);
+                removeActiveSession(session, /* isSessionExpired= */ true);
             }
         }
     }
@@ -589,12 +589,18 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
      * This should only be called on a root session.
      */
     @GuardedBy("mSessions")
-    private void removeActiveSession(PackageInstallerSession session) {
+    private void removeActiveSession(PackageInstallerSession session, boolean isSessionExpired) {
         mSessions.remove(session.sessionId);
         addHistoricalSessionLocked(session);
+        if (isSessionExpired) {
+            session.onSessionExpired();
+        }
         for (PackageInstallerSession child : session.getChildSessions()) {
             mSessions.remove(child.sessionId);
             addHistoricalSessionLocked(child);
+            if (isSessionExpired) {
+                child.onSessionExpired();
+            }
         }
     }
 
@@ -2320,7 +2326,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                             boolean shouldRemove = !session.isStaged() || session.isDestroyed()
                                     || !session.isCommitted();
                             if (shouldRemove) {
-                                removeActiveSession(session);
+                                removeActiveSession(session, /* isSessionExpired= */ false);
                             }
                         }
 
