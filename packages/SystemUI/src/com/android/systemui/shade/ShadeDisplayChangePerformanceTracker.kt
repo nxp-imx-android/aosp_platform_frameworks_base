@@ -16,9 +16,12 @@
 package com.android.systemui.shade
 
 import android.util.Log
+import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.util.LatencyTracker
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysWaitInteractor
 import java.util.concurrent.CancellationException
@@ -30,21 +33,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
 /**
- * Tracks the time it takes to move the shade from one display to another.
- * - The start event is when [ShadeDisplaysRepository] propagates the new display ID.
- * - The end event is one frame after the shade configuration controller receives a new
- *   configuration change.
- *
- * Note that even in the unlikely case the configuration of the new display is the same,
- * onConfigurationChange is called anyway as is is triggered by
- * [NotificationShadeWindowView.onMovedToDisplay].
+ * Records the performance of moving the shade from one display to another - tracking both the
+ * latency and jank involved in the process.
+ * - Recording starts when [ShadeDisplaysRepository] propagates the new display ID.
+ * - Latency tracking ends one frame after the shade configuration controller receives a new
+ *   configuration change. (Note: even if the configuration of the new display is the same,
+ *   onConfigurationChange is called anyway as it is triggered by
+ *   [NotificationShadeWindowView.onMovedToDisplay].
+ * - Jank tracking ends after the shade window is fully expanded.
  */
 @SysUISingleton
-class ShadeDisplayChangeLatencyTracker
+class ShadeDisplayChangePerformanceTracker
 @Inject
 constructor(
     private val latencyTracker: LatencyTracker,
+    private val shadeRootView: WindowRootView,
     @Background private val bgScope: CoroutineScope,
+    private val jankMonitor: InteractionJankMonitor,
     private val waitInteractor: ShadeDisplaysWaitInteractor,
 ) {
 
@@ -69,10 +74,13 @@ constructor(
 
     private suspend fun onShadeDisplayChangingAsync(displayId: Int) {
         try {
+            jankMonitor.begin(shadeRootView, CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE)
             latencyTracker.onActionStart(SHADE_MOVE_ACTION)
             waitForOnMovedToDisplayDispatchedToView(displayId)
             waitUntilNextDoFrameDone(displayId)
             latencyTracker.onActionEnd(SHADE_MOVE_ACTION)
+            waitForShadeExpanded()
+            jankMonitor.end(CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE)
         } catch (e: Exception) {
             val reason =
                 when (e) {
@@ -84,6 +92,7 @@ constructor(
                 }
             Log.e(TAG, reason, e)
             latencyTracker.onActionCancel(SHADE_MOVE_ACTION)
+            jankMonitor.cancel(CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE)
         }
     }
 
@@ -95,6 +104,10 @@ constructor(
 
     private suspend fun waitUntilNextDoFrameDone(newDisplayId: Int) {
         withTimeout(TIMEOUT) { waitInteractor.waitForNextDoFrameDone(newDisplayId, TAG) }
+    }
+
+    private suspend fun waitForShadeExpanded() {
+        withTimeout(TIMEOUT) { waitInteractor.waitForShadeExpanded(TAG) }
     }
 
     private companion object {

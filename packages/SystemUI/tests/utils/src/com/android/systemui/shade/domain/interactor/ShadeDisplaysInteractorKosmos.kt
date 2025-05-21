@@ -21,7 +21,7 @@ import android.window.WindowContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
-import com.android.systemui.shade.ShadeDisplayChangeLatencyTracker
+import com.android.systemui.shade.ShadeDisplayChangePerformanceTracker
 import com.android.systemui.shade.ShadeWindowLayoutParams
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.shadeExpansionIntent
@@ -43,8 +43,8 @@ val Kosmos.mockedWindowContext by
             }
         }
     }
-val Kosmos.mockedShadeDisplayChangeLatencyTracker by
-    Kosmos.Fixture { mock<ShadeDisplayChangeLatencyTracker>() }
+val Kosmos.mockedShadeDisplayChangePerformanceTracker by
+    Kosmos.Fixture { mock<ShadeDisplayChangePerformanceTracker>() }
 val Kosmos.shadeDisplaysInteractor by
     Kosmos.Fixture {
         ShadeDisplaysInteractorImpl(
@@ -52,7 +52,7 @@ val Kosmos.shadeDisplaysInteractor by
             mockedWindowContext,
             testScope.backgroundScope,
             testScope.backgroundScope.coroutineContext,
-            mockedShadeDisplayChangeLatencyTracker,
+            mockedShadeDisplayChangePerformanceTracker,
             shadeExpandedStateInteractor,
             shadeExpansionIntent,
             activeNotificationsInteractor,
