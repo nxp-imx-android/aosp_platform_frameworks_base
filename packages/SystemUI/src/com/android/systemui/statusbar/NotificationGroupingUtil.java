@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar;
 
+import static android.app.Flags.notificationsRedesignAppIcons;
 import static android.app.Flags.notificationsRedesignTemplates;
 
 import android.app.Flags;
@@ -127,12 +128,14 @@ public class NotificationGroupingUtil {
                 ICON_EXTRACTOR,
                 iconVisibilityComparator,
                 VISIBILITY_APPLICATOR));
-        // To grey out the icons when they are not the same, or they have the same color
-        mProcessors.add(new Processor(mRow,
-                com.android.internal.R.id.status_bar_latest_event_content,
-                ICON_EXTRACTOR,
-                greyComparator,
-                greyApplicator));
+        if (!notificationsRedesignAppIcons()) {
+            // To grey out the icons when they are not the same, or they have the same color
+            mProcessors.add(new Processor(mRow,
+                    com.android.internal.R.id.status_bar_latest_event_content,
+                    ICON_EXTRACTOR,
+                    greyComparator,
+                    greyApplicator));
+        }
         // To show the large icon on the left side instead if all the small icons are the same
         mProcessors.add(new Processor(mRow,
                 com.android.internal.R.id.status_bar_latest_event_content,
