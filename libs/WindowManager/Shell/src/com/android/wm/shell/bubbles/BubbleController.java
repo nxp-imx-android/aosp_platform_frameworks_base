@@ -2007,7 +2007,9 @@ public class BubbleController implements ConfigurationChangeListener,
                 if (mStackView != null) {
                     b.setSuppressFlyout(true);
                     mStackView.addBubble(b);
-                    mStackView.setSelectedBubble(b);
+                    if (b.getKey().equals(mBubbleData.getSelectedBubbleKey())) {
+                        mStackView.setSelectedBubble(b);
+                    }
                 } else {
                     Log.w(TAG, "Tried to add a bubble to the stack but the stack is null");
                 }
@@ -2018,6 +2020,11 @@ public class BubbleController implements ConfigurationChangeListener,
                     mLayerView.showExpandedView(b);
                 }
             };
+        }
+        // TODO (b/380105874): Remove this after properly transitioning the expanded bubble from bar
+        // to floating
+        if (mStackView != null && mBubbleData.isExpanded()) {
+            mBubbleData.collapseNoUpdate();
         }
         for (int i = mBubbleData.getBubbles().size() - 1; i >= 0; i--) {
             Bubble bubble = mBubbleData.getBubbles().get(i);
