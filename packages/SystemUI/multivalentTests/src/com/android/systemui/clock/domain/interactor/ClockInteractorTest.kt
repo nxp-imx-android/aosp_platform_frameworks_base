@@ -33,6 +33,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.statusbar.policy.NextAlarmController.NextAlarmChangeCallback
 import com.android.systemui.statusbar.policy.nextAlarmController
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.systemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.Date
 import kotlin.time.Duration
@@ -103,6 +104,13 @@ class ClockInteractorTest : SysuiTestCase() {
 
             // Expect only 1 event to have been emitted onStart, but no more.
             assertThat(timeZoneOrLocaleChanges).hasSize(1)
+        }
+
+    @Test
+    fun currentTime_initialTime() =
+        kosmos.runTest {
+            assertThat(underTest.currentTime.value)
+                .isEqualTo(Date(kosmos.systemClock.currentTimeMillis()))
         }
 
     @Test
