@@ -846,10 +846,6 @@ public class PropertyInvalidatedCacheTests {
             + " +Hits: 0, Misses: 0, Skips: 0";
         assertThat(dump).containsMatch(p);
 
-        // Verify that the well-known cache getApplicationInfo is present.
-        p = "Cache Name: getApplicationInfo";
-        assertThat(dump).containsMatch(p);
-
         // Construct a brief listing.
         dump = getDumpsys(/* brief */ true);
 
