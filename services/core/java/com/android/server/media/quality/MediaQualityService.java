@@ -2103,6 +2103,7 @@ public class MediaQualityService extends SystemService {
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
+                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
@@ -2148,6 +2149,7 @@ public class MediaQualityService extends SystemService {
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
+                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
