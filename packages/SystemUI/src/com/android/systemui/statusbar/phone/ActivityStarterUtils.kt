@@ -45,6 +45,43 @@ fun createActivityOptions(displayId: Int, transition: RemoteTransition?, cookie:
         .toBundle()
 }
 
+/**
+ * Returns an [ActivityOptions] bundle created using the given parameters.
+ *
+ * @param displayId The ID of the display to launch the activity in. Typically this would be the
+ *   display the status bar is on.
+ * @param transition The animation driver used to start this activity, or null for the default
+ *   animation.
+ * @param cookie The launch cookie associated with this activity, or null. Only used if [transition]
+ *   is also not null.
+ * @param isKeyguardShowing Whether keyguard is currently showing.
+ * @param eventTime The event time in milliseconds since boot, not including sleep. See
+ *   [ActivityOptions.setSourceInfo].
+ */
+fun createActivityOptions(
+    displayId: Int,
+    transition: RemoteTransition?,
+    cookie: IBinder?,
+    isKeyguardShowing: Boolean,
+    eventTime: Long,
+): Bundle {
+    return createDefaultActivityOptions(transition, cookie)
+        .apply {
+            setSourceInfo(
+                if (isKeyguardShowing) {
+                    ActivityOptions.SourceInfo.TYPE_LOCKSCREEN
+                } else {
+                    ActivityOptions.SourceInfo.TYPE_NOTIFICATION
+                },
+                eventTime,
+            )
+            launchDisplayId = displayId
+            callerDisplayId = displayId
+            isPendingIntentBackgroundActivityLaunchAllowed = true
+        }
+        .toBundle()
+}
+
 @SuppressLint("MissingPermission")
 private fun createDefaultActivityOptions(
     transition: RemoteTransition?,

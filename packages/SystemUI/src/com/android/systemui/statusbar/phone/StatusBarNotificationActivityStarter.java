@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.phone;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED;
 import static android.service.notification.NotificationListenerService.REASON_CLICK;
 
+import static com.android.systemui.statusbar.phone.ActivityStarterUtilsKt.addCookieIfNeeded;
+import static com.android.systemui.statusbar.phone.ActivityStarterUtilsKt.createActivityOptions;
 import static com.android.systemui.statusbar.phone.CentralSurfaces.getActivityOptions;
 
 import android.app.ActivityManager;
@@ -54,6 +56,7 @@ import com.android.systemui.EventLogTags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.ActivityStarter;
@@ -84,6 +87,8 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.wmshell.BubblesManager;
 
 import dagger.Lazy;
+
+import kotlinx.coroutines.CoroutineScope;
 
 import java.util.List;
 import java.util.Optional;
@@ -118,6 +123,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
 
     private final Handler mMainThreadHandler;
     private final Executor mUiBgExecutor;
+    private final CoroutineScope mApplicationScope;
 
     private final NotificationVisibilityProvider mVisibilityProvider;
     private final HeadsUpManager mHeadsUpManager;
@@ -158,6 +164,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             ShadeDialogContextInteractor contextInteractor,
             @Main Handler mainThreadHandler,
             @Background Executor uiBgExecutor,
+            @Application CoroutineScope applicationScope,
             NotificationVisibilityProvider visibilityProvider,
             HeadsUpManager headsUpManager,
             ActivityStarter activityStarter,
@@ -191,6 +198,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         mContextInteractor = contextInteractor;
         mMainThreadHandler = mainThreadHandler;
         mUiBgExecutor = uiBgExecutor;
+        mApplicationScope = applicationScope;
         mVisibilityProvider = visibilityProvider;
         mHeadsUpManager = headsUpManager;
         mActivityStarter = activityStarter;
@@ -503,24 +511,53 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                             mCommandQueue,
                             displayId,
                             isActivityIntent);
-            mActivityTransitionAnimator.startPendingIntentWithAnimation(
-                    animationController,
-                    animate,
-                    intent.getCreatorPackage(),
-                    (adapter) -> {
-                        long eventTime = row.getAndResetLastActionUpTime();
-                        Bundle options = eventTime > 0
-                                ? getActivityOptions(
-                                displayId,
-                                adapter,
-                                mKeyguardStateController.isShowing(),
-                                eventTime)
-                                : getActivityOptions(displayId, adapter);
-                        int result = intent.sendAndReturnResult(mContext, 0, fillInIntent, null,
-                                null, null, options);
-                        mLogger.logSendPendingIntent(entry, intent, result);
-                        return result;
-                    });
+
+            if (ActivityTransitionAnimator.Companion.shellMigrationEnabled()) {
+                ActivityTransitionAnimator.Controller controllerWithCookie =
+                        addCookieIfNeeded(animationController);
+                ActivityTransitionAnimator.TransitionCookie cookie =
+                        controllerWithCookie != null
+                                ? controllerWithCookie.getTransitionCookie() : null;
+
+                mActivityTransitionAnimator.startPendingIntentWithAnimation(
+                        controllerWithCookie,
+                        mApplicationScope,
+                        animate,
+                        (transition) -> {
+                            long eventTime = row.getAndResetLastActionUpTime();
+                            Bundle options = eventTime > 0
+                                    ? createActivityOptions(
+                                    displayId,
+                                    transition,
+                                    cookie,
+                                    mKeyguardStateController.isShowing(),
+                                    eventTime)
+                                    : createActivityOptions(displayId, transition, cookie);
+                            int result = intent.sendAndReturnResult(mContext, 0, fillInIntent, null,
+                                    null, null, options);
+                            mLogger.logSendPendingIntent(entry, intent, result);
+                            return result;
+                        });
+            } else {
+                mActivityTransitionAnimator.startPendingIntentWithAnimation(
+                        animationController,
+                        animate,
+                        intent.getCreatorPackage(),
+                        (adapter) -> {
+                            long eventTime = row.getAndResetLastActionUpTime();
+                            Bundle options = eventTime > 0
+                                    ? getActivityOptions(
+                                    displayId,
+                                    adapter,
+                                    mKeyguardStateController.isShowing(),
+                                    eventTime)
+                                    : getActivityOptions(displayId, adapter);
+                            int result = intent.sendAndReturnResult(mContext, 0, fillInIntent, null,
+                                    null, null, options);
+                            mLogger.logSendPendingIntent(entry, intent, result);
+                            return result;
+                        });
+            }
         } catch (PendingIntent.CanceledException e) {
             // the stack trace isn't very helpful here.
             // Just log the exception message.
@@ -548,14 +585,36 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
                                     displayId,
                                     true /* isActivityIntent */);
 
-                    mActivityTransitionAnimator.startIntentWithAnimation(
-                            animationController, animate, intent.getPackage(),
-                            (adapter) -> TaskStackBuilder.create(mContext)
-                                    .addNextIntentWithParentStack(intent)
-                                    .startActivities(getActivityOptions(
-                                                    displayId,
-                                                    adapter),
-                                            new UserHandle(UserHandle.getUserId(appUid))));
+                    if (ActivityTransitionAnimator.Companion.shellMigrationEnabled()) {
+                        ActivityTransitionAnimator.Controller controllerWithCookie =
+                                addCookieIfNeeded(animationController);
+                        ActivityTransitionAnimator.TransitionCookie cookie =
+                                controllerWithCookie != null
+                                        ? controllerWithCookie.getTransitionCookie() : null;
+
+                        mActivityTransitionAnimator.startIntentWithAnimation(
+                                controllerWithCookie,
+                                mApplicationScope,
+                                animate,
+                                (transition) -> TaskStackBuilder.create(mContext)
+                                        .addNextIntentWithParentStack(intent)
+                                        .startActivities(
+                                                createActivityOptions(
+                                                        displayId,
+                                                        transition,
+                                                        cookie),
+                                                new UserHandle(UserHandle.getUserId(appUid))));
+                    } else {
+                        mActivityTransitionAnimator.startIntentWithAnimation(
+                                animationController,
+                                animate,
+                                intent.getPackage(),
+                                (adapter) -> TaskStackBuilder.create(mContext)
+                                        .addNextIntentWithParentStack(intent)
+                                        .startActivities(
+                                                getActivityOptions(displayId, adapter),
+                                                new UserHandle(UserHandle.getUserId(appUid))));
+                    }
                 });
                 return true;
             }
@@ -694,5 +753,4 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         }
         return true;
     }
-
 }
