@@ -17,10 +17,14 @@
 package com.android.server.companion.utils;
 
 import static android.app.role.RoleManager.MANAGE_HOLDERS_FLAG_DONT_KILL_APP;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
+import static android.companion.CompanionResources.PERMISSION_ADD_MIRROR_DISPLAY;
+import static android.companion.CompanionResources.PERMISSION_ADD_TRUSTED_DISPLAY;
 import static android.companion.CompanionResources.PERMISSION_CALENDAR;
 import static android.companion.CompanionResources.PERMISSION_CALL_LOGS;
 import static android.companion.CompanionResources.PERMISSION_CHANGE_MEDIA_OUTPUT;
@@ -46,7 +50,6 @@ import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.Slog;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -60,16 +63,31 @@ public final class RolesUtils {
     private static final String TAG = "CDM_RolesUtils";
 
     public static final Map<String, List<Integer>> PROFILE_PERMISSION_SETS = Map.of(
-            DEVICE_PROFILE_COMPUTER, Arrays.asList(
+            DEVICE_PROFILE_COMPUTER, List.of(
                     PERMISSION_NOTIFICATIONS, PERMISSION_STORAGE),
-            DEVICE_PROFILE_WATCH, Arrays.asList(
+
+            DEVICE_PROFILE_WATCH, List.of(
                     PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_CALL_LOGS,
                     PERMISSION_SMS, PERMISSION_CONTACTS, PERMISSION_CALENDAR,
                     PERMISSION_NEARBY_DEVICES, PERMISSION_CHANGE_MEDIA_OUTPUT),
-            DEVICE_PROFILE_GLASSES, Arrays.asList(
+
+            DEVICE_PROFILE_GLASSES, List.of(
                     PERMISSION_NOTIFICATIONS, PERMISSION_PHONE, PERMISSION_SMS, PERMISSION_CONTACTS,
                     PERMISSION_MICROPHONE, PERMISSION_NEARBY_DEVICES),
-            DEVICE_PROFILE_VIRTUAL_DEVICE, Arrays.asList(PERMISSION_CREATE_VIRTUAL_DEVICE,
+
+            DEVICE_PROFILE_APP_STREAMING,
+            android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()
+                    ? List.of(PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_MIRROR_DISPLAY,
+                            PERMISSION_ADD_TRUSTED_DISPLAY, PERMISSION_POST_NOTIFICATIONS)
+                    : Collections.emptyList(),
+
+            DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
+            android.companion.virtualdevice.flags.Flags.itemizedVdmPermissions()
+                    ? List.of(PERMISSION_CREATE_VIRTUAL_DEVICE, PERMISSION_ADD_TRUSTED_DISPLAY,
+                    PERMISSION_POST_NOTIFICATIONS)
+                    : Collections.emptyList(),
+
+            DEVICE_PROFILE_VIRTUAL_DEVICE, List.of(PERMISSION_CREATE_VIRTUAL_DEVICE,
                             PERMISSION_NEARBY_DEVICES, PERMISSION_POST_NOTIFICATIONS)
     );
 
