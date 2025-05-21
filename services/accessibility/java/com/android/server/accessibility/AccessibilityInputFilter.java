@@ -763,10 +763,17 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
 
         if ((mEnabledFeatures & FLAG_FEATURE_MOUSE_KEYS) != 0) {
+            TimeSource systemClockTimeSource = new TimeSource() {
+                @Override
+                public long uptimeMillis() {
+                    return SystemClock.uptimeMillis();
+                }
+            };
             mMouseKeysInterceptor = new MouseKeysInterceptor(mAms,
                     Objects.requireNonNull(mContext.getSystemService(InputManager.class)),
                     Looper.myLooper(),
-                    Display.DEFAULT_DISPLAY);
+                    Display.DEFAULT_DISPLAY,
+                    systemClockTimeSource);
             addFirstEventHandler(Display.DEFAULT_DISPLAY, mMouseKeysInterceptor);
         }
 
