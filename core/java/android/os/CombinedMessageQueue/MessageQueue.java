@@ -3047,8 +3047,9 @@ public final class MessageQueue {
 
         if (top.isQuittingNode()) {
             QuittingNode quittingNode = (QuittingNode) top;
-            if (quittingNode.mNext.isMessageNode()) {
-                top = quittingNode.mNext;
+            StackNode next = quittingNode.mNext;
+            if (next.isMessageNode()) {
+                top = next;
             } else {
                 waitForDrainCompleted();
                 return false;
