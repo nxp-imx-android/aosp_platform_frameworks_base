@@ -42,11 +42,7 @@ class ZeroStatePreference @JvmOverloads constructor(
     init {
         isSelectable = false
         layoutResource = R.layout.settingslib_expressive_preference_zerostate
-        icon?.let { originalIcon ->
-            tintedIcon = originalIcon.mutate().apply {
-                colorFilter = PorterDuffColorFilter(iconTint, PorterDuff.Mode.SRC_IN)
-            }
-        }
+        applyColorFilterToIcon()
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
@@ -59,6 +55,20 @@ class ZeroStatePreference @JvmOverloads constructor(
 
         (holder.findViewById(android.R.id.icon) as? ImageView)?.apply {
             setImageDrawable(tintedIcon ?: icon)
+        }
+    }
+
+    override fun setIcon(iconResId: Int) {
+        super.setIcon(iconResId)
+
+        applyColorFilterToIcon()
+    }
+
+    private fun applyColorFilterToIcon() {
+        icon?.let { originalIcon ->
+            tintedIcon = originalIcon.mutate().apply {
+                colorFilter = PorterDuffColorFilter(iconTint, PorterDuff.Mode.SRC_IN)
+            }
         }
     }
 }

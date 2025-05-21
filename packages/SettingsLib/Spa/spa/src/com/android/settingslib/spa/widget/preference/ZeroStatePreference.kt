@@ -68,7 +68,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
         Box(
             modifier = Modifier
                 .clip(clip)
-                .background(MaterialTheme.colorScheme.primary)
+                .background(MaterialTheme.colorScheme.surfaceBright)
                 .size(160.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -76,7 +76,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
         Spacer(Modifier.height(SettingsDimension.small4))
@@ -84,7 +84,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMediumEmphasized,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Spacer(Modifier.height(SettingsDimension.extraSmall2))
@@ -92,7 +92,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Spacer(Modifier.height(SettingsDimension.small1))
