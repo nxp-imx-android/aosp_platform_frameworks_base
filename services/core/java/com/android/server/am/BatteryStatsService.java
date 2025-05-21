@@ -959,15 +959,13 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     null, // use default PullAtomMetadata values
                     DIRECT_EXECUTOR, pullAtomCallback);
         }
-        if (Flags.addBatteryUsageStatsSliceAtom()) {
-            statsManager.setPullAtomCallback(
-                    FrameworkStatsLog.BATTERY_USAGE_STATS_PER_UID,
-                    new StatsManager.PullAtomMetadata.Builder()
-                            .setTimeoutMillis(3_000L)
-                            .build(),
-                    DIRECT_EXECUTOR,
-                    pullAtomCallback);
-        }
+        statsManager.setPullAtomCallback(
+                FrameworkStatsLog.BATTERY_USAGE_STATS_PER_UID,
+                new StatsManager.PullAtomMetadata.Builder()
+                        .setTimeoutMillis(3_000L)
+                        .build(),
+                DIRECT_EXECUTOR,
+                pullAtomCallback);
     }
 
     /** StatsPullAtomCallback for pulling BatteryUsageStats data. */
@@ -1025,10 +1023,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     break;
                 }
                 case FrameworkStatsLog.BATTERY_USAGE_STATS_PER_UID: {
-                    if (!Flags.addBatteryUsageStatsSliceAtom()) {
-                        return StatsManager.PULL_SKIP;
-                    }
-
                     @SuppressLint("MissingPermission")
                     final double minConsumedPowerThreshold =
                             DeviceConfig.getFloat(
