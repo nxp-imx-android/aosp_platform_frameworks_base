@@ -109,6 +109,7 @@ import android.app.servertransaction.LaunchActivityItem;
 import android.app.servertransaction.PauseActivityItem;
 import android.app.servertransaction.ResumeActivityItem;
 import android.app.servertransaction.StopActivityItem;
+import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -140,6 +141,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
+import android.permission.PermissionManager;
 import android.provider.MediaStore;
 import android.util.ArrayMap;
 import android.util.Slog;
@@ -291,6 +293,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     private WindowManagerService mWindowManager;
 
     private AppOpsManager mAppOpsManager;
+    private PermissionManager mPermissionManager;
     private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
 
     /** Common synchronization logic used to save things to disks. */
@@ -1353,6 +1356,13 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         return mAppOpsManager;
     }
 
+    private PermissionManager getPermissionManager() {
+        if (mPermissionManager == null) {
+            mPermissionManager = mService.mContext.getSystemService(PermissionManager.class);
+        }
+        return mPermissionManager;
+    }
+
     BackgroundActivityStartController getBackgroundActivityLaunchController() {
         return mBalController;
     }
@@ -1368,6 +1378,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
         if (activityInfo.permission == null) {
             return ACTIVITY_RESTRICTION_NONE;
+        }
+
+        // TODO(b/419317335): Fully migrate to PermissionManager behind additional flags
+        if (com.android.media.projection.flags.Flags.recordingOverlay()) {
+            if (ignoreTargetSecurity || getPermissionManager().checkPermissionForDataDelivery(
+                    activityInfo.permission,
+                    new AttributionSource(callingUid, callingPackage, callingFeatureId), "")
+                    == PermissionManager.PERMISSION_GRANTED) {
+                return ACTIVITY_RESTRICTION_NONE;
+            }
         }
 
         final int opCode = AppOpsManager.permissionToOpCode(activityInfo.permission);
