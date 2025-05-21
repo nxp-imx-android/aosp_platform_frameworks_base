@@ -82,7 +82,8 @@ class DesktopTasksTransitionObserver(
         if (
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue &&
                 (DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
-                    .isTrue || DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue)
+                    .isTrue ||
+                    DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue)
         ) {
             updateTopTransparentFullscreenTaskId(info)
         }

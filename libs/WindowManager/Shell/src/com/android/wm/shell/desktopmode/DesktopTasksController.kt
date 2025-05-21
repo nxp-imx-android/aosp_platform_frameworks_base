@@ -3172,7 +3172,7 @@ class DesktopTasksController(
             if (!inDesktop && !forceEnterDesktop(displayId)) return null
             if (
                 isTransparentTask &&
-                    (DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
+                    (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
                         DesktopModeFlags
                             .INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                             .isTrue)
@@ -3204,7 +3204,7 @@ class DesktopTasksController(
         }
         if (
             isTransparentTask &&
-                (DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
+                (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
                     DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                         .isTrue)
         ) {
@@ -3749,7 +3749,7 @@ class DesktopTasksController(
     }
 
     private fun closeTopTransparentFullscreenTask(wct: WindowContainerTransaction, deskId: Int) {
-        if (!DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return
+        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return
         val data = taskRepository.getTopTransparentFullscreenTaskData(deskId)
         if (data != null) {
             logD("closeTopTransparentFullscreenTask: taskId=%d, deskId=%d", data.taskId, deskId)

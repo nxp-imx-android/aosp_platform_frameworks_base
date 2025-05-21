@@ -126,9 +126,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX),
     ENABLE_EMPTY_DESK_ON_MINIMIZE(Flags::enableEmptyDeskOnMinimize, true,
             Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE),
-    ENABLE_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
-            Flags::forceCloseTopTransparentFullscreenTask, false,
-            Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
     ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS(Flags::enableFreeformDisplayLaunchParams, true,
@@ -204,6 +201,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
             true, Flags.FLAG_ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS),
+    FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
+            Flags::forceCloseTopTransparentFullscreenTask, false,
+            Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK),
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
     REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
