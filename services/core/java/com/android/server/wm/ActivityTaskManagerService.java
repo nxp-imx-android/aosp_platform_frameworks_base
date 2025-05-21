@@ -3888,7 +3888,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mActivityClientController.dismissKeyguard(r.token, new KeyguardDismissCallback() {
                     @Override
                     public void onDismissSucceeded() {
-                        enterPipRunnable.run();
+                        synchronized (mGlobalLock) {
+                            enterPipRunnable.run();
+                        }
                     }
                 }, null /* message */);
             } else {
