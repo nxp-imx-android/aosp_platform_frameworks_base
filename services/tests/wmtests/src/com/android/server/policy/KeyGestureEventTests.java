@@ -157,7 +157,7 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Before
     public void setUp() {
-        setUpPhoneWindowManager(/*supportSettingsUpdate*/ true);
+        setUpPhoneWindowManager(/*supportSettingsUpdate*/ true, /* supportFeature */ "");
         mPhoneWindowManager.overrideLaunchHome();
         mPhoneWindowManager.overrideEnableBugReportTrigger(true);
         mPhoneWindowManager.overrideStatusBarManagerInternal();
@@ -239,6 +239,15 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     public void testKeyGestureGoHome() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_HOME);
         mPhoneWindowManager.assertGoToHomescreen();
+    }
+
+    @Test
+    public void testKeyGestureStopDreaming() {
+        mPhoneWindowManager.overrideCanStartDreaming(true);
+        mPhoneWindowManager.overrideIsDreaming(true);
+        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_HOME);
+        mPhoneWindowManager.assertDreamStopped();
+        mPhoneWindowManager.assertNotGoToHomescreen();
     }
 
     @Test

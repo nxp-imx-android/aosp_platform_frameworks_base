@@ -1851,7 +1851,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
         if (dreamManagerInternal != null && dreamManagerInternal.isDreaming()) {
             dreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
-            return;
+            if (mHasFeatureLeanback) {
+                if (localLOGV) Log.v(TAG, "TV will launch home after stopping dream");
+            } else {
+                return;
+            }
+
         }
 
         // Go home!
