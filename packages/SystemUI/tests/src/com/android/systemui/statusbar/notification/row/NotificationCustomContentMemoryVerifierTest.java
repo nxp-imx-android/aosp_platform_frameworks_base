@@ -207,7 +207,7 @@ public class NotificationCustomContentMemoryVerifierTest extends SysuiTestCase {
 
 
     /** This provider serves the images for inflation. */
-    class TestImageContentProvider extends ContentProvider {
+    static class TestImageContentProvider extends ContentProvider {
 
         TestImageContentProvider(Context context) {
             ProviderInfo info = new ProviderInfo();
@@ -225,8 +225,8 @@ public class NotificationCustomContentMemoryVerifierTest extends SysuiTestCase {
         @Override
         public ParcelFileDescriptor openFile(Uri uri, String mode) {
             return getContext().getResources().openRawResourceFd(
-                    NotificationCustomContentNotificationBuilder.getDRAWABLE_IMAGE_RESOURCE())
-                        .getParcelFileDescriptor();
+                        NotificationCustomContentNotificationBuilder.getDRAWABLE_IMAGE_RESOURCE())
+                    .getParcelFileDescriptor();
         }
 
         @Override
