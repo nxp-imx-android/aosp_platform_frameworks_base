@@ -72,16 +72,19 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             VibrationEffect.Composition.PRIMITIVE_LOW_TICK,
             VibrationEffect.Composition.PRIMITIVE_QUICK_RISE,
             VibrationEffect.Composition.PRIMITIVE_TICK,
+            VibrationEffect.Composition.PRIMITIVE_CLICK,
         )
-    private val invocationHaptics =
-        SqueezeEffectHapticsBuilder.createInvocationHaptics(
+    private val zoomOutHaptics =
+        SqueezeEffectHapticsBuilder.createZoomOutEffect(
             lowTickDuration = primitiveDurations[0],
             quickRiseDuration = primitiveDurations[1],
             tickDuration = primitiveDurations[2],
-            totalEffectDuration =
-                DEFAULT_OUTWARD_EFFECT_DURATION_MS.toInt() +
-                    DEFAULT_INWARD_EFFECT_DURATION_MILLIS.toInt(),
+            effectDuration =
+                (TopLevelWindowEffects.HAPTIC_OUTWARD_EFFECT_DURATION_SCALE *
+                        DEFAULT_OUTWARD_EFFECT_DURATION_MS)
+                    .toInt(),
         )
+    private val lppIndicatorEffect = SqueezeEffectHapticsBuilder.createLppIndicatorEffect()
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
@@ -134,7 +137,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             animatorTestRule.advanceTimeBy(1)
 
             assertNotEquals(0f, kosmos.fakeAppZoomOut.lastTopLevelProgress)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isTrue()
         }
 
     @Test
@@ -153,7 +155,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             animatorTestRule.advanceTimeBy(1)
 
             assertEquals(0f, kosmos.fakeAppZoomOut.lastTopLevelProgress)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isFalse()
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isFalse()
         }
 
     @Test
@@ -177,7 +179,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             animatorTestRule.advanceTimeBy(1)
 
             assertEquals(0f, kosmos.fakeAppZoomOut.lastTopLevelProgress)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isFalse()
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isFalse()
         }
 
     @Test
@@ -194,15 +196,11 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             // add additional 1ms time to simulate initial delay duration has passed
             advanceTime((expectedDelay + 1).milliseconds)
             animatorTestRule.advanceTimeBy(1)
-            val timesCancelledBefore = vibratorHelper.timesCancelled
 
             fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
                 false
             runCurrent()
             animatorTestRule.advanceTimeBy(1)
-
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isTrue()
-            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore + 1)
         }
 
     @Test
@@ -228,7 +226,9 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             runCurrent()
             animatorTestRule.advanceTimeBy(1)
 
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isTrue()
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isFalse()
+            assertThat(vibratorHelper.hasVibratedWithEffects(lppIndicatorEffect.vibration))
+                .isFalse()
             assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore + 1)
         }
 
@@ -254,7 +254,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             runCurrent()
 
             assertEquals(0f, kosmos.fakeAppZoomOut.lastTopLevelProgress)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isFalse()
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isFalse()
         }
 
     @Test
@@ -273,7 +273,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             animatorTestRule.advanceTimeBy(1)
 
             assertEquals(0f, kosmos.fakeAppZoomOut.lastTopLevelProgress)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isFalse()
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isFalse()
         }
     }
 
@@ -295,7 +295,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             runCurrent()
             val timesCancelledBefore = vibratorHelper.timesCancelled
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isGreaterThan(0f)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isTrue()
 
             // Simulate power button long press
             fakeSqueezeEffectRepository.isPowerButtonLongPressed.value = true
@@ -306,8 +305,10 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 false
             runCurrent() // Triggers cancelSqueeze, but it should not interrupt
 
-            // Animation should be non-interruptible, so haptics are not cancelled at this point
-            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
+            // On long-press the LPP haptic effect plays cancelling any previous haptic effect
+            var expectedCancellations = timesCancelledBefore + 1
+            assertThat(vibratorHelper.timesCancelled).isEqualTo(expectedCancellations)
+            assertThat(vibratorHelper.hasVibratedWithEffects(lppIndicatorEffect.vibration)).isTrue()
 
             // Animation continues: complete inward animation
             animatorTestRule.advanceTimeBy(DEFAULT_INWARD_EFFECT_DURATION_MILLIS - 10L)
@@ -315,12 +316,14 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(1f)
 
             // Animation continues: complete outward animation (triggered by inward animation's end)
+            // ZoomOut haptics have been played at this point after cancelling any previous
+            // vibration job
             animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
+            expectedCancellations++
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
-
-            // Haptics never cancelled when animation completes
-            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isTrue()
+            assertThat(vibratorHelper.timesCancelled).isEqualTo(expectedCancellations)
         }
 
     @Test
@@ -376,7 +379,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             runCurrent()
             // Advance past initial delay
             advanceTime((initialDelay + 1).milliseconds)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isTrue()
             val timesCancelledBefore = vibratorHelper.timesCancelled
 
             // Complete inward animation
@@ -389,8 +391,10 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             runCurrent()
             assertThat(fakeAppZoomOut.lastTopLevelProgress).isEqualTo(0f)
 
-            // Haptics are not cancelled when animation completes without interruption
-            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
+            // ZoomOut Haptics play and are not cancelled when animation completes without
+            // interruption
+            assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore + 1)
+            assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isTrue()
 
             // Release power button (does not affect completed animation)
             fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
@@ -420,7 +424,6 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             val progressBeforeCancel = fakeAppZoomOut.lastTopLevelProgress
             assertThat(progressBeforeCancel).isGreaterThan(0f)
             assertThat(progressBeforeCancel).isLessThan(1f)
-            assertThat(vibratorHelper.hasVibratedWithEffects(invocationHaptics.vibration)).isTrue()
 
             // Release power button before long press is detected
             fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
