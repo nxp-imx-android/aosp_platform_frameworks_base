@@ -1428,6 +1428,7 @@ class SyntheticPasswordManager {
 
         byte[] stretchedLskf = null;
         byte[] weaverKey = null;
+        byte[] weaverSecret = null;
         byte[] gkPassword = null;
         byte[] protectorSecret = null;
         try {
@@ -1445,11 +1446,12 @@ class SyntheticPasswordManager {
                 }
                 weaverKey = stretchedLskfToWeaverKey(stretchedLskf);
                 WeaverReadResponse weaverResponse = weaverVerify(weaver, weaverSlot, weaverKey);
+                weaverSecret = weaverResponse.value;
                 if (weaverResponse.status != WeaverReadStatus.OK) {
                     result.response = verifyCredentialResponseFromWeaverResponse(weaverResponse);
                     return result;
                 }
-                protectorSecret = transformUnderWeaverSecret(stretchedLskf, weaverResponse.value);
+                protectorSecret = transformUnderWeaverSecret(stretchedLskf, weaverSecret);
             } else {
                 // Weaver is unavailable, so the protector uses Gatekeeper to verify the LSKF,
                 // unless the LSKF is empty in which case Gatekeeper might not have been used at
@@ -1542,6 +1544,7 @@ class SyntheticPasswordManager {
         } finally {
             ArrayUtils.zeroize(stretchedLskf);
             ArrayUtils.zeroize(weaverKey);
+            ArrayUtils.zeroize(weaverSecret);
             ArrayUtils.zeroize(gkPassword);
             ArrayUtils.zeroize(protectorSecret);
         }
