@@ -132,9 +132,13 @@ public class TaskBroadcasterTest {
         IOnTransportsChangedListener listener = listenerCaptor.getValue();
 
         // Setup a fake foreground task.
+        String expectedLabel = "test";
         ActivityManager.RunningTaskInfo taskInfo
             = new ActivityManager.RunningTaskInfo();
         taskInfo.taskId = 1;
+        taskInfo.taskDescription
+            = new ActivityManager.TaskDescription(expectedLabel);
+
         when(mMockActivityTaskManager.getTasks(Integer.MAX_VALUE, true))
             .thenReturn(Arrays.asList(taskInfo));
 
@@ -161,5 +165,10 @@ public class TaskBroadcasterTest {
             = (ContinuityDeviceConnected) taskContinuityMessage.getData();
         assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
             .isEqualTo(taskInfo.taskId);
+        assertThat(continuityDeviceConnected.getRemoteTasks()).hasSize(1);
+        assertThat(continuityDeviceConnected.getRemoteTasks().get(0).getId())
+            .isEqualTo(taskInfo.taskId);
+        assertThat(continuityDeviceConnected.getRemoteTasks().get(0).getLabel())
+            .isEqualTo(expectedLabel);
     }
 }
