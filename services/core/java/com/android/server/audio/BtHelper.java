@@ -399,7 +399,7 @@ public class BtHelper {
             }
             boolean deviceSwitch = optimizeBtDeviceSwitch()
                     && btDevice != null && mBluetoothHeadsetDevice != null;
-            onSetBtScoActiveDevice(btDevice, deviceSwitch);
+            mDeviceBroker.onSetBtScoActiveDevice(btDevice, deviceSwitch);
         } else if (action.equals(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)) {
             int btState = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1);
             onScoAudioStateChanged(btState);
