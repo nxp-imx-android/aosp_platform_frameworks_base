@@ -37,7 +37,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.modules.utils.testing.TestableDeviceConfig;
 
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -51,7 +50,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class FaceDownDetectorTest {
-    @ClassRule
+    @Rule
     public static final TestableContext sContext = new TestableContext(
             InstrumentationRegistry.getInstrumentation().getTargetContext(), null);
     @Rule
