@@ -129,8 +129,8 @@ import java.util.Objects;
 
     @Override
     @NonNull
-    public synchronized MediaRoute2Info getSelectedRoute() {
-        return mDeviceRoute;
+    public synchronized List<MediaRoute2Info> getSelectedRoutes() {
+        return List.of(mDeviceRoute);
     }
 
     @Override

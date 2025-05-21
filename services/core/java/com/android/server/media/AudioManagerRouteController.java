@@ -52,6 +52,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.media.BluetoothRouteController.NoOpBluetoothRouteController;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,8 +120,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             new HashMap<>();
 
     @GuardedBy("this")
-    @NonNull
-    private MediaRoute2Info mSelectedRoute;
+    private List<MediaRoute2Info> mSelectedRoutes = Collections.emptyList();
 
     // A singleton AudioManagerRouteController.
     private static AudioManagerRouteController mInstance;
@@ -253,8 +253,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @Override
     @NonNull
-    public synchronized MediaRoute2Info getSelectedRoute() {
-        return mSelectedRoute;
+    public synchronized List<MediaRoute2Info> getSelectedRoutes() {
+        if (mSelectedRoutes.isEmpty()) {
+            // mSelectedRoutes should non-empty from initialization.
+            throw new IllegalStateException("Selected routes should not be empty");
+        }
+        return mSelectedRoutes;
     }
 
     @Override
@@ -474,7 +478,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mRouteIdToAvailableDeviceRoutes.put(
                 newSelectedRouteHolder.mMediaRoute2Info.getId(),
                 selectedRouteHolderWithUpdatedVolumeInfo);
-        mSelectedRoute = selectedRouteHolderWithUpdatedVolumeInfo.mMediaRoute2Info;
+        mSelectedRoutes =
+                Collections.singletonList(
+                        selectedRouteHolderWithUpdatedVolumeInfo.mMediaRoute2Info);
 
         // We only add those BT routes that we have not already obtained from audio manager (which
         // are active).
