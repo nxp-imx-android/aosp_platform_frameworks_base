@@ -1371,6 +1371,7 @@ public class Bubble implements BubbleViewProvider {
         pw.print("  isDismissable: "); pw.println(mIsDismissable);
         pw.println("  bubbleMetadataFlagListener null?: " + (mBubbleMetadataFlagListener == null));
         pw.println("  preparingTransition null?: " + (mPreparingTransition == null));
+        pw.println("  isConvertingToBar: " + isConvertingToBar());
         if (mExpandedView != null) {
             mExpandedView.dump(pw, "  ");
         }

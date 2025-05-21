@@ -19,6 +19,7 @@ package com.android.wm.shell.bubbles.bar
 import android.animation.AnimatorTestRule
 import android.app.Activity
 import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Context
 import android.graphics.Insets
 import android.graphics.Outline
@@ -342,6 +343,7 @@ class BubbleBarAnimationHelperTest {
         whenever(taskViewTaskController.taskInfo).thenReturn(taskInfo)
         val bubble = FakeBubbleFactory.createChatBubble(context, key)
         val bubbleTaskView = BubbleTaskView(taskView, mainExecutor)
+        bubbleTaskView.listener.onTaskCreated(/* taskId= */ 1, ComponentName("package", "class"))
 
         FakeBubbleFactory.createExpandedView(
             context,

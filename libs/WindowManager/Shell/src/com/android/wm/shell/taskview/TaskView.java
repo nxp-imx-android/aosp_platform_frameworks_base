@@ -126,6 +126,16 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     /**
+     * Whether this task view is temporarily marked for moving windows.
+     *
+     * @see #setIsMovingWindows(boolean)
+     */
+    @VisibleForTesting
+    public boolean isMovingWindows() {
+        return mIsMovingWindows;
+    }
+
+    /**
      * Launch a new activity.
      *
      * @param pendingIntent Intent used to launch an activity.
