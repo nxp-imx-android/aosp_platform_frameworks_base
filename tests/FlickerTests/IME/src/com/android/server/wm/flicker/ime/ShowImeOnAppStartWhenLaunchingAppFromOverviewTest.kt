@@ -47,6 +47,7 @@ class ShowImeOnAppStartWhenLaunchingAppFromOverviewTest(flicker: LegacyFlickerTe
     override val transition: FlickerBuilder.() -> Unit = {
         setup {
             tapl.expectedRotationCheckEnabled = false
+            tapl.workspace.switchToOverview().dismissAllTasks()
             testApp.launchViaIntent(wmHelper)
             testApp.openIME(wmHelper)
             this.setRotation(flicker.scenario.startRotation)

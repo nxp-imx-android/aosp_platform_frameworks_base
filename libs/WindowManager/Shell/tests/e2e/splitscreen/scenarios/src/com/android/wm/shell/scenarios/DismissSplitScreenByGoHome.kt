@@ -23,7 +23,7 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
-import android.tools.helpers.RecentTasksUtils
+import com.android.server.wm.flicker.helpers.RecentTasksUtils
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.After
