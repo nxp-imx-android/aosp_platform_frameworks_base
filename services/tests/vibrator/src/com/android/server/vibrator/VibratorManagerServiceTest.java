@@ -1406,7 +1406,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.os.vibrator.Flags.FLAG_VIBRATION_PIPELINE_ENABLED)
+    @EnableFlags(android.os.vibrator.Flags.FLAG_VIBRATION_PIPELINE_FIX_ENABLED)
     public void vibrate_withPipelineFlagEnabledAndShortEffect_continuesOngoingEffect()
             throws Exception {
         assumeTrue(mVibrationConfig.getVibrationPipelineMaxDurationMs() > 0);
