@@ -1372,6 +1372,14 @@ constructor(
             println("previous location: $previousLocation")
             println("bounds: $currentBounds, target $targetBounds")
             println("clipping: $currentClipping, target $targetClipping")
+            println("qsExpansion: $qsExpansion")
+            println("Host bounds:")
+            mediaHosts.forEachIndexed { location, host ->
+                println(
+                    "\t$location: bounds ${host?.currentBounds}" +
+                        ", clipping ${host?.currentClipping}"
+                )
+            }
         }
     }
 
