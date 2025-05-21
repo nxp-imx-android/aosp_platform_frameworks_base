@@ -25,6 +25,7 @@ import android.annotation.PermissionMethod;
 import android.annotation.PermissionName;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CanBeCURRENT_OR_SELF;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.RestrictionLevel;
@@ -333,7 +334,8 @@ public abstract class ActivityManagerInternal {
      * Checks to see if the calling pid is allowed to handle the user. Returns adjusted user id as
      * needed.
      */
-    public abstract int handleIncomingUser(int callingPid, int callingUid, @UserIdInt int userId,
+    public abstract @CanBeALL @UserIdInt int handleIncomingUser(int callingPid, int callingUid,
+            @CanBeALL @CanBeCURRENT @CanBeCURRENT_OR_SELF @UserIdInt int userId,
             boolean allowAll, int allowMode, String name, String callerPackage);
 
     /** Checks if the calling binder pid/uid has the given permission. */
@@ -1339,7 +1341,7 @@ public abstract class ActivityManagerInternal {
      * @hide
      */
     public abstract boolean clearApplicationUserData(String packageName, boolean keepState,
-            boolean isRestore, IPackageDataObserver observer, int userId);
+            boolean isRestore, IPackageDataObserver observer, @CanBeCURRENT @UserIdInt int userId);
 
 
     /**

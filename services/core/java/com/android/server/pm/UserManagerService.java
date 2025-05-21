@@ -537,7 +537,7 @@ public class UserManagerService extends IUserManager.Stub {
     /**
      * User restrictions set by {@link com.android.server.devicepolicy.DevicePolicyManagerService}
      * for each user. Restrictions that apply to all users (global) are represented by
-     * {@link com.android.os.UserHandle.USER_ALL}.
+     * {@link UserHandle#USER_ALL}.
      * The key is the user id of the user whom the restrictions are targeting.
      */
     @GuardedBy("mRestrictionsLock")
@@ -2442,8 +2442,7 @@ public class UserManagerService extends IUserManager.Stub {
      * with a {@code null} name.
      */
     @VisibleForTesting
-    @Nullable
-    UserInfo userWithName(@Nullable UserInfo orig) {
+    @Nullable UserInfo userWithName(@Nullable UserInfo orig) {
         if (orig != null && orig.name == null) {
             String name = getName(orig, /* logUser0Allocations= */ true);
             if (name != null) {
@@ -2455,13 +2454,11 @@ public class UserManagerService extends IUserManager.Stub {
         return orig;
     }
 
-    @Nullable
-    String getName(UserInfo user) {
+    @Nullable String getName(UserInfo user) {
         return getName(user, /* logUser0Allocations= */ false);
     }
 
-    @Nullable
-    private String getName(UserInfo user, boolean logUser0Allocations) {
+    private @Nullable String getName(UserInfo user, boolean logUser0Allocations) {
         if (user.name != null) {
             return user.name;
         }
@@ -2774,8 +2771,7 @@ public class UserManagerService extends IUserManager.Stub {
      * {@link UserHandle#USER_NULL}.
      */
     @VisibleForTesting
-    @NonNull
-    Pair<Integer, Integer> getCurrentAndTargetUserIds() {
+    @NonNull Pair<Integer, Integer> getCurrentAndTargetUserIds() {
         ActivityManagerInternal activityManagerInternal = getActivityManagerInternal();
         if (activityManagerInternal == null) {
             Slog.w(LOG_TAG, "getCurrentAndTargetUserId() called too early, "
@@ -6067,8 +6063,9 @@ public class UserManagerService extends IUserManager.Stub {
 
     private @NonNull UserInfo createUserInternalUncheckedNoTracing(
             @Nullable String name, @NonNull String userType, @UserInfoFlag int flags,
-            @UserIdInt int parentId, boolean preCreate, @Nullable String[] disallowedPackages,
-            @NonNull TimingsTraceAndSlog t, @Nullable Object token)
+            @CanBeNULL @UserIdInt int parentId, boolean preCreate,
+            @Nullable String[] disallowedPackages, @NonNull TimingsTraceAndSlog t,
+            @Nullable Object token)
             throws UserManager.CheckedUserOperationException {
         String truncatedName = truncateString(name, UserManager.MAX_USER_NAME_LENGTH);
         final UserTypeDetails userTypeDetails = mUserTypes.get(userType);
@@ -7694,8 +7691,7 @@ public class UserManagerService extends IUserManager.Stub {
         return RESTRICTIONS_FILE_PREFIX + packageName + XML_SUFFIX;
     }
 
-    @Nullable
-    private static String getRedacted(@Nullable String string) {
+    private static @Nullable String getRedacted(@Nullable String string) {
         return string == null ? null : string.length() + "_chars";
     }
 
