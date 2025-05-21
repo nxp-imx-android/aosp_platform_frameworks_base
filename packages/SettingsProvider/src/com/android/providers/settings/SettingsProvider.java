@@ -4254,7 +4254,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 229;
+            private static final int SETTINGS_VERSION = 230;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6571,6 +6571,18 @@ public class SettingsProvider extends ContentProvider {
                     }
 
                     currentVersion = 229;
+                }
+
+                // Version 229: Migrate WearOS time zone settings for geo detection
+                if (currentVersion == 229) {
+                    if (getContext().getPackageManager()
+                            .hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+                        SettingsState global = getGlobalSettingsLocked();
+                        global.insertSettingLocked(Global.AUTO_TIME_ZONE, "0", null, true,
+                                SettingsState.SYSTEM_PACKAGE_NAME);
+                    }
+
+                    currentVersion = 230;
                 }
 
                 // vXXX: Add new settings above this point.
