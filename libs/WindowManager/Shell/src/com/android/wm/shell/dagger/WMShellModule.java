@@ -68,7 +68,7 @@ import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
 import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
-import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
+import com.android.wm.shell.bubbles.bar.DragToBubbleController;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -1775,7 +1775,7 @@ public abstract class WMShellModule {
             IconProvider iconProvider,
             GlobalDragListener globalDragListener,
             Transitions transitions,
-            Lazy<BubbleController> bubbleControllerLazy,
+            Lazy<DragToBubbleController> dragToBubbleControllerLazy,
             @ShellMainThread ShellExecutor mainExecutor,
             DesktopState desktopState) {
         return new DragAndDropController(
@@ -1789,14 +1789,16 @@ public abstract class WMShellModule {
                 iconProvider,
                 globalDragListener,
                 transitions,
-                new Lazy<>() {
-                    @Override
-                    public BubbleBarDragListener get() {
-                        return bubbleControllerLazy.get();
-                    }
-                },
+                dragToBubbleControllerLazy,
                 mainExecutor,
                 desktopState);
+    }
+
+    @WMSingleton
+    @Provides
+    static DragToBubbleController getDragToBubbleController(Context context,
+            BubblePositioner bubblePositioner, BubbleController bubbleController) {
+        return new DragToBubbleController(context, bubblePositioner, bubbleController);
     }
 
     //
