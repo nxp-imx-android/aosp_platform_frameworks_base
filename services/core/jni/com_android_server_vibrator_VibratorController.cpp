@@ -117,31 +117,17 @@ public:
     }
 
     std::function<void()> createCallback(jlong vibrationId, jlong stepId) {
-        auto callbackId = ++mCallbackId;
-        return [vibrationId, stepId, callbackId, this]() {
-            auto currentCallbackId = mCallbackId.load();
-            if (!android_os_vibrator_fix_vibration_thread_callback_handling() &&
-                currentCallbackId != callbackId) {
-                // This callback is from an older HAL call that is no longer relevant
-                return;
-            }
+        return [vibrationId, stepId, this]() {
             auto jniEnv = GetOrAttachJNIEnvironment(sJvm);
             jniEnv->CallVoidMethod(mCallbackListener, sMethodIdOnComplete, mVibratorId, vibrationId,
                                    stepId);
         };
     }
 
-    void disableOldCallbacks() {
-        // TODO remove this once android_os_vibrator_fix_vibration_thread_callback_handling removed
-        mCallbackId++;
-    }
-
 private:
     const std::shared_ptr<vibrator::HalController> mHal;
     const int32_t mVibratorId;
     const jobject mCallbackListener;
-    // TODO remove this once android_os_vibrator_fix_vibration_thread_callback_handling removed
-    std::atomic<int64_t> mCallbackId;
 };
 
 static Aidl::BrakingPwle brakingPwle(Aidl::Braking braking, int32_t duration) {
@@ -271,7 +257,6 @@ static void vibratorOff(JNIEnv* env, jclass /* clazz */, jlong ptr) {
     }
     auto offFn = [](vibrator::HalWrapper* hal) { return hal->off(); };
     wrapper->halCall<void>(offFn, "off");
-    wrapper->disableOldCallbacks();
 }
 
 static void vibratorSetAmplitude(JNIEnv* env, jclass /* clazz */, jlong ptr, jfloat amplitude) {

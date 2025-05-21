@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.os.VibrationEffect;
-import android.os.vibrator.Flags;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.Slog;
@@ -46,33 +45,6 @@ final class SetAmplitudeVibratorStep extends AbstractComposedVibratorStep {
             long pendingVibratorOffDeadline) {
         // This step has a fixed startTime coming from the timings of the waveform it's playing.
         super(conductor, startTime, controller, effect, index, pendingVibratorOffDeadline);
-    }
-
-    @Override
-    public boolean acceptVibratorCompleteCallback(int vibratorId) {
-        if (Flags.fixVibrationThreadCallbackHandling()) {
-            // TODO: remove this method once flag removed.
-            return super.acceptVibratorCompleteCallback(vibratorId);
-        }
-        // Ensure the super method is called and will reset the off timeout and boolean flag.
-        // This is true if the vibrator was ON and this callback has the same vibratorId.
-        if (!super.acceptVibratorCompleteCallback(vibratorId)) {
-            return false;
-        }
-
-        // Timings are tightly controlled here, so only trigger this step if the vibrator was
-        // supposed to be ON but has completed prematurely, to turn it back on as soon as
-        // possible. If the vibrator turned off during a zero-amplitude step, just wait for
-        // the correct start time of this step before playing it.
-        boolean shouldAcceptCallback =
-                (SystemClock.uptimeMillis() < startTime) && (controller.getCurrentAmplitude() > 0);
-
-        if (VibrationThread.DEBUG) {
-            Slog.d(VibrationThread.TAG,
-                    "Amplitude step received completion callback from " + vibratorId
-                            + ", accepted = " + shouldAcceptCallback);
-        }
-        return shouldAcceptCallback;
     }
 
     @NonNull

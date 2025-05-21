@@ -433,8 +433,7 @@ final class VibrationStepConductor {
         }
 
         synchronized (mLock) {
-            if (Flags.fixVibrationThreadCallbackHandling()
-                    && mSignalVibratorStepIds.get(vibratorId) != stepId) {
+            if (mSignalVibratorStepIds.get(vibratorId) != stepId) {
                 if (DEBUG) {
                     Slog.d(TAG, "Vibrator " + vibratorId + " callback for step=" + stepId
                             + " ignored, current step=" + mSignalVibratorStepIds.get(vibratorId));
@@ -665,9 +664,6 @@ final class VibrationStepConductor {
      * triggered too late by the HAL, preventing them from affecting the ongoing vibration playback.
      */
     public int nextVibratorCallbackStepId(int vibratorId) {
-        if (!Flags.fixVibrationThreadCallbackHandling()) {
-            return 0;
-        }
         if (Build.IS_DEBUGGABLE) {
             expectIsVibrationThread(true);
         }
