@@ -248,26 +248,23 @@ abstract class HdmiCecLocalDeviceSource extends HdmiCecLocalDevice {
         assertRunOnServiceThread();
         int physicalAddress = HdmiUtils.twoBytesToInt(message.getParams());
         int localDevicePhysicalAddress = mService.getPhysicalAddress();
-        // If <Set Stream Path> targeting an ancestor address is received while this device is
-        // the active source, wait to see if a new Active Source is declared, as a parent switch
-        // might be changing paths.
-        // E.g. TV [0.0.0.0] ------ AVR [3.0.0.0] ------ Playback [3.1.0.0] (Active Source)
-        // TV sends <Set Stream Path> [3.0.0.0]
-        //   AVR sends <Routing Information> [3.2.0.0] -> Playback [3.1.0.0] is no longer AS.
-        //   AVR sends <Routing Information> [3.1.0.0] -> Playback [3.1.0.0] stays <AS>.
-        //   AVR sends no relevant CEC message         -> Playback [3.1.0.0] stays <AS>.
-        if (isActiveSource()
-                && HdmiUtils.isTailOfActivePath(localDevicePhysicalAddress, physicalAddress)) {
-            return Constants.HANDLED;
-        }
-        if (physicalAddress == localDevicePhysicalAddress
-                && mService.isPlaybackDevice()) {
-            // If current device is the target path, set to Active Source.
-            // If the path is under the current device, should switch
+        // If current device is the target path and it's a playback device, set it as Active Source.
+        if (physicalAddress == localDevicePhysicalAddress && mService.isPlaybackDevice()) {
             setAndBroadcastActiveSource(message, physicalAddress,
                     "HdmiCecLocalDeviceSource#handleSetStreamPath()");
+        } else if (isActiveSource()
+                && HdmiUtils.isTailOfActivePath(localDevicePhysicalAddress, physicalAddress)) {
+            // If <Set Stream Path> targeting an ancestor address is received while this device is
+            // the active source, wait to see if a new Active Source is declared, as a parent switch
+            // might be changing paths.
+            // E.g. TV [0.0.0.0] ------ AVR [3.0.0.0] ------ Playback [3.1.0.0] (Active Source)
+            // TV sends <Set Stream Path> [3.0.0.0]
+            //    AVR sends <Routing Information> [3.2.0.0] -> Playback [3.1.0.0] is no longer AS.
+            //    AVR sends <Routing Information> [3.1.0.0] -> Playback [3.1.0.0] stays <AS>.
+            //    AVR sends no relevant CEC message         -> Playback [3.1.0.0] stays <AS>.
+            return Constants.HANDLED;
         } else if (physicalAddress != localDevicePhysicalAddress || !isActiveSource()) {
-            // Invalidate the active source if stream path is set to other physical address or
+            // Invalidate the active source if stream path is set to another physical address or
             // our physical address while not active source
             setActiveSource(physicalAddress, "HdmiCecLocalDeviceSource#handleSetStreamPath()");
         }
