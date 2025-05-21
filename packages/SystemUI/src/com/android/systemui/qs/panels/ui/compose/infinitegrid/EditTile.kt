@@ -336,7 +336,13 @@ fun DefaultEditTileGrid(
                     onEditAction = onEditAction,
                     editModeTabViewModel = editModeTabViewModel,
                 ) {
-                    CurrentTilesGrid(listState, selectionState, onEditAction)
+                    CurrentTilesGrid(
+                        listState = listState,
+                        selectionState = selectionState,
+                        canRemoveTiles = editModeTabViewModel.selectedTab.isTilesEditingAllowed,
+                        canLayoutTiles = editModeTabViewModel.selectedTab.isTilesLayoutAllowed,
+                        onEditAction = onEditAction,
+                    )
 
                     AnimatedAvailableTilesGrid(
                         allTiles = allTiles,
@@ -360,7 +366,13 @@ fun DefaultEditTileGrid(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                     )
 
-                    CurrentTilesGrid(listState, selectionState, onEditAction)
+                    CurrentTilesGrid(
+                        listState = listState,
+                        selectionState = selectionState,
+                        canRemoveTiles = true,
+                        canLayoutTiles = true,
+                        onEditAction = onEditAction,
+                    )
 
                     // Only show available tiles when a drag or placement isn't in progress, OR the
                     // drag is within the current tiles grid
@@ -604,6 +616,8 @@ private fun EditGridCenteredText(text: String, modifier: Modifier = Modifier) {
 private fun CurrentTilesGrid(
     listState: EditTileListState,
     selectionState: MutableSelectionState,
+    canRemoveTiles: Boolean,
+    canLayoutTiles: Boolean,
     onEditAction: (EditAction) -> Unit,
 ) {
     val currentListState by rememberUpdatedState(listState)
@@ -650,6 +664,8 @@ private fun CurrentTilesGrid(
             listState = listState,
             selectionState = selectionState,
             gridState = gridState,
+            canRemoveTiles = canRemoveTiles,
+            canLayoutTiles = canLayoutTiles,
             coroutineScope = coroutineScope,
             onRemoveTile = { onEditAction(EditAction.RemoveTile(it)) },
         ) { resizingOperation ->
@@ -825,6 +841,8 @@ private fun GridCell.key(index: Int): Any {
  * @param listState the [EditTileListState] for this grid
  * @param selectionState the [MutableSelectionState] for this grid
  * @param gridState the [LazyGridState] for this grid
+ * @param canRemoveTiles whether tiles can be removed from this grid
+ * @param canLayoutTiles whether tiles can be reordered/resized
  * @param coroutineScope the [CoroutineScope] to be used for the tiles
  * @param onRemoveTile the callback when a tile is removed from this grid
  * @param onResize the callback when a tile has a new [ResizeOperation]
@@ -833,6 +851,8 @@ fun LazyGridScope.EditTiles(
     listState: EditTileListState,
     selectionState: MutableSelectionState,
     gridState: LazyGridState,
+    canRemoveTiles: Boolean,
+    canLayoutTiles: Boolean,
     coroutineScope: CoroutineScope,
     onRemoveTile: (TileSpec) -> Unit,
     onResize: (operation: ResizeOperation) -> Unit,
@@ -863,6 +883,8 @@ fun LazyGridScope.EditTiles(
                         dragAndDropState = listState,
                         selectionState = selectionState,
                         gridState = gridState,
+                        canRemoveTile = canRemoveTiles,
+                        canLayoutTile = canLayoutTiles,
                         onResize = onResize,
                         onRemoveTile = onRemoveTile,
                         coroutineScope = coroutineScope,
@@ -883,9 +905,10 @@ fun LazyGridScope.EditTiles(
 private fun rememberTileState(
     tile: EditTileViewModel,
     selectionState: MutableSelectionState,
+    canRemoveTile: Boolean,
 ): State<TileState> {
     val tileState = remember { mutableStateOf(TileState.None) }
-    val canShowRemovalBadge = tile.isRemovable
+    val canShowRemovalBadge = canRemoveTile && tile.isRemovable
 
     LaunchedEffect(selectionState.selection, selectionState.placementEnabled, canShowRemovalBadge) {
         tileState.value =
@@ -902,6 +925,8 @@ private fun LazyGridItemScope.TileGridCell(
     dragAndDropState: DragAndDropState,
     selectionState: MutableSelectionState,
     gridState: LazyGridState,
+    canRemoveTile: Boolean,
+    canLayoutTile: Boolean,
     onResize: (operation: ResizeOperation) -> Unit,
     onRemoveTile: (TileSpec) -> Unit,
     coroutineScope: CoroutineScope,
@@ -909,7 +934,7 @@ private fun LazyGridItemScope.TileGridCell(
     modifier: Modifier = Modifier,
 ) {
     val stateDescription = stringResource(id = R.string.accessibility_qs_edit_position, index + 1)
-    val tileState by rememberTileState(cell.tile, selectionState)
+    val tileState by rememberTileState(cell.tile, selectionState, canRemoveTile)
     val resizingState = rememberResizingState(cell.tile.tileSpec, cell.isIcon)
     val progress: () -> Float = {
         if (tileState == TileState.Selected) {
@@ -969,6 +994,10 @@ private fun LazyGridItemScope.TileGridCell(
     // the resizing animation. The selection can't change positions without selecting a
     // different tile, so this isn't needed regardless.
     val placementSpec = if (tileState != TileState.Selected) TilePlacementSpec else null
+    val removeTile = {
+        selectionState.unSelect()
+        onRemoveTile(cell.tile.tileSpec)
+    }
     InteractiveTileContainer(
         tileState = tileState,
         resizingState = resizingState,
@@ -976,8 +1005,7 @@ private fun LazyGridItemScope.TileGridCell(
             modifier.height(TileHeight).fillMaxWidth().animateItem(placementSpec = placementSpec),
         onClick = {
             if (tileState == TileState.Removable) {
-                selectionState.unSelect()
-                onRemoveTile(cell.tile.tileSpec)
+                removeTile()
             } else if (tileState == TileState.Selected) {
                 coroutineScope.launch { resizingState.toggleCurrentValue() }
             }
@@ -993,15 +1021,16 @@ private fun LazyGridItemScope.TileGridCell(
         // Rapidly composing elements with the draggable modifier can cause visual jank. This
         // usually happens when resizing a tile multiple times. We can fix this by applying the
         // draggable modifier after the first frame
-        var isReadyToDrag by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) { isReadyToDrag = true }
-        val draggableModifier =
-            Modifier.dragAndDropTileSource(
-                SizedTileImpl(cell.tile, cell.width),
-                dragAndDropState,
-                DragType.Move,
-                selectionState::unSelect,
-            )
+        var isSelectable by remember { mutableStateOf(false) }
+        LaunchedEffect(canLayoutTile) { isSelectable = canLayoutTile }
+        val selectableModifier =
+            Modifier.selectableTile(cell.tile.tileSpec, selectionState)
+                .dragAndDropTileSource(
+                    SizedTileImpl(cell.tile, cell.width),
+                    dragAndDropState,
+                    DragType.Move,
+                    selectionState::unSelect,
+                )
 
         val toggleSelectionLabel = stringResource(R.string.accessibility_qs_edit_toggle_selection)
         val placeTileLabel = stringResource(R.string.accessibility_qs_edit_place_tile_action)
@@ -1011,41 +1040,46 @@ private fun LazyGridItemScope.TileGridCell(
                     this.stateDescription = stateDescription
                     contentDescription = cell.tile.label.text
 
-                    val actions =
-                        mutableListOf(
-                            CustomAccessibilityAction(togglePlacementModeLabel) {
-                                selectionState.togglePlacementMode(cell.tile.tileSpec)
-                                true
-                            }
-                        )
+                    if (isSelectable) {
+                        val actions =
+                            mutableListOf(
+                                CustomAccessibilityAction(togglePlacementModeLabel) {
+                                    selectionState.togglePlacementMode(cell.tile.tileSpec)
+                                    true
+                                }
+                            )
 
-                    if (selectionState.placementEnabled) {
-                        actions.add(
-                            CustomAccessibilityAction(placeTileLabel) {
-                                selectionState.placeTileAt(cell.tile.tileSpec)
-                                true
-                            }
-                        )
-                    } else {
-                        // Don't allow for resizing during placement mode
-                        actions.add(
-                            CustomAccessibilityAction(toggleSizeLabel) {
-                                onResize(FinalResizeOperation(cell.tile.tileSpec, !cell.isIcon))
-                                true
-                            }
-                        )
-                        actions.add(
-                            CustomAccessibilityAction(toggleSelectionLabel) {
-                                selectionState.toggleSelection(cell.tile.tileSpec)
-                                true
-                            }
-                        )
+                        if (selectionState.placementEnabled) {
+                            actions.add(
+                                CustomAccessibilityAction(placeTileLabel) {
+                                    selectionState.placeTileAt(cell.tile.tileSpec)
+                                    true
+                                }
+                            )
+                        } else {
+                            // Don't allow for resizing during placement mode
+                            actions.add(
+                                CustomAccessibilityAction(toggleSizeLabel) {
+                                    onResize(FinalResizeOperation(cell.tile.tileSpec, !cell.isIcon))
+                                    true
+                                }
+                            )
+                            actions.add(
+                                CustomAccessibilityAction(toggleSelectionLabel) {
+                                    selectionState.toggleSelection(cell.tile.tileSpec)
+                                    true
+                                }
+                            )
+                        }
+
+                        customActions = actions
                     }
-
-                    customActions = actions
                 }
-                .selectableTile(cell.tile.tileSpec, selectionState)
-                .thenIf(isReadyToDrag) { draggableModifier }
+                .thenIf(isSelectable) { selectableModifier }
+                .thenIf(!isSelectable && canRemoveTile && cell.tile.isRemovable && !canLayoutTile) {
+                    // Set the remove click on the entire tile if reordering is disabled
+                    Modifier.clickable(onClick = removeTile)
+                }
                 .tileBackground { backgroundColor }
         ) {
             EditTile(
