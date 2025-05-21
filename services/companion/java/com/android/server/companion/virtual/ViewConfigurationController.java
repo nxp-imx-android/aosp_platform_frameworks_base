@@ -19,6 +19,7 @@ package com.android.server.companion.virtual;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.companion.virtual.ViewConfigurationParams;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayConstraint;
@@ -26,6 +27,7 @@ import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayManager;
 import android.content.om.OverlayManagerTransaction;
 import android.os.Binder;
+import android.provider.Settings;
 import android.util.Slog;
 import android.util.TypedValue;
 
@@ -33,6 +35,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controls the application of {@link ViewConfigurationParams} for a virtual device.
@@ -56,6 +59,7 @@ public class ViewConfigurationController {
             "dimen/config_viewMaxFlingVelocity";
     private static final String SCROLL_FRICTION_RESOURCE_NAME = "dimen/config_scrollFriction";
 
+    private final Context mContext;
     private final OverlayManager mOverlayManager;
     private final Object mLock = new Object();
 
@@ -63,6 +67,7 @@ public class ViewConfigurationController {
     private OverlayIdentifier mOverlayIdentifier = null;
 
     public ViewConfigurationController(@NonNull Context context) {
+        mContext = Objects.requireNonNull(context);
         mOverlayManager = context.getSystemService(OverlayManager.class);
     }
 
@@ -75,40 +80,8 @@ public class ViewConfigurationController {
             return;
         }
 
-        FabricatedOverlay overlay = new FabricatedOverlay.Builder(
-                FRAMEWORK_PACKAGE_NAME /* owningPackage */,
-                "vdOverlay" + deviceId /* overlayName */,
-                FRAMEWORK_PACKAGE_NAME /* targetPackage */)
-                .build();
-        OverlayIdentifier overlayIdentifier = overlay.getIdentifier();
-        setResourceDpValue(overlay, TOUCH_SLOP_RESOURCE_NAME,
-                viewConfigurationParams.getTouchSlopDp());
-        setResourceDpValue(overlay, MIN_FLING_VELOCITY_RESOURCE_NAME,
-                viewConfigurationParams.getMinimumFlingVelocityDpPerSecond());
-        setResourceDpValue(overlay, MAX_FLING_VELOCITY_RESOURCE_NAME,
-                viewConfigurationParams.getMaximumFlingVelocityDpPerSecond());
-        setResourceFloatValue(overlay, SCROLL_FRICTION_RESOURCE_NAME,
-                viewConfigurationParams.getScrollFriction());
-        setResourceIntValue(overlay, TAP_TIMEOUT_RESOURCE_NAME,
-                (int) viewConfigurationParams.getTapTimeoutDuration().toMillis());
-        setResourceIntValue(overlay, DOUBLE_TAP_TIMEOUT_RESOURCE_NAME,
-                (int) viewConfigurationParams.getDoubleTapTimeoutDuration().toMillis());
-        setResourceIntValue(overlay, DOUBLE_TAP_MIN_TIME_RESOURCE_NAME,
-                (int) viewConfigurationParams.getDoubleTapMinTimeDuration().toMillis());
-
-        int callingUserId = Binder.getCallingUserHandle().getIdentifier();
-        Binder.withCleanCallingIdentity(() -> {
-            mOverlayManager.commit(
-                    new OverlayManagerTransaction.Builder()
-                            .registerFabricatedOverlay(overlay)
-                            .setEnabled(overlayIdentifier, true /* enable */, callingUserId,
-                                    List.of(new OverlayConstraint(OverlayConstraint.TYPE_DEVICE_ID,
-                                            deviceId)))
-                            .build());
-            synchronized (mLock) {
-                mOverlayIdentifier = overlayIdentifier;
-            }
-        });
+        applyResourceOverlays(deviceId, viewConfigurationParams);
+        applySettings(deviceId, viewConfigurationParams);
     }
 
     /**
@@ -128,42 +101,117 @@ public class ViewConfigurationController {
         Binder.withCleanCallingIdentity(() -> mOverlayManager.commit(transaction));
     }
 
-    private static void setResourceDpValue(@NonNull FabricatedOverlay overlay,
-            @NonNull String resourceName, float value) {
-        if (value == ViewConfigurationParams.INVALID_VALUE) {
+    private void applyResourceOverlays(int deviceId,
+            @NonNull ViewConfigurationParams viewConfigurationParams) {
+        FabricatedOverlay overlay = new FabricatedOverlay.Builder(
+                FRAMEWORK_PACKAGE_NAME /* owningPackage */,
+                "vdOverlay" + deviceId /* overlayName */,
+                FRAMEWORK_PACKAGE_NAME /* targetPackage */)
+                .build();
+        OverlayIdentifier overlayIdentifier = overlay.getIdentifier();
+        boolean change = false;
+        change |= setResourceDpValue(overlay, TOUCH_SLOP_RESOURCE_NAME,
+                viewConfigurationParams.getTouchSlopDp());
+        change |= setResourceDpValue(overlay, MIN_FLING_VELOCITY_RESOURCE_NAME,
+                viewConfigurationParams.getMinimumFlingVelocityDpPerSecond());
+        change |= setResourceDpValue(overlay, MAX_FLING_VELOCITY_RESOURCE_NAME,
+                viewConfigurationParams.getMaximumFlingVelocityDpPerSecond());
+        change |= setResourceFloatValue(overlay, SCROLL_FRICTION_RESOURCE_NAME,
+                viewConfigurationParams.getScrollFriction());
+        change |= setResourceIntValue(overlay, TAP_TIMEOUT_RESOURCE_NAME,
+                (int) viewConfigurationParams.getTapTimeoutDuration().toMillis());
+        change |= setResourceIntValue(overlay, DOUBLE_TAP_TIMEOUT_RESOURCE_NAME,
+                (int) viewConfigurationParams.getDoubleTapTimeoutDuration().toMillis());
+        change |= setResourceIntValue(overlay, DOUBLE_TAP_MIN_TIME_RESOURCE_NAME,
+                (int) viewConfigurationParams.getDoubleTapMinTimeDuration().toMillis());
+        if (!change) {
             return;
+        }
+
+        int callingUserId = Binder.getCallingUserHandle().getIdentifier();
+        Binder.withCleanCallingIdentity(() -> {
+            mOverlayManager.commit(
+                    new OverlayManagerTransaction.Builder()
+                            .registerFabricatedOverlay(overlay)
+                            .setEnabled(overlayIdentifier, true /* enable */, callingUserId,
+                                    List.of(new OverlayConstraint(OverlayConstraint.TYPE_DEVICE_ID,
+                                            deviceId)))
+                            .build());
+            synchronized (mLock) {
+                mOverlayIdentifier = overlayIdentifier;
+            }
+        });
+    }
+
+    private void applySettings(int deviceId,
+            @NonNull ViewConfigurationParams viewConfigurationParams) {
+        int longPressTimeout =
+                (int) viewConfigurationParams.getLongPressTimeoutDuration().toMillis();
+        int multiPressTimeout =
+                (int) viewConfigurationParams.getMultiPressTimeoutDuration().toMillis();
+        boolean isLongPressTimeoutInvalid = isInvalid(longPressTimeout);
+        boolean isMultiPressTimeoutInvalid = isInvalid(multiPressTimeout);
+        if (isLongPressTimeoutInvalid && isMultiPressTimeoutInvalid) {
+            return;
+        }
+
+        Context deviceContext = mContext.createDeviceContext(deviceId);
+        ContentResolver contentResolver = deviceContext.getContentResolver();
+        Binder.withCleanCallingIdentity(() -> {
+            if (!isLongPressTimeoutInvalid) {
+                Settings.Secure.putInt(contentResolver, Settings.Secure.LONG_PRESS_TIMEOUT,
+                        longPressTimeout);
+            }
+            if (!isMultiPressTimeoutInvalid) {
+                Settings.Secure.putInt(contentResolver, Settings.Secure.MULTI_PRESS_TIMEOUT,
+                        multiPressTimeout);
+            }
+        });
+    }
+
+    private static boolean setResourceDpValue(@NonNull FabricatedOverlay overlay,
+            @NonNull String resourceName, float value) {
+        if (isInvalid(value)) {
+            return false;
         }
 
         if (!android.content.res.Flags.dimensionFrro()) {
             Slog.e(TAG, "Dimension resource overlay is not supported");
-            return;
+            return false;
         }
 
         overlay.setResourceValue(resourceName, value, TypedValue.COMPLEX_UNIT_DIP,
                 null /* configuration */);
+        return true;
     }
 
-    private static void setResourceFloatValue(@NonNull FabricatedOverlay overlay,
+    private static boolean setResourceFloatValue(@NonNull FabricatedOverlay overlay,
             @NonNull String resourceName, float value) {
-        if (value == ViewConfigurationParams.INVALID_VALUE) {
-            return;
+        if (isInvalid(value)) {
+            return false;
         }
 
         if (!android.content.res.Flags.dimensionFrro()) {
             Slog.e(TAG, "Dimension resource overlay is not supported");
-            return;
+            return false;
         }
 
         overlay.setResourceValue(resourceName, value, null /* configuration */);
+        return true;
     }
 
-    private static void setResourceIntValue(@NonNull FabricatedOverlay overlay,
+    private static boolean setResourceIntValue(@NonNull FabricatedOverlay overlay,
             @NonNull String resourceName, int value) {
-        if (value == ViewConfigurationParams.INVALID_VALUE) {
-            return;
+        if (isInvalid(value)) {
+            return false;
         }
 
         overlay.setResourceValue(resourceName, TypedValue.TYPE_INT_DEC, value,
                 null /* configuration */);
+        return true;
+    }
+
+    private static boolean isInvalid(float value) {
+        return value == ViewConfigurationParams.INVALID_VALUE;
     }
 }

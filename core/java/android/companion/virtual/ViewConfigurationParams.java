@@ -51,10 +51,13 @@ public final class ViewConfigurationParams implements Parcelable {
     private final int mTapTimeoutMillis;
     private final int mDoubleTapTimeoutMillis;
     private final int mDoubleTapMinTimeMillis;
+    private final int mLongPressTimeoutMillis;
+    private final int mMultiPressTimeoutMillis;
 
     private ViewConfigurationParams(float touchSlopDp, float minimumFlingVelocityDpPerSecond,
             float maximumFlingVelocityDpPerSecond, float scrollFriction, int tapTimeoutMillis,
-            int doubleTapTimeoutMillis, int doubleTapMinTimeMillis) {
+            int doubleTapTimeoutMillis, int doubleTapMinTimeMillis, int longPressTimeoutMillis,
+            int multiPressTimeoutMillis) {
         mTouchSlopDp = touchSlopDp;
         mMinimumFlingVelocityDpPerSecond = minimumFlingVelocityDpPerSecond;
         mMaximumFlingVelocityDpPerSecond = maximumFlingVelocityDpPerSecond;
@@ -62,6 +65,8 @@ public final class ViewConfigurationParams implements Parcelable {
         mTapTimeoutMillis = tapTimeoutMillis;
         mDoubleTapTimeoutMillis = doubleTapTimeoutMillis;
         mDoubleTapMinTimeMillis = doubleTapMinTimeMillis;
+        mLongPressTimeoutMillis = longPressTimeoutMillis;
+        mMultiPressTimeoutMillis = multiPressTimeoutMillis;
     }
 
     private ViewConfigurationParams(Parcel in) {
@@ -72,6 +77,8 @@ public final class ViewConfigurationParams implements Parcelable {
         mTapTimeoutMillis = in.readInt();
         mDoubleTapTimeoutMillis = in.readInt();
         mDoubleTapMinTimeMillis = in.readInt();
+        mLongPressTimeoutMillis = in.readInt();
+        mMultiPressTimeoutMillis = in.readInt();
     }
 
     @Override
@@ -88,6 +95,8 @@ public final class ViewConfigurationParams implements Parcelable {
         dest.writeInt(mTapTimeoutMillis);
         dest.writeInt(mDoubleTapTimeoutMillis);
         dest.writeInt(mDoubleTapMinTimeMillis);
+        dest.writeInt(mLongPressTimeoutMillis);
+        dest.writeInt(mMultiPressTimeoutMillis);
     }
 
     @Override
@@ -102,14 +111,17 @@ public final class ViewConfigurationParams implements Parcelable {
                 && Float.compare(mScrollFriction, that.mScrollFriction) == 0
                 && mTapTimeoutMillis == that.mTapTimeoutMillis
                 && mDoubleTapTimeoutMillis == that.mDoubleTapTimeoutMillis
-                && mDoubleTapMinTimeMillis == that.mDoubleTapMinTimeMillis;
+                && mDoubleTapMinTimeMillis == that.mDoubleTapMinTimeMillis
+                && mLongPressTimeoutMillis == that.mLongPressTimeoutMillis
+                && mMultiPressTimeoutMillis == that.mMultiPressTimeoutMillis;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mTouchSlopDp, mMinimumFlingVelocityDpPerSecond,
                 mMaximumFlingVelocityDpPerSecond, mScrollFriction, mTapTimeoutMillis,
-                mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis);
+                mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis, mLongPressTimeoutMillis,
+                mMultiPressTimeoutMillis);
     }
 
     @Override
@@ -123,6 +135,8 @@ public final class ViewConfigurationParams implements Parcelable {
                 + ", mTapTimeoutMillis=" + mTapTimeoutMillis
                 + ", mDoubleTapTimeoutMillis=" + mDoubleTapTimeoutMillis
                 + ", mDoubleTapMinTimeMillis=" + mDoubleTapMinTimeMillis
+                + ", mLongPressTimeoutMillis=" + mLongPressTimeoutMillis
+                + ", mMultiPressTimeoutMillis=" + mMultiPressTimeoutMillis
                 + ')';
     }
 
@@ -194,6 +208,22 @@ public final class ViewConfigurationParams implements Parcelable {
         return Duration.ofMillis(mDoubleTapMinTimeMillis);
     }
 
+    /**
+     * Returns a {@link Duration} representing the long press timeout.
+     */
+    @NonNull
+    public Duration getLongPressTimeoutDuration() {
+        return Duration.ofMillis(mLongPressTimeoutMillis);
+    }
+
+    /**
+     * Returns a {@link Duration} representing the multi press timeout.
+     */
+    @NonNull
+    public Duration getMultiPressTimeoutDuration() {
+        return Duration.ofMillis(mMultiPressTimeoutMillis);
+    }
+
     @NonNull
     public static final Creator<ViewConfigurationParams> CREATOR =
             new Creator<>() {
@@ -221,6 +251,8 @@ public final class ViewConfigurationParams implements Parcelable {
         private int mTapTimeoutMillis = INVALID_VALUE;
         private int mDoubleTapTimeoutMillis = INVALID_VALUE;
         private int mDoubleTapMinTimeMillis = INVALID_VALUE;
+        private int mLongPressTimeoutMillis = INVALID_VALUE;
+        private int mMultiPressTimeoutMillis = INVALID_VALUE;
 
         /**
          * Sets the touch slop in density independent pixels (dp). When this is set,
@@ -358,6 +390,48 @@ public final class ViewConfigurationParams implements Parcelable {
         }
 
         /**
+         * Sets the long press timeout as {@link Duration}.
+         *
+         * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
+         * greater than {@link Integer#MAX_VALUE}.
+         */
+        @NonNull
+        public Builder setLongPressTimeoutDuration(@NonNull Duration duration) {
+            Objects.requireNonNull(duration);
+            if (duration.isNegative()) {
+                throw new IllegalArgumentException("Long press timeout cannot be negative");
+            }
+            long millis = duration.toMillis();
+            if (millis > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                        "Long press timeout cannot be larger than " + Integer.MAX_VALUE);
+            }
+            mLongPressTimeoutMillis = (int) millis;
+            return this;
+        }
+
+        /**
+         * Sets the multi press timeout as {@link Duration}.
+         *
+         * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
+         * greater than {@link Integer#MAX_VALUE}.
+         */
+        @NonNull
+        public Builder setMultiPressTimeoutDuration(@NonNull Duration duration) {
+            Objects.requireNonNull(duration);
+            if (duration.isNegative()) {
+                throw new IllegalArgumentException("Multi press timeout cannot be negative");
+            }
+            long millis = duration.toMillis();
+            if (millis > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                        "Multi press timeout cannot be larger than " + Integer.MAX_VALUE);
+            }
+            mMultiPressTimeoutMillis = (int) millis;
+            return this;
+        }
+
+        /**
          * Builds the {@link ViewConfigurationParams} instance.
          *
          * @throws IllegalArgumentException if there's no parameter set, or if the minimum fling
@@ -371,7 +445,9 @@ public final class ViewConfigurationParams implements Parcelable {
                     && mScrollFriction == INVALID_VALUE
                     && mTapTimeoutMillis == INVALID_VALUE
                     && mDoubleTapTimeoutMillis == INVALID_VALUE
-                    && mDoubleTapMinTimeMillis == INVALID_VALUE) {
+                    && mDoubleTapMinTimeMillis == INVALID_VALUE
+                    && mLongPressTimeoutMillis == INVALID_VALUE
+                    && mMultiPressTimeoutMillis == INVALID_VALUE) {
                 throw new IllegalArgumentException("None of the parameters are set");
             }
             if (mMinimumFlingVelocityDpPerSecond != INVALID_VALUE
@@ -382,7 +458,8 @@ public final class ViewConfigurationParams implements Parcelable {
             }
             return new ViewConfigurationParams(mTouchSlopDp, mMinimumFlingVelocityDpPerSecond,
                     mMaximumFlingVelocityDpPerSecond, mScrollFriction, mTapTimeoutMillis,
-                    mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis);
+                    mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis, mLongPressTimeoutMillis,
+                    mMultiPressTimeoutMillis);
         }
     }
 }
