@@ -138,10 +138,6 @@ static struct {
     jmethodID getInputUniqueIdAssociationsByDescriptor;
     jmethodID getDeviceTypeAssociations;
     jmethodID getKeyboardLayoutAssociations;
-    jmethodID getHoverTapTimeout;
-    jmethodID getHoverTapSlop;
-    jmethodID getDoubleTapTimeout;
-    jmethodID getLongPressTimeout;
     jmethodID getPointerLayer;
     jmethodID getLoadedPointerIcon;
     jmethodID getKeyboardLayoutOverlay;
@@ -776,45 +772,11 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
                                                               std::move(layoutType));
                                 });
 
-    jint hoverTapTimeout = env->CallIntMethod(mServiceObj,
-            gServiceClassInfo.getHoverTapTimeout);
-    if (!checkAndClearExceptionFromCallback(env, "getHoverTapTimeout")) {
-        jint doubleTapTimeout = env->CallIntMethod(mServiceObj,
-                gServiceClassInfo.getDoubleTapTimeout);
-        if (!checkAndClearExceptionFromCallback(env, "getDoubleTapTimeout")) {
-            jint longPressTimeout = env->CallIntMethod(mServiceObj,
-                    gServiceClassInfo.getLongPressTimeout);
-            if (!checkAndClearExceptionFromCallback(env, "getLongPressTimeout")) {
-                outConfig->pointerGestureTapInterval = milliseconds_to_nanoseconds(hoverTapTimeout);
-
-                // We must ensure that the tap-drag interval is significantly shorter than
-                // the long-press timeout because the tap is held down for the entire duration
-                // of the double-tap timeout.
-                jint tapDragInterval = max(min(longPressTimeout - 100,
-                        doubleTapTimeout), hoverTapTimeout);
-                outConfig->pointerGestureTapDragInterval =
-                        milliseconds_to_nanoseconds(tapDragInterval);
-            }
-        }
-    }
-
-    jint hoverTapSlop = env->CallIntMethod(mServiceObj,
-            gServiceClassInfo.getHoverTapSlop);
-    if (!checkAndClearExceptionFromCallback(env, "getHoverTapSlop")) {
-        outConfig->pointerGestureTapSlop = hoverTapSlop;
-    }
-
     { // acquire lock
         std::scoped_lock _l(mLock);
 
         outConfig->mousePointerSpeed = mLocked.pointerSpeed;
         outConfig->displaysWithMouseScalingDisabled = mLocked.displaysWithMouseScalingDisabled;
-        outConfig->pointerVelocityControlParameters.scale =
-                exp2f(mLocked.pointerSpeed * POINTER_SPEED_EXPONENT);
-        outConfig->pointerVelocityControlParameters.acceleration =
-                mLocked.displaysWithMouseScalingDisabled.count(mLocked.pointerDisplayId) == 0
-                ? android::os::IInputConstants::DEFAULT_POINTER_ACCELERATION
-                : 1;
         outConfig->wheelVelocityControlParameters.acceleration =
                 mLocked.mouseScrollingAccelerationEnabled
                 ? android::os::IInputConstants::DEFAULT_MOUSE_WHEEL_ACCELERATION
@@ -3569,18 +3531,6 @@ int register_android_server_InputManager(JNIEnv* env) {
 
     GET_METHOD_ID(gServiceClassInfo.getKeyboardLayoutAssociations, clazz,
                   "getKeyboardLayoutAssociations", "()[Ljava/lang/String;");
-
-    GET_METHOD_ID(gServiceClassInfo.getHoverTapTimeout, clazz,
-            "getHoverTapTimeout", "()I");
-
-    GET_METHOD_ID(gServiceClassInfo.getHoverTapSlop, clazz,
-            "getHoverTapSlop", "()I");
-
-    GET_METHOD_ID(gServiceClassInfo.getDoubleTapTimeout, clazz,
-            "getDoubleTapTimeout", "()I");
-
-    GET_METHOD_ID(gServiceClassInfo.getLongPressTimeout, clazz,
-            "getLongPressTimeout", "()I");
 
     GET_METHOD_ID(gServiceClassInfo.getPointerLayer, clazz,
             "getPointerLayer", "()I");

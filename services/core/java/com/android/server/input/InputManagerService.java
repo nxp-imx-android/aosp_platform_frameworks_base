@@ -124,7 +124,6 @@ import android.view.PointerIcon;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.VerifiedInputEvent;
-import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.WindowManagerPolicyConstants;
 import android.view.inputmethod.InputMethodInfo;
@@ -3001,30 +3000,6 @@ public class InputManagerService extends IInputManager.Stub
      */
     public boolean canDispatchToDisplay(int deviceId, int displayId) {
         return mNative.canDispatchToDisplay(deviceId, displayId);
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getHoverTapTimeout() {
-        return ViewConfiguration.getHoverTapTimeout();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getHoverTapSlop() {
-        return ViewConfiguration.getHoverTapSlop();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getDoubleTapTimeout() {
-        return ViewConfiguration.getDoubleTapTimeout();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getLongPressTimeout() {
-        return ViewConfiguration.getLongPressTimeout();
     }
 
     // Native callback.
