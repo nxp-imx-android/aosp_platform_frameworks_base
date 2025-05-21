@@ -36,11 +36,11 @@ import java.util.List;
 final class PerformPrebakedVibratorStep extends AbstractComposedVibratorStep {
 
     PerformPrebakedVibratorStep(VibrationStepConductor conductor, long startTime,
-            VibratorController controller, VibrationEffect.Composed effect, int index,
+            HalVibrator vibrator, VibrationEffect.Composed effect, int index,
             long pendingVibratorOffDeadline) {
         // This step should wait for the last vibration to finish (with the timeout) and for the
         // intended step start time (to respect the effect delays).
-        super(conductor, Math.max(startTime, pendingVibratorOffDeadline), controller, effect,
+        super(conductor, Math.max(startTime, pendingVibratorOffDeadline), vibrator, effect,
                 index, pendingVibratorOffDeadline);
     }
 
@@ -60,11 +60,11 @@ final class PerformPrebakedVibratorStep extends AbstractComposedVibratorStep {
             if (VibrationThread.DEBUG) {
                 Slog.d(VibrationThread.TAG, "Perform " + VibrationEffect.effectIdToString(
                         prebaked.getEffectId()) + " on vibrator "
-                        + controller.getVibratorInfo().getId());
+                        + vibrator.getInfo().getId());
             }
 
             int stepId = conductor.nextVibratorCallbackStepId(getVibratorId());
-            long vibratorOnResult = controller.on(prebaked, getVibration().id, stepId);
+            long vibratorOnResult = vibrator.on(getVibration().id, stepId, prebaked);
             handleVibratorOnResult(vibratorOnResult);
             getVibration().stats.reportPerformEffect(vibratorOnResult, prebaked);
 
@@ -77,7 +77,7 @@ final class PerformPrebakedVibratorStep extends AbstractComposedVibratorStep {
                                 + VibrationEffect.effectIdToString(prebaked.getEffectId()));
                     }
                     AbstractVibratorStep fallbackStep = conductor.nextVibrateStep(startTime,
-                            controller,
+                            vibrator,
                             replaceCurrentSegment((VibrationEffect.Composed) fallback),
                             segmentIndex, mPendingVibratorOffDeadline);
                     List<Step> fallbackResult = fallbackStep.play();

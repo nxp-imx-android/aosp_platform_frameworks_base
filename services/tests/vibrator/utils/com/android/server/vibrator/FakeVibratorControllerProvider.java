@@ -31,8 +31,6 @@ import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 
-import com.android.server.vibrator.VibratorController.OnVibrationCompleteListener;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,7 +56,6 @@ public final class FakeVibratorControllerProvider {
     private final Handler mHandler;
     private final FakeNativeWrapper mNativeWrapper;
 
-    private boolean mIsAvailable = true;
     private boolean mIsInfoLoadSuccessful = true;
     private long mCompletionCallbackDelay;
     private long mOnLatency;
@@ -104,19 +101,14 @@ public final class FakeVibratorControllerProvider {
 
     private final class FakeNativeWrapper extends VibratorController.NativeWrapper {
         public int vibratorId;
-        public OnVibrationCompleteListener listener;
+        public HalVibrator.Callbacks listener;
         public boolean isInitialized;
 
         @Override
-        public void init(int vibratorId, OnVibrationCompleteListener listener) {
+        public void init(int vibratorId, HalVibrator.Callbacks listener) {
             isInitialized = true;
             this.vibratorId = vibratorId;
             this.listener = listener;
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return mIsAvailable;
         }
 
         @Override
@@ -267,7 +259,8 @@ public final class FakeVibratorControllerProvider {
         }
 
         private void scheduleListener(long vibrationDuration, long vibrationId, long stepId) {
-            mHandler.postDelayed(() -> listener.onComplete(vibratorId, vibrationId, stepId),
+            mHandler.postDelayed(
+                    () -> listener.onVibrationStepComplete(vibratorId, vibrationId, stepId),
                     vibrationDuration + mCompletionCallbackDelay);
         }
     }
@@ -277,9 +270,9 @@ public final class FakeVibratorControllerProvider {
         mNativeWrapper = new FakeNativeWrapper();
     }
 
-    public VibratorController newVibratorController(
-            int vibratorId, OnVibrationCompleteListener listener) {
-        return new VibratorController(vibratorId, listener, mNativeWrapper);
+    /** Return new controller instance. */
+    public VibratorController newVibratorController(int vibratorId) {
+        return new VibratorController(vibratorId, mNativeWrapper);
     }
 
     /** Return {@code true} if this controller was initialized. */

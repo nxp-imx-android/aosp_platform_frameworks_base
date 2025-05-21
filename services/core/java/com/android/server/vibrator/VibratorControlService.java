@@ -506,7 +506,7 @@ final class VibratorControlService extends IVibratorControlService.Stub {
 
     /**
      * Keep records of {@link VibrationParam} values received by this service from a registered
-     * {@link VibratorController} and provide debug information for this service.
+     * {@link HalVibrator} and provide debug information for this service.
      */
     private static final class VibrationParamsRecords
             extends GroupedAggregatedLogRecords<VibrationScaleParamRecord> {
