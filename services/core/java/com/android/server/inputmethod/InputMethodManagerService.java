@@ -3538,11 +3538,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_HAS_IME);
             userData.mCurStatsToken = null;
 
-            if (Flags.useHandwritingListenerForTooltype()) {
-                maybeReportToolType(userId);
-            } else if (lastClickToolType != MotionEvent.TOOL_TYPE_UNKNOWN) {
-                onUpdateEditorToolTypeLocked(lastClickToolType, userId);
-            }
+            maybeReportToolType(userId);
             mVisibilityApplier.performShowIme(windowToken, statsToken,
                     visibilityStateComputer.getShowFlagsForInputMethodServiceOnly(),
                     resultReceiver, reason, userId);
