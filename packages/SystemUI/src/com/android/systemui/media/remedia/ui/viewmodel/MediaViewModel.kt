@@ -215,21 +215,42 @@ constructor(
                         )
                     }
 
-                override val outputSwitcherChips: List<MediaOutputSwitcherChipViewModel>
+                override val deviceSuggestionChip: MediaDeviceChipViewModel?
                     get() {
-                        return listOf(
-                            MediaOutputSwitcherChipViewModel(
-                                icon = session.outputDevice.icon,
-                                text = session.outputDevice.name,
+                        return session.suggestedOutputDevice?.let {
+                            MediaDeviceChipViewModel(
+                                icon = it.icon,
+                                text =
+                                    context.getString(
+                                        R.string.media_suggestion_disconnected_text,
+                                        it.name,
+                                    ),
+                                isConnecting = it.isInProgress,
                                 onClick = {
                                     falsingSystem.runIfNotFalseTap(
                                         FalsingManager.MODERATE_PENALTY
                                     ) {
-                                        // TODO(b/397989775): tell the UI to show the output
-                                        // switcher.
+                                        // TODO(b/397989775): Perform selection of the suggested
+                                        // device
                                     }
                                 },
                             )
+                        }
+                    }
+
+                override val outputSwitcherChip: MediaDeviceChipViewModel
+                    get() {
+                        return MediaDeviceChipViewModel(
+                            icon = session.outputDevice.icon,
+                            text =
+                                if (session.suggestedOutputDevice == null) session.outputDevice.name
+                                else null,
+                            onClick = {
+                                falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
+                                    // TODO(b/397989775): tell the UI to show the output
+                                    // switcher.
+                                }
+                            },
                         )
                     }
 

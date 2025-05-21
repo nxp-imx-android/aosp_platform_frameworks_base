@@ -18,8 +18,9 @@ package com.android.systemui.media.remedia.ui.viewmodel
 
 import com.android.systemui.common.shared.model.Icon
 
-data class MediaOutputSwitcherChipViewModel(
+data class MediaDeviceChipViewModel(
     val icon: Icon,
     val text: String? = null,
+    val isConnecting: Boolean = false,
     val onClick: () -> Unit,
 )

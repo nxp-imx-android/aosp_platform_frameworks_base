@@ -149,6 +149,9 @@ constructor(
                         )
                     }
 
+            override val suggestedOutputDevice: MediaOutputDeviceModel?
+                get() = TODO("Not yet implemented")
+
             override val actionButtonLayout: MediaCardActionButtonLayout
                 get() =
                     dataModel.playbackStateActions?.let {
