@@ -1409,27 +1409,30 @@ public final class MediaQualityUtils {
         }
 
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
+            dts.limiter = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
+            dts.truSurroundX = params.getBoolean(
+                    SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
+            dts.truVolumeHd = params.getBoolean(
+                    SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
+            dts.dialogClarity = params.getBoolean(
+                    SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
+            dts.definition = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
+            dts.height = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
         }
         soundParams.add(SoundParameter.dtsVirtualX(dts));
