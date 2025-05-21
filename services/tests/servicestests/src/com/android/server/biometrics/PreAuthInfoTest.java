@@ -208,7 +208,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
-    public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorAvailable()
+    public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorAvailable_identityCheckAuthenticator()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
 
@@ -225,23 +225,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
-    public void testMandatoryBiometricsStatus_whenAllRequirementsSatisfiedAndSensorUnavailable()
-            throws Exception {
-        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
-
-        final PromptInfo promptInfo = new PromptInfo();
-        promptInfo.setAuthenticators(BiometricManager.Authenticators.IDENTITY_CHECK);
-        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
-                mSettingObserver, List.of(), USER_ID, promptInfo, TEST_PACKAGE_NAME,
-                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
-                mUserManager);
-
-        assertThat(preAuthInfo.eligibleSensors).hasSize(0);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
-    public void testMandatoryBiometricsAndStrongBiometricsStatus_whenRequirementsNotSatisfied()
+    public void testMandatoryBiometricsAndStrongBiometricsStatus_whenRequirementsNotSatisfied_identityCheckAuthenticator()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
 
@@ -259,7 +243,7 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
-    public void testMandatoryBiometricsStatus_whenRequirementsNotSatisfiedAndSensorAvailable()
+    public void testMandatoryBiometricsStatus_whenRequirementsNotSatisfiedAndSensorAvailable_identityCheckAuthenticator()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
 
@@ -274,6 +258,69 @@ public class PreAuthInfoTest {
         assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(
                 BiometricManager.BIOMETRIC_ERROR_IDENTITY_CHECK_NOT_ACTIVE);
         assertThat(preAuthInfo.eligibleSensors).hasSize(0);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testIdentityCheckStatus_whenAllRequirementsSatisfiedAndSensorAvailable_biometricStrongAndDeviceCredential()
+            throws Exception {
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+
+        final BiometricSensor sensor = getFaceSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG
+                | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
+                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
+                mUserManager);
+
+        assertThat(promptInfo.isDeviceCredentialAllowed()).isTrue();
+        assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isTrue();
+        assertThat(preAuthInfo.eligibleSensors).hasSize(1);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testIdentityCheckStatus_whenRequirementsNotSatisfied_biometricStrongAndDeviceCredential()
+            throws Exception {
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
+
+        final BiometricSensor sensor = getFaceSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG
+                | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
+                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
+                mUserManager);
+
+        assertThat(promptInfo.isDeviceCredentialAllowed()).isTrue();
+        assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isFalse();
+        assertThat(preAuthInfo.eligibleSensors).hasSize(1);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API,
+            Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testIdentityCheckStatus_whenRequirementsNotSatisfiedAndSensorAvailable_biometricStrongAndDeviceCredential()
+            throws Exception {
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(false);
+
+        final BiometricSensor sensor = getFaceSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG
+                | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
+                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
+                mUserManager);
+
+        assertThat(promptInfo.isDeviceCredentialAllowed()).isTrue();
+        assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isFalse();
+        assertThat(preAuthInfo.eligibleSensors).hasSize(1);
     }
 
     @Test
@@ -313,6 +360,23 @@ public class PreAuthInfoTest {
                 false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
                 mUserManager);
         assertThat(promptInfo.getNegativeButtonText()).isEqualTo(TEST_PACKAGE_NAME);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
+    public void testMandatoryBiometricsNegativeButtonText_whenNotSet()
+            throws Exception {
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+
+        final BiometricSensor sensor = getFaceSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.IDENTITY_CHECK);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
+                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
+                mUserManager);
+        assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isTrue();
+        assertThat(promptInfo.getNegativeButtonText()).isEqualTo(null);
     }
 
     @Test

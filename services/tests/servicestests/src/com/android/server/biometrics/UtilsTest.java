@@ -19,6 +19,8 @@ package com.android.server.biometrics;
 import static android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED;
 import static android.hardware.biometrics.BiometricManager.Authenticators;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -34,8 +36,10 @@ import android.hardware.biometrics.BiometricAuthenticator;
 import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
+import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.PromptInfo;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
@@ -313,5 +317,34 @@ public class UtilsTest {
         authenticators = Utils.removeBiometricBits(authenticators);
         // All biometric bits are removed
         assertEquals(0, authenticators & Authenticators.BIOMETRIC_MIN_STRENGTH);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testShouldApplyIdentityCheck_singleAuthenticator_returnsTrue() {
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.IDENTITY_CHECK)).isTrue();
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_WEAK)).isTrue();
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testShouldApplyIdentityCheck_combinationAuthenticators_returnsTrue() {
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.IDENTITY_CHECK
+                | Authenticators.DEVICE_CREDENTIAL)).isTrue();
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.DEVICE_CREDENTIAL
+                | Authenticators.BIOMETRIC_STRONG)).isTrue();
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_WEAK
+                | Authenticators.DEVICE_CREDENTIAL)).isTrue();
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_WEAK
+                | Authenticators.IDENTITY_CHECK)).isTrue();
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_ALL_SURFACES, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testShouldApplyIdentityCheck_returnsFalse() {
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_STRONG
+                | Authenticators.IDENTITY_CHECK)).isFalse();
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.BIOMETRIC_STRONG)).isFalse();
+        assertThat(Utils.shouldApplyIdentityCheck(Authenticators.DEVICE_CREDENTIAL)).isFalse();
     }
 }

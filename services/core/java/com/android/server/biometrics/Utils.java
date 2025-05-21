@@ -50,6 +50,7 @@ import android.hardware.biometrics.BiometricConstants;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.hardware.biometrics.BiometricPrompt.AuthenticationResultType;
+import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorProperties;
@@ -147,6 +148,33 @@ public class Utils {
      */
     static boolean isMandatoryBiometricsRequested(@Authenticators.Types int authenticators) {
         return (authenticators & Authenticators.IDENTITY_CHECK) != 0;
+    }
+
+    /**
+     *
+     * @param authenticators composed of one or more values from {@link Authenticators}
+     * @return true if Identity Check requirements should be applied depending on the authenticators
+     */
+    static boolean shouldApplyIdentityCheck(@Authenticators.Types int authenticators) {
+        final boolean isIdentityCheckAllSurfacesEnabled =
+                Flags.identityCheckAllSurfaces() && Flags.bpFallbackOptions();
+        final boolean isMandatoryOrBiometricRequested =
+                isMandatoryBiometricsRequested(authenticators)
+                        || isBiometricRequested(authenticators);
+        final boolean isOnlyStrongBiometricRequested =
+                isOnlyStrongBiometricRequested(authenticators);
+
+        if (isIdentityCheckAllSurfacesEnabled) {
+            return isMandatoryOrBiometricRequested && !isOnlyStrongBiometricRequested;
+        }
+
+        return isMandatoryBiometricsRequested(authenticators);
+    }
+
+    private static boolean isOnlyStrongBiometricRequested(
+            @Authenticators.Types int authenticators) {
+        return getPublicBiometricStrength(authenticators) == Authenticators.BIOMETRIC_STRONG
+                && !isCredentialRequested(authenticators);
     }
 
     /**
