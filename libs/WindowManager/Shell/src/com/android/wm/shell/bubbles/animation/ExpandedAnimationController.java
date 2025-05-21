@@ -354,6 +354,7 @@ public class ExpandedAnimationController
             View bubble,
             MagnetizedObject.MagneticTarget target,
             MagnetizedObject.MagnetListener listener) {
+        if (mLayout == null) return;
         mLayout.cancelAnimationsOnView(bubble);
 
         mMagnetizedBubbleDraggingOut = new MagnetizedObject<View>(
