@@ -39,7 +39,7 @@ import kotlinx.coroutines.DisposableHandle
  * to start consuming gestures, set the gesture's enable function ([setLongPressHandlingEnabled],
  * [setDoublePressHandlingEnabled]) to `true`.
  */
-class TouchHandlingView(
+open class TouchHandlingView(
     context: Context,
     attrs: AttributeSet?,
     longPressDuration: () -> Long,

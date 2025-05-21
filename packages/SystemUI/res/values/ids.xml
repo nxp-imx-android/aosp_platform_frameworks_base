@@ -279,6 +279,9 @@
     <item type="id" name="alternate_bouncer_udfps_icon_view" />
     <item type="id" name="alternate_bouncer_udfps_accessibility_overlay" />
 
+    <!--Id for the biometric prompt UDFPS accessibility overlay. -->
+    <item type="id" name="biometric_prompt_udfps_accessibility_overlay" />
+
     <!-- Id for the udfps accessibility overlay -->
     <item type="id" name="udfps_accessibility_overlay" />
     <item type="id" name="udfps_accessibility_overlay_top_guideline" />

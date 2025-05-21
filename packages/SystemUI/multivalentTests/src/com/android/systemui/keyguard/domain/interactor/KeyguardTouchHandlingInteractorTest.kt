@@ -33,7 +33,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
-import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -57,9 +56,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.Mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
@@ -362,8 +361,6 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
         }
     }
 
-
-
     @Test
     @EnableFlags(FLAG_DOUBLE_TAP_TO_SLEEP)
     fun isDoubleTapEnabled_flagEnabledAndConfigDisabled_alwaysFalse() {
@@ -436,7 +433,6 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
                 transitionInteractor = kosmos.keyguardTransitionInteractor,
                 repository = keyguardRepository,
                 logger = logger,
-                featureFlags = kosmos.fakeFeatureFlagsClassic,
                 broadcastDispatcher = fakeBroadcastDispatcher,
                 accessibilityManager = kosmos.accessibilityManagerWrapper,
                 pulsingGestureListener = kosmos.pulsingGestureListener,

@@ -67,9 +67,9 @@ import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.classifier.FalsingCollectorFake;
 import com.android.systemui.classifier.FalsingManagerFake;
 import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
-import com.android.systemui.common.ui.view.TouchHandlingView;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor;
+import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlayOverlappingTouchHandlingView;
 import com.android.systemui.doze.DozeLog;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FakeFeatureFlagsClassic;
@@ -507,7 +507,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
 
         mMainHandler = new Handler(Looper.getMainLooper());
 
-        TouchHandlingView touchHandlingView = mock(TouchHandlingView.class);
+        UdfpsAccessibilityOverlayOverlappingTouchHandlingView touchHandlingView =
+                mock(UdfpsAccessibilityOverlayOverlappingTouchHandlingView.class);
         when(mView.requireViewById(R.id.keyguard_long_press))
                 .thenReturn(touchHandlingView);
 

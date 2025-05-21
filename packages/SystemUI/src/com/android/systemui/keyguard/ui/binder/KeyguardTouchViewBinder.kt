@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.common.ui.view.TouchHandlingView
+import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlayOverlappingTouchHandlingView
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -33,6 +34,7 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 object KeyguardTouchViewBinder {
     /**
@@ -46,7 +48,7 @@ object KeyguardTouchViewBinder {
      */
     @JvmStatic
     fun bind(
-        view: TouchHandlingView,
+        view: UdfpsAccessibilityOverlayOverlappingTouchHandlingView,
         viewModelFactory: KeyguardTouchHandlingViewModel.Factory,
         onSingleTap: (x: Int, y: Int) -> Unit,
         falsingManager: FalsingManager,
@@ -118,6 +120,14 @@ object KeyguardTouchViewBinder {
                                 viewModel.onDoubleClick()
                             }
                         }
+
+                    launch {
+                        viewModel.accessibilityOverlayBoundsWhenListeningForUdfps.collect { bounds
+                            ->
+                            view.setOverlappingAccessibilityViewBounds(bounds)
+                        }
+                    }
+
                     awaitCancellation()
                 }
             }

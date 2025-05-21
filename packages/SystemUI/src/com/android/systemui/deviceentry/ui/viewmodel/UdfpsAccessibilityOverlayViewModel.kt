@@ -66,6 +66,13 @@ abstract class UdfpsAccessibilityOverlayViewModel(
 
     abstract fun isVisibleWhenTouchExplorationEnabled(): Flow<Boolean>
 
+    open fun getUdfpsDirectionalFeedbackOnHoverEnterOrMove(
+        event: MotionEvent,
+        includeLockscreenContentDescription: Boolean,
+    ): CharSequence? {
+        return getUdfpsDirectionalFeedbackOnHoverEnterOrMove(event)
+    }
+
     /** Give directional feedback to help the user authenticate with UDFPS. */
     fun getUdfpsDirectionalFeedbackOnHoverEnterOrMove(event: MotionEvent): CharSequence? {
         if (!isListeningForUdfps.value) {
