@@ -17,6 +17,7 @@
 package android.media;
 
 import static android.media.audio.Flags.FLAG_ROUTED_DEVICE_IDS;
+import static android.media.mediarecorder.Flags.FLAG_APV_RECORDING_SUPPORT;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -703,15 +704,27 @@ public class MediaRecorder implements AudioRouting,
        * in include/media/mediarecorder.h!
        */
         private VideoEncoder() {}
+        /** Default video codec */
         public static final int DEFAULT = 0;
+        /** H.263 video codec */
         public static final int H263 = 1;
+        /** H.264 video codec */
         public static final int H264 = 2;
+        /** MPEG-4 SP video codec */
         public static final int MPEG_4_SP = 3;
+        /** VP8 video codec */
         public static final int VP8 = 4;
+        /** HEVC/H.265 video codec */
         public static final int HEVC = 5;
+        /** VP9 video codec */
         public static final int VP9 = 6;
+        /** Dolby Vision video codec */
         public static final int DOLBY_VISION = 7;
+        /** AV1 video codec */
         public static final int AV1 = 8;
+        /** APV video codec */
+        @FlaggedApi(FLAG_APV_RECORDING_SUPPORT)
+        public static final int APV = 9;
     }
 
     /**
@@ -727,6 +740,7 @@ public class MediaRecorder implements AudioRouting,
         VideoEncoder.VP9,
         VideoEncoder.DOLBY_VISION,
         VideoEncoder.AV1,
+        VideoEncoder.APV,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface VideoEncoderValues {}

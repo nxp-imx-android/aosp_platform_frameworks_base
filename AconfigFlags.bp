@@ -54,6 +54,7 @@ aconfig_declarations_group {
         "android.hardware.usb.flags-aconfig-java",
         "android.location.flags-aconfig-java",
         "android.media.codec-aconfig-java",
+        "android.media.mediarecorder-aconfig-java",
         "android.media.tv.flags-aconfig-java",
         "android.multiuser.flags-aconfig-java",
         "android.net.platform.flags-aconfig-java",
@@ -112,7 +113,6 @@ aconfig_declarations_group {
         "com.android.window.flags.window-aconfig-java",
         "configinfra_framework_flags_java_exported_lib",
         "conscrypt_exported_aconfig_flags_lib",
-        "sdk_sandbox_exported_flags_lib",
         "device_policy_aconfig_flags_lib",
         "display_flags_lib",
         "dropbox_flags_lib",
@@ -126,6 +126,7 @@ aconfig_declarations_group {
         "libcore_readonly_aconfig_flags_lib",
         "libgui_flags_java_lib",
         "power_flags_lib",
+        "sdk_sandbox_exported_flags_lib",
         "surfaceflinger_flags_java_lib",
         "telecom_flags_core_java_lib",
         "telephony_flags_core_java_lib",
@@ -874,9 +875,9 @@ java_aconfig_library {
     min_sdk_version: "30",
     apex_available: [
         "//apex_available:platform",
+        "com.android.extservices",
         "com.android.nfcservices",
         "com.android.permission",
-        "com.android.extservices",
     ],
 }
 
