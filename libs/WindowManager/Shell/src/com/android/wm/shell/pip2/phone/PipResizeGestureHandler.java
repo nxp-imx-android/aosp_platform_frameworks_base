@@ -60,14 +60,15 @@ import java.util.function.Function;
  * trigger dynamic resize.
  */
 public class PipResizeGestureHandler implements
-        PipTransitionState.PipTransitionStateChangedListener {
+        PipTransitionState.PipTransitionStateChangedListener,
+        PipDisplayLayoutState.DisplayIdListener {
 
     private static final String TAG = "PipResizeGestureHandler";
     private static final int PINCH_RESIZE_SNAP_DURATION = 250;
     private static final float PINCH_RESIZE_AUTO_MAX_RATIO = 0.9f;
     private static final String RESIZE_BOUNDS_CHANGE = "resize_bounds_change";
 
-    private final Context mContext;
+    private Context mContext;
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
     private final PipBoundsState mPipBoundsState;
     private final PipTouchState mPipTouchState;
@@ -145,6 +146,7 @@ public class PipResizeGestureHandler implements
 
         mPhonePipMenuController = menuActivityController;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
         mPipDesktopState = pipDesktopState;
         mPipUiEventLogger = pipUiEventLogger;
 
@@ -167,8 +169,14 @@ public class PipResizeGestureHandler implements
     }
 
     private void reloadResources() {
-        mPipDragToResizeHandler.reloadResources();
+        mPipDragToResizeHandler.reloadResources(mContext);
         mTouchSlop = ViewConfiguration.get(mContext).getScaledTouchSlop();
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
+        mContext = context;
+        reloadResources();
     }
 
     private void disposeInputChannel() {

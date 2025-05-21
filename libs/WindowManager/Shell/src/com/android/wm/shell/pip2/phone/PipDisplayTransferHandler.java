@@ -75,7 +75,8 @@ public class PipDisplayTransferHandler implements
     public PipDisplayTransferHandler(Context context, PipTransitionState pipTransitionState,
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             PipBoundsState pipBoundsState, DisplayController displayController,
-            PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm) {
+            PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper) {
         mContext = context;
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
@@ -83,7 +84,7 @@ public class PipDisplayTransferHandler implements
         mSurfaceControlTransactionFactory =
                 new PipSurfaceTransactionHelper.VsyncSurfaceControlTransactionFactory();
         mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
-        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
+        mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipBoundsState = pipBoundsState;
         mDisplayController = displayController;
         mPipDisplayLayoutState = pipDisplayLayoutState;

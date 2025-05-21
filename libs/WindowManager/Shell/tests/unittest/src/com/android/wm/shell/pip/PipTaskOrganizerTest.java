@@ -122,14 +122,17 @@ public class PipTaskOrganizerTest extends ShellTestCase {
         }).when(mMockExecutor).execute(any());
         mComponent1 = new ComponentName(mContext, "component1");
         mComponent2 = new ComponentName(mContext, "component2");
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
+        mShellInit = new ShellInit(mMockExecutor);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController,
+                mShellInit);
+        // Directly call onInit instead of using ShellInit
+        mPipDisplayLayoutState.onInit();
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);
         mPipTransitionState = new PipTransitionState();
         mPipBoundsAlgorithm = new PipBoundsAlgorithm(mContext, mPipBoundsState,
                 new PipSnapAlgorithm(), new PipKeepClearAlgorithmInterface() {},
                 mPipDisplayLayoutState, mSizeSpecSource);
-        mShellInit = new ShellInit(mMockExecutor);
         mPipTaskOrganizer = new PipTaskOrganizer(mContext, mShellInit, mMockSyncTransactionQueue,
                 mPipTransitionState, mPipBoundsState, mPipDisplayLayoutState,
                 mPipBoundsAlgorithm, mMockPhonePipMenuController, mMockPipAnimationController,

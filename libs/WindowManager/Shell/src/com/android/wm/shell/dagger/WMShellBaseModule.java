@@ -562,8 +562,9 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
-    static PhonePipKeepClearAlgorithm providePhonePipKeepClearAlgorithm(Context context) {
-        return new PhonePipKeepClearAlgorithm(context);
+    static PhonePipKeepClearAlgorithm providePhonePipKeepClearAlgorithm(Context context,
+            PipDisplayLayoutState pipDisplayLayoutState) {
+        return new PhonePipKeepClearAlgorithm(context, pipDisplayLayoutState);
     }
 
     @WMSingleton

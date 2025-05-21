@@ -78,7 +78,8 @@ import java.util.Optional;
  * Manages all the touch handling for PIP on the Phone, including moving, dismissing and expanding
  * the PIP.
  */
-public class PipTouchHandler implements PipTransitionState.PipTransitionStateChangedListener {
+public class PipTouchHandler implements PipTransitionState.PipTransitionStateChangedListener,
+        PipDisplayLayoutState.DisplayIdListener {
 
     private static final String TAG = "PipTouchHandler";
     private static final float DEFAULT_STASH_VELOCITY_THRESHOLD = 18000.f;
@@ -87,7 +88,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
     // Allow PIP to resize to a slightly bigger state upon touch
     private boolean mEnableResize;
-    private final Context mContext;
+    private Context mContext;
     private final ShellCommandHandler mShellCommandHandler;
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
     private final PipDesktopState mPipDesktopState;
@@ -216,6 +217,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipScheduler = pipScheduler;
         mSizeSpecSource = sizeSpecSource;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
         mMenuController = menuController;
         mPipUiEventLogger = pipUiEventLogger;
         mFloatingContentCoordinator = floatingContentCoordinator;
@@ -225,7 +227,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipDisplayTransferHandler = pipDisplayTransferHandler;
         mPipScheduler.setUpdateMovementBoundsRunnable(this::updateMovementBounds);
         mPipDismissTargetHandler = new PipDismissTargetHandler(context, pipUiEventLogger,
-                mMotionHelper, mPipDisplayLayoutState, mDisplayController, mainExecutor);
+                mMotionHelper, mPipDisplayLayoutState, mainExecutor);
         mTouchState = new PipTouchState(ViewConfiguration.get(context),
                 () -> {
                     mMenuController.showMenuWithPossibleDelay(MENU_STATE_FULL,
@@ -315,6 +317,12 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mBottomOffsetBufferPx = res.getDimensionPixelSize(R.dimen.pip_bottom_offset_buffer);
         mImeOffset = res.getDimensionPixelSize(R.dimen.pip_ime_offset);
         mPipDismissTargetHandler.updateMagneticTargetSize();
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
+        mContext = context;
+        reloadResources();
     }
 
     void onOverlayChanged() {

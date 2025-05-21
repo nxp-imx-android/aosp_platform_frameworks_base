@@ -91,14 +91,15 @@ import java.util.function.Consumer;
 public class PipController implements ConfigurationChangeListener,
         PipTransitionState.PipTransitionStateChangedListener,
         DisplayController.OnDisplaysChangedListener,
-        DisplayChangeController.OnDisplayChangingListener, RemoteCallable<PipController> {
+        DisplayChangeController.OnDisplayChangingListener, RemoteCallable<PipController>,
+        PipDisplayLayoutState.DisplayIdListener {
     private static final String TAG = PipController.class.getSimpleName();
     private static final String SWIPE_TO_PIP_APP_BOUNDS = "pip_app_bounds";
     private static final String SWIPE_TO_PIP_OVERLAY = "swipe_to_pip_overlay";
     private static final String DISPLAY_CHANGE_PIP_BOUNDS_UPDATE =
             "display_change_pip_bounds_update";
 
-    private final Context mContext;
+    private Context mContext;
     private final ShellCommandHandler mShellCommandHandler;
     private final ShellController mShellController;
     private final DisplayController mDisplayController;
@@ -187,6 +188,7 @@ public class PipController implements ConfigurationChangeListener,
         mPipBoundsState = pipBoundsState;
         mPipBoundsAlgorithm = pipBoundsAlgorithm;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
         mPipScheduler = pipScheduler;
         mTaskStackListener = taskStackListener;
         mShellTaskOrganizer = shellTaskOrganizer;
@@ -689,6 +691,12 @@ public class PipController implements ConfigurationChangeListener,
                     mContext.getResources().getDimensionPixelSize(R.dimen.pip_corner_radius),
                     mContext.getResources().getDimensionPixelSize(R.dimen.pip_shadow_radius));
         }
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
+        mContext = context;
+        onPipResourceDimensionsChanged();
     }
 
     private void dump(PrintWriter pw, String prefix) {

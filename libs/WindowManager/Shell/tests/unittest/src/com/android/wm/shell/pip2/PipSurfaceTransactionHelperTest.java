@@ -44,7 +44,9 @@ import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.BoxShadowHelper;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipUtils;
+import com.android.wm.shell.sysui.ShellInit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -89,6 +91,8 @@ public class PipSurfaceTransactionHelperTest {
     @Mock private Context mMockContext;
     @Mock private Resources mMockResources;
     @Mock private SurfaceControl.Transaction mMockTransaction;
+    @Mock private ShellInit mMockShellInit;
+    @Mock private PipDisplayLayoutState mMockPipDisplayLayoutState;
     private PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private SurfaceControl mTestLeash;
 
@@ -128,7 +132,10 @@ public class PipSurfaceTransactionHelperTest {
         when(mMockTransaction.setShadowRadius(any(SurfaceControl.class), anyFloat()))
                 .thenReturn(mMockTransaction);
 
-        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mMockContext);
+        mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mMockContext,
+                mMockShellInit, mMockPipDisplayLayoutState);
+        // Directly call onInit instead of using ShellInit
+        mPipSurfaceTransactionHelper.onInit();
         mTestLeash = new SurfaceControl.Builder()
                 .setContainerLayer()
                 .setName("PipSurfaceTransactionHelperTest")

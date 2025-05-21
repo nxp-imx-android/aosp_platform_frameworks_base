@@ -33,6 +33,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.sysui.ShellInit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -65,12 +66,16 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
     private SizeSpecSource mSizeSpecSource;
     private PipDisplayLayoutState mPipDisplayLayoutState;
     @Mock private DisplayController mDisplayController;
+    @Mock private ShellInit mShellInit;
 
 
     @Before
     public void setUp() throws Exception {
         initializeMockResources();
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController,
+                mShellInit);
+        // Directly call onInit instead of using ShellInit
+        mPipDisplayLayoutState.onInit();
 
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, mPipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, mPipDisplayLayoutState);

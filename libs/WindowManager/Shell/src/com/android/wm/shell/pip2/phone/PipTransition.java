@@ -96,7 +96,8 @@ import java.util.Optional;
  * Implementation of transitions for PiP on phone.
  */
 public class PipTransition extends PipTransitionController implements
-        PipTransitionState.PipTransitionStateChangedListener {
+        PipTransitionState.PipTransitionStateChangedListener,
+        PipDisplayLayoutState.DisplayIdListener {
     private static final String TAG = PipTransition.class.getSimpleName();
 
     // Used when for ENTERING_PIP state update.
@@ -115,15 +116,17 @@ public class PipTransition extends PipTransitionController implements
     // Dependencies
     //
 
-    private final Context mContext;
+    private Context mContext;
     private final PipTaskListener mPipTaskListener;
     private final PipScheduler mPipScheduler;
     private final PipTransitionState mPipTransitionState;
     private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final DisplayController mDisplayController;
+    private final Optional<SplitScreenController> mSplitScreenControllerOptional;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final PipDesktopState mPipDesktopState;
     private final Optional<DesktopPipTransitionController> mDesktopPipTransitionController;
+    private final PipInteractionHandler mPipInteractionHandler;
 
     //
     // Transition caches
@@ -180,10 +183,13 @@ public class PipTransition extends PipTransitionController implements
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
         mDisplayController = displayController;
+        mSplitScreenControllerOptional = splitScreenControllerOptional;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipDesktopState = pipDesktopState;
         mDesktopPipTransitionController = desktopPipTransitionController;
+        mPipInteractionHandler = pipInteractionHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, mPipSurfaceTransactionHelper,
                 pipBoundsState, pipBoundsAlgorithm,
@@ -199,6 +205,12 @@ public class PipTransition extends PipTransitionController implements
             mTransitions.addHandler(this);
             mTransitions.registerObserver(mPipDisplayChangeObserver);
         }
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
+        mContext = context;
+        mExpandHandler.onDisplayIdChanged(context);
     }
 
     @Override
