@@ -626,7 +626,7 @@ public class NotificationStackScrollLayout
         @Override
         public boolean isScrolledToTop() {
             if (SceneContainerFlag.isEnabled()) {
-                return mScrollViewFields.getScrollState().isScrolledToTop();
+                return mScrollViewFields.scrollState.isScrolledToTop();
             } else {
                 return getOwnScrollY() == 0;
             }
@@ -818,7 +818,7 @@ public class NotificationStackScrollLayout
             y = (int) mAmbientState.getHeadsUpTop();
             drawDebugInfo(canvas, y, Color.GREEN, /* label= */ "getHeadsUpTop() = " + y);
 
-            y = (int) (mAmbientState.getStackTop() + mScrollViewFields.getIntrinsicStackHeight());
+            y = (int) (mAmbientState.getStackTop() + mScrollViewFields.intrinsicStackHeight);
             drawDebugInfo(canvas, y, Color.BLUE,
                     /* label= */ "getStackTop() + getIntrinsicStackHeight() = " + y);
 
@@ -1232,9 +1232,9 @@ public class NotificationStackScrollLayout
         mForwardScrollable = forwardScrollable;
         mBackwardScrollable = backwardScrollable;
 
-        boolean scrollPositionChanged = mScrollViewFields.getScrollState().getScrollPosition()
+        boolean scrollPositionChanged = mScrollViewFields.scrollState.getScrollPosition()
                 != scrollState.getScrollPosition();
-        mScrollViewFields.setScrollState(scrollState);
+        mScrollViewFields.scrollState = scrollState;
 
         if (scrollPositionChanged) {
             sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SCROLLED);
@@ -1563,7 +1563,7 @@ public class NotificationStackScrollLayout
         if (mMaxDisplayedNotifications != -1) {
             // The stack intrinsic height already contains the correct value when there is a limit
             // in the max number of notifications (e.g. as in keyguard).
-            height = mScrollViewFields.getIntrinsicStackHeight();
+            height = mScrollViewFields.intrinsicStackHeight;
         } else {
             height = Math.max(0f, mAmbientState.getStackCutoff() - mAmbientState.getStackTop());
         }
@@ -2588,8 +2588,8 @@ public class NotificationStackScrollLayout
                 shelfIntrinsicHeight,
                 "updateIntrinsicStackHeight"
         );
-        if (mScrollViewFields.getIntrinsicStackHeight() != notificationsHeight) {
-            mScrollViewFields.setIntrinsicStackHeight(notificationsHeight);
+        if (mScrollViewFields.intrinsicStackHeight != notificationsHeight) {
+            mScrollViewFields.intrinsicStackHeight = notificationsHeight;
             notifyStackHeightChangedListeners();
         }
     }
@@ -2622,7 +2622,7 @@ public class NotificationStackScrollLayout
     @Override
     public int getIntrinsicStackHeight() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0;
-        return mScrollViewFields.getIntrinsicStackHeight();
+        return mScrollViewFields.intrinsicStackHeight;
     }
 
     @Override
@@ -3931,7 +3931,7 @@ public class NotificationStackScrollLayout
         if (!SceneContainerFlag.isEnabled()) {
             return !isInsideQsHeader(ev);
         }
-        ShadeScrimShape shape = mScrollViewFields.getClippingShape();
+        ShadeScrimShape shape = mScrollViewFields.clippingShape;
         if (shape == null) {
             return true; // When there is no scrim, consider this event scrollable.
         }
@@ -4972,8 +4972,8 @@ public class NotificationStackScrollLayout
         event.setMaxScrollX(mScrollX);
 
         if (SceneContainerFlag.isEnabled()) {
-            event.setScrollY(mScrollViewFields.getScrollState().getScrollPosition());
-            event.setMaxScrollY(mScrollViewFields.getScrollState().getMaxScrollPosition());
+            event.setScrollY(mScrollViewFields.scrollState.getScrollPosition());
+            event.setMaxScrollY(mScrollViewFields.scrollState.getMaxScrollPosition());
         } else {
             event.setScrollY(getOwnScrollY());
             event.setMaxScrollY(getScrollRange());
@@ -5968,8 +5968,8 @@ public class NotificationStackScrollLayout
     @Override
     public void setClippingShape(@Nullable ShadeScrimShape shape) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (Objects.equals(mScrollViewFields.getClippingShape(), shape)) return;
-        mScrollViewFields.setClippingShape(shape);
+        if (Objects.equals(mScrollViewFields.clippingShape, shape)) return;
+        mScrollViewFields.clippingShape = shape;
         mShouldUseRoundedRectClipping = shape != null;
         mRoundedClipPath.reset();
         if (shape != null) {
@@ -5996,9 +5996,8 @@ public class NotificationStackScrollLayout
     @Override
     public void setNegativeClippingShape(@Nullable ShadeScrimShape shape) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (Objects.equals(mScrollViewFields.getNegativeClippingShape(), shape)) return;
-
-        mScrollViewFields.setNegativeClippingShape(shape);
+        if (Objects.equals(mScrollViewFields.negativeClippingShape, shape)) return;
+        mScrollViewFields.negativeClippingShape = shape;
         mShouldUseNegativeRoundedRectClipping = shape != null;
         mNegativeRoundedClipPath.reset();
         if (shape != null) {
@@ -6925,7 +6924,7 @@ public class NotificationStackScrollLayout
     }
 
     /**
-     * Use {@link ScrollViewFields#intrinsicStackHeight}, when SceneContainerFlag is enabled.
+     * Use {@link ScrollViewFields#intrinsicStackHeight}}, when SceneContainerFlag is enabled.
      * @return the height of the content ignoring the footer.
      */
     public float getIntrinsicContentHeight() {
