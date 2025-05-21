@@ -677,6 +677,16 @@ flag {
 }
 
 flag {
+    name: "thin_screen_recording_service"
+    namespace: "systemui"
+    description: "Fix screen recording on hsum enabled devices"
+    bug: "368579013"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "clipboard_overlay_multiuser"
     namespace: "systemui"
     description: "Fix clipboard overlay for secondary users"
