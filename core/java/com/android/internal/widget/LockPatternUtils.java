@@ -459,13 +459,13 @@ public class LockPatternUtils {
             final VerifyCredentialResponse response = getLockSettings().verifyCredential(
                     credential, userId, flags);
             if (response == null) {
-                return VerifyCredentialResponse.ERROR;
+                return VerifyCredentialResponse.OTHER_ERROR;
             } else {
                 return response;
             }
         } catch (RemoteException re) {
             Log.e(TAG, "failed to verify credential", re);
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
     }
 
@@ -481,12 +481,12 @@ public class LockPatternUtils {
             final VerifyCredentialResponse response = getLockSettings()
                     .verifyGatekeeperPasswordHandle(gatekeeperPasswordHandle, challenge, userId);
             if (response == null) {
-                return VerifyCredentialResponse.ERROR;
+                return VerifyCredentialResponse.OTHER_ERROR;
             }
             return response;
         } catch (RemoteException e) {
             Log.e(TAG, "failed to verify gatekeeper password", e);
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
     }
 
@@ -551,13 +551,13 @@ public class LockPatternUtils {
             final VerifyCredentialResponse response = getLockSettings()
                     .verifyTiedProfileChallenge(credential, userId, flags);
             if (response == null) {
-                return VerifyCredentialResponse.ERROR;
+                return VerifyCredentialResponse.OTHER_ERROR;
             } else {
                 return response;
             }
         } catch (RemoteException re) {
             Log.e(TAG, "failed to verify tied profile credential", re);
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
     }
 

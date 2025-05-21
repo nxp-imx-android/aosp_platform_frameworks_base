@@ -33,18 +33,17 @@ import java.time.Duration;
  */
 public final class VerifyCredentialResponse implements Parcelable {
 
-    public static final int RESPONSE_ERROR = -1;
+    public static final int RESPONSE_OTHER_ERROR = -1;
     public static final int RESPONSE_OK = 0;
     public static final int RESPONSE_RETRY = 1;
-    @IntDef({RESPONSE_ERROR,
-            RESPONSE_OK,
-            RESPONSE_RETRY})
+
+    @IntDef({RESPONSE_OTHER_ERROR, RESPONSE_OK, RESPONSE_RETRY})
     @Retention(RetentionPolicy.SOURCE)
     @interface ResponseCode {}
 
     public static final VerifyCredentialResponse OK = new VerifyCredentialResponse.Builder()
             .build();
-    public static final VerifyCredentialResponse ERROR = fromError();
+    public static final VerifyCredentialResponse OTHER_ERROR = fromError();
     private static final String TAG = "VerifyCredentialResponse";
 
     private final @ResponseCode int mResponseCode;
@@ -124,7 +123,7 @@ public final class VerifyCredentialResponse implements Parcelable {
      * being populated, provide a default method to return a VerifyCredentialResponse.
      */
     public static VerifyCredentialResponse fromError() {
-        return new VerifyCredentialResponse(RESPONSE_ERROR,
+        return new VerifyCredentialResponse(RESPONSE_OTHER_ERROR,
                 0 /* timeout */,
                 null /* gatekeeperHAT */,
                 0L /* gatekeeperPasswordHandle */);

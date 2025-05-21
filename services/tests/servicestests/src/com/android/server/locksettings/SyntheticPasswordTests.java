@@ -195,8 +195,10 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
                 password, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
         verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
 
-        assertEquals(VerifyCredentialResponse.RESPONSE_ERROR, mService.verifyCredential(
-                badPassword, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+                mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
+                        .getResponseCode());
     }
 
     @Test

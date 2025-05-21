@@ -218,14 +218,17 @@ public class RecoverableKeyStoreManagerTest {
                 mCleanupManager,
                 mRemoteLockscreenValidationSessionStorage);
         when(mLockSettingsService.verifyCredential(
-                any(LockscreenCredential.class), anyInt(), anyInt())).thenAnswer(args -> {
-                    LockscreenCredential argument = (LockscreenCredential) args.getArguments()[0];
-                    if (Arrays.equals(argument.getCredential(), VALID_GUESS)) {
-                        return VerifyCredentialResponse.OK;
-                    } else if (Arrays.equals(argument.getCredential(), INVALID_GUESS)) {
-                        return VerifyCredentialResponse.ERROR;
-                    } else return VerifyCredentialResponse.fromTimeout(TIMEOUT_MILLIS);
-                });
+                        any(LockscreenCredential.class), anyInt(), anyInt()))
+                .thenAnswer(
+                        args -> {
+                            LockscreenCredential argument =
+                                    (LockscreenCredential) args.getArguments()[0];
+                            if (Arrays.equals(argument.getCredential(), VALID_GUESS)) {
+                                return VerifyCredentialResponse.OK;
+                            } else if (Arrays.equals(argument.getCredential(), INVALID_GUESS)) {
+                                return VerifyCredentialResponse.OTHER_ERROR;
+                            } else return VerifyCredentialResponse.fromTimeout(TIMEOUT_MILLIS);
+                        });
     }
 
     @After
