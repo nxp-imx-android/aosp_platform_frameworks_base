@@ -46,6 +46,7 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DeviceBasedSatelliteViewModelTest : SysuiTestCase() {
     private lateinit var underTest: DeviceBasedSatelliteViewModel
     private lateinit var interactor: DeviceBasedSatelliteInteractor

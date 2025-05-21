@@ -51,6 +51,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardBouncerViewModelTest : SysuiTestCase() {
 
     @Mock lateinit var bouncerView: BouncerView

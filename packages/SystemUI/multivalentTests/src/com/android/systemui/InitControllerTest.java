@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
+@android.platform.test.annotations.EnabledOnRavenwood
 public class InitControllerTest extends SysuiTestCase {
 
     private InitController mInitController = new InitController();

@@ -66,6 +66,7 @@ import org.mockito.Mockito.verify
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class QSSceneAdapterImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().apply { testCase = this@QSSceneAdapterImplTest }

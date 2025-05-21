@@ -39,6 +39,7 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class SystemProcessConditionTest : SysuiTestCase() {
     private val kosmos = Kosmos()
 

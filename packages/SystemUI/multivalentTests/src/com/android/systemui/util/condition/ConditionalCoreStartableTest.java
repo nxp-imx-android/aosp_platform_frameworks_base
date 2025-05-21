@@ -44,6 +44,7 @@ import java.util.Set;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class ConditionalCoreStartableTest extends SysuiTestCase {
     public static class FakeConditionalCoreStartable extends ConditionalCoreStartable {
         interface Callback {

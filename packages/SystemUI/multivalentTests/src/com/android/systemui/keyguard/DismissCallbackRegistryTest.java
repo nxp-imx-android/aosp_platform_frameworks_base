@@ -38,6 +38,7 @@ import org.mockito.MockitoAnnotations;
  */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class DismissCallbackRegistryTest extends SysuiTestCase {
 
     private DismissCallbackRegistry mDismissCallbackRegistry;

@@ -38,6 +38,7 @@ import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

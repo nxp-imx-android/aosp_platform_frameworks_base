@@ -38,6 +38,7 @@ import org.mockito.Mockito.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DisplaySwitchNotificationsHiderTrackerTest : SysuiTestCase() {
 
     private val testScope = TestScope()

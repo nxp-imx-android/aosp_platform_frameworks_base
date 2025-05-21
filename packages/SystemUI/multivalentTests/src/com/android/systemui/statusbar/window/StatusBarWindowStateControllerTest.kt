@@ -36,6 +36,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class StatusBarWindowStateControllerTest : SysuiTestCase() {
     private lateinit var controller: StatusBarWindowStateController
     private lateinit var callback: CommandQueue.Callbacks

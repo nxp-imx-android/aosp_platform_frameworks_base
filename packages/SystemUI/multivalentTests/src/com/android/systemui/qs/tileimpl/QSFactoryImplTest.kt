@@ -96,6 +96,7 @@ private val specMap =
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class QSFactoryImplTest : SysuiTestCase() {
 
     @Mock private lateinit var qsHost: QSHost

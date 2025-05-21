@@ -38,6 +38,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
+@android.platform.test.annotations.EnabledOnRavenwood
 class VolumeDialogRingerInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

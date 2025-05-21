@@ -32,6 +32,7 @@ import org.mockito.Mockito.`when` as whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class PrivacyDotDecorProviderFactoryTest : SysuiTestCase() {
     private lateinit var mPrivacyDotDecorProviderFactory: PrivacyDotDecorProviderFactory
 

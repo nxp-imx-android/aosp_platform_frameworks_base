@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class AnnouncementResolverTest : SysuiTestCase() {
     private val kosmos = Kosmos()
 

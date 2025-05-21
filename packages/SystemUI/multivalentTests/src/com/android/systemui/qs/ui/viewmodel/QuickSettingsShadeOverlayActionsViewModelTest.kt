@@ -43,6 +43,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
+@android.platform.test.annotations.EnabledOnRavenwood
 class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

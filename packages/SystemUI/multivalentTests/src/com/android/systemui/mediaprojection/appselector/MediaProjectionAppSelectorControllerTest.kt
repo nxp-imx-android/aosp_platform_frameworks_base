@@ -26,6 +26,7 @@ import org.mockito.Mockito.verify
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class MediaProjectionAppSelectorControllerTest : SysuiTestCase() {
 
     private val taskListProvider = TestRecentTaskListProvider()

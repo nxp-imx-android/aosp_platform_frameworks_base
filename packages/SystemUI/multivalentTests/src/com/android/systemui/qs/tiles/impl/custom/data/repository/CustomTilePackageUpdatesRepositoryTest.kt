@@ -50,6 +50,7 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @SuppressLint("UnspecifiedRegisterReceiverFlag") // Not needed in the test
+@android.platform.test.annotations.EnabledOnRavenwood
 class CustomTilePackageUpdatesRepositoryTest : SysuiTestCase() {
 
     @Mock private lateinit var mockedContext: Context

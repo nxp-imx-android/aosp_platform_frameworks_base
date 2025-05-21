@@ -58,6 +58,7 @@ import org.mockito.kotlin.whenever
 @OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class MobileIconsInteractorKairosTest : SysuiTestCase() {
 
     private val kosmos =
