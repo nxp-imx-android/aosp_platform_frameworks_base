@@ -2120,6 +2120,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (!Flags.removeStartingInTransition()) {
             return;
         }
+        // Skip if player is not enabled.
+        if (!mIsPlayerEnabled) {
+            return;
+        }
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final ActivityRecord ar = mParticipants.valueAt(i).asActivityRecord();
             if (ar == null || ar.mStartingData == null || ar.mStartingSurface == null

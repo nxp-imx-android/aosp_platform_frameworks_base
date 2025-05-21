@@ -639,10 +639,10 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         info.taskSnapshot = taskSnapshot;
         info.appToken = activity.token;
         final Transition collecting = activity.mTransitionController.getCollectingTransition();
-        if (collecting != null) {
+        if (collecting != null && !activity.mTransitionController.mIsWaitingForDisplayEnabled) {
             info.transitionToken = collecting.getToken();
         } else {
-            Slog.w(TAG, "The starting window is created without transition?");
+            Slog.w(TAG, "The starting window is created without transition.");
         }
         // make this happen prior than prepare surface
         try {
