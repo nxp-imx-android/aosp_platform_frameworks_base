@@ -1024,11 +1024,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 return;
             }
 
-            if (!Flags.fixExternalVibrationSystemUpdateAware()
-                    && (mCurrentSession instanceof ExternalVibrationSession)) {
-                return;
-            }
-
             Status ignoreStatus = shouldIgnoreVibrationLocked(mCurrentSession.getCallerInfo());
             if (inputDevicesChanged || (ignoreStatus != null)) {
                 if (DEBUG) {
@@ -2352,22 +2347,11 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
     @GuardedBy("mLock")
     private void maybeClearCurrentAndNextSessionsLocked(
             Predicate<VibrationSession> shouldEndSessionPredicate, Status endStatus) {
-        if (Flags.fixExternalVibrationSystemUpdateAware()) {
-            if (shouldEndSessionPredicate.test(mNextSession)) {
-                clearNextSessionLocked(endStatus);
-            }
-            if (shouldEndSessionPredicate.test(mCurrentSession)) {
-                mCurrentSession.requestEnd(endStatus);
-            }
-        } else {
-            if (!(mNextSession instanceof ExternalVibrationSession)
-                    && shouldEndSessionPredicate.test(mNextSession)) {
-                clearNextSessionLocked(endStatus);
-            }
-            if (!(mCurrentSession instanceof ExternalVibrationSession)
-                    && shouldEndSessionPredicate.test(mCurrentSession)) {
-                mCurrentSession.requestEnd(endStatus);
-            }
+        if (shouldEndSessionPredicate.test(mNextSession)) {
+            clearNextSessionLocked(endStatus);
+        }
+        if (shouldEndSessionPredicate.test(mCurrentSession)) {
+            mCurrentSession.requestEnd(endStatus);
         }
     }
 
