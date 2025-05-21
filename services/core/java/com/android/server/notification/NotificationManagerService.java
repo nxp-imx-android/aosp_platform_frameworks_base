@@ -9859,15 +9859,34 @@ public class NotificationManagerService extends SystemService {
                     return false;
                 }
 
-                mEnqueuedNotifications.add(r);
-                mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
-
                 final StatusBarNotification n = r.getSbn();
                 if (DBG) Slog.d(TAG, "EnqueueNotificationRunnable.run for: " + n.getKey());
                 NotificationRecord old = mNotificationsByKey.get(n.getKey());
                 if (old != null) {
                     // Retain ranking information from previous record
                     r.copyRankingInformation(old);
+                }
+
+                // If we don't have a previous record, before adding this record to enqueued list,
+                // see if we have a previously enqueued version of this notification so we can share
+                // instance ID if necessary.
+                NotificationRecord previouslyEnqueued = null;
+                if (old == null) {
+                    previouslyEnqueued = findNotificationByListLocked(mEnqueuedNotifications,
+                            n.getKey());
+                }
+
+                mEnqueuedNotifications.add(r);
+                mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
+
+                // Either initialize instance ID for statsd logging, or carry over from old SBN.
+                if (old != null && old.getSbn().getInstanceId() != null) {
+                    n.setInstanceId(old.getSbn().getInstanceId());
+                } else if (previouslyEnqueued != null
+                        && previouslyEnqueued.getSbn().getInstanceId() != null) {
+                    n.setInstanceId(previouslyEnqueued.getSbn().getInstanceId());
+                } else {
+                    n.setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
                 }
 
                 final int callingUid = n.getUid();
@@ -10023,13 +10042,6 @@ public class NotificationManagerService extends SystemService {
                         mUsageStats.registerSuspendedByAdmin(r);
                     }
                     NotificationRecord old = mNotificationsByKey.get(key);
-
-                    // Make sure the SBN has an instance ID for statsd logging.
-                    if (old == null || old.getSbn().getInstanceId() == null) {
-                        n.setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
-                    } else {
-                        n.setInstanceId(old.getSbn().getInstanceId());
-                    }
 
                     int index = indexOfNotificationLocked(n.getKey());
                     if (index < 0) {
