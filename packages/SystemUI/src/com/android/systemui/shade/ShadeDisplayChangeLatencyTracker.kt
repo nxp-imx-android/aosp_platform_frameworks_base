@@ -16,22 +16,16 @@
 package com.android.systemui.shade
 
 import android.util.Log
-import com.android.app.tracing.coroutines.TrackTracer
 import com.android.internal.util.LatencyTracker
-import com.android.systemui.common.ui.data.repository.ConfigurationRepository
-import com.android.systemui.common.ui.view.ChoreographerUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
+import com.android.systemui.shade.domain.interactor.ShadeDisplaysWaitInteractor
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
@@ -49,17 +43,10 @@ import kotlinx.coroutines.withTimeout
 class ShadeDisplayChangeLatencyTracker
 @Inject
 constructor(
-    private val shadeRootView: WindowRootView,
-    @ShadeDisplayAware private val configurationRepository: ConfigurationRepository,
     private val latencyTracker: LatencyTracker,
     @Background private val bgScope: CoroutineScope,
-    private val choreographerUtils: ChoreographerUtils,
+    private val waitInteractor: ShadeDisplaysWaitInteractor,
 ) {
-
-    /**
-     * We need to keep this always up to date eagerly to avoid delays receiving the new display ID.
-     */
-    private val onMovedToDisplayFlow: StateFlow<Int> = configurationRepository.onMovedToDisplay
 
     private var previousJob: Job? = null
 
@@ -84,7 +71,7 @@ constructor(
         try {
             latencyTracker.onActionStart(SHADE_MOVE_ACTION)
             waitForOnMovedToDisplayDispatchedToView(displayId)
-            waitUntilNextDoFrameDone()
+            waitUntilNextDoFrameDone(displayId)
             latencyTracker.onActionEnd(SHADE_MOVE_ACTION)
         } catch (e: Exception) {
             val reason =
@@ -101,20 +88,17 @@ constructor(
     }
 
     private suspend fun waitForOnMovedToDisplayDispatchedToView(newDisplayId: Int) {
-        t.traceAsync({ "waitForOnMovedToDisplayDispatchedToView(newDisplayId=$newDisplayId)" }) {
-            withTimeout(TIMEOUT) { onMovedToDisplayFlow.filter { it == newDisplayId }.first() }
-            t.instant { "onMovedToDisplay received with $newDisplayId" }
+        withTimeout(TIMEOUT) {
+            waitInteractor.waitForOnMovedToDisplayDispatchedToView(newDisplayId, TAG)
         }
     }
 
-    private suspend fun waitUntilNextDoFrameDone(): Unit =
-        t.traceAsync("waitUntilNextDoFrameDone") {
-            withTimeout(TIMEOUT) { choreographerUtils.waitUntilNextDoFrameDone(shadeRootView) }
-        }
+    private suspend fun waitUntilNextDoFrameDone(newDisplayId: Int) {
+        withTimeout(TIMEOUT) { waitInteractor.waitForNextDoFrameDone(newDisplayId, TAG) }
+    }
 
     private companion object {
         const val TAG = "ShadeDisplayLatency"
-        val t = TrackTracer(trackName = TAG, trackGroup = "shade")
         val TIMEOUT = 3.seconds
         const val SHADE_MOVE_ACTION = LatencyTracker.ACTION_SHADE_WINDOW_DISPLAY_CHANGE
     }

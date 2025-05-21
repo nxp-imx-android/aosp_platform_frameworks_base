@@ -17,20 +17,15 @@
 package com.android.systemui.shade
 
 import com.android.internal.logging.latencyTracker
-import com.android.systemui.common.ui.data.repository.configurationRepository
-import com.android.systemui.common.ui.view.fakeChoreographerUtils
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.scene.ui.view.mockShadeRootView
-import java.util.Optional
+import com.android.systemui.shade.domain.interactor.shadeDisplaysWaitInteractor
 
 val Kosmos.shadeDisplayChangeLatencyTracker by Fixture {
     ShadeDisplayChangeLatencyTracker(
-        mockShadeRootView,
-        configurationRepository,
         latencyTracker,
         testScope.backgroundScope,
-        fakeChoreographerUtils,
+        shadeDisplaysWaitInteractor,
     )
 }
