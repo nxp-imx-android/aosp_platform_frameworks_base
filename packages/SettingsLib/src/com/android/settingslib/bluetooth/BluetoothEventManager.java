@@ -568,9 +568,9 @@ public class BluetoothEventManager {
                 Log.w(TAG, "AclStateChangedHandler: action is null");
                 return;
             }
-            final CachedBluetoothDevice activeDevice = mDeviceManager.findDevice(device);
+            CachedBluetoothDevice activeDevice = mDeviceManager.findDevice(device);
             if (activeDevice == null) {
-                mDeviceManager.addDevice(device);
+                activeDevice = mDeviceManager.addDevice(device);
                 Log.d(
                         TAG,
                         "AclStateChangedHandler created new CachedBluetoothDevice "
