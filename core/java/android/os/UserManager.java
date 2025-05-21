@@ -4021,7 +4021,7 @@ public class UserManager {
      * {@code android.Manifest.permission#MANAGE_USERS},
      * {@code android.Manifest.permission#QUERY_USERS}, or
      * {@code android.Manifest.permission#INTERACT_ACROSS_USERS}
-     * permission, or else the caller must be in the same profile group as the caller.
+     * permission, or else the caller must be in the same profile group as the specified user.
      *
      * @param userHandle the user handle of the user whose information is being requested.
      * @return a UserProperties object for a specific user.
