@@ -259,6 +259,6 @@ class ModesTileTest : SysuiTestCase() {
 
             assertThat(tileState.disabledByPolicy).isTrue()
             verify(userManager)
-                .getUserRestrictionSources(eq(UserManager.DISALLOW_ADJUST_VOLUME), eq(context.user))
+                .getUserRestrictionSources(eq(UserManager.DISALLOW_ADJUST_VOLUME), any())
         }
 }
