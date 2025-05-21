@@ -441,6 +441,15 @@ public class PipTransition extends PipTransitionController {
     }
 
     @Override
+    public void cleanUpState() {
+        ActivityManager.RunningTaskInfo taskInfo = mPipOrganizer.getTaskInfo();
+        if (taskInfo != null) {
+            mPipOrganizer.onExitPipFinished(taskInfo);
+            mPipBoundsState.setLastPipComponentName(null);
+        }
+    }
+
+    @Override
     public boolean handleRotateDisplay(int startRotation, int endRotation,
             WindowContainerTransaction wct) {
         if (mRequestedEnterTransition != null && mEnterAnimationType == ANIM_TYPE_ALPHA) {
@@ -1361,6 +1370,12 @@ public class PipTransition extends PipTransitionController {
         final TaskInfo inPipTask = mPipOrganizer.getTaskInfo();
         return packageName != null && inPipTask != null && mPipOrganizer.isInPip()
                 && packageName.equals(ComponentUtils.getPackageName(inPipTask.baseIntent));
+    }
+
+    @Override
+    public boolean isTaskActiveInPip(int taskId) {
+        final TaskInfo inPipTask = mPipOrganizer.getTaskInfo();
+        return inPipTask != null && mPipOrganizer.isInPip() && taskId == inPipTask.taskId;
     }
 
     private void updatePipForUnhandledTransition(@NonNull TransitionInfo.Change pipChange,
