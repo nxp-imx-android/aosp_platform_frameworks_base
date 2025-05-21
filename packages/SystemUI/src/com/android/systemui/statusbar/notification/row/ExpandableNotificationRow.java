@@ -3580,7 +3580,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
 
         final boolean shouldSkipHideSensitiveAnimation =
-                Flags.skipHideSensitiveNotifAnimation() && isShowingLayoutNotChanged;
+                Flags.skipHideSensitiveNotifAnimation()
+                        && mShowingPublic && isShowingLayoutNotChanged;
         if (!animated || shouldSkipHideSensitiveAnimation) {
             if (!NotificationContentAlphaOptimization.isEnabled()
                     || mShowingPublic != oldShowingPublic) {
