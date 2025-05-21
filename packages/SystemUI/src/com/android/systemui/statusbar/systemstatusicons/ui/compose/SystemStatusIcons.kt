@@ -32,6 +32,7 @@ import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.icons.ui.compose.EllipsizingRow
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.compose.MobileIcons
 import com.android.systemui.statusbar.pipeline.wifi.ui.compose.WifiIcon
 import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
@@ -45,12 +46,15 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 @Composable
 fun SystemStatusIcons(
     viewModelFactory: SystemStatusIconsViewModel.Factory,
+    systemStatusIconBlocklistInteractor: SystemStatusIconBlocklistInteractor,
     tint: Color,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val viewModel =
-        rememberViewModel(traceName = "SystemStatusIcons") { viewModelFactory.create(context) }
+        rememberViewModel(traceName = "SystemStatusIcons") {
+            viewModelFactory.create(context, systemStatusIconBlocklistInteractor)
+        }
 
     CompositionLocalProvider(LocalContentColor provides tint) {
         EllipsizingRow(spacing = 6.dp, modifier = modifier.sysuiResTag("statusIcons")) {

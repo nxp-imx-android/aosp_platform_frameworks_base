@@ -31,6 +31,7 @@ import com.android.systemui.display.data.repository.display
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.audio.audioManager
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.getCommandQueueCallback
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.fakeMobileIconsInteractor
@@ -76,9 +77,13 @@ import org.mockito.kotlin.whenever
 val Kosmos.systemStatusIconsViewModelFactory by
     Kosmos.Fixture {
         object : SystemStatusIconsViewModelImpl.Factory {
-            override fun create(context: Context): SystemStatusIconsViewModelImpl =
+            override fun create(
+                context: Context,
+                systemStatusIconBlocklistInteractor: SystemStatusIconBlocklistInteractor,
+            ): SystemStatusIconsViewModelImpl =
                 SystemStatusIconsViewModelImpl(
                     context = context,
+                    systemStatusIconBlocklistInteractor = systemStatusIconBlocklistInteractor,
                     orderedIconSlotNamesInteractor = orderedIconSlotNamesInteractor,
                     externalSystemStatusIconInteractor = externalSystemStatusIconInteractor,
                     airplaneModeIconViewModelFactory = airplaneModeIconViewModelFactory,

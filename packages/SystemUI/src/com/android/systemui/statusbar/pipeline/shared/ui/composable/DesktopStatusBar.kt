@@ -300,6 +300,8 @@ private fun QuickSettingsChip(
                     viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
                     tint = tint,
                     modifier = modifier,
+                    systemStatusIconBlocklistInteractor =
+                        viewModel.systemStatusIconBlockListInteractor,
                 )
             } else {
                 val localContext = LocalContext.current

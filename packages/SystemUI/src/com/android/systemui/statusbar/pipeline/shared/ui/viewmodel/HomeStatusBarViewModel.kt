@@ -62,6 +62,7 @@ import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.domain.interactor.ScrollToTopInteractor
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
@@ -214,6 +215,9 @@ interface HomeStatusBarViewModel : Activatable {
     /** Which icons to block from the home status bar */
     val iconBlockList: Flow<List<String>>
 
+    /** Interactor that provides the set of blocked icon slots */
+    val systemStatusIconBlockListInteractor: SystemStatusIconBlocklistInteractor
+
     /** This status bar's current content area for the given rotation in absolute bounds. */
     val contentArea: Flow<Rect>
 
@@ -306,6 +310,9 @@ constructor(
     private val statusBarPopupChips by lazy {
         statusBarPopupChipsViewModelFactory.create(thisDisplayId)
     }
+
+    override val systemStatusIconBlockListInteractor: SystemStatusIconBlocklistInteractor =
+        homeStatusBarIconBlockListInteractor
 
     override val isTransitioningFromLockscreenToOccluded: StateFlow<Boolean> =
         if (SceneContainerFlag.isEnabled) {

@@ -28,6 +28,7 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
@@ -42,6 +43,7 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import org.mockito.Mockito.mock
 
 class FakeHomeStatusBarViewModel(
@@ -86,8 +88,10 @@ class FakeHomeStatusBarViewModel(
 
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory =
         object : SystemStatusIconsViewModel.Factory {
-            override fun create(context: Context): SystemStatusIconsViewModel =
-                mock(SystemStatusIconsViewModel::class.java)
+            override fun create(
+                context: Context,
+                systemStatusIconBlocklistInteractor: SystemStatusIconBlocklistInteractor,
+            ): SystemStatusIconsViewModel = mock(SystemStatusIconsViewModel::class.java)
         }
 
     override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory =
@@ -121,6 +125,11 @@ class FakeHomeStatusBarViewModel(
         )
 
     override val iconBlockList: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
+
+    override val systemStatusIconBlockListInteractor: SystemStatusIconBlocklistInteractor =
+        object : SystemStatusIconBlocklistInteractor {
+            override val blockedIconSlots: Flow<Set<String>> = iconBlockList.map { it.toSet() }
+        }
 
     override val contentArea = MutableStateFlow(Rect(0, 0, 1, 1))
 
