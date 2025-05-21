@@ -21,6 +21,7 @@ import android.provider.DeviceConfig
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
@@ -43,7 +44,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
-import com.android.app.tracing.coroutines.launchTraced as launch
 import kotlinx.coroutines.withTimeout
 
 /**
@@ -280,7 +280,10 @@ constructor(
     private fun runChipAppearAnimation() {
         Assert.isMainThread()
         if (hasPersistentDot) {
-            statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(true)
+            statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(
+                true,
+                source = "SystemStatusAnimSchedule#runChipAppearAnimation",
+            )
         }
         _animationState.value = AnimatingIn
 
@@ -314,7 +317,10 @@ constructor(
                             scheduledEvent.value != null -> AnimationQueued
                             else -> Idle
                         }
-                    statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(false)
+                    statusBarWindowControllerStore.defaultDisplay.setForceStatusBarVisible(
+                        false,
+                        source = "SystemStatusAnimSchedule#runChipDisappearAnimation",
+                    )
                 }
             }
         )

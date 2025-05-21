@@ -261,7 +261,7 @@ constructor(
             uidObserver.registerWithUid(currentCallNotificationInfo.uid)
             if (!currentCallNotificationInfo.statusBarSwipedAway) {
                 statusBarWindowControllerStore.defaultDisplay
-                    .setOngoingProcessRequiresStatusBarVisible(true)
+                    .setOngoingProcessRequiresStatusBarVisible(visible = true, source = TAG)
             }
             updateGestureListening()
             sendStateChangeEvent()
@@ -306,7 +306,8 @@ constructor(
 
         callNotificationInfo = null
         statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
-            false
+            visible = false,
+            source = TAG,
         )
         swipeStatusBarAwayGestureHandler.removeOnGestureDetectedCallback(TAG)
         sendStateChangeEvent()
@@ -334,7 +335,8 @@ constructor(
         logger.log(TAG, LogLevel.DEBUG, {}, { "Swipe away gesture detected" })
         callNotificationInfo = callNotificationInfo?.copy(statusBarSwipedAway = true)
         statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
-            false
+            visible = false,
+            source = TAG,
         )
         swipeStatusBarAwayGestureHandler.removeOnGestureDetectedCallback(TAG)
     }

@@ -55,6 +55,8 @@ import com.android.systemui.animation.DelegateTransitionAnimatorController;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.fragments.FragmentHostManager;
 import com.android.systemui.fragments.FragmentService;
+import com.android.systemui.log.LogBuffer;
+import com.android.systemui.log.core.LogLevel;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
@@ -85,6 +87,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     private final IWindowManager mIWindowManager;
     private final StatusBarContentInsetsProvider mContentInsetsProvider;
     private final Executor mMainExecutor;
+    private final LogBuffer mLogBuffer;
     private final int mDisplayId;
     private int mBarHeight = -1;
     private final State mCurrentState = new State();
@@ -118,6 +121,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
             FragmentService fragmentService,
             Optional<UnfoldTransitionProgressProvider> unfoldTransitionProgressProvider,
             @Main Executor mainExecutor,
+            @StatusBarWindowLog LogBuffer logBuffer,
             @Assisted int displayId) {
         mContext = context;
         mDisplayId = displayId;
@@ -126,6 +130,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
         mIWindowManager = iWindowManager;
         mContentInsetsProvider = contentInsetsProvider;
         mMainExecutor = mainExecutor;
+        mLogBuffer = logBuffer;
         mStatusBarWindowView = statusBarWindowViewInflater.inflate(context);
         mFragmentService = fragmentService;
         mLaunchAnimationContainer = mStatusBarWindowView.findViewById(
@@ -253,13 +258,15 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
                     @Override
                     public void onTransitionAnimationStart(boolean isExpandingFullyAbove) {
                         getDelegate().onTransitionAnimationStart(isExpandingFullyAbove);
-                        setLaunchAnimationRunning(true);
+                        setLaunchAnimationRunning(
+                                true, /* source= */ animationController.toString());
                     }
 
                     @Override
                     public void onTransitionAnimationEnd(boolean isExpandingFullyAbove) {
                         getDelegate().onTransitionAnimationEnd(isExpandingFullyAbove);
-                        setLaunchAnimationRunning(false);
+                        setLaunchAnimationRunning(
+                                false, /* source= */ animationController.toString());
                     }
                 });
     }
@@ -330,13 +337,31 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     }
 
     @Override
-    public void setForceStatusBarVisible(boolean forceStatusBarVisible) {
+    public void setForceStatusBarVisible(boolean forceStatusBarVisible, String source) {
+        mLogBuffer.log(
+                /* tag= */ source,
+                LogLevel.DEBUG,
+                msg -> {
+                    msg.setBool1(forceStatusBarVisible);
+                    return kotlin.Unit.INSTANCE;
+                },
+                msg -> "ForcedVisible set to " + msg.getBool1()
+        );
         mCurrentState.mForceStatusBarVisible = forceStatusBarVisible;
         apply(mCurrentState);
     }
 
     @Override
-    public void setOngoingProcessRequiresStatusBarVisible(boolean visible) {
+    public void setOngoingProcessRequiresStatusBarVisible(boolean visible, String source) {
+        mLogBuffer.log(
+                /* tag= */ source,
+                LogLevel.DEBUG,
+                msg -> {
+                    msg.setBool1(visible);
+                    return kotlin.Unit.INSTANCE;
+                },
+                msg -> "OngoingProcessRequiresVisible set to " + msg.getBool1()
+        );
         mCurrentState.mOngoingProcessRequiresStatusBarVisible = visible;
         apply(mCurrentState);
     }
@@ -346,11 +371,20 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
      * window matches its parent height so that the animation is not clipped by the normal status
      * bar height.
      */
-    private void setLaunchAnimationRunning(boolean isLaunchAnimationRunning) {
+    private void setLaunchAnimationRunning(boolean isLaunchAnimationRunning, String source) {
         if (isLaunchAnimationRunning == mCurrentState.mIsLaunchAnimationRunning) {
             return;
         }
 
+        mLogBuffer.log(
+                /* tag= */ source,
+                LogLevel.DEBUG,
+                msg -> {
+                    msg.setBool1(isLaunchAnimationRunning);
+                    return kotlin.Unit.INSTANCE;
+                },
+                msg -> "LaunchAnimRunning set to " + msg.getBool1()
+        );
         mCurrentState.mIsLaunchAnimationRunning = isLaunchAnimationRunning;
         apply(mCurrentState);
     }
@@ -408,9 +442,24 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     }
 
     private void applyForceStatusBarVisibleFlag(State state) {
+        mLogBuffer.log(
+                /* tag= */ TAG,
+                LogLevel.DEBUG,
+                msg -> {
+                    msg.setInt1(mDisplayId);
+                    msg.setBool1(state.mForceStatusBarVisible);
+                    msg.setBool2(state.mIsLaunchAnimationRunning);
+                    msg.setBool3(state.mOngoingProcessRequiresStatusBarVisible);
+                    return kotlin.Unit.INSTANCE;
+                },
+                msg ->
+                        "Status bar window state(display=" + msg.getInt1() + "). "
+                                + " ForcedVisible=" + msg.getBool1()
+                                + " LaunchAnimRunning=" + msg.getBool2()
+                                + " OngoingProcessRequiresVisible=" + msg.getBool3()
+        );
         if (state.mForceStatusBarVisible
                 || state.mIsLaunchAnimationRunning
-                // Don't force-show the status bar if the user has already dismissed it.
                 || state.mOngoingProcessRequiresStatusBarVisible) {
             mLpChanged.forciblyShownTypes |= WindowInsets.Type.statusBars();
         } else {
