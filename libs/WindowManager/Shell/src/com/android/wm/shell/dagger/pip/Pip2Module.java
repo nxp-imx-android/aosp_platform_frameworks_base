@@ -267,13 +267,15 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static PipTaskListener providePipTaskListener(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellTaskOrganizer shellTaskOrganizer,
             PipTransitionState pipTransitionState,
             PipScheduler pipScheduler,
             PipBoundsState pipBoundsState,
             PipBoundsAlgorithm pipBoundsAlgorithm,
             @ShellMainThread ShellExecutor mainExecutor) {
-        return new PipTaskListener(context, shellTaskOrganizer, pipTransitionState,
+        return new PipTaskListener(context, pipSurfaceTransactionHelper, shellTaskOrganizer,
+                pipTransitionState,
                 pipScheduler, pipBoundsState, pipBoundsAlgorithm, mainExecutor);
     }
 
