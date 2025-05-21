@@ -461,11 +461,11 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
             TypedArray windowStyle) {
         return !isOptingOutEdgeToEdgeEnforcement(info, local, windowStyle)
                 && (info.targetSdkVersion >= ENFORCE_EDGE_TO_EDGE_SDK_VERSION
-                        || (Flags.enforceEdgeToEdge() && (local
+                        || (local
                                 // Calling this doesn't require a permission.
                                 ? CompatChanges.isChangeEnabled(ENFORCE_EDGE_TO_EDGE)
                                 // Calling this requires permissions.
-                                : info.isChangeEnabled(ENFORCE_EDGE_TO_EDGE))));
+                                : info.isChangeEnabled(ENFORCE_EDGE_TO_EDGE)));
     }
 
     /**
