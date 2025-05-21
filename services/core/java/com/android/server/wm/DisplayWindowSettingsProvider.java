@@ -538,7 +538,8 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
                     "ignoreDisplayCutout", null /* defaultValue */);
             settingsEntry.mDontMoveToTop = getBooleanAttribute(parser,
                     "dontMoveToTop", null /* defaultValue */);
-
+            settingsEntry.mIsHomeSupported = getBooleanAttribute(parser,
+                    "isHomeSupported", null /* defaultValue */);
             fileData.mSettings.put(name, settingsEntry);
         }
         XmlUtils.skipCurrentTag(parser);
@@ -638,6 +639,10 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
                 if (settingsEntry.mDontMoveToTop != null) {
                     out.attributeBoolean(null, "dontMoveToTop",
                             settingsEntry.mDontMoveToTop);
+                }
+                if (settingsEntry.mIsHomeSupported != null) {
+                    out.attributeBoolean(null, "isHomeSupported",
+                            settingsEntry.mIsHomeSupported);
                 }
                 out.endTag(null, "display");
             }
