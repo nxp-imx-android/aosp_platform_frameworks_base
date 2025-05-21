@@ -3640,7 +3640,7 @@ class DesktopTasksController(
      * null and may be used to run other desktop policies, such as minimizing another task if the
      * task limit has been exceeded.
      */
-    private fun addDeskActivationChanges(
+    fun addDeskActivationChanges(
         deskId: Int,
         wct: WindowContainerTransaction,
         newTask: TaskInfo? = null,

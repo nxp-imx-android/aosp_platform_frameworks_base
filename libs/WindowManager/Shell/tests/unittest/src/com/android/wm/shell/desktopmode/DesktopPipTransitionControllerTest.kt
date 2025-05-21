@@ -82,6 +82,8 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     @Before
     fun setUp() {
         whenever(mockPipDesktopState.isDesktopWindowingPipEnabled()).thenReturn(true)
+        whenever(mockPipDesktopState.isDisplayDesktopFirst(any())).thenReturn(false)
+        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
         whenever(mockDesktopUserRepositories.getProfile(any())).thenReturn(mockDesktopRepository)
         whenever(mockDesktopRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(mockDesktopRepository.getActiveDeskId(any())).thenReturn(DESK_ID)
@@ -122,7 +124,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     @Test
     fun maybeUpdateParentInWct_inDesktop_addFreeformChangesToWct() {
         val wct = WindowContainerTransaction()
-        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
 
         controller.maybeUpdateParentInWct(wct, fullscreenParentTask.taskId)
 
@@ -146,7 +147,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     @Test
     fun maybeUpdateParentInWct_inDesktop_parentWindowingModeMatches_noWctChanges() {
         val wct = WindowContainerTransaction()
-        whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
 
         controller.maybeUpdateParentInWct(wct, freeformParentTask.taskId)
 
@@ -165,7 +165,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
-    fun maybeReparentTaskToDesk_noDeskActive_noWctChanges() {
+    fun maybeReparentTaskToDesk_noDeskActive_notDesktopFirstDisplay_noWctChanges() {
         val wct = WindowContainerTransaction()
         whenever(mockDesktopRepository.isAnyDeskActive(eq(taskInfo.displayId))).thenReturn(false)
 
@@ -182,6 +182,28 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
 
         controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
 
+        verify(mockDesktopTasksController)
+            .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
+    }
+
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @Test
+    fun maybeReparentTaskToDesk_noDeskActive_desktopFirstDisplay_addDeskActivationChanges() {
+        val wct = WindowContainerTransaction()
+        whenever(mockDesktopRepository.getActiveDeskId(any())).thenReturn(null)
+        whenever(mockDesktopRepository.isAnyDeskActive(eq(taskInfo.displayId))).thenReturn(false)
+        whenever(mockPipDesktopState.isDisplayDesktopFirst(any())).thenReturn(true)
+        whenever(mockDesktopRepository.getDefaultDeskId(any())).thenReturn(DESK_ID)
+
+        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+
+        verify(mockDesktopTasksController)
+            .addDeskActivationChanges(
+                deskId = DESK_ID,
+                wct = wct,
+                newTask = taskInfo,
+                displayId = taskInfo.displayId,
+            )
         verify(mockDesktopTasksController)
             .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
     }
