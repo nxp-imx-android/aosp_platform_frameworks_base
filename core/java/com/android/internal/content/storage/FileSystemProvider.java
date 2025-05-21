@@ -47,6 +47,7 @@ import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.content.storage.flags.Flags;
 import com.android.internal.util.ArrayUtils;
 
 import libcore.io.IoUtils;
@@ -62,7 +63,7 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
- import java.util.ArrayDeque;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,9 +86,11 @@ public abstract class FileSystemProvider extends DocumentsProvider {
             DocumentsContract.QUERY_ARG_DISPLAY_NAME,
             DocumentsContract.QUERY_ARG_FILE_SIZE_OVER,
             DocumentsContract.QUERY_ARG_LAST_MODIFIED_AFTER,
-            DocumentsContract.QUERY_ARG_MIME_TYPES);
+            DocumentsContract.QUERY_ARG_MIME_TYPES,
+            ContentResolver.QUERY_ARG_LIMIT);
 
-    private static final int MAX_RESULTS_NUMBER = 23;
+    private static final int DEFAULT_SEARCH_RESULT_LIMIT = 23;
+    private static final int MAX_SEARCH_RESULT_LIMIT = 1000;
 
     private static String joinNewline(String... args) {
         return TextUtils.join("\n", args);
@@ -431,10 +434,10 @@ public abstract class FileSystemProvider extends DocumentsProvider {
     /**
      * Searches documents under the given folder.
      *
-     * To avoid runtime explosion only returns the at most 23 items.
+     * To avoid runtime explosion only returns the at most 23 items unless the caller
+     * (DocumentsUI) explicitly asks for up to MAX_SEARCH_RESULT_LIMIT using a non-negative limit.
      *
      * @param folder the root folder where recursive search begins
-     * @param query the search condition used to match file names
      * @param projection projection of the returned cursor
      * @param exclusion absolute file paths to exclude from result
      * @param queryArgs the query arguments for search
@@ -450,11 +453,22 @@ public abstract class FileSystemProvider extends DocumentsProvider {
             Set<String> exclusion, Bundle queryArgs) throws FileNotFoundException {
         final MatrixCursor result = new MatrixCursor(resolveProjection(projection));
 
+        int maxResults = DEFAULT_SEARCH_RESULT_LIMIT;
+        if (Flags.useFileSystemProviderSearchLimits()) {
+            maxResults = queryArgs.getInt(ContentResolver.QUERY_ARG_LIMIT,
+                    DEFAULT_SEARCH_RESULT_LIMIT);
+            if (maxResults > MAX_SEARCH_RESULT_LIMIT) {
+                maxResults = MAX_SEARCH_RESULT_LIMIT;
+            } else if (maxResults < 0) {
+                maxResults = DEFAULT_SEARCH_RESULT_LIMIT;
+            }
+        }
+
         // We'll be a running a BFS here.
         final Queue<File> pending = new ArrayDeque<>();
         pending.offer(folder);
 
-        while (!pending.isEmpty() && result.getCount() < MAX_RESULTS_NUMBER) {
+        while (!pending.isEmpty() && result.getCount() < maxResults) {
             final File file = pending.poll();
 
             // Skip hidden documents (both files and directories)

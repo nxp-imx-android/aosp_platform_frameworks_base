@@ -1138,8 +1138,9 @@ public final class DocumentsContract {
      * {@link DocumentsContract#QUERY_ARG_EXCLUDE_MEDIA},
      * {@link DocumentsContract#QUERY_ARG_DISPLAY_NAME},
      * {@link DocumentsContract#QUERY_ARG_MIME_TYPES},
-     * {@link DocumentsContract#QUERY_ARG_FILE_SIZE_OVER} and
-     * {@link DocumentsContract#QUERY_ARG_LAST_MODIFIED_AFTER}.
+     * {@link DocumentsContract#QUERY_ARG_FILE_SIZE_OVER},
+     * {@link DocumentsContract#QUERY_ARG_LAST_MODIFIED_AFTER} and
+     * {@link ContentResolver#QUERY_ARG_LIMIT}.
      *
      * @param queryArgs the query arguments to be parsed.
      * @return the handled query arguments
@@ -1170,6 +1171,10 @@ public final class DocumentsContract {
 
         if (queryArgs.keySet().contains(QUERY_ARG_MIME_TYPES)) {
             args.add(QUERY_ARG_MIME_TYPES);
+        }
+
+        if (queryArgs.keySet().contains(ContentResolver.QUERY_ARG_LIMIT)) {
+            args.add(ContentResolver.QUERY_ARG_LIMIT);
         }
         return args.toArray(new String[0]);
     }

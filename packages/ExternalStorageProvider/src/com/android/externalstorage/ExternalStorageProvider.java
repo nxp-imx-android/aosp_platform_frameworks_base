@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import android.app.usage.StorageStatsManager;
 import android.content.AttributionSource;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.UriPermission;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -135,8 +136,8 @@ public class ExternalStorageProvider extends FileSystemProvider {
     public boolean onCreate() {
         super.onCreate(DEFAULT_DOCUMENT_PROJECTION);
 
-        mStorageManager = getContext().getSystemService(StorageManager.class);
-        mUserManager = getContext().getSystemService(UserManager.class);
+        mStorageManager = (StorageManager) getContext().getSystemService(Context.STORAGE_SERVICE);
+        mUserManager = (UserManager) getContext().getSystemService(Context.USER_SERVICE);
 
         updateVolumes();
 
