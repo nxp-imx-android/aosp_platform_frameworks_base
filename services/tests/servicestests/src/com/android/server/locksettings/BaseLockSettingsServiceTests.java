@@ -253,7 +253,14 @@ public abstract class BaseLockSettingsServiceTests {
                 .thenReturn(true);
         when(res.getBoolean(eq(com.android.internal.R.bool.config_repairModeSupported)))
                 .thenReturn(true);
+        when(res.getBoolean(
+                        eq(com.android.internal.R.bool.config_softwareLskfRateLimiterEnforcing)))
+                .thenReturn(isSoftwareLskfRateLimiterEnforcing());
         return res;
+    }
+
+    protected boolean isSoftwareLskfRateLimiterEnforcing() {
+        return true;
     }
 
     protected void setDeviceProvisioned(boolean provisioned) {

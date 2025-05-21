@@ -171,6 +171,7 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -277,6 +278,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     private final SynchronizedStrongAuthTracker mStrongAuthTracker;
     private final BiometricDeferredQueue mBiometricDeferredQueue;
     private final LongSparseArray<byte[]> mGatekeeperPasswords;
+    private final SoftwareRateLimiter mSoftwareRateLimiter;
 
     private final NotificationManager mNotificationManager;
     protected final UserManager mUserManager;
@@ -659,6 +661,34 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
+    private class SoftwareRateLimiterInjector implements SoftwareRateLimiter.Injector {
+
+        @Override
+        public int readWrongGuessCounter(LskfIdentifier id) {
+            return mSpManager.readWrongGuessCounter(id);
+        }
+
+        @Override
+        public void writeWrongGuessCounter(LskfIdentifier id, int count) {
+            mSpManager.writeWrongGuessCounter(id, count);
+        }
+
+        @Override
+        public Duration getTimeSinceBoot() {
+            return Duration.ofMillis(SystemClock.elapsedRealtime());
+        }
+
+        @Override
+        public void removeCallbacksAndMessages(Object token) {
+            Handler.getMain().removeCallbacksAndMessages(token);
+        }
+
+        @Override
+        public void postDelayed(Runnable runnable, Object token, long delayMillis) {
+            Handler.getMain().postDelayed(runnable, token, delayMillis);
+        }
+    }
+
     public LockSettingsService(Context context) {
         this(new Injector(context));
     }
@@ -673,6 +703,14 @@ public class LockSettingsService extends ILockSettings.Stub {
         mHandler = injector.getHandler(injector.getServiceThread());
         mStrongAuth = injector.getStrongAuth();
         mActivityManager = injector.getActivityManager();
+
+        boolean enforcing =
+                mContext.getResources()
+                        .getBoolean(
+                                com.android.internal.R.bool
+                                        .config_softwareLskfRateLimiterEnforcing);
+        mSoftwareRateLimiter =
+                new SoftwareRateLimiter(new SoftwareRateLimiterInjector(), enforcing);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_STARTING);
@@ -2403,6 +2441,24 @@ public class LockSettingsService extends ILockSettings.Stub {
         VerifyCredentialResponse response;
 
         synchronized (mSpManager) {
+            final long protectorId =
+                    isSpecialUserId(userId)
+                            ? SyntheticPasswordManager.NULL_PROTECTOR_ID
+                            : getCurrentLskfBasedProtectorId(userId);
+            final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+            if (android.security.Flags.softwareRatelimiter()) {
+                SoftwareRateLimiterResult res = mSoftwareRateLimiter.apply(lskfId, credential);
+                switch (res.code) {
+                    case SoftwareRateLimiterResult.CONTINUE_TO_HARDWARE:
+                        break;
+                    case SoftwareRateLimiterResult.RATE_LIMITED:
+                        return VerifyCredentialResponse.fromTimeout(res.remainingDelay);
+                    case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
+                    case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
+                    default:
+                        return VerifyCredentialResponse.fromError();
+                }
+            }
             if (isSpecialUserId(userId)) {
                 response = mSpManager.verifySpecialUserCredential(userId, getGateKeeperService(),
                         credential, progressCallback);
@@ -2410,13 +2466,11 @@ public class LockSettingsService extends ILockSettings.Stub {
                         && userId == USER_FRP) {
                     mStorage.deactivateFactoryResetProtectionWithoutSecret();
                 }
-                return response;
+                return reportResultToSoftwareRateLimiter(response, lskfId, credential);
             }
-
-            long protectorId = getCurrentLskfBasedProtectorId(userId);
             authResult = mSpManager.unlockLskfBasedProtector(
                     getGateKeeperService(), protectorId, credential, userId, progressCallback);
-            response = authResult.gkResponse;
+            response = reportResultToSoftwareRateLimiter(authResult.gkResponse, lskfId, credential);
 
             if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
                 if ((flags & VERIFY_FLAG_WRITE_REPAIR_MODE_PW) != 0) {
@@ -2449,6 +2503,35 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
         final boolean success = response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK;
         notifyLockSettingsStateListeners(success, userId);
+        return response;
+    }
+
+    /**
+     * Reports the result of the real credential check to the software rate-limiter, if enabled.
+     * Returns either the same {@link VerifyCredentialResponse}, or a modified {@link
+     * VerifyCredentialResponse} with a larger timeout.
+     */
+    private VerifyCredentialResponse reportResultToSoftwareRateLimiter(
+            VerifyCredentialResponse response,
+            LskfIdentifier lskfId,
+            LockscreenCredential credential) {
+        if (android.security.Flags.softwareRatelimiter()) {
+            if (response.isMatched()) {
+                mSoftwareRateLimiter.reportSuccess(lskfId);
+            } else {
+                // TODO(b/395976735): don't count transient failures
+                Duration swTimeout = mSoftwareRateLimiter.reportWrongGuess(lskfId, credential);
+
+                // The software rate-limiter may use longer delays than the hardware one. While the
+                // long-term solution is to update the hardware rate-limiter to match, for now this
+                // case needs to be handled by reporting the maximum of the two delays so that the
+                // lock screen doesn't allow another attempt until both rate-limiters allow it.
+                Duration hwTimeout = response.getTimeoutAsDuration();
+                if (swTimeout.compareTo(hwTimeout) > 0) {
+                    response = VerifyCredentialResponse.fromTimeout(swTimeout);
+                }
+            }
+        }
         return response;
     }
 
@@ -2607,6 +2690,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         removeBiometricsForUser(userId);
         mSpManager.removeUser(getGateKeeperService(), userId);
         mStrongAuth.removeUser(userId);
+
+        if (android.security.Flags.softwareRatelimiter()) {
+            mSoftwareRateLimiter.clearUserState(userId);
+        }
 
         AndroidKeyStoreMaintenance.onUserRemoved(userId);
         mUnifiedProfilePasswordCache.removePassword(userId);
@@ -3130,6 +3217,9 @@ public class LockSettingsService extends ILockSettings.Stub {
                 entry.getValue().zeroize();
             }
         }
+        if (android.security.Flags.softwareRatelimiter()) {
+            mSoftwareRateLimiter.clearLskfState(new LskfIdentifier(userId, oldProtectorId));
+        }
         mSpManager.destroyLskfBasedProtector(oldProtectorId, userId);
         Slogf.i(TAG, "Successfully changed lockscreen credential of user %d", userId);
         return newProtectorId;
@@ -3507,6 +3597,14 @@ public class LockSettingsService extends ILockSettings.Stub {
         mRebootEscrowManager.dump(pw);
         pw.println();
         pw.decreaseIndent();
+
+        if (android.security.Flags.softwareRatelimiter()) {
+            pw.println("SoftwareRateLimiter:");
+            pw.increaseIndent();
+            mSoftwareRateLimiter.dump(pw);
+            pw.println();
+            pw.decreaseIndent();
+        }
 
         pw.println("PasswordHandleCount: " + mGatekeeperPasswords.size());
         synchronized (mUserCreationAndRemovalLock) {

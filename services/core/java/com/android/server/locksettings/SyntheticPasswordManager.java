@@ -122,8 +122,11 @@ import java.util.Set;
  *                            overwritten and deleted as a "best-effort" attempt to support secure
  *                            deletion when hardware support for secure deletion is unavailable.
  *                            Doesn't exist for LSKF-based protectors that use Weaver.
- *       WEAVER_SLOT: Contains the Weaver slot number used by this protector.  Only exists if the
- *                    protector uses Weaver.
+ *       WEAVER_SLOT_NAME: Contains the Weaver slot number used by this protector.  Only exists if
+ *                         the protector uses Weaver.
+ *       WRONG_GUESS_COUNTER_NAME: Contains the wrong guess counter for the software rate-limiter.
+ *                                 Only exists for LSKF-based protectors.  Does not affect the
+ *                                 hardware rate-limiter which operates concurrently.
  */
 class SyntheticPasswordManager {
     private static final String SP_BLOB_NAME = "spblob";
@@ -136,6 +139,8 @@ class SyntheticPasswordManager {
     private static final String WEAVER_SLOT_NAME = "weaver";
     private static final String PASSWORD_METRICS_NAME = "metrics";
     private static final String VENDOR_AUTH_SECRET_NAME = "vendor_auth_secret";
+    @VisibleForTesting static final String WRONG_GUESS_COUNTER_NAME = "wrong_guess_counter";
+    @VisibleForTesting static final int WRONG_GUESS_COUNTER_FILE_SIZE = 2 * Integer.BYTES;
 
     // used for files associated with the SP itself, not with a particular protector
     public static final long NULL_PROTECTOR_ID = 0L;
@@ -2091,5 +2096,53 @@ class SyntheticPasswordManager {
         } finally {
             ArrayUtils.zeroize(key);
         }
+    }
+
+    private static int hashInt(int n) {
+        // A simple and fast multiplicative hash that tries to evenly distribute the bits from the
+        // integer.
+        return (int) (n * 0x1E35A7BD);
+    }
+
+    /** Reads a wrong guess counter. */
+    public int readWrongGuessCounter(LskfIdentifier id) {
+        byte[] bytes = loadState(WRONG_GUESS_COUNTER_NAME, id.protectorId, id.userId);
+        if (bytes == null || bytes.length != WRONG_GUESS_COUNTER_FILE_SIZE) {
+            // For a new protector, the counter is initially zero. Handle that by just returning
+            // zero when the counter file does not exist. Of course, attackers who can delete the
+            // file can reset the counter, but that is out of scope of the threat model of the
+            // software rate-limiter. The hardware rate-limiter provides a higher security level.
+            return 0;
+        }
+        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+        buffer.put(bytes, 0, bytes.length);
+        buffer.flip();
+        int counter = buffer.getInt();
+        int hash = buffer.getInt();
+        if (hash != hashInt(counter)) {
+            Slogf.e(
+                    TAG,
+                    "%s file is corrupted! counter=%d, hash=0x%x",
+                    WRONG_GUESS_COUNTER_NAME,
+                    counter,
+                    hash);
+            // Gracefully recover from a corrupted counter file by returning zero. This means that
+            // attackers who can corrupt the counter file can reset the counter to zero, but that is
+            // out of scope of the threat model of the software rate-limiter.
+            return 0;
+        }
+        return counter;
+    }
+
+    /** Synchronously writes a wrong guess counter. */
+    public void writeWrongGuessCounter(LskfIdentifier id, int count) {
+        ByteBuffer buffer = ByteBuffer.allocate(WRONG_GUESS_COUNTER_FILE_SIZE);
+        buffer.putInt(count);
+        // Add redundancy by also storing a hash of the counter. This makes it possible to
+        // gracefully recover from file corruption such as bitflips, which otherwise could cause a
+        // device lockout by making it seem like a lot of guesses have been made.
+        buffer.putInt(hashInt(count));
+        saveState(WRONG_GUESS_COUNTER_NAME, buffer.array(), id.protectorId, id.userId);
+        syncState(id.userId);
     }
 }
