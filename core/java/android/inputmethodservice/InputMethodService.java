@@ -58,7 +58,6 @@ import static android.view.inputmethod.Flags.FLAG_CONNECTIONLESS_HANDWRITING;
 import static android.view.inputmethod.Flags.FLAG_IME_SWITCHER_REVAMP_API;
 import static android.view.inputmethod.Flags.FLAG_VERIFY_KEY_EVENT;
 import static android.view.inputmethod.Flags.ctrlShiftShortcut;
-import static android.view.inputmethod.Flags.predictiveBackIme;
 
 import android.annotation.AnyThread;
 import android.annotation.CallSuper;
@@ -3256,11 +3255,11 @@ public class InputMethodService extends AbstractInputMethodService {
             return;
         }
         if (mWindow != null) {
-            if (getApplicationInfo().isOnBackInvokedCallbackEnabled() && predictiveBackIme()) {
+            if (getApplicationInfo().isOnBackInvokedCallbackEnabled()) {
                 // Register the compat callback as system-callback if IME has opted in for
-                // predictive back (and predictiveBackIme feature flag is enabled). This indicates
-                // to the receiving process (application process) that a predictive IME dismiss
-                // animation may be played instead of invoking the callback.
+                // predictive back. This indicates to the receiving process (application process)
+                // that a predictive IME dismiss animation may be played instead of invoking the
+                // callback.
                 mWindow.getOnBackInvokedDispatcher().registerSystemOnBackInvokedCallback(
                         mCompatBackCallback);
             } else {

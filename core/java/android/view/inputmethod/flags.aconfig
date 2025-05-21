@@ -110,14 +110,6 @@ flag {
 }
 
 flag {
-    name: "predictive_back_ime"
-    namespace: "input_method"
-    description: "Predictive back animation for IMEs"
-    bug: "322836622"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "ctrl_shift_shortcut"
     namespace: "input_method"
     description: "Ctrl+Shift shortcut to switch IMEs"
