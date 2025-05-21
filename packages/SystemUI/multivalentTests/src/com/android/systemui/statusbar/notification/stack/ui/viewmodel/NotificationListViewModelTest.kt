@@ -211,6 +211,24 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
+    fun shouldShowEmptyShadeView_notAnimatingWhenQsExpandedOnKeyguard() =
+        testScope.runTest {
+            val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView)
+
+            // WHEN has no notifs
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+            // AND quick settings are expanded
+            shadeTestUtil.setQsFullscreen(true)
+            // AND we are on the keyguard
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.KEYGUARD)
+            shadeTestUtil.setShadeExpansion(1f)
+            runCurrent()
+
+            // THEN empty shade visibility does not animate
+            assertThat(shouldShow?.isAnimating).isFalse()
+        }
+
+    @Test
     fun shouldShowEmptyShadeView_trueWhenLockedShade() =
         testScope.runTest {
             val shouldShowEmptyShadeView by
