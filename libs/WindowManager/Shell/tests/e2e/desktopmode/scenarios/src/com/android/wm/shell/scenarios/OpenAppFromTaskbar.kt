@@ -36,7 +36,7 @@ open class OpenAppFromTaskbar() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val browserApp = BrowserAppHelper(instrumentation)
+    val browserApp = BrowserAppHelper(instrumentation)
 
     @Before
     fun setup() {
@@ -59,6 +59,4 @@ open class OpenAppFromTaskbar() : TestScenarioBase() {
         browserApp.exit(wmHelper)
         testApp.exit(wmHelper)
     }
-
-    fun getOpenedApp() = browserApp
 }
