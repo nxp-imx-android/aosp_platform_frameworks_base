@@ -38,11 +38,14 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.DismissAction
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -232,6 +235,22 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             underTest.onUiDestroyed()
 
             assertThat(dismissAction).isEqualTo(DismissAction.None)
+        }
+
+    @Test
+    fun navigateBack_hidesBouncerOverlay() =
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            // Show bouncer
+            sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+            runCurrent()
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+
+            // Navigate back
+            underTest.navigateBack()
+            runCurrent()
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
         }
 
     private fun authMethodsToTest(): List<AuthenticationMethodModel> {

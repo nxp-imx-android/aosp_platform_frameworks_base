@@ -41,6 +41,8 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInte
 import com.android.systemui.keyguard.domain.interactor.KeyguardMediaKeyInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -71,6 +73,7 @@ constructor(
     private val keyguardMediaKeyInteractor: KeyguardMediaKeyInteractor,
     private val bouncerActionButtonInteractor: BouncerActionButtonInteractor,
     private val keyguardDismissActionInteractor: KeyguardDismissActionInteractor,
+    private val sceneInteractor: SceneInteractor,
 ) : ExclusiveActivatable() {
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
@@ -133,6 +136,12 @@ constructor(
      * much width as possible.
      */
     val isOneHandedModeSupported: StateFlow<Boolean> = _isOneHandedModeSupported.asStateFlow()
+
+    /**
+     * Whether to show a "back" button on bouncer. This is enabled for large screen interaction as
+     * these typically don't rely on touch gestures to go back.
+     */
+    val showBackButton = bouncerInteractor.isImproveLargeScreenInteractionEnabled
 
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
@@ -458,6 +467,10 @@ constructor(
      */
     fun onUiDestroyed() {
         keyguardDismissActionInteractor.clearDismissAction()
+    }
+
+    fun navigateBack() {
+        sceneInteractor.hideOverlay(Overlays.Bouncer, "back button clicked")
     }
 
     data class DialogViewModel(
