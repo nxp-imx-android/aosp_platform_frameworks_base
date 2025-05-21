@@ -21,7 +21,6 @@ import android.platform.test.annotations.Postsubmit
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
-import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -64,7 +63,7 @@ open class StartAppMediaProjectionFromSplitScreen {
 
     @Before
     fun setup() {
-        RemoveAllTasksButHomeRule.removeAllTasksButHome()
+        tapl.workspace.switchToOverview().dismissAllTasks()
 
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(initialRotation.value)

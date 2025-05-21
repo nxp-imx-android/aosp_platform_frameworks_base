@@ -19,7 +19,6 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.tools.NavBar
 import android.tools.Rotation
-import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -52,7 +51,10 @@ abstract class EnterDesktopViaStaticDesktopOverviewTask : TestScenarioBase() {
     fun setup() {
         Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
         // Clear all tasks
-        RemoveAllTasksButHomeRule.removeAllTasksButHome()
+        val overview = tapl.goHome().switchToOverview()
+        if (overview.hasTasks()) {
+            overview.dismissAllTasks()
+        }
         desktopApp.enterDesktopMode(wmHelper, device)
         tapl.goHome().switchToOverview()
     }
