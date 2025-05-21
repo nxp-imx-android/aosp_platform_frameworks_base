@@ -1446,8 +1446,7 @@ public abstract class WallpaperService extends Service {
                             mIsCreating = true;
                             didSurface = true;
                             mReportedSurfaceCreated = true;
-                            if (DEBUG) Log.v(TAG, "onSurfaceCreated("
-                                    + mSurfaceHolder + "): " + this);
+                            Log.d(TAG, "onSurfaceCreated(" + mSurfaceHolder + "): " + this);
                             Trace.beginSection("WPMS.Engine.onSurfaceCreated");
                             onSurfaceCreated(mSurfaceHolder);
                             Trace.endSection();
@@ -1471,7 +1470,7 @@ public abstract class WallpaperService extends Service {
                                         + " formatChanged=" + formatChanged
                                         + " sizeChanged=" + sizeChanged, e);
                             }
-                            if (DEBUG) Log.v(TAG, "onSurfaceChanged("
+                            Log.d(TAG, "onSurfaceChanged("
                                     + mSurfaceHolder + ", " + mFormat
                                     + ", " + mCurWidth + ", " + mCurHeight
                                     + "): " + this);
@@ -1502,6 +1501,7 @@ public abstract class WallpaperService extends Service {
                         }
 
                         if (redrawNeeded || sizeChanged) {
+                            Log.d(TAG, "onSurfaceRedrawNeeded(" + mSurfaceHolder + "): " + this);
                             Trace.beginSection("WPMS.Engine.onSurfaceRedrawNeeded");
                             onSurfaceRedrawNeeded(mSurfaceHolder);
                             Trace.endSection();
@@ -1737,9 +1737,7 @@ public abstract class WallpaperService extends Service {
                 }
                 if (mReportedVisible != visible) {
                     mReportedVisible = visible;
-                    if (DEBUG) {
-                        Log.v(TAG, "onVisibilityChanged(" + visible + "): " + this);
-                    }
+                    Log.d(TAG, "onVisibilityChanged(" + visible + "): " + this);
                     if (visible) {
                         // If becoming visible, in preview mode the surface
                         // may have been destroyed so now we need to make
