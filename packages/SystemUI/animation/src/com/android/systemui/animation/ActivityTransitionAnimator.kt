@@ -547,6 +547,27 @@ constructor(
      * Same as [startIntentWithAnimation] but allows [intentStarter] to throw a
      * [PendingIntent.CanceledException] which must then be handled by the caller. This is useful
      * for Java caller starting a [PendingIntent].
+     */
+    @Throws(PendingIntent.CanceledException::class)
+    @JvmOverloads
+    fun startPendingIntentWithAnimation(
+        controller: Controller?,
+        scope: CoroutineScope,
+        animate: Boolean = true,
+        animateReturn: Boolean = false,
+        showOverLockscreen: Boolean = false,
+        intentStarter: PendingIntentStarter,
+    ) {
+        assertShellMigration()
+        startIntentWithAnimation(controller, scope, animate, animateReturn, showOverLockscreen) {
+            intentStarter.startPendingIntent(it)
+        }
+    }
+
+    /**
+     * Same as [startIntentWithAnimation] but allows [intentStarter] to throw a
+     * [PendingIntent.CanceledException] which must then be handled by the caller. This is useful
+     * for Java caller starting a [PendingIntent].
      *
      * If possible, you should pass the [packageName] of the intent that will be started so that
      * trampoline activity launches will also be animated.
@@ -558,7 +579,7 @@ constructor(
         animate: Boolean = true,
         packageName: String? = null,
         showOverLockscreen: Boolean = false,
-        intentStarter: PendingIntentStarter,
+        intentStarter: LegacyPendingIntentStarter,
     ) {
         startIntentWithAnimation(controller, animate, packageName, showOverLockscreen) {
             intentStarter.startPendingIntent(it)
@@ -792,6 +813,12 @@ constructor(
     }
 
     interface PendingIntentStarter {
+        /** Start a pending intent using the provided [transition] and return the launch result. */
+        @Throws(PendingIntent.CanceledException::class)
+        fun startPendingIntent(transition: RemoteTransition?): Int
+    }
+
+    interface LegacyPendingIntentStarter {
         /**
          * Start a pending intent using the provided [animationAdapter] and return the launch
          * result.
