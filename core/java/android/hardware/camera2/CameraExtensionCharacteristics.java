@@ -464,7 +464,7 @@ public final class CameraExtensionCharacteristics {
             // Check if user enabled fallback impl
             ContentResolver resolver = ctx.getContentResolver();
             int userEnabled = Settings.Secure.getInt(resolver,
-                    Settings.Secure.CAMERA_EXTENSIONS_FALLBACK, 1);
+                    Settings.Secure.CAMERA_EXTENSIONS_FALLBACK, 0);
 
             boolean vendorImpl = true;
             if (ret && (mConnectionManager.getProxy(extension) != null) && (userEnabled == 1)) {
