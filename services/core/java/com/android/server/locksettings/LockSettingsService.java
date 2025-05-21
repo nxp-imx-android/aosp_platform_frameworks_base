@@ -1931,18 +1931,22 @@ public class LockSettingsService extends ILockSettings.Stub {
     /**
      * Set a new LSKF for the given user/profile. Only succeeds if the synthetic password for the
      * user is protected by the given {@param savedCredential}.
-     * <p>
-     * When setting a new credential where there was none, updates the strong auth state for
+     *
+     * <p>When setting a new credential where there was none, updates the strong auth state for
      * {@param userId} to <tt>STRONG_AUTH_NOT_REQUIRED</tt>.
      *
      * @param savedCredential if the user is a profile with unified challenge and savedCredential is
-     *     empty, LSS will try to re-derive the profile password internally.
-     *     TODO (b/80170828): Fix this so profile password is always passed in.
+     *     empty, LSS will try to re-derive the profile password internally. TODO (b/80170828): Fix
+     *     this so profile password is always passed in.
      * @param isLockTiedToParent is {@code true} if {@code userId} is a profile and its new
      *     credentials are being tied to its parent's credentials.
+     * @return {@code false} if verification of savedCredential failed
      */
-    private boolean setLockCredentialInternal(LockscreenCredential credential,
-            LockscreenCredential savedCredential, int userId, boolean isLockTiedToParent) {
+    private boolean setLockCredentialInternal(
+            LockscreenCredential credential,
+            LockscreenCredential savedCredential,
+            int userId,
+            boolean isLockTiedToParent) {
         Objects.requireNonNull(credential);
         Objects.requireNonNull(savedCredential);
         synchronized (mSpManager) {
@@ -1967,17 +1971,13 @@ public class LockSettingsService extends ILockSettings.Stub {
             SyntheticPassword sp = authResult.syntheticPassword;
 
             if (sp == null) {
-                if (response == null
-                        || response.getResponseCode() == VerifyCredentialResponse.RESPONSE_ERROR) {
-                    Slog.w(TAG, "Failed to enroll: incorrect credential.");
-                    return false;
-                }
-                if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
+                if (response != null
+                        && response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
                     Slog.w(TAG, "Failed to enroll: rate limit exceeded.");
-                    return false;
+                } else {
+                    Slog.w(TAG, "Failed to enroll: incorrect credential.");
                 }
-                // Should not be reachable, but just in case.
-                throw new IllegalStateException("password change failed");
+                return false;
             }
 
             onSyntheticPasswordUnlocked(userId, sp);
