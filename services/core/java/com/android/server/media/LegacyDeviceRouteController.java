@@ -40,9 +40,7 @@ import android.os.UserHandle;
 import android.util.Slog;
 
 import com.android.internal.R;
-import com.android.media.flags.Flags;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -135,9 +133,7 @@ import java.util.Objects;
 
     @Override
     public synchronized List<MediaRoute2Info> getAvailableRoutes() {
-        return Flags.enableFixForEmptySystemRoutesCrash()
-                ? List.of(mDeviceRoute)
-                : Collections.emptyList();
+        return List.of(mDeviceRoute);
     }
 
     @Override
