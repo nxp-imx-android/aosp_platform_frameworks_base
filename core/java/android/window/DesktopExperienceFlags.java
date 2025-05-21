@@ -202,7 +202,7 @@ public enum DesktopExperienceFlags {
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
             true, Flags.FLAG_ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS),
     FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
-            Flags::forceCloseTopTransparentFullscreenTask, false,
+            Flags::forceCloseTopTransparentFullscreenTask, true,
             Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK),
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
