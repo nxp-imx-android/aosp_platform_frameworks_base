@@ -149,6 +149,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
 
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
+        observer.onTransitionStarting(token);
         notifyTransactionCommitted(st);
         assertTrue(observer.hasPendingRemoval());
         observer.requestRemoval(taskId, removalInfo);
@@ -159,7 +160,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         observer.requestRemoval(taskId, removalInfo);
         observer.onTransitionReady(token, info, st, st);
         assertTrue(observer.hasPendingRemoval());
-        notifyTransactionCommitted(st);
+        observer.onTransitionStarting(token);
         assertFalse(observer.hasPendingRemoval());
 
         // Received second transition with FLAG_IS_BEHIND_STARTING_WINDOW
@@ -170,21 +171,28 @@ public class StartingWindowControllerTests extends ShellTestCase {
                 .addChange(TRANSIT_OPEN, FLAG_IS_BEHIND_STARTING_WINDOW).build();
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
+        observer.onTransitionStarting(token);
         notifyTransactionCommitted(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
-        notifyTransactionCommitted(st);
+        observer.onTransitionMerged(secondToken, token);
         assertTrue(observer.hasPendingRemoval());
+        // received removalInfo before transaction committed
         observer.requestRemoval(taskId, removalInfo);
+        assertTrue(observer.hasPendingRemoval());
+        notifyTransactionCommitted(st);
         assertFalse(observer.hasPendingRemoval());
 
         st.clear();
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
+        observer.onTransitionStarting(token);
         notifyTransactionCommitted(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
-        observer.requestRemoval(taskId, removalInfo);
-        assertTrue(observer.hasPendingRemoval());
+        observer.onTransitionMerged(secondToken, token);
+        // received transaction committed before removalInfo
         notifyTransactionCommitted(st);
+        assertTrue(observer.hasPendingRemoval());
+        observer.requestRemoval(taskId, removalInfo);
         assertFalse(observer.hasPendingRemoval());
     }
 
