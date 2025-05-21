@@ -326,3 +326,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_device_suggestions_preference"
+    namespace: "media_better_together"
+    description: "Add a preference for device suggestions in the media settings page"
+    bug: "415096359"
+}
