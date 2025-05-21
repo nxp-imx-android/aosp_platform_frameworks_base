@@ -822,10 +822,18 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                 }
             }
             // Update windowing mode if necessary, e.g. launch into a different windowing mode.
-            if (windowingMode != WINDOWING_MODE_UNDEFINED && candidateTask.isRootTask()
+            if (windowingMode != WINDOWING_MODE_UNDEFINED
                     && candidateTask.getWindowingMode() != windowingMode) {
                 candidateTask.mTransitionController.collect(candidateTask);
-                candidateTask.setRootTaskWindowingMode(windowingMode);
+                // We only explicitly change the windowing mode if it's a root task.
+                // If it's not a root task, we don't do anything. But, if the desired windowing
+                // mode is the same as its parent's, then we will set it undefined so it inherits.
+                if (candidateTask.isRootTask()) {
+                    candidateTask.setRootTaskWindowingMode(windowingMode);
+                } else if (candidateTask.getParent() != null
+                        && windowingMode == candidateTask.getParent().getWindowingMode()) {
+                    candidateTask.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+                }
             }
             return candidateTask.getRootTask();
         }
