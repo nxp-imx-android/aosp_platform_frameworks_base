@@ -36,8 +36,6 @@ import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
 import static com.android.server.wm.ActivityStarter.Request;
-import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
-import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.LaunchParamsUtil.getPreferredLaunchTaskDisplayArea;
 
 import android.annotation.NonNull;
@@ -48,10 +46,11 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.util.Size;
-import android.util.Slog;
 import android.view.Gravity;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLog;
+import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 
@@ -62,9 +61,6 @@ import java.util.List;
  * The class that defines the default launch params for tasks.
  */
 class TaskLaunchParamsModifier implements LaunchParamsModifier {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "TaskLaunchParamsModifier" : TAG_ATM;
-    private static final boolean DEBUG = false;
-
     // Allowance of size matching.
     private static final int EPSILON = 2;
 
@@ -99,7 +95,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             @Nullable ActivityRecord activity, @Nullable ActivityRecord source,
             @Nullable ActivityOptions options, @Nullable Request request, @Phase int phase,
             LaunchParams currentParams, LaunchParams outParams) {
-        initLogBuilder(task, activity);
+        initLogBuilder(phase, task, activity);
         final int result = calculate(task, layout, activity, source, options, request, phase,
                 currentParams, outParams);
         outputLog();
@@ -134,11 +130,9 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 task, options, source, currentParams, activity, request, this::appendLog);
         outParams.mPreferredTaskDisplayArea = suggestedDisplayArea;
         final DisplayContent display = suggestedDisplayArea.mDisplayContent;
-        if (DEBUG) {
-            appendLog("display-id=" + display.getDisplayId()
-                    + " task-display-area-windowing-mode=" + suggestedDisplayArea.getWindowingMode()
-                    + " suggested-display-area=" + suggestedDisplayArea);
-        }
+        appendLog("display-id=" + display.getDisplayId()
+                + " task-display-area-windowing-mode=" + suggestedDisplayArea.getWindowingMode()
+                + " suggested-display-area=" + suggestedDisplayArea);
 
         if (phase == PHASE_DISPLAY) {
             return RESULT_CONTINUE;
@@ -160,10 +154,8 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             // to fullscreen and its task is pinned windowing mode when the activity is entering
             // pip.
             launchMode = source.getTask().getWindowingMode();
-            if (DEBUG) {
-                appendLog("inherit-from-source="
-                        + WindowConfiguration.windowingModeToString(launchMode));
-            }
+            appendLog("inherit-from-source="
+                    + WindowConfiguration.windowingModeToString(launchMode));
         }
         // If the launch windowing mode is still undefined, inherit from the target task if the
         // task is already on the right display area (otherwise, the task may be on a different
@@ -173,10 +165,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 && task != null && task.getTaskDisplayArea() == suggestedDisplayArea
                 && !task.getRootTask().mReparentLeafTaskIfRelaunch) {
             launchMode = task.getWindowingMode();
-            if (DEBUG) {
-                appendLog("inherit-from-task="
-                        + WindowConfiguration.windowingModeToString(launchMode));
-            }
+            appendLog("inherit-from-task=" + WindowConfiguration.windowingModeToString(launchMode));
         }
         // hasInitialBounds is set if either activity options or layout has specified bounds. If
         // that's set we'll skip some adjustments later to avoid overriding the initial bounds.
@@ -207,7 +196,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                     ? WINDOWING_MODE_FREEFORM
                     : launchMode;
             outParams.mBounds.set(options.getLaunchBounds());
-            if (DEBUG) appendLog("activity-options-bounds=" + outParams.mBounds);
+            appendLog("activity-options-bounds=" + outParams.mBounds);
         } else if (canApplyWindowLayout) {
             mTmpBounds.set(currentParams.mBounds);
             getLayoutBounds(suggestedDisplayArea, root, layout, mTmpBounds);
@@ -216,9 +205,9 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 outParams.mBounds.set(mTmpBounds);
                 hasInitialBounds = true;
                 hasInitialBoundsForSuggestedDisplayAreaInFreeformWindow = true;
-                if (DEBUG) appendLog("bounds-from-layout=" + outParams.mBounds);
+                appendLog("bounds-from-layout=" + outParams.mBounds);
             } else {
-                if (DEBUG) appendLog("empty-window-layout");
+                appendLog("empty-window-layout");
             }
         } else if (launchMode == WINDOWING_MODE_MULTI_WINDOW
                 && options != null && options.getLaunchBounds() != null) {
@@ -227,7 +216,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             outParams.mBounds.set(options.getLaunchBounds());
             outParams.mBoundsSet = true;
             hasInitialBounds = true;
-            if (DEBUG) appendLog("multiwindow-activity-options-bounds=" + outParams.mBounds);
+            appendLog("multiwindow-activity-options-bounds=" + outParams.mBounds);
         }
 
         // STEP 2.2: Check if previous modifier or the controller (referred as "callers" below) has
@@ -256,9 +245,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                     && suggestedDisplayArea.inFreeformWindowingMode()) {
                 launchMode = currentParams.mWindowingMode;
                 fullyResolvedCurrentParam = launchMode != WINDOWING_MODE_FREEFORM;
-                if (DEBUG) {
-                    appendLog("inherit-" + WindowConfiguration.windowingModeToString(launchMode));
-                }
+                appendLog("inherit-" + WindowConfiguration.windowingModeToString(launchMode));
             }
 
             if (!currentParams.mBounds.isEmpty()) {
@@ -267,7 +254,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 outParams.mBounds.set(currentParams.mBounds);
                 fullyResolvedCurrentParam = true;
                 if (launchMode == WINDOWING_MODE_FREEFORM) {
-                    if (DEBUG) appendLog("inherit-bounds=" + outParams.mBounds);
+                    appendLog("inherit-bounds=" + outParams.mBounds);
                 }
             }
         }
@@ -285,7 +272,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
         boolean hasInitialBoundsForSuggestedDisplayAreaInFreeformMode = false;
         if (suggestedDisplayArea.inFreeformWindowingMode()) {
             if (launchMode == WINDOWING_MODE_PINNED) {
-                if (DEBUG) appendLog("picture-in-picture");
+                appendLog("picture-in-picture");
             } else if (!root.isResizeable()) {
                 if (shouldLaunchUnresizableAppInFreeform(root, suggestedDisplayArea, options)) {
                     launchMode = WINDOWING_MODE_FREEFORM;
@@ -294,15 +281,15 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                                 hasInitialBounds, outParams.mBounds);
                         hasInitialBoundsForSuggestedDisplayAreaInFreeformMode = true;
                     }
-                    if (DEBUG) appendLog("unresizable-freeform");
+                    appendLog("unresizable-freeform");
                 } else {
                     launchMode = WINDOWING_MODE_FULLSCREEN;
                     outParams.mBounds.setEmpty();
-                    if (DEBUG) appendLog("unresizable-forced-maximize");
+                    appendLog("unresizable-forced-maximize");
                 }
             }
         } else {
-            if (DEBUG) appendLog("non-freeform-task-display-area");
+            appendLog("non-freeform-task-display-area");
         }
         boolean isNonRootLeafTask =
                 com.android.window.flags.Flags.fixFullscreenInMultiWindow() ? task != null
@@ -312,7 +299,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             // Seems not making sense to have a fullscreen task in a multi-window Task, let it
             // inherits from the root task.
             launchMode = WINDOWING_MODE_UNDEFINED;
-            if (DEBUG) appendLog("inherit-rootTask");
+            appendLog("inherit-rootTask");
         }
 
         // If launch mode matches display windowing mode, let it inherit from display.
@@ -537,14 +524,14 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             case SCREEN_ORIENTATION_REVERSE_LANDSCAPE:
             case SCREEN_ORIENTATION_USER_LANDSCAPE:
             case SCREEN_ORIENTATION_LANDSCAPE:
-                if (DEBUG) appendLog("activity-requested-landscape");
+                appendLog("activity-requested-landscape");
                 orientation = SCREEN_ORIENTATION_LANDSCAPE;
                 break;
             case SCREEN_ORIENTATION_SENSOR_PORTRAIT:
             case SCREEN_ORIENTATION_REVERSE_PORTRAIT:
             case SCREEN_ORIENTATION_USER_PORTRAIT:
             case SCREEN_ORIENTATION_PORTRAIT:
-                if (DEBUG) appendLog("activity-requested-portrait");
+                appendLog("activity-requested-portrait");
                 orientation = SCREEN_ORIENTATION_PORTRAIT;
                 break;
             default:
@@ -573,9 +560,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                 && resolvedMode != WINDOWING_MODE_FULLSCREEN) {
             // This function should be used only for freeform bounds adjustment. Freeform bounds
             // needs to be set to fullscreen tasks too as restore bounds.
-            if (DEBUG) {
-                appendLog("skip-bounds-" + WindowConfiguration.windowingModeToString(resolvedMode));
-            }
+            appendLog("skip-bounds-" + WindowConfiguration.windowingModeToString(resolvedMode));
             return;
         }
 
@@ -598,12 +583,12 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             // bounds if possible -- so if app can handle the orientation we just use it, and if not
             // we transpose the suggested bounds in-place.
             if (orientation == orientationFromBounds(inOutBounds)) {
-                if (DEBUG) appendLog("freeform-size-orientation-match=" + inOutBounds);
+                appendLog("freeform-size-orientation-match=" + inOutBounds);
             } else {
                 // Meh, orientation doesn't match. Let's rotate inOutBounds in-place.
                 LaunchParamsUtil.centerBounds(displayArea, inOutBounds.height(),
                         inOutBounds.width(), inOutBounds);
-                if (DEBUG) appendLog("freeform-orientation-mismatch=" + inOutBounds);
+                appendLog("freeform-orientation-mismatch=" + inOutBounds);
             }
         } else {
             // We are here either because there is no suggested bounds, or the suggested bounds is
@@ -615,7 +600,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
             inOutBounds.setEmpty();
             LaunchParamsUtil.centerBounds(displayArea, mTmpBounds.width(), mTmpBounds.height(),
                     inOutBounds);
-            if (DEBUG) appendLog("freeform-size-mismatch=" + inOutBounds);
+            appendLog("freeform-size-mismatch=" + inOutBounds);
         }
 
         // Lastly we adjust bounds to avoid conflicts with other tasks as much as possible.
@@ -642,19 +627,14 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                     ? convertOrientationToScreenOrientation(
                             displayArea.getConfiguration().orientation)
                     : orientationFromBounds(bounds);
-            if (DEBUG) {
-                appendLog(bounds.isEmpty() ? "locked-orientation-from-display=" + orientation
-                        : "locked-orientation-from-bounds=" + bounds);
-            }
+            appendLog(bounds.isEmpty() ? "locked-orientation-from-display=" + orientation
+                    : "locked-orientation-from-bounds=" + bounds);
         }
 
         if (orientation == SCREEN_ORIENTATION_UNSPECIFIED) {
             orientation = bounds.isEmpty() ? SCREEN_ORIENTATION_PORTRAIT
                     : orientationFromBounds(bounds);
-            if (DEBUG) {
-                appendLog(bounds.isEmpty() ? "default-portrait"
-                        : "orientation-from-bounds=" + bounds);
-            }
+            appendLog(bounds.isEmpty() ? "default-portrait" : "orientation-from-bounds=" + bounds);
         }
 
         return orientation;
@@ -741,7 +721,7 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
                     && displayAreaBounds.contains(mTmpBounds)) {
                 // Found a candidate. Just use this.
                 inOutBounds.set(mTmpBounds);
-                if (DEBUG) appendLog("avoid-bounds-conflict=" + inOutBounds);
+                appendLog("avoid-bounds-conflict=" + inOutBounds);
                 return;
             }
 
@@ -844,19 +824,17 @@ class TaskLaunchParamsModifier implements LaunchParamsModifier {
         inOutBounds.offset(horizontalOffset, verticalOffset);
     }
 
-    private void initLogBuilder(Task task, ActivityRecord activity) {
-        if (DEBUG) {
-            mLogBuilder = new StringBuilder("TaskLaunchParamsModifier:task=" + task
-                    + " activity=" + activity);
-        }
+    private void initLogBuilder(int phase, Task task, ActivityRecord activity) {
+        mLogBuilder = new StringBuilder("TaskLaunchParamsModifier:phase=" + phase
+                + " task=" + task + " activity=" + activity);
     }
 
     private void appendLog(String log) {
-        if (DEBUG) mLogBuilder.append(" ").append(log);
+        mLogBuilder.append(" ").append(log);
     }
 
     private void outputLog() {
-        if (DEBUG) Slog.d(TAG, mLogBuilder.toString());
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, mLogBuilder.toString());
     }
 
     private static int orientationFromBounds(Rect bounds) {

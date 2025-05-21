@@ -27,8 +27,6 @@ import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK;
 import static android.window.DesktopExperienceFlags.ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS;
 import static android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 
-import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
-import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 import static com.android.server.wm.LaunchParamsUtil.getPreferredLaunchTaskDisplayArea;
 
@@ -38,11 +36,12 @@ import android.app.ActivityOptions;
 import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.util.Slog;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.protolog.ProtoLog;
+import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 
 import java.util.Objects;
@@ -51,12 +50,6 @@ import java.util.Objects;
  * The class that defines default launch params for tasks in desktop mode
  */
 class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
-
-    private static final String TAG =
-            TAG_WITH_CLASS_NAME ? "DesktopModeLaunchParamsModifier" : TAG_ATM;
-
-    private static final boolean DEBUG = false;
-
     private StringBuilder mLogBuilder;
 
     @NonNull private final Context mContext;
@@ -75,7 +68,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull LaunchParamsController.LaunchParams currentParams,
             @NonNull LaunchParamsController.LaunchParams outParams) {
 
-        initLogBuilder(task, activity);
+        initLogBuilder(phase, task, activity);
         int result = calculate(task, layout, activity, source, options, request, phase,
                 currentParams, outParams);
         outputLog();
@@ -337,18 +330,16 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             || (intentFlags & FLAG_ACTIVITY_MULTIPLE_TASK) == 0;
     }
 
-    private void initLogBuilder(Task task, ActivityRecord activity) {
-        if (DEBUG) {
-            mLogBuilder = new StringBuilder(
-                    "DesktopModeLaunchParamsModifier: task=" + task + " activity=" + activity);
-        }
+    private void initLogBuilder(int phase, Task task, ActivityRecord activity) {
+        mLogBuilder = new StringBuilder("DesktopModeLaunchParamsModifier: phase= " + phase
+                + " task=" + task + " activity=" + activity);
     }
 
     private void appendLog(String format, Object... args) {
-        if (DEBUG) mLogBuilder.append(" ").append(String.format(format, args));
+        mLogBuilder.append(" ").append(String.format(format, args));
     }
 
     private void outputLog() {
-        if (DEBUG) Slog.d(TAG, mLogBuilder.toString());
+        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_TASKS_LAUNCH_PARAMS, mLogBuilder.toString());
     }
 }
