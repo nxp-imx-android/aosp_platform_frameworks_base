@@ -33913,6 +33913,10 @@ package android.os {
     method @Deprecated public static int getGlobalFreedCount();
     method @Deprecated public static int getGlobalFreedSize();
     method @Deprecated public static int getGlobalGcInvocationCount();
+    method @FlaggedApi("android.os.count_class_instances_api") public static long getInstanceCount(@NonNull Class);
+    method @FlaggedApi("android.os.count_class_instances_api") public static long getInstanceCount(@NonNull Class, boolean);
+    method @FlaggedApi("android.os.count_class_instances_api") @NonNull public static long[] getInstanceCounts(@NonNull java.util.List<java.lang.Class>);
+    method @FlaggedApi("android.os.count_class_instances_api") @NonNull public static long[] getInstanceCounts(@NonNull java.util.List<java.lang.Class>, boolean);
     method public static int getLoadedClassCount();
     method public static void getMemoryInfo(android.os.Debug.MemoryInfo);
     method public static long getNativeHeapAllocatedSize();
