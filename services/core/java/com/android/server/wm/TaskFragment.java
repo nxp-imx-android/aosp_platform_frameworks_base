@@ -665,9 +665,11 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         mResumedActivity = r;
         final ActivityRecord topResumed = mTaskSupervisor.updateTopResumedActivityIfNeeded(reason);
         if (mResumedActivity != null && topResumed != null && topResumed.isEmbedded()
-                && topResumed.getTaskFragment().isAdjacentTo(this)) {
+                && topResumed.getTaskFragment().isAdjacentTo(this)
+                && topResumed.getTaskFragment().isPinned()) {
             // Explicitly updates the last resumed Activity if the resumed activity is
-            // adjacent to the top-resumed embedded activity.
+            // adjacent to the top-resumed embedded activity and the top-resumed TaskFragment is
+            // pinned.
             mAtmService.setLastResumedActivityUncheckLocked(mResumedActivity, reason);
         }
         if (r == null && prevR.mDisplayContent != null
