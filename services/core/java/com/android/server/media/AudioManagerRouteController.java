@@ -93,6 +93,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
     private static final SparseArray<SystemRouteInfo> AUDIO_DEVICE_INFO_TYPE_TO_ROUTE_INFO =
             new SparseArray<>();
 
+    private static final String ROUTE_ID_ADDRESS_PREFIX = ";address=";
+
     @NonNull private final Context mContext;
     @NonNull private final AudioManager mAudioManager;
     @NonNull private final Handler mHandler;
@@ -328,11 +330,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
             };
 
         } else {
+            String deviceAddress =
+                    com.android.media.flags.Flags.enableDeviceAddressAsIdentifierInMediaRouter2()
+                            ? mediaRoute2InfoHolder.mMediaRoute2Info.getAddress() : "";
+
             AudioDeviceAttributes deviceAttributes =
                     new AudioDeviceAttributes(
                             AudioDeviceAttributes.ROLE_OUTPUT,
                             mediaRoute2InfoHolder.mAudioDeviceInfoType,
-                            /* address= */ ""); // This is not a BT device, hence no address needed.
+                            deviceAddress);
             return () ->
                     mAudioManager.setPreferredDeviceForStrategy(
                             mStrategyForMedia, deviceAttributes);
@@ -373,23 +379,31 @@ import java.util.concurrent.CopyOnWriteArrayList;
         List<AudioDeviceAttributes> attributesOfSelectedOutputDevices =
                 mAudioManager.getDevicesForAttributes(MEDIA_USAGE_AUDIO_ATTRIBUTES);
         int selectedDeviceAttributesType;
+        String selectedDeviceAttributesAddr = "";
         if (attributesOfSelectedOutputDevices.isEmpty()) {
             Slog.e(
                     TAG,
                     "Unexpected empty list of output devices for media. Using built-in speakers.");
             selectedDeviceAttributesType = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
         } else {
+            // Note in the event of multiple devices of the same type exist (e.g., USB), this
+            // usually still returns only one of them, that being either the preferred device or
+            // the last connected device (see `getLastRemovableMediaDevices` in `Engine`).
             if (attributesOfSelectedOutputDevices.size() > 1) {
                 Slog.w(
                         TAG,
                         "AudioManager.getDevicesForAttributes returned more than one element. Using"
                                 + " the first one.");
             }
-            selectedDeviceAttributesType = attributesOfSelectedOutputDevices.get(0).getType();
+            AudioDeviceAttributes selectedDeviceAttributes =
+                    attributesOfSelectedOutputDevices.get(0);
+            selectedDeviceAttributesType = selectedDeviceAttributes.getType();
+            selectedDeviceAttributesAddr = selectedDeviceAttributes.getAddress();
         }
 
         updateAvailableRoutes(
                 selectedDeviceAttributesType,
+                selectedDeviceAttributesAddr,
                 /* audioDeviceInfos= */ mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS),
                 /* availableBluetoothRoutes= */ mBluetoothRouteController
                         .getAvailableBluetoothRoutes(),
@@ -420,6 +434,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
      */
     private synchronized void updateAvailableRoutes(
             int selectedDeviceAttributesType,
+            String selectedDeviceAttributesAddr,
             AudioDeviceInfo[] audioDeviceInfos,
             List<MediaRoute2Info> availableBluetoothRoutes,
             int musicVolume,
@@ -434,12 +449,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
             // earpiece. We ignore those.
             if (mediaRoute2Info != null) {
                 int audioDeviceInfoType = audioDeviceInfo.getType();
+                String audioDeviceInfoAddr = audioDeviceInfo.getAddress();
                 MediaRoute2InfoHolder newHolder =
                         MediaRoute2InfoHolder.createForAudioManagerRoute(
                                 mediaRoute2Info, audioDeviceInfoType);
                 mRouteIdToAvailableDeviceRoutes.put(mediaRoute2Info.getId(), newHolder);
                 if (selectedDeviceAttributesType == audioDeviceInfoType) {
-                    newSelectedRouteHolder = newHolder;
+                    if (com.android.media.flags.Flags
+                            .enableDeviceAddressAsIdentifierInMediaRouter2()) {
+                        if (selectedDeviceAttributesAddr.equals(audioDeviceInfoAddr)) {
+                            newSelectedRouteHolder = newHolder;
+                        }
+                    } else {
+                        newSelectedRouteHolder = newHolder;
+                    }
                 }
             }
         }
@@ -556,7 +579,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
             // are creating a non-BT route, or we are creating a BT route but a race condition
             // caused AudioManager to expose the BT route before BluetoothAdapter, preventing us
             // from getting an id using BluetoothRouteController#getRouteIdForBluetoothAddress.
-            routeId = systemRouteInfo.mDefaultRouteId;
+            if (com.android.media.flags.Flags.enableDeviceAddressAsIdentifierInMediaRouter2()) {
+                routeId = systemRouteInfo.mDefaultRouteId + ROUTE_ID_ADDRESS_PREFIX + address;
+            } else {
+                routeId = systemRouteInfo.mDefaultRouteId;
+            }
         }
         MediaRoute2Info.Builder builder = new MediaRoute2Info.Builder(routeId, humanReadableName)
                 .setType(systemRouteInfo.mMediaRoute2InfoType)
