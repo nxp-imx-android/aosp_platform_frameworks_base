@@ -2219,7 +2219,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         mOwners = makeOwners(injector, pathProvider);
 
         mDevicePolicyEngine = new DevicePolicyEngine(
-                mContext, mDeviceAdminServiceController, getLockObject());
+                mContext, mDeviceAdminServiceController, getLockObject(), mPathProvider);
 
         if (!mHasFeature) {
             // Skip the rest of the initialization
