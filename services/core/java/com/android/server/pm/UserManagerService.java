@@ -1605,7 +1605,12 @@ public class UserManagerService extends IUserManager.Stub {
                 /* resolveNullNames= */ false);
     }
 
-    private @NonNull List<UserInfo> getUsersInternal(boolean excludePartial, boolean excludeDying,
+    /**
+     * @deprecated should use {@link #getUsers(UserFilter)} instead.
+     */
+    @Deprecated
+    @VisibleForTesting
+    List<UserInfo> getUsersInternal(boolean excludePartial, boolean excludeDying,
             boolean excludePreCreated, boolean resolveNullNames) {
         synchronized (mUsersLock) {
             ArrayList<UserInfo> users = new ArrayList<>(mUsers.size());
