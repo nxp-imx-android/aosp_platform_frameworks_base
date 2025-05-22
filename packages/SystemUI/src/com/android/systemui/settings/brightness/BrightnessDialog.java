@@ -189,9 +189,9 @@ public class BrightnessDialog extends Activity {
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             boolean shouldBeFullWidth = getIntent()
                     .getBooleanExtra(EXTRA_BRIGHTNESS_DIALOG_IS_FULL_WIDTH, false);
-            lp.width = (shouldBeFullWidth ? windowWidth : windowWidth / 2) - margin * 2;
+            lp.width = shouldBeFullWidth ? windowWidth : windowWidth / 2;
         } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            lp.width = windowWidth - margin * 2;
+            lp.width = windowWidth;
         }
 
         container.setLayoutParams(lp);
@@ -201,7 +201,7 @@ public class BrightnessDialog extends Activity {
                     // Exclude this view (and its horizontal margins) from triggering gestures.
                     // This prevents back gesture from being triggered by dragging close to the
                     // edge of the slider (0% or 100%).
-                    bounds.set(-margin, 0, right - left + margin, bottom - top);
+                    bounds.set(0, 0, right - left, bottom - top);
                     v.setSystemGestureExclusionRects(List.of(bounds));
                 });
     }
