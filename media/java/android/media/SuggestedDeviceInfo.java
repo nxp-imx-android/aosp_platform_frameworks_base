@@ -159,6 +159,13 @@ public final class SuggestedDeviceInfo implements Parcelable {
 
         private Bundle mExtras = Bundle.EMPTY;
 
+        /**
+         * Constructor.
+         *
+         * @param deviceDisplayName The {@link #getDeviceDisplayName() display name}.
+         * @param routeId The {@link #getRouteId() route ID}.
+         * @param type The {@link #getType() route type}.
+         */
         public Builder(
                 @NonNull String deviceDisplayName,
                 @NonNull String routeId,
