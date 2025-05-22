@@ -204,7 +204,6 @@ public class ProtectedPackages {
         return Binder.withCleanCallingIdentity(
                 () -> {
                     if (!supervisionManager.isSupervisionEnabledForUser(userId)) {
-                        Slog.w(TAG, "Supervision is not enabled.");
                         return false;
                     }
                     List<String> systemSupervisionHolders =
