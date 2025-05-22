@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.log.core
+package com.android.systemui.log
 
-import android.util.Log
-import com.android.systemui.log.LogMessageImpl
+import com.android.systemui.log.core.LogLevel
+import com.android.systemui.log.core.LogMessage
+import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.log.core.MessagePrinter
 import kotlin.collections.ArrayDeque
 
 /**
@@ -25,9 +27,11 @@ import kotlin.collections.ArrayDeque
  * immediately. This defeats the intention behind [LogBuffer] and should only be used when
  * [LogBuffer]s are unavailable in a certain context.
  */
-class LogcatOnlyMessageBuffer(
-    val targetLogLevel: LogLevel,
-    val maxMessageCount: Int = DEFAULT_MESSAGE_MAX_COUNT,
+class LogcatOnlyMessageBuffer
+@JvmOverloads
+constructor(
+    private val targetLogLevel: LogLevel,
+    private val maxMessageCount: Int = DEFAULT_MESSAGE_MAX_COUNT,
 ) : MessageBuffer {
     private val messages = ArrayDeque<LogMessageImpl>(maxMessageCount)
 
@@ -47,14 +51,7 @@ class LogcatOnlyMessageBuffer(
     override fun commit(message: LogMessage) {
         if (message.level >= targetLogLevel) {
             val strMessage = message.messagePrinter(message)
-            when (message.level) {
-                LogLevel.VERBOSE -> Log.v(message.tag, strMessage, message.exception)
-                LogLevel.DEBUG -> Log.d(message.tag, strMessage, message.exception)
-                LogLevel.INFO -> Log.i(message.tag, strMessage, message.exception)
-                LogLevel.WARNING -> Log.w(message.tag, strMessage, message.exception)
-                LogLevel.ERROR -> Log.e(message.tag, strMessage, message.exception)
-                LogLevel.WTF -> Log.wtf(message.tag, strMessage, message.exception)
-            }
+            message.level.logcatFunc(message.tag, strMessage, message.exception)
         }
 
         if (message is LogMessageImpl) {
