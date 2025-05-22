@@ -125,7 +125,7 @@ constructor(
                                                 R.drawable.ic_content_paste_spark
                                             )!!,
                                     label = title,
-                                    attribution = chip.subtitle.toString(),
+                                    attribution = chip.subtitle?.toString(),
                                     onPerformAction = {
                                         val intent = chip.intent
                                         val pendingIntent = chip.pendingIntent
