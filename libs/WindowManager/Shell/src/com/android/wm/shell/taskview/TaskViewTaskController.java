@@ -348,12 +348,20 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
     @Override
     public void attachChildSurfaceToTask(int taskId, SurfaceControl.Builder b) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // TODO(b/419342398): Add a notifier when the surface is ready for this to be called.
+            if (!mIsInitialized) return;
+        }
         b.setParent(findTaskSurface(taskId));
     }
 
     @Override
     public void reparentChildSurfaceToTask(int taskId, SurfaceControl sc,
             SurfaceControl.Transaction t) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // TODO(b/419342398): Add a notifier when the surface is ready for this to be called.
+            if (!mIsInitialized) return;
+        }
         t.reparent(sc, findTaskSurface(taskId));
     }
 
