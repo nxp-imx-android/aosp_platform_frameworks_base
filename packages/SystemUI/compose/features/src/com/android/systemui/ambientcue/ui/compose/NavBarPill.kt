@@ -44,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -143,12 +142,6 @@ fun NavBarPill(
                     ) {
                         Image(
                             painter = rememberDrawablePainter(action.icon),
-                            colorFilter =
-                                if (hasAttribution) {
-                                    ColorFilter.tint(outlineColor)
-                                } else {
-                                    null
-                                },
                             contentDescription = action.label,
                             modifier = Modifier.size(16.dp).clip(CircleShape),
                         )

@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -119,7 +118,7 @@ fun ShortPill(
                     modifier = pillModifier.defaultMinSize(minWidth = minSize),
                 ) {
                     actions.take(3).fastForEach { action ->
-                        Icon(action, backgroundColor, outlineColor)
+                        Icon(action, backgroundColor)
                         if (actions.size == 1) {
                             Text(
                                 text = action.label,
@@ -151,9 +150,7 @@ fun ShortPill(
                     verticalArrangement = Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
                     modifier = pillModifier.defaultMinSize(minHeight = minSize),
                 ) {
-                    actions.take(3).fastForEach { action ->
-                        Icon(action, backgroundColor, outlineColor)
-                    }
+                    actions.take(3).fastForEach { action -> Icon(action, backgroundColor) }
                 }
 
                 CloseButton(
@@ -191,21 +188,9 @@ private fun CloseButton(
 }
 
 @Composable
-private fun Icon(
-    action: ActionViewModel,
-    backgroundColor: Color,
-    outlineColor: Color,
-    modifier: Modifier = Modifier,
-) {
-    val hasAttribution = action.attribution != null
+private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modifier = Modifier) {
     Image(
         painter = rememberDrawablePainter(action.icon),
-        colorFilter =
-            if (hasAttribution) {
-                ColorFilter.tint(outlineColor)
-            } else {
-                null
-            },
         contentDescription = action.label,
         modifier =
             modifier
