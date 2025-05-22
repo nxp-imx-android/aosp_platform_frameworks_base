@@ -202,8 +202,17 @@ public class UserManagerServiceShellCommand extends ShellCommand {
             }
         }
         final IActivityManager am = ActivityManager.getService();
-        final List<UserInfo> users = mService.getUsersWithUnresolvedNames(
-                /* excludePartial= */ !all, /* excludeDying= */ false);
+        List<UserInfo> users;
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            users = mService.getUsersWithUnresolvedNames(/* excludePartial= */ !all,
+                    /* excludeDying= */ false);
+        } else {
+            var filterBuilder = UserFilter.builder().withDyingUsers();
+            if (all) {
+                filterBuilder.withPartialUsers();
+            }
+            users = mService.getUsers(filterBuilder.build());
+        }
         if (users == null) {
             pw.println("Error: couldn't get users");
             return 1;

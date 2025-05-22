@@ -4367,8 +4367,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mPermissionManager.onSystemReady();
 
         int[] grantPermissionsUserIds = EMPTY_INT_ARRAY;
-        final List<UserInfo> livingUsers = mInjector.getUserManagerInternal().getUsers(
-                /* excludeDying= */ true);
+        final List<UserInfo> livingUsers;
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            livingUsers = mInjector.getUserManagerInternal().getUsers(/* excludeDying= */ true);
+        } else {
+            livingUsers = mInjector.getUserManagerInternal()
+                    .getUsers(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS);
+        }
         final int livingUserCount = livingUsers.size();
         for (int i = 0; i < livingUserCount; i++) {
             final int userId = livingUsers.get(i).id;

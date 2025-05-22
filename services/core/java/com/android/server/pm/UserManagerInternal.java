@@ -81,6 +81,14 @@ public abstract class UserManagerInternal {
     })
     public @interface UserStartMode {}
 
+    /** Pre-defined filter that exclude all "incomplete" users (dying, partial, etc). */
+    public static final UserFilter USER_FILTER_WITH_ALL_COMPLETE_USERS = UserFilter.builder()
+            .build();
+
+    /** Pre-defined filter that include dying users. */
+    public static final UserFilter USER_FILTER_WITH_DYING_USERS = UserFilter.builder()
+            .withDyingUsers().build();
+
     // TODO(b/248408342): Move keep annotations below to the method referencing these fields
     // reflectively.
 
@@ -296,8 +304,21 @@ public abstract class UserManagerInternal {
      * Internal implementation of getUsers does not check permissions.
      * This improves performance for calls from inside system server which already have permissions
      * checked.
+     *
+     * @deprecated use {@link #getUsers(UserFilter)} with
+     * {@link #USER_FILTER_WITH_ALL_COMPLETE_USERS} (for when {@code excludeDying} is {@code true})
+     * or {@link #USER_FILTER_WITH_DYING_USERS} (for when its {@code false}).
      */
+    @Deprecated
     public abstract @NonNull List<UserInfo> getUsers(boolean excludeDying);
+
+    /**
+     * Gets the users that match the given {@code filter}.
+     *
+     * <p><b>Note: </b>for performance reasons, prefer using pre-existing filters, like
+     * {@link #USER_FILTER_WITH_ALL_COMPLETE_USERS} or {@link #USER_FILTER_WITH_DYING_USERS}.
+     */
+    public abstract List<UserInfo> getUsers(UserFilter userFilter);
 
     /**
      * Returns a list of the users that are associated with the specified user, including the user
