@@ -27,7 +27,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.stateIn
 
 private const val TAG = "SwipeToDismissInteractor"
@@ -55,7 +55,7 @@ constructor(
      */
     val dismissFling: StateFlow<FlingInfo?> =
         shadeRepository.currentFling
-            .map { flingInfo ->
+            .filter { flingInfo ->
                 val isDismiss =
                     flingInfo != null &&
                         !flingInfo.expand &&
@@ -77,11 +77,7 @@ constructor(
                         "isKeyguardDismissible: ${keyguardInteractor.isKeyguardDismissible.value}",
                 )
 
-                if (isDismiss) {
-                    flingInfo
-                } else {
-                    null
-                }
+                isDismiss
             }
             .stateIn(backgroundScope, SharingStarted.Eagerly, null)
 }
