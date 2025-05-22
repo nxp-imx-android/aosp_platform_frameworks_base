@@ -17,16 +17,12 @@
 package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.View
-import androidx.compose.animation.core.tween
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
-import com.android.compose.animation.scene.transitions
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
@@ -35,54 +31,48 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.Flow
 
 class BundleHeaderViewModel @AssistedInject constructor(private val interactor: BundleInteractor) :
     ExclusiveActivatable() {
 
-    val titleText
+    val titleText: Int
         get() = interactor.titleText
 
-    val numberOfChildren
+    val numberOfChildren: Int?
         get() = interactor.numberOfChildren
 
-    val bundleIcon
+    val bundleIcon: Int
         get() = interactor.bundleIcon
 
-    val previewIcons
+    val previewIcons: Flow<List<Drawable>>
         get() = interactor.previewIcons
+
+    var state: MutableSceneTransitionLayoutState? by interactor::state
+
+    var composeScope: CoroutineScope? by interactor::composeScope
 
     var backgroundDrawable by mutableStateOf<Drawable?>(null)
 
     var onExpandClickListener: View.OnClickListener? = null
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    val state: MutableSceneTransitionLayoutState =
-        MutableSceneTransitionLayoutState(
-            BundleHeader.Scenes.Collapsed,
-            MotionScheme.standard(),
-            transitions {
-                from(BundleHeader.Scenes.Collapsed, to = BundleHeader.Scenes.Expanded) {
-                    spec = tween(500)
-                    translate(BundleHeader.Elements.PreviewIcon3, x = 32.dp)
-                    translate(BundleHeader.Elements.PreviewIcon2, x = 16.dp)
-                    fade(BundleHeader.Elements.PreviewIcon1)
-                    fade(BundleHeader.Elements.PreviewIcon2)
-                    fade(BundleHeader.Elements.PreviewIcon3)
-                }
-            },
-        )
-
-    fun onHeaderClicked(scope: CoroutineScope) {
+    fun onHeaderClicked() {
         val targetScene =
-            when (state.currentScene) {
+            when (state?.currentScene) {
                 BundleHeader.Scenes.Collapsed -> BundleHeader.Scenes.Expanded
                 BundleHeader.Scenes.Expanded -> BundleHeader.Scenes.Collapsed
-                else -> error("Unknown Scene")
+                null -> {
+                    Log.e(TAG, "Unexpected scene: ${state?.currentScene}")
+                    return
+                }
+                else -> error("Unknown Scene.")
             }
-        state.setTargetScene(targetScene, scope)
+        interactor.setTargetScene(targetScene)
 
         onExpandClickListener?.onClick(null)
     }
+
+    fun setExpansionState(isExpanded: Boolean) = interactor.setExpansionState(isExpanded)
 
     override suspend fun onActivated(): Nothing {
         // TODO(b/415055105): hydrate previewIcons state
@@ -93,5 +83,9 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
     @BundleRowScope
     interface Factory {
         fun create(): BundleHeaderViewModel
+    }
+
+    companion object {
+        const val TAG = "BundleHeaderViewModel"
     }
 }

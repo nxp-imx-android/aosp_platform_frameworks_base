@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.notification.dagger.SocialHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
-import com.android.systemui.statusbar.notification.stack.PriorityBucket
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.foldToSparseArray
@@ -120,10 +119,7 @@ internal constructor(
     }
 
     fun createSectionsForBuckets(): Array<NotificationSection> =
-        PriorityBucket
-            .getAllInOrder()
-            .map { NotificationSection(it) }
-            .toTypedArray()
+        PriorityBucket.getAllInOrder().map { NotificationSection(it) }.toTypedArray()
 
     /** Reinflates the entire notification header, including all decoration views. */
     fun reinflateViews() {

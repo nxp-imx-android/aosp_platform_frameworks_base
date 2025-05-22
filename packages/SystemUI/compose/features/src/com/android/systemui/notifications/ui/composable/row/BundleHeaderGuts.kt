@@ -131,7 +131,7 @@ private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier 
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
+                maxLines = 2,
             )
         }
 
@@ -164,7 +164,7 @@ private fun BottomRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier =
                 modifier
                     .padding(vertical = 13.dp)
                     .clickable(
-                        onClick = viewModel.onDismissClicked,
+                        onClick = { viewModel.onDismissClicked() },
                         indication = null,
                         interactionSource = null,
                     ),

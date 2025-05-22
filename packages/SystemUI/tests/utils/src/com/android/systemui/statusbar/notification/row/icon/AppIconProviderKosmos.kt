@@ -23,5 +23,5 @@ import org.mockito.kotlin.mock
 
 val Kosmos.mockAppIconProvider by Kosmos.Fixture { mock<AppIconProvider>() }
 
-val Kosmos.appIconProvider by
+var Kosmos.appIconProvider: AppIconProvider by
     Kosmos.Fixture { AppIconProviderImpl(applicationContext, dumpManager) }

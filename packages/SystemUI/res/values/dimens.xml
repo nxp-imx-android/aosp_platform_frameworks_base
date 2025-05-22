@@ -811,6 +811,9 @@
     <!-- The height of the divider between the individual notifications. -->
     <dimen name="notification_divider_height">2dp</dimen>
 
+    <!-- The *additional* height of the divider between bundles. -->
+    <dimen name="bundle_divider_height">2dp</dimen>
+
     <!-- The min distance the notifications should be from the lock icon on the lock screen. -->
     <dimen name="min_lock_icon_padding">48dp</dimen>
 
@@ -823,6 +826,9 @@
     <!-- The height of the divider between the individual notifications in a notification
          group. -->
     <dimen name="notification_children_container_divider_height">0.5dp</dimen>
+
+    <!-- The height of the divider between the individual notifications within a bundle -->
+    <dimen name="bundle_children_container_divider_height">2dp</dimen>
 
     <!-- The horizontal margin of the content in the notification shade -->
     <dimen name="notification_shade_content_margin_horizontal">16dp</dimen>

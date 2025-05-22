@@ -106,7 +106,7 @@ import com.android.systemui.statusbar.notification.row.createRowWithNotif
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.row.expandableNotificationRowLogger
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.bundleHeaderViewModel
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.bundleHeaderViewModelFactory
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.sharedNotificationContainerInteractor
 import com.android.systemui.statusbar.phone.fakeAutoHideControllerStore
@@ -239,7 +239,7 @@ class KosmosJavaAdapter() {
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
     val sysUIStateInteractor by lazy { kosmos.sysuiStateInteractor }
     val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
-    val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModel }
+    val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModelFactory.create()  }
     val mockNotificationDismissibilityProvider by lazy {
         kosmos.mockNotificationDismissibilityProvider
     }

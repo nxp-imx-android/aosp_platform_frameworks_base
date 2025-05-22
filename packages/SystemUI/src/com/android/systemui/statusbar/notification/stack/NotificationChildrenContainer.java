@@ -549,10 +549,13 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     private void initBundleDimens() {
+        Resources res = getResources();
         NotificationBundleUi.unsafeAssertInNewMode();
         mCollapsedHeaderMargin = mHeaderHeight;
         mAdditionalExpandedHeaderMargin = 0;
         mCollapsedBottomPadding = 0;
+        mDividerHeight = res.getDimensionPixelOffset(
+                R.dimen.bundle_children_container_divider_height);
     }
 
     /**
@@ -1249,6 +1252,9 @@ public class NotificationChildrenContainer extends ViewGroup
         updateExpansionStates();
         if (mGroupHeaderWrapper != null) {
             mGroupHeaderWrapper.setExpanded(childrenExpanded);
+        }
+        if (mBundleHeaderViewModel != null) {
+            mBundleHeaderViewModel.setExpansionState(childrenExpanded);
         }
         final int count = mAttachedChildren.size();
         for (int childIdx = 0; childIdx < count; childIdx++) {

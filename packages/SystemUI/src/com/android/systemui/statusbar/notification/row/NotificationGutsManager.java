@@ -509,12 +509,11 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
 
         Function0<Unit> onSettingsClicked = () -> {
             guts.resetFalsingCheck();
-            // TODO(b/409748420): navigate to correct settings page
             startBundleSettingsActivity(0, row);
             return Unit.INSTANCE;
         };
 
-        Function0<Unit> dismissBundle = () -> {
+        Function0<Unit> onDismissBundle = () -> {
             guts.resetFalsingCheck();
             row.getDismissButtonOnClickListener().onClick(gutsContent.getContentView());
             return Unit.INSTANCE;
@@ -529,7 +528,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             return Unit.INSTANCE;
         };
 
-        gutsContent.bindNotification(row, onSettingsClicked, dismissBundle, enableBundle);
+        gutsContent.bindNotification(row, onSettingsClicked, onDismissBundle, enableBundle);
     }
 
     /**

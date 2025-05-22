@@ -16,11 +16,9 @@
 
 package com.android.systemui.notifications.ui.composable.row
 
-import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -39,7 +37,6 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
@@ -55,7 +52,6 @@ import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
-import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 
 object NotificationRowPrimitives {
     object Elements {
@@ -81,26 +77,6 @@ fun BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
             modifier = Modifier.padding(10.dp).fillMaxSize(),
             contentScale = ContentScale.Fit,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-        )
-    }
-}
-
-/** The Icon used to display a preview of contained child notifications in a Bundle. */
-@Composable
-fun PreviewIcon(drawable: Drawable, modifier: Modifier = Modifier) {
-    val surfaceColor = notificationElementSurfaceColor()
-    Box(
-        modifier =
-            modifier
-                .background(color = surfaceColor, shape = CircleShape)
-                .border(0.5.dp, surfaceColor, CircleShape)
-    ) {
-        val painter = rememberDrawablePainter(drawable)
-        Image(
-            painter = painter,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize().clip(CircleShape),
-            contentScale = ContentScale.Fit,
         )
     }
 }
@@ -156,7 +132,7 @@ private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
 
 @Composable
 @ReadOnlyComposable
-private fun notificationElementSurfaceColor(): Color {
+fun notificationElementSurfaceColor(): Color {
     return if (isSystemInDarkTheme()) {
         Color.White.copy(alpha = 0.15f)
     } else {
