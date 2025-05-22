@@ -26,9 +26,11 @@ import android.content.Context;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -122,13 +124,19 @@ class TaskBroadcaster {
             currentForegroundTaskId = runningTasks.get(0).taskId;
         }
 
+        List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
+        for (ActivityManager.RunningTaskInfo taskInfo : runningTasks) {
+            remoteTasks.add(new RemoteTaskInfo(taskInfo));
+        }
+
         ContinuityDeviceConnected deviceConnectedMessage =
-            new ContinuityDeviceConnected(currentForegroundTaskId);
+            new ContinuityDeviceConnected(currentForegroundTaskId, remoteTasks);
 
         sendMessage(associationId, deviceConnectedMessage);
     }
 
     private void sendMessage(int associationId, TaskContinuityMessageData data) {
+
         Slog.v(
             TAG,
             "Sending message to association id: "
