@@ -19,10 +19,12 @@ package com.android.systemui.topwindoweffects.data.repository
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.PERSISTED_FOR_ASSISTANT_PREFERENCE
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.PERSISTED_FOR_USER_PREFERENCE
 import java.io.PrintWriter
@@ -42,35 +44,23 @@ class FakeInvocationEffectPreferences : InvocationEffectPreferences {
         fakeSharedPreferences.edit { f() }
     }
 
-    fun clear() {
-        fakeSharedPreferences = FakeSharedPreferences()
+    override fun isInvocationEffectEnabledInPreferences(): Boolean {
+        return fakeSharedPreferences.getBoolean(
+            IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+            DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+        )
     }
 
-    override fun saveCurrentAssistant() {
-        addToPref { putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, activeAssistant) }
+    fun clear() {
+        fakeSharedPreferences = FakeSharedPreferences()
     }
 
     fun getSavedAssistant(): String {
         return fakeSharedPreferences.getString(PERSISTED_FOR_ASSISTANT_PREFERENCE, "") ?: ""
     }
 
-    override fun saveCurrentUserId() {
-        addToPref { putInt(PERSISTED_FOR_USER_PREFERENCE, activeUserId) }
-    }
-
     fun getSavedUserId(): Int {
-        return fakeSharedPreferences.getInt(PERSISTED_FOR_USER_PREFERENCE, -1)
-    }
-
-    fun isActiveUserAndAssistantPersisted() =
-        activeUserId == getSavedUserId() && activeAssistant == getSavedAssistant()
-
-    override fun setInvocationEffectEnabledByAssistant(enabled: Boolean) {
-        isInvocationEffectEnabledByAssistant.value = enabled
-    }
-
-    override fun setInwardAnimationPaddingDurationMillis(duration: Long) {
-        addToPref { putLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, duration) }
+        return fakeSharedPreferences.getInt(PERSISTED_FOR_USER_PREFERENCE, Int.MIN_VALUE)
     }
 
     override fun getInwardAnimationPaddingDurationMillis(): Long {
@@ -80,15 +70,35 @@ class FakeInvocationEffectPreferences : InvocationEffectPreferences {
         )
     }
 
-    override fun setOutwardAnimationDurationMillis(duration: Long) {
-        addToPref { putLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, duration) }
-    }
-
     override fun getOutwardAnimationDurationMillis(): Long {
         return fakeSharedPreferences.getLong(
             INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS,
             DEFAULT_OUTWARD_EFFECT_DURATION_MS,
         )
+    }
+
+    override fun isCurrentUserAndAssistantPersisted(): Boolean {
+        return activeUserId == getSavedUserId() && activeAssistant == getSavedAssistant()
+    }
+
+    override fun setInvocationEffectConfig(
+        config: InvocationEffectPreferences.Config,
+        saveActiveUserAndAssistant: Boolean,
+    ) {
+        if (saveActiveUserAndAssistant) {
+            addToPref {
+                putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, activeAssistant)
+                putInt(PERSISTED_FOR_USER_PREFERENCE, activeUserId)
+            }
+        }
+        addToPref {
+            putLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, config.outwardsEffectDuration)
+            putLong(
+                INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS,
+                config.inwardsEffectDurationPadding,
+            )
+            putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE, config.isEnabled)
+        }
     }
 
     override fun registerOnChangeListener(
@@ -105,6 +115,10 @@ class FakeInvocationEffectPreferences : InvocationEffectPreferences {
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         // empty
+    }
+
+    fun setInvocationEffectEnabledByAssistant(enabled: Boolean) {
+        isInvocationEffectEnabledByAssistant.value = enabled
     }
 }
 

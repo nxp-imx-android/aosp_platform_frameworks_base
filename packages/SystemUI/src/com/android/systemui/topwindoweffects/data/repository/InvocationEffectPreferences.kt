@@ -51,25 +51,27 @@ interface InvocationEffectPreferences {
 
     val isInvocationEffectEnabledByAssistant: StateFlow<Boolean>
 
-    fun saveCurrentAssistant()
-
-    fun saveCurrentUserId()
-
-    fun setInvocationEffectEnabledByAssistant(enabled: Boolean)
-
-    fun setInwardAnimationPaddingDurationMillis(duration: Long)
+    fun isInvocationEffectEnabledInPreferences(): Boolean
 
     fun getInwardAnimationPaddingDurationMillis(): Long
 
-    fun setOutwardAnimationDurationMillis(duration: Long)
-
     fun getOutwardAnimationDurationMillis(): Long
+
+    fun isCurrentUserAndAssistantPersisted(): Boolean
+
+    fun setInvocationEffectConfig(config: Config, saveActiveUserAndAssistant: Boolean)
 
     fun registerOnChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener)
 
     fun unregisterOnChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener)
 
     fun dump(pw: PrintWriter, args: Array<out String>)
+
+    data class Config(
+        val isEnabled: Boolean,
+        val inwardsEffectDurationPadding: Long,
+        val outwardsEffectDuration: Long,
+    )
 }
 
 @SysUISingleton
@@ -81,7 +83,7 @@ constructor(
     private val userRepository: UserRepository,
     roleManager: RoleManager,
     @Background executor: Executor,
-    @Background coroutineContext: CoroutineContext,
+    @Background private val coroutineContext: CoroutineContext,
 ) : InvocationEffectPreferences {
 
     private val sharedPreferences by lazy {
@@ -120,7 +122,8 @@ constructor(
                 val changed = activeUser != userId || activeAssistant != assistant
                 if (changed) {
                     activeUser = userId
-                    activeAssistant = assistant
+                    activeAssistant =
+                        roleManager.getCurrentAssistantFor(userRepository.selectedUserHandle)
                 }
                 changed
             }
@@ -152,20 +155,12 @@ constructor(
                 initialValue = isInvocationEffectEnabledByAssistant(),
             )
 
-    override fun saveCurrentAssistant() {
-        setInPreferences { putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, activeAssistant) }
-    }
-
     private fun getSavedAssistant(): String =
         getOrDefault<String>(
             key = PERSISTED_FOR_ASSISTANT_PREFERENCE,
             default = "",
             checkUserAndAssistant = false,
         )
-
-    override fun saveCurrentUserId() {
-        setInPreferences { putInt(PERSISTED_FOR_USER_PREFERENCE, activeUser) }
-    }
 
     private fun getSavedUserId(): Int =
         getOrDefault<Int>(
@@ -174,31 +169,8 @@ constructor(
             checkUserAndAssistant = false,
         )
 
-    override fun setInvocationEffectEnabledByAssistant(enabled: Boolean) {
-        setInPreferences {
-            putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE, enabled)
-        }
-    }
-
     private fun isInvocationEffectEnabledByAssistant(): Boolean =
-        getOrDefault<Boolean>(
-            key = IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
-            default = true,
-            checkUserAndAssistant = true,
-        ) && activeAssistant.isNotEmpty()
-
-    override fun setInwardAnimationPaddingDurationMillis(duration: Long) {
-        setInPreferences {
-            if (duration in 0..1000) {
-                putLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, duration)
-            } else {
-                putLong(
-                    INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS,
-                    DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS,
-                )
-            }
-        }
-    }
+        isInvocationEffectEnabledInPreferences() && activeAssistant.isNotEmpty()
 
     override fun getInwardAnimationPaddingDurationMillis(): Long =
         getOrDefault<Long>(
@@ -207,20 +179,6 @@ constructor(
             checkUserAndAssistant = true,
         )
 
-    // TODO(b/418685731): Should we have a positive non-zero min value for out effect duration?
-    override fun setOutwardAnimationDurationMillis(duration: Long) {
-        setInPreferences {
-            if (duration in 0..1000) {
-                putLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, duration)
-            } else {
-                putLong(
-                    INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS,
-                    DEFAULT_OUTWARD_EFFECT_DURATION_MS,
-                )
-            }
-        }
-    }
-
     override fun getOutwardAnimationDurationMillis(): Long =
         getOrDefault<Long>(
             key = INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS,
@@ -228,11 +186,59 @@ constructor(
             checkUserAndAssistant = true,
         )
 
-    private fun isCurrentUserAndAssistantPersisted(): Boolean =
+    override fun isCurrentUserAndAssistantPersisted(): Boolean =
         activeUser == getSavedUserId() && activeAssistant == getSavedAssistant()
 
-    private fun setInPreferences(block: SharedPreferences.Editor.() -> Unit) {
-        bgScope.launch { sharedPreferences.edit { block() } }
+    override fun isInvocationEffectEnabledInPreferences(): Boolean =
+        getOrDefault<Boolean>(
+            key = IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+            default = DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+            checkUserAndAssistant = true,
+        )
+
+    override fun setInvocationEffectConfig(
+        config: InvocationEffectPreferences.Config,
+        saveActiveUserAndAssistant: Boolean,
+    ) {
+        bgScope.launch(context = coroutineContext) {
+            sharedPreferences.edit {
+                if (saveActiveUserAndAssistant) {
+                    putString(PERSISTED_FOR_ASSISTANT_PREFERENCE, activeAssistant)
+                    putInt(PERSISTED_FOR_USER_PREFERENCE, activeUser)
+                }
+
+                if (config.isEnabled != isInvocationEffectEnabledInPreferences()) {
+                    putBoolean(
+                        IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+                        config.isEnabled,
+                    )
+                }
+
+                if (
+                    config.inwardsEffectDurationPadding != getInwardAnimationPaddingDurationMillis()
+                ) {
+                    putLong(
+                        INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS,
+                        if (config.inwardsEffectDurationPadding in 0..1000) {
+                            config.inwardsEffectDurationPadding
+                        } else {
+                            DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
+                        },
+                    )
+                }
+
+                if (config.outwardsEffectDuration != getOutwardAnimationDurationMillis()) {
+                    putLong(
+                        INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS,
+                        if (config.outwardsEffectDuration in 100..1000) {
+                            config.outwardsEffectDuration
+                        } else {
+                            DEFAULT_OUTWARD_EFFECT_DURATION_MS
+                        },
+                    )
+                }
+            }
+        }
     }
 
     private inline fun <reified T> getOrDefault(
