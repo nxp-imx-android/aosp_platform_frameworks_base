@@ -40,6 +40,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
+import com.android.internal.policy.SystemBarUtils;
 
 public class AutoclickTypePanel {
 
@@ -134,6 +135,8 @@ public class AutoclickTypePanel {
     // Whether autoclick is paused.
     private boolean mPaused = false;
 
+    private int mStatusBarHeight = 0;
+
     // The current corner position of the panel, default to bottom right.
     private @Corner int mCurrentCorner = CORNER_BOTTOM_RIGHT;
 
@@ -197,6 +200,8 @@ public class AutoclickTypePanel {
         mLongPressButton =
                 mContentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
 
+        // Get status bar height.
+        mStatusBarHeight = SystemBarUtils.getStatusBarHeight(context);
         // Initialize the cursor icons.
         mCurrentCursor = PointerIcon.getSystemIcon(context, PointerIcon.TYPE_ARROW);
 
@@ -259,7 +264,12 @@ public class AutoclickTypePanel {
 
                     // Update panel position, based on Top-Left absolute positioning.
                     mParams.x = mPanelStartX + (int) deltaX;
-                    mParams.y = mPanelStartY + (int) deltaY;
+
+                    // Adjust Y by status bar height:
+                    // Note: mParams.y is relative to the content area (below the status bar),
+                    // but mPanelStartY uses absolute screen coordinates. Subtract status bar
+                    // height to align coordinates properly.
+                    mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
                     mWindowManager.updateViewLayout(mContentView, mParams);
                 }
                 return true;
@@ -747,6 +757,10 @@ public class AutoclickTypePanel {
     }
 
     @VisibleForTesting
+    int getStatusBarHeightForTesting() {
+        return mStatusBarHeight;
+    }
+
     PointerIcon getCurrentCursorForTesting() {
         return mCurrentCursor;
     }

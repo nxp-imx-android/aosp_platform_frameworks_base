@@ -351,7 +351,9 @@ public class AutoclickTypePanelTest {
         assertThat(mAutoclickTypePanel.getIsDraggingForTesting()).isTrue();
         assertThat(params.gravity).isEqualTo(Gravity.LEFT | Gravity.TOP);
         assertThat(params.x).isEqualTo(panelLocation[0] + delta);
-        assertThat(params.y).isEqualTo(panelLocation[1] + delta);
+        assertThat(params.y).isEqualTo(
+                Math.max(0, panelLocation[1] + delta
+                        - mAutoclickTypePanel.getStatusBarHeightForTesting()));
     }
 
     @Test
@@ -475,7 +477,9 @@ public class AutoclickTypePanelTest {
         assertThat(parts).hasLength(4);
         assertThat(Integer.parseInt(parts[0])).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(Integer.parseInt(parts[1])).isEqualTo(15);
-        assertThat(Integer.parseInt(parts[2])).isEqualTo(panelLocation[1] + 10);
+        assertThat(Integer.parseInt(parts[2])).isEqualTo(
+                Math.max(0, panelLocation[1] + 10
+                        - mAutoclickTypePanel.getStatusBarHeightForTesting()));
         assertThat(Integer.parseInt(parts[3])).isEqualTo(CORNER_BOTTOM_LEFT);
 
         // Show panel to trigger position restoration.
@@ -485,7 +489,8 @@ public class AutoclickTypePanelTest {
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(params.x).isEqualTo(15); // PANEL_EDGE_MARGIN
-        assertThat(params.y).isEqualTo(panelLocation[1] + 10);
+        assertThat(params.y).isEqualTo(Math.max(0,
+                panelLocation[1] + 10 - mAutoclickTypePanel.getStatusBarHeightForTesting()));
         assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 CORNER_BOTTOM_LEFT);
     }
