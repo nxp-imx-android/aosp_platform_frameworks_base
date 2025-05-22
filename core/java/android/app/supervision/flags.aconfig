@@ -98,20 +98,6 @@ flag {
 }
 
 flag {
-  name: "update_supervision_admin_dialog"
-  namespace: "supervision"
-  description: "Updates the supervision admin dialog customizations to be compatible with device supervision"
-  bug: "399481325"
-}
-
-flag {
-  name: "restrict_factory_reset"
-  namespace: "supervision"
-  description: "Enable restricting factory reset when device supervision is enabled and a supervision PIN recovery method is set"
-  bug: "383624414"
-}
-
-flag {
   name: "enable_remove_policies_on_supervision_disable"
   is_exported: false
   namespace: "supervision"
