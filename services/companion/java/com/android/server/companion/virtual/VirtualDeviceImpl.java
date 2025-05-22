@@ -151,6 +151,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     public static final long DO_NOT_SHOW_TOAST_WHEN_SECURE_SURFACE_SHOWN = 311101667L;
 
+    /**
+     * Check the {@link android.Manifest.permission.ADD_MIRROR_DISPLAY} permission instead of
+     * relying on the app streaming role. VDM clients must declare the new permission
+     * after {@link android.os.Build.VERSION_CODES#BAKLAVA}.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    public static final long CHECK_ADD_MIRROR_DISPLAY_PERMISSION = 378605160L;
+
     private static final int DEFAULT_VIRTUAL_DISPLAY_FLAGS =
             DisplayManager.VIRTUAL_DISPLAY_FLAG_TOUCH_FEEDBACK_DISABLED
                     | DisplayManager.VIRTUAL_DISPLAY_FLAG_DESTROY_CONTENT_ON_REMOVAL
@@ -1385,11 +1394,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
     @Override
     public boolean canCreateMirrorDisplays() {
-        if (!android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
+        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()
+                && CompatChanges.isChangeEnabled(CHECK_ADD_MIRROR_DISPLAY_PERMISSION,
+                    mOwnerPackageName,  UserHandle.getUserHandleForUid(mOwnerUid))) {
+          return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
+              == PackageManager.PERMISSION_GRANTED;
         }
-        return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
-                == PackageManager.PERMISSION_GRANTED;
+
+      // If the VDM owner app targets B or earlier, we rely on the role instead of the permission.
+      return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
     }
 
     private boolean hasCustomAudioInputSupportInternal() {
