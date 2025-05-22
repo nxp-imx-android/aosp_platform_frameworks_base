@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -197,6 +198,17 @@ private fun ChipBody(
                 icon = model.icon,
                 colors = model.colors,
                 modifier = Modifier.sysuiResTag(STATUS_BAR_CHIP_CONTENT_ID),
+            )
+        }
+
+        model.decorativeIcon?.let {
+            Icon(
+                icon = it.icon,
+                modifier =
+                    modifier
+                        .background(color = it.backgroundColor, shape = it.backgroundShape)
+                        .padding(vertical = 2.dp, horizontal = 8.dp)
+                        .size(12.dp),
             )
         }
     }

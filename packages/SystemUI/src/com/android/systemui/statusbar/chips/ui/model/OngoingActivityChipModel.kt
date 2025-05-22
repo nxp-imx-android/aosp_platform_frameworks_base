@@ -22,6 +22,8 @@ import android.annotation.StringRes
 import android.os.SystemClock
 import android.view.View
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
@@ -89,7 +91,8 @@ sealed class OngoingActivityChipModel {
         val isHidden: Boolean = false,
         /** Whether the transition from hidden to shown should be animated. */
         val shouldAnimate: Boolean = true,
-
+        /** A decorative icon to show on the end side of the chip. */
+        val decorativeIcon: DecorativeIcon? = null,
         /**
          * An optional per-chip ID used for logging. Should stay the same throughout the lifetime of
          * a single chip.
@@ -282,5 +285,12 @@ sealed class OngoingActivityChipModel {
          * not be visible but must be composed in order for the animation to start.
          */
         val hideChipForTransition: Boolean = false,
+    )
+
+    /** Represents a decorative icon to show on the right side of the chip. */
+    data class DecorativeIcon(
+        val icon: Icon,
+        val backgroundColor: Color,
+        val backgroundShape: Shape,
     )
 }
