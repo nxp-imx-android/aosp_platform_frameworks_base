@@ -30,30 +30,35 @@
         style="@style/Widget.Material3Expressive.MaterialButtonGroup.Connected"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:singleSelection="true"
         app:selectionRequired="true"
         app:checkedButton="@id/button_1">
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_1"
             android:layout_weight="1"
+            android:visibility="gone"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_2"
             android:layout_weight="1"
+            android:visibility="gone"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_3"
             android:layout_weight="1"
+            android:visibility="gone"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_4"
             android:layout_weight="1"
+            android:visibility="gone"
             app:iconPadding="0dp"
             app:iconGravity="textStart"
             style="@style/SettingsLibButtonStyle.Expressive.Tonal.Large"/>

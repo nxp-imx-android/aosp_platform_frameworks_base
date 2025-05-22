@@ -117,6 +117,11 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     }
 
     private fun applyButtonSetupData() {
+        // The button group is default gone to avoid NullPointerException
+        // if all children's visibility are GONE.
+        if(buttonSetupData.isNotEmpty()) {
+            buttonGroup?.isGone = false
+        }
         for ((index, config) in buttonSetupData) {
             applyButtonSetupData(index, config.first, config.second)
         }
