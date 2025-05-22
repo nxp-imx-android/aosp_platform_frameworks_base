@@ -39,29 +39,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 
 internal fun createSwipeAnimation(
-    layoutState: MutableSceneTransitionLayoutStateImpl,
-    result: UserActionResult,
-    isUpOrLeft: Boolean,
-    orientation: Orientation,
-    distance: Float,
-    gestureContext: MutableDragOffsetGestureContext,
-    decayAnimationSpec: DecayAnimationSpec<Float>,
-): SwipeAnimation<*> {
-    return createSwipeAnimation(
-        layoutState,
-        result,
-        isUpOrLeft,
-        orientation,
-        distance = { distance },
-        contentForUserActions = {
-            error("Computing contentForUserActions requires a SceneTransitionLayoutImpl")
-        },
-        gestureContext = gestureContext,
-        decayAnimationSpec = decayAnimationSpec,
-    )
-}
-
-internal fun createSwipeAnimation(
     layoutImpl: SceneTransitionLayoutImpl,
     result: UserActionResult,
     isUpOrLeft: Boolean,
@@ -108,7 +85,6 @@ internal fun createSwipeAnimation(
         layoutImpl.state,
         result,
         isUpOrLeft,
-        orientation,
         distance = ::distance,
         contentForUserActions = { layoutImpl.contentForUserActions().key },
         gestureContext = gestureContext,
@@ -120,7 +96,6 @@ private fun createSwipeAnimation(
     layoutState: MutableSceneTransitionLayoutStateImpl,
     result: UserActionResult,
     isUpOrLeft: Boolean,
-    orientation: Orientation,
     distance: (SwipeAnimation<*>) -> Float,
     contentForUserActions: () -> ContentKey,
     gestureContext: MutableDragOffsetGestureContext,
@@ -131,7 +106,6 @@ private fun createSwipeAnimation(
             layoutState = layoutState,
             fromContent = fromContent,
             toContent = toContent,
-            orientation = orientation,
             isUpOrLeft = isUpOrLeft,
             requiresFullDistanceSwipe = result.requiresFullDistanceSwipe,
             distance = distance,
@@ -201,11 +175,10 @@ private fun createSwipeAnimation(
 
 /** A helper class that contains the main logic for swipe transitions. */
 internal class SwipeAnimation<T : ContentKey>(
-    val layoutState: MutableSceneTransitionLayoutStateImpl,
+    private val layoutState: MutableSceneTransitionLayoutStateImpl,
     val fromContent: T,
     val toContent: T,
-    val orientation: Orientation,
-    val isUpOrLeft: Boolean,
+    private val isUpOrLeft: Boolean,
     val requiresFullDistanceSwipe: Boolean,
     private val distance: (SwipeAnimation<T>) -> Float,
     currentContent: T = fromContent,
@@ -241,7 +214,7 @@ internal class SwipeAnimation<T : ContentKey>(
             return computeProgress(offset)
         }
 
-    fun computeProgress(offset: Float): Float {
+    private fun computeProgress(offset: Float): Float {
         val distance = distance()
         if (distance == DistanceUnspecified) {
             return 0f
@@ -289,7 +262,7 @@ internal class SwipeAnimation<T : ContentKey>(
         // This animation will first be driven by finger, then when the user lift their finger we
         // start an animation to the target offset (progress = 1f or progress = 0f). We await() for
         // offsetAnimationRunnable to be completed and then run it.
-        val runAnimation = offsetAnimationRunnable.await() ?: return
+        val runAnimation = offsetAnimationRunnable.await()
         runAnimation()
     }
 
