@@ -18,7 +18,6 @@ package com.android.server.appop;
 
 import static android.app.AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE;
 import static android.app.AppOpsManager.HISTORY_FLAG_AGGREGATE;
-import static android.app.AppOpsManager.HISTORY_FLAG_DISCRETE;
 import static android.app.AppOpsManager.OP_ACCESS_ACCESSIBILITY;
 import static android.app.AppOpsManager.OP_ACCESS_NOTIFICATIONS;
 import static android.app.AppOpsManager.OP_BIND_ACCESSIBILITY_SERVICE;
@@ -550,11 +549,9 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         final AppOpsManager.HistoricalOps result =
                 new AppOpsManager.HistoricalOps(beginTimeMillis, endTimeMillis);
 
-        if ((historyFlags & HISTORY_FLAG_DISCRETE) != 0) {
-            mShortIntervalHistoryHelper.addShortIntervalOpsToHistoricalOpsResult(result,
-                    beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
-                    attributionTag, flags, new ArraySet<>(attributionExemptPkgs));
-        }
+        mShortIntervalHistoryHelper.addShortIntervalOpsToHistoricalOpsResult(result,
+                beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
+                attributionTag, flags, new ArraySet<>(attributionExemptPkgs), historyFlags);
         if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
             mLongIntervalHistoryHelper.addLongIntervalOpsToHistoricalOpsResult(result,
                     beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
