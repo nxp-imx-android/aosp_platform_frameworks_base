@@ -22,7 +22,15 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.KeyGestureEvent;
+import android.hardware.input.VirtualDpadConfig;
+import android.hardware.input.VirtualKeyboardConfig;
+import android.hardware.input.VirtualMouseConfig;
+import android.hardware.input.VirtualNavigationTouchpadConfig;
+import android.hardware.input.VirtualRotaryEncoderConfig;
+import android.hardware.input.VirtualStylusConfig;
+import android.hardware.input.VirtualTouchscreenConfig;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.SparseBooleanArray;
@@ -363,4 +371,88 @@ public abstract class InputManagerInternal {
      * trying again.
      */
     public abstract long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event);
+
+    /**
+     * Creates a new virtual keyboard.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+            @NonNull VirtualKeyboardConfig config);
+
+    /**
+     * Creates a new virtual mouse.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualMouse(@NonNull IBinder token,
+            @NonNull VirtualMouseConfig config);
+
+    /**
+     * Creates a new virtual touchscreen.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualTouchscreen(@NonNull IBinder token,
+            @NonNull VirtualTouchscreenConfig config);
+
+    /**
+     * Creates a new virtual navigation touchpad.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualNavigationTouchpad(@NonNull IBinder token,
+            @NonNull VirtualNavigationTouchpadConfig config);
+
+    /**
+     * Creates a new virtual dpad.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualDpad(@NonNull IBinder token,
+            @NonNull VirtualDpadConfig config);
+
+    /**
+     * Creates a new virtual stylus.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualStylus(@NonNull IBinder token,
+            @NonNull VirtualStylusConfig config);
+
+    /**
+     * Creates a new virtual rotary encoder.
+     *
+     * @param token token identifying the device
+     * @param config the input device configuration
+     * @return the new virtual input device, or {@code null} if the creation failed.
+     */
+    @NonNull
+    public abstract IVirtualInputDevice createVirtualRotaryEncoder(@NonNull IBinder token,
+            @NonNull VirtualRotaryEncoderConfig config);
+
+    /**
+     * Removes an input device with the given id.
+     *
+     * @param token token identifying the device to remove
+     */
+    public abstract void closeVirtualInputDevice(IBinder token);
 }

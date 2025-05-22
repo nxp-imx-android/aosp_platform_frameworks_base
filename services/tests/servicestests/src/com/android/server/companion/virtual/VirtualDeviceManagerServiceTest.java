@@ -26,13 +26,11 @@ import static android.content.Intent.ACTION_VIEW;
 import static android.content.pm.ActivityInfo.FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -80,7 +78,7 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
-import android.hardware.input.IInputManager;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
@@ -223,9 +221,8 @@ public class VirtualDeviceManagerServiceTest {
     public VirtualDeviceRule mVirtualDeviceRule = VirtualDeviceRule.createDefault();
 
     private Context mContext;
-    private InputManagerMockHelper mInputManagerMockHelper;
     private VirtualDeviceImpl mDeviceImpl;
-    private InputController mInputController;
+    private VirtualInputController mInputController;
     private SensorController mSensorController;
     private CameraAccessController mCameraAccessController;
     private AssociationInfo mAssociationInfo;
@@ -235,11 +232,11 @@ public class VirtualDeviceManagerServiceTest {
     private VirtualDeviceManagerService.VirtualDeviceManagerNativeImpl mVdmNative;
     private VirtualDeviceLog mVirtualDeviceLog;
     @Mock
-    private InputController.NativeWrapper mNativeWrapperMock;
-    @Mock
     private DisplayManagerInternal mDisplayManagerInternalMock;
     @Mock
     private IDisplayManager mIDisplayManager;
+    @Mock
+    private IVirtualInputDevice mIVirtualInputDevice;
     @Mock
     private WindowManager mWindowManager;
     @Mock
@@ -276,8 +273,6 @@ public class VirtualDeviceManagerServiceTest {
     private CameraAccessController.CameraAccessBlockedCallback mCameraAccessBlockedCallback;
     @Mock
     private ApplicationInfo mApplicationInfoMock;
-    @Mock
-    IInputManager mIInputManagerMock;
     @Mock
     private ViewConfigurationController mViewConfigurationControllerMock;
 
@@ -330,6 +325,10 @@ public class VirtualDeviceManagerServiceTest {
         LocalServices.removeServiceForTest(DisplayManagerInternal.class);
         LocalServices.addService(DisplayManagerInternal.class, mDisplayManagerInternalMock);
 
+        when(mInputManagerInternalMock.createVirtualTouchscreen(any(), any()))
+                .thenReturn(mIVirtualInputDevice);
+        when(mInputManagerInternalMock.createVirtualKeyboard(any(), any()))
+                .thenReturn(mIVirtualInputDevice);
         doNothing().when(mInputManagerInternalMock).setPointerIconVisible(anyBoolean(), anyInt());
         LocalServices.removeServiceForTest(InputManagerInternal.class);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternalMock);
@@ -356,28 +355,10 @@ public class VirtualDeviceManagerServiceTest {
                 mIThermalServiceMock,
                 new Handler(TestableLooper.get(this).getLooper()));
         when(mContext.getSystemService(Context.POWER_SERVICE)).thenReturn(powerManager);
-
-        when(mNativeWrapperMock.writeButtonEvent(anyLong(), anyInt(), anyInt(), anyLong()))
-                .thenReturn(true);
-        when(mNativeWrapperMock.writeRelativeEvent(anyLong(), anyFloat(), anyFloat(), anyLong()))
-                .thenReturn(true);
-        when(mNativeWrapperMock.writeScrollEvent(anyLong(), anyFloat(), anyFloat(), anyLong()))
-                .thenReturn(true);
-        when(mNativeWrapperMock.writeKeyEvent(anyLong(), anyInt(), anyInt(), anyLong()))
-                .thenReturn(true);
-        when(mNativeWrapperMock.writeTouchEvent(anyLong(), anyInt(), anyInt(), anyInt(),
-                anyFloat(), anyFloat(), anyFloat(), anyFloat(), anyLong()))
-                .thenReturn(true);
-
-        mInputManagerMockHelper = new InputManagerMockHelper(
-                TestableLooper.get(this), mNativeWrapperMock, mIInputManagerMock);
-        // Allow virtual devices to be created on the looper thread for testing.
-        final InputController.DeviceCreationThreadVerifier threadVerifier = () -> true;
-        mInputController = new InputController(mNativeWrapperMock,
-                new Handler(TestableLooper.get(this).getLooper()),
+        mInputController = new VirtualInputController(
                 InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(
                         InputManager.class), mWindowManager,
-                AttributionSource.myAttributionSource(), threadVerifier);
+                AttributionSource.myAttributionSource());
         mCameraAccessController =
                 new CameraAccessController(mContext, mLocalService, mCameraAccessBlockedCallback);
 
@@ -396,7 +377,6 @@ public class VirtualDeviceManagerServiceTest {
     @After
     public void tearDown() {
         mDeviceImpl.close();
-        mInputManagerMockHelper.tearDown();
     }
 
     @Test
@@ -654,13 +634,12 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    public void testIsInputDeviceOwnedByVirtualDevice() {
+    public void testIsInputDeviceOwnedByVirtualDevice() throws RemoteException {
+        when(mIVirtualInputDevice.getInputDeviceId()).thenReturn(INPUT_DEVICE_ID);
+
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isFalse();
 
-        final int fd = 1;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_KEYBOARD, DISPLAY_ID_1, PHYS,
-                DEVICE_NAME_1, INPUT_DEVICE_ID);
+        mInputController.addDeviceForTesting(BINDER, mIVirtualInputDevice);
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isTrue();
 
         mInputController.unregisterInputDevice(BINDER);
@@ -1081,37 +1060,6 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    public void createVirtualTouchscreen_zeroDisplayDimension_failsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new VirtualTouchscreenConfig.Builder(
-                        /* touchscrenWidth= */ 0, /* touchscreenHeight= */ 0));
-    }
-
-    @Test
-    public void createVirtualTouchscreen_negativeDisplayDimension_failsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new VirtualTouchscreenConfig.Builder(
-                        /* touchscrenWidth= */ -100, /* touchscreenHeight= */ -100));
-    }
-
-    @Test
-    public void createVirtualTouchscreen_positiveDisplayDimension_successful() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        VirtualTouchscreenConfig positiveConfig =
-                new VirtualTouchscreenConfig.Builder(
-                        /* touchscrenWidth= */ 600, /* touchscreenHeight= */ 800)
-                        .setVendorId(VENDOR_ID)
-                        .setProductId(PRODUCT_ID)
-                        .setInputDeviceName(DEVICE_NAME_1)
-                        .setAssociatedDisplayId(DISPLAY_ID_1)
-                        .build();
-        mDeviceImpl.createVirtualTouchscreen(positiveConfig, BINDER);
-        assertWithMessage(
-                "Virtual touchscreen should create input device descriptor on successful creation"
-                        + ".").that(mInputController.getInputDeviceDescriptors()).isNotEmpty();
-    }
-
-    @Test
     public void createVirtualNavigationTouchpad_noDisplay_failsSecurityException() {
         assertThrows(SecurityException.class,
                 () -> mDeviceImpl.createVirtualNavigationTouchpad(NAVIGATION_TOUCHPAD_CONFIG,
@@ -1127,75 +1075,10 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
-    public void createVirtualNavigationTouchpad_zeroDisplayDimension_failsWithException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new VirtualNavigationTouchpadConfig.Builder(
-                        /* touchpadHeight= */ 0, /* touchpadWidth= */ 0));
-    }
-
-    @Test
-    public void createVirtualNavigationTouchpad_negativeDisplayDimension_failsWithException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new VirtualNavigationTouchpadConfig.Builder(
-                        /* touchpadHeight= */ -50, /* touchpadWidth= */ 50));
-    }
-
-    @Test
-    public void createVirtualNavigationTouchpad_positiveDisplayDimension_successful() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        VirtualNavigationTouchpadConfig positiveConfig =
-                new VirtualNavigationTouchpadConfig.Builder(
-                        /* touchpadHeight= */ 50, /* touchpadWidth= */ 50)
-                        .setVendorId(VENDOR_ID)
-                        .setProductId(PRODUCT_ID)
-                        .setInputDeviceName(DEVICE_NAME_1)
-                        .setAssociatedDisplayId(DISPLAY_ID_1)
-                        .build();
-        mDeviceImpl.createVirtualNavigationTouchpad(positiveConfig, BINDER);
-        assertWithMessage(
-                "Virtual navigation touchpad should create input device descriptor on successful "
-                        + "creation"
-                        + ".").that(mInputController.getInputDeviceDescriptors()).isNotEmpty();
-    }
-
-    @Test
     public void onAudioSessionStarting_noDisplay_failsSecurityException() {
         assertThrows(SecurityException.class,
                 () -> mDeviceImpl.onAudioSessionStarting(
                         DISPLAY_ID_1, mRoutingCallback, mConfigChangedCallback));
-    }
-
-    @Test
-    public void createVirtualDpad_hasDisplay_obtainFileDescriptor() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        mDeviceImpl.createVirtualDpad(DPAD_CONFIG, BINDER);
-        assertWithMessage("Virtual dpad should register fd when the display matches").that(
-                mInputController.getInputDeviceDescriptors()).isNotEmpty();
-        verify(mNativeWrapperMock).openUinputDpad(eq(DEVICE_NAME_1), eq(VENDOR_ID), eq(PRODUCT_ID),
-                anyString());
-    }
-
-    @Test
-    public void createVirtualKeyboard_hasDisplay_obtainFileDescriptor() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        mDeviceImpl.createVirtualKeyboard(KEYBOARD_CONFIG, BINDER);
-        assertWithMessage("Virtual keyboard should register fd when the display matches").that(
-                mInputController.getInputDeviceDescriptors()).isNotEmpty();
-        verify(mNativeWrapperMock).openUinputKeyboard(eq(DEVICE_NAME_1), eq(VENDOR_ID),
-                eq(PRODUCT_ID), anyString());
-    }
-
-    @Test
-    public void createVirtualKeyboard_keyboardCreated_localeUpdated() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        mDeviceImpl.createVirtualKeyboard(KEYBOARD_CONFIG, BINDER);
-        assertWithMessage("Virtual keyboard should register fd when the display matches")
-                .that(mInputController.getInputDeviceDescriptors())
-                .isNotEmpty();
-        verify(mNativeWrapperMock).openUinputKeyboard(eq(DEVICE_NAME_1), eq(VENDOR_ID),
-                eq(PRODUCT_ID), anyString());
-        assertThat(mDeviceImpl.getDeviceLocaleList()).isEqualTo(
-                LocaleList.forLanguageTags(KEYBOARD_CONFIG.getLanguageTag()));
     }
 
     @Test
@@ -1210,11 +1093,6 @@ public class VirtualDeviceManagerServiceTest {
 
         addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
         mDeviceImpl.createVirtualKeyboard(configWithoutExplicitLayoutInfo, BINDER);
-        assertWithMessage("Virtual keyboard should register fd when the display matches")
-                .that(mInputController.getInputDeviceDescriptors())
-                .isNotEmpty();
-        verify(mNativeWrapperMock).openUinputKeyboard(eq(DEVICE_NAME_1), eq(VENDOR_ID),
-                eq(PRODUCT_ID), anyString());
         assertThat(mDeviceImpl.getDeviceLocaleList()).isEqualTo(
                 LocaleList.forLanguageTags(VirtualKeyboardConfig.DEFAULT_LANGUAGE_TAG));
     }
@@ -1225,48 +1103,6 @@ public class VirtualDeviceManagerServiceTest {
 
         // no preceding call to createVirtualKeyboard()
         assertThat(mDeviceImpl.getDeviceLocaleList()).isNull();
-    }
-
-    @Test
-    public void createVirtualMouse_hasDisplay_obtainFileDescriptor() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        mDeviceImpl.createVirtualMouse(MOUSE_CONFIG, BINDER);
-        assertWithMessage("Virtual mouse should register fd when the display matches").that(
-                mInputController.getInputDeviceDescriptors()).isNotEmpty();
-        verify(mNativeWrapperMock).openUinputMouse(eq(DEVICE_NAME_1), eq(VENDOR_ID), eq(PRODUCT_ID),
-                anyString());
-    }
-
-    @Test
-    public void createVirtualTouchscreen_hasDisplay_obtainFileDescriptor() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        mDeviceImpl.createVirtualTouchscreen(TOUCHSCREEN_CONFIG, BINDER);
-        assertWithMessage("Virtual touchscreen should register fd when the display matches").that(
-                mInputController.getInputDeviceDescriptors()).isNotEmpty();
-        verify(mNativeWrapperMock).openUinputTouchscreen(eq(DEVICE_NAME_1), eq(VENDOR_ID),
-                eq(PRODUCT_ID), anyString(), eq(HEIGHT), eq(WIDTH));
-    }
-
-    @Test
-    public void createVirtualNavigationTouchpad_hasDisplay_obtainFileDescriptor() {
-        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
-        mDeviceImpl.createVirtualNavigationTouchpad(NAVIGATION_TOUCHPAD_CONFIG, BINDER);
-        assertWithMessage("Virtual navigation touchpad should register fd when the display matches")
-                .that(
-                        mInputController.getInputDeviceDescriptors()).isNotEmpty();
-        verify(mNativeWrapperMock).openUinputTouchscreen(eq(DEVICE_NAME_1), eq(VENDOR_ID),
-                eq(PRODUCT_ID), anyString(), eq(HEIGHT), eq(WIDTH));
-    }
-
-    @Test
-    public void createVirtualKeyboard_inputDeviceId_obtainFromInputController() {
-        final int fd = 1;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_KEYBOARD, DISPLAY_ID_1, PHYS,
-                DEVICE_NAME_1, INPUT_DEVICE_ID);
-        assertWithMessage(
-                "InputController should return device id from InputDeviceDescriptor").that(
-                mInputController.getInputDeviceId(BINDER)).isEqualTo(INPUT_DEVICE_ID);
     }
 
     @Test
@@ -1724,7 +1560,6 @@ public class VirtualDeviceManagerServiceTest {
                         .setFlags(virtualDisplayFlags)
                         .build();
         virtualDevice.createVirtualDisplay(virtualDisplayConfig, mVirtualDisplayCallback);
-        mInputManagerMockHelper.addDisplayIdMapping(uniqueId, displayId);
     }
 
     private AssociationInfo createAssociationInfo(int associationId, String deviceProfile) {
