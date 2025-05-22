@@ -101,6 +101,12 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
                                 action.onPerformAction()
                                 collapse()
                             },
+                            actionType =
+                                when (action.actionType) {
+                                    "ma" -> ActionType.MA
+                                    "mr" -> ActionType.MR
+                                    else -> ActionType.Unknown
+                                },
                         )
                     }
                 },

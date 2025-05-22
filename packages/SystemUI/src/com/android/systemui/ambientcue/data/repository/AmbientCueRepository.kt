@@ -118,6 +118,7 @@ constructor(
                                 val title = chip.title.toString()
                                 val activityId =
                                     chip.extras?.getParcelable<ActivityId>(EXTRA_ACTIVITY_ID)
+                                val actionType = chip.extras?.getString(EXTRA_ACTION_TYPE)
                                 ActionModel(
                                     icon =
                                         chip.icon?.loadDrawable(applicationContext)
@@ -169,6 +170,7 @@ constructor(
                                         }
                                     },
                                     taskId = activityId?.taskId ?: INVALID_TASK_ID,
+                                    actionType = actionType,
                                 )
                             }
                     if (DEBUG) {
@@ -268,6 +270,7 @@ constructor(
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
         @VisibleForTesting const val EXTRA_ACTIVITY_ID = "activityId"
         @VisibleForTesting const val EXTRA_AUTOFILL_ID = "autofillId"
+        private const val EXTRA_ACTION_TYPE = "actionType"
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
