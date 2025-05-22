@@ -17,6 +17,8 @@
 package com.android.systemui.ambientcue.ui.view
 
 import android.content.Context
+import android.graphics.Rect
+import android.graphics.Region
 import android.view.Gravity
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -62,7 +64,21 @@ constructor(
                         AmbientCueContainer(
                             modifier = Modifier.fillMaxSize(),
                             ambientCueViewModelFactory = ambientCueViewModelFactory,
-                            onShouldInterceptTouches = { interceptTouches ->
+                            onShouldInterceptTouches = { interceptTouches, touchableRegion ->
+                                val region =
+                                    if (touchableRegion == null) null
+                                    else
+                                        Region(
+                                            Rect(
+                                                /* left = */ touchableRegion.left.toInt(),
+                                                /* top = */ touchableRegion.top.toInt(),
+                                                /* right = */ touchableRegion.right.toInt(),
+                                                /* bottom = */ touchableRegion.bottom.toInt(),
+                                            )
+                                        )
+                                this@AmbientCueWindowRootView.viewRootImpl?.setTouchableRegion(
+                                    region
+                                )
                                 windowManager.updateViewLayout(
                                     this@AmbientCueWindowRootView,
                                     AmbientCueUtils.getAmbientCueLayoutParams(
