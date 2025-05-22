@@ -2620,9 +2620,13 @@ class Task extends TaskFragment {
 
     /** Return the top-most leaf-task under this one, or this task if it is a leaf. */
     public Task getTopLeafTask() {
+        return getTopLeafTask(alwaysTruePredicate());
+    }
+
+    Task getTopLeafTask(Predicate<Task> filter) {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final Task child = mChildren.get(i).asTask();
-            if (child == null) continue;
+            if (child == null || !filter.test(child)) continue;
             return child.getTopLeafTask();
         }
         return this;

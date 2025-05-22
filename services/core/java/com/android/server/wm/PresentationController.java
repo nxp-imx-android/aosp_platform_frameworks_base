@@ -125,8 +125,7 @@ class PresentationController implements DisplayManager.DisplayListener {
         }
 
         final int displayId = displayContent.mDisplayId;
-        if (hasPresentationWindow(displayId)
-                && win != null && win != mPresentations.get(displayId).mWin) {
+        if (hasPresentationWindow(displayId) && win != mPresentations.get(displayId).mWin) {
             // A display can't have multiple presentations.
             return false;
         }
@@ -137,7 +136,7 @@ class PresentationController implements DisplayManager.DisplayListener {
             hostTask = presentation.mHostTask;
         } else if (win == null) {
             final Task globallyFocusedTask =
-                    displayContent.mWmService.mRoot.getTopDisplayFocusedRootTask();
+                    displayContent.mWmService.mRoot.getTopDisplayFocusedLeafTask();
             if (globallyFocusedTask != null && uid == globallyFocusedTask.effectiveUid) {
                 hostTask = globallyFocusedTask;
             }
@@ -195,7 +194,7 @@ class PresentationController implements DisplayManager.DisplayListener {
         Task hostTask = null;
         if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()) {
             final Task globallyFocusedTask =
-                    win.mWmService.mRoot.getTopDisplayFocusedRootTask();
+                    win.mWmService.mRoot.getTopDisplayFocusedLeafTask();
             if (globallyFocusedTask != null && uid == globallyFocusedTask.effectiveUid) {
                 hostTask = globallyFocusedTask;
             }

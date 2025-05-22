@@ -228,6 +228,31 @@ public class PresentationControllerTests extends WindowTestsBase {
         assertFalse(window.isVisible());
     }
 
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testNewPresentationCannotShowOnPresentingDesk() {
+        int uid = Binder.getCallingUid();
+        final DisplayContent presentationDisplay = createPresentationDisplay();
+
+        // Emulate the multi desk environment, where a desk task is created and have apps as child
+        // tasks.
+        final Task rootDeskTask = createTask(presentationDisplay);
+        rootDeskTask.effectiveUid = uid + 1;
+        final Task leafTask = createTaskInRootTask(rootDeskTask, uid);
+        leafTask.effectiveUid = uid;
+        final ActivityRecord activity = createActivityRecord(leafTask);
+        assertTrue(activity.isVisible());
+
+        // Adding a presentation window on the other display must succeed.
+        final WindowState window = addPresentationWindow(uid, DEFAULT_DISPLAY);
+        final Transition addTransition = window.mTransitionController.getCollectingTransition();
+        completeTransition(addTransition, /*abortSync=*/ true);
+        assertTrue(window.isVisible());
+
+        // Adding another presentation window over the presentation must fail.
+        assertAddPresentationWindowFails(uid, DEFAULT_DISPLAY);
+    }
+
     private WindowState addPresentationWindow(int uid, int displayId) {
         final Session session = createTestSession(mAtm, 1234 /* pid */, uid);
         final int userId = UserHandle.getUserId(uid);
@@ -271,6 +296,14 @@ public class PresentationControllerTests extends WindowTestsBase {
         final int displayId = dc.getDisplayId();
         doReturn(dc).when(mWm.mRoot).getDisplayContentOrCreate(displayId);
         return dc;
+    }
+
+    static ActivityRecord createActivityRecord(Task task) {
+        final ActivityRecord activity = createActivityRecord(task.getDisplayContent(), task);
+        // PresentationController finds a host task based on the top resumed activity, so make sure
+        // to set activity to be resumed in the parent task.
+        task.setResumedActivity(activity, "createActivityRecord");
+        return activity;
     }
 
     private void completeTransition(@NonNull Transition transition, boolean abortSync) {
