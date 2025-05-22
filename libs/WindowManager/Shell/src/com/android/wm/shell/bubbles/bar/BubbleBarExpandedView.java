@@ -286,7 +286,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             }
 
             // Handle view needs to draw on top of task view.
-            bringChildToFront(mHandleView);
+            mHandleView.setElevation(1);
 
             mHandleView.setAccessibilityDelegate(new HandleViewAccessibilityDelegate());
         }
