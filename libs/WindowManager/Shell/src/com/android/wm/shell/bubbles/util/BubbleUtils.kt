@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles.util
 
 import android.app.WindowConfiguration
+import android.graphics.Rect
 import android.os.Binder
 import android.view.WindowInsets
 import android.window.WindowContainerToken
@@ -65,6 +66,10 @@ private fun getBubbleTransaction(
     }
     if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
         wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
+        if (!toBubble) {
+            // Clear bounds if moving out of Bubble.
+            wct.setBounds(token, Rect())
+        }
     }
     if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithAppCompatFixes()) {
         if (!toBubble && captionInsetsOwner != null) {
