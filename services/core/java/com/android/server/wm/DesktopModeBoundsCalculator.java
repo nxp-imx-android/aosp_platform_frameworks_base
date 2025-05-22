@@ -40,6 +40,7 @@ import android.os.SystemProperties;
 import android.util.Size;
 import android.view.Display;
 import android.view.Gravity;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import java.util.function.Consumer;
@@ -243,7 +244,7 @@ public final class DesktopModeBoundsCalculator {
     private static @Configuration.Orientation int getActivityConfigurationOrientation(
             @NonNull ActivityRecord activity, @NonNull Task task,
             @Configuration.Orientation int stableBoundsOrientation) {
-        if (DesktopModeFlags.PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH.isTrue()
+        if (DesktopExperienceFlags.PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH.isTrue()
                 && task.inRecents && task.topRunningActivity() != null) {
             // If task in resents with running activity, inherit existing activity orientation.
             final WindowConfiguration windowConfiguration =
