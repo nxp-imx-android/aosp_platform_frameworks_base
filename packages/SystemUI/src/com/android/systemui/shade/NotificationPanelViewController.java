@@ -230,7 +230,7 @@ public final class NotificationPanelViewController implements
         ShadeSurface, Dumpable, BrightnessMirrorShowingInteractor {
 
     public static final String TAG = NotificationPanelView.class.getSimpleName();
-    private static final boolean DEBUG_LOGCAT = Compile.IS_DEBUG || Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG_LOGCAT = Log.isLoggable(TAG, Log.DEBUG);
     private static final boolean DEBUG_DRAWABLE = false;
     /** The parallax amount of the quick settings translation when dragging down the panel. */
     public static final float QS_PARALLAX_AMOUNT = 0.175f;
