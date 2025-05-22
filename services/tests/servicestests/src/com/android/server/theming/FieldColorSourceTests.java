@@ -33,8 +33,13 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class FieldColorSourceTests {
-    static final ThemeSettings DEFAULTS = new ThemeSettings(1, 0xFF123456, 0xFF654321,
-            "home_wallpaper", ThemeStyle.VIBRANT, true);
+    public static final ThemeSettings DEFAULTS = new ThemeSettings(
+            /* colorIndex= */ 1,
+            /* systemPalette= */ 0xFF123456,
+            /* accentColor= */ 0xFF654321,
+            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
+            /* themeStyle= */ ThemeStyle.VIBRANT,
+            /* colorBoth= */ true);
     private FieldColorSource mFieldColorSource;
 
     @Before
@@ -47,31 +52,31 @@ public class FieldColorSourceTests {
 
     @Test
     public void parse_validColorSource_returnsSameString() {
-        String validColorSource = "home_wallpaper";
+        String validColorSource = FieldColorSource.VALUE_HOME_WALLPAPER;
         String parsedValue = mFieldColorSource.parse(validColorSource);
         assertThat(parsedValue).isEqualTo(validColorSource);
     }
 
     @Test
     public void serialize_validColorSource_returnsSameString() {
-        String validColorSource = "lock_wallpaper";
+        String validColorSource = FieldColorSource.VALUE_LOCK_WALLPAPER;
         String serializedValue = mFieldColorSource.serialize(validColorSource);
         assertThat(serializedValue).isEqualTo(validColorSource);
     }
 
     @Test
     public void validate_preset_returnsTrue() {
-        assertThat(mFieldColorSource.validate("preset")).isTrue();
+        assertThat(mFieldColorSource.validate(FieldColorSource.VALUE_PRESET)).isTrue();
     }
 
     @Test
     public void validate_homeWallpaper_returnsTrue() {
-        assertThat(mFieldColorSource.validate("home_wallpaper")).isTrue();
+        assertThat(mFieldColorSource.validate(FieldColorSource.VALUE_HOME_WALLPAPER)).isTrue();
     }
 
     @Test
     public void validate_lockWallpaper_returnsTrue() {
-        assertThat(mFieldColorSource.validate("lock_wallpaper")).isTrue();
+        assertThat(mFieldColorSource.validate(FieldColorSource.VALUE_LOCK_WALLPAPER)).isTrue();
     }
 
     @Test

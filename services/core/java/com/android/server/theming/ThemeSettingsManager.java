@@ -91,7 +91,7 @@ class ThemeSettingsManager {
      *
      * @param userId          The ID of the user.
      * @param contentResolver The content resolver to use.
-     * @param updater     The {@link ThemeSettingsUpdater} to save.
+     * @param updater         The {@link ThemeSettingsUpdater} to save.
      */
     void replaceSettings(@UserIdInt int userId, ContentResolver contentResolver,
             ThemeSettingsUpdater updater) throws RuntimeException {

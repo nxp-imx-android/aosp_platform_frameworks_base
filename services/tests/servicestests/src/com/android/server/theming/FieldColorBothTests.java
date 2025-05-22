@@ -19,6 +19,7 @@ package com.android.server.theming;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.theming.FieldColorBoth;
+import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
@@ -32,8 +33,13 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class FieldColorBothTests {
-    static final ThemeSettings DEFAULTS = new ThemeSettings(1, 0xFF123456, 0xFF654321,
-            "home_wallpaper", ThemeStyle.VIBRANT, true);
+    public static final ThemeSettings DEFAULTS = new ThemeSettings(
+            /* colorIndex= */ 1,
+            /* systemPalette= */ 0xFF123456,
+            /* accentColor= */ 0xFF654321,
+            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
+            /* themeStyle= */ ThemeStyle.VIBRANT,
+            /* colorBoth= */ true);
     private FieldColorBoth mFieldColorBoth;
 
     @Before

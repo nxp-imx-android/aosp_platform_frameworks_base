@@ -16,12 +16,18 @@
 
 package android.content.theming;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * A class defining the different styles available for theming.
@@ -49,7 +55,8 @@ public final class ThemeStyle {
             CLOCK,
             CLOCK_VIBRANT
     })
-    @Retention(RetentionPolicy.SOURCE)
+    @Retention(SOURCE)
+    @Target({PARAMETER, METHOD, LOCAL_VARIABLE, FIELD})
     public @interface Type {
     }
 
@@ -148,7 +155,7 @@ public final class ThemeStyle {
     }
 
     /**
-     * Returns the name of the given style. This method is equivalent to {@link #toString(int)}.
+     * Returns the name of the given style. This method is equivalent to {@link #toString(Integer)}.
      *
      * @param style The style value.
      * @return The name of the style.

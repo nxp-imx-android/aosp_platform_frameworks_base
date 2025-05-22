@@ -24,6 +24,8 @@ import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.json.JSONObject;
+
 import java.util.Objects;
 
 /**
@@ -39,28 +41,19 @@ public class ThemeSettingsUpdater implements Parcelable {
     private Integer mAccentColor;
     private Boolean mColorBoth;
     private Integer mColorIndex;
+    @FieldColorSource.Type
     private String mColorSource;
     @ColorInt
     private Integer mSystemPalette;
+    @ThemeStyle.Type
     private Integer mThemeStyle;
-
-    ThemeSettingsUpdater(Integer colorIndex, @ColorInt Integer systemPalette,
-            @ColorInt Integer accentColor, @FieldColorSource.Type String colorSource,
-            @ThemeStyle.Type Integer themeStyle, Boolean colorBoth) {
-        this.mAccentColor = accentColor;
-        this.mColorBoth = colorBoth;
-        this.mColorIndex = colorIndex;
-        this.mColorSource = colorSource;
-        this.mSystemPalette = systemPalette;
-        this.mThemeStyle = themeStyle;
-    }
 
     ThemeSettingsUpdater() {
     }
 
     // only reading basic JVM types for nullability
     @SuppressLint("ParcelClassLoader")
-    protected ThemeSettingsUpdater(Parcel in) {
+    private ThemeSettingsUpdater(Parcel in) {
         mAccentColor = (Integer) in.readValue(null);
         mColorBoth = (Boolean) in.readValue(null);
         mColorIndex = (Integer) in.readValue(null);
@@ -117,6 +110,7 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The system palette color.
      */
+    @ColorInt
     public Integer getSystemPalette() {
         return mSystemPalette;
     }
@@ -137,6 +131,7 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The accent color.
      */
+    @ColorInt
     public Integer getAccentColor() {
         return mAccentColor;
     }
@@ -157,6 +152,7 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The theme style.
      */
+    @ThemeStyle.Type
     public Integer getThemeStyle() {
         return mThemeStyle;
     }
@@ -177,6 +173,7 @@ public class ThemeSettingsUpdater implements Parcelable {
      *
      * @return The color source.
      */
+    @FieldColorSource.Type
     public String getColorSource() {
         return mColorSource;
     }
@@ -207,8 +204,7 @@ public class ThemeSettingsUpdater implements Parcelable {
      * @return A new {@link ThemeSettings} object.
      */
     public ThemeSettings toThemeSettings(@NonNull ThemeSettings defaults) {
-        return new ThemeSettings(
-                Objects.requireNonNullElse(mColorIndex, defaults.colorIndex()),
+        return new ThemeSettings(Objects.requireNonNullElse(mColorIndex, defaults.colorIndex()),
                 Objects.requireNonNullElse(mSystemPalette, defaults.systemPalette()),
                 Objects.requireNonNullElse(mAccentColor, defaults.accentColor()),
                 Objects.requireNonNullElse(mColorSource, defaults.colorSource()),
@@ -221,16 +217,33 @@ public class ThemeSettingsUpdater implements Parcelable {
         return 0;
     }
 
-    public static final Creator<ThemeSettingsUpdater> CREATOR =
-            new Creator<>() {
-                @Override
-                public ThemeSettingsUpdater createFromParcel(Parcel in) {
-                    return new ThemeSettingsUpdater(in);
-                }
+    public static final Creator<ThemeSettingsUpdater> CREATOR = new Creator<>() {
+        @Override
+        public ThemeSettingsUpdater createFromParcel(Parcel in) {
+            return new ThemeSettingsUpdater(in);
+        }
 
-                @Override
-                public ThemeSettingsUpdater[] newArray(int size) {
-                    return new ThemeSettingsUpdater[size];
-                }
-            };
+        @Override
+        public ThemeSettingsUpdater[] newArray(int size) {
+            return new ThemeSettingsUpdater[size];
+        }
+    };
+
+    @Override
+    public String toString() {
+        JSONObject obj = new JSONObject();
+
+        try {
+            obj.append("accentColor", mAccentColor);
+            obj.append("colorBoth", mColorBoth);
+            obj.append("colorIndex", mColorIndex);
+            obj.append("colorSource", mColorSource);
+            obj.append("systemPalette", mSystemPalette);
+            obj.append("themeStyle", mThemeStyle);
+
+            return obj.toString(4);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
 }

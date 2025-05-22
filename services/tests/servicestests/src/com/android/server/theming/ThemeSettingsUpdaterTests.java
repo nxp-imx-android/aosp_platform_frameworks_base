@@ -18,6 +18,7 @@ package com.android.server.theming;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
@@ -35,7 +36,7 @@ public class ThemeSettingsUpdaterTests {
             /* colorIndex= */ 1,
             /* systemPalette= */ 0xFF123456,
             /* accentColor= */ 0xFF654321,
-            /* colorSource= */ "home_wallpaper",
+            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
             /* themeStyle= */ ThemeStyle.VIBRANT,
             /* colorBoth= */ true);
     private ThemeSettingsUpdater mUpdater;
@@ -65,8 +66,8 @@ public class ThemeSettingsUpdaterTests {
 
     @Test
     public void testSetAndGetColorSource() {
-        mUpdater.colorSource("lock_wallpaper");
-        assertThat(mUpdater.getColorSource()).isEqualTo("lock_wallpaper");
+        mUpdater.colorSource(FieldColorSource.VALUE_LOCK_WALLPAPER);
+        assertThat(mUpdater.getColorSource()).isEqualTo(FieldColorSource.VALUE_LOCK_WALLPAPER);
     }
 
     @Test
@@ -87,7 +88,7 @@ public class ThemeSettingsUpdaterTests {
         mUpdater.colorIndex(5)
                 .systemPalette(0xFFABCDEF)
                 .accentColor(0xFFFEDCBA)
-                .colorSource("lock_wallpaper")
+                .colorSource(FieldColorSource.VALUE_LOCK_WALLPAPER)
                 .themeStyle(ThemeStyle.EXPRESSIVE)
                 .colorBoth(false);
         ThemeSettings settings = mUpdater.toThemeSettings(DEFAULTS);
@@ -95,7 +96,7 @@ public class ThemeSettingsUpdaterTests {
         assertThat(settings.colorIndex()).isEqualTo(5);
         assertThat(settings.systemPalette()).isEqualTo(0xFFABCDEF);
         assertThat(settings.accentColor()).isEqualTo(0xFFFEDCBA);
-        assertThat(settings.colorSource()).isEqualTo("lock_wallpaper");
+        assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_LOCK_WALLPAPER);
         assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
         assertThat(settings.colorBoth()).isFalse();
     }
@@ -120,7 +121,7 @@ public class ThemeSettingsUpdaterTests {
         mUpdater.colorIndex(5)
                 .systemPalette(0xFFABCDEF)
                 .accentColor(0xFFFEDCBA)
-                .colorSource("lock_wallpaper")
+                .colorSource(FieldColorSource.VALUE_LOCK_WALLPAPER)
                 .themeStyle(ThemeStyle.EXPRESSIVE)
                 .colorBoth(false);
 
@@ -132,7 +133,7 @@ public class ThemeSettingsUpdaterTests {
         assertThat(fromParcel.getColorIndex()).isEqualTo(5);
         assertThat(fromParcel.getSystemPalette()).isEqualTo(0xFFABCDEF);
         assertThat(fromParcel.getAccentColor()).isEqualTo(0xFFFEDCBA);
-        assertThat(fromParcel.getColorSource()).isEqualTo("lock_wallpaper");
+        assertThat(fromParcel.getColorSource()).isEqualTo(FieldColorSource.VALUE_LOCK_WALLPAPER);
         assertThat(fromParcel.getThemeStyle()).isEqualTo(ThemeStyle.EXPRESSIVE);
         assertThat(fromParcel.getColorBoth()).isFalse();
     }

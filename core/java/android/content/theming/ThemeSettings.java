@@ -23,6 +23,8 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONObject;
+
 import java.util.Objects;
 
 /**
@@ -35,10 +37,14 @@ import java.util.Objects;
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public final class ThemeSettings implements Parcelable {
     private final int mColorIndex;
+    @ColorInt
     private final int mSystemPalette;
+    @ColorInt
     private final int mAccentColor;
     @NonNull
+    @FieldColorSource.Type
     private final String mColorSource;
+    @ThemeStyle.Type
     private final int mThemeStyle;
     private final boolean mColorBoth;
 
@@ -53,8 +59,8 @@ public final class ThemeSettings implements Parcelable {
      * @param colorBoth     The color combination.
      */
 
-    public ThemeSettings(int colorIndex, @ColorInt int systemPalette,
-            @ColorInt int accentColor, @NonNull String colorSource, int themeStyle,
+    public ThemeSettings(int colorIndex, @ColorInt int systemPalette, @ColorInt int accentColor,
+            @NonNull @FieldColorSource.Type String colorSource, @ThemeStyle.Type int themeStyle,
             boolean colorBoth) {
 
         this.mAccentColor = accentColor;
@@ -153,12 +159,9 @@ public final class ThemeSettings implements Parcelable {
             return true;
         }
 
-        return obj instanceof ThemeSettings other
-                && mColorIndex == other.mColorIndex
-                && mSystemPalette == other.mSystemPalette
-                && mAccentColor == other.mAccentColor
-                && mColorSource.equals(other.mColorSource)
-                && mThemeStyle == other.mThemeStyle
+        return obj instanceof ThemeSettings other && mColorIndex == other.mColorIndex
+                && mSystemPalette == other.mSystemPalette && mAccentColor == other.mAccentColor
+                && mColorSource.equals(other.mColorSource) && mThemeStyle == other.mThemeStyle
                 && mColorBoth == other.mColorBoth;
     }
 
@@ -197,4 +200,23 @@ public final class ThemeSettings implements Parcelable {
     public static ThemeSettingsUpdater updater() {
         return new ThemeSettingsUpdater();
     }
+
+    @Override
+    public String toString() {
+        JSONObject obj = new JSONObject();
+
+        try {
+            obj.append("accentColor", mAccentColor);
+            obj.append("colorBoth", mColorBoth);
+            obj.append("colorIndex", mColorIndex);
+            obj.append("colorSource", mColorSource);
+            obj.append("systemPalette", mSystemPalette);
+            obj.append("themeStyle", mThemeStyle);
+
+            return obj.toString(4);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
 }
