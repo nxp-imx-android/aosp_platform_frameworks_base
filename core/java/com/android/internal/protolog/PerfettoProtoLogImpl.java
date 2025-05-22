@@ -62,6 +62,9 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.IProtoLogConfigurationService.RegisterClientArgs;
+import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingFlushCallback;
+import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingInstanceStartCallback;
+import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingInstanceStopCallback;
 import com.android.internal.protolog.common.ILogger;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
@@ -93,7 +96,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * A service for the ProtoLog logging system.
  */
-public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implements IProtoLog {
+public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implements IProtoLog,
+        TracingInstanceStartCallback, TracingInstanceStopCallback, TracingFlushCallback {
     private static final String LOG_TAG = "ProtoLog";
     public static final String NULL_STRING = "null";
     private final AtomicInteger mTracingInstances = new AtomicInteger();
@@ -172,9 +176,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             connectToConfigurationService();
         }
 
-        mDataSource.registerOnStartCallback(this::onTracingInstanceStart);
-        mDataSource.registerOnFlushCallback(this::onTracingFlush);
-        mDataSource.registerOnStopCallback(this::onTracingInstanceStop);
+        mDataSource.registerOnStartCallback(this);
+        mDataSource.registerOnFlushCallback(this);
+        mDataSource.registerOnStopCallback(this);
     }
 
     private void connectToConfigurationService() {
@@ -207,9 +211,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * the datasource and the configuration service to ensure we no longer receive the callback.
      */
     public void disable() {
-        mDataSource.unregisterOnStartCallback(this::onTracingInstanceStart);
-        mDataSource.unregisterOnFlushCallback(this::onTracingFlush);
-        mDataSource.unregisterOnStopCallback(this::onTracingInstanceStop);
+        mDataSource.unregisterOnStartCallback(this);
+        mDataSource.unregisterOnFlushCallback(this);
+        mDataSource.unregisterOnStopCallback(this);
 
         if (android.tracing.Flags.clientSideProtoLogging()) {
             try {
@@ -419,7 +423,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
     }
 
-    private void onTracingFlush() {
+    @Override
+    public void onTracingFlush() {
         Log.d(LOG_TAG, "Executing onTracingFlush");
         waitForExistingBackgroundTasksToComplete();
 
@@ -747,7 +752,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return -1;
     }
 
-    private void onTracingInstanceStart(
+    @Override
+    public void onTracingInstanceStart(
             int instanceIdx, ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStart");
 
@@ -790,7 +796,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         this.mTracingInstances.incrementAndGet();
     }
 
-    private synchronized void onTracingInstanceStop(
+    @Override
+    public synchronized void onTracingInstanceStop(
             int instanceIdx, ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStop");
 
