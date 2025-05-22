@@ -29,3 +29,13 @@ val TEST_BUNDLE_SPEC =
         bucket = BUCKET_RECS,
         bundleType = 0,
     )
+
+val TEST_BUNDLE_SPEC_2 =
+    BundleSpec(
+        key = "Test Bundle 2",
+        titleText = R.string.recs_notification_channel_label,
+        summaryText = R.string.redacted_notification_action_title,
+        icon = R.drawable.ic_settings,
+        bucket = BUCKET_RECS,
+        bundleType = 0,
+    )

@@ -274,6 +274,9 @@ public class NotificationGroupingUtil {
      * Reset the modifications to this row for removing it from the group.
      */
     public void restoreChildNotification(ExpandableNotificationRow row) {
+        if (row.getNotificationViewWrapper() == null) {
+            return;
+        }
         for (int compI = 0; compI < mProcessors.size(); compI++) {
             mProcessors.get(compI).apply(row, true /* reset */);
         }
