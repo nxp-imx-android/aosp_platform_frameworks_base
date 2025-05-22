@@ -666,7 +666,8 @@ public class Transitions implements RemoteCallable<Transitions>,
                 continue;
             }
             // Don't reparent display level if only changing order (since root will be inside it).
-            if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)) {
+            if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
+                    && change.getStartRotation() == change.getEndRotation()) {
                 continue;
             }
 

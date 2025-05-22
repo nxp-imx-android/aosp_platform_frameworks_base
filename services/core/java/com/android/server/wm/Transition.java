@@ -3358,7 +3358,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 continue;
             }
             // Skip order-only display-level changes since the display itself isn't changing.
-            if (wc.asDisplayContent() != null && isOrderOnly(change)) {
+            if (wc.asDisplayContent() != null && isOrderOnly(change)
+                    && change.mRotation == wc.getWindowConfiguration().getRotation()) {
                 continue;
             }
             // Re-initiate the last parent as the initial ancestor instead of the top target.
