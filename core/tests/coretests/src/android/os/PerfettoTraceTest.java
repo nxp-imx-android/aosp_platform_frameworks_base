@@ -32,16 +32,11 @@ import android.util.ArraySet;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.google.protobuf.ExtensionRegistryLite;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import perfetto.protos.AndroidTrackEventOuterClass;
-import perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue;
-import perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent;
 import perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo;
 import perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo.ComponentInfo;
 import perfetto.protos.DataSourceConfigOuterClass.DataSourceConfig;
@@ -62,11 +57,8 @@ import perfetto.protos.TrackEventOuterClass.EventCategory;
 import perfetto.protos.TrackEventOuterClass.EventName;
 import perfetto.protos.TrackEventOuterClass.TrackEvent;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is used to test the native tracing support. Run this test
@@ -613,135 +605,6 @@ public class PerfettoTraceTest {
 
         assertThat(mDebugAnnotationNames).contains("after");
         assertThat(mDebugAnnotationNames).doesNotContain("before");
-    }
-
-    @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
-    public void testMessageQueue() throws Exception {
-        PerfettoTrace.MQ_CATEGORY.register();
-        final String mqReceiverThreadName = "mq_test_thread";
-        final String mqSenderThreadName = Thread.currentThread().getName();
-        final HandlerThread thread = new HandlerThread(mqReceiverThreadName);
-        thread.start();
-        final Handler handler = thread.getThreadHandler();
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        PerfettoTrace.Session session = new PerfettoTrace.Session(true,
-                getTraceConfig("mq").toByteArray());
-
-        final int eventsCount = 4;
-
-        handler.sendEmptyMessage(MESSAGE);
-        handler.sendEmptyMessageDelayed(MESSAGE_DELAYED, 10);
-        handler.sendEmptyMessage(MESSAGE);
-        handler.postDelayed(() -> {
-            latch.countDown();
-        }, 20);
-        assertThat(latch.await(100, TimeUnit.MILLISECONDS)).isTrue();
-
-        ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
-        AndroidTrackEventOuterClass.registerAllExtensions(registry);
-
-        Trace trace = Trace.parseFrom(session.close(), registry);
-
-        int counterCount = 0;
-        int sliceEndEventCount = 0;
-
-        Long counterTrackUuid = null;
-        ArrayList<AndroidMessageQueue> messageQueueSendEvents = new ArrayList<>();
-        ArrayList<Long> messageQueueSendFlowIds = new ArrayList<>();
-        ArrayList<AndroidMessageQueue> messageQueueReceiveEvents = new ArrayList<>();
-        ArrayList<Long> messageQueueReceiveTerminateFlowIds = new ArrayList<>();
-
-        for (TracePacket packet : trace.getPacketList()) {
-            if (packet.hasTrackDescriptor()) {
-                TrackDescriptor trackDescriptor = packet.getTrackDescriptor();
-                if (trackDescriptor.getName().equals(mqReceiverThreadName)
-                        && trackDescriptor.hasCounter()) {
-                    counterTrackUuid = trackDescriptor.getUuid();
-                }
-            } else if (packet.hasTrackEvent()) {
-                TrackEvent event = packet.getTrackEvent();
-                if (event.getType() == TrackEvent.Type.TYPE_INSTANT) {
-                    if (event.hasExtension(AndroidTrackEvent.messageQueue)) {
-                        AndroidMessageQueue mqEvent =
-                                event.getExtension(AndroidTrackEvent.messageQueue);
-                        messageQueueSendEvents.add(mqEvent);
-                        assertThat(event.getFlowIdsCount()).isEqualTo(1);
-                        messageQueueSendFlowIds.add(event.getFlowIds(0));
-                    }
-                } else if (event.getType() == TrackEvent.Type.TYPE_SLICE_BEGIN) {
-                    if (event.hasExtension(AndroidTrackEvent.messageQueue)) {
-                        AndroidMessageQueue mqEvent =
-                                event.getExtension(AndroidTrackEvent.messageQueue);
-                        messageQueueReceiveEvents.add(mqEvent);
-                        assertThat(event.getTerminatingFlowIdsCount()).isEqualTo(1);
-                        messageQueueReceiveTerminateFlowIds.add(event.getTerminatingFlowIds(0));
-                    }
-                } else if (event.getType() == TrackEvent.Type.TYPE_SLICE_END) {
-                    sliceEndEventCount++;
-                } else if (event.getType() == TrackEvent.Type.TYPE_COUNTER) {
-                    if (counterTrackUuid != null && event.getTrackUuid() == counterTrackUuid) {
-                        counterCount++;
-                    }
-                }
-            }
-            collectInternedData(packet);
-        }
-
-        assertThat(mCategoryNames).containsExactly("mq");
-        assertThat(mEventNames).containsExactly("message_queue_send", "message_queue_receive");
-        assertThat(counterTrackUuid).isNotNull();
-        assertThat(counterCount).isAtLeast(eventsCount);
-        assertThat(sliceEndEventCount).isEqualTo(eventsCount);
-
-        assertThat(messageQueueSendEvents).hasSize(eventsCount);
-        assertThat(messageQueueSendFlowIds).hasSize(eventsCount);
-
-        assertThat(messageQueueReceiveEvents).hasSize(eventsCount);
-        assertThat(messageQueueReceiveTerminateFlowIds).hasSize(eventsCount);
-
-        assertThat(messageQueueSendEvents.get(0).getMessageCode()).isEqualTo(MESSAGE);
-        assertThat(messageQueueSendEvents.get(0).getMessageDelayMs()).isEqualTo(0);
-        assertThat(messageQueueSendEvents.get(0).getReceivingThreadName()).isEqualTo(
-                mqReceiverThreadName);
-
-        assertThat(messageQueueSendEvents.get(1).getMessageCode()).isEqualTo(MESSAGE_DELAYED);
-        assertThat(messageQueueSendEvents.get(1).getMessageDelayMs()).isEqualTo(10);
-        assertThat(messageQueueSendEvents.get(1).getReceivingThreadName()).isEqualTo(
-                mqReceiverThreadName);
-
-        assertThat(messageQueueSendEvents.get(2).getMessageCode()).isEqualTo(MESSAGE);
-        assertThat(messageQueueSendEvents.get(2).getMessageDelayMs()).isEqualTo(0);
-        assertThat(messageQueueSendEvents.get(2).getReceivingThreadName()).isEqualTo(
-                mqReceiverThreadName);
-
-        assertThat(messageQueueSendEvents.get(3).getMessageCode()).isEqualTo(0);
-        assertThat(messageQueueSendEvents.get(3).getMessageDelayMs()).isEqualTo(20);
-        assertThat(messageQueueSendEvents.get(3).getReceivingThreadName()).isEqualTo(
-                mqReceiverThreadName);
-
-        assertThat(messageQueueReceiveEvents.get(0).getSendingThreadName()).isEqualTo(
-                mqSenderThreadName);
-        assertThat(messageQueueReceiveEvents.get(1).getSendingThreadName()).isEqualTo(
-                mqSenderThreadName);
-        assertThat(messageQueueReceiveEvents.get(2).getSendingThreadName()).isEqualTo(
-                mqSenderThreadName);
-        assertThat(messageQueueReceiveEvents.get(3).getSendingThreadName()).isEqualTo(
-                mqSenderThreadName);
-
-        // The second message was send with a delay, and was received after the third one,
-        // so we assert that the terminating flow Id of the third message is equal to the flow Id
-        // of the second and the terminating flow id of the second is equal to the flow Id of the
-        // third.
-        assertThat(messageQueueSendFlowIds.get(0)).isEqualTo(
-                messageQueueReceiveTerminateFlowIds.get(0));
-        assertThat(messageQueueSendFlowIds.get(1)).isEqualTo(
-                messageQueueReceiveTerminateFlowIds.get(2));
-        assertThat(messageQueueSendFlowIds.get(2)).isEqualTo(
-                messageQueueReceiveTerminateFlowIds.get(1));
-        assertThat(messageQueueSendFlowIds.get(3)).isEqualTo(
-                messageQueueReceiveTerminateFlowIds.get(3));
     }
 
     private TraceConfig getTraceConfig(String cat) {
