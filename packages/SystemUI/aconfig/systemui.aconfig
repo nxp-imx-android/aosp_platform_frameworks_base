@@ -1917,7 +1917,7 @@ flag {
     name: "enable_suggested_device_ui"
     namespace: "systemui"
     description: "Enables the UI for the suggested devices feature."
-    bug: "411452237"
+    bug: "392942321"
 }
 
 flag {
