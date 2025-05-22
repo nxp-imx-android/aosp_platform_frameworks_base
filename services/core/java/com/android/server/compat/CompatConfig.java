@@ -726,7 +726,6 @@ final class CompatConfig {
         try (InputStream in = new BufferedInputStream(new FileInputStream(configFile))) {
             Config config = com.android.server.compat.config.XmlParser.read(in);
             for (Change change : config.getCompatChange()) {
-                Slog.d(TAG, "Adding: " + change.toString());
                 mChanges.put(change.getId(), new CompatChange(change));
             }
         } catch (IOException | DatatypeConfigurationException | XmlPullParserException e) {
