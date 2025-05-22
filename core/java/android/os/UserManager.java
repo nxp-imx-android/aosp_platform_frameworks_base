@@ -5060,12 +5060,6 @@ public class UserManager {
      *
      * <p>To retrieve only users that are not marked for deletion, use {@link #getAliveUsers()}.
      *
-     * <p>To retrieve *all* users (including partial and pre-created users), use
-     * {@link #getUsers(boolean, boolean, boolean)) getUsers(false, false, false)}.
-     *
-     * <p>To retrieve a more specific list of users, use
-     * {@link #getUsers(boolean, boolean, boolean)}.
-     *
      * @return the list of users that were created.
      *
      * @hide
@@ -5077,20 +5071,17 @@ public class UserManager {
     })
     @TestApi
     public @NonNull List<UserInfo> getUsers() {
-        return getUsers(/*excludePartial= */ true, /* excludeDying= */ false,
-                /* excludePreCreated= */ true);
+        return getUsers(/* excludeDying= */ false);
     }
 
     /**
-     * Returns information for all "usable" users on this device (i.e, it excludes users that are
-     * marked for deletion, pre-created users, etc...).
+     * Returns information for all "usable" users on this device (for example, it excludes users
+     * that are marked for deletion).
      *
-     * <p>To retrieve all fully-created users, use {@link #getUsers()}.
-     *
-     * <p>To retrieve a more specific list of users, use
-     * {@link #getUsers(boolean, boolean, boolean)}.
+     * <p>To also retrieve users marked for deletion, use {@link #getUsers()}.
      *
      * @return the list of users that were created.
+     *
      * @hide
      */
     @RequiresPermission(anyOf = {
@@ -5099,8 +5090,7 @@ public class UserManager {
     })
     @TestApi
     public @NonNull List<UserInfo> getAliveUsers() {
-        return getUsers(/*excludePartial= */ true, /* excludeDying= */ true,
-                /* excludePreCreated= */ true);
+        return getUsers(/* excludeDying= */ true);
     }
 
     /**
@@ -5116,24 +5106,8 @@ public class UserManager {
             android.Manifest.permission.CREATE_USERS
     })
     public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
-        return getUsers(/*excludePartial= */ true, excludeDying,
-                /* excludePreCreated= */ true);
-    }
-
-    /**
-     * @deprecated Pre-created users are deprecated and no longer supported.
-     *             Use {@link #getUsers()}, or {@link #getAliveUsers()} instead.
-     * @hide
-     */
-    @Deprecated
-    @RequiresPermission(anyOf = {
-            android.Manifest.permission.MANAGE_USERS,
-            android.Manifest.permission.CREATE_USERS
-    })
-    private @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
-            boolean excludePreCreated) {
         try {
-            return mService.getUsers(excludePartial, excludeDying, excludePreCreated);
+            return mService.getUsers(excludeDying);
         } catch (RemoteException re) {
             throw re.rethrowFromSystemServer();
         }
@@ -5152,8 +5126,7 @@ public class UserManager {
             android.Manifest.permission.CREATE_USERS
     })
     public @NonNull List<UserHandle> getUserHandles(boolean excludeDying) {
-        List<UserInfo> users = getUsers(/* excludePartial= */ true, excludeDying,
-                /* excludePreCreated= */ true);
+        List<UserInfo> users = getUsers(excludeDying);
         List<UserHandle> result = new ArrayList<>(users.size());
         for (UserInfo user : users) {
             result.add(user.getUserHandle());
@@ -5174,8 +5147,7 @@ public class UserManager {
             android.Manifest.permission.CREATE_USERS
     })
     public long[] getSerialNumbersOfUsers(boolean excludeDying) {
-        List<UserInfo> users = getUsers(/* excludePartial= */ true, excludeDying,
-                /* excludePreCreated= */ true);
+        List<UserInfo> users = getUsers(excludeDying);
         long[] result = new long[users.size()];
         for (int i = 0; i < result.length; i++) {
             result[i] = users.get(i).serialNumber;
