@@ -187,6 +187,9 @@
   </staging-public-group>
 
   <staging-public-group type="array" first-id="0x019c0000">
+    <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_WATCH_FACE_ROLE_ENABLED)
+    @hide @SystemApi -->
+    <public name="config_watchFacePermissions" />
   </staging-public-group>
 
   <staging-public-group type="drawable" first-id="0x019b0000">
