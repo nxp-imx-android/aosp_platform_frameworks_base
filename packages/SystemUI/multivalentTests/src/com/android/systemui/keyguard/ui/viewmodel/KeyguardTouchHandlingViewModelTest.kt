@@ -17,20 +17,25 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.graphics.Rect
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.haptics.msdl.fakeMSDLPlayer
 import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardTouchHandlingInteractor
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
+import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -38,6 +43,7 @@ class KeyguardTouchHandlingViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
+    private val msdlPlayer = kosmos.fakeMSDLPlayer
     private lateinit var underTest: KeyguardTouchHandlingViewModel
 
     @Before
@@ -62,6 +68,15 @@ class KeyguardTouchHandlingViewModelTest : SysuiTestCase() {
             setUdfpsListeningState(true)
             assertThat(accessibilityOverlayBoundsWhenListeningForUdfps)
                 .isEqualTo(Rect(0, 1000, 1000, 2000))
+        }
+
+    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
+    @Test
+    fun onLongPress_playsLongPressHapticToken() =
+        testScope.runTest {
+            underTest.onLongPress(any())
+
+            assertThat(msdlPlayer.latestTokenPlayed).isEqualTo(MSDLToken.LONG_PRESS)
         }
 
     private fun setUdfpsListeningState(isListening: Boolean) {
