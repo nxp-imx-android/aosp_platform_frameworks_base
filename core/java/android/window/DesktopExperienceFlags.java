@@ -24,6 +24,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.content.Context;
+import android.os.Build;
 import android.os.SystemProperties;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -378,6 +379,9 @@ public enum DesktopExperienceFlags {
 
     private static boolean checkIfFlagShouldBeOverridden(@Nullable String flagName,
             boolean defaultValue) {
+        if (!Build.IS_ENG && !Build.IS_USERDEBUG) {
+            return defaultValue;
+        }
         if (!Flags.showDesktopExperienceDevOption() || enableDisplayContentModeManagement()) {
             return false;
         }
