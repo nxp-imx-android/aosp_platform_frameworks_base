@@ -193,13 +193,20 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             val latest by collectLastValue(underTest.chip)
 
             val instanceId = InstanceId.fakeInstanceId(10)
-            addOngoingCallState(startTimeMs = -2, isAppVisible = false, instanceId = instanceId)
+            addOngoingCallState(
+                startTimeMs = -2,
+                isAppVisible = false,
+                instanceId = instanceId,
+                packageName = PACKAGE_NAME,
+            )
 
             assertThat((latest as OngoingActivityChipModel.Active).content)
                 .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
             assertThat((latest as OngoingActivityChipModel.Active).instanceId).isEqualTo(instanceId)
+            assertThat((latest as OngoingActivityChipModel.Active).managingPackageName)
+                .isEqualTo(PACKAGE_NAME)
         }
 
     @Test
@@ -1455,7 +1462,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         private const val NOTIFICATION_KEY = "testKey"
         private const val NOTIFICATION_UID = 12345
-
+        private const val PACKAGE_NAME = "testApp.package.name"
         @get:Parameters(name = "{0}")
         @JvmStatic
         val flags: List<FlagsParameterization>

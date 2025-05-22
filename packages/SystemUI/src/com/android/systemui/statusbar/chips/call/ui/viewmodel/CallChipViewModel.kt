@@ -255,6 +255,7 @@ constructor(
         return OngoingActivityChipModel.Active(
             key = key,
             icon = icon,
+            managingPackageName = state.packageName,
             content = content,
             colors = colors,
             onClickListenerLegacy = getOnClickListener(intent, instanceId, state.notificationKey),

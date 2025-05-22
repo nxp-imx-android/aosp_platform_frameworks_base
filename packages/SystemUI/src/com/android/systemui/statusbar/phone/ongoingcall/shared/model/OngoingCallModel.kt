@@ -50,6 +50,7 @@ sealed interface OngoingCallModel {
      * @property isAppVisible whether the app to which the call belongs is currently visible.
      * @property notificationInstanceId an optional per-chip ID used for logging. Should stay the
      *   same throughout the lifetime of a single chip.
+     * @property packageName the package name of the app to which the call belongs.
      */
     data class InCall(
         val startTimeMs: Long,
@@ -61,6 +62,7 @@ sealed interface OngoingCallModel {
         val promotedContent: PromotedNotificationContentModels?,
         val isAppVisible: Boolean,
         val notificationInstanceId: InstanceId?,
+        val packageName: String,
     ) : OngoingCallModel {
         override fun logString(): String {
             return "InCall(notifKey=$notificationKey " +
