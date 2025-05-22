@@ -16,95 +16,153 @@
 
 package com.android.server.selectiontoolbar;
 
+import static android.permission.flags.Flags.useSystemSelectionToolbarInSysui;
+
+import android.annotation.NonNull;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Binder;
+import android.os.IBinder;
 import android.os.UserHandle;
+import android.service.selectiontoolbar.DefaultSelectionToolbarRenderService;
+import android.service.selectiontoolbar.ISelectionToolbarRenderService;
+import android.service.selectiontoolbar.ISelectionToolbarRenderServiceCallback;
+import android.service.selectiontoolbar.SelectionToolbarRenderService;
 import android.util.Slog;
 import android.view.selectiontoolbar.ISelectionToolbarCallback;
 import android.view.selectiontoolbar.ISelectionToolbarManager;
 import android.view.selectiontoolbar.ShowInfo;
 
-import com.android.internal.util.DumpUtils;
-import com.android.server.infra.AbstractMasterSystemService;
+import com.android.internal.R;
+import com.android.internal.infra.ServiceConnector;
+import com.android.server.LocalServices;
+import com.android.server.SystemService;
+import com.android.server.clipboard.ClipboardManagerInternal;
+import com.android.server.input.InputManagerInternal;
 
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
 
-/**
- * Entry point service for selection toolbar management.
- */
-public final class SelectionToolbarManagerService extends
-        AbstractMasterSystemService<SelectionToolbarManagerService,
-                SelectionToolbarManagerServiceImpl> {
+public class SelectionToolbarManagerService extends SystemService {
 
-    private static final String TAG = "SelectionToolbarManagerService";
+    private static final String LOG_TAG = SelectionToolbarManagerService.class.getSimpleName();
+
+    private final SelectionToolbarRenderServiceRemoteCallback mRemoteServiceCallback =
+            new SelectionToolbarRenderServiceRemoteCallback();
+    private final RemoteRenderServiceConnector mRemoteRenderServiceConnector;
+
+    private InputManagerInternal mInputManagerInternal;
+    private ClipboardManagerInternal mClipboardManagerInternal;
+
+
+    public SelectionToolbarManagerService(Context context) {
+        super(context);
+
+        String serviceName;
+        if (useSystemSelectionToolbarInSysui()) {
+            serviceName = context.getResources()
+                    .getString(R.string.config_systemUiSelectionToolbarRenderService);
+        } else {
+            serviceName = new ComponentName(
+                    "android", DefaultSelectionToolbarRenderService.class.getName())
+                    .flattenToString();
+        }
+        final ComponentName serviceComponent = ComponentName.unflattenFromString(serviceName);
+        mRemoteRenderServiceConnector = new RemoteRenderServiceConnector(context,
+                serviceComponent, UserHandle.USER_SYSTEM, mRemoteServiceCallback);
+    }
 
     @Override
     public void onStart() {
-        publishBinderService(Context.SELECTION_TOOLBAR_SERVICE,
-                new SelectionToolbarManagerService.SelectionToolbarManagerServiceStub());
-    }
+        mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
+        mClipboardManagerInternal = LocalServices.getService(ClipboardManagerInternal.class);
 
-    public SelectionToolbarManagerService(Context context) {
-        super(context, new SelectionToolbarServiceNameResolver(context), /* disallowProperty= */
-                null, PACKAGE_UPDATE_POLICY_REFRESH_EAGER);
+        publishBinderService(Context.SELECTION_TOOLBAR_SERVICE, new Stub());
     }
 
     @Override
-    protected SelectionToolbarManagerServiceImpl newServiceLocked(int resolvedUserId,
-            boolean disabled) {
-        return new SelectionToolbarManagerServiceImpl(this, mLock, resolvedUserId);
+    public void onBootPhase(int phase) {
+        super.onBootPhase(phase);
+
+        if (phase == SystemService.PHASE_BOOT_COMPLETED) {
+            mRemoteRenderServiceConnector.connect(); // Prepare the binding in advance
+        }
     }
 
-    @SuppressWarnings("GuardedBy") // mLock == service.mLock
-    final class SelectionToolbarManagerServiceStub extends ISelectionToolbarManager.Stub {
+    private class Stub extends ISelectionToolbarManager.Stub {
 
         @Override
-        public void showToolbar(ShowInfo showInfo, ISelectionToolbarCallback callback) {
-            int userId = UserHandle.getUserId(Binder.getCallingUid());
-            synchronized (mLock) {
-                SelectionToolbarManagerServiceImpl service = getServiceForUserLocked(userId);
-                if (service != null) {
-                    service.showToolbar(showInfo, callback);
-                } else {
-                    Slog.v(TAG, "showToolbar(): no service for " + userId);
-                }
-            }
+        public void showToolbar(ShowInfo showInfo,
+                ISelectionToolbarCallback iSelectionToolbarCallback) {
+            mRemoteRenderServiceConnector
+                    .showToolbar(Binder.getCallingUid(), showInfo, iSelectionToolbarCallback);
         }
 
         @Override
         public void hideToolbar(long widgetToken) {
-            int userId = UserHandle.getUserId(Binder.getCallingUid());
-            synchronized (mLock) {
-                SelectionToolbarManagerServiceImpl service = getServiceForUserLocked(userId);
-                if (service != null) {
-                    service.hideToolbar(widgetToken);
-                } else {
-                    Slog.v(TAG, "hideToolbar(): no service for " + userId);
-                }
-            }
+            mRemoteRenderServiceConnector.hideToolbar(widgetToken);
         }
 
         @Override
         public void dismissToolbar(long widgetToken) {
-            int userId = UserHandle.getUserId(Binder.getCallingUid());
-            synchronized (mLock) {
-                SelectionToolbarManagerServiceImpl service = getServiceForUserLocked(userId);
-                if (service != null) {
-                    service.dismissToolbar(widgetToken);
-                } else {
-                    Slog.v(TAG, "dismissToolbar(): no service for " + userId);
-                }
-            }
+            mRemoteRenderServiceConnector.dismissToolbar(Binder.getCallingUid(), widgetToken);
+        }
+
+    }
+
+    private final class SelectionToolbarRenderServiceRemoteCallback extends
+            ISelectionToolbarRenderServiceCallback.Stub {
+
+        @Override
+        public void transferTouch(IBinder source, IBinder target) {
+            mInputManagerInternal.transferTouchGesture(source, target, false);
         }
 
         @Override
-        public void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
-            if (!DumpUtils.checkDumpPermission(getContext(), TAG, pw)) return;
+        public void onPasteAction(int uid) {
+            mClipboardManagerInternal.notifyUserAuthorizedClipAccess(uid);
+        }
+    }
 
-            synchronized (mLock) {
-                dumpLocked("", pw);
+    private static class RemoteRenderServiceConnector extends
+            ServiceConnector.Impl<ISelectionToolbarRenderService> {
+        private final IBinder mCallback;
+
+        private RemoteRenderServiceConnector(Context context, ComponentName serviceName,
+                int userId, IBinder callback) {
+            super(context, new Intent(SelectionToolbarRenderService.SERVICE_INTERFACE)
+                            .setComponent(serviceName), 0, userId,
+                    ISelectionToolbarRenderService.Stub::asInterface);
+            mCallback = callback;
+        }
+
+        @Override
+        protected long getAutoDisconnectTimeoutMs() {
+            return 0; // Never unbind
+        }
+
+        @Override
+        protected void onServiceConnectionStatusChanged(
+                @NonNull ISelectionToolbarRenderService service, boolean isConnected) {
+            try {
+                if (isConnected) {
+                    service.onConnected(mCallback);
+                }
+            } catch (Exception e) {
+                Slog.w(LOG_TAG, "Exception calling onConnected().", e);
             }
+        }
+
+        private void showToolbar(int callingUid, ShowInfo showInfo,
+                ISelectionToolbarCallback callback) {
+            run(s -> s.onShow(callingUid, showInfo, callback));
+        }
+
+        private void hideToolbar(long widgetToken) {
+            run(s -> s.onHide(widgetToken));
+        }
+
+        private void dismissToolbar(int callingUid, long widgetToken) {
+            run(s -> s.onDismiss(callingUid, widgetToken));
         }
     }
 }
