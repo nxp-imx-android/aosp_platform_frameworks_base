@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import com.android.settingslib.spa.framework.compose.LocalNavController
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
 /** Action that navigates back to last page. */
@@ -58,13 +59,13 @@ private fun BackAction(contentDescription: String, onClick: () -> Unit) {
         modifier =
             if (isSpaExpressiveEnabled)
                 Modifier.padding(
-                    start = SettingsDimension.extraSmall5,
+                    start = SettingsSpace.extraSmall5,
                     end = SettingsDimension.paddingSmall,
-                    top = SettingsDimension.extraSmall2,
-                    bottom = SettingsDimension.extraSmall2,
+                    top = SettingsSpace.extraSmall2,
+                    bottom = SettingsSpace.extraSmall2,
                 )
                     .size(SettingsDimension.actionIconSize)
-                    .clip(SettingsShape.CornerExtraLarge)
+                    .clip(SettingsShape.CornerExtraLarge1)
             else Modifier,
     ) {
         Icon(
@@ -73,7 +74,7 @@ private fun BackAction(contentDescription: String, onClick: () -> Unit) {
             modifier =
                 if (isSpaExpressiveEnabled)
                     Modifier.size(SettingsDimension.actionIconSize)
-                        .clip(SettingsShape.CornerExtraLarge)
+                        .clip(SettingsShape.CornerExtraLarge1)
                         .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                         .padding(SettingsDimension.actionIconPadding)
                 else Modifier,

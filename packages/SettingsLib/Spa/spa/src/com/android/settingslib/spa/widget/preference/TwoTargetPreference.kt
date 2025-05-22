@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsOpacity.alphaForEnabled
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.divider
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 import com.android.settingslib.spa.framework.util.wrapOnClickWithLog
@@ -105,7 +106,7 @@ private fun PreferenceDivider() {
         if (isSpaExpressiveEnabled) {
             Modifier.padding(
                 start = SettingsDimension.paddingSmall,
-                end = SettingsDimension.extraSmall6,
+                end = SettingsSpace.extraSmall6,
             )
                 .size(width = 1.dp, height = SettingsDimension.itemDividerHeight)
                 .background(color = MaterialTheme.colorScheme.outline)

@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.settingslib.spa.framework.theme.SettingsDimension
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.util.annotatedStringResource
 import com.android.settingslib.spa.widget.ui.SettingsIntro
 
@@ -73,8 +74,8 @@ fun TopIntroPreference(model: TopIntroPreferenceModel) {
             modifier =
                 Modifier
                     .padding(
-                        horizontal = SettingsDimension.small4,
-                        vertical = SettingsDimension.extraSmall4,
+                        horizontal = SettingsSpace.small4,
+                        vertical = SettingsSpace.extraSmall4,
                     )
                     .animateContentSize()
         ) {
@@ -101,10 +102,10 @@ private fun CollapseBar(
                 .fillMaxWidth()
                 .clickable { onExpandedChange(!expanded) }
                 .padding(
-                    top = SettingsDimension.extraSmall4,
-                    bottom = SettingsDimension.small1,
-                    start = SettingsDimension.small4,
-                    end = SettingsDimension.small4,
+                    top = SettingsSpace.extraSmall4,
+                    bottom = SettingsSpace.small1,
+                    start = SettingsSpace.small4,
+                    end = SettingsSpace.small4,
                 ),
     ) {
         Icon(
@@ -117,7 +118,7 @@ private fun CollapseBar(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
         )
-        Spacer(Modifier.width(SettingsDimension.extraSmall4))
+        Spacer(Modifier.width(SettingsSpace.extraSmall4))
         Text(
             text = if (expanded) model.collapseText else model.expandText,
             style = MaterialTheme.typography.bodyLargeEmphasized,
@@ -131,7 +132,7 @@ private fun TopIntroAnnotatedText(@StringRes id: Int?) {
     if (id == null) return
     Text(
         text = annotatedStringResource(id),
-        modifier = Modifier.padding(vertical = SettingsDimension.extraSmall5),
+        modifier = Modifier.padding(vertical = SettingsSpace.extraSmall5),
         style = MaterialTheme.typography.bodyLargeEmphasized,
         color = MaterialTheme.colorScheme.primary,
     )

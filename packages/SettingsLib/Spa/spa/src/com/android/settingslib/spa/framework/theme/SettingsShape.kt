@@ -16,22 +16,20 @@
 
 package com.android.settingslib.spa.framework.theme
 
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 
 object SettingsShape {
-    val CornerExtraSmall = RoundedCornerShape(4.dp)
-
+    val CornerFull = CircleShape
+    val CornerExtraSmall2 = RoundedCornerShape(4.dp)
     val CornerMedium = RoundedCornerShape(12.dp)
+    val CornerLarge1 = RoundedCornerShape(16.dp)
+    val CornerLarge2 = RoundedCornerShape(20.dp)
+    val CornerExtraLarge1 = RoundedCornerShape(28.dp)
 
-    val CornerMedium2 = RoundedCornerShape(20.dp)
-
-    val CornerLarge = RoundedCornerShape(24.dp)
-
-    val CornerExtraLarge = RoundedCornerShape(28.dp)
-
-    val CornerExtraLarge1 = RoundedCornerShape(40.dp)
+    // Legacy tokens below
 
     val TopCornerMedium2 =
         RoundedCornerShape(CornerSize(20.dp), CornerSize(20.dp), CornerSize(0), CornerSize(0))

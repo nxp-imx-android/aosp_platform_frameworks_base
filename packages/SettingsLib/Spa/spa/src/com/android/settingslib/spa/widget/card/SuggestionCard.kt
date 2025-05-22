@@ -46,6 +46,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.toSemiBoldWeight
 
@@ -76,10 +77,10 @@ fun SuggestionCard(model: SuggestionCardModel) {
                     )
                     .fillMaxWidth()
                     .heightIn(min = SettingsDimension.preferenceMinHeight)
-                    .clip(SettingsShape.CornerExtraLarge1)
+                    .clip(SettingsShape.CornerFull)
                     .background(MaterialTheme.colorScheme.secondaryContainer)
                     .then(model.onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier)
-                    .padding(SettingsDimension.extraSmall6),
+                    .padding(SettingsSpace.extraSmall6),
         ) {
             SuggestionCardIcon(model.imageVector)
             Spacer(Modifier.padding(SettingsDimension.paddingSmall))

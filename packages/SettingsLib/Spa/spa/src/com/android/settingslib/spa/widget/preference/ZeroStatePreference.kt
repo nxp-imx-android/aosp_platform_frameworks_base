@@ -49,7 +49,7 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
-import com.android.settingslib.spa.framework.theme.SettingsDimension
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -79,7 +79,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         }
-        Spacer(Modifier.height(SettingsDimension.small4))
+        Spacer(Modifier.height(SettingsSpace.small4))
         if (text.isNotEmpty()) {
             Text(
                 text = text,
@@ -87,7 +87,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
-        Spacer(Modifier.height(SettingsDimension.extraSmall2))
+        Spacer(Modifier.height(SettingsSpace.extraSmall2))
         if (description.isNotEmpty()) {
             Text(
                 text = description,
@@ -95,7 +95,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
-        Spacer(Modifier.height(SettingsDimension.small1))
+        Spacer(Modifier.height(SettingsSpace.small1))
     }
 }
 

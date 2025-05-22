@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.settingslib.spa.framework.theme.SettingsDimension
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 
 @Composable
 fun IntroPreference(
@@ -70,13 +71,13 @@ internal fun IntroPreference(
             Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = SettingsDimension.small4,
-                    vertical = SettingsDimension.small1,
+                    horizontal = SettingsSpace.small4,
+                    vertical = SettingsSpace.small1,
                 ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         icon()
-        Spacer(Modifier.height(SettingsDimension.small1))
+        Spacer(Modifier.height(SettingsSpace.small1))
         IntroTitle(title)
         IntroDescription(descriptions)
     }
@@ -129,7 +130,7 @@ private fun IntroDescription(descriptions: List<String>) {
             text = description,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = SettingsDimension.extraSmall2),
+            modifier = Modifier.padding(top = SettingsSpace.extraSmall2),
         )
     }
 }

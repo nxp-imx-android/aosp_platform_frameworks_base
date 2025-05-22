@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.android.settingslib.spa.framework.theme.SettingsDimension
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 import com.android.settingslib.spa.framework.theme.settingsBackground
 import com.android.settingslib.spa.framework.theme.toSemiBoldWeight
@@ -145,8 +146,8 @@ private fun Title(title: String, maxLines: Int = Int.MAX_VALUE) {
             Modifier
                 .padding(
                     start =
-                    if (isSpaExpressiveEnabled) SettingsDimension.extraSmall2
-                    else SettingsDimension.itemPaddingAround,
+                        if (isSpaExpressiveEnabled) SettingsSpace.extraSmall2
+                        else SettingsDimension.itemPaddingAround,
                     end = SettingsDimension.itemPaddingEnd,
                 )
                 .semantics { heading() },
