@@ -8232,6 +8232,8 @@
                 android:protectionLevel="normal|appop" />
 
     <!-- Required for apps to post promoted notifications.
+         <p>This is required in addition to (not instead of)
+         {@link android.app.Manifest.permission#POST_NOTIFICATIONS}.
          <p>Protection level: normal|appops
          @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION)
          -->
@@ -8239,7 +8241,7 @@
         android:label="@string/permlab_postPromotedNotifications"
         android:description="@string/permdesc_postPromotedNotifications"
         android:protectionLevel="normal|appop"
-        android:featureFlag="android.app.api_rich_ongoing_permission"/>
+        android:featureFlag="android.app.ui_rich_ongoing"/>
 
     <!-- @SystemApi Required for the privileged assistant apps targeting
          {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM}

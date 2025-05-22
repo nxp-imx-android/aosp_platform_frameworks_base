@@ -28,7 +28,6 @@ import static android.app.Flags.FLAG_API_RICH_ONGOING;
 import static android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION_UI;
-import static android.app.Flags.FLAG_OPT_IN_RICH_ONGOING;
 import static android.app.Flags.FLAG_UI_RICH_ONGOING;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -585,6 +584,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     private NotificationManagerService.WorkerHandler mWorkerHandler;
     private Handler mBroadcastsHandler;
+    private int mPromotedMode = 0;
 
     private class TestableToastCallback extends ITransientNotification.Stub {
         @Override
@@ -788,6 +788,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         initNMS(SystemService.PHASE_BOOT_COMPLETED);
     }
 
+    @SuppressLint("MissingPermission")
     private void initNMS(int upToBootPhase) throws Exception {
         mService = new TestableNotificationManagerService(mContext, mNotificationRecordLogger,
                 mNotificationInstanceIdSequence);
@@ -18078,7 +18079,36 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_ui() throws Exception {
+        // UI flag includes permission enforcement via PermissionMgr/AppOps
+        preparePermissionManagerFake();
         testSetCanBePromoted_granted();
+    }
+
+    private void preparePermissionManagerFake() {
+        when(mPermissionHelper.hasRequestedPermission(Manifest.permission.USE_FULL_SCREEN_INTENT,
+                mPkg, mUserId)).thenReturn(true);
+        doAnswer(invocation -> {
+            mPromotedMode = invocation.getArgument(2);
+            Log.i(TAG, "Setting promoted mode to: " + mPromotedMode);
+            return null;
+        }).when(mAppOpsManager).setUidMode(eq(AppOpsManager.OP_POST_PROMOTED_NOTIFICATIONS),
+                anyInt(), anyInt());
+        when(mPermissionManager.checkPermissionForPreflight(
+                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any()))
+                .thenAnswer(
+                        invocationOnMock -> {
+                            return mPromotedMode == AppOpsManager.MODE_ALLOWED
+                                    ? PermissionManager.PERMISSION_GRANTED :
+                                    PermissionManager.PERMISSION_SOFT_DENIED;
+                        });
+        when(mPermissionManager.checkPermissionForDataDelivery(
+                eq(Manifest.permission.POST_PROMOTED_NOTIFICATIONS), any(), any()))
+                .thenAnswer(
+                        invocationOnMock -> {
+                            return mPromotedMode == AppOpsManager.MODE_ALLOWED
+                                    ? PermissionManager.PERMISSION_GRANTED :
+                                    PermissionManager.PERMISSION_SOFT_DENIED;
+                        });
     }
 
     private void testSetCanBePromoted_granted() throws Exception {
@@ -18151,6 +18181,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     @EnableFlags({FLAG_API_RICH_ONGOING, FLAG_UI_RICH_ONGOING})
     @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
     public void testSetCanBePromoted_granted_onlyNotifiesOnce_ui() throws Exception {
+        // UI flag includes permission enforcement via PermissionMgr/AppOps
+        preparePermissionManagerFake();
         testSetCanBePromoted_granted_onlyNotifiesOnce();
     }
 
@@ -18279,8 +18311,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags({FLAG_API_RICH_ONGOING})
-    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION})
-    public void testPostPromotableNotification_noPermission() throws Exception {
+    @DisableFlags({FLAG_API_RICH_ONGOING_PERMISSION, FLAG_UI_RICH_ONGOING})
+    public void testPostPromotableNotification_noPermission_preferences() throws Exception {
         mBinderService.setCanBePromoted(mPkg, mUid, false, true);
         postAndVerifyPromotableNotification(false);
     }

@@ -68,7 +68,6 @@ import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_P
 import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_PREFERENCES__FSI_STATE__NOT_REQUESTED;
 import static com.android.server.notification.NotificationChannelLogger.NotificationChannelEvent.NOTIFICATION_CHANNEL_UPDATED_BY_USER;
 import static com.android.server.notification.PreferencesHelper.DEFAULT_BUBBLE_PREFERENCE;
-import static com.android.server.notification.PreferencesHelper.LockableAppFields.USER_LOCKED_PROMOTABLE;
 import static com.android.server.notification.PreferencesHelper.NOTIFICATION_CHANNEL_COUNT_LIMIT;
 import static com.android.server.notification.PreferencesHelper.NOTIFICATION_CHANNEL_GROUP_COUNT_LIMIT;
 import static com.android.server.notification.PreferencesHelper.UNKNOWN_UID;
@@ -182,9 +181,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -204,6 +200,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
+
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -673,11 +672,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         loadStreamXml(baos, false, UserHandle.USER_ALL);
 
         assertTrue(mXmlHelper.canShowBadge(PKG_N_MR1, UID_N_MR1));
-        if (android.app.Flags.uiRichOngoing()) {
-            assertThat(mXmlHelper.canBePromoted(PKG_N_MR1, UID_N_MR1)).isTrue();
-            assertThat(mXmlHelper.getAppLockedFields(PKG_N_MR1, UID_N_MR1) & USER_LOCKED_PROMOTABLE)
-                    .isNotEqualTo(0);
-        }
         assertEquals(channel1,
                 mXmlHelper.getNotificationChannel(PKG_N_MR1, UID_N_MR1, channel1.getId(), false));
         compareChannels(channel2,
@@ -6700,15 +6694,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags({android.app.Flags.FLAG_API_RICH_ONGOING,
-            android.app.Flags.FLAG_UI_RICH_ONGOING})
-    public void testAllAppsHavePermissionToPromoteByDefault() {
-        mHelper.setShowBadge(PKG_P, UID_P, true);
-        assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isTrue();
-    }
-
-    @Test
     @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
+    // ui_rich_ongoing uses permissions, not preferences
+    @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testSetCanBePromoted() {
         mHelper.setCanBePromoted(PKG_P, UID_P, true, true);
         assertThat(mHelper.canBePromoted(PKG_P, UID_P)).isTrue();
@@ -6720,6 +6708,8 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
+    // ui_rich_ongoing uses permissions, not preferences
+    @DisableFlags(android.app.Flags.FLAG_UI_RICH_ONGOING)
     public void testSetCanBePromoted_allowlistNotOverrideUser() {
         // default value is true. So we need to set it false to trigger the change.
         mHelper.setCanBePromoted(PKG_P, UID_P, false, true);
