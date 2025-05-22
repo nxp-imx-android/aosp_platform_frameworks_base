@@ -562,6 +562,27 @@ public final class WindowContainerTransaction implements Parcelable {
         return this;
     }
 
+    /**
+     * Sets whether back press should be intercepted for the root activity of the given task
+     * container. If true, then
+     * {@link TaskOrganizer#onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo)} will be
+     * called.
+     *
+     * @param container The window container of the task that the intercept-back state is set on.
+     * @param interceptBackPressed {@code true} to allow back to be intercepted for the root
+     *                             activity of the task, {@code false} otherwise.
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setInterceptBackPressedOnTaskRoot(
+            @NonNull WindowContainerToken container,
+            boolean interceptBackPressed) {
+        final Change change = getOrCreateChange(container.asBinder());
+        change.mChangeMask |= Change.CHANGE_INTERCEPT_BACK_PRESSED;
+        change.mInterceptBackPressed = interceptBackPressed;
+        return this;
+    }
+
     /*
      * ===========================================================================================
      * Hierarchy updates (create/destroy/reorder/reparent containers)
@@ -757,7 +778,8 @@ public final class WindowContainerTransaction implements Parcelable {
     public WindowContainerTransaction sendPendingIntent(@Nullable PendingIntent sender,
             @Nullable Intent fillInIntent, @Nullable Bundle options) {
         if (DEBUG_START_ACTIVITY) {
-            Log.d(Instrumentation.TAG, "WCT.sendPendingIntent: sender=" + sender.getIntent()
+            Log.d(Instrumentation.TAG, "WCT.sendPendingIntent: sender="
+                    + (sender != null ? sender.getIntent() : "null")
                     + " fillInIntent=" + fillInIntent + " options=" + options, new Throwable());
         }
         mHierarchyOps.add(new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT)
@@ -1457,6 +1479,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_DISABLE_PIP = 1 << 11;
         public static final int CHANGE_DISABLE_LAUNCH_ADJACENT = 1 << 12;
         public static final int CHANGE_IS_TASK_MOVE_ALLOWED = 1 << 13;
+        public static final int CHANGE_INTERCEPT_BACK_PRESSED = 1 << 14;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1473,6 +1496,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_DISABLE_PIP,
                 CHANGE_DISABLE_LAUNCH_ADJACENT,
                 CHANGE_IS_TASK_MOVE_ALLOWED,
+                CHANGE_INTERCEPT_BACK_PRESSED
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1487,6 +1511,7 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mDisablePip = false;
         private boolean mDisableLaunchAdjacent = false;
         private boolean mIsTaskMoveAllowed = false;
+        private boolean mInterceptBackPressed = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1517,6 +1542,7 @@ public final class WindowContainerTransaction implements Parcelable {
             mDisablePip = in.readBoolean();
             mDisableLaunchAdjacent = in.readBoolean();
             mIsTaskMoveAllowed = in.readBoolean();
+            mInterceptBackPressed = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1577,6 +1603,9 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if ((other.mChangeMask & CHANGE_IS_TASK_MOVE_ALLOWED) != 0) {
                 mIsTaskMoveAllowed = other.mIsTaskMoveAllowed;
+            }
+            if ((other.mChangeMask & CHANGE_INTERCEPT_BACK_PRESSED) != 0) {
+                mInterceptBackPressed = other.mInterceptBackPressed;
             }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
@@ -1684,6 +1713,15 @@ public final class WindowContainerTransaction implements Parcelable {
             return mDisableLaunchAdjacent;
         }
 
+        /** Gets the intercept-back-pressed state. */
+        public boolean getInterceptBackPressed() {
+            if ((mChangeMask & CHANGE_INTERCEPT_BACK_PRESSED) == 0) {
+                throw new RuntimeException("Intercept back pressed not set. "
+                        + "Check CHANGE_INTERCEPT_BACK_PRESSED first");
+            }
+            return mInterceptBackPressed;
+        }
+
         /** Gets whether the config should be sent to the client at the end of the transition. */
         public boolean getConfigAtTransitionEnd() {
             return mConfigAtTransitionEnd;
@@ -1783,6 +1821,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_IS_TASK_MOVE_ALLOWED) != 0) {
                 sb.append("isTaskMoveAllowed:" + mIsTaskMoveAllowed + ",");
             }
+            if ((mChangeMask & CHANGE_INTERCEPT_BACK_PRESSED) != 0) {
+                sb.append("interceptBack:" + mInterceptBackPressed + ",");
+            }
             if (mBoundsChangeTransaction != null) {
                 sb.append("hasBoundsTransaction,");
             }
@@ -1815,6 +1856,7 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mDisablePip);
             dest.writeBoolean(mDisableLaunchAdjacent);
             dest.writeBoolean(mIsTaskMoveAllowed);
+            dest.writeBoolean(mInterceptBackPressed);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);

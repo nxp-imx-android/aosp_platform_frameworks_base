@@ -65,13 +65,6 @@ interface ITaskOrganizerController {
     @nullable WindowContainerToken getImeLayeringTarget(int display);
 
     /**
-     * Requests that the given task organizer is notified when back is pressed on the root activity
-     * of one of its controlled tasks.
-     */
-    void setInterceptBackPressedOnTaskRoot(in WindowContainerToken task,
-            boolean interceptBackPressed);
-
-    /**
      * Restarts the top activity in the given task by killing its process if it is visible.
      */
     void restartTaskTopActivityProcessIfVisible(in WindowContainerToken task);

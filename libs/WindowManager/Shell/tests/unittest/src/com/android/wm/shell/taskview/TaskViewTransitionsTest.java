@@ -66,6 +66,7 @@ import com.android.wm.shell.transition.Transitions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -137,7 +138,12 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     public void testMoveTaskViewToFullscreen_resetsInterceptBackPressed() {
         mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
 
-        verify(mOrganizer).setInterceptBackPressedOnTaskRoot(mToken, false);
+        ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), any());
+        WindowContainerTransaction.Change chg =
+                wctCaptor.getValue().getChanges().get(mToken.asBinder());
+        assertThat(chg.getInterceptBackPressed()).isFalse();
     }
 
     @EnableFlags({

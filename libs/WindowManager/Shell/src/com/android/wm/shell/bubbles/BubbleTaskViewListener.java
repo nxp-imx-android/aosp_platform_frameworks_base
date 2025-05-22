@@ -256,8 +256,6 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                 final WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
                         mTaskView.getCaptionInsetsOwner());
                 tvc.getTaskOrganizer().applyTransaction(wct);
-                tvc.getTaskOrganizer().setInterceptBackPressedOnTaskRoot(taskInfo.token,
-                        false /* interceptBackPressed */);
             }
             mTaskView.release();
             ((ViewGroup) mParentView).removeView(mTaskView);

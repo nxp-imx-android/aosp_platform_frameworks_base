@@ -66,6 +66,7 @@ fun verifyEnterBubbleTransaction(
     assertThat(change.forceExcludedFromRecents).isTrue()
     assertThat(change.disablePip).isTrue()
     assertThat(change.disableLaunchAdjacent).isTrue()
+    assertThat(change.interceptBackPressed).isTrue()
 }
 
 /** Verifies the [WindowContainerTransaction] to exit Bubble. */
@@ -101,4 +102,5 @@ fun verifyExitBubbleTransaction(
     assertThat(change.disablePip).isFalse()
     assertThat(change.disableLaunchAdjacent).isFalse()
     assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
+    assertThat(change.interceptBackPressed).isFalse()
 }

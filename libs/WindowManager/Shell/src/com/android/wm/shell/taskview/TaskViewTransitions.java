@@ -483,7 +483,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         final WindowContainerTransaction wct =
                 getExitBubbleTransaction(taskToken, taskView.getCaptionInsetsOwner());
         mShellExecutor.execute(() -> {
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskToken, false /* intercept */);
             mPending.add(new PendingTransition(TRANSIT_CHANGE, wct, taskView, null /* cookie */));
             startNextTransition();
             taskView.notifyTaskRemovalStarted(taskView.getTaskInfo());
@@ -1048,7 +1047,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             // listener callback is below
         }
         if (newTask) {
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(taskInfo.token, true /* intercept */);
+            wct.setInterceptBackPressedOnTaskRoot(taskInfo.token, true /* intercept */);
         }
 
         if (taskInfo.taskDescription != null) {

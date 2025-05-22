@@ -526,7 +526,14 @@ class BubbleTaskViewListenerTest {
 
         verify(expandedViewManager).removeBubble(eq(b.key), eq(Bubbles.DISMISS_TASK_FINISHED))
         verify(mockTaskView).release()
-        verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(eq(taskViewTaskToken), eq(false))
+
+        // Capture the WCT used to clean up the task
+        val wct = argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
+            verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+            wctCaptor.lastValue
+        }
+        val change = wct.changes[taskViewTaskToken.asBinder()]!!
+        assertThat(change.interceptBackPressed).isFalse()
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)
         assertThat(bubbleTaskViewListener.taskView).isNull()
         verify(listenerCallback).onTaskRemovalStarted()

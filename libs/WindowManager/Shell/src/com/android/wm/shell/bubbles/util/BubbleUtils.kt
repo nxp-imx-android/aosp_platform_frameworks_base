@@ -50,6 +50,7 @@ private fun getBubbleTransaction(
         else
             WindowConfiguration.WINDOWING_MODE_UNDEFINED,
     )
+    wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
     if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
         wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
     }

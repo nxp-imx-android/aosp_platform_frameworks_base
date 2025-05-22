@@ -319,7 +319,11 @@ public class TaskViewTest extends ShellTestCase {
     public void testSetOnBackPressedOnTaskRoot_legacyTransitions() {
         assumeFalse(Transitions.ENABLE_SHELL_TRANSITIONS);
         mTaskViewTaskController.onTaskAppeared(mTaskInfo, mLeash);
-        verify(mOrganizer).setInterceptBackPressedOnTaskRoot(eq(mTaskInfo.token), eq(true));
+
+        verify(mOrganizer).applyTransaction(mWctCaptor.capture());
+        WindowContainerTransaction.Change chg =
+                mWctCaptor.getValue().getChanges().get(mToken.asBinder());
+        assertThat(chg.getInterceptBackPressed()).isTrue();
     }
 
     @Test
@@ -506,7 +510,8 @@ public class TaskViewTest extends ShellTestCase {
         mTaskViewTransitions.prepareOpenAnimation(mTaskViewTaskController, true /* newTask */,
                 new SurfaceControl.Transaction(), new SurfaceControl.Transaction(), mTaskInfo,
                 mLeash, wct);
-        verify(mOrganizer).setInterceptBackPressedOnTaskRoot(eq(mTaskInfo.token), eq(true));
+
+        assertThat(wct.getChanges().get(mToken.asBinder()).getInterceptBackPressed()).isTrue();
     }
 
     @Test

@@ -231,17 +231,15 @@ public class TaskOrganizer extends WindowOrganizer {
     }
 
     /**
-     * Requests that the given task organizer is notified when back is pressed on the root activity
-     * of one of its controlled tasks.
+     * Callers should use {@link
+     * WindowContainerTransaction#setInterceptBackPressedOnTaskRoot(WindowContainerToken, boolean)}.
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     public void setInterceptBackPressedOnTaskRoot(@NonNull WindowContainerToken task,
             boolean interceptBackPressed) {
-        try {
-            mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(task, interceptBackPressed);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setInterceptBackPressedOnTaskRoot(task, interceptBackPressed);
+        applyTransaction(wct);
     }
 
 
