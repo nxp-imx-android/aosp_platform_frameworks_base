@@ -27,6 +27,7 @@ import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +44,7 @@ class DesktopRepositoryInitializerImpl(
     private val persistentRepository: DesktopPersistentRepository,
     @ShellMainThread private val mainCoroutineScope: CoroutineScope,
     private val desktopConfig: DesktopConfig,
+    private val desktopState: DesktopState,
 ) : DesktopRepositoryInitializer {
 
     override var deskRecreationFactory: DeskRecreationFactory = DefaultDeskRecreationFactory()
@@ -51,7 +53,11 @@ class DesktopRepositoryInitializerImpl(
     override val isInitialized: StateFlow<Boolean> = _isInitialized
 
     override fun initialize(userRepositories: DesktopUserRepositories) {
-        if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+        // TODO: b/401107440 - Remove second check once restoring to external displays is supported
+        if (
+            !DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue ||
+                !desktopState.isDesktopModeSupportedOnDisplay(Display.DEFAULT_DISPLAY)
+        ) {
             _isInitialized.value = true
             return
         }
