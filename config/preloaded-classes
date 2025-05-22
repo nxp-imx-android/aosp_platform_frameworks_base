@@ -16663,6 +16663,7 @@ java.util.concurrent.ConcurrentMap
 java.util.concurrent.ConcurrentNavigableMap
 java.util.concurrent.ConcurrentSkipListMap$Index
 java.util.concurrent.ConcurrentSkipListMap$Iter
+java.util.concurrent.ConcurrentSkipListMap$KeyIterator
 java.util.concurrent.ConcurrentSkipListMap$KeySet
 java.util.concurrent.ConcurrentSkipListMap$Node
 java.util.concurrent.ConcurrentSkipListMap$ValueIterator
