@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.splitscreen
 
+import android.content.res.Resources
 import androidx.test.filters.SmallTest
 import androidx.test.runner.AndroidJUnit4
 import com.android.wm.shell.common.split.SplitState
@@ -27,6 +28,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -37,10 +40,13 @@ class SplitStateTests {
     private lateinit var splitter: SplitState
     private lateinit var listener1: TestListener
     private lateinit var listener2: TestListener
+    @Mock
+    private lateinit var resources: Resources
 
     @Before
     fun setUp() {
-        splitter = SplitState()
+        MockitoAnnotations.initMocks(this)
+        splitter = SplitState(resources)
         listener1 = TestListener()
         listener2 = TestListener()
     }

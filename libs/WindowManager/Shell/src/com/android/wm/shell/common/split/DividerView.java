@@ -68,6 +68,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopState;
 
 import com.google.android.msdl.data.model.MSDLToken;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -118,6 +119,8 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
      */
     private final Rect mDividerBounds = new Rect();
     private final Rect mTempRect = new Rect();
+    private SplitTargetProvider mSplitTargetProvider;
+
     private FrameLayout mDividerBar;
 
     static final Property<DividerView, Integer> DIVIDER_HEIGHT_PROPERTY =
@@ -149,48 +152,20 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     };
 
     final AccessibilityDelegate mHandleDelegate = new AccessibilityDelegate() {
+        private List<SplitTargetProvider.SplitTarget> mTargets;
+
         @Override
         public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
             super.onInitializeAccessibilityNodeInfo(host, info);
-            final DividerSnapAlgorithm snapAlgorithm = mSplitLayout.mDividerSnapAlgorithm;
+
+            mTargets = mSplitTargetProvider.getTargets(true /*includeDismissal*/);
+            mTargets.forEach(target ->
+                    info.addAction(new AccessibilityAction(target.getA11yActionId(),
+                            mContext.getString(target.getA11yActionString()))));
             if (mSplitLayout.isLeftRightSplit()) {
-                info.addAction(new AccessibilityAction(R.id.action_move_tl_full,
-                        mContext.getString(R.string.accessibility_action_divider_left_full)));
-                if (snapAlgorithm.isFirstSplitTargetAvailable()) {
-                    info.addAction(new AccessibilityAction(R.id.action_move_tl_70,
-                            mContext.getString(R.string.accessibility_action_divider_left_70)));
-                }
-                if (snapAlgorithm.showMiddleSplitTargetForAccessibility()) {
-                    // Only show the middle target if there are more than 1 split target
-                    info.addAction(new AccessibilityAction(R.id.action_move_tl_50,
-                            mContext.getString(R.string.accessibility_action_divider_left_50)));
-                }
-                if (snapAlgorithm.isLastSplitTargetAvailable()) {
-                    info.addAction(new AccessibilityAction(R.id.action_move_tl_30,
-                            mContext.getString(R.string.accessibility_action_divider_left_30)));
-                }
-                info.addAction(new AccessibilityAction(R.id.action_move_rb_full,
-                        mContext.getString(R.string.accessibility_action_divider_right_full)));
                 info.addAction(new AccessibilityAction(R.id.action_swap_apps,
                         mContext.getString(R.string.accessibility_action_divider_swap_horizontal)));
             } else {
-                info.addAction(new AccessibilityAction(R.id.action_move_tl_full,
-                        mContext.getString(R.string.accessibility_action_divider_top_full)));
-                if (snapAlgorithm.isFirstSplitTargetAvailable()) {
-                    info.addAction(new AccessibilityAction(R.id.action_move_tl_70,
-                            mContext.getString(R.string.accessibility_action_divider_top_70)));
-                }
-                if (snapAlgorithm.showMiddleSplitTargetForAccessibility()) {
-                    // Only show the middle target if there are more than 1 split target
-                    info.addAction(new AccessibilityAction(R.id.action_move_tl_50,
-                            mContext.getString(R.string.accessibility_action_divider_top_50)));
-                }
-                if (snapAlgorithm.isLastSplitTargetAvailable()) {
-                    info.addAction(new AccessibilityAction(R.id.action_move_tl_30,
-                            mContext.getString(R.string.accessibility_action_divider_top_30)));
-                }
-                info.addAction(new AccessibilityAction(R.id.action_move_rb_full,
-                        mContext.getString(R.string.accessibility_action_divider_bottom_full)));
                 info.addAction(new AccessibilityAction(R.id.action_swap_apps,
                         mContext.getString(R.string.accessibility_action_divider_swap_vertical)));
             }
@@ -204,21 +179,12 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 return true;
             }
 
-            SnapTarget nextTarget = null;
-            DividerSnapAlgorithm snapAlgorithm = mSplitLayout.mDividerSnapAlgorithm;
-            if (action == R.id.action_move_tl_full) {
-                nextTarget = snapAlgorithm.getDismissEndTarget();
-            } else if (action == R.id.action_move_tl_70) {
-                nextTarget = snapAlgorithm.getLastSplitTarget();
-            } else if (action == R.id.action_move_tl_50) {
-                nextTarget = snapAlgorithm.getMiddleTarget();
-            } else if (action == R.id.action_move_tl_30) {
-                nextTarget = snapAlgorithm.getFirstSplitTarget();
-            } else if (action == R.id.action_move_rb_full) {
-                nextTarget = snapAlgorithm.getDismissStartTarget();
-            }
-            if (nextTarget != null) {
-                mSplitLayout.snapToTarget(mSplitLayout.getDividerPosition(), nextTarget);
+            SplitTargetProvider.SplitTarget selectedTarget = mTargets.stream()
+                    .filter(target -> target.getA11yActionId() == action)
+                    .findFirst()
+                    .orElse(null);
+            if (selectedTarget != null) {
+                mSplitLayout.snapToTarget(selectedTarget.getSnapPosition());
                 return true;
             }
             return super.performAccessibilityAction(host, action, args);
@@ -246,7 +212,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     /** Sets up essential dependencies of the divider bar. */
     public void setup(SplitLayout layout, SplitWindowManager splitWindowManager,
             SurfaceControlViewHost viewHost, InsetsState insetsState,
-            DesktopState desktopState) {
+            DesktopState desktopState, SplitTargetProvider splitTargetProvider) {
         mSplitLayout = layout;
         mSplitWindowManager = splitWindowManager;
         mViewHost = viewHost;
@@ -266,6 +232,9 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 : desktopState.canEnterDesktopMode()
                         ? R.dimen.desktop_mode_portrait_split_divider_handle_region_height
                         : R.dimen.split_divider_handle_region_height);
+
+        mSplitTargetProvider = splitTargetProvider;
+        mHandle.setAccessibilityDelegate(mHandleDelegate);
     }
 
     void onInsetsChanged(InsetsState insetsState, boolean animate) {
@@ -314,7 +283,6 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         mInteractive = true;
         mHideHandle = false;
         setOnTouchListener(this);
-        mHandle.setAccessibilityDelegate(mHandleDelegate);
         setWillNotDraw(false);
         mPaint.setColor(getResources().getColor(R.color.split_divider_background, null));
         mPaint.setAntiAlias(true);

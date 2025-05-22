@@ -100,6 +100,7 @@ public class DividerSnapAlgorithm {
     private final boolean mIsLeftRightSplit;
     /** In SNAP_MODE_MINIMIZED, the side of the screen on which an app will "dock" when minimized */
     private final int mDockSide;
+    private final SplitTargetProvider mSplitTargetProvider;
 
     /**
      * The first, and usually only, snap target between the left/top screen edge and center.
@@ -126,14 +127,16 @@ public class DividerSnapAlgorithm {
     private final MotionSpec mMotionSpec;
 
     public DividerSnapAlgorithm(Resources res, int displayWidth, int displayHeight, int dividerSize,
-            boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide) {
+            boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide,
+            SplitTargetProvider splitTargetProvider) {
         this(res, displayWidth, displayHeight, dividerSize, isLeftRightSplit, insets,
-                pinnedTaskbarInsets, dockSide, false /* minimized */, true /* resizable */);
+                pinnedTaskbarInsets, dockSide, true /* resizable */,
+                splitTargetProvider);
     }
 
     public DividerSnapAlgorithm(Resources res, int displayWidth, int displayHeight, int dividerSize,
             boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide,
-            boolean isMinimizedMode, boolean isHomeResizable) {
+            boolean isHomeResizable, SplitTargetProvider splitTargetProvider) {
         mMinFlingVelocityPxPerSecond =
                 MIN_FLING_VELOCITY_DP_PER_SECOND * res.getDisplayMetrics().density;
         mMinDismissVelocityPxPerSecond =
@@ -143,17 +146,10 @@ public class DividerSnapAlgorithm {
         mDisplayHeight = displayHeight;
         mIsLeftRightSplit = isLeftRightSplit;
         mDockSide = dockSide;
+        mSplitTargetProvider = splitTargetProvider;
         mInsets.set(insets);
         mPinnedTaskbarInsets.set(pinnedTaskbarInsets);
-        if (Flags.enableFlexibleTwoAppSplit()) {
-            mSnapMode = SNAP_FLEXIBLE_HYBRID;
-        } else {
-            // Set SNAP_MODE_MINIMIZED, SNAP_MODE_16_9, or SNAP_FIXED_RATIO depending on config
-            mSnapMode = isMinimizedMode
-                    ? SNAP_MODE_MINIMIZED
-                    : res.getInteger(
-                            com.android.internal.R.integer.config_dockedStackDividerSnapMode);
-        }
+        mSnapMode = mSplitTargetProvider.getSnapMode();
         mFreeSnapMode = res.getBoolean(
                 com.android.internal.R.bool.config_dockedStackDividerFreeSnapMode);
         mFixedRatio = res.getFraction(
@@ -358,8 +354,10 @@ public class DividerSnapAlgorithm {
      */
     private void addNonDismissingTargets(List<Integer> positions, int dividerMax) {
         // Get the desired layout for our snap mode.
-        List<Integer> targetSpec =
-                SplitSpec.getSnapTargetLayout(mSnapMode, areOffscreenRatiosSupported());
+        List<Integer> targetSpec = mSplitTargetProvider
+                .getTargets(false /*includeDismissal*/)
+                .stream().map(SplitTargetProvider.SplitTarget::getSnapPosition)
+                .toList();
 
         if (positions.size() != targetSpec.size()) {
             throw new IllegalStateException("unexpected number of snap positions");
@@ -372,12 +370,18 @@ public class DividerSnapAlgorithm {
             int position = positions.get(i);
 
             if (!midpointPassed) {
-                maybeAddTarget(position, position - getStartInset(), target);
-            } else if (target == SNAP_TO_2_50_50) {
-                mTargets.add(new SnapTarget(position, target));
-                midpointPassed = true;
+                if (target == SNAP_TO_2_50_50) {
+                    // midpoint
+                    mTargets.add(new SnapTarget(position, target));
+                    midpointPassed = true;
+                } else {
+                    // before midpoint
+                    maybeAddTarget(position, position - getStartInset(), target);
+                }
             } else {
-                maybeAddTarget(position, dividerMax - getEndInset() - (position + mDividerSize),
+                // after midpoint
+                maybeAddTarget(position,
+                        dividerMax - getEndInset() - (position + mDividerSize),
                         target);
             }
         }
@@ -550,10 +554,6 @@ public class DividerSnapAlgorithm {
 
     public MotionSpec getMotionSpec() {
         return mMotionSpec;
-    }
-
-    public int getSnapMode() {
-        return mSnapMode;
     }
 
     /**

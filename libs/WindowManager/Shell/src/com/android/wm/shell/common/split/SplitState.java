@@ -24,6 +24,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_4
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SplitScreenState;
 
 import android.annotation.NonNull;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
@@ -39,6 +40,11 @@ public class SplitState {
     private SplitSpec mSplitSpec;
     private final Set<SplitStateChangeListener> mListeners = new HashSet<>();
 
+    private final SplitTargetProvider mSplitTargetProvider;
+
+    public SplitState(Resources resources) {
+        mSplitTargetProvider = new SnapToTargetConverter(resources, false /*isMinimizedMode*/);
+    }
 
     /** Updates the current state of split screen on this device. */
     public void set(@SplitScreenState int newState) {
@@ -112,6 +118,13 @@ public class SplitState {
         for (SplitStateChangeListener listener : mListeners) {
             listener.onSplitStateChanged(mState);
         }
+    }
+
+    /**
+     * @return Interface used to get current supported targets for split
+     */
+    public SplitTargetProvider getSplitTargetProvider() {
+        return mSplitTargetProvider;
     }
 
     /**
