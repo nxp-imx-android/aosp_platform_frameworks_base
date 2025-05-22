@@ -30,13 +30,11 @@ import android.media.AudioRoutesInfo;
 import android.media.IAudioRoutesObserver;
 import android.media.MediaRoute2Info;
 import android.os.RemoteException;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.text.TextUtils;
 
 import com.android.internal.R;
-import com.android.media.flags.Flags;
 import com.android.server.audio.AudioService;
 
 import org.junit.Before;
@@ -148,7 +146,6 @@ public class LegacyDeviceRouteControllerTest {
             assertThat(actualMediaRoute.getVolume()).isEqualTo(VOLUME_DEFAULT_VALUE);
         }
 
-        @RequiresFlagsEnabled(Flags.FLAG_ENABLE_FIX_FOR_EMPTY_SYSTEM_ROUTES_CRASH)
         @Test
         public void getAvailableRoutes_matchesSelectedRoute() {
             when(mResources.getText(R.string.default_audio_route_name))
