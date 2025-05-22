@@ -78,7 +78,7 @@ import java.util.function.Supplier;
  * holding the current state of magnification and animation, and it handles
  * communication between the accessibility manager and window manager.
  *
- * Magnification is limited to the range controlled by
+ * <p>Magnification is limited to the range controlled by
  * {@link MagnificationScaleProvider#constrainScale(float)}, and can only occur inside the
  * magnification region. If a value is out of bounds, it will be adjusted to guarantee these
  * constraints.
@@ -448,7 +448,7 @@ public class FullScreenMagnificationController implements
         }
 
         @Override
-        public void onMagnificationRegionChanged(Region magnificationRegion) {
+        public void onMagnificationRegionChanged(@NonNull Region magnificationRegion) {
             final Message m = PooledLambda.obtainMessage(
                     DisplayMagnification::updateMagnificationRegion, this,
                     Region.obtain(magnificationRegion));
@@ -1200,7 +1200,7 @@ public class FullScreenMagnificationController implements
      * Start tracking the magnification region for services that control magnification and the
      * magnification gesture handler.
      *
-     * This tracking imposes a cost on the system, so we avoid tracking this data unless it's
+     * <p>This tracking imposes a cost on the system, so we avoid tracking this data unless it's
      * required.
      *
      * @param displayId The logical display id.
@@ -1928,8 +1928,8 @@ public class FullScreenMagnificationController implements
 
     /**
      * Persists the default display magnification scale to the current user's settings
-     * <strong>if scale is >= {@link MagnificationConstants.PERSISTED_SCALE_MIN_VALUE}</strong>.
-     * We assume if the scale is < {@link MagnificationConstants.PERSISTED_SCALE_MIN_VALUE}, there
+     * <strong>if scale is >= {@link MagnificationConstants#PERSISTED_SCALE_MIN_VALUE}</strong>.
+     * We assume if the scale is < {@link MagnificationConstants#PERSISTED_SCALE_MIN_VALUE}, there
      * will be no obvious magnification effect.
      * Only the value of the default display is persisted in user's settings.
      */
