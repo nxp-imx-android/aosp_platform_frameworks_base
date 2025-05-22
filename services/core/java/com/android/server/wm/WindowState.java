@@ -5514,6 +5514,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     void setViewVisibility(int viewVisibility) {
         mViewVisibility = viewVisibility;
+
+        if (isPresentation()
+                && (viewVisibility == View.INVISIBLE || viewVisibility == View.GONE)) {
+            mWmService.mPresentationController.removePresentation(getDisplayId(),
+                    "setViewVisibility");
+        }
     }
 
     SurfaceControl getClientViewRootSurface() {
