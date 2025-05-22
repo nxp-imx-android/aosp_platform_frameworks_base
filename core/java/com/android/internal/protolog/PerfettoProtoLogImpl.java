@@ -775,11 +775,6 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 mCollectStackTraceGroupCounts.put(overriddenGroupTag,
                         mCollectStackTraceGroupCounts.getOrDefault(overriddenGroupTag, 0) + 1);
             }
-
-            if (config.getConfigFor(overriddenGroupTag).collectStackTrace) {
-                mCollectStackTraceGroupCounts.put(overriddenGroupTag,
-                        mCollectStackTraceGroupCounts.getOrDefault(overriddenGroupTag, 0) + 1);
-            }
         }
 
         mCacheUpdater.update(this);
