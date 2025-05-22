@@ -1567,6 +1567,16 @@ flag {
 }
 
 flag {
+  name: "shade_qsvisible_logic"
+  namespace: "systemui"
+  description: "Changes the way that QS visibility is calculated"
+  bug: "412476562"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "keyboard_shortcut_helper_shortcut_customizer"
     namespace: "systemui"
     description: "An implementation of shortcut customizations through shortcut helper."
