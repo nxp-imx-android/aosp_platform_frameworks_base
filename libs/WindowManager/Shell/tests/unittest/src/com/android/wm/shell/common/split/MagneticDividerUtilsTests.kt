@@ -17,6 +17,11 @@ package com.android.wm.shell.common.split
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.mechanics.spec.Mapping
+import com.android.mechanics.spec.builder.MotionBuilderContext
+import com.android.mechanics.testing.DirectionalMotionSpecSubject.Companion.assertThat
+import com.android.mechanics.testing.FakeMotionSpecBuilderContext
+import com.android.mechanics.testing.MotionSpecSubject.Companion.assertThat
 import com.android.wm.shell.common.split.DividerSnapAlgorithm.SnapTarget
 import com.android.wm.shell.common.split.MagneticDividerUtils.generateMotionSpec
 import com.android.wm.shell.shared.split.SplitScreenConstants
@@ -26,7 +31,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class MagneticDividerUtilsTests {
+class MagneticDividerUtilsTests : MotionBuilderContext by FakeMotionSpecBuilderContext.Default {
 
     @Test
     fun generateMotionSpec_worksOnThisDeviceWithoutCrashing() {
@@ -52,5 +57,48 @@ class MagneticDividerUtilsTests {
         // values set MagneticDividerUtils are large enough that the snap zones overlap on smaller
         // screens.
         assertThat(generateMotionSpec(targets, resources)).isNotNull()
+    }
+
+    @Test
+    fun generateMotionSpec_specMatchesExpectations() {
+        val zoneHalfSizePx = MagneticDividerUtils.DEFAULT_MAGNETIC_ATTACH_THRESHOLD.toPx()
+
+        val targets =
+            listOf(
+                SnapTarget(0, SplitScreenConstants.SNAP_TO_START_AND_DISMISS),
+                SnapTarget(500, SplitScreenConstants.SNAP_TO_2_50_50),
+                SnapTarget(1000, SplitScreenConstants.SNAP_TO_END_AND_DISMISS),
+            )
+
+        val generated = generateMotionSpec(targets)
+        assertThat(generated.minDirection).isSameInstanceAs(generated.maxDirection)
+
+        val spec = generated.minDirection
+
+        assertThat(spec)
+            .breakpoints()
+            .positions()
+            .containsExactly(0f, 500f - zoneHalfSizePx, 500f + zoneHalfSizePx, 1000f)
+            .inOrder()
+
+        assertThat(spec)
+            .mappingsMatch(
+                Mapping.Fixed(0f),
+                Mapping.Identity,
+                Mapping.Linear(0.5f, offset = 250f),
+                Mapping.Identity,
+                Mapping.Fixed(1000f),
+            )
+
+        assertThat(spec)
+            .semantics()
+            .withKey(MagneticDividerUtils.SNAP_POSITION_KEY)
+            .containsExactly(
+                SplitScreenConstants.SNAP_TO_START_AND_DISMISS,
+                null,
+                SplitScreenConstants.SNAP_TO_2_50_50,
+                null,
+                SplitScreenConstants.SNAP_TO_END_AND_DISMISS,
+            )
     }
 }
