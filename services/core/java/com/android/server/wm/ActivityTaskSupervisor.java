@@ -932,6 +932,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // a resume.
             r.setState(RESUMED, "realStartActivityLocked");
             r.completeResumeLocked();
+            makeNonTopVisibleActivitiesActiveIfNeeded(r, task);
         } else if (r.isVisibleRequested()) {
             // This activity is not starting in the resumed state... which should look like we asked
             // it to pause+stop (but remain visible), and it has done so and reported back the
@@ -940,6 +941,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     + "(starting in paused state)", r);
             r.setState(PAUSED, "realStartActivityLocked");
             mRootWindowContainer.executeAppTransitionForAllDisplay();
+            makeNonTopVisibleActivitiesActiveIfNeeded(r, task);
         } else {
             // This activity is starting while invisible, so it should be stopped.
             r.setState(STOPPING, "realStartActivityLocked");
@@ -1079,6 +1081,24 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             }
         }
         return null;
+    }
+
+    /**
+     * Sends lifecycle item (e.g. StartActivityItem) to non-top visible activities in the same task
+     * of the launched activity if ensureActivitiesVisible was called with notifyClients=false.
+     */
+    private static void makeNonTopVisibleActivitiesActiveIfNeeded(@NonNull ActivityRecord launched,
+            @NonNull Task task) {
+        if (!task.inMultiWindowMode() || (launched.occludesParent() && !launched.isEmbedded())) {
+            // Skip if this activity may trigger other activities to pause, because activityPaused
+            // will call ensureActivitiesVisible with notifyClients=true.
+            return;
+        }
+        task.forAllActivities(r -> {
+            if (r != launched && r.isVisibleRequested()) {
+                r.makeActiveIfNeeded(null /* activeActivity */);
+            }
+        });
     }
 
     void updateHomeProcessIfNeeded(@NonNull ActivityRecord r) {

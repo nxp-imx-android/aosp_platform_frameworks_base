@@ -24,6 +24,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doCallRealMethod;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.reset;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -255,6 +257,35 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
                 new Intent(), null /* intentGrants */, "other.package2",
                 /* isShareIdentityEnabled */ false, /* userId */ -1, /* recipientAppId */ -1);
         verify(activity).getFilteredReferrer(eq("other.package2"));
+    }
+
+    /**
+     * Ensures that {@link ActivityRecord#makeActiveIfNeeded(ActivityRecord)} is called for non-top
+     * visible activities when launching an activity into an existing task which won't make other
+     * activities pause (i.e. no subsequent ensureActivitiesVisible with notifyClients=true).
+     */
+    @Test
+    public void testNonTopVisibleActivitiesActiveWhenLaunchingTranslucent() {
+        final Task freeformTask = new TaskBuilder(mSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setTask(freeformTask)
+                .setVisible(false).build();
+        activity.setState(ActivityRecord.State.STOPPED, "test");
+        final ActivityRecord translucentTop = new ActivityBuilder(mAtm).setTask(freeformTask)
+                .setActivityTheme(android.R.style.Theme_Translucent)
+                .setVisible(false).build();
+        doCallRealMethod().when(mRootWindowContainer).ensureActivitiesVisible(
+                any() /* starting */, anyBoolean() /* notifyClients */);
+        try {
+            mSupervisor.realStartActivityLocked(translucentTop, translucentTop.app,
+                    true /* andResume */, true /* checkConfig */);
+        } catch (RemoteException ignored) {
+        }
+
+        assertTrue(activity.isVisibleRequested());
+        assertTrue(translucentTop.isVisibleRequested());
+        assertEquals(ActivityRecord.State.RESUMED, translucentTop.getState());
+        assertEquals(ActivityRecord.State.STARTED, activity.getState());
     }
 
     /**
