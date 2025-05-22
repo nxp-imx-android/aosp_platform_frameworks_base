@@ -108,12 +108,30 @@ interface PreferenceMetadata {
     fun tags(context: Context): Array<String> = arrayOf()
 
     /**
-     * Returns if preference is indexable, default value is `true`.
+     * Returns if preference is indexable for settings search.
      *
-     * Return `false` only when the preference is always unavailable on current device. If it is
-     * conditional available, override [PreferenceAvailabilityProvider].
+     * Return `false` only when the preference is unavailable for indexing on current device. If it
+     * is available on condition, override [PreferenceAvailabilityProvider].
+     *
+     * Note: If a [PreferenceScreenMetadata.isIndexable] returns `false`, all the preferences on the
+     * screen are not indexable.
      */
-    fun isIndexable(context: Context): Boolean = true
+    fun isIndexable(context: Context): Boolean =
+        when (this) {
+            is PreferenceGroup -> getPreferenceTitle(context)?.isNotEmpty() == true
+            else -> true
+        }
+
+    /**
+     * Returns if the preference is available on condition, which indicates its availability could
+     * be changed at runtime and should not be cached (e.g. for indexing).
+     *
+     * [PreferenceAvailabilityProvider] subclass returns `true` by default. For [PreferenceMetadata]
+     * that are generated programmatically should also return `true` even it does not implement
+     * [PreferenceAvailabilityProvider].
+     */
+    val isAvailableOnCondition: Boolean
+        get() = this is PreferenceAvailabilityProvider
 
     /**
      * Returns if preference is enabled.

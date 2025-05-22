@@ -55,6 +55,9 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
     val description: Int
         @StringRes get() = 0
 
+    /** Returns if the flag (e.g. for rollout) is enabled on current screen. */
+    fun isFlagEnabled(context: Context): Boolean = true
+
     /** Returns dynamic screen title, use [screenTitle] whenever possible. */
     fun getScreenTitle(context: Context): CharSequence? = null
 
@@ -85,6 +88,9 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
 
     /**
      * Returns the [Intent] to show current preference screen.
+     *
+     * NOTE: Always provide action for the returned intent. Otherwise, SettingsIntelligence starts
+     * intent with com.android.settings.SEARCH_RESULT_TRAMPOLINE action instead of given activity.
      *
      * @param metadata the preference to locate when show the screen
      */
