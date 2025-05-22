@@ -790,8 +790,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Reordering hide-task to bottom");
             wct.reorder(hideTaskToken, false /* onTop */);
         }
-        prepareTasksForSplitScreen(new int[] {taskId}, wct);
-        wct.startTask(taskId, options);
+        Bundle[] outOptions = new Bundle[]{options};
+        prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
+        wct.startTask(taskId, outOptions[0]);
         // If this should be mixed, send the task to avoid split handle transition directly.
         if (mMixedHandler != null && mMixedHandler.isTaskInPip(taskId, mTaskOrganizer)) {
             mTaskOrganizer.applyTransaction(wct);
@@ -915,10 +916,11 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             stageForTask1 = mSideStage;
         }
         addActivityOptions(options1, stageForTask1);
-        prepareTasksForSplitScreen(new int[] {taskId1, taskId2}, wct);
-        wct.startTask(taskId1, options1);
+        Bundle[] outOptions = new Bundle[]{options1, options2};
+        prepareTasksForSplitScreen(new int[]{taskId1, taskId2}, wct, outOptions);
+        wct.startTask(taskId1, outOptions[0]);
 
-        startWithTask(wct, taskId2, options2, snapPosition, remoteTransition, instanceId,
+        startWithTask(wct, taskId2, outOptions[1], snapPosition, remoteTransition, instanceId,
                 splitPosition);
     }
 
@@ -954,9 +956,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         addActivityOptions(options1, stageForTask1);
         wct.sendPendingIntent(pendingIntent, fillInIntent, options1);
-        prepareTasksForSplitScreen(new int[] {taskId}, wct);
+        Bundle[] outOptions = new Bundle[]{options2};
+        prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
 
-        startWithTask(wct, taskId, options2, snapPosition, remoteTransition, instanceId,
+        startWithTask(wct, taskId, outOptions[0], snapPosition, remoteTransition, instanceId,
                 splitPosition);
     }
 
@@ -974,12 +977,13 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         options = options != null ? options : new Bundle();
         addActivityOptions(options, null);
+        Bundle[] outOptions = new Bundle[]{options};
         ActivityManager.RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
         if (enableFullScreenWindowOnRemovingSplitScreenStageBugfix() && taskInfo != null
                 && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
-            prepareTasksForSplitScreen(new int[] {taskId}, wct);
+            prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
         }
-        wct.startTask(taskId, options);
+        wct.startTask(taskId, outOptions[0]);
         mSplitTransitions.startFullscreenTransition(wct, remoteTransition);
     }
 
@@ -1011,9 +1015,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         addActivityOptions(options1, stageForTask1);
         wct.startShortcut(mContext.getPackageName(), shortcutInfo, options1);
-        prepareTasksForSplitScreen(new int[] {taskId}, wct);
+        Bundle[] outOptions = new Bundle[]{options2};
+        prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
 
-        startWithTask(wct, taskId, options2, snapPosition, remoteTransition, instanceId,
+        startWithTask(wct, taskId, outOptions[0], snapPosition, remoteTransition, instanceId,
                 splitPosition);
     }
 
@@ -1024,13 +1029,31 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      *
      * @param taskIds an array of task IDs whose bounds will be cleared.
      * @param wct     transaction to clear the bounds on the tasks.
+     * @param bundles an array of Bundle that can be used to clear the bounds on the tasks. It
+     *                should have the same length as {@code taskIds}.
      */
-    private void prepareTasksForSplitScreen(int[] taskIds, WindowContainerTransaction wct) {
-        for (int taskId : taskIds) {
+    private void prepareTasksForSplitScreen(int[] taskIds, WindowContainerTransaction wct,
+            Bundle[] bundles) {
+        if (com.android.window.flags.Flags.fixLayoutRestoredTask()
+                && taskIds.length != bundles.length) {
+            Slog.w(TAG, "The length of taskIds and bundles are not the same.");
+            return;
+        }
+
+        for (int i = 0; i < taskIds.length; i++) {
+            final int taskId = taskIds[i];
             ActivityManager.RunningTaskInfo task = mTaskOrganizer.getRunningTaskInfo(taskId);
             if (task != null) {
                 wct.setWindowingMode(task.getToken(), WINDOWING_MODE_UNDEFINED)
-                        .setBounds(task.getToken(), null);
+                        .setBounds(task.getToken(), null /* bounds */);
+            } else if (com.android.window.flags.Flags.fixLayoutRestoredTask()) {
+                // Clear the task bounds via Bundle once the Task is restored.
+                ActivityOptions options = ActivityOptions.fromBundle(bundles[i]);
+                if (options == null) {
+                    options = ActivityOptions.makeBasic();
+                }
+                options.setLaunchBounds(new Rect());
+                bundles[i] = options.toBundle();
             }
         }
     }
