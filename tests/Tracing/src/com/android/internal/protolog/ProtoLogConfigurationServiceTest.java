@@ -219,9 +219,9 @@ public class ProtoLogConfigurationServiceTest {
         Mockito.verify(mSecondMockClientBinder)
                 .linkToDeath(mSecondDeathRecipientArgumentCaptor.capture(), anyInt());
 
-        mDeathRecipientArgumentCaptor.getValue().binderDied();
+        mDeathRecipientArgumentCaptor.getValue().binderDied(mMockClientBinder);
         Mockito.verify(tracer, never()).trace(any(), any());
-        mSecondDeathRecipientArgumentCaptor.getValue().binderDied();
+        mSecondDeathRecipientArgumentCaptor.getValue().binderDied(mSecondMockClientBinder);
         Mockito.verify(tracer).trace(any(), eq(mViewerConfigFile.getAbsolutePath()));
     }
 
