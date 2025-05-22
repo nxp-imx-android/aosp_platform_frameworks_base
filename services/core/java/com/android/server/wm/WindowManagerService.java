@@ -700,6 +700,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     // Cache whether to Magnify the IME.
     private boolean mMagnifyIme = false;
+    private boolean mIsMouseOrKeyboardConnected = false;
 
     /** Dump of the windows and app tokens at the time of the last ANR. Cleared after
      * LAST_ANR_LIFETIME_DURATION_MSECS */
@@ -1508,9 +1509,12 @@ public class WindowManagerService extends IWindowManager.Stub
                 new ConfigurationChangeSettingInternalImpl());
     }
 
-    @VisibleForTesting
     boolean isMagnifyImeEnabled() {
         return mMagnifyIme;
+    }
+
+    boolean isMagnifyNavBarEnabled() {
+        return mMagnifyIme && mIsMouseOrKeyboardConnected;
     }
 
     DisplayAreaPolicy.Provider getDisplayAreaPolicyProvider() {
@@ -1562,6 +1566,27 @@ public class WindowManagerService extends IWindowManager.Stub
 
     public InputManagerCallback getInputManagerCallback() {
         return mInputManagerCallback;
+    }
+
+    void onInputDevicesChanged() {
+        boolean hasMouseOrKeyboard = false;
+        for (final InputDevice device : mInputManager.getInputDevices()) {
+            if (!device.isEnabled() || device.isVirtual()) {
+                continue;
+            }
+            if (device.supportsSource(InputDevice.SOURCE_MOUSE) || device.isFullKeyboard()) {
+                hasMouseOrKeyboard = true;
+                break;
+            }
+        }
+        synchronized (mGlobalLock) {
+            if (mIsMouseOrKeyboardConnected != hasMouseOrKeyboard) {
+                mIsMouseOrKeyboardConnected = hasMouseOrKeyboard;
+                var t = mTransactionFactory.get();
+                mRoot.forAllDisplays(dc -> dc.reapplyMagnificationSpec(t));
+                t.apply();
+            }
+        }
     }
 
     @Override

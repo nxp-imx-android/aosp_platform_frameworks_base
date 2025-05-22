@@ -107,10 +107,12 @@ import android.util.ArraySet;
 import android.util.MergedConfiguration;
 import android.view.Gravity;
 import android.view.IWindow;
+import android.view.InputDevice;
 import android.view.InputWindowHandle;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
+import android.view.KeyCharacterMap;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.WindowInsets;
@@ -130,6 +132,7 @@ import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import com.android.window.flags.Flags;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -149,6 +152,14 @@ import java.util.List;
 @Presubmit
 @RunWith(WindowTestRunner.class)
 public class WindowStateTests extends WindowTestsBase {
+
+    @Before
+    public void setUp() {
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_TOUCHSCREEN).build()
+        });
+        mWm.onInputDevicesChanged();
+    }
 
     @After
     public void tearDown() {
@@ -343,14 +354,17 @@ public class WindowStateTests extends WindowTestsBase {
                 TYPE_MAGNIFICATION_OVERLAY).build();
         final WindowState navPanelWindow = newWindowBuilder("navPanelWindow",
                 TYPE_NAVIGATION_BAR_PANEL).build();
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
 
         a11yMagWindow.setHasSurface(true);
         magWindow.setHasSurface(true);
         navPanelWindow.setHasSurface(true);
+        navWindow.setHasSurface(true);
 
         assertFalse(a11yMagWindow.shouldMagnify());
         assertFalse(magWindow.shouldMagnify());
         assertFalse(navPanelWindow.shouldMagnify());
+        assertFalse(navWindow.shouldMagnify());
     }
 
     @Test
@@ -422,6 +436,91 @@ public class WindowStateTests extends WindowTestsBase {
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavBar_WhenImeIsMagnified_shouldNotMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(true /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        navWindow.setHasSurface(true);
+
+        // Here are examples of devices that should not trigger magnifying nav bar:
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_TOUCHSCREEN).build(),
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_GAMEPAD).build(),
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_ROTARY_ENCODER).build(),
+                // A disabled device.
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_MOUSE)
+                        .setEnabled(false).build(),
+                // A non-full alphabetic keyboard.
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_KEYBOARD)
+                        .setKeyboardType(InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC).build(),
+                // A virtual keyboard.
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_KEYBOARD)
+                        .setId(KeyCharacterMap.VIRTUAL_KEYBOARD).build(),
+        });
+        mWm.onInputDevicesChanged();
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+        assertFalse(mWm.isMagnifyNavBarEnabled());
+        assertFalse(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavBar_WhenImeIsMagnified_withMouse_shouldMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(true /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        navWindow.setHasSurface(true);
+
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_MOUSE).build()
+        });
+        mWm.onInputDevicesChanged();
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+        assertTrue(mWm.isMagnifyNavBarEnabled());
+        assertTrue(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavBar_WhenImeIsMagnified_withKeyboard_shouldMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(true /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        navWindow.setHasSurface(true);
+
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_KEYBOARD).setKeyboardType(
+                        InputDevice.KEYBOARD_TYPE_ALPHABETIC).build()
+        });
+        mWm.onInputDevicesChanged();
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+        assertTrue(mWm.isMagnifyNavBarEnabled());
+        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test

@@ -4935,7 +4935,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean shouldMagnify() {
         if (mAttrs.type == TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY
                 || mAttrs.type == TYPE_MAGNIFICATION_OVERLAY
-                || mAttrs.type == TYPE_NAVIGATION_BAR
                 // It's tempting to wonder: Have we forgotten the rounded corners overlay?
                 // worry not: it's a fake TYPE_NAVIGATION_BAR_PANEL
                 || mAttrs.type == TYPE_NAVIGATION_BAR_PANEL) {
@@ -4944,6 +4943,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mAttrs.type == TYPE_INPUT_METHOD
                 || mAttrs.type == TYPE_INPUT_METHOD_DIALOG) {
             return mWmService.isMagnifyImeEnabled();
+        }
+        if (mAttrs.type == TYPE_NAVIGATION_BAR) {
+            return mWmService.isMagnifyNavBarEnabled();
         }
         if ((mAttrs.privateFlags & PRIVATE_FLAG_NOT_MAGNIFIABLE) != 0) {
             return false;

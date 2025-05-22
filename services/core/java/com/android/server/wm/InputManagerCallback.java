@@ -146,6 +146,9 @@ final class InputManagerCallback implements InputManagerService.WindowManagerCal
                 mInputDevicesReadyMonitor.notifyAll();
             }
         }
+
+        mService.onInputDevicesChanged();
+
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
     }
 
