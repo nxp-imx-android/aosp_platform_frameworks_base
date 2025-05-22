@@ -23,6 +23,8 @@ import android.os.UserManager.DISALLOW_MICROPHONE_TOGGLE
 import android.os.UserManager.DISALLOW_SHARE_LOCATION
 import com.android.systemui.Flags
 import com.android.systemui.flashlight.FlashlightModule
+import com.android.systemui.flashlight.flags.FlashlightStrength
+import com.android.systemui.flashlight.shared.model.FlashlightModel
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
@@ -30,6 +32,7 @@ import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.AlarmTile
 import com.android.systemui.qs.tiles.CameraToggleTile
 import com.android.systemui.qs.tiles.FlashlightTile
+import com.android.systemui.qs.tiles.FlashlightTileWithLevel
 import com.android.systemui.qs.tiles.LocationTile
 import com.android.systemui.qs.tiles.MicrophoneToggleTile
 import com.android.systemui.qs.tiles.ModesDndTile
@@ -49,8 +52,7 @@ import com.android.systemui.qs.tiles.impl.alarm.domain.model.AlarmTileModel
 import com.android.systemui.qs.tiles.impl.alarm.ui.mapper.AlarmTileMapper
 import com.android.systemui.qs.tiles.impl.flashlight.domain.interactor.FlashlightTileDataInteractor
 import com.android.systemui.qs.tiles.impl.flashlight.domain.interactor.FlashlightTileUserActionInteractor
-import com.android.systemui.qs.tiles.impl.flashlight.domain.model.FlashlightTileModel
-import com.android.systemui.qs.tiles.impl.flashlight.ui.mapper.FlashlightMapper
+import com.android.systemui.qs.tiles.impl.flashlight.ui.mapper.FlashlightTileMapper
 import com.android.systemui.qs.tiles.impl.location.domain.interactor.LocationTileDataInteractor
 import com.android.systemui.qs.tiles.impl.location.domain.interactor.LocationTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.location.domain.model.LocationTileModel
@@ -82,6 +84,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
+import javax.inject.Provider
 
 @Module(includes = [FlashlightModule::class])
 interface PolicyModule {
@@ -95,7 +98,7 @@ interface PolicyModule {
     @Binds
     @IntoMap
     @StringKey(FLASHLIGHT_TILE_SPEC)
-    fun provideAirplaneModeAvailabilityInteractor(
+    fun provideFlashlightAvailabilityInteractor(
         impl: FlashlightTileDataInteractor
     ): QSTileAvailabilityInteractor
 
@@ -171,8 +174,8 @@ interface PolicyModule {
         @IntoMap
         @StringKey(FLASHLIGHT_TILE_SPEC)
         fun provideFlashlightTileViewModel(
-            factory: QSTileViewModelFactory.Static<FlashlightTileModel>,
-            mapper: FlashlightMapper,
+            factory: QSTileViewModelFactory.Static<FlashlightModel>,
+            mapper: FlashlightTileMapper,
             stateInteractor: FlashlightTileDataInteractor,
             userActionInteractor: FlashlightTileUserActionInteractor,
         ): QSTileViewModel =
@@ -472,13 +475,20 @@ interface PolicyModule {
                 stateInteractor,
                 mapper,
             )
-    }
 
-    /** Inject FlashlightTile into tileMap in QSModule */
-    @Binds
-    @IntoMap
-    @StringKey(FlashlightTile.TILE_SPEC)
-    fun bindFlashlightTile(flashlightTile: FlashlightTile): QSTileImpl<*>
+        /**
+         * Inject FlashlightTile or FlashlightTileWithLevel into tileMap in QSModule based on flag
+         */
+        @Provides
+        @IntoMap
+        @StringKey(FlashlightTile.TILE_SPEC)
+        fun provideBinaryOrLevelOldFlashlightTile(
+            binaryTile: Provider<FlashlightTile>,
+            levelTile: Provider<FlashlightTileWithLevel>,
+        ): QSTileImpl<*> {
+            return if (FlashlightStrength.isEnabled) levelTile.get() else binaryTile.get()
+        }
+    }
 
     /** Inject LocationTile into tileMap in QSModule */
     @Binds
