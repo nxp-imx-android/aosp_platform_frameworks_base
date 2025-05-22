@@ -36,6 +36,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +58,6 @@ import com.android.settingslib.spa.framework.theme.SettingsShape.CornerExtraLarg
 import com.android.settingslib.spa.framework.theme.SettingsShape.CornerExtraSmall2
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
-import com.android.settingslib.spa.framework.theme.toSemiBoldWeight
 import com.android.settingslib.spa.widget.ui.SettingsBody
 import com.android.settingslib.spa.widget.ui.SettingsTitle
 
@@ -157,11 +157,12 @@ fun BannerHeader(imageVector: ImageVector?, iconColor: Color, onDismiss: (() -> 
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BannerTitleHeader(title: String, onDismiss: (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth()) {
         Box(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium.toSemiBoldWeight())
+            Text(text = title, style = MaterialTheme.typography.titleMediumEmphasized)
         }
         Spacer(modifier = Modifier.padding(SettingsDimension.paddingSmall))
         DismissButton(onDismiss)

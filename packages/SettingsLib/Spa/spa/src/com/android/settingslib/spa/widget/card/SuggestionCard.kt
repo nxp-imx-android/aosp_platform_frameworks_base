@@ -48,7 +48,6 @@ import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
 import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
-import com.android.settingslib.spa.framework.theme.toSemiBoldWeight
 
 data class SuggestionCardModel(
     val title: String,
@@ -115,11 +114,12 @@ private fun SuggestionCardIcon(imageVector: ImageVector) {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun SuggestionCardTitle(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleMedium.toSemiBoldWeight(),
+        style = MaterialTheme.typography.titleMediumEmphasized,
         modifier = Modifier.padding(vertical = SettingsDimension.paddingTiny),
         color = MaterialTheme.colorScheme.onSecondaryContainer,
     )

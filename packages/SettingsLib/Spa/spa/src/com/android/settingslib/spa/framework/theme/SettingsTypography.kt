@@ -184,7 +184,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             displayLargeEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.displayLargeEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 57.sp,
                     lineHeight = 64.sp,
                     letterSpacing = (-0.2).sp,
@@ -202,7 +202,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             displayMediumEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.displayMediumEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 45.sp,
                     lineHeight = 52.sp,
                     letterSpacing = 0.0.sp,
@@ -220,7 +220,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             displaySmallEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.displaySmallEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 36.sp,
                     lineHeight = 44.sp,
                     letterSpacing = 0.0.sp,
@@ -238,7 +238,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             headlineLargeEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.headlineLargeEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 32.sp,
                     lineHeight = 40.sp,
                     letterSpacing = 0.0.sp,
@@ -256,7 +256,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             headlineMediumEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.headlineMediumEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 28.sp,
                     lineHeight = 36.sp,
                     letterSpacing = 0.0.sp,
@@ -274,7 +274,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             headlineSmallEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.headlineSmallEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,
                     lineHeight = 32.sp,
                     letterSpacing = 0.0.sp,
@@ -292,7 +292,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             titleLargeEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.titleLargeEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 22.sp,
                     lineHeight = 28.sp,
                     letterSpacing = 0.02.em,
@@ -346,7 +346,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             bodyLargeEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.bodyLargeEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     lineHeight = 24.sp,
                     letterSpacing = 0.01.em,
@@ -364,7 +364,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             bodyMediumEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.bodyMediumEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     letterSpacing = 0.01.em,
@@ -382,7 +382,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
             bodySmallEmphasized =
                 TextStyle(
                     fontFamily = settingsFontFamily.bodySmallEmphasized,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
                     letterSpacing = 0.01.em,
@@ -457,6 +457,3 @@ internal fun rememberSettingsTypography(): Typography {
 /** Creates a new [TextStyle] which font weight set to medium. */
 internal fun TextStyle.toMediumWeight() =
     copy(fontWeight = FontWeight.Medium, letterSpacing = 0.01.em)
-
-internal fun TextStyle.toSemiBoldWeight() =
-    copy(fontWeight = FontWeight.SemiBold, letterSpacing = 0.01.em)
