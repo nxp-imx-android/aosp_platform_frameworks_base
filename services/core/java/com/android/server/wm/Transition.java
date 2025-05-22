@@ -111,6 +111,7 @@ import android.util.SparseArray;
 import android.view.Display;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.ActivityTransitionInfo;
 import android.window.ScreenCapture;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
@@ -3192,7 +3193,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
 
             if (activityRecord != null) {
-                change.setActivityComponent(activityRecord.mActivityComponent);
+                change.setActivityTransitionInfo(new ActivityTransitionInfo(
+                        activityRecord.mActivityComponent, activityRecord.getTask().mTaskId));
             }
 
             change.setRotation(info.mRotation, endRotation);
