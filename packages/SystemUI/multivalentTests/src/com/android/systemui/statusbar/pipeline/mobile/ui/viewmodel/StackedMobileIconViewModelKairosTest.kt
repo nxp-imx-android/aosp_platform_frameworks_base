@@ -43,6 +43,7 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class StackedMobileIconViewModelKairosTest : SysuiTestCase() {
     private val kosmos =
         testKosmos().useUnconfinedTestDispatcher().apply {

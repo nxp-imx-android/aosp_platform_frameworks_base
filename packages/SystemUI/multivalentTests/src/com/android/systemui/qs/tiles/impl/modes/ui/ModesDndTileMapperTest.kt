@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class ModesDndTileMapperTest : SysuiTestCase() {
     val config =
         QSTileConfigTestBuilder.build {
