@@ -95,3 +95,10 @@ flag {
      description: "Remove AdServicesManagerService from Wear"
      bug: "340928611"
 }
+
+flag {
+    namespace: "wear_system_health"
+    name: "allow_system_server_inherit_rt"
+    description: "Allow enabling real-time priority inheritance for binder services within system_server"
+    bug: "379851024"
+}
