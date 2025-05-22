@@ -1246,7 +1246,7 @@ public final class CompanionDeviceManager {
      * process completes, and its result.
      *
      * <p>This API should be used to remove a bluetooth bond that was created either
-     * by using {@link BluetoothDevice#createBond(int)} or by a direct user action.
+     * by using {@link BluetoothDevice#createBond()} or by a direct user action.
      * The association must already exist with this device before calling this method, but
      * this may be done retroactively to remove a bond that was created outside of the
      * CompanionDeviceManager.
