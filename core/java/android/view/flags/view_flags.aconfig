@@ -142,14 +142,6 @@ flag {
 }
 
 flag {
-    name: "date_time_view_relative_time_display_configs"
-    namespace: "systemui"
-    description: "Enables DateTimeView to use additional display configurations for relative time"
-    bug: "364653005"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "root_view_changed_listener"
     namespace: "windowing_sdk"
     description: "Implement listener pattern for WindowInspector#getGlobalWindowViews."
