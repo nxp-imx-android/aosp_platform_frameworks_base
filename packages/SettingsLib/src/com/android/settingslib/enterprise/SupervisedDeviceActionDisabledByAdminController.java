@@ -16,7 +16,7 @@
 
 package com.android.settingslib.enterprise;
 
-
+import android.app.supervision.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -49,6 +49,9 @@ final class SupervisedDeviceActionDisabledByAdminController
 
     @Override
     public String getAdminSupportTitle(@Nullable String restriction) {
+        if (Flags.enableSupervisionSettingsScreen()) {
+            return mStringProvider.getDisabledByParentalControlsTitle();
+        }
         return mStringProvider.getDisabledBiometricsParentConsentTitle();
     }
 
