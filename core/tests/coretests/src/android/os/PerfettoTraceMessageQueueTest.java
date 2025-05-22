@@ -22,12 +22,13 @@ import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.FlagsParameterization;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
-
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.google.protobuf.ExtensionRegistryLite;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -46,17 +47,52 @@ import perfetto.protos.TrackDescriptorOuterClass;
 import perfetto.protos.TrackEventConfigOuterClass;
 import perfetto.protos.TrackEventOuterClass;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/** Tests the Perfetto SDK tracing for the MessageQueue and Looper classes. */
-@RunWith(AndroidJUnit4.class)
+/**
+ * Tests the Perfetto SDK tracing for the {@link android.os.MessageQueue} and {@link
+ * android.os.Looper} classes. <br>
+ * You need to manually enable or disable the {@code android.os.perfetto_sdk_tracing_v3} flag before
+ * running this test. This is needed because the {@link PerfettoTrace} caches the value of the flag
+ * that was at the boot time, and the {@code SetFlagsRule} can't change it. <br>
+ * Run the following adb commands before running the test: <br>
+ * {@code adb shell aflags enable android.os.perfetto_sdk_tracing_v3 } <br>
+ * or {@code adb shell aflags disable android.os.perfetto_sdk_tracing_v3 } <br>
+ * and then <br>
+ * {@code adb reboot} <br>
+ *
+ * <p>This test is a parameterized test, and only the version for the flag value that matches the
+ * boot flag value will be run. The test output allows you to verify that you are running the
+ * correct version.
+ */
+@RunWith(ParameterizedAndroidJunit4.class)
 @DisabledOnRavenwood(blockedBy = PerfettoTrace.class)
+@RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
 public class PerfettoTraceMessageQueueTest {
+    private static final boolean PERFETTO_V3_FLAG_WHEN_STARTED =
+            android.os.Flags.perfettoSdkTracingV3();
+
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V3);
+    }
+
+    @Rule public SetFlagsRule mSetFlagsRule;
+
+    public PerfettoTraceMessageQueueTest(FlagsParameterization flags) {
+        mSetFlagsRule = new SetFlagsRule(flags);
+    }
 
     private static final int MESSAGE = 1234567;
     private static final int MESSAGE_DELAYED = 7654321;
@@ -70,15 +106,30 @@ public class PerfettoTraceMessageQueueTest {
         PerfettoTrace.registerCategories();
     }
 
+    private boolean mPerfettoV3FlagWhenRunning = false;
+
     @Before
     public void setUp() {
+        // The value of the flag is changed by the 'mSetFlagsRule'.
+        mPerfettoV3FlagWhenRunning = android.os.Flags.perfettoSdkTracingV3();
+        Assume.assumeTrue(
+                "Parametrized test flag value is not equal to the boot time flag value.",
+                mPerfettoV3FlagWhenRunning == PERFETTO_V3_FLAG_WHEN_STARTED);
         mCategoryNames.clear();
         mEventNames.clear();
     }
 
     @Test
-    @RequiresFlagsEnabled(android.os.Flags.FLAG_PERFETTO_SDK_TRACING_V2)
     public void testMessageQueue() throws Exception {
+        // Assert we initialize the correct API version.
+        if (mPerfettoV3FlagWhenRunning) {
+            assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isFalse();
+            assertThat(PerfettoTrace.MQ_CATEGORY_V3.isRegistered()).isTrue();
+        } else {
+            assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isTrue();
+            assertThat(PerfettoTrace.MQ_CATEGORY_V3.isRegistered()).isFalse();
+        }
+
         final String mqReceiverThreadName = "mq_test_thread";
         final String mqSenderThreadName = Thread.currentThread().getName();
         final HandlerThread thread = new HandlerThread(mqReceiverThreadName);
@@ -86,8 +137,16 @@ public class PerfettoTraceMessageQueueTest {
         final Handler handler = thread.getThreadHandler();
         final CountDownLatch latch = new CountDownLatch(1);
 
-        PerfettoTrace.Session session =
-                new PerfettoTrace.Session(true, getTraceConfig("mq").toByteArray());
+        byte[] mqTraceConfig = getTraceConfig("mq").toByteArray();
+        PerfettoTrace.Session session = null;
+        com.android.internal.dev.perfetto.sdk.PerfettoTrace.Session sessionV3 = null;
+        if (mPerfettoV3FlagWhenRunning) {
+            sessionV3 =
+                    new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Session(
+                            true, mqTraceConfig);
+        } else {
+            session = new PerfettoTrace.Session(true, mqTraceConfig);
+        }
 
         final int eventsCount = 4;
 
@@ -104,7 +163,13 @@ public class PerfettoTraceMessageQueueTest {
         ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
         AndroidTrackEventOuterClass.registerAllExtensions(registry);
 
-        TraceOuterClass.Trace trace = TraceOuterClass.Trace.parseFrom(session.close(), registry);
+        byte[] traceData;
+        if (mPerfettoV3FlagWhenRunning) {
+            traceData = sessionV3.close();
+        } else {
+            traceData = session.close();
+        }
+        TraceOuterClass.Trace trace = TraceOuterClass.Trace.parseFrom(traceData, registry);
 
         int counterCount = 0;
         int sliceEndEventCount = 0;
