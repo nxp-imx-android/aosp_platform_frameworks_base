@@ -397,7 +397,7 @@ class TestPhoneWindowManager {
         doNothing().when(mContext).startActivityAsUser(any(), any());
         doNothing().when(mContext).startActivityAsUser(any(), any(), any());
 
-        KeyInterceptionInfo interceptionInfo = new KeyInterceptionInfo(0, 0, null, 0);
+        KeyInterceptionInfo interceptionInfo = new KeyInterceptionInfo(0, 0, 0, null, 0);
         doReturn(interceptionInfo)
                 .when(mWindowManagerInternal).getKeyInterceptionInfoFromToken(any());
 

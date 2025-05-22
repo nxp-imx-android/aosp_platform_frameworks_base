@@ -720,6 +720,7 @@ class InputManagerServiceTests {
             } else {
                 0
             },
+            /* inputFeatures = */0,
             "title",
             /* uid = */0
         )
