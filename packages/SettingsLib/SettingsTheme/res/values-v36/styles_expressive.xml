@@ -443,7 +443,7 @@
     <style name="Widget.SettingsLib.DialogButton" parent="@android:style/Widget.DeviceDefault.Button">
         <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_extrasmall4</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">0dp</item>
+        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium4</item>
         <item name="android:minWidth">0dp</item>
         <item name="android:paddingVertical">@dimen/settingslib_expressive_space_extrasmall5</item>
         <item name="android:paddingHorizontal">@dimen/settingslib_expressive_space_small1</item>
