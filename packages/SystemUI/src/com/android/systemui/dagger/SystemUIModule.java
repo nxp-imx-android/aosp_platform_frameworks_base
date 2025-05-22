@@ -75,6 +75,7 @@ import com.android.systemui.flags.FlagDependenciesModule;
 import com.android.systemui.flags.FlagsModule;
 import com.android.systemui.growth.dagger.GrowthModule;
 import com.android.systemui.haptics.msdl.dagger.MSDLModule;
+import com.android.systemui.inputdevice.InputDeviceModule;
 import com.android.systemui.inputmethod.InputMethodModule;
 import com.android.systemui.keyboard.KeyboardModule;
 import com.android.systemui.keyevent.data.repository.KeyEventRepositoryModule;
@@ -302,7 +303,8 @@ import javax.inject.Named;
         WalletModule.class,
         LowLightModule.class,
         LowLightClockModule.class,
-        PerDisplayRepositoriesModule.class
+        PerDisplayRepositoriesModule.class,
+        InputDeviceModule.class,
 },
         subcomponents = {
                 ComplicationComponent.class,
