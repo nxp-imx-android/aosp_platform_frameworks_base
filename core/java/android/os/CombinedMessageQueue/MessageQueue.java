@@ -279,7 +279,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchDeliverableMessages extends MessageCompare {
+    static final class MatchDeliverableMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1227,7 +1227,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchBarrierToken extends MessageCompare {
+    static final class MatchBarrierToken extends MessageCompare {
         int mBarrierToken;
 
         MatchBarrierToken(int token) {
@@ -1526,7 +1526,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerWhatAndObject extends MessageCompare {
+    static final class MatchHandlerWhatAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1569,7 +1569,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
+    static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1612,7 +1612,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerRunnableAndObject extends MessageCompare {
+    static final class MatchHandlerRunnableAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1656,7 +1656,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandler extends MessageCompare {
+    static final class MatchHandler extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1874,7 +1874,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
+    static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1949,7 +1949,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerAndObject extends MessageCompare {
+    static final class MatchHandlerAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2022,7 +2022,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerAndObjectEquals extends MessageCompare {
+    static final class MatchHandlerAndObjectEquals extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2144,7 +2144,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchAllMessages extends MessageCompare {
+    static final class MatchAllMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2156,7 +2156,7 @@ public final class MessageQueue {
         findOrRemoveMessages(null, -1, null, null, 0, sMatchAllMessages, true);
     }
 
-    private static final class MatchAllFutureMessages extends MessageCompare {
+    static final class MatchAllFutureMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2383,7 +2383,7 @@ public final class MessageQueue {
         @Events int onFileDescriptorEvents(@NonNull FileDescriptor fd, @Events int events);
     }
 
-    private static final class FileDescriptorRecord {
+    static final class FileDescriptorRecord {
         public final FileDescriptor mDescriptor;
         public int mEvents;
         public OnFileDescriptorEventListener mListener;
@@ -2801,7 +2801,7 @@ public final class MessageQueue {
      * On item cancellation, determine whether to wake next() to flush tombstoned messages.
      * We track queued and cancelled counts as two ints packed into a single long.
      */
-    private static final class MessageCounts {
+    static final class MessageCounts {
         private static VarHandle sCounts;
         private volatile long mCountsValue = 0;
         static {
@@ -3003,7 +3003,7 @@ public final class MessageQueue {
     /*
      * This class is used to find matches for hasMessages() and removeMessages()
      */
-    private abstract static class MessageCompare {
+    abstract static class MessageCompare {
         public abstract boolean compareMessage(MessageNode n, Handler h, int what, Object object,
                 Runnable r, long when);
     }
