@@ -19915,7 +19915,8 @@ public class TelephonyManager {
      *
      * @param carrierIdentifier {@link CarrierIdentifier}
      *
-     * @return Carrier id. Return {@link #UNKNOWN_CARRIER_ID} if the carrier cannot be identified.
+     * @return Carrier id from passing {@link CarrierIdentifier}. If parent carrier id is available,
+     * it will be returned. Or {@link #UNKNOWN_CARRIER_ID} if the carrier cannot be identified.
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      *
