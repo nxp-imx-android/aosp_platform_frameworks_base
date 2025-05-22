@@ -2108,8 +2108,11 @@
     <!-- [CHAR LIMIT=NONE] Notification camera based rotation enabled description -->
     <string name="rotation_lock_camera_rotation_on">On - Face-based</string>
 
-    <!-- [CHAR LIMIT=100] Notification bundle inline settings title -->
+    <!-- [CHAR LIMIT=100] Notification bundle header inline settings title -->
     <string name="notification_guts_bundle_title">Silence and bundle</string>
+
+    <!-- [CHAR LIMIT=100] Notification bundle individual notification inline settings title -->
+    <string name="notification_guts_single_bundle_notif_title">Use Notification Organizer</string>
 
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary for an individual notification -->
     <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
