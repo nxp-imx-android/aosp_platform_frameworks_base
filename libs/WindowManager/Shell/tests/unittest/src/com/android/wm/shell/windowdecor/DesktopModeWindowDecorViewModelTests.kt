@@ -747,7 +747,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         verify(spyContext).startActivityAsUser(argThat { intent ->
             uri.equals(intent.data)
                     && intent.action == ACTION_MAIN
-        }, eq(mockUserHandle))
+        }, any(), eq(mockUserHandle))
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

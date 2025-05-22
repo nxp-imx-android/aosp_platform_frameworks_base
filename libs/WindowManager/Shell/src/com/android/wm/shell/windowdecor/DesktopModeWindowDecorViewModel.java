@@ -45,6 +45,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
@@ -146,8 +147,8 @@ import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
-import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
+import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
@@ -810,11 +811,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (decoration == null) {
             return;
         }
-        openInBrowser(intent, decoration.getUser());
+        openInBrowser(intent, decoration.getUser(), decoration.mTaskInfo.displayId);
     }
 
-    private void openInBrowser(@NonNull Intent intent, @NonNull UserHandle userHandle) {
-        mContext.startActivityAsUser(intent, userHandle);
+    private void openInBrowser(
+            @NonNull Intent intent, @NonNull UserHandle userHandle, int displayId) {
+        final ActivityOptions options = ActivityOptions.makeBasic().setLaunchDisplayId(displayId);
+        mContext.startActivityAsUser(intent, options.toBundle(), userHandle);
     }
 
     private void moveToDesktop(int taskId, DesktopModeTransitionSource source) {
