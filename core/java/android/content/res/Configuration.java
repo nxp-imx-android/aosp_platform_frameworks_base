@@ -16,32 +16,32 @@
 
 package android.content.res;
 
-import static android.content.ConfigurationProto.COLOR_MODE;
-import static android.content.ConfigurationProto.DENSITY_DPI;
-import static android.content.ConfigurationProto.FONT_SCALE;
-import static android.content.ConfigurationProto.FONT_WEIGHT_ADJUSTMENT;
-import static android.content.ConfigurationProto.GRAMMATICAL_GENDER;
-import static android.content.ConfigurationProto.HARD_KEYBOARD_HIDDEN;
-import static android.content.ConfigurationProto.KEYBOARD;
-import static android.content.ConfigurationProto.KEYBOARD_HIDDEN;
-import static android.content.ConfigurationProto.LOCALES;
-import static android.content.ConfigurationProto.LOCALE_LIST;
-import static android.content.ConfigurationProto.MCC;
-import static android.content.ConfigurationProto.MNC;
-import static android.content.ConfigurationProto.NAVIGATION;
-import static android.content.ConfigurationProto.NAVIGATION_HIDDEN;
-import static android.content.ConfigurationProto.ORIENTATION;
-import static android.content.ConfigurationProto.SCREEN_HEIGHT_DP;
-import static android.content.ConfigurationProto.SCREEN_LAYOUT;
-import static android.content.ConfigurationProto.SCREEN_WIDTH_DP;
-import static android.content.ConfigurationProto.SMALLEST_SCREEN_WIDTH_DP;
-import static android.content.ConfigurationProto.TOUCHSCREEN;
-import static android.content.ConfigurationProto.UI_MODE;
-import static android.content.ConfigurationProto.WINDOW_CONFIGURATION;
-import static android.content.ResourcesConfigurationProto.CONFIGURATION;
-import static android.content.ResourcesConfigurationProto.SCREEN_HEIGHT_PX;
-import static android.content.ResourcesConfigurationProto.SCREEN_WIDTH_PX;
-import static android.content.ResourcesConfigurationProto.SDK_VERSION;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.COLOR_MODE;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.DENSITY_DPI;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.FONT_SCALE;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.FONT_WEIGHT_ADJUSTMENT;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.GRAMMATICAL_GENDER;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.HARD_KEYBOARD_HIDDEN;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.KEYBOARD;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.KEYBOARD_HIDDEN;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.LOCALES;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.LOCALE_LIST;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.MCC;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.MNC;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.NAVIGATION;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.NAVIGATION_HIDDEN;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.ORIENTATION;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.SCREEN_HEIGHT_DP;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.SCREEN_LAYOUT;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.SCREEN_WIDTH_DP;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.SMALLEST_SCREEN_WIDTH_DP;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.TOUCHSCREEN;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.UI_MODE;
+import static android.internal.perfetto.protos.Configuration.ConfigurationProto.WINDOW_CONFIGURATION;
+import static android.internal.perfetto.protos.Configuration.ResourcesConfigurationProto.CONFIGURATION;
+import static android.internal.perfetto.protos.Configuration.ResourcesConfigurationProto.SCREEN_HEIGHT_PX;
+import static android.internal.perfetto.protos.Configuration.ResourcesConfigurationProto.SCREEN_WIDTH_PX;
+import static android.internal.perfetto.protos.Configuration.ResourcesConfigurationProto.SDK_VERSION;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -50,10 +50,10 @@ import android.annotation.TestApi;
 import android.app.GrammaticalInflectionManager;
 import android.app.WindowConfiguration;
 import android.compat.annotation.UnsupportedAppUsage;
-import android.content.LocaleProto;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityInfo.Config;
 import android.graphics.Typeface;
+import android.internal.perfetto.protos.Locale.LocaleProto;
 import android.os.Build;
 import android.os.LocaleList;
 import android.os.Parcel;
@@ -1302,7 +1302,8 @@ public final class Configuration implements Parcelable, Comparable<Configuration
 
     /**
      * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link android.content.ConfigurationProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.Configuration.ConfigurationProto}
      * Has the option to ignore fields that don't need to be persisted to disk.
      *
      * @param protoOutputStream Stream to write the Configuration object to.
@@ -1347,7 +1348,8 @@ public final class Configuration implements Parcelable, Comparable<Configuration
 
     /**
      * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link android.content.ConfigurationProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.Configuration.ConfigurationProto}
      *
      * @param protoOutputStream Stream to write the Configuration object to.
      * @param fieldId           Field Id of the Configuration as defined in the parent message
@@ -1359,7 +1361,8 @@ public final class Configuration implements Parcelable, Comparable<Configuration
 
     /**
      * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link android.content.ConfigurationProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.Configuration.ConfigurationProto}
      *
      * @param protoOutputStream Stream to write the Configuration object to.
      * @param fieldId           Field Id of the Configuration as defined in the parent message
@@ -1372,7 +1375,8 @@ public final class Configuration implements Parcelable, Comparable<Configuration
 
     /**
      * Read from a protocol buffer output stream.
-     * Protocol buffer message definition at {@link android.content.ConfigurationProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.Configuration.ConfigurationProto}
      *
      * @param protoInputStream Stream to read the Configuration object from.
      * @param fieldId          Field Id of the Configuration as defined in the parent message
@@ -1520,8 +1524,8 @@ public final class Configuration implements Parcelable, Comparable<Configuration
     }
 
     /**
-     * Write full {@link android.content.ResourcesConfigurationProto} to protocol buffer output
-     * stream.
+     * Write full {@link android.internal.perfetto.protos.Configuration.ResourcesConfigurationProto}
+     * to protocol buffer output stream.
      *
      * @param protoOutputStream Stream to write the Configuration object to.
      * @param fieldId           Field Id of the Configuration as defined in the parent message
