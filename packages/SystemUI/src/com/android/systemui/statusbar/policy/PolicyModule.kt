@@ -22,6 +22,7 @@ import android.os.UserManager.DISALLOW_CONFIG_LOCATION
 import android.os.UserManager.DISALLOW_MICROPHONE_TOGGLE
 import android.os.UserManager.DISALLOW_SHARE_LOCATION
 import com.android.systemui.Flags
+import com.android.systemui.flashlight.FlashlightModule
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
@@ -82,7 +83,7 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 import dagger.multibindings.StringKey
 
-@Module
+@Module(includes = [FlashlightModule::class])
 interface PolicyModule {
 
     /** Inject WorkModeTile into tileMap in QSModule */
