@@ -4950,24 +4950,24 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     }
 
     /**
-     * Returns all users on the device, including pre-created and dying users.
+     * Returns all users on the device, including dying users.
      *
      * @param userManager UserManagerService instance
      * @return the list of users
      */
     private static List<UserInfo> getAllUsers(UserManagerService userManager) {
-        return getUsers(userManager, /* excludeDying= */ false, /* excludePreCreated= */ false);
+        return getUsers(userManager, /* excludeDying= */ false);
     }
 
     /**
-     * Returns the list of users on the device, excluding pre-created ones.
+     * Returns the list of users on the device, excluding dying ones.
      *
      * @param userManager UserManagerService instance
      *
      * @return the list of users
      */
     static List<UserInfo> getActiveUsers(UserManagerService userManager) {
-        return getUsers(userManager, /* excludeDying= */ true, /* excludePreCreated= */ true);
+        return getUsers(userManager, /* excludeDying= */ true);
     }
 
     /**
@@ -4975,16 +4975,13 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
      *
      * @param userManager UserManagerService instance
      * @param excludeDying Indicates whether to exclude any users marked for deletion.
-     * @param excludePreCreated Indicates whether to exclude any pre-created users.
      *
      * @return the list of users
      */
-    private static List<UserInfo> getUsers(UserManagerService userManager, boolean excludeDying,
-            boolean excludePreCreated) {
+    private static List<UserInfo> getUsers(UserManagerService userManager, boolean excludeDying) {
         final long id = Binder.clearCallingIdentity();
         try {
-            return userManager.getUsers(/* excludePartial= */ true, excludeDying,
-                    excludePreCreated);
+            return userManager.getUsers(excludeDying);
         } catch (NullPointerException npe) {
             // packagemanager not yet initialized
         } finally {
