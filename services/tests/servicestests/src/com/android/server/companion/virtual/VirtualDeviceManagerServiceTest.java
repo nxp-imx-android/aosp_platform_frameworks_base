@@ -83,14 +83,9 @@ import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IInputManager;
 import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
-import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboardConfig;
-import android.hardware.input.VirtualMouseButtonEvent;
 import android.hardware.input.VirtualMouseConfig;
-import android.hardware.input.VirtualMouseRelativeEvent;
-import android.hardware.input.VirtualMouseScrollEvent;
 import android.hardware.input.VirtualNavigationTouchpadConfig;
-import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.media.AudioManager;
 import android.net.MacAddress;
@@ -114,7 +109,6 @@ import android.testing.TestableLooper;
 import android.util.ArraySet;
 import android.view.Display;
 import android.view.DisplayInfo;
-import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.virtualdevice.cts.common.VirtualDeviceRule;
 
@@ -591,20 +585,6 @@ public class VirtualDeviceManagerServiceTest {
         assertThrows(SecurityException.class, () -> unownedDevice.createVirtualStylus(null, null));
         assertThrows(SecurityException.class,
                 () -> unownedDevice.createVirtualRotaryEncoder(null, null));
-        assertThrows(SecurityException.class, () -> unownedDevice.unregisterInputDevice(null));
-
-        assertThrows(SecurityException.class, () -> unownedDevice.sendDpadKeyEvent(null, null));
-        assertThrows(SecurityException.class, () -> unownedDevice.sendKeyEvent(null, null));
-        assertThrows(SecurityException.class, () -> unownedDevice.sendButtonEvent(null, null));
-        assertThrows(SecurityException.class, () -> unownedDevice.sendTouchEvent(null, null));
-        assertThrows(SecurityException.class, () -> unownedDevice.sendRelativeEvent(null, null));
-        assertThrows(SecurityException.class, () -> unownedDevice.sendScrollEvent(null, null));
-        assertThrows(SecurityException.class,
-                () -> unownedDevice.sendStylusMotionEvent(null, null));
-        assertThrows(SecurityException.class,
-                () -> unownedDevice.sendStylusButtonEvent(null, null));
-        assertThrows(SecurityException.class,
-                () -> unownedDevice.sendRotaryEncoderScrollEvent(null, null));
         assertThrows(SecurityException.class, () -> unownedDevice.setShowPointerIcon(true));
 
         assertThrows(SecurityException.class, () -> unownedDevice.getVirtualSensorList());
@@ -1337,192 +1317,6 @@ public class VirtualDeviceManagerServiceTest {
         mVdms.notifyRunningAppsChanged(deviceId, Sets.newArraySet(UID_1));
         TestableLooper.get(this).processAllMessages();
         verify(mAppsOnVirtualDeviceListener, never()).onAppsOnAnyVirtualDeviceChanged(any());
-    }
-
-    @Test
-    public void sendKeyEvent_noFd() {
-        assertThat(mDeviceImpl.sendKeyEvent(BINDER,
-                new VirtualKeyEvent.Builder()
-                        .setKeyCode(KeyEvent.KEYCODE_A)
-                        .setAction(VirtualKeyEvent.ACTION_DOWN)
-                        .build()))
-                .isFalse();
-    }
-
-    @Test
-    public void sendKeyEvent_hasFd_writesEvent() {
-        final int fd = 1;
-        final int keyCode = KeyEvent.KEYCODE_A;
-        final int action = VirtualKeyEvent.ACTION_UP;
-        final long eventTimeNanos = 5000L;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_KEYBOARD, DISPLAY_ID_1, PHYS,
-                DEVICE_NAME_1, INPUT_DEVICE_ID);
-
-        assertThat(mDeviceImpl.sendKeyEvent(BINDER,
-                new VirtualKeyEvent.Builder()
-                        .setKeyCode(keyCode)
-                        .setAction(action)
-                        .setEventTimeNanos(eventTimeNanos)
-                        .build()))
-                .isTrue();
-        verify(mNativeWrapperMock).writeKeyEvent(fd, keyCode, action, eventTimeNanos);
-    }
-
-    @Test
-    public void sendButtonEvent_noFd() {
-        assertThat(mDeviceImpl.sendButtonEvent(BINDER,
-                new VirtualMouseButtonEvent.Builder()
-                        .setButtonCode(VirtualMouseButtonEvent.BUTTON_BACK)
-                        .setAction(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS)
-                        .build()))
-                .isFalse();
-    }
-
-    @Test
-    public void sendButtonEvent_hasFd_writesEvent() {
-        final int fd = 1;
-        final int buttonCode = VirtualMouseButtonEvent.BUTTON_BACK;
-        final int action = VirtualMouseButtonEvent.ACTION_BUTTON_PRESS;
-        final long eventTimeNanos = 5000L;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_MOUSE, DISPLAY_ID_1, PHYS,
-                DEVICE_NAME_1, INPUT_DEVICE_ID);
-        assertThat(mDeviceImpl.sendButtonEvent(BINDER,
-                new VirtualMouseButtonEvent.Builder()
-                        .setButtonCode(buttonCode)
-                        .setAction(action)
-                        .setEventTimeNanos(eventTimeNanos)
-                        .build()))
-                .isTrue();
-        verify(mNativeWrapperMock).writeButtonEvent(fd, buttonCode, action, eventTimeNanos);
-    }
-
-    @Test
-    public void sendRelativeEvent_noFd() {
-        assertThat(mDeviceImpl.sendRelativeEvent(BINDER,
-                new VirtualMouseRelativeEvent.Builder()
-                        .setRelativeX(0.0f)
-                        .setRelativeY(0.0f)
-                        .build()))
-                .isFalse();
-    }
-
-    @Test
-    public void sendRelativeEvent_hasFd_writesEvent() {
-        final int fd = 1;
-        final float x = -0.2f;
-        final float y = 0.7f;
-        final long eventTimeNanos = 5000L;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_MOUSE, DISPLAY_ID_1, PHYS, DEVICE_NAME_1,
-                INPUT_DEVICE_ID);
-        assertThat(mDeviceImpl.sendRelativeEvent(BINDER,
-                new VirtualMouseRelativeEvent.Builder()
-                        .setRelativeX(x)
-                        .setRelativeY(y)
-                        .setEventTimeNanos(eventTimeNanos)
-                        .build()))
-                .isTrue();
-        verify(mNativeWrapperMock).writeRelativeEvent(fd, x, y, eventTimeNanos);
-    }
-
-    @Test
-    public void sendScrollEvent_noFd() {
-        assertThat(mDeviceImpl.sendScrollEvent(BINDER,
-                new VirtualMouseScrollEvent.Builder()
-                        .setXAxisMovement(-1f)
-                        .setYAxisMovement(1f)
-                        .build()))
-                .isFalse();
-    }
-
-    @Test
-    public void sendScrollEvent_hasFd_writesEvent() {
-        final int fd = 1;
-        final float x = 0.5f;
-        final float y = 1f;
-        final long eventTimeNanos = 5000L;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_MOUSE, DISPLAY_ID_1, PHYS, DEVICE_NAME_1,
-                INPUT_DEVICE_ID);
-        assertThat(mDeviceImpl.sendScrollEvent(BINDER,
-                new VirtualMouseScrollEvent.Builder()
-                        .setXAxisMovement(x)
-                        .setYAxisMovement(y)
-                        .setEventTimeNanos(eventTimeNanos)
-                        .build()))
-                .isTrue();
-        verify(mNativeWrapperMock).writeScrollEvent(fd, x, y, eventTimeNanos);
-    }
-
-    @Test
-    public void sendTouchEvent_noFd() {
-        assertThat(mDeviceImpl.sendTouchEvent(BINDER,
-                new VirtualTouchEvent.Builder()
-                        .setX(0.0f)
-                        .setY(0.0f)
-                        .setAction(VirtualTouchEvent.ACTION_UP)
-                        .setPointerId(1)
-                        .setToolType(VirtualTouchEvent.TOOL_TYPE_FINGER)
-                        .build()))
-                .isFalse();
-    }
-
-    @Test
-    public void sendTouchEvent_hasFd_writesEvent_withoutPressureOrMajorAxisSize() {
-        final int fd = 1;
-        final int pointerId = 5;
-        final int toolType = VirtualTouchEvent.TOOL_TYPE_FINGER;
-        final float x = 100.5f;
-        final float y = 200.5f;
-        final int action = VirtualTouchEvent.ACTION_UP;
-        final long eventTimeNanos = 5000L;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_TOUCHSCREEN, DISPLAY_ID_1, PHYS,
-                DEVICE_NAME_1, INPUT_DEVICE_ID);
-        assertThat(mDeviceImpl.sendTouchEvent(BINDER,
-                new VirtualTouchEvent.Builder()
-                        .setX(x)
-                        .setY(y)
-                        .setAction(action)
-                        .setPointerId(pointerId)
-                        .setToolType(toolType)
-                        .setEventTimeNanos(eventTimeNanos)
-                        .build()))
-                .isTrue();
-        verify(mNativeWrapperMock).writeTouchEvent(fd, pointerId, toolType, action, x, y, Float.NaN,
-                Float.NaN, eventTimeNanos);
-    }
-
-    @Test
-    public void sendTouchEvent_hasFd_writesEvent() {
-        final int fd = 1;
-        final int pointerId = 5;
-        final int toolType = VirtualTouchEvent.TOOL_TYPE_FINGER;
-        final float x = 100.5f;
-        final float y = 200.5f;
-        final int action = VirtualTouchEvent.ACTION_UP;
-        final float pressure = 1.0f;
-        final float majorAxisSize = 10.0f;
-        final long eventTimeNanos = 5000L;
-        mInputController.addDeviceForTesting(BINDER, fd,
-                InputController.InputDeviceDescriptor.TYPE_TOUCHSCREEN, DISPLAY_ID_1, PHYS,
-                DEVICE_NAME_1, INPUT_DEVICE_ID);
-        assertThat(mDeviceImpl.sendTouchEvent(BINDER,
-                new VirtualTouchEvent.Builder()
-                        .setX(x)
-                        .setY(y)
-                        .setAction(action)
-                        .setPointerId(pointerId)
-                        .setToolType(toolType)
-                        .setPressure(pressure)
-                        .setMajorAxisSize(majorAxisSize)
-                        .setEventTimeNanos(eventTimeNanos)
-                        .build()))
-                .isTrue();
-        verify(mNativeWrapperMock).writeTouchEvent(fd, pointerId, toolType, action, x, y, pressure,
-                majorAxisSize, eventTimeNanos);
     }
 
     @Test

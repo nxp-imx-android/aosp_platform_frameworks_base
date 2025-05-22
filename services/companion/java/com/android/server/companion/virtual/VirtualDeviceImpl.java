@@ -70,27 +70,19 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.PointF;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
-import android.hardware.input.VirtualKeyEvent;
 import android.hardware.input.VirtualKeyboardConfig;
-import android.hardware.input.VirtualMouseButtonEvent;
 import android.hardware.input.VirtualMouseConfig;
-import android.hardware.input.VirtualMouseRelativeEvent;
-import android.hardware.input.VirtualMouseScrollEvent;
 import android.hardware.input.VirtualNavigationTouchpadConfig;
 import android.hardware.input.VirtualRotaryEncoderConfig;
-import android.hardware.input.VirtualRotaryEncoderScrollEvent;
-import android.hardware.input.VirtualStylusButtonEvent;
 import android.hardware.input.VirtualStylusConfig;
-import android.hardware.input.VirtualStylusMotionEvent;
-import android.hardware.input.VirtualTouchEvent;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.media.AudioManager;
 import android.media.audiopolicy.AudioMix;
@@ -989,13 +981,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualDpad(VirtualDpadConfig config, @NonNull IBinder deviceToken) {
+    public IVirtualInputDevice createVirtualDpad(@NonNull VirtualDpadConfig config,
+            @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
+        Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createDpad(config.getInputDeviceName(), config.getVendorId(),
+            return mInputController.createDpad(config.getInputDeviceName(), config.getVendorId(),
                     config.getProductId(), deviceToken,
                     getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
         } catch (InputController.DeviceCreationException e) {
@@ -1006,19 +1000,22 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualKeyboard(VirtualKeyboardConfig config, @NonNull IBinder deviceToken) {
+    public IVirtualInputDevice createVirtualKeyboard(@NonNull VirtualKeyboardConfig config,
+            @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
+        Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createKeyboard(config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
+            IVirtualInputDevice device = mInputController.createKeyboard(
+                    config.getInputDeviceName(), config.getVendorId(), config.getProductId(),
+                    deviceToken, getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
                     config.getLanguageTag(), config.getLayoutType());
             synchronized (mVirtualDeviceLock) {
                 mLocaleList = LocaleList.forLanguageTags(config.getLanguageTag());
             }
+            return device;
         } catch (InputController.DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         } finally {
@@ -1027,13 +1024,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualMouse(VirtualMouseConfig config, @NonNull IBinder deviceToken) {
+    public IVirtualInputDevice createVirtualMouse(@NonNull VirtualMouseConfig config,
+            @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
+        Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createMouse(config.getInputDeviceName(), config.getVendorId(),
+            return mInputController.createMouse(config.getInputDeviceName(), config.getVendorId(),
                     config.getProductId(), deviceToken, config.getAssociatedDisplayId());
         } catch (InputController.DeviceCreationException e) {
             throw new IllegalArgumentException(e);
@@ -1043,16 +1042,17 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualTouchscreen(VirtualTouchscreenConfig config,
+    public IVirtualInputDevice createVirtualTouchscreen(@NonNull VirtualTouchscreenConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
+        Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createTouchscreen(config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken, config.getAssociatedDisplayId(),
-                    config.getHeight(), config.getWidth());
+            return mInputController.createTouchscreen(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), deviceToken,
+                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth());
         } catch (InputController.DeviceCreationException e) {
             throw new IllegalArgumentException(e);
         } finally {
@@ -1061,16 +1061,16 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualNavigationTouchpad(VirtualNavigationTouchpadConfig config,
-            @NonNull IBinder deviceToken) {
+    public IVirtualInputDevice createVirtualNavigationTouchpad(
+            @NonNull VirtualNavigationTouchpadConfig config, @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
+        Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createNavigationTouchpad(
-                    config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken,
+            return mInputController.createNavigationTouchpad(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), deviceToken,
                     getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
                     config.getHeight(), config.getWidth());
         } catch (InputController.DeviceCreationException e) {
@@ -1081,7 +1081,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualStylus(@NonNull VirtualStylusConfig config,
+    public IVirtualInputDevice createVirtualStylus(@NonNull VirtualStylusConfig config,
             @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
@@ -1089,7 +1089,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createStylus(config.getInputDeviceName(), config.getVendorId(),
+            return mInputController.createStylus(config.getInputDeviceName(), config.getVendorId(),
                     config.getProductId(), deviceToken, config.getAssociatedDisplayId(),
                     config.getHeight(), config.getWidth());
         } catch (InputController.DeviceCreationException e) {
@@ -1100,157 +1100,19 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     @Override // Binder call
-    public void createVirtualRotaryEncoder(@NonNull VirtualRotaryEncoderConfig config,
-            @NonNull IBinder deviceToken) {
+    public IVirtualInputDevice createVirtualRotaryEncoder(
+            @NonNull VirtualRotaryEncoderConfig config, @NonNull IBinder deviceToken) {
         checkCallerIsDeviceOwner();
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
         final long ident = Binder.clearCallingIdentity();
         try {
-            mInputController.createRotaryEncoder(config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken,
+            return mInputController.createRotaryEncoder(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), deviceToken,
                     getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
         } catch (InputController.DeviceCreationException e) {
             throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public void unregisterInputDevice(IBinder token) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            mInputController.unregisterInputDevice(token);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public int getInputDeviceId(IBinder token) {
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.getInputDeviceId(token);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-
-    @Override // Binder call
-    public boolean sendDpadKeyEvent(IBinder token, VirtualKeyEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendDpadKeyEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendKeyEvent(IBinder token, VirtualKeyEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendKeyEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendButtonEvent(IBinder token, VirtualMouseButtonEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendButtonEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendTouchEvent(IBinder token, VirtualTouchEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendTouchEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendRelativeEvent(IBinder token, VirtualMouseRelativeEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendRelativeEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendScrollEvent(IBinder token, VirtualMouseScrollEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendScrollEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public PointF getCursorPosition(IBinder token) {
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.getCursorPosition(token);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendStylusMotionEvent(@NonNull IBinder token,
-            @NonNull VirtualStylusMotionEvent event) {
-        checkCallerIsDeviceOwner();
-        Objects.requireNonNull(token);
-        Objects.requireNonNull(event);
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendStylusMotionEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendStylusButtonEvent(@NonNull IBinder token,
-            @NonNull VirtualStylusButtonEvent event) {
-        checkCallerIsDeviceOwner();
-        Objects.requireNonNull(token);
-        Objects.requireNonNull(event);
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendStylusButtonEvent(token, event);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override // Binder call
-    public boolean sendRotaryEncoderScrollEvent(@NonNull IBinder token,
-            @NonNull VirtualRotaryEncoderScrollEvent event) {
-        checkCallerIsDeviceOwner();
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.sendRotaryEncoderScrollEvent(token, event);
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
