@@ -33,7 +33,6 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import com.android.compatibility.common.util.SettingsStateChangerRule
-import com.android.internal.R
 import com.android.server.accessibility.Flags
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Assert.assertEquals
@@ -89,67 +88,50 @@ class AutoclickPanelTests {
 
     private fun clickPauseButton() {
         findObject(
-            By.res(
-                context.getResources()
-                    .getResourceName(R.id.accessibility_autoclick_pause_layout)
-            )
+            By.res(PAUSE_BUTTON_LAYOUT_ID)
         ).click()
     }
 
-    private fun clickClickTypeButton(id: Int) {
-        findObject(
-            By.res(context.getResources().getResourceName(id))
-        ).click()
+    private fun clickClickTypeButton(resourceId: String) {
+        findObject(By.res(resourceId)).click()
         // The delay is needed to let the animation of the panel opening/closing complete before
         // querying for the next element.
         uiDevice.waitForIdle(DELAY_FOR_ANIMATION.inWholeMilliseconds)
     }
 
     private fun clickLeftClickButton() {
-        clickClickTypeButton(R.id.accessibility_autoclick_left_click_layout)
+        clickClickTypeButton(LEFT_CLICK_BUTTON_LAYOUT_ID)
     }
 
     private fun clickLongPressButton() {
-        clickClickTypeButton(R.id.accessibility_autoclick_long_press_layout)
+        clickClickTypeButton(LONG_PRESS_BUTTON_LAYOUT_ID)
     }
 
     private fun clickPositionButton() {
-        clickClickTypeButton(R.id.accessibility_autoclick_position_layout)
+        clickClickTypeButton(POSITION_BUTTON_LAYOUT_ID)
     }
 
     // The panel is considered open when every click type button is showing.
     private fun isAutoclickPanelOpen(): Boolean {
         val PANEL_OPEN_CLICK_TYPE_COUNT = 6
         val clickTypeButtonGroupContainer = findObject(
-            By.res(
-                context.getResources()
-                    .getResourceName(R.id.accessibility_autoclick_click_type_button_group_container)
-            )
+            By.res(CLICK_TYPE_BUTTON_GROUP_ID)
         )
         return clickTypeButtonGroupContainer.childCount == PANEL_OPEN_CLICK_TYPE_COUNT
     }
 
     private fun getAutoclickPanelPosition(): Point {
         return findObject(
-            By.res(
-                context.getResources()
-                    .getResourceName(R.id.accessibility_autoclick_type_panel)
-            )
+            By.res(AUTOCLICK_PANEL_ID)
         ).visibleCenter
     }
 
     @Test
     fun togglePauseResumeButton_contentDescriptionReflectsTheState() {
-        val autoclickPauseButtonId = context.getResources()
-            .getResourceName(R.id.accessibility_autoclick_pause_button)
-        val resumeText = "Resume"
-        val pauseText = "Pause"
-
         // Expect the panel to start with the pause button.
         assertNotNull(
             findObject(
-                By.res(autoclickPauseButtonId)
-                    .desc(pauseText)
+                By.res(PAUSE_BUTTON_IMAGE_ID).desc("Pause")
             )
         )
 
@@ -157,8 +139,7 @@ class AutoclickPanelTests {
         clickPauseButton()
         assertNotNull(
             findObject(
-                By.res(autoclickPauseButtonId)
-                    .desc(resumeText)
+                By.res(PAUSE_BUTTON_IMAGE_ID).desc("Resume")
             )
         )
 
@@ -166,8 +147,7 @@ class AutoclickPanelTests {
         clickPauseButton()
         assertNotNull(
             findObject(
-                By.res(autoclickPauseButtonId)
-                    .desc(pauseText)
+                By.res(PAUSE_BUTTON_IMAGE_ID).desc("Pause")
             )
         )
     }
@@ -181,12 +161,7 @@ class AutoclickPanelTests {
         // other click type buttons hidden.
         clickLongPressButton()
         assertNotNull(
-            findObject(
-                By.res(
-                    context.getResources()
-                        .getResourceName(R.id.accessibility_autoclick_long_press_layout)
-                )
-            )
+            findObject(By.res(LONG_PRESS_BUTTON_LAYOUT_ID))
         )
         assertFalse(isAutoclickPanelOpen())
     }
@@ -214,5 +189,17 @@ class AutoclickPanelTests {
     private companion object {
         private val FIND_OBJECT_TIMEOUT = 30.seconds
         private val DELAY_FOR_ANIMATION = 2.seconds
+
+        // Resource ids
+        private val PAUSE_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_pause_layout"
+        private val PAUSE_BUTTON_IMAGE_ID = "android:id/accessibility_autoclick_pause_button"
+        private val LEFT_CLICK_BUTTON_LAYOUT_ID =
+            "android:id/accessibility_autoclick_left_click_layout"
+        private val LONG_PRESS_BUTTON_LAYOUT_ID =
+            "android:id/accessibility_autoclick_long_press_layout"
+        private val POSITION_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_position_layout"
+        private val CLICK_TYPE_BUTTON_GROUP_ID =
+            "android:id/accessibility_autoclick_click_type_button_group_container"
+        private val AUTOCLICK_PANEL_ID = "android:id/accessibility_autoclick_type_panel"
     }
 }
