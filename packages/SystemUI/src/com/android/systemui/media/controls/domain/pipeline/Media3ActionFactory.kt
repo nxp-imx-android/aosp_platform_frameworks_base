@@ -31,6 +31,7 @@ import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaController as Media3Controller
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionToken
+import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -48,7 +49,6 @@ import java.util.concurrent.ExecutionException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 private const val TAG = "Media3ActionFactory"

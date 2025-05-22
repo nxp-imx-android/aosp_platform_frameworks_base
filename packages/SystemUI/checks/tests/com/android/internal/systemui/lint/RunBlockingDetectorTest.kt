@@ -52,10 +52,10 @@ class RunBlockingDetectorTest : SystemUILintDetectorTest() {
             .run()
             .expect(
                 """
-src/com/example/MyClass.kt:4: Warning: Importing kotlinx.coroutines.runBlocking is not allowed. [RunBlockingUsage]
+src/com/example/MyClass.kt:4: Error: Importing kotlinx.coroutines.runBlocking is not allowed. [RunBlockingUsage]
                     import kotlinx.coroutines.runBlocking
                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-0 errors, 1 warnings
+1 errors, 0 warnings
 """
                     .trimIndent()
             )

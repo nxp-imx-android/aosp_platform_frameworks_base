@@ -44,6 +44,7 @@ import androidx.constraintlayout.widget.ConstraintSet.PARENT_ID
 import androidx.constraintlayout.widget.ConstraintSet.START
 import androidx.constraintlayout.widget.ConstraintSet.TOP
 import androidx.core.view.isInvisible
+import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.keyguard.ClockEventController
 import com.android.systemui.animation.view.LaunchableImageView
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
@@ -83,7 +84,6 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -148,7 +148,7 @@ constructor(
             shouldHighlightSelectedAffordance = previewViewModel.shouldHighlightSelectedAffordance,
         )
 
-        runBlocking(mainDispatcher) {
+        runBlocking(context = mainDispatcher) {
             host =
                 SurfaceControlViewHost(
                     context,
