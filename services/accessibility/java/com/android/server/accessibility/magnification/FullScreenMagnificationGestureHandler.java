@@ -378,7 +378,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy(boolean resetMagnification) {
         if (DEBUG_STATE_TRANSITIONS) {
             Slog.i(mLogTag, "onDestroy(); delayed = "
                     + MotionEventInfo.toString(mDetectingState.mDelayedEventQueue));
@@ -389,9 +389,12 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
             mScreenStateReceiver.unregister();
         }
         mPromptController.onDestroy();
-        // Check if need to reset when MagnificationGestureHandler is the last magnifying service.
-        mFullScreenMagnificationController.resetIfNeeded(
-                mDisplayId, AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID);
+        if (resetMagnification) {
+            // Check if need to reset when MagnificationGestureHandler is the last magnifying
+            // service.
+            mFullScreenMagnificationController.resetIfNeeded(
+                    mDisplayId, AccessibilityManagerService.MAGNIFICATION_GESTURE_HANDLER_ID);
+        }
         mFullScreenMagnificationController.removeInfoChangedCallback(
                 mMagnificationInfoChangedCallback);
         clearAndTransitionToStateDetecting();

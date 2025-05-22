@@ -114,6 +114,19 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
     }
 
     @Override
+    public void onDestroy() {
+        onDestroy(/* resetMagnification= */ true);
+    }
+
+    /**
+     * Destroys this magnification gesture handler.
+     * @param resetMagnification Whether to reset the connected magnification when destroying.
+     */
+    public void onDestroy(boolean resetMagnification) {
+        super.onDestroy();
+    }
+
+    @Override
     public final void onMotionEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
         if (DEBUG_ALL) {
             Slog.i(mLogTag, "onMotionEvent(" + event + ")");
