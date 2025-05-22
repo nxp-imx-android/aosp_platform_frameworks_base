@@ -19,10 +19,13 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import android.graphics.Rect
 import androidx.compose.runtime.getValue
+import com.android.systemui.Flags
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTouchHandlingInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.google.android.msdl.data.model.MSDLToken
+import com.google.android.msdl.domain.MSDLPlayer
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +38,7 @@ class KeyguardTouchHandlingViewModel
 @AssistedInject
 constructor(
     private val interactor: KeyguardTouchHandlingInteractor,
+    private val msdlPlayer: MSDLPlayer,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
 ) : ExclusiveActivatable() {
     private val hydrator = Hydrator("KeyguardTouchHandlingViewModel.hydrator")
@@ -82,6 +86,9 @@ constructor(
      * @param isA11yAction: Whether the action was performed as an a11y action
      */
     fun onLongPress(isA11yAction: Boolean) {
+        if (Flags.msdlFeedback()) {
+            msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+        }
         interactor.onLongPress(isA11yAction)
     }
 
