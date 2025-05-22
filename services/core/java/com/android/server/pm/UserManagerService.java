@@ -999,6 +999,9 @@ public class UserManagerService extends IUserManager.Stub {
     @GuardedBy("mUsersLock")
     private @CanBeNULL @UserIdInt int mBootUser = UserHandle.USER_NULL;
 
+    /** Converter used on calls to {@link #getUsersInternal(UserFilter, Function)}. */
+    private final Function<UserInfo, UserInfo> mNameConverter = user -> userWithName(user);
+
     private static UserManagerService sInstance;
 
     public static UserManagerService getInstance() {
@@ -1662,7 +1665,10 @@ public class UserManagerService extends IUserManager.Stub {
     List<UserInfo> getUsersWithUnresolvedNames(boolean excludePartial,
             boolean excludeDying) {
         checkCreateUsersPermission("get users with unresolved names");
-        return getUsersInternal(excludePartial, excludeDying, /* resolveNullNames= */ false);
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            return getUsersInternal(excludePartial, excludeDying, /* resolveNullNames= */ false);
+        }
+        return getUsers(getFilter(excludePartial, excludeDying));
     }
 
     /**
@@ -1672,6 +1678,8 @@ public class UserManagerService extends IUserManager.Stub {
     @VisibleForTesting
     List<UserInfo> getUsersInternal(boolean excludePartial, boolean excludeDying,
             boolean resolveNullNames) {
+        if (!android.multiuser.Flags.userFilterRefactoring()) {
+            // NOTE: not indented on purpose (to minimize git changes)
         synchronized (mUsersLock) {
             ArrayList<UserInfo> users = new ArrayList<>(mUsers.size());
             final int userSize = mUsers.size();
@@ -1688,6 +1696,22 @@ public class UserManagerService extends IUserManager.Stub {
             }
             return users;
         }
+        }
+        UserFilter filter = getFilter(excludePartial, excludeDying);
+        Function<UserInfo, UserInfo> converter = resolveNullNames ? mNameConverter : null;
+        return getUsersInternal(filter, converter);
+    }
+
+    // TODO(b/419086491): use cached filters
+    private static UserFilter getFilter(boolean excludePartial, boolean excludeDying) {
+        var builder = UserFilter.builder();
+        if (!excludePartial) {
+            builder.withPartialUsers();
+        }
+        if (!excludeDying) {
+            builder.withDyingUsers();
+        }
+        return builder.build();
     }
 
     /** Gets the users that match the given {@code filter}. */
