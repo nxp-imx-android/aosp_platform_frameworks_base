@@ -17,9 +17,11 @@
 package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.Postsubmit
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -35,7 +37,10 @@ open class DragAppWindowSingleWindow : DragAppWindowScenarioTestBase()
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         testApp.enterDesktopMode(wmHelper, device)
     }
 

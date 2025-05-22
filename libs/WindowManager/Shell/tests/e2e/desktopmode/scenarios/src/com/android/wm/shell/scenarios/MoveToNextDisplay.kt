@@ -19,6 +19,7 @@ package com.android.wm.shell.scenarios
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.NavBar
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
@@ -28,6 +29,7 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -56,7 +58,10 @@ abstract class MoveToNextDisplay {
 
     @Before
     fun setup() {
-        Assume.assumeTrue("isTablet", tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(getInstrumentation().context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
     }
 
     @Test

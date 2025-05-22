@@ -19,6 +19,7 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.platform.test.annotations.Postsubmit
 import android.tools.NavBar
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -30,6 +31,7 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper.Corners.LEFT_T
 import com.android.server.wm.flicker.helpers.StartMediaProjectionAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -56,7 +58,10 @@ open class StartAppMediaProjectionResizeAndDrag {
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(0)
         testApp.enterDesktopMode(wmHelper, device)

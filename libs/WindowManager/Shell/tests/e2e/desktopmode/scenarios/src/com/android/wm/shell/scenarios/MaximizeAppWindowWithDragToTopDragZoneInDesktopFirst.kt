@@ -87,5 +87,6 @@ abstract class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(
     @After
     fun teardown() {
         testApp.exit(wmHelper)
+        connectedDisplayRule.cleanupTestDisplays()
     }
 }
