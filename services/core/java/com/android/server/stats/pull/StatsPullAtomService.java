@@ -810,6 +810,7 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.BATTERY_VOLTAGE:
                     case FrameworkStatsLog.BATTERY_CYCLE_COUNT:
                     case FrameworkStatsLog.BATTERY_HEALTH:
+                    case FrameworkStatsLog.BATTERY_LIFE:
                         synchronized (mHealthHalLock) {
                             return pullHealthHalLocked(atomTag, data);
                         }
@@ -1068,6 +1069,7 @@ public class StatsPullAtomService extends SystemService {
         if (ENABLE_PRESSURE_STALL_INFORMATION_PULLER) {
             registerPressureStallInformation();
         }
+        registerBatteryLife();
     }
 
     private void initMobileDataStatsPuller() {
@@ -4433,6 +4435,13 @@ public class StatsPullAtomService extends SystemService {
                 DIRECT_EXECUTOR, mStatsCallbackImpl);
     }
 
+    private void registerBatteryLife() {
+        int tagId = FrameworkStatsLog.BATTERY_LIFE;
+        mStatsManager.setPullAtomCallback(tagId,
+                null, // use default PullAtomMetadata values
+                DIRECT_EXECUTOR, mStatsCallbackImpl);
+    }
+
     @GuardedBy("mHealthHalLock")
     private int pullHealthHalLocked(int atomTag, List<StatsEvent> pulledData) {
         if (mHealthService == null) {
@@ -4503,6 +4512,13 @@ public class StatsPullAtomService extends SystemService {
                     Slog.e(TAG, "Could not find message digest algorithm", e);
                 }
                 return StatsManager.PULL_SKIP;
+            case FrameworkStatsLog.BATTERY_LIFE:
+                if (!healthInfo.batteryPresent || healthInfo.batteryCurrentMicroamps == 0) {
+                    return StatsManager.PULL_SKIP;
+                }
+                pulledValue = (int) Math.round(((double) healthInfo.batteryFullChargeUah * 60 * .96)
+                    / Math.abs(healthInfo.batteryCurrentMicroamps));
+                break;
             default:
                 return StatsManager.PULL_SKIP;
         }
