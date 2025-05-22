@@ -3536,6 +3536,34 @@ interface ITelephony {
     boolean setIsSatelliteCommunicationAllowedForCurrentLocationCache(in String state);
 
     /**
+     * This API can be used by only CTS to override the satellite entitlement status response.
+     *
+     * @param overriddenEntilementStatusResponse the overridden entitlement status response.
+     * @param throwException whether to throw exception when receiving a request for entitlement
+     *                       status.
+     * @return {@code true} if the setting is successful, {@code false} otherwise.
+     */
+    boolean overrideSatelliteEntilementStatusResponseForCtsTest(
+            in String overriddenEntilementStatusResponse, in boolean throwException);
+    /**
+     * This API can be used by only CTS to override the entitlement query conditions.
+     *
+     * @param ignoreInternetConnection whether to ignore the internet connection check.
+     * @param ignoreRefreshCondition whether to ignore the refresh condition.
+     * @return {@code true} if the setting is successful, {@code false} otherwise.
+     */
+    boolean overrideSatelliteEntilementQueryConditions(
+            boolean ignoreInternetConnection, boolean ignoreRefreshCondition);
+
+    /**
+     * This API can be used by only CTS to control the max allowed data mode.
+     *
+     * @param maxAllowedDataMode The max allowed data mode.
+     * @return {@code true} if the value is set successfully, {@code false} otherwise.
+     */
+    boolean setMaxAllowedSatelliteDataModeForCtsTest(int maxAllowedDataMode);
+
+    /**
      * Request to get the session stats of the satellite service.
      *
      * @param subId The subId of the subscription to get the session stats for.
