@@ -19,6 +19,7 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -30,6 +31,7 @@ import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -60,7 +62,10 @@ abstract class MinimizeWindowOnAppOpen : TestScenarioBase() {
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         Assume.assumeTrue(maxNum > 0)
         tapl.enableTransientTaskbar(false)
         tapl.showTaskbarIfHidden()

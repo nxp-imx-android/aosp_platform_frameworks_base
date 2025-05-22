@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
 import android.tools.device.apphelpers.ClockAppHelper
@@ -32,6 +33,7 @@ import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
 import com.android.window.flags.Flags
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -60,7 +62,11 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(val rotation: Rotation = 
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && Flags.enableDesktopTaskLimitSeparateTransition() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
+        Assume.assumeTrue(Flags.enableDesktopTaskLimitSeparateTransition())
         tapl.apply {
             setEnableRotation(true)
             setExpectedRotation(rotation.value)
