@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.accessibilitymenu.view;
 
+import static android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE;
 import static android.os.UserManager.DISALLOW_ADJUST_VOLUME;
 import static android.os.UserManager.DISALLOW_CONFIG_BRIGHTNESS;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -363,6 +364,7 @@ public class A11yMenuOverlayLayout {
                     mLayout, createShortcutList(), getPageIndex());
             updateViewLayout();
 
+            mService.performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE);
             mLayout.setVisibility(View.VISIBLE);
         }
     }
