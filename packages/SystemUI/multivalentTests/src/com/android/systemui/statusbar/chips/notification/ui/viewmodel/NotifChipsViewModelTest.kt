@@ -468,11 +468,12 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime)
                 }
+            val icon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = icon,
                         promotedContent = oldPromotedContentBuilder.build(),
                     )
                 )
@@ -493,7 +494,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = icon,
                         promotedContent = newPromotedContentBuilder.build(),
                     )
                 )
@@ -513,11 +514,12 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 PromotedNotificationContentBuilder("notif").applyToShared {
                     this.subText = "Old subtext"
                 }
+            val icon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = icon,
                         promotedContent = oldPromotedContentBuilder.build(),
                     )
                 )
@@ -536,7 +538,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 listOf(
                     activeNotificationModel(
                         key = "notif",
-                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        statusBarChipIcon = icon,
                         promotedContent = newPromotedContentBuilder.build(),
                     )
                 )
