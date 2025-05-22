@@ -16,7 +16,7 @@
 
 package com.android.server.security.authenticationpolicy;
 
-import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_UNSUPPORTED;
+import static android.security.authenticationpolicy.AuthenticationPolicyManager.SUCCESS;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 import static com.android.server.security.authenticationpolicy.AuthenticationPolicyService.MAX_ALLOWED_FAILED_AUTH_ATTEMPTS;
@@ -39,6 +39,7 @@ import android.hardware.biometrics.BiometricSourceType;
 import android.hardware.biometrics.events.AuthenticationFailedInfo;
 import android.hardware.biometrics.events.AuthenticationSucceededInfo;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -141,10 +142,10 @@ public class AuthenticationPolicyServiceTest {
         when(mUserManager.getProfileParentId(eq(MANAGED_PROFILE_USER_ID)))
                 .thenReturn(PRIMARY_USER_ID);
         if (android.security.Flags.secureLockdown()) {
-            when(mSecureLockDeviceService.enableSecureLockDevice(any()))
-                    .thenReturn(ERROR_UNSUPPORTED);
-            when(mSecureLockDeviceService.disableSecureLockDevice(any()))
-                    .thenReturn(ERROR_UNSUPPORTED);
+            when(mSecureLockDeviceService.enableSecureLockDevice(eq(UserHandle.of(PRIMARY_USER_ID)),
+                    any())).thenReturn(SUCCESS);
+            when(mSecureLockDeviceService.disableSecureLockDevice(
+                    eq(UserHandle.of(PRIMARY_USER_ID)), any())).thenReturn(SUCCESS);
         }
 
         toggleAdaptiveAuthSettingsOverride(PRIMARY_USER_ID, false /* disable */);

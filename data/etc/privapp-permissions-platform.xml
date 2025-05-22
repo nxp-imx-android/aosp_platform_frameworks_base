@@ -464,9 +464,13 @@ applications that come with the platform
         <permission name="android.permission.SUGGEST_EXTERNAL_TIME" />
         <!-- Permissions required for CTS test - android.server.biometrics -->
         <permission name="android.permission.USE_BIOMETRIC" />
-        <permission name="android.permission.TEST_BIOMETRIC" />
         <permission name="android.permission.SET_BIOMETRIC_DIALOG_ADVANCED" />
         <permission name="android.permission.MANAGE_BIOMETRIC_DIALOG" />
+        <!-- Permissions required for biometrics CTS tests and AuthenticationPolicyManagerTest-->
+        <permission name="android.permission.TEST_BIOMETRIC" />
+        <permission name="android.permission.MANAGE_BIOMETRIC" />
+        <!-- Permission required for CTS test - AuthenticationPolicyManagerTest -->
+        <permission name="android.permission.MANAGE_SECURE_LOCK_DEVICE" />
         <!-- Permissions required for CTS test - CtsContactsProviderTestCases -->
         <permission name="android.contacts.permission.MANAGE_SIM_ACCOUNTS" />
         <!-- Permissions required for CTS test - CtsHdmiCecHostTestCases -->
@@ -547,8 +551,6 @@ applications that come with the platform
         <permission name="com.android.cellbroadcastservice.FULL_ACCESS_CELL_BROADCAST_HISTORY" />
         <!-- Permission required for ATS test - CarDevicePolicyManagerTest -->
         <permission name="android.permission.LOCK_DEVICE" />
-        <!-- Permission required for AuthenticationPolicyManagerTest -->
-        <permission name="android.permission.MANAGE_SECURE_LOCK_DEVICE" />
         <!-- Permissions required for CTS test - CtsSafetyCenterTestCases -->
         <permission name="android.permission.SEND_SAFETY_CENTER_UPDATE" />
         <permission name="android.permission.READ_SAFETY_CENTER_STATUS" />

@@ -107,6 +107,14 @@ flag {
 }
 
 flag {
+    name: "secure_lock_device"
+    namespace: "biometrics"
+    description: "Feature flag for Secure Lock Device feature"
+    bug: "401645997"
+    is_exported: true
+}
+
+flag {
     name: "subscribe_to_keyguard_locked_state_perm_priv_flag"
     namespace: "psap_ai"
     description: "Feature flag to add the privileged flag to the SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE permission"

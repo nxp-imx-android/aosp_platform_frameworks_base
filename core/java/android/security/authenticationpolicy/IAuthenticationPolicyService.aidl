@@ -16,6 +16,7 @@
 
 package android.security.authenticationpolicy;
 
+import android.os.UserHandle;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 
@@ -25,8 +26,14 @@ import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
  */
 interface IAuthenticationPolicyService {
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
-    int enableSecureLockDevice(in EnableSecureLockDeviceParams params);
+    int enableSecureLockDevice(in UserHandle user, in EnableSecureLockDeviceParams params);
 
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
-    int disableSecureLockDevice(in DisableSecureLockDeviceParams params);
+    int disableSecureLockDevice(in UserHandle user, in DisableSecureLockDeviceParams params);
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    int isSecureLockDeviceAvailable(in UserHandle user);
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    boolean isSecureLockDeviceEnabled();
 }
