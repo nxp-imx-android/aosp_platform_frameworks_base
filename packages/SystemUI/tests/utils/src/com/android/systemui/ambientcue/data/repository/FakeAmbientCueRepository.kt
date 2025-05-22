@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.data.repository
 
+import android.graphics.Rect
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +47,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val _isGestureNav = MutableStateFlow(false)
     override val isGestureNav: StateFlow<Boolean> = _isGestureNav.asStateFlow()
 
+    private val _recentsButtonPosition = MutableStateFlow<Rect?>(null)
+    override val recentsButtonPosition: StateFlow<Rect?> = _recentsButtonPosition.asStateFlow()
+
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
     }
@@ -68,5 +72,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
 
     fun setIsGestureNav(isGestureNav: Boolean) {
         _isGestureNav.update { isGestureNav }
+    }
+
+    fun setRecentsButtonPosition(recentsButtonPosition: Rect) {
+        _recentsButtonPosition.update { recentsButtonPosition }
     }
 }

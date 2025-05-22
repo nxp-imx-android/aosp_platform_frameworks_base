@@ -20,9 +20,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.toComposeRect
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -68,9 +66,11 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
             traceName = "pillStyle",
             initialValue = PillStyleViewModel.Uninitialized,
             source =
-                combine(ambientCueInteractor.isGestureNav, ambientCueInteractor.isTaskBarVisible) {
-                    isGestureNav,
-                    isTaskBarVisible ->
+                combine(
+                    ambientCueInteractor.isGestureNav,
+                    ambientCueInteractor.isTaskBarVisible,
+                    ambientCueInteractor.recentsButtonPosition,
+                ) { isGestureNav, isTaskBarVisible, recentsButtonPosition ->
                     if (isGestureNav && !isTaskBarVisible) {
                         PillStyleViewModel.NavBarPillStyle
                     } else {
@@ -78,10 +78,9 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
                             if (isGestureNav) {
                                 null
                             } else {
-                                // TODO: b/415914083 Overview button position should come from SysUI
-                                Rect(Offset.Zero, Size(100f, 100f))
+                                recentsButtonPosition
                             }
-                        PillStyleViewModel.ShortPillStyle(position)
+                        PillStyleViewModel.ShortPillStyle(position?.toComposeRect())
                     }
                 },
         )
