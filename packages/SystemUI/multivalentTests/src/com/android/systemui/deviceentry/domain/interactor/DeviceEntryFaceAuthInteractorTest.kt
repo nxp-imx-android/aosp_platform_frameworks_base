@@ -37,7 +37,6 @@ import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepositor
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.primaryBouncerInteractor
 import com.android.systemui.camera.domain.interactor.cameraSensorPrivacyInteractor
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.data.repository.fakeFaceWakeUpTriggersConfig
 import com.android.systemui.deviceentry.shared.FaceAuthUiEvent
 import com.android.systemui.deviceentry.shared.model.ErrorFaceAuthenticationStatus
@@ -51,6 +50,9 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.FaceAuthenticationLogger
@@ -63,17 +65,13 @@ import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.eq
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -81,74 +79,57 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
+
     private val kosmos = testKosmos()
-    private val testScope: TestScope = kosmos.testScope
 
     private lateinit var underTest: SystemUIDeviceEntryFaceAuthInteractor
 
-    private val bouncerRepository = kosmos.fakeKeyguardBouncerRepository
-    private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val faceAuthRepository = kosmos.fakeDeviceEntryFaceAuthRepository
-    private val fakeUserRepository = kosmos.fakeUserRepository
-    private val facePropertyRepository = kosmos.facePropertyRepository
-    private val fakeBiometricSettingsRepository = kosmos.fakeBiometricSettingsRepository
-
-    private val keyguardUpdateMonitor by lazy { kosmos.keyguardUpdateMonitor }
-    private val faceWakeUpTriggersConfig = kosmos.fakeFaceWakeUpTriggersConfig
-    private val trustManager = kosmos.trustManager
-
-    private val keyguardTransitionInteractor by lazy { kosmos.keyguardTransitionInteractor }
-    private val fakeDeviceEntryFingerprintAuthInteractor by lazy {
-        kosmos.deviceEntryFingerprintAuthInteractor
-    }
-    private val powerInteractor by lazy { kosmos.powerInteractor }
-    private val deviceEntryFaceAuthStatusInteractor by lazy {
-        kosmos.deviceEntryFaceAuthStatusInteractor
-    }
 
     @Before
     fun setup() {
-        fakeUserRepository.setUserInfos(listOf(primaryUser, secondaryUser))
+        kosmos.fakeUserRepository.setUserInfos(listOf(primaryUser, secondaryUser))
         underTest =
-            SystemUIDeviceEntryFaceAuthInteractor(
-                mContext,
-                testScope.backgroundScope,
-                kosmos.testDispatcher,
-                faceAuthRepository,
-                { kosmos.primaryBouncerInteractor },
-                kosmos.alternateBouncerInteractor,
-                keyguardTransitionInteractor,
-                FaceAuthenticationLogger(logcatLogBuffer("faceAuthBuffer")),
-                keyguardUpdateMonitor,
-                fakeDeviceEntryFingerprintAuthInteractor,
-                fakeUserRepository,
-                facePropertyRepository,
-                faceWakeUpTriggersConfig,
-                powerInteractor,
-                fakeBiometricSettingsRepository,
-                trustManager,
-                { kosmos.sceneInteractor },
-                deviceEntryFaceAuthStatusInteractor,
-                kosmos.cameraSensorPrivacyInteractor,
-            )
+            with(kosmos) {
+                SystemUIDeviceEntryFaceAuthInteractor(
+                    mContext,
+                    testScope.backgroundScope,
+                    testDispatcher,
+                    faceAuthRepository,
+                    { primaryBouncerInteractor },
+                    alternateBouncerInteractor,
+                    keyguardTransitionInteractor,
+                    FaceAuthenticationLogger(logcatLogBuffer("faceAuthBuffer")),
+                    keyguardUpdateMonitor,
+                    deviceEntryFingerprintAuthInteractor,
+                    fakeUserRepository,
+                    facePropertyRepository,
+                    fakeFaceWakeUpTriggersConfig,
+                    powerInteractor,
+                    fakeBiometricSettingsRepository,
+                    trustManager,
+                    { sceneInteractor },
+                    deviceEntryFaceAuthStatusInteractor,
+                    cameraSensorPrivacyInteractor,
+                )
+            }
     }
 
     @Test
     fun faceAuthIsRequestedWhenLockscreenBecomesVisibleFromOffState() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             runCurrent()
 
             powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LID)
-            faceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
+            fakeFaceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
                 setOf(WakeSleepReason.LID.powerManagerWakeReason)
             )
 
-            keyguardTransitionRepository.sendTransitionStep(
+            fakeKeyguardTransitionRepository.sendTransitionStep(
                 TransitionStep(
                     KeyguardState.OFF,
                     KeyguardState.LOCKSCREEN,
@@ -166,16 +147,16 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableFlags(FLAG_DREAMS_V2)
     fun faceAuthIsRequestedWhenTransitioningFromDreamToLockscreen() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             runCurrent()
 
             powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LID)
-            faceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
+            fakeFaceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
                 setOf(WakeSleepReason.LID.powerManagerWakeReason)
             )
 
-            keyguardTransitionRepository.sendTransitionStep(
+            fakeKeyguardTransitionRepository.sendTransitionStep(
                 TransitionStep(
                     KeyguardState.DREAMING,
                     KeyguardState.LOCKSCREEN,
@@ -192,7 +173,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun whenFaceIsLockedOutAndNonBypassAnyAttemptsToTriggerFaceAuthMustProvideLockoutError() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             val authenticationStatus = collectLastValue(underTest.authenticationStatus)
             faceAuthRepository.setLockedOut(true)
@@ -209,11 +190,11 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun whenFaceIsLockedOutAndBypass_DetectRuns() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             val authenticationStatus = collectLastValue(underTest.authenticationStatus)
             faceAuthRepository.setLockedOut(true)
-            kosmos.fakeDeviceEntryFaceAuthRepository.isBypassEnabled.value = true
+            fakeDeviceEntryFaceAuthRepository.isBypassEnabled.value = true
 
             underTest.onDeviceLifted()
 
@@ -222,16 +203,16 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenLockscreenBecomesVisibleFromAodState() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             runCurrent()
 
             powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LID)
-            faceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
+            fakeFaceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
                 setOf(WakeSleepReason.LID.powerManagerWakeReason)
             )
 
-            keyguardTransitionRepository.sendTransitionStep(
+            fakeKeyguardTransitionRepository.sendTransitionStep(
                 TransitionStep(
                     KeyguardState.AOD,
                     KeyguardState.LOCKSCREEN,
@@ -248,15 +229,15 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsNotRequestedWhenLockscreenBecomesVisibleDueToIgnoredWakeReasons() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
             powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LIFT)
-            faceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
+            fakeFaceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
                 setOf(WakeSleepReason.LID.powerManagerWakeReason)
             )
 
-            keyguardTransitionRepository.sendTransitionStep(
+            fakeKeyguardTransitionRepository.sendTransitionStep(
                 TransitionStep(
                     KeyguardState.DOZING,
                     KeyguardState.LOCKSCREEN,
@@ -270,16 +251,16 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenLockscreenBecomesVisibleFromDozingState() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             runCurrent()
 
             powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LID)
-            faceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
+            fakeFaceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
                 setOf(WakeSleepReason.LID.powerManagerWakeReason)
             )
 
-            keyguardTransitionRepository.sendTransitionStep(
+            fakeKeyguardTransitionRepository.sendTransitionStep(
                 TransitionStep(
                     KeyguardState.DOZING,
                     KeyguardState.LOCKSCREEN,
@@ -297,7 +278,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @DisableSceneContainer
     fun faceAuthLockedOutStateIsUpdatedAfterUserSwitch() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             runCurrent()
             fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
@@ -310,7 +291,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            bouncerRepository.setPrimaryShow(true)
+            fakeKeyguardBouncerRepository.setPrimaryShow(true)
             // New user is not locked out.
             facePropertyRepository.setLockoutMode(secondaryUser.id, LockoutMode.NONE)
             fakeUserRepository.setSelectedUserInfo(
@@ -330,7 +311,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun faceAuthLockedOutStateIsUpdatedAfterUserSwitch_withSceneContainerEnabled() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             runCurrent()
             fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
@@ -344,12 +325,10 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
-            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-                )
+            sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
+            sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)))
             )
             runCurrent()
 
@@ -372,15 +351,13 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun faceAuthIsRequestedWhenPrimaryBouncerIsVisible_withSceneContainerEnabled() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
-            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
-            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-                )
+            sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
+            sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)))
             )
             runCurrent()
 
@@ -391,15 +368,15 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @DisableSceneContainer
     fun faceAuthIsRequestedWhenPrimaryBouncerIsAboutToShow() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
-            bouncerRepository.setPrimaryShowingSoon(false)
+            fakeKeyguardBouncerRepository.setPrimaryShowingSoon(false)
             runCurrent()
 
-            bouncerRepository.setPrimaryShowingSoon(true)
-
+            fakeKeyguardBouncerRepository.setPrimaryShowingSoon(true)
             runCurrent()
+
             assertThat(faceAuthRepository.runningAuthRequest.value)
                 .isEqualTo(
                     Pair(
@@ -412,16 +389,17 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @DisableSceneContainer
     fun faceAuthIsOnlyRequestedWhenPrimaryBouncerIsAboutToShow() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
-            bouncerRepository.setPrimaryShowingSoon(false)
-            bouncerRepository.setPrimaryShow(false)
+            fakeKeyguardBouncerRepository.setPrimaryShowingSoon(false)
+            fakeKeyguardBouncerRepository.setPrimaryShow(false)
             runCurrent()
 
-            bouncerRepository.setPrimaryShowingSoon(true)
+            fakeKeyguardBouncerRepository.setPrimaryShowingSoon(true)
             runCurrent()
-            bouncerRepository.setPrimaryShow(true)
+
+            fakeKeyguardBouncerRepository.setPrimaryShow(true)
             runCurrent()
 
             assertThat(faceAuthRepository.runningAuthRequest.value)
@@ -436,15 +414,13 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun withSceneContainerEnabled_faceAuthIsRequestedWhenPrimaryBouncerIsVisible() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
-            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
-            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
-                    ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
-                )
+            sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
+            sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer)))
             )
 
             runCurrent()
@@ -455,10 +431,10 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun withSceneContainerEnabled_faceAuthIsRequestedWhenTransitioningToPrimaryBouncer() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
-            kosmos.setSceneTransition(
+            setSceneTransition(
                 ShowOverlay(
                     overlay = Overlays.Bouncer,
                     fromScene = Scenes.Lockscreen,
@@ -471,15 +447,15 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenAlternateBouncerIsVisible() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
-            bouncerRepository.setAlternateVisible(false)
+            fakeKeyguardBouncerRepository.setAlternateVisible(false)
             runCurrent()
 
-            bouncerRepository.setAlternateVisible(true)
-
+            fakeKeyguardBouncerRepository.setAlternateVisible(true)
             runCurrent()
+
             assertThat(faceAuthRepository.runningAuthRequest.value)
                 .isEqualTo(
                     Pair(
@@ -491,7 +467,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenUdfpsSensorTouched() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
             underTest.onUdfpsSensorTouched()
@@ -503,7 +479,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenOnAssistantTriggeredOnLockScreen() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
             underTest.onAssistantTriggeredOnLockScreen()
@@ -517,7 +493,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenDeviceLifted() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
             underTest.onDeviceLifted()
@@ -531,7 +507,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenShadeExpansionStarted() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
             underTest.onShadeExpansionStarted()
@@ -544,20 +520,22 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun faceAuthIsRequestedWhenShadeExpansionIsStarted() =
-        testScope.runTest {
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
             underTest.start()
             faceAuthRepository.canRunFaceAuth.value = true
-            kosmos.sceneInteractor.snapToScene(toScene = Scenes.Lockscreen, "for-test")
+            sceneInteractor.snapToScene(toScene = Scenes.Lockscreen, "for-test")
             runCurrent()
 
-            kosmos.sceneInteractor.changeScene(toScene = Scenes.Shade, loggingReason = "for-test")
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
+            sceneInteractor.changeScene(toScene = Scenes.Shade, loggingReason = "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(
                     ObservableTransitionState.Transition(
                         fromScene = Scenes.Lockscreen,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.Lockscreen),
-                        progress = MutableStateFlow(0.2f),
+                        progress = flowOf(0.2f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(false),
                     )
@@ -572,20 +550,21 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     @Test
     @EnableSceneContainer
     fun faceAuthIsRequestedOnlyOnceWhenShadeExpansionStarts() =
-        testScope.runTest {
+        kosmos.runTest {
+            enableSingleShade()
             underTest.start()
             faceAuthRepository.canRunFaceAuth.value = true
-            kosmos.sceneInteractor.snapToScene(toScene = Scenes.Lockscreen, "for-test")
+            sceneInteractor.snapToScene(toScene = Scenes.Lockscreen, "for-test")
             runCurrent()
 
-            kosmos.sceneInteractor.changeScene(toScene = Scenes.Shade, loggingReason = "for-test")
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
+            sceneInteractor.changeScene(toScene = Scenes.Shade, loggingReason = "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(
                     ObservableTransitionState.Transition(
                         fromScene = Scenes.Lockscreen,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.Lockscreen),
-                        progress = MutableStateFlow(0.2f),
+                        progress = flowOf(0.2f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(false),
                     )
@@ -598,13 +577,13 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             faceAuthRepository.runningAuthRequest.value = null
 
             // expansion progress shouldn't trigger face auth again
-            kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(
+            sceneInteractor.setTransitionState(
+                flowOf(
                     ObservableTransitionState.Transition(
                         fromScene = Scenes.Lockscreen,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.Lockscreen),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(false),
                     )
@@ -616,9 +595,8 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenNotificationPanelClicked() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
-
             underTest.onNotificationPanelClicked()
 
             runCurrent()
@@ -630,26 +608,22 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsCancelledWhenUserInputOnPrimaryBouncer() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
-
             underTest.onSwipeUpOnBouncer()
 
             runCurrent()
             assertThat(faceAuthRepository.isAuthRunning.value).isTrue()
 
             underTest.onPrimaryBouncerUserInput()
-
             runCurrent()
-
             assertThat(faceAuthRepository.isAuthRunning.value).isFalse()
         }
 
     @Test
     fun faceAuthIsRequestedWhenSwipeUpOnBouncer() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
-
             underTest.onSwipeUpOnBouncer()
 
             runCurrent()
@@ -659,7 +633,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenWalletIsLaunchedAndIfFaceAuthIsStrong() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             facePropertyRepository.setSensorInfo(FaceSensorInfo(1, SensorStrength.STRONG))
 
@@ -672,7 +646,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsNotTriggeredIfFaceAuthIsWeak() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             facePropertyRepository.setSensorInfo(FaceSensorInfo(1, SensorStrength.WEAK))
 
@@ -684,7 +658,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsNotTriggeredIfFaceAuthIsConvenience() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             facePropertyRepository.setSensorInfo(FaceSensorInfo(1, SensorStrength.CONVENIENCE))
 
@@ -696,11 +670,11 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceUnlockIsDisabledWhenFpIsLockedOut() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
+            fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
             runCurrent()
 
             assertThat(faceAuthRepository.isLockedOut.value).isTrue()
@@ -708,18 +682,18 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceLockoutStateIsResetWheneverFingerprintIsNotLockedOut() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             fakeUserRepository.setSelectedUserInfo(primaryUser, SelectionStatus.SELECTION_COMPLETE)
             fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
+            fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
             runCurrent()
 
             assertThat(faceAuthRepository.isLockedOut.value).isTrue()
             facePropertyRepository.setLockoutMode(primaryUserId, LockoutMode.NONE)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(false)
+            fakeDeviceEntryFingerprintAuthRepository.setLockedOut(false)
             runCurrent()
 
             assertThat(faceAuthRepository.isLockedOut.value).isFalse()
@@ -727,18 +701,18 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceLockoutStateIsSetToUsersLockoutStateWheneverFingerprintIsNotLockedOut() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
             fakeUserRepository.setSelectedUserInfo(primaryUser, SelectionStatus.SELECTION_COMPLETE)
             fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
+            fakeDeviceEntryFingerprintAuthRepository.setLockedOut(true)
             runCurrent()
 
             assertThat(faceAuthRepository.isLockedOut.value).isTrue()
             facePropertyRepository.setLockoutMode(primaryUserId, LockoutMode.TIMED)
 
-            kosmos.fakeDeviceEntryFingerprintAuthRepository.setLockedOut(false)
+            fakeDeviceEntryFingerprintAuthRepository.setLockedOut(false)
             runCurrent()
 
             assertThat(faceAuthRepository.isLockedOut.value).isTrue()
@@ -746,7 +720,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun whenIsAuthenticatedFalse_clearFaceBiometrics() =
-        testScope.runTest {
+        kosmos.runTest {
             underTest.start()
 
             faceAuthRepository.isAuthenticated.value = true
@@ -762,7 +736,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsRequestedWhenAuthIsRunningWhileCameraInfoChanged() =
-        testScope.runTest {
+        kosmos.runTest {
             facePropertyRepository.setCameraIno(null)
             underTest.start()
 
@@ -779,7 +753,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsNotRequestedWhenNoAuthRunningWhileCameraInfoChanged() =
-        testScope.runTest {
+        kosmos.runTest {
             facePropertyRepository.setCameraIno(null)
             underTest.start()
 
@@ -791,7 +765,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun faceAuthIsNotRequestedWhenAuthIsRunningWhileCameraInfoIsNull() =
-        testScope.runTest {
+        kosmos.runTest {
             facePropertyRepository.setCameraIno(null)
             underTest.start()
 
@@ -803,13 +777,13 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     fun lockedOut_providesSameValueFromRepository() =
-        testScope.runTest {
+        kosmos.runTest {
             assertThat(underTest.isLockedOut).isSameInstanceAs(faceAuthRepository.isLockedOut)
         }
 
     @Test
     fun authenticated_providesSameValueFromRepository() =
-        testScope.runTest {
+        kosmos.runTest {
             assertThat(underTest.isAuthenticated)
                 .isSameInstanceAs(faceAuthRepository.isAuthenticated)
         }
