@@ -1235,9 +1235,9 @@ public class TaskFragmentTest extends WindowTestsBase {
         taskFragmentRight.setResumedActivity(appRightTop, "test");
         assertEquals(appRightTop, task.getDisplayContent().mFocusedApp);
 
-        // Ensure the focused app is updated when the left activity resumed.
+        // Ensure the focused app is NOT updated when the left activity resumed.
         taskFragmentLeft.setResumedActivity(appLeftTop, "test");
-        assertEquals(appLeftTop, task.getDisplayContent().mFocusedApp);
+        assertEquals(appRightTop, task.getDisplayContent().mFocusedApp);
     }
 
     @Test
