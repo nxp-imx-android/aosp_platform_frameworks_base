@@ -48,4 +48,6 @@ interface IProtoLogConfigurationService {
     }
 
     oneway void registerClient(IProtoLogClient client, in RegisterClientArgs args);
+
+    oneway void unregisterClient(IProtoLogClient  client);
 }
