@@ -17,6 +17,7 @@
 package android.security.authenticationpolicy;
 
 import android.os.UserHandle;
+import android.proximity.IProximityResultCallback;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
@@ -44,4 +45,7 @@ interface IAuthenticationPolicyService {
 
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
     void unregisterSecureLockDeviceStatusListener(in ISecureLockDeviceStatusListener listener);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    void startWatchRangingForIdentityCheck(in IProximityResultCallback resultCallback);
 }
