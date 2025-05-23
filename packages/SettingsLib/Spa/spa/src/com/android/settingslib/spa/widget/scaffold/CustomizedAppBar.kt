@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -204,7 +205,7 @@ private fun topAppBarColors() =
  *   using the default material3 spec
  */
 @Stable
-private class TopAppBarColors(
+internal class TopAppBarColors(
     val containerColor: Color,
     val scrolledContainerColor: Color,
     val navigationIconContentColor: Color,
@@ -542,13 +543,7 @@ private fun TopAppBarLayout(
                 ProvideTextStyle(value = titleTextStyle) {
                     CompositionLocalProvider(
                         LocalContentColor provides titleContentColor,
-                        LocalDensity provides
-                            with(LocalDensity.current) {
-                                Density(
-                                    density = density,
-                                    fontScale = if (titleScaleDisabled) 1f else fontScale,
-                                )
-                            },
+                        localDensityDisableFontScale(),
                         content = title,
                     )
                 }
@@ -636,7 +631,7 @@ private fun TopAppBarLayout(
  * after the fling settles.
  */
 @OptIn(ExperimentalMaterial3Api::class)
-private suspend fun settleAppBar(
+internal suspend fun settleAppBar(
     state: TopAppBarState,
     velocity: Float,
     flingAnimationSpec: DecayAnimationSpec<Float>?,
@@ -685,6 +680,10 @@ private suspend fun settleAppBar(
 
     return Velocity(0f, remainingVelocity)
 }
+
+@Composable
+internal fun localDensityDisableFontScale(): ProvidedValue<Density> =
+    LocalDensity provides with(LocalDensity.current) { Density(density = density, fontScale = 1f) }
 
 // An easing function used to compute the alpha value that is applied to the top title part of a
 // Medium or Large app bar.

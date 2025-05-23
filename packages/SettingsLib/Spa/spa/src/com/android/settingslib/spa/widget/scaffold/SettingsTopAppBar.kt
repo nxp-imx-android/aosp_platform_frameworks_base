@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.window.embedding.ActivityEmbeddingController
 import com.android.settingslib.spa.framework.compose.localActivity
+import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,12 +34,26 @@ internal fun SettingsTopAppBar(
     isFirstLayerPageWhenEmbedded: Boolean,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    CustomizedLargeTopAppBar(
-        title = title,
-        navigationIcon = { if (shouldShowNavigateBack(isFirstLayerPageWhenEmbedded)) NavigateBack() },
-        actions = actions,
-        scrollBehavior = scrollBehavior,
-    )
+    if (isSpaExpressiveEnabled) {
+        MorphingTitleLargeTopAppBar(
+            title = title,
+            navigationIcon = { NavigationIcon(isFirstLayerPageWhenEmbedded) },
+            actions = actions,
+            scrollBehavior = scrollBehavior,
+        )
+    } else {
+        CustomizedLargeTopAppBar(
+            title = title,
+            navigationIcon = { NavigationIcon(isFirstLayerPageWhenEmbedded) },
+            actions = actions,
+            scrollBehavior = scrollBehavior,
+        )
+    }
+}
+
+@Composable
+private fun NavigationIcon(isFirstLayerPageWhenEmbedded: Boolean) {
+    if (shouldShowNavigateBack(isFirstLayerPageWhenEmbedded)) NavigateBack()
 }
 
 /** Whether the current page should show the navigate back button. */
@@ -57,7 +72,5 @@ private fun shouldShowNavigateBack(isFirstLayerPageWhenEmbedded: Boolean): Boole
 
 @OptIn(ExperimentalMaterial3Api::class)
 internal fun TopAppBarScrollBehavior.collapse() {
-    with(state) {
-        heightOffset = heightOffsetLimit
-    }
+    with(state) { heightOffset = heightOffsetLimit }
 }

@@ -295,7 +295,7 @@ private class SettingsTypography(settingsFontFamily: SettingsFontFamily) {
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 22.sp,
                     lineHeight = 28.sp,
-                    letterSpacing = 0.02.em,
+                    letterSpacing = 0.sp,
                     hyphens = Hyphens.Auto,
                 ),
             titleMedium =
