@@ -106,12 +106,14 @@ public class BubbleTransitions {
     @NonNull final Context mContext;
     @NonNull final BubbleAppInfoProvider mAppInfoProvider;
 
+    @VisibleForTesting
     // Map of a launch cookie (used to start an activity) to the associated transition handler
-    private final Map<IBinder, TransitionHandler> mPendingEnterTransitions =
+    final Map<IBinder, TransitionHandler> mPendingEnterTransitions =
             new HashMap<>();
 
+    @VisibleForTesting
     // Map of a running transition token to the associated transition handler
-    private final Map<IBinder, TransitionHandler> mEnterTransitions =
+    final Map<IBinder, TransitionHandler> mEnterTransitions =
             new HashMap<>();
 
     private BubbleController mBubbleController;
@@ -229,13 +231,13 @@ public class BubbleTransitions {
     /**
      * Starts a new launch or convert transition to show the given bubble.
      */
-    public void startLaunchIntoOrConvertToBubble(Bubble bubble,
+    public BubbleTransition startLaunchIntoOrConvertToBubble(Bubble bubble,
             BubbleExpandedViewManager expandedViewManager, BubbleTaskViewFactory factory,
             BubblePositioner positioner, BubbleStackView stackView,
             BubbleBarLayerView layerView, BubbleIconFactory iconFactory,
             boolean inflateSync, @Nullable BubbleBarLocation bubbleBarLocation) {
-        new LaunchOrConvertToBubble(bubble, mContext, expandedViewManager, factory, positioner,
-                stackView, layerView, iconFactory, inflateSync, bubbleBarLocation);
+        return new LaunchOrConvertToBubble(bubble, mContext, expandedViewManager, factory,
+                positioner, stackView, layerView, iconFactory, inflateSync, bubbleBarLocation);
     }
 
     /**
@@ -929,7 +931,7 @@ public class BubbleTransitions {
                     mFinishT = finishTransaction;
                     mTaskLeash = chg.getLeash();
                     mSnapshot = chg.getSnapshot();
-                    mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode());
+                    mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
                     found = true;
                 } else {
                     // In core-initiated launches, the transition is of an OPEN type, and we need to
