@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.notification.logging.NotificationLogger
 import com.android.systemui.statusbar.notification.row.NotifBindPipelineInitializer
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
-import com.android.wm.shell.bubbles.Bubbles
 import dagger.Lazy
 import java.util.Optional
 import javax.inject.Inject
@@ -69,7 +68,6 @@ constructor(
     private val clickerBuilder: NotificationClicker.Builder,
     private val animatedImageNotificationManager: AnimatedImageNotificationManager,
     private val peopleSpaceWidgetManager: PeopleSpaceWidgetManager,
-    private val bubblesOptional: Optional<Bubbles>,
 ) : NotificationsController {
 
     override fun initialize(
@@ -90,7 +88,7 @@ constructor(
             )
 
         notificationRowBinder.setNotificationClicker(
-            clickerBuilder.build(bubblesOptional, notificationActivityStarter)
+            clickerBuilder.build(notificationActivityStarter)
         )
         notificationRowBinder.setUpWithPresenter(presenter, listContainer)
         notifBindPipelineInitializer.initialize()

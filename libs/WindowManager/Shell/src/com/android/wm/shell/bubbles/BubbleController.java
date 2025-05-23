@@ -3339,13 +3339,6 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void collapseStack() {
-            mMainExecutor.execute(() -> {
-                BubbleController.this.collapseStack();
-            });
-        }
-
-        @Override
         public void expandStackAndSelectBubble(BubbleEntry entry) {
             mMainExecutor.execute(() -> {
                 BubbleController.this.expandStackAndSelectBubble(entry);
