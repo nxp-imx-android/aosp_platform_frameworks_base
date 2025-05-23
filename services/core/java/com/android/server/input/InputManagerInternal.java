@@ -27,6 +27,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.SparseBooleanArray;
 import android.view.InputChannel;
+import android.view.KeyEvent;
 import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
@@ -350,4 +351,16 @@ public abstract class InputManagerInternal {
      */
     public abstract void registerAccessibilityPointerMotionFilter(
             @Nullable AccessibilityPointerMotionFilter filter);
+
+    /**
+     * Allows A11y input filter to allow processing of key combinations (or wait for key
+     * combination processing).
+     *
+     * @param event key to intercept
+     * @return 0 if the key is not consumed and can be immediately forwarded to respective A11y
+     * service, -1 if the key is consumed and should not be sent forward, or a positive value
+     * indicating the number of milliseconds by which the key forwarding should be delayed before
+     * trying again.
+     */
+    public abstract long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event);
 }

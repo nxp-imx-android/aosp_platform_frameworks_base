@@ -25,6 +25,7 @@ import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
+import static com.android.hardware.input.Flags.fixKeyboardInterceptorPolicyCall;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
@@ -3869,6 +3870,17 @@ public class InputManagerService extends IInputManager.Stub
         public void registerAccessibilityPointerMotionFilter(
                 AccessibilityPointerMotionFilter filter) {
             InputManagerService.this.registerAccessibilityPointerMotionFilter(filter);
+        }
+
+        @Override
+        public long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event) {
+            if (fixKeyboardInterceptorPolicyCall()) {
+                return mKeyGestureController.interceptKeyBeforeDispatching(/* focusedToken= */null,
+                        event, /* policyFlags= */0);
+            } else {
+                return mWindowManagerCallbacks.interceptKeyBeforeDispatching(
+                        /* focusedToken= */null, event, /* policyFlags= */0);
+            }
         }
     }
 

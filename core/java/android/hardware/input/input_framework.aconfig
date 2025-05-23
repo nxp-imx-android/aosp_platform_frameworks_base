@@ -205,3 +205,13 @@ flag {
     description: "Adds support for creating a virtual keyboard API"
     bug: "416054433"
 }
+
+flag {
+    name: "fix_keyboard_interceptor_policy_call"
+    namespace: "input"
+    description: "Fixes keyboard interceptor calls to the policy"
+    bug: "358569822"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
