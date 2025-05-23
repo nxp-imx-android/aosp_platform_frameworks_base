@@ -1070,6 +1070,7 @@ private class AnimatedDialog(
         }
 
         private var lastBounds: Rect? = null
+        private var lastParentBounds: Rect? = null
         private var currentAnimator: ValueAnimator? = null
 
         override fun onLayoutChange(
@@ -1083,6 +1084,11 @@ private class AnimatedDialog(
             oldRight: Int,
             oldBottom: Int,
         ) {
+            val oldParentBounds = lastParentBounds
+            (view.parent as ViewGroup)?.let { p ->
+                lastParentBounds = Rect(p.left, p.top, p.right, p.bottom)
+            }
+
             // Don't animate if bounds didn't actually change.
             if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) {
                 // Make sure that we that the last bounds set by the animator were not overridden.
@@ -1105,8 +1111,15 @@ private class AnimatedDialog(
             val startRight = bounds.right
             val startBottom = bounds.bottom
 
+            currentAnimator?.removeAllListeners()
             currentAnimator?.cancel()
             currentAnimator = null
+
+            // When bounds changed only because parent's bounds also changed, don't animate.
+            if (lastParentBounds != oldParentBounds && oldParentBounds != null) {
+                lastBounds?.set(left, top, right, bottom)
+                return
+            }
 
             val animator =
                 ValueAnimator.ofFloat(0f, 1f).apply {
