@@ -51,6 +51,12 @@ constructor(
 ) {
     val previewClockSize = clockViewModel.previewClockSize
 
+    val shouldDateWeatherBeBelowSmallClock
+        get() = clockViewModel.shouldSmallDateWeatherBeBelowSmallClock()
+
+    val shouldDateWeatherBeBelowLargeClock
+        get() = clockViewModel.shouldSmallDateWeatherBeBelowLargeClock()
+
     val previewAlpha = if (previewInteractor.shouldHighlightSelectedAffordance) DIM_ALPHA else 1.0f
 
     val shouldHideSmartspace: Flow<Boolean> =
