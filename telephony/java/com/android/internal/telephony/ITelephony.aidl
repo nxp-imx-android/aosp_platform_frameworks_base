@@ -3195,9 +3195,11 @@ interface ITelephony {
      *                     To disable the override, use -1 for handoverType.
      * @param delaySeconds The event EVENT_DISPLAY_EMERGENCY_MESSAGE will be sent to Dialer
      *                     delaySeconds after the emergency call starts.
+     * @param simSlotIndex The SIM slot index to use for loading T911 conversation thread.
      * @return {@code true} if the handover type is set successfully, {@code false} otherwise.
      */
-    boolean setEmergencyCallToSatelliteHandoverType(int handoverType, int delaySeconds);
+    boolean setEmergencyCallToSatelliteHandoverType(
+            int handoverType, int delaySeconds, int simSlotIndex);
 
     /**
      * This API should be used by only CTS tests to forcefully set the country codes.

@@ -1266,6 +1266,18 @@ public class TelephonyManager {
             "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT";
 
     /**
+     * Integer extra key used with the {@link #EVENT_DISPLAY_EMERGENCY_MESSAGE} for a
+     * {@link PendingIntent} which will be launched by the Dialer app. This extra key is included
+     * the in {@link Intent} of the {@link PendingIntent} only when the handover type is
+     * {@link SatelliteManager#EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911}.
+     *
+     * <p> This extra key indicates the SIM slot ID of the satellite subscription that is used
+     * to launch the T911 conversation thread in the messaging app.
+     * @hide
+     */
+    public static final String EXTRA_SIM_SLOT_ID = "simSlot";
+
+    /**
      * Integer extra key used with {@link #EVENT_SUPPLEMENTARY_SERVICE_NOTIFICATION} which indicates
      * the type of supplementary service notification which occurred.
      * Will be either
