@@ -413,6 +413,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
      *
      * @param selectedDeviceAttributesType The {@link AudioDeviceInfo#getType() type} that
      *     corresponds to the currently selected route.
+     * @param selectedDeviceAttributesAddr The {@link AudioDeviceInfo#getAddress() address} that
+     *     corresponds to the currently selected route.
      * @param audioDeviceInfos The available audio outputs as obtained from {@link
      *     AudioManager#getDevices}.
      * @param availableBluetoothRoutes The available bluetooth routes as obtained from {@link
