@@ -763,4 +763,8 @@
     <!-- This uses non-regular transparent intentionally. It is used to tell if the transparent
          color is set by the framework or not. -->
     <color name="navigation_bar_default">#00808080</color>
+
+    <!-- Color for APM USB Data Protection Notification-->
+    <!-- Notification icon tint color-->
+    <color name="security_privacy_notification_tint_normal">#1A73E8</color>
 </resources>
