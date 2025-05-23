@@ -690,7 +690,9 @@ public class BubbleTransitions {
             mTaskViewTransitions.prepareOpenAnimation(tv, true /* new */, startT, mFinishT,
                     (ActivityManager.RunningTaskInfo) mTaskInfo, mTaskLeash, mFinishWct);
             // Add the task view task listener manually since we aren't going through
-            // TaskViewTransitions (which normally sets up the listener via a pending launch cookie
+            // TaskViewTransitions (which normally sets up the listener via a pending launch cookie)
+            // Note: In this path, because a new task is being started, the transition may receive
+            // the transition for the task before the organizer does
             mTaskOrganizer.addListenerForTaskId(tv, mTaskInfo.taskId);
 
             if (mFinishWct.isEmpty()) {

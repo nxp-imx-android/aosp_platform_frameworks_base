@@ -171,6 +171,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     /** @see #setPendingLaunchCookieListener */
     private final ArrayMap<IBinder, TaskListener> mLaunchCookieToListener = new ArrayMap<>();
 
+    /** @see #setPendingTaskListener(int, TaskListener)  */
+    private final ArrayMap<Integer, TaskListener> mPendingTaskToListener = new ArrayMap<>();
+
     // Keeps track of taskId's with visible locusIds. Used to notify any {@link LocusIdListener}s
     // that might be set.
     private final SparseArray<LocusId> mVisibleTasksWithLocusId = new SparseArray<>();
@@ -365,7 +368,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
-     * Adds a listener for a specific task id.
+     * Adds a listener for a specific task id.  This only applies if
      */
     public void addListenerForTaskId(TaskListener listener, int taskId) {
         synchronized (mLock) {
@@ -383,7 +386,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
             final TaskAppearedInfo info = mTasks.get(taskId);
             if (info == null) {
-                throw new IllegalArgumentException("addListenerForTaskId unknown taskId=" + taskId);
+                ProtoLog.v(WM_SHELL_TASK_ORG, "Queueing pending listener");
+                // The caller may have received a transition with the task before the organizer
+                // was notified of the task appearing, so set a pending task listener for the
+                // task to be retrieved when the task actually appears
+                mPendingTaskToListener.put(taskId, listener);
+                return;
             }
 
             final TaskListener oldListener = getTaskListener(info.getTaskInfo());
@@ -423,6 +431,14 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     public void removeListener(TaskListener listener) {
         synchronized (mLock) {
             ProtoLog.v(WM_SHELL_TASK_ORG, "Remove listener=%s", listener);
+
+            // Remove all occurrences of the pending listener
+            for (int i = mPendingTaskToListener.size() - 1; i >= 0; --i) {
+                if (mPendingTaskToListener.valueAt(i) == listener) {
+                    mPendingTaskToListener.removeAt(i);
+                }
+            }
+
             final int index = mTaskListeners.indexOfValue(listener);
             if (index == -1) {
                 Log.w(TAG, "No registered listener found");
@@ -438,7 +454,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
                 tasks.add(data);
             }
 
-            // Remove listener, there can be the multiple occurrences, so search the whole list.
+            // Remove occurrences of the listener
             for (int i = mTaskListeners.size() - 1; i >= 0; --i) {
                 if (mTaskListeners.valueAt(i) == listener) {
                     mTaskListeners.removeAt(i);
@@ -456,9 +472,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
 
     /**
      * Associated a listener to a pending launch cookie so we can route the task later once it
-     * appears.
+     * appears.  If both this and a pending task-id listener is set, then this will take priority.
      */
     public void setPendingLaunchCookieListener(IBinder cookie, TaskListener listener) {
+        ProtoLog.v(WM_SHELL_TASK_ORG, "setPendingLaunchCookieListener(): cookie=%s listener=%s",
+                cookie, listener);
         synchronized (mLock) {
             mLaunchCookieToListener.put(cookie, listener);
         }
@@ -904,7 +922,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     private TaskListener getTaskListener(RunningTaskInfo runningTaskInfo,
-            boolean removeLaunchCookieIfNeeded) {
+            boolean removePendingIfNeeded) {
 
         final int taskId = runningTaskInfo.taskId;
         TaskListener listener;
@@ -916,14 +934,33 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             listener = mLaunchCookieToListener.get(cookie);
             if (listener == null) continue;
 
-            if (removeLaunchCookieIfNeeded) {
+            if (removePendingIfNeeded) {
                 ProtoLog.v(WM_SHELL_TASK_ORG, "Migrating cookie listener to task: taskId=%d",
-                        runningTaskInfo.taskId);
+                        taskId);
                 // Remove the cookie and add the listener.
                 mLaunchCookieToListener.remove(cookie);
+                if (mPendingTaskToListener.containsKey(taskId)
+                        && mPendingTaskToListener.get(taskId) != listener) {
+                    Log.w(TAG, "Conflicting pending task listeners reported for taskId=" + taskId);
+                }
+                mPendingTaskToListener.remove(taskId);
                 mTaskListeners.put(taskId, listener);
             }
             return listener;
+        }
+
+        // Next priority goes to the pending task id listener
+        if (mPendingTaskToListener.containsKey(taskId)) {
+            listener = mPendingTaskToListener.get(taskId);
+            if (listener != null) {
+                if (removePendingIfNeeded) {
+                    ProtoLog.v(WM_SHELL_TASK_ORG, "Migrating pending listener to task: taskId=%d",
+                            taskId);
+                    mPendingTaskToListener.remove(taskId);
+                    mTaskListeners.put(taskId, listener);
+                }
+                return listener;
+            }
         }
 
         // Next priority goes to taskId specific listeners.
@@ -1025,13 +1062,21 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             }
 
             pw.println();
-            pw.println(innerPrefix + mLaunchCookieToListener.size() + " Launch Cookies");
+            pw.println(innerPrefix + mLaunchCookieToListener.size()
+                    + " Pending launch cookies listeners");
             for (int i = mLaunchCookieToListener.size() - 1; i >= 0; --i) {
                 final IBinder key = mLaunchCookieToListener.keyAt(i);
                 final TaskListener listener = mLaunchCookieToListener.valueAt(i);
                 pw.println(innerPrefix + "#" + i + " cookie=" + key + " listener=" + listener);
             }
 
+            pw.println();
+            pw.println(innerPrefix + mPendingTaskToListener.size() + " Pending task listeners");
+            for (int i = mPendingTaskToListener.size() - 1; i >= 0; --i) {
+                final int taskId = mPendingTaskToListener.keyAt(i);
+                final TaskListener listener = mPendingTaskToListener.valueAt(i);
+                pw.println(innerPrefix + "#" + i + " taskId=" + taskId + " listener=" + listener);
+            }
         }
     }
 }
