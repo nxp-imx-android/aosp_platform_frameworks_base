@@ -1957,7 +1957,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             final long oldProtectorId = getCurrentLskfBasedProtectorId(userId);
             AuthenticationResult authResult = mSpManager.unlockLskfBasedProtector(
                     getGateKeeperService(), oldProtectorId, savedCredential, userId, null);
-            VerifyCredentialResponse response = authResult.gkResponse;
+            VerifyCredentialResponse response = authResult.response;
             SyntheticPassword sp = authResult.syntheticPassword;
 
             if (sp == null) {
@@ -2464,7 +2464,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             }
             authResult = mSpManager.unlockLskfBasedProtector(
                     getGateKeeperService(), protectorId, credential, userId, progressCallback);
-            response = reportResultToSoftwareRateLimiter(authResult.gkResponse, lskfId, credential);
+            response = reportResultToSoftwareRateLimiter(authResult.response, lskfId, credential);
 
             if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
                 if ((flags & VERIFY_FLAG_WRITE_REPAIR_MODE_PW) != 0) {
@@ -3456,7 +3456,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             Slog.w(TAG, "Invalid escrow token supplied");
             return false;
         }
-        if (result.gkResponse.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK) {
+        if (result.response.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK) {
             // Most likely, an untrusted credential reset happened in the past which
             // changed the synthetic password
             Slog.e(TAG, "Obsolete token: synthetic password decrypted but it fails GK "
