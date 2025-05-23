@@ -75,7 +75,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
-import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.authsecret.IAuthSecret;
@@ -653,11 +652,6 @@ public class LockSettingsService extends ILockSettings.Stub {
 
         public boolean isHeadlessSystemUserMode() {
             return UserManager.isHeadlessSystemUserMode();
-        }
-
-        public boolean isMainUserPermanentAdmin() {
-            return Resources.getSystem()
-                    .getBoolean(com.android.internal.R.bool.config_isMainUserPermanentAdmin);
         }
     }
 
@@ -3003,7 +2997,8 @@ public class LockSettingsService extends ILockSettings.Stub {
                 return;
             }
             authSecret = sp.deriveVendorAuthSecret();
-        } else if (!mInjector.isMainUserPermanentAdmin() || !userInfo.isFull()) {
+        } else if (!mInjector.getUserManagerInternal().isMainUserPermanentAdmin()
+                || !userInfo.isFull()) {
             // Only full users can receive or pass on the auth secret.
             // If there is no main permanent admin user, we don't try to create or send
             // an auth secret, since there may sometimes be no full users.

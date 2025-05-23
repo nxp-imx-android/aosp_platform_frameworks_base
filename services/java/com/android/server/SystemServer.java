@@ -3043,7 +3043,6 @@ public final class SystemServer implements Dumpable {
         final HsumBootUserInitializer hsumBootUserInitializer =
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
                         mPackageManagerService, mContentResolver,
-                        context.getResources().getBoolean(R.bool.config_isMainUserPermanentAdmin),
                         context.getResources().getBoolean(R.bool.config_createInitialUser)
                         );
         if (hsumBootUserInitializer != null) {
