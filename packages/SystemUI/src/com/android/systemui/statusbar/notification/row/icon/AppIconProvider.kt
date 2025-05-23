@@ -202,7 +202,7 @@ constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: D
 
     private fun iconOptions(context: Context, withWorkProfileBadge: Boolean): IconOptions {
         return IconOptions().apply {
-            setUser(userIconInfo(context, withWorkProfileBadge = false))
+            setUser(userIconInfo(context, withWorkProfileBadge))
             setBitmapGenerationMode(BaseIconFactory.MODE_HARDWARE)
             // This color will not be used, but we're just setting it so that the icon factory
             // doesn't try to extract colors from our bitmap (since it won't work, given it's a
