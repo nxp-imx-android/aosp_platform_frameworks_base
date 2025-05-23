@@ -19879,6 +19879,26 @@ public final class Settings {
         public static final String BINDER_CALLS_STATS = "binder_calls_stats";
 
         /**
+         * Native binder stats settings.
+         *
+         * These parameters are represented by a comma-delimited key-value list.
+         *
+         * The following strings are supported as keys:
+         * <pre>
+         *     enabled                      (boolean)
+         *     process_sharding             (int)
+         *     spam_sharding                (int)
+         *     call_sharding                (int)
+         *     system_process_sharding      (int)
+         *     system_spam_sharding         (int)
+         *     system_call_sharding         (int)
+         * </pre>
+         *
+         * @hide
+         */
+        public static final String NATIVE_BINDER_STATS = "native_binder_stats";
+
+        /**
          * Looper stats settings.
          *
          * The following strings are supported as keys:

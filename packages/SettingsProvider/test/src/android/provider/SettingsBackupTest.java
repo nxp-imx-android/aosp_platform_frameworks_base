@@ -104,6 +104,7 @@ public class SettingsBackupTest {
                     Settings.Global.BATTERY_SAVER_DEVICE_SPECIFIC_CONSTANTS,
                     Settings.Global.BATTERY_STATS_CONSTANTS,
                     Settings.Global.BINDER_CALLS_STATS,
+                    Settings.Global.NATIVE_BINDER_STATS,
                     Settings.Global.BLE_SCAN_ALWAYS_AVAILABLE,
                     Settings.Global.BLE_SCAN_LOW_POWER_WINDOW_MS,
                     Settings.Global.BLE_SCAN_LOW_POWER_INTERVAL_MS,
