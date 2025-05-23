@@ -60,8 +60,8 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.os.Handler;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.platform.test.annotations.UsesFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.util.DisplayMetrics;
@@ -84,6 +84,7 @@ import androidx.test.filters.SmallTest;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.TestHandler;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
@@ -160,8 +161,6 @@ public class WindowDecorationTests extends ShellTestCase {
     @Mock
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock
-    private Handler mMockHandler;
-    @Mock
     private Transitions mTransitions;
 
     private final List<SurfaceControl.Transaction> mMockSurfaceControlTransactions =
@@ -173,6 +172,7 @@ public class WindowDecorationTests extends ShellTestCase {
     private SurfaceControl.Transaction mMockSurfaceControlAddWindowT;
     private WindowDecoration.RelayoutParams mRelayoutParams = new WindowDecoration.RelayoutParams();
     private int mCaptionMenuWidthId;
+    private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
 
     public WindowDecorationTests(FlagsParameterization flags) {
         mSetFlagsRule.setFlagsParameterization(flags);
@@ -1305,7 +1305,7 @@ public class WindowDecorationTests extends ShellTestCase {
                 @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost>
                         windowDecorViewHostSupplier,
                 DesktopModeEventLogger desktopModeEventLogger) {
-            super(context, mMockHandler, mTransitions, userContext, displayController,
+            super(context, mTestHandler, mTransitions, userContext, displayController,
                     taskOrganizer, taskInfo, taskSurface, surfaceControlBuilderSupplier,
                     surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
                     surfaceControlSupplier, surfaceControlViewHostFactory,

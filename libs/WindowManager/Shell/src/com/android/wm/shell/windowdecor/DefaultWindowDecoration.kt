@@ -59,7 +59,8 @@ class DefaultWindowDecoration(
     displayController,
     taskSurface,
     surfaceControlSupplier,
-    taskOrganizer
+    taskOrganizer,
+    handler,
 ) {
 
     /**

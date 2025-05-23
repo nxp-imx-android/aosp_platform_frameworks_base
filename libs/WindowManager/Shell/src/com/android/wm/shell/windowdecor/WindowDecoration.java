@@ -736,7 +736,11 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     private boolean obtainDisplayOrRegisterListener() {
         mDisplay = mDisplayController.getDisplay(mTaskInfo.displayId);
         if (mDisplay == null) {
-            mDisplayController.addDisplayWindowListener(mOnDisplaysChangedListener);
+            // Post to the handler to avoid an infinite loop. See b/415631133 for more details.
+            // TODO(b/419398609): Remove this whole work around once the root timing issue is
+            //  resolved.
+            mHandler.post(
+                    () -> mDisplayController.addDisplayWindowListener(mOnDisplaysChangedListener));
             return false;
         }
         return true;
