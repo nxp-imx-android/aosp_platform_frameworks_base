@@ -1998,6 +1998,16 @@ flag {
 }
 
 flag {
+   name: "bouncer_lifecycle_fix"
+   namespace: "systemui"
+   description: "Don't resume the Bouncer InputView when the view is inflated."
+   bug: "417307529"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "qs_compose_fragment_early_expansion"
    namespace: "systemui"
    description: "Start expansion from QQS into QS early when touching the shade."
