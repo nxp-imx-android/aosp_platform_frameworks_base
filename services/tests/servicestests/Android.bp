@@ -1052,6 +1052,17 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FrameworksServicesTests_devicepolicy",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "device-tests",
+        "automotive-tests",
+    ],
+
+    include_filters: ["com.android.server.devicepolicy"],
+}
+
+test_module_config {
     name: "FrameworksServicesTests_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
