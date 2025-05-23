@@ -298,8 +298,8 @@
     <string name="oem_unlock_enable_summary" msgid="5857388174390953829">"બુટલોડર અનલૉક કરવાની મંજૂરી આપો"</string>
     <string name="confirm_enable_oem_unlock_title" msgid="8249318129774367535">"OEM ને અનલૉક કરવાની મંજૂરી આપીએ?"</string>
     <string name="confirm_enable_oem_unlock_text" msgid="854131050791011970">"ચેતવણી: જ્યારે આ સેટિંગ ચાલુ હોય ત્યારે આ ઉપકરણ પર ઉપકરણ સંરક્ષણ સુવિધાઓ કાર્ય કરશે નહીં."</string>
-    <string name="mock_location_app" msgid="6269380172542248304">"મોક લોકેશન ઍપ પસંદ કરો"</string>
-    <string name="mock_location_app_not_set" msgid="6972032787262831155">"કોઈ મોક લોકેશન ઍપ સેટ કરાયેલું નથી"</string>
+    <string name="mock_location_app" msgid="6269380172542248304">"મૉક લોકેશન ઍપ પસંદ કરો"</string>
+    <string name="mock_location_app_not_set" msgid="6972032787262831155">"કોઈ મૉક લોકેશન ઍપ સેટ કરાયેલું નથી"</string>
     <string name="mock_location_app_set" msgid="4706722469342913843">"મૉક લોકેશન ઍપ: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="debug_networking_category" msgid="6829757985772659599">"નેટવર્કિંગ"</string>
     <string name="wifi_display_certification" msgid="1805579519992520381">"વાયરલેસ ડિસ્પ્લે પ્રમાણીકરણ"</string>
