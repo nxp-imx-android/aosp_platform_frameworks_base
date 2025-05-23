@@ -31,7 +31,6 @@ import android.view.View;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayLayout;
@@ -201,8 +200,7 @@ class CompatUIWindowManager extends CompatUIWindowManagerAbstract {
     @VisibleForTesting
     boolean shouldShowSizeCompatRestartButton(@NonNull TaskInfo taskInfo) {
         // Always show button if display is phone sized.
-        if (!Flags.allowHideScmButton() || taskInfo.configuration.smallestScreenWidthDp
-                < LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP) {
+        if (taskInfo.configuration.smallestScreenWidthDp < LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP) {
             return true;
         }
 
