@@ -23,6 +23,7 @@ import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableS
 import android.security.authenticationpolicy.AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
+import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 
 /**
  * Local system service interface for {@link SecureLockDeviceService}.
@@ -75,4 +76,22 @@ public abstract class SecureLockDeviceServiceInternal {
      * @return true if secure lock device is enabled, false otherwise
      */
     public abstract boolean isSecureLockDeviceEnabled();
+
+    /**
+     * @see AuthenticationPolicyManager#registerSecureLockDeviceStatusListener
+     * @param user user associated with the calling context to notify of updates to secure
+     *             lock device availability
+     * @param listener {@link ISecureLockDeviceStatusListener} to register for updates to secure
+     *                                                        lock device status
+     */
+    public abstract void registerSecureLockDeviceStatusListener(UserHandle user,
+            ISecureLockDeviceStatusListener listener);
+
+    /**
+     * @see AuthenticationPolicyManager#unregisterSecureLockDeviceStatusListener
+     * @param listener {@link ISecureLockDeviceStatusListener} to unregister from updates to secure
+     *                                                        lock device status
+     */
+    public abstract void unregisterSecureLockDeviceStatusListener(
+            ISecureLockDeviceStatusListener listener);
 }

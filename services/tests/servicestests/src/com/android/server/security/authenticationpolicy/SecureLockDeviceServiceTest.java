@@ -33,6 +33,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +42,10 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.BiometricStateListener;
+import android.hardware.face.FaceManager;
+import android.hardware.fingerprint.FingerprintManager;
+import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.IThermalService;
 import android.os.PowerManager;
@@ -50,6 +56,7 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
+import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 import android.testing.TestableContext;
 
 import androidx.test.filters.SmallTest;
@@ -64,6 +71,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -85,10 +94,22 @@ public class SecureLockDeviceServiceTest {
     @Rule public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
     @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
+    @Captor private ArgumentCaptor<BiometricStateListener> mBiometricStateListenerCaptor;
+    @Captor private ArgumentCaptor<Integer> mSecureLockDeviceAvailableStatusArgumentCaptor;
+    @Captor private ArgumentCaptor<Boolean> mSecureLockDeviceEnabledStatusArgumentCaptor;
+
     @Mock private ActivityManager mActivityManager;
+    @Mock private AuthenticationPolicyService mAuthenticationPolicyService;
     @Mock private BiometricManager mBiometricManager;
     @Mock private DevicePolicyManager mDevicePolicyManager;
+    @Mock private FaceManager mFaceManager;
+    @Mock private FingerprintManager mFingerprintManager;
+    @Mock private IBinder mSecureLockDeviceStatusListenerBinder;
+    @Mock private IBinder mSecureLockDeviceStatusOtherListenerBinder;
     @Mock private IPowerManager mIPowerManager;
+    @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusListener;
+    // For OTHER_USER_ID
+    @Mock private ISecureLockDeviceStatusListener mSecureLockDeviceStatusOtherListener;
     @Mock private IThermalService mThermalService;
     @Mock private SecureLockDeviceServiceInternal mSecureLockDeviceServiceInternal;
     @Mock private WindowManagerInternal mWindowManagerInternal;
@@ -105,15 +126,24 @@ public class SecureLockDeviceServiceTest {
 
     @SuppressLint("VisibleForTests")
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         // Unable to mock PowerManager directly because final class
         mContext.addMockSystemService(ActivityManager.class, mActivityManager);
         mContext.addMockSystemService(PowerManager.class,
                 new PowerManager(mContext, mIPowerManager, mThermalService, null));
         mContext.addMockSystemService(BiometricManager.class, mBiometricManager);
         mContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
+        mContext.addMockSystemService((FaceManager.class), mFaceManager);
+        mContext.addMockSystemService((FingerprintManager.class), mFingerprintManager);
 
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(true);
+        when(mSecureLockDeviceStatusListener.asBinder())
+                .thenReturn(mSecureLockDeviceStatusListenerBinder);
+        when(mSecureLockDeviceStatusOtherListener.asBinder())
+                .thenReturn(mSecureLockDeviceStatusOtherListenerBinder);
+
+        mLocalServiceKeeperRule.overrideLocalService(AuthenticationPolicyService.class,
+                mAuthenticationPolicyService);
         mLocalServiceKeeperRule.overrideLocalService(SecureLockDeviceServiceInternal.class,
                 mSecureLockDeviceServiceInternal);
         mLocalServiceKeeperRule.overrideLocalService(WindowManagerInternal.class,
@@ -122,8 +152,10 @@ public class SecureLockDeviceServiceTest {
         mSecureLockDeviceService = new SecureLockDeviceService(mContext);
         mSecureLockDeviceStore = mSecureLockDeviceService.getStore();
         mSecureLockDeviceService.onLockSettingsReady();
+        mSecureLockDeviceService.onBootCompleted();
     }
 
+    @SuppressLint("VisibleForTests")
     @After
     public void tearDown() throws Exception {
         disableSecureLockDevice(mUser);
@@ -292,6 +324,145 @@ public class SecureLockDeviceServiceTest {
         isSecureLockDeviceEnabled = mSecureLockDeviceService.isSecureLockDeviceEnabled();
 
         assertThat(isSecureLockDeviceEnabled).isFalse();
+    }
+
+    @Test
+    public void testAllListenersNotified_onEnableSecureLockDevice() throws RemoteException {
+        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
+                true /* isStrongBiometric */);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mUser, mSecureLockDeviceStatusListener);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mOtherUser, mSecureLockDeviceStatusOtherListener);
+        clearInvocations(mSecureLockDeviceStatusListener);
+        clearInvocations(mSecureLockDeviceStatusOtherListener);
+
+        enableSecureLockDevice(mUser);
+
+        // Verify listener registered from TEST_USER_ID is notified
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceAvailableStatusChanged(
+                mSecureLockDeviceAvailableStatusArgumentCaptor.capture());
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceEnabledStatusChanged(
+                mSecureLockDeviceEnabledStatusArgumentCaptor.capture());
+        int available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
+        boolean enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
+        assertThat(available).isEqualTo(SUCCESS);
+        assertThat(enabled).isTrue();
+
+        // Verify listener registered from OTHER_USER_ID is notified
+        verify(mSecureLockDeviceStatusOtherListener).onSecureLockDeviceAvailableStatusChanged(
+                mSecureLockDeviceAvailableStatusArgumentCaptor.capture());
+        verify(mSecureLockDeviceStatusOtherListener).onSecureLockDeviceEnabledStatusChanged(
+                mSecureLockDeviceEnabledStatusArgumentCaptor.capture());
+        available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
+        enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
+        assertThat(available).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+        assertThat(enabled).isTrue();
+
+    }
+
+    @Test
+    public void testAllListenersNotified_onDisableSecureLockDevice() throws RemoteException {
+        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
+                true /* isStrongBiometric */);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mUser, mSecureLockDeviceStatusListener);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mOtherUser, mSecureLockDeviceStatusOtherListener);
+        enableSecureLockDevice(mUser);
+        clearInvocations(mSecureLockDeviceStatusListener);
+        clearInvocations(mSecureLockDeviceStatusOtherListener);
+
+        disableSecureLockDevice(mUser);
+
+        // Verify listener registered from TEST_USER_ID is notified
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceAvailableStatusChanged(
+                mSecureLockDeviceAvailableStatusArgumentCaptor.capture());
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceEnabledStatusChanged(
+                mSecureLockDeviceEnabledStatusArgumentCaptor.capture());
+        int available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
+        boolean enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
+        assertThat(available).isEqualTo(SUCCESS);
+        assertThat(enabled).isFalse();
+
+        // Verify listener registered from OTHER_USER_ID is notified
+        verify(mSecureLockDeviceStatusOtherListener).onSecureLockDeviceAvailableStatusChanged(
+                mSecureLockDeviceAvailableStatusArgumentCaptor.capture());
+        verify(mSecureLockDeviceStatusOtherListener).onSecureLockDeviceEnabledStatusChanged(
+                mSecureLockDeviceEnabledStatusArgumentCaptor.capture());
+        available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
+        enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
+        assertThat(available).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+        assertThat(enabled).isFalse();
+    }
+
+    @Test
+    public void testRelevantListenerNotified_onBiometricEnrollmentAdded() throws RemoteException {
+        setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
+                false /* isStrongBiometric */);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mUser, mSecureLockDeviceStatusListener);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mOtherUser, mSecureLockDeviceStatusOtherListener);
+        verify(mFingerprintManager).registerBiometricStateListener(
+                mBiometricStateListenerCaptor.capture());
+        BiometricStateListener biometricStateListener = mBiometricStateListenerCaptor.getValue();
+        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
+                true /* isStrongBiometric */);
+        clearInvocations(mSecureLockDeviceStatusListener);
+        clearInvocations(mSecureLockDeviceStatusOtherListener);
+
+        biometricStateListener.onEnrollmentsChanged(
+                TEST_USER_ID,
+                1 /* sensorId */,
+                true /* hasEnrollments */
+        );
+
+        // Verify user that enrolled is notified
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceAvailableStatusChanged(
+                mSecureLockDeviceAvailableStatusArgumentCaptor.capture());
+        int available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
+        assertThat(available).isEqualTo(SUCCESS);
+
+        // Verify other user is not notified
+        verify(mSecureLockDeviceStatusOtherListener, never())
+                .onSecureLockDeviceAvailableStatusChanged(anyInt());
+    }
+
+    @Test
+    public void testRelevantListenerNotified_onBiometricEnrollmentRemoved() throws RemoteException {
+        // Add enrollments
+        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
+                true /* isStrongBiometric */);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mUser, mSecureLockDeviceStatusListener);
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mOtherUser, mSecureLockDeviceStatusOtherListener);
+        verify(mFingerprintManager).registerBiometricStateListener(
+                mBiometricStateListenerCaptor.capture());
+        BiometricStateListener biometricStateListener = mBiometricStateListenerCaptor.getValue();
+
+        // Remove enrollments
+        setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
+                false /* isStrongBiometric */);
+        clearInvocations(mSecureLockDeviceStatusListener);
+        clearInvocations(mSecureLockDeviceStatusOtherListener);
+
+        biometricStateListener.onEnrollmentsChanged(
+                TEST_USER_ID,
+                1 /* sensorId */,
+                false /* hasEnrollments */
+        );
+
+        // Verify user that enrolled is notified
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceAvailableStatusChanged(
+                mSecureLockDeviceAvailableStatusArgumentCaptor.capture());
+        int available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
+        assertThat(available).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+
+        // Verify other user is not notified
+        verify(mSecureLockDeviceStatusOtherListener, never())
+                .onSecureLockDeviceAvailableStatusChanged(anyInt());
     }
 
     private void setupBiometrics(int userId, boolean hasBiometricEnrolled,

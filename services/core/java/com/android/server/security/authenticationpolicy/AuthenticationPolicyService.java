@@ -51,9 +51,12 @@ import android.security.authenticationpolicy.AuthenticationPolicyManager.IsSecur
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
+import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 import android.util.Slog;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
+
+import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
@@ -119,6 +122,7 @@ public class AuthenticationPolicyService extends SystemService {
     @Override
     public void onStart() {
         publishBinderService(Context.AUTHENTICATION_POLICY_SERVICE, mService);
+        LocalServices.addService(AuthenticationPolicyService.class, this);
     }
 
     @Override
@@ -429,6 +433,51 @@ public class AuthenticationPolicyService extends SystemService {
             final long identity = Binder.clearCallingIdentity();
             try {
                 return mSecureLockDeviceService.isSecureLockDeviceEnabled();
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        /**
+         * @see AuthenticationPolicyManager#registerSecureLockDeviceStatusListener
+         * @param user user associated with the calling context to notify of updates to secure
+         *             lock device availability
+         * @param listener to register for updates to secure lock device availability
+         */
+        @Override
+        @EnforcePermission(MANAGE_SECURE_LOCK_DEVICE)
+        public void registerSecureLockDeviceStatusListener(
+                UserHandle user,
+                @NonNull ISecureLockDeviceStatusListener listener
+        ) {
+            registerSecureLockDeviceStatusListener_enforcePermission();
+            enforceCrossUserPermission(user, TAG
+                    + "#registerSecureLockDeviceStatusListener");
+            // Required for internal service to acquire necessary system permissions
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                mSecureLockDeviceService.registerSecureLockDeviceStatusListener(user, listener);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
+        }
+
+        /**
+         * @see AuthenticationPolicyManager#unregisterSecureLockDeviceStatusListener
+         * @param listener to unregister for updates to secure lock device availability
+         */
+        @Override
+        @EnforcePermission(MANAGE_SECURE_LOCK_DEVICE)
+        public void unregisterSecureLockDeviceStatusListener(
+                @NonNull ISecureLockDeviceStatusListener listener
+        ) {
+            unregisterSecureLockDeviceStatusListener_enforcePermission();
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                mSecureLockDeviceService.unregisterSecureLockDeviceStatusListener(listener);
+                if (DEBUG) {
+                    Slog.d(TAG, "Unregistered listener: " + listener.asBinder());
+                }
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
