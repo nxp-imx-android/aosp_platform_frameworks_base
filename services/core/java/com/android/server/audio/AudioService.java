@@ -13805,7 +13805,8 @@ public class AudioService extends IAudioService.Stub
                 // logging after registration so we have the registration id
                 mDynPolicyLogger.enqueue((new EventLogger.StringEvent("registerAudioPolicy for "
                         + pcb.asBinder() + " u/pid:" + Binder.getCallingUid() + "/"
-                        + Binder.getCallingPid() + " with config:" + app.toCompactLogString()))
+                        + Binder.getCallingPid() + " with config:" + app.toCompactLogString()
+                        + " for virtual deviceId: " + attributionSource.getDeviceId()))
                         .printLog(TAG));
 
                 regId = app.getRegistrationId();
