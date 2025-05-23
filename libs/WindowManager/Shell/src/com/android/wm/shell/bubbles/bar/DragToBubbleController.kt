@@ -22,6 +22,7 @@ import android.content.pm.ShortcutInfo
 import android.os.UserHandle
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.draganddrop.DragAndDropController.DragAndDropListener
@@ -54,10 +55,12 @@ class DragToBubbleController(
     private val isRtl: Boolean
         get() = containerView.isLayoutRtl
 
-    private val dropTargetManager: DropTargetManager =
+    @VisibleForTesting
+    val dropTargetManager: DropTargetManager =
         DropTargetManager(context, containerView, createDragZoneListener())
 
-    private val dragZoneFactory = createDragZoneFactory()
+    @VisibleForTesting
+    val dragZoneFactory = createDragZoneFactory()
     private var lastDragZone: DragZone? = null
 
     /** Returns the container view in which drop targets are added. */
