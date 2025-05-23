@@ -19,11 +19,10 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.tools.flicker.subject.events.EventLogSubject
-import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.wm.shell.Flags
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleStackAlwaysVisibleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleViaBackKey
@@ -53,14 +52,34 @@ import org.junit.runners.MethodSorters
  * Verified tests:
  * - [BubbleFlickerTestBase]
  * - [BubbleStackAlwaysVisibleTestCases]
- * - The focus changes to [LAUNCHER] from [testApp] and [LAUNCHER] becomes the top window
+ * - [BubbleAppBecomesNotExpandedTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class CollapseBubbleViaBackTest : BubbleFlickerTestBase(), BubbleStackAlwaysVisibleTestCases {
+class CollapseBubbleViaBackTest :
+    BubbleFlickerTestBase(),
+    BubbleStackAlwaysVisibleTestCases,
+    BubbleAppBecomesNotExpandedTestCases
+{
+
+    /**
+     * Verifies bubble app window becomes invisible at the end of the transition.
+     */
+    @Test
+    fun appWindowIsInvisibleAtEnd() {
+        wmStateSubjectAtEnd.isAppWindowInvisible(testApp)
+    }
+
+    /**
+     * Verifies bubble app layer becomes invisible at the end of the transition.
+     */
+    @Test
+    fun appLayerIsInvisibleAtEnd() {
+        layerTraceEntrySubjectAtEnd.isInvisible(testApp, mustExist = true)
+    }
 
     companion object : FlickerPropertyInitializer() {
 
@@ -78,54 +97,4 @@ class CollapseBubbleViaBackTest : BubbleFlickerTestBase(), BubbleStackAlwaysVisi
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-// region launcher related tests
-
-    /**
-     * Verifies the focus changed from launcher to [testApp].
-     */
-    @Test
-    fun focusChanges() {
-        EventLogSubject(
-            traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
-            traceDataReader
-        ).focusChanges(
-            testApp.toWindowName(),
-            LAUNCHER.toWindowName(),
-        )
-    }
-
-    /**
-     * Verifies the [testApp] replaces launcher to be the top window.
-     */
-    @Test
-    fun launcherWindowReplacesTestAppAsTopWindow() {
-        wmTraceSubject
-            .isAppWindowOnTop(testApp)
-            .then()
-            .isAppWindowOnTop(LAUNCHER)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies [LAUNCHER] is the top window at the end of transition.
-     */
-    @Test
-    fun launcherWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(LAUNCHER)
-    }
-
-    /**
-     * Verifies the [LAUNCHER] becomes the top window.
-     */
-    @Test
-    fun launcherWindowBecomesTopWindow() {
-        wmTraceSubject
-            .isAppWindowNotOnTop(LAUNCHER)
-            .then()
-            .isAppWindowOnTop(LAUNCHER)
-            .forAllEntries()
-    }
-
-// endregion
 }

@@ -31,7 +31,7 @@ interface BubbleStackAlwaysVisibleTestCases : BubbleFlickerSubjects {
      */
     @Test
     fun bubbleWindowIsAlwaysVisible() {
-        wmTraceSubject.isAboveAppWindowVisible(BUBBLE)
+        wmTraceSubject.isAboveAppWindowVisible(BUBBLE).forAllEntries()
     }
 
     /**
@@ -39,6 +39,6 @@ interface BubbleStackAlwaysVisibleTestCases : BubbleFlickerSubjects {
      */
     @Test
     fun bubbleLayerIsAlwaysVisible() {
-        layersTraceSubject.isVisible(BUBBLE)
+        layersTraceSubject.isVisible(BUBBLE).forAllEntries()
     }
 }

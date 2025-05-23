@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
+import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.surfaceflinger.LayerTraceEntry
 import android.tools.traces.wm.WindowManagerState
@@ -53,5 +54,5 @@ open class FlickerPropertyInitializer {
     /**
      * The app used in flicker tests to verify with.
      */
-    open val testApp = SimpleAppHelper(instrumentation)
+    open val testApp: StandardAppHelper = SimpleAppHelper(instrumentation)
 }

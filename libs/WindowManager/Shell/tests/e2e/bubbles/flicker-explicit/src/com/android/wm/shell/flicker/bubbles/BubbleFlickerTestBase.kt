@@ -19,7 +19,6 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.Tag
-import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.assertions.SubjectsParser
 import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.layers.LayerTraceEntrySubject
@@ -104,8 +103,8 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
      */
     override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
 
-    override val testApp: StandardAppHelper
-        get() = CollapseBubbleViaBackTest.testApp
+    override val testApp
+        get() = BubbleFlickerTestBase.testApp
 
     /**
      * Initialize subjects inherited from [FlickerSubject].

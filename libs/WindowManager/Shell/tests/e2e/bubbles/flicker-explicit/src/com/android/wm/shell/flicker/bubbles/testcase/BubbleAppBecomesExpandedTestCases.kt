@@ -28,7 +28,7 @@ import org.junit.Test
 interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
 
     /**
-     * Verifies the focus changed from launcher to [testApp].
+     * Verifies the focus changed from launcher to bubble app.
      */
     @Test
     fun focusChanges() {
@@ -36,7 +36,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] replaces launcher to be the top window.
+     * Verifies the bubble app replaces launcher to be the top window.
      */
     @Test
     fun appWindowReplacesLauncherAsTopWindow() {
@@ -54,7 +54,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] is the top window at the end of transition.
+     * Verifies the bubble app is the top window at the end of transition.
      */
     @Test
     fun appWindowAsTopWindowAtEnd() {
@@ -62,7 +62,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] becomes the top window.
+     * Verifies the bubble app becomes the top window.
      */
     @Test
     fun appWindowBecomesTopWindow() {
@@ -75,7 +75,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] window becomes visible.
+     * Verifies the bubble app window becomes visible.
      */
     @Test
     fun appWindowBecomesVisible() {
@@ -88,7 +88,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] layer becomes visible.
+     * Verifies the bubble app layer becomes visible.
      */
     @Test
     fun appLayerBecomesVisible() {
@@ -100,7 +100,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] window is visible at the end of transition.
+     * Verifies the bubble app window is visible at the end of transition.
      */
     @Test
     fun appWindowIsVisibleAtEnd() {
@@ -108,7 +108,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] layer is visible at the end of transition.
+     * Verifies the bubble app layer is visible at the end of transition.
      */
     @Test
     fun appLayerIsVisibleAtEnd() {
@@ -116,7 +116,7 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     }
 
     /**
-     * Verifies the [testApp] layer has rounded corners
+     * Verifies the bubble app layer has rounded corners at the end of transition.
      */
     @Test
     fun appLayerHasRoundedCorner() {
