@@ -1616,6 +1616,9 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos);
         void onFrameRateOverridesChanged(long timestampNanos, long physicalDisplayId,
                 DisplayEventReceiver.FrameRateOverride[] overrides);
+        void onModeAndFrameRateOverridesChanged(long timestampNanos, long physicalDisplayId,
+                int modeId,  long renderPeriod, long appVsyncOffsetNanos,
+                long presentationDeadlineNanos, DisplayEventReceiver.FrameRateOverride[] overrides);
         void onHdcpLevelsChanged(long physicalDisplayId, int connectedLevel, int maxLevel);
 
     }
@@ -1644,6 +1647,14 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos) {
             mListener.onModeChanged(timestampNanos, physicalDisplayId, modeId,
                     renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos);
+        }
+
+        public void onModeAndFrameRateOverridesChanged(long timestampNanos, long physicalDisplayId,
+                int modeId,  long renderPeriod, long appVsyncOffsetNanos,
+                long presentationDeadlineNanos,
+                DisplayEventReceiver.FrameRateOverride[] overrides) {
+            mListener.onModeAndFrameRateOverridesChanged(timestampNanos, physicalDisplayId, modeId,
+                    renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos, overrides);
         }
 
         @Override
@@ -1727,6 +1738,21 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 }
                 device.onFrameRateOverridesChanged(overrides);
             }
+        }
+
+        @Override
+        public void onModeAndFrameRateOverridesChanged(long timestampNanos, long physicalDisplayId,
+                int modeId, long renderPeriod, long appVsyncOffsetNanos,
+                long presentationDeadlineNanos,
+                DisplayEventReceiver.FrameRateOverride[] overrides) {
+            if (DEBUG) {
+                Slog.d(TAG, "onModeAndFrameRateOverridesChanged");
+            }
+            //TODO(b/415850294) App should not get two callbacks when
+            // onModeAndFrameRateOverridesChanged is executed.
+            onModeChanged(timestampNanos, physicalDisplayId, modeId, renderPeriod,
+                    appVsyncOffsetNanos, presentationDeadlineNanos);
+            onFrameRateOverridesChanged(timestampNanos, physicalDisplayId, overrides);
         }
 
         @Override

@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static android.hardware.display.DeviceProductInfo.CONNECTION_TO_SINK_DIRECT;
+import static android.view.DisplayEventReceiver.FrameRateOverride;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
@@ -937,6 +938,56 @@ public class LocalDisplayAdapterTest {
         assertEquals(newAppVsyncOffsetNanos, displayDeviceInfo.appVsyncOffsetNanos);
         assertEquals(newPresentationDeadlineNanos, displayDeviceInfo.presentationDeadlineNanos);
         assertThat(mListener.changedDisplays.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void testOnModeAndFrameRateOverridesChanged() throws Exception {
+        doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
+        long appVsyncOffsetNanosMode1 = 100;
+        long presentationDeadlineNanosMode1 = 200;
+        long appVsyncOffsetNanosMode2 = 101;
+        long presentationDeadlineNanosMode2 = 201;
+        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f,
+                appVsyncOffsetNanosMode1, presentationDeadlineNanosMode1);
+        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 1920, 1080, 120f,
+                appVsyncOffsetNanosMode2, presentationDeadlineNanosMode2);
+        SurfaceControl.DisplayMode[] modes =
+                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2};
+        FakeDisplay display = new FakeDisplay(PORT_A, modes, /*activeMode*/ 0,
+                displayMode1.peakRefreshRate);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
+        assertThat(mListener.changedDisplays).isEmpty();
+
+        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        assertEquals(appVsyncOffsetNanosMode1, displayDeviceInfo.appVsyncOffsetNanos);
+        assertEquals(presentationDeadlineNanosMode1, displayDeviceInfo.presentationDeadlineNanos);
+        Display.Mode activeMode = getModeById(displayDeviceInfo, displayDeviceInfo.modeId);
+        assertThat(activeMode.matches(1920, 1080, 60f)).isTrue();
+
+        long newAppVsyncOffsetNanos = 400;
+        long newPresentationDeadlineNanos = 500;
+
+        FrameRateOverride[] frameRateOverrides = new FrameRateOverride[1];
+        mInjector.getTransmitter().sendOnModeAndFrameRateOverridesChanged(display,
+                /*modeId*/ 1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
+                newPresentationDeadlineNanos, frameRateOverrides);
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        assertTrue(mListener.traversalRequested);
+
+        DisplayDevice displayDevice = mListener.changedDisplays.get(0);
+        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
+        displayDeviceInfo = mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked();
+        // Returns the values captured from the OnModeAndFrameRateOverridesChanged event.
+        assertEquals(newAppVsyncOffsetNanos, displayDeviceInfo.appVsyncOffsetNanos);
+        assertEquals(newPresentationDeadlineNanos, displayDeviceInfo.presentationDeadlineNanos);
+        assertThat(mListener.changedDisplays.size()).isEqualTo(2);
+        activeMode = getModeById(displayDeviceInfo, displayDeviceInfo.modeId);
+        assertThat(activeMode.matches(1920, 1080, 120f)).isTrue();
     }
 
     @Test
@@ -1926,6 +1977,17 @@ public class LocalDisplayAdapterTest {
             mHandler.post(() -> mListener.onModeChanged(/* timestampNanos = */ 0,
                     display.address.getPhysicalDisplayId(), modeId, renderPeriod,
                     appVsyncOffsetNanos, presentationDeadlineNanos));
+            waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        }
+
+        public void sendOnModeAndFrameRateOverridesChanged(FakeDisplay display, int modeId,
+                long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos,
+                FrameRateOverride[] frameRateOverrides) throws InterruptedException {
+
+            mHandler.post(() -> mListener.onModeAndFrameRateOverridesChanged(
+                    /* timestampNanos = */ 0, display.address.getPhysicalDisplayId(), modeId,
+                    renderPeriod, appVsyncOffsetNanos, presentationDeadlineNanos,
+                    frameRateOverrides));
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
     }
