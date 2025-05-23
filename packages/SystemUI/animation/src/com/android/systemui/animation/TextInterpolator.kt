@@ -21,7 +21,6 @@ import android.graphics.fonts.Font
 import android.graphics.fonts.FontVariationAxis
 import android.graphics.text.PositionedGlyphs
 import android.text.Layout
-import android.text.TextDirectionHeuristic
 import android.text.TextPaint
 import android.text.TextShaper
 import android.util.MathUtils
@@ -42,11 +41,7 @@ interface TextInterpolatorListener {
     ): Boolean = false
 }
 
-class ShapingResult(
-    val text: String,
-    val lines: List<List<ShapingRun>>,
-    val textDirectionHeuristic: TextDirectionHeuristic,
-)
+class ShapingResult(val text: String, val lines: List<List<ShapingRun>>, val layout: Layout)
 
 class ShapingRun(val text: String, val glyphs: PositionedGlyphs)
 
@@ -98,8 +93,10 @@ class TextInterpolator(
     /** A class represents text layout of a single run. */
     private class Run(
         val glyphIds: IntArray,
+        var baseOffset: Float,
         val baseX: FloatArray, // same length as glyphIds
         val baseY: FloatArray, // same length as glyphIds
+        var targetOffset: Float,
         val targetX: FloatArray, // same length as glyphIds
         val targetY: FloatArray, // same length as glyphIds
         val fontRuns: List<FontRun>,
@@ -247,6 +244,7 @@ class TextInterpolator(
                 for (i in run.baseX.indices) {
                     run.baseX[i] = MathUtils.lerp(run.baseX[i], run.targetX[i], progress)
                     run.baseY[i] = MathUtils.lerp(run.baseY[i], run.targetY[i], progress)
+                    run.baseOffset = MathUtils.lerp(run.baseOffset, run.targetOffset, progress)
                 }
                 run.fontRuns.forEach { fontRun ->
                     fontRun.baseFont =
@@ -278,9 +276,13 @@ class TextInterpolator(
             line.runs.forEach { run ->
                 canvas.save()
                 try {
-                    // Move to drawing origin.
-                    val origin = layout.getDrawOrigin(lineNo)
-                    canvas.translate(origin, layout.getLineBaseline(lineNo).toFloat())
+                    val offset = MathUtils.lerp(run.baseOffset, run.targetOffset, progress)
+                    // Move to drawing origin w/ correction for RTL offset
+                    val origin = layout.getLineDrawOrigin(lineNo)
+                    canvas.translate(
+                        origin - (origin + offset),
+                        layout.getLineBaseline(lineNo).toFloat(),
+                    )
 
                     run.fontRuns.forEach { fontRun ->
                         drawFontRun(canvas, run, fontRun, lineNo, tmpPaint)
@@ -325,25 +327,27 @@ class TextInterpolator(
 
                         val baseX = FloatArray(glyphCount)
                         val baseY = FloatArray(glyphCount)
-                        populateGlyphPositions(
-                            basePaint,
-                            baseLayout.textDirectionHeuristic,
-                            base.glyphs,
-                            base.text,
-                            baseX,
-                            baseY,
-                        )
+                        val baseOffset =
+                            populateGlyphPositions(
+                                basePaint,
+                                baseLayout.layout,
+                                base.glyphs,
+                                base.text,
+                                baseX,
+                                baseY,
+                            )
 
                         val targetX = FloatArray(glyphCount)
                         val targetY = FloatArray(glyphCount)
-                        populateGlyphPositions(
-                            targetPaint,
-                            targetLayout.textDirectionHeuristic,
-                            target.glyphs,
-                            target.text,
-                            targetX,
-                            targetY,
-                        )
+                        val targetOffset =
+                            populateGlyphPositions(
+                                targetPaint,
+                                targetLayout.layout,
+                                target.glyphs,
+                                target.text,
+                                targetX,
+                                targetY,
+                            )
 
                         // Calculate font runs
                         val fontRun = mutableListOf<FontRun>()
@@ -382,7 +386,16 @@ class TextInterpolator(
                             fontRun.add(FontRun(start, glyphCount, baseFont, targetFont))
                             maxRunLength = max(maxRunLength, glyphCount - start)
                         }
-                        Run(glyphIds, baseX, baseY, targetX, targetY, fontRun)
+                        Run(
+                            glyphIds,
+                            baseOffset,
+                            baseX,
+                            baseY,
+                            targetOffset,
+                            targetX,
+                            targetY,
+                            fontRun,
+                        )
                     }
                 Line(runs)
             }
@@ -520,23 +533,25 @@ class TextInterpolator(
                 }
 
                 if (updateBase) {
-                    populateGlyphPositions(
-                        basePaint,
-                        layoutResult.textDirectionHeuristic,
-                        newRun.glyphs,
-                        newRun.text,
-                        lineRun.baseX,
-                        lineRun.baseY,
-                    )
+                    lineRun.baseOffset =
+                        populateGlyphPositions(
+                            basePaint,
+                            layoutResult.layout,
+                            newRun.glyphs,
+                            newRun.text,
+                            lineRun.baseX,
+                            lineRun.baseY,
+                        )
                 } else {
-                    populateGlyphPositions(
-                        targetPaint,
-                        layoutResult.textDirectionHeuristic,
-                        newRun.glyphs,
-                        newRun.text,
-                        lineRun.targetX,
-                        lineRun.targetY,
-                    )
+                    lineRun.targetOffset =
+                        populateGlyphPositions(
+                            targetPaint,
+                            layoutResult.layout,
+                            newRun.glyphs,
+                            newRun.text,
+                            lineRun.targetX,
+                            lineRun.targetY,
+                        )
                 }
             }
         }
@@ -583,21 +598,20 @@ class TextInterpolator(
             text.append(layout.text.substring(lineStart, lineEnd))
         }
         shapedText = text.toString()
-        return ShapingResult(shapedText, lines, layout.textDirectionHeuristic)
+        return ShapingResult(shapedText, lines, layout)
     }
 
     private fun populateGlyphPositions(
         paint: Paint,
-        textDirectionHeuristic: TextDirectionHeuristic,
+        layout: Layout,
         glyphs: PositionedGlyphs,
         str: String,
         outX: FloatArray,
         outY: FloatArray,
-    ) {
-        val isRtl = textDirectionHeuristic.isRtl(str, 0, str.length)
+    ): Float {
+        val isRtl = layout.textDirectionHeuristic.isRtl(str, 0, str.length)
         val range = (0 until glyphs.glyphCount()).let { if (isRtl) it.reversed() else it }
         val sign = if (isRtl) -1 else 1
-
         var xAdjustment = 0f
         for (i in range) {
             val xPos = glyphs.getGlyphX(i)
@@ -619,23 +633,12 @@ class TextInterpolator(
             }
         }
 
-        val boundsUpdated =
-            listener?.onTotalAdjustmentComputed(paint, glyphs.getAdvance(), xAdjustment) ?: false
-
-        // RTL glyph positions are relative to zero on the right side, but do not invert the x axis.
-        // and as a result are negative. They are still however drawn relative to the left side of
-        // the view. This means when we shrink the view, they'll end up mispositioned unless we
-        // account for the total adjustment and update each glyph position. For some reason that
-        // isn't clear this misalginment is only present in production and not in robolectric tests.
-        if (isRtl && boundsUpdated) {
-            for (i in range) {
-                outX[i] -= xAdjustment
-            }
-        }
+        listener?.onTotalAdjustmentComputed(paint, glyphs.getAdvance(), xAdjustment)
+        return glyphs.offsetX
     }
 
     companion object {
-        private fun Layout.getDrawOrigin(lineNo: Int): Float {
+        private fun Layout.getLineDrawOrigin(lineNo: Int): Float {
             if (getParagraphDirection(lineNo) == Layout.DIR_LEFT_TO_RIGHT) {
                 return getLineLeft(lineNo)
             } else {
