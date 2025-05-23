@@ -159,7 +159,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
      * @param onStartCallback The callback object to unregister.
      */
     public void unregisterOnStartCallback(Instance.TracingInstanceStartCallback onStartCallback) {
-        mOnStartCallbacks.add(onStartCallback);
+        mOnStartCallbacks.remove(onStartCallback);
     }
 
     /**
@@ -167,7 +167,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
      * @param onFlushCallback The callback object to unregister.
      */
     public void unregisterOnFlushCallback(Instance.TracingFlushCallback onFlushCallback) {
-        mOnFlushCallbacks.add(onFlushCallback);
+        mOnFlushCallbacks.remove(onFlushCallback);
     }
 
     /**
@@ -175,7 +175,7 @@ public class ProtoLogDataSource extends DataSource<ProtoLogDataSource.Instance,
      * @param onStopCallback The callback object to unregister.
      */
     public void unregisterOnStopCallback(Instance.TracingInstanceStopCallback onStopCallback) {
-        mOnStopCallbacks.add(onStopCallback);
+        mOnStopCallbacks.remove(onStopCallback);
     }
 
     private synchronized void executeOnStartCallbacks(int instanceIdx, ProtoLogConfig config) {
