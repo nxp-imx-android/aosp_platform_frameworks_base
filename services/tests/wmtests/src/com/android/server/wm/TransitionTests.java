@@ -1651,6 +1651,20 @@ public class TransitionTests extends WindowTestsBase {
         // Transition#finishTransition -> updateImeForVisibleTransientLaunch.
         verify(mDisplayContent).computeImeLayeringTarget(true /* update */);
         assertFalse(translucentApp.isVisible());
+
+        // Simulate switching/returning to the translucent activity while the recent is running.
+        recent.setState(ActivityRecord.State.RESUMED, "test");
+        final Transition transition2 = createTestTransition(TRANSIT_OPEN, player.mController);
+        player.mController.moveToCollecting(transition2);
+        player.mController.requestStartTransition(transition2, taskRecent,
+                null /* remoteTransition */, null /* displayChange */);
+        transition2.setTransientLaunch(recent, taskRecent);
+        translucentApp.getTask().moveToFront("move-translucent-to-front");
+        mDisplayContent.setFocusedApp(translucentApp);
+        player.start();
+        player.finish();
+        // The translucent activity is moved to top, so the recent should be scheduled to pause.
+        assertEquals(recent.getState(), ActivityRecord.State.PAUSING);
     }
 
     @Test

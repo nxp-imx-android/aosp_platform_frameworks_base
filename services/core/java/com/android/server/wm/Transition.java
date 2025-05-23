@@ -1285,6 +1285,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             // Prevent spurious background app switches.
             if (ar.mDisplayContent.mFocusedApp == ar) {
                 mController.mAtm.stopAppSwitches();
+            } else if (ar.isState(RESUMED) && task.getVisibility(null /* starting */)
+                    == TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT) {
+                ar.getTaskFragment().startPausing(false /* uiSleeping */, null /* resuming */,
+                        "finishTransition-behind-translucent");
             }
             found = true;
         }
