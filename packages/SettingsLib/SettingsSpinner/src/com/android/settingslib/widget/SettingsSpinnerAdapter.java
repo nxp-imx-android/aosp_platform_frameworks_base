@@ -17,7 +17,6 @@
 package com.android.settingslib.widget;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,12 +45,6 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
             R.layout.settings_expressive_spinner_dropdown_view;
     private final LayoutInflater mDefaultInflater;
     private int mSelectedPosition = -1;
-    private static final int DEFAULT_DROPDOWN_COLOR =
-            com.android.settingslib.widget.theme.R.color.settingslib_materialColorOnSurface;
-    private static final int DEFAULT_DROPDOWN_SELECTED_COLOR =
-            com.android.settingslib.widget.theme.R.color.settingslib_materialColorOnPrimaryContainer;
-    private ColorStateList mDropdownColor;
-    private ColorStateList mDropdownSelectedColor;
 
     /**
      * Constructs a new SettingsSpinnerAdapter with the given context.
@@ -65,9 +58,6 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
 
         setDropDownViewResource(getDropdownResource(context));
         mDefaultInflater = LayoutInflater.from(context);
-
-        mDropdownColor = context.getColorStateList(DEFAULT_DROPDOWN_COLOR);
-        mDropdownSelectedColor = context.getColorStateList(DEFAULT_DROPDOWN_SELECTED_COLOR);
     }
 
     @Override
@@ -84,13 +74,10 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
         TextView textView = view.findViewById(android.R.id.text1);
         ImageView iconView = view.findViewById(android.R.id.icon);
         if (iconView != null) {
-            iconView.setImageTintList(mDropdownSelectedColor);
             iconView.setVisibility((position == mSelectedPosition) ? View.VISIBLE : View.GONE);
         }
         T item = getItem(position);
         textView.setText(item == null ? "" : item.toString());
-        textView.setTextColor(
-                (position == mSelectedPosition) ? mDropdownSelectedColor : mDropdownColor);
         return view;
     }
 
