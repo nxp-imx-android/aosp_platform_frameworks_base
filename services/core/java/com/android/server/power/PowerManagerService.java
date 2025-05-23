@@ -28,6 +28,7 @@ import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DREAMING;
+import static android.os.PowerManagerInternal.isInteractive;
 import static android.os.PowerManagerInternal.wakefulnessToString;
 import static android.service.dreams.Flags.allowDreamWhenPostured;
 import static android.service.dreams.Flags.dreamsV2;
@@ -315,6 +316,10 @@ public final class PowerManagerService extends SystemService
     private static final String HOLDING_DISPLAY_SUSPEND_BLOCKER = "holding display";
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
+
+    /** Display group IDs representing only DEFAULT_DISPLAY_GROUP. */
+    private static final IntArray DEFAULT_DISPLAY_GROUP_IDS =
+            IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
 
     private final Context mContext;
     private final ServiceThread mHandlerThread;
@@ -1393,7 +1398,7 @@ public final class PowerManagerService extends SystemService
             mPowerGroups.append(Display.DEFAULT_DISPLAY_GROUP,
                     new PowerGroup(WAKEFULNESS_AWAKE, mPowerGroupWakefulnessChangeListener,
                             mNotifier, mDisplayManagerInternal, mClock.uptimeMillis(),
-                            mFeatureFlags, /* isDefaultGroupAdjacent */  false));
+                            mFeatureFlags, /* isDefaultGroupAdjacent */  true));
             DisplayGroupPowerChangeListener displayGroupPowerChangeListener =
                     new DisplayGroupPowerChangeListener();
             mDisplayManagerInternal.registerDisplayGroupListener(displayGroupPowerChangeListener);
@@ -2263,32 +2268,15 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private boolean dozePowerGroupLocked(final PowerGroup powerGroup, long eventTime,
-            @GoToSleepReason int reason, int uid, boolean allowSleepToDozeTransition) {
+            @GoToSleepReason int reason, int uid) {
         if (powerGroup.getGroupId() != Display.DEFAULT_DISPLAY_GROUP
                 && android.companion.virtualdevice.flags.Flags.virtualPowerGroupSleepNoDoze()) {
             return sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);
         }
 
-        if (com.android.server.display.feature.flags.Flags.separateTimeouts()) {
-            // The group should sleep if
-            // 1. It is not a default display group (and is display adjacent)
-            // 2. It is a default display group, and at least one display adjacent groups is
-            // interactive
-            // 3. The group is asleep, and no adjacent group exist
-            boolean shouldSleep = (powerGroup.getGroupId() != Display.DEFAULT_DISPLAY_GROUP)
-                    || (isDefaultAdjacentGroupInteractive())
-                    || (powerGroup.getWakefulnessLocked() == WAKEFULNESS_ASLEEP
-                            && !doAnyAdjacentGroupsExist());
-
-            if (shouldSleep && powerGroup.isDefaultOrAdjacentGroup()) {
-                return sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);
-            }
-        }
-
         if (DEBUG_SPEW) {
             Slog.d(TAG, "dozePowerGroup: eventTime=" + eventTime
                     + ", groupId=" + powerGroup.getGroupId()
-                    + ", allowSleepToDozeTransition=" + allowSleepToDozeTransition
                     + ", reason=" + PowerManager.sleepReasonToString(reason) + ", uid=" + uid);
         }
 
@@ -2296,7 +2284,7 @@ public final class PowerManagerService extends SystemService
             return false;
         }
 
-        return powerGroup.dozeLocked(eventTime, uid, reason, allowSleepToDozeTransition);
+        return powerGroup.dozeLocked(eventTime, uid, reason);
     }
 
     @GuardedBy("mLock")
@@ -2413,7 +2401,7 @@ public final class PowerManagerService extends SystemService
                 case WAKEFULNESS_ASLEEP:
                     // fallthrough
                 case WAKEFULNESS_DOZING:
-                    if (!PowerManagerInternal.isInteractive(currentWakefulness)) {
+                    if (!isInteractive(currentWakefulness)) {
                         // TODO(b/215518989): remove this once transactions are in place
                         break;
                     }
@@ -3341,28 +3329,6 @@ public final class PowerManagerService extends SystemService
         return shortestScreenOffTimeout;
     }
 
-    private boolean isDefaultAdjacentGroupInteractive() {
-        for (int idx = 0; idx < mPowerGroups.size(); idx++) {
-            PowerGroup powerGroup = mPowerGroups.get(idx);
-            if (powerGroup.isDefaultGroupAdjacent()) {
-                if (PowerManagerInternal.isInteractive(powerGroup.getWakefulnessLocked())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean doAnyAdjacentGroupsExist() {
-        for (int idx = 0; idx < mPowerGroups.size(); idx++) {
-            PowerGroup powerGroup = mPowerGroups.get(idx);
-            if (powerGroup.isDefaultGroupAdjacent()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * Updates the wakefulness of the device.
      *
@@ -3382,25 +3348,8 @@ public final class PowerManagerService extends SystemService
             return changed;
         }
         final long time = mClock.uptimeMillis();
-
-        // Iterate from the end so that the wakefulness of all non-default power groups is updated
-        // before default group. This will help in deciding if the default group if eligible for
-        // transition to non interactive wakefulness states(It can do this only if all default
-        // adjacent power groups are non interactive)
-        for (int idx = mPowerGroups.size() - 1; idx >= 0; idx--) {
+        for (int idx = 0; idx < mPowerGroups.size(); idx++) {
             final PowerGroup powerGroup = mPowerGroups.valueAt(idx);
-            // The display can go from sleep to doze when all adjacent power
-            // groups sleep
-            // The display can go from doze to sleep when any adjacent power
-            // groups wakes up
-            if (powerGroup.canTransitionBetweenNonInteractiveStates()) {
-                // The attempt to doze will first attempt to put the display to sleep if eligible
-                changed = dozePowerGroupLocked(powerGroup, time,
-                        PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, Process.SYSTEM_UID,
-                        /* allowSleepToDozeTransition */ true);
-                continue;
-            }
-
             if (!(powerGroup.getWakefulnessLocked() == WAKEFULNESS_AWAKE
                     && isItBedTimeYetLocked(powerGroup))) {
                 continue;
@@ -3420,8 +3369,7 @@ public final class PowerManagerService extends SystemService
                         Process.SYSTEM_UID, /* allowWake= */ false);
             } else {
                 changed = dozePowerGroupLocked(powerGroup, time,
-                        PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, Process.SYSTEM_UID,
-                        /* allowSleepToDozeTransition */ false);
+                        PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, Process.SYSTEM_UID);
             }
         }
         return changed;
@@ -3546,16 +3494,15 @@ public final class PowerManagerService extends SystemService
     private void handleSandman(int groupId) { // runs on handler thread
         // Handle preconditions.
         final boolean canDream;
-        boolean startDreaming;
+        final boolean startDreaming;
         final int wakefulness;
-        PowerGroup powerGroup;
         synchronized (mLock) {
             mSandmanScheduled = false;
             if (!mPowerGroups.contains(groupId)) {
                 // Group has been removed.
                 return;
             }
-            powerGroup = mPowerGroups.get(groupId);
+            final PowerGroup powerGroup = mPowerGroups.get(groupId);
             wakefulness = powerGroup.getWakefulnessLocked();
             canDream = canDreamLocked(powerGroup);
             if (powerGroup.isSandmanSummonedLocked() && powerGroup.isReadyLocked()) {
@@ -3564,12 +3511,7 @@ public final class PowerManagerService extends SystemService
             } else {
                 startDreaming = false;
             }
-
-            // An attempt to dream was already made. If we are trying to dream again, the group is
-            // either already dreaming, or the dreaming failed in the previous attempt
-            startDreaming = startDreaming && !powerGroup.dreamManagerAttemptedDreamingLocked();
         }
-
 
         // Start dreaming if needed.
         // We only control the dream on the handler thread, so we don't need to worry about
@@ -3578,7 +3520,6 @@ public final class PowerManagerService extends SystemService
         if (mDreamManager != null) {
             // Restart the dream whenever the sandman is summoned.
             if (startDreaming) {
-                powerGroup.setDreamManagerAttemptedDreamingLocked(true);
                 mDreamManager.stopDream(/* immediate= */ false,
                         "power manager request before starting dream" /*reason*/);
                 mDreamManager.startDream(wakefulness == WAKEFULNESS_DOZING,
@@ -3612,6 +3553,7 @@ public final class PowerManagerService extends SystemService
 
             // If preconditions changed, wait for the next iteration to determine
             // whether the dream should continue (or be restarted).
+            final PowerGroup powerGroup = mPowerGroups.get(groupId);
             if (powerGroup.isSandmanSummonedLocked()
                     || powerGroup.getWakefulnessLocked() != wakefulness) {
                 return; // wait for next cycle
@@ -3644,7 +3586,7 @@ public final class PowerManagerService extends SystemService
                                 PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, Process.SYSTEM_UID);
                     } else {
                         dozePowerGroupLocked(powerGroup, now,
-                                PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, Process.SYSTEM_UID, false);
+                                PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, Process.SYSTEM_UID);
                     }
                 } else {
                     wakePowerGroupLocked(powerGroup, now,
@@ -3713,6 +3655,7 @@ public final class PowerManagerService extends SystemService
     private boolean canDreamLocked(final PowerGroup powerGroup) {
         final boolean dreamsSuppressed = mDreamsDisabledByAmbientModeSuppressionConfig
                 && mAmbientDisplaySuppressionController.isSuppressed();
+
         if (!mBootCompleted
                 || dreamsSuppressed
                 || getGlobalWakefulnessLocked() != WAKEFULNESS_DREAMING
@@ -3757,12 +3700,8 @@ public final class PowerManagerService extends SystemService
      */
     @GuardedBy("mLock")
     private boolean canDozeLocked(PowerGroup powerGroup) {
-        boolean allDefaultAdjacentGroupsNonInteractive =
-                (com.android.server.display.feature.flags.Flags.separateTimeouts())
-                ? !isDefaultAdjacentGroupInteractive() : true;
         return powerGroup.supportsSandmanLocked()
-                && powerGroup.getWakefulnessLocked() == WAKEFULNESS_DOZING
-                && allDefaultAdjacentGroupsNonInteractive;
+                && powerGroup.getWakefulnessLocked() == WAKEFULNESS_DOZING;
     }
 
     /**
@@ -6376,14 +6315,7 @@ public final class PowerManagerService extends SystemService
         @Override // Binder call
         @RequiresPermission(android.Manifest.permission.DEVICE_POWER)
         public void goToSleep(long eventTime, int reason, int flags) {
-            IntArray groupIds = new IntArray();
-            for (int idx = 0; idx < mPowerGroups.size(); idx++) {
-                PowerGroup powerGroup = mPowerGroups.get(idx);
-                if (powerGroup.isDefaultOrAdjacentGroup()) {
-                    groupIds.add(powerGroup.getGroupId());
-                }
-            }
-            goToSleepInternal(groupIds, eventTime, reason, flags);
+            goToSleepInternal(DEFAULT_DISPLAY_GROUP_IDS, eventTime, reason, flags);
         }
 
         @Override // Binder call
@@ -7442,11 +7374,7 @@ public final class PowerManagerService extends SystemService
         final long ident = Binder.clearCallingIdentity();
         try {
             synchronized (mLock) {
-                // Iterate from the end so that the wakefulness of all non-default power groups is
-                // updated before default group. This will help in deciding if the default group
-                // if eligible for transition to non interactive wakefulness states(It can do this
-                // only if all default adjacent power groups are non interactive)
-                for (int i = groupIds.size() - 1; i >= 0; i--) {
+                for (int i = 0; i < groupIds.size(); i++) {
                     int groupId = groupIds.get(i);
                     PowerGroup powerGroup = mPowerGroups.get(groupId);
                     if (powerGroup == null) {
@@ -7466,8 +7394,7 @@ public final class PowerManagerService extends SystemService
                     if (isNoDoze) {
                         sleepPowerGroupLocked(powerGroup, eventTime, reason, uid);
                     } else {
-                        dozePowerGroupLocked(powerGroup, eventTime, reason, uid,
-                                /* allowSleepToDozeTransition */ false);
+                        dozePowerGroupLocked(powerGroup, eventTime, reason, uid);
                     }
                 }
             }
@@ -7632,17 +7559,6 @@ public final class PowerManagerService extends SystemService
         }
 
         @Override
-        public boolean isGroupInteractive(int groupId) {
-            synchronized (mLock) {
-                PowerGroup powerGroup = mPowerGroups.get(groupId);
-                if (powerGroup != null) {
-                    return isInteractive(powerGroup.getWakefulnessLocked());
-                }
-                return false;
-            }
-        }
-
-        @Override
         public void setPowerMode(int mode, boolean enabled) {
             setPowerModeInternal(mode, enabled);
         }
@@ -7655,22 +7571,6 @@ public final class PowerManagerService extends SystemService
         @Override
         public PowerManager.WakeData getLastWakeup() {
             return getLastWakeupInternal();
-        }
-
-        @Override
-        public boolean isAnyDefaultAdjacentGroupInteractive() {
-            return isDefaultAdjacentGroupInteractive();
-        }
-
-        @Override
-        public boolean isDefaultGroupAdjacent(int groupId) {
-            synchronized (mLock) {
-                PowerGroup powerGroup = mPowerGroups.get(groupId);
-                if (powerGroup != null) {
-                    return powerGroup.isDefaultGroupAdjacent();
-                }
-                return false;
-            }
         }
 
         @Override

@@ -1329,11 +1329,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
         }
 
-        goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, flags);
+        sleepDefaultDisplay(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, flags);
         return true;
     }
 
-    private void goToSleep(long eventTime, int reason, int flags) {
+    private void sleepDefaultDisplay(long eventTime, int reason, int flags) {
         mRequestedOrSleepingDefaultDisplay = true;
         mPowerManager.goToSleep(eventTime, reason, flags);
     }
@@ -1371,7 +1371,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             Settings.Global.THEATER_MODE_ON, 1);
 
                     if (mGoToSleepOnButtonPressTheaterMode && interactive) {
-                        goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON,
+                        sleepDefaultDisplay(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON,
                                 0);
                     }
                 }
@@ -1544,7 +1544,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case SHORT_PRESS_SLEEP_GO_TO_SLEEP:
             case SHORT_PRESS_SLEEP_GO_TO_SLEEP_AND_GO_HOME:
                 Slog.i(TAG, "sleepRelease() calling goToSleep(GO_TO_SLEEP_REASON_SLEEP_BUTTON)");
-                goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_SLEEP_BUTTON, 0);
+                sleepDefaultDisplay(eventTime, PowerManager.GO_TO_SLEEP_REASON_SLEEP_BUTTON, 0);
                 break;
         }
     }
@@ -4637,7 +4637,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             }
                             if ((mEndcallBehavior
                                     & Settings.System.END_BUTTON_BEHAVIOR_SLEEP) != 0) {
-                                goToSleep(event.getEventTime(),
+                                sleepDefaultDisplay(event.getEventTime(),
                                         PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
                                 isWakeKey = false;
                             }
@@ -5288,45 +5288,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mDeviceGoingToSleep = false;
     }
 
-    // Both the default and default adjacent groups should be non interactive
-    private boolean isReadyToSignalSleep(int displayGroupId) {
-        if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
-            return displayGroupId == Display.DEFAULT_DISPLAY_GROUP;
-        }
-
-        // We only care about default and default-adjacent groups
-        if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP
-                && !mPowerManagerInternal.isDefaultGroupAdjacent(displayGroupId)) {
-            return false;
-        }
-
-        boolean areAllDefaultAdjacentGroupsNonInteractive =
-                !mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
-        boolean isDefaultGroupNonInteractive =
-                !mPowerManagerInternal.isGroupInteractive(DEFAULT_DISPLAY);
-        return areAllDefaultAdjacentGroupsNonInteractive && isDefaultGroupNonInteractive;
-    }
-
-    // Either of the default or default adjacent groups should be interactive
-    private boolean isReadyToSignalWakeup(int displayGroupId) {
-        if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
-            return displayGroupId == Display.DEFAULT_DISPLAY_GROUP;
-        }
-
-        // We only care about default and default-adjacent groups
-        if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP
-                && !mPowerManagerInternal.isDefaultGroupAdjacent(displayGroupId)) {
-            return false;
-        }
-
-        boolean isAnyDefaultAdjacentGroupInteractive =
-                mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
-        boolean isDefaultGroupInteractive = mPowerManagerInternal
-                .isGroupInteractive(DEFAULT_DISPLAY);
-
-        return isAnyDefaultAdjacentGroupInteractive || isDefaultGroupInteractive;
-    }
-
     // Called on the PowerManager's Notifier thread.
     @Override
     public void startedGoingToSleep(int displayGroupId,
@@ -5337,8 +5298,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             WindowManagerPolicyConstants.translateSleepReasonToOffReason(
                                     pmSleepReason)) + ")");
         }
-
-        if (!isReadyToSignalSleep(displayGroupId)) {
+        if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP) {
             return;
         }
 
@@ -5354,10 +5314,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void finishedGoingToSleep(int displayGroupId,
             @PowerManager.GoToSleepReason int pmSleepReason) {
-        if (!isReadyToSignalSleep(displayGroupId)) {
+        if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP) {
             return;
         }
-
         EventLogTags.writeScreenToggled(0);
         if (DEBUG_WAKEUP) {
             Slog.i(TAG, "Finished going to sleep... (groupId=" + displayGroupId + " why="
@@ -5399,11 +5358,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     WindowManagerPolicyConstants.translateWakeReasonToOnReason(
                             pmWakeReason)) + ")");
         }
-
-        if (!isReadyToSignalWakeup(displayGroupId)) {
+        if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP) {
             return;
         }
-
         EventLogTags.writeScreenToggled(1);
 
         mIsGoingToSleepDefaultDisplay = false;
@@ -5435,8 +5392,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             WindowManagerPolicyConstants.translateWakeReasonToOnReason(
                                     pmWakeReason)) + ")");
         }
-
-        if (!isReadyToSignalWakeup(displayGroupId)) {
+        if (displayGroupId != Display.DEFAULT_DISPLAY_GROUP) {
             return;
         }
 
@@ -6101,7 +6057,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     mWindowManagerFuncs.lockDeviceNow();
                     break;
                 case LID_BEHAVIOR_SLEEP:
-                    goToSleep(SystemClock.uptimeMillis(),
+                    sleepDefaultDisplay(SystemClock.uptimeMillis(),
                             PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH,
                             PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
                     break;

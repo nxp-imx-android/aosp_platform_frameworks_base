@@ -19,7 +19,6 @@ package com.android.server.policy;
 import static android.bluetooth.BluetoothHidHost.ACTION_CONNECTION_STATE_CHANGED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.view.Display.DEFAULT_DISPLAY;
-import static android.view.Display.DEFAULT_DISPLAY_GROUP;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
@@ -51,7 +50,6 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
@@ -69,9 +67,6 @@ import android.os.PowerManagerInternal;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
@@ -119,9 +114,6 @@ public class PhoneWindowManagerTests {
     @Rule
     public final TestableContext mContext = spy(
             new TestableContext(getInstrumentation().getContext()));
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Mock private IBinder mInputToken;
 
@@ -235,88 +227,16 @@ public class PhoneWindowManagerTests {
         mPhoneWindowManager.screenTurnedOff(DEFAULT_DISPLAY, true /* isSwappingDisplay */);
         verify(mDisplayPolicy).screenTurnedOff(false /* acquireSleepToken */);
         assertThat(isScreenTurnedOff[0]).isTrue();
-        when(mPowerManagerInternal.isGroupInteractive(DEFAULT_DISPLAY_GROUP)).thenReturn(false);
 
         // Apply sleep-token for sleep-screen-off.
         isScreenTurnedOff[0] = false;
-        mPhoneWindowManager.startedGoingToSleep(DEFAULT_DISPLAY_GROUP, 0 /* reason */);
+        mPhoneWindowManager.startedGoingToSleep(DEFAULT_DISPLAY, 0 /* reason */);
         assertThat(mPhoneWindowManager.mIsGoingToSleepDefaultDisplay).isTrue();
         mPhoneWindowManager.screenTurnedOff(DEFAULT_DISPLAY, true /* isSwappingDisplay */);
         verify(mDisplayPolicy).screenTurnedOff(true /* acquireSleepToken */);
 
-        mPhoneWindowManager.finishedGoingToSleep(DEFAULT_DISPLAY_GROUP, 0 /* reason */);
+        mPhoneWindowManager.finishedGoingToSleep(DEFAULT_DISPLAY, 0 /* reason */);
         assertThat(mPhoneWindowManager.mIsGoingToSleepDefaultDisplay).isFalse();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
-    public void testScreenTurnedOff_forNonAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
-        doNothing().when(mPhoneWindowManager).initializeHdmiState();
-        initPhoneWindowManager();
-
-        int nonDefaultDisplay = DEFAULT_DISPLAY + 1;
-        when(mPowerManagerInternal.isDefaultGroupAdjacent(nonDefaultDisplay)).thenReturn(false);
-        mPhoneWindowManager.startedGoingToSleep(nonDefaultDisplay, 0 /* reason */);
-        assertThat(mPhoneWindowManager.mIsGoingToSleepDefaultDisplay).isFalse();
-
-        mPhoneWindowManager.finishedGoingToSleep(nonDefaultDisplay, 0 /* reason */);
-        assertThat(mPhoneWindowManager.mIsGoingToSleepDefaultDisplay).isFalse();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
-    public void testScreenTurnedOff_forAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
-        doNothing().when(mPhoneWindowManager).initializeHdmiState();
-        initPhoneWindowManager();
-
-        int nonDefaultDisplay = DEFAULT_DISPLAY + 1;
-        when(mPowerManagerInternal.isDefaultGroupAdjacent(nonDefaultDisplay)).thenReturn(true);
-        when(mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive())
-                .thenReturn(false);
-        when(mPowerManagerInternal.isGroupInteractive(DEFAULT_DISPLAY)).thenReturn(false);
-        mPhoneWindowManager.startedGoingToSleep(nonDefaultDisplay, 0 /* reason */);
-        assertThat(mPhoneWindowManager.mIsGoingToSleepDefaultDisplay).isTrue();
-
-        mPhoneWindowManager.finishedGoingToSleep(nonDefaultDisplay, 0 /* reason */);
-        assertThat(mPhoneWindowManager.mIsGoingToSleepDefaultDisplay).isFalse();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
-    public void testScreenTurnedOn_forNonAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
-        doNothing().when(mPhoneWindowManager).initializeHdmiState();
-        initPhoneWindowManager();
-
-        int nonDefaultDisplay = DEFAULT_DISPLAY + 1;
-        when(mPowerManagerInternal.isDefaultGroupAdjacent(nonDefaultDisplay)).thenReturn(false);
-        mPhoneWindowManager.startedWakingUp(nonDefaultDisplay, 0 /* reason */);
-        verify(mPhoneWindowManager.mDefaultDisplayPolicy, times(0)).setAwake(true);
-
-        mPhoneWindowManager.finishedWakingUp(nonDefaultDisplay, 0 /* reason */);
-        verify(mKeyguardServiceDelegate, times(0)).onFinishedWakingUp();
-    }
-
-    @Test
-    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_SEPARATE_TIMEOUTS)
-    public void testScreenTurnedOn_forAdjacentDisplayGroup() {
-        doNothing().when(mPhoneWindowManager).updateSettings(any());
-        doNothing().when(mPhoneWindowManager).initializeHdmiState();
-        initPhoneWindowManager();
-
-        int nonDefaultDisplay = DEFAULT_DISPLAY + 1;
-        when(mPowerManagerInternal.isDefaultGroupAdjacent(nonDefaultDisplay)).thenReturn(true);
-        when(mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive())
-                .thenReturn(true);
-        when(mPowerManagerInternal.isGroupInteractive(DEFAULT_DISPLAY_GROUP)).thenReturn(false);
-
-        mPhoneWindowManager.startedWakingUp(nonDefaultDisplay, 0 /* reason */);
-        verify(mPhoneWindowManager.mDefaultDisplayPolicy).setAwake(true);
-
-        mPhoneWindowManager.finishedWakingUp(nonDefaultDisplay, 0 /* reason */);
-        verify(mKeyguardServiceDelegate).onFinishedWakingUp();
     }
 
     @Test
