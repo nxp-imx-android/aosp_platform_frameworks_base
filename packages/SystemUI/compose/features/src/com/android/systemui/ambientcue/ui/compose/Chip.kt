@@ -49,7 +49,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(24.dp))
                 .background(backgroundColor)
                 .clickable { action.onClick() }
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 12.dp),
     ) {
         val painter = rememberDrawablePainter(action.icon)
         Image(
