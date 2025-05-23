@@ -25,13 +25,10 @@ import com.android.wm.shell.ShellTaskOrganizer.TaskVanishedListener
 @DslMarker
 annotation class TaskListenerTestTagMarker
 
-@TaskListenerTestTagMarker
-class TaskAppearedListenerTestContext(
-    private val testSubjectFactory: () -> TaskAppearedListener
-) {
+// Base class for the TaskListener interfaces Test Context.
+open class BaseTaskListenerTestContext<TL> {
 
-    private lateinit var inputTaskInfo: RunningTaskInfo
-    private var inputLeash: SurfaceControl = SurfaceControl()
+    protected lateinit var inputTaskInfo: RunningTaskInfo
 
     fun runningTaskInfo(
         builder: RunningTaskInfoTestInputBuilder.(RunningTaskInfo) -> Unit
@@ -43,6 +40,14 @@ class TaskAppearedListenerTestContext(
             inputTaskInfo = this
         }
     }
+}
+
+@TaskListenerTestTagMarker
+class TaskAppearedListenerTestContext(
+    private val testSubjectFactory: () -> TaskAppearedListener
+) : BaseTaskListenerTestContext<TaskAppearedListener>() {
+
+    private var inputLeash: SurfaceControl = SurfaceControl()
 
     fun leash(builder: SurfaceControlTestInputBuilder.() -> SurfaceControl): SurfaceControl {
         val binderObj = SurfaceControlTestInputBuilder()
@@ -73,20 +78,7 @@ fun testTaskAppearedListener(
 @TaskListenerTestTagMarker
 class TaskVanishedListenerTestContext(
     private val testSubjectFactory: () -> TaskVanishedListener
-) {
-
-    private lateinit var inputTaskInfo: RunningTaskInfo
-
-    fun runningTaskInfo(
-        builder: RunningTaskInfoTestInputBuilder.(RunningTaskInfo) -> Unit
-    ): RunningTaskInfo {
-        val runningTaskInfoObj = RunningTaskInfoTestInputBuilder()
-        return RunningTaskInfo().also {
-            runningTaskInfoObj.builder(it)
-        }.apply {
-            inputTaskInfo = this
-        }
-    }
+) : BaseTaskListenerTestContext<TaskVanishedListener>() {
 
     fun validateOnTaskVanished(verifier: () -> Unit) {
         // We execute the test subject using the input
@@ -110,20 +102,7 @@ fun testTaskVanishedListener(
 @TaskListenerTestTagMarker
 class TaskInfoChangedListenerTestContext(
     private val testSubjectFactory: () -> TaskInfoChangedListener
-) {
-
-    private lateinit var inputTaskInfo: RunningTaskInfo
-
-    fun runningTaskInfo(
-        builder: RunningTaskInfoTestInputBuilder.(RunningTaskInfo) -> Unit
-    ): RunningTaskInfo {
-        val runningTaskInfoObj = RunningTaskInfoTestInputBuilder()
-        return RunningTaskInfo().also {
-            runningTaskInfoObj.builder(it)
-        }.apply {
-            inputTaskInfo = this
-        }
-    }
+) : BaseTaskListenerTestContext<TaskInfoChangedListener>() {
 
     fun validateOnTaskInfoChanged(verifier: () -> Unit) {
         // We execute the test subject using the input
