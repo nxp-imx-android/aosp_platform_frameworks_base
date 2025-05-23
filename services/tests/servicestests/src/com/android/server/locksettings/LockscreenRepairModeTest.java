@@ -24,7 +24,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
-import android.app.PropertyInvalidatedCache;
 import android.platform.test.annotations.Presubmit;
 import android.provider.Settings;
 
@@ -46,7 +45,6 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
 
     @Before
     public void setUp() throws Exception {
-        PropertyInvalidatedCache.disableForTestMode();
         mService.initializeSyntheticPassword(PRIMARY_USER_ID);
     }
 
