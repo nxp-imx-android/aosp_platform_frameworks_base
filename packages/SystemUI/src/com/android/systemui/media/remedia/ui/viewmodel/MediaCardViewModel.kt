@@ -51,7 +51,9 @@ interface MediaCardViewModel {
 
     val guts: MediaCardGutsViewModel
 
-    val outputSwitcherChips: List<MediaOutputSwitcherChipViewModel>
+    val outputSwitcherChip: MediaDeviceChipViewModel
+
+    val deviceSuggestionChip: MediaDeviceChipViewModel?
 
     /** Simple icon-only version of the output switcher for use in compact UIs. */
     val outputSwitcherChipButton: MediaSecondaryActionViewModel.Action

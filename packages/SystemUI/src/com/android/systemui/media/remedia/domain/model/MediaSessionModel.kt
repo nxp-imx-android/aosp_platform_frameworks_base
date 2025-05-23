@@ -68,6 +68,8 @@ interface MediaSessionModel {
 
     val outputDevice: MediaOutputDeviceModel
 
+    val suggestedOutputDevice: MediaOutputDeviceModel?
+
     /** How to lay out the action buttons. */
     val actionButtonLayout: MediaCardActionButtonLayout
     val playPauseAction: MediaActionModel
