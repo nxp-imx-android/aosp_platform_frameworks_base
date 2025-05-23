@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"अनुमति दिनुहोस्"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"वायरलेस डिबगिङ सेवालाई अनुमति दिइएको छैन"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"हाल यस डिभाइसमा साइन इन भएका प्रयोगकर्ताले USB डिबगिङ अन गर्न सक्दैनन्। यो सुविधा प्रयोग गर्न कृपया खाताका एड्मिनका रूपमा साइन इन गर्नुहोस्।"</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"तपाईंले लग इन गरेपछि तपाईं यो सेटिङ बदल्न सक्नुहुन्छ"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB पोर्ट असक्षम पारियो"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"तपाईंको यन्त्रलाई तरल पदार्थ वा धुलोबाट जोगाउन यसको USB पोर्ट असक्षम पारिएको छ र यसले कुनै पनि सहायक उपकरणहरू पहिचान गर्ने छैन।\n\nउक्त USB पोर्ट फेरि प्रयोग गर्दा हुन्छ भने तपाईंलाई यसबारे सूचित गरिने छ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"चार्जर तथा सामानहरू पत्ता लगाउन सक्षम पारिएको USB पोर्ट"</string>
@@ -204,6 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"प्रमाणीकरण गरियो"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"प्रमाणीकरण रद्द गर्नुहोस्"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"थप विकल्पहरू"</string>
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"थप विकल्पहरू"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"अर्कै तरिका प्रयोग गरी पुष्टि गर्नुहोस्"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"पहिचान पुष्टि गर्ने सुविधा व्यवस्थापन गर्नुहोस्"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"पहिचान पुष्टि गर्ने सुविधा अन भएकाले र बायोमेट्रिक प्रयोग गर्नु पर्ने भएकाले पहिचान पुष्टि गर्नका निम्ति PIN प्रयोग गर्न मिल्दैन। पहिचान पुष्टि गर्ने सुविधाका बारेमा थप जान्नुहोस्"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN प्रयोग गर्नुहोस्"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"प्याटर्न प्रयोग गर्नुहोस्"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"पासवर्ड प्रयोग गर्नुहोस्"</string>
@@ -271,8 +274,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"ब्याट्री चार्ज हुँदैछ, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> प्रतिशत भयो।"</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"ब्याट्री <xliff:g id="PERCENTAGE">%d</xliff:g> प्रतिशत, ब्याट्री जोगाउन चार्ज गर्ने कार्य पज गरिएको छ।"</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"ब्याट्री <xliff:g id="PERCENTAGE">%1$d</xliff:g> प्रतिशत, <xliff:g id="TIME">%2$s</xliff:g>, ब्याट्री जोगाउन चार्ज गर्ने कार्य पज गरिएको छ।"</string>
-    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
-    <skip />
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"ब्याट्री <xliff:g id="NUMBER">%d</xliff:g> प्रतिशत छ। ब्याट्री सेभर अन छ।"</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"सबै सूचनाहरू हेर्नुहोस्"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"टेलि टाइपराइटर सक्षम गरियो।"</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"बज्ने कम्पन हुन्छ।"</string>
@@ -283,6 +285,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"द्रुत सेटिङहरू"</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"द्रुत सेटिङ तथा सूचना कक्ष।"</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"लक स्क्रिन"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"वर्क प्रोफाइलको लक स्क्रिन"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"बन्द गर्नुहोस्"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"पूर्ण मौनता"</string>
@@ -377,6 +381,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# डिभाइस}other{# वटा डिभाइस}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"फ्ल्यासलाइट"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"क्यामेरा प्रयोग भइरहेको छ"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"मोबाइल डेटा"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"डेटाको प्रयोग"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"बाँकी डेटा"</string>
@@ -843,13 +851,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> मा वार्तालापसम्बन्धी सुविधा प्रयोग गर्न मिल्दैन"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"प्रतिक्रिया"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"हटाउनुहोस्"</string>
-    <!-- no translation found for notification_inline_disable_promotion (8434781064426043662) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"अफ गर्नुहोस्"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"यो एपबाट प्राप्त हुने लाइभ अपडेटहरू ब्लक गर्नुहोस्"</string>
-    <!-- no translation found for live_notifications_title (5926318111951903878) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (2639662830862800119) -->
-    <skip />
+    <string name="live_notifications_title" msgid="5926318111951903878">"लाइभ अपडेट"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"अफ गरिएका बेला यो एपबाट प्राप्त हुने जारी कार्यसम्बन्धी नोटिफिकेसनहरू तपाईंको डिभाइसको लक स्क्रिन र स्ट्याटस बारमा देखाइने छैनन्"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"यी सूचनाहरू परिमार्जन गर्न मिल्दैन।"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"कलसम्बन्धी सूचनाहरू परिमार्जन गर्न मिल्दैन।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"यहाँबाट सूचनाहरूको यो समूह कन्फिगर गर्न सकिँदैन"</string>
@@ -876,7 +881,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> का लागि स्नुज गरियो"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# घण्टा}=2{# घण्टा}other{# घण्टा}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# मिनेट}other{# मिनेट}}"</string>
-    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"दर्जा घटाउने विकल्प भएको मेनु खोल्न"</string>
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"डिमोसन मेनु खोल्न"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ब्याट्री सेभर"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> बटन"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1162,8 +1167,7 @@
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"आकार बदल्न कुनाबाट ड्र्याग गर्नुहोस्"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"डायगोनल तरिकाले स्क्रोल गर्ने अनुमति दिनुहोस्"</string>
     <string name="accessibility_magnify_typing" msgid="4450037184548427852">"टेक्स्ट टाइप गर्दै गर्दा उक्त टेक्स्टमा जुम इन गर्नुहोस्"</string>
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"किबोर्ड जुम इन गर्नुहोस्"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"आकार बदल्नुहोस्"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"जुम इन गर्ने सुविधाको प्रकार बदल्नुहोस्"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"आकार बदल्न छाड्नुहोस्"</string>
@@ -1279,8 +1283,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"समूह"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"१ यन्त्र चयन गरियो"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> वटा यन्त्र चयन गरिए"</string>
-    <!-- no translation found for media_output_item_connected_state (297439499870755458) -->
-    <skip />
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"कनेक्ट गरिएको छ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"बदल्न सकिएन। फेरि प्रयास गर्न ट्याप गर्नुहोस्।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"डिभाइस कनेक्ट गर्नुहोस्"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"डिभाइस कनेक्ट गर्नुहोस्"</string>

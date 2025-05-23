@@ -203,6 +203,14 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Ολοκληρώθηκε ο έλεγχος ταυτότητας"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Ακύρωση ελέγχου ταυτότητας"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Περισσότερες επιλογές"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Χρήση PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Χρήση μοτίβου"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Χρήση κωδικού πρόσβασης"</string>
@@ -270,8 +278,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Φόρτιση μπαταρίας: <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g>%%."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Μπαταρία <xliff:g id="PERCENTAGE">%d</xliff:g> τοις εκατό, η φόρτιση τέθηκε σε παύση για την προστασία της μπαταρίας."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Μπαταρία <xliff:g id="PERCENTAGE">%1$d</xliff:g> τοις εκατό, <xliff:g id="TIME">%2$s</xliff:g>, η φόρτιση τέθηκε σε παύση για την προστασία της μπαταρίας."</string>
-    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
-    <skip />
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"Μπαταρία <xliff:g id="NUMBER">%d</xliff:g> τοις εκατό. Η Εξοικονόμηση μπαταρίας είναι ενεργή."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"Δείτε όλες τις ειδοποιήσεις"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"Το TeleTypewriter ενεργοποιήθηκε."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Δόνηση ειδοποίησης ήχου."</string>
@@ -282,6 +289,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Γρήγορες ρυθμίσεις."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Γρήγορες ρυθμίσεις και πλαίσιο σκίασης ειδοποιήσεων."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Κλείδωμα οθόνης"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Οθόνη κλειδωμένης εργασίας"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"Κλείσιμο"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"πλήρης σίγαση"</string>
@@ -376,6 +385,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# συσκευή}other{# συσκευές}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Φακός"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Η κάμερα χρησιμοποιείται"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Δεδομένα κινητής τηλεφωνίας"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Χρήση δεδομένων"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Υπολειπόμενα δεδομένα"</string>

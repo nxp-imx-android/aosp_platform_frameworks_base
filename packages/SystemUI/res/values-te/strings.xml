@@ -203,6 +203,14 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ప్రామాణీకరించబడింది"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ప్రామాణీకరణను రద్దు చేయండి"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"మరిన్ని ఆప్షన్‌లు"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PINను ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ఆకృతిని ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"పాస్‌వర్డ్‌ను ఉపయోగించండి"</string>
@@ -281,6 +289,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"శీఘ్ర సెట్టింగ్‌లు."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"క్విక్ సెట్టింగ్‌లు, నోటిఫికేషన్ తెర."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"లాక్ స్క్రీన్"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"కార్యాలయ లాక్ స్క్రీన్"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"మూసివేస్తుంది"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"మొత్తం నిశ్శబ్దం"</string>
@@ -375,6 +385,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# పరికరం}other{# పరికరాలు}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"ఫ్లాష్‌లైట్"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"కెమెరా ఉపయోగంలో ఉంది"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"మొబైల్ డేటా"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"డేటా వినియోగం"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"మిగిలిన డేటా"</string>

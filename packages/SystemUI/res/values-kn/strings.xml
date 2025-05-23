@@ -203,6 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ದೃಢೀಕರಿಸಲಾಗಿದೆ"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ದೃಢೀಕರಣವನ್ನು ರದ್ದುಗೊಳಿಸಿ"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು"</string>
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ಮತ್ತೊಂದು ರೀತಿಯಲ್ಲಿ ದೃಢೀಕರಿಸಿ"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಆನ್ ಆಗಿರುವುದರಿಂದ ಮತ್ತು ಬಯೋಮೆಟ್ರಿಕ್ ಅಗತ್ಯವಿರುವುದರಿಂದ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಪಿನ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ಪಿನ್ ಬಳಸಿ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ಪ್ಯಾಟರ್ನ್ ಬಳಸಿ"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ"</string>
@@ -281,6 +285,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‍ಗಳು."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‍ಗಳು ಮತ್ತು ಅಧಿಸೂಚನೆಯ ಪರದೆ."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"ಕೆಲಸದ ಲಾಕ್ ಸ್ಕ್ರೀನ್"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"ಮುಚ್ಚಿ"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"ಸಂಪೂರ್ಣ ನಿಶ್ಯಬ್ಧ"</string>
@@ -375,6 +381,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# ಸಾಧನ}one{# ಸಾಧನಗಳು}other{# ಸಾಧನಗಳು}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"ಫ್ಲಾಶ್‌ಲೈಟ್‌"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"ಮೊಬೈಲ್ ಡೇಟಾ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"ಡೇಟಾ ಬಳಕೆ"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"ಉಳಿದಿರುವ ಡೇಟಾ"</string>
