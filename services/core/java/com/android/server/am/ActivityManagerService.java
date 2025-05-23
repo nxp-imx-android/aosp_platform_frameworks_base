@@ -4300,6 +4300,14 @@ public class ActivityManagerService extends IActivityManager.Stub
                         "fully stop " + packageName + "/" + userId + " by user request");
             }
 
+            if (android.os.profiling.Flags.profiling25q4()
+                    && packageName != null) {
+                sendProfilingTrigger(
+                        uid,
+                        packageName,
+                        ProfilingTrigger.TRIGGER_TYPE_KILL_TASK_MANAGER);
+            }
+
             mServices.bringDownDisabledPackageServicesLocked(
                     packageName, null, userId, false, true, true);
             mServices.onUidRemovedLocked(uid);
@@ -4390,6 +4398,15 @@ public class ActivityManagerService extends IActivityManager.Stub
                     subReason,
                     (packageName == null ? ("stop user " + userId) : ("stop " + packageName))
                     + " due to " + reasonString);
+
+            if (didSomething && subReason == ApplicationExitInfo.SUBREASON_FORCE_STOP
+                    && android.os.profiling.Flags.profiling25q4()
+                    && packageName != null) {
+                sendProfilingTrigger(
+                        uid,
+                        packageName,
+                        ProfilingTrigger.TRIGGER_TYPE_KILL_FORCE_STOP);
+            }
         }
 
         if (mServices.bringDownDisabledPackageServicesLocked(
@@ -17161,6 +17178,19 @@ public class ActivityManagerService extends IActivityManager.Stub
                         // receiver.
                         pr.setWaitingToKill("remove task");
                     }
+
+                    // Send the profiling trigger. This is done both in cases where we kill
+                    // immediately and where we delay the kill, as the user has already requested
+                    // the kill and the longer we wait the lower the chance the events of interest
+                    // will still be in the buffer.
+                    if (android.os.profiling.Flags.profiling25q4()
+                            && pr.info != null
+                            && pr.info.packageName != null) {
+                        sendProfilingTrigger(
+                                pr.uid,
+                                pr.info.packageName,
+                                ProfilingTrigger.TRIGGER_TYPE_KILL_RECENTS);
+                    }
                 }
             }
         }
@@ -19655,5 +19685,15 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
         }
         return token;
+    }
+
+    /** Helper method for sending profiling triggers asynchronously. */
+    private void sendProfilingTrigger(int uid, @NonNull String packageName, int triggerType) {
+        mHandler.post(new Runnable() {
+            @Override public void run() {
+                ProfilingServiceHelper.getInstance().onProfilingTriggerOccurred(
+                        uid, packageName, triggerType);
+            }
+        });
     }
 }
