@@ -203,6 +203,14 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Todennettu"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Peruuta todennus"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Lisää vaihtoehtoja"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Käytä PIN-koodia"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Käytä kuviota"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Käytä salasanaa"</string>
@@ -270,8 +278,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Akku latautuu: <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> prosenttia"</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Akun virta <xliff:g id="PERCENTAGE">%d</xliff:g> prosenttia, lataaminen keskeytetty akun suojelemiseksi."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Akun virta <xliff:g id="PERCENTAGE">%1$d</xliff:g> prosenttia, <xliff:g id="TIME">%2$s</xliff:g>, lataaminen keskeytetty akun suojelemiseksi."</string>
-    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
-    <skip />
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"Akun virta <xliff:g id="NUMBER">%d</xliff:g> prosenttia. Virransäästö on päällä."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"Näytä kaikki ilmoitukset"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"Tekstipuhelin käytössä."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Soittoääni: värinä."</string>
@@ -282,6 +289,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Pika-asetukset."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Pika-asetukset ja ilmoitusalue"</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Lukitusnäyttö"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Työlukitusnäyttö"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"Sulje"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"hiljennä kaikki"</string>
@@ -376,6 +385,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# laite}other{# laitetta}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Taskulamppu"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Kamera käytössä"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Mobiilidata"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Datakäyttö"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Käytettävissä"</string>
@@ -842,13 +855,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ei tue keskusteluominaisuuksia"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Palaute"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Hylkää"</string>
-    <!-- no translation found for notification_inline_disable_promotion (8434781064426043662) -->
-    <skip />
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"Laita pois päältä"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Estä livepäivitykset"</string>
-    <!-- no translation found for live_notifications_title (5926318111951903878) -->
-    <skip />
-    <!-- no translation found for live_notifications_desc (2639662830862800119) -->
-    <skip />
+    <string name="live_notifications_title" msgid="5926318111951903878">"Live-päivitykset"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"Kun tämä on pois päältä, sovelluksen käynnissä olevat ilmoitukset eivät näy lukitusnäytöllä ja tilapalkissa"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Näitä ilmoituksia ei voi muokata"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Puheluilmoituksia ei voi muokata."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Tätä ilmoitusryhmää ei voi määrittää tässä"</string>
@@ -1277,8 +1287,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Ryhmä"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 laite valittu"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> laitetta valittu"</string>
-    <!-- no translation found for media_output_item_connected_state (297439499870755458) -->
-    <skip />
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"Yhdistetty"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Vaihtaminen ei onnistunut. Yritä uudelleen."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Yhdistä laite"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Yhdistä laite"</string>
