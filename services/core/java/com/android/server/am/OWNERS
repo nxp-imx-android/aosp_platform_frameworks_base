@@ -74,6 +74,9 @@ per-file flags.aconfig = file:/ACTIVITY_MANAGER_OWNERS
 michaelwr@google.com #{LAST_RESORT_SUGGESTION}
 narayan@google.com #{LAST_RESORT_SUGGESTION}
 
+# Memory usage stats
+per-file MemoryUsageStats.java = file:/MEMORY_OWNERS
+
 # Default
 yamasani@google.com #{LAST_RESORT_SUGGESTION}
 hackbod@google.com #{LAST_RESORT_SUGGESTION}
