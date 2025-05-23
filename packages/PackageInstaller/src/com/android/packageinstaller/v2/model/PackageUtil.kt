@@ -87,7 +87,8 @@ object PackageUtil {
      * @return [ApplicationInfo] of the provider if a downloads provider exists, it is a
      * system app, and its UID matches with the passed UID, null otherwise.
      */
-    private fun getSystemDownloadsProviderInfo(pm: PackageManager, uid: Int): ApplicationInfo? {
+    @JvmStatic
+    fun getSystemDownloadsProviderInfo(pm: PackageManager, uid: Int): ApplicationInfo? {
         // Check if there are currently enabled downloads provider on the system.
         val providerInfo = pm.resolveContentProvider(DOWNLOADS_AUTHORITY, 0)
             ?: return null
@@ -168,13 +169,22 @@ object PackageUtil {
 
     /**
      * @param context the [Context] object
+     * @param callingUid the UID of the caller who's permission is being checked
+     * @return `true` if the callingUid is granted the documents permission
+     */
+    @JvmStatic
+    fun isDocumentsManager(context: Context, callingUid: Int): Boolean {
+        return isPermissionGranted(context, Manifest.permission.MANAGE_DOCUMENTS, callingUid)
+    }
+
+    /**
+     * @param context the [Context] object
      * @param callingUid the UID of the caller of Pia
      * @param isTrustedSource indicates whether install request is coming from a privileged app
      * that has passed EXTRA_NOT_UNKNOWN_SOURCE as `true` in the installation intent, or an app that
      * has the [INSTALL_PACKAGES][Manifest.permission.INSTALL_PACKAGES] permission granted.
      *
-     * @return `true` if the package is either a system downloads provider, a document manager,
-     * a trusted source, or has declared the
+     * @return `true` if the package is a trusted source, or has declared the
      * [REQUEST_INSTALL_PACKAGES][Manifest.permission.REQUEST_INSTALL_PACKAGES] in its manifest.
      */
     @JvmStatic
@@ -183,12 +193,7 @@ object PackageUtil {
         callingUid: Int,
         isTrustedSource: Boolean,
     ): Boolean {
-        val isDocumentsManager =
-            isPermissionGranted(context, Manifest.permission.MANAGE_DOCUMENTS, callingUid)
-        val isSystemDownloadsProvider =
-            getSystemDownloadsProviderInfo(context.packageManager, callingUid) != null
-
-        if (!isTrustedSource && !isSystemDownloadsProvider && !isDocumentsManager) {
+        if (!isTrustedSource) {
             val targetSdkVersion = getMaxTargetSdkVersionForUid(context, callingUid)
             if (targetSdkVersion < 0) {
                 // Invalid calling uid supplied. Abort install.
