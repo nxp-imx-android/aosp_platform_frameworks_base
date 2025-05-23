@@ -196,8 +196,8 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             taskId = taskId,
             taskBounds = taskBounds,
             letterboxBounds = letterboxBounds,
-            letterboxActivityToken = letterboxActivityToken,
-            letterboxActivityLeash = letterboxActivityLeash
+            containerToken = letterboxActivityToken,
+            leash = letterboxActivityLeash
         )
 
         fun configureIsRecentsTransitionRunning(running: Boolean) {
