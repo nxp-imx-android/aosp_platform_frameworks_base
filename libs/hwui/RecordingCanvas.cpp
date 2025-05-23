@@ -1253,7 +1253,7 @@ constexpr color_transform_fn colorTransformForOp<DrawRippleDrawable>() {
     return [](const void* opRaw, ColorTransform transform) {
         const DrawRippleDrawable* op = reinterpret_cast<const DrawRippleDrawable*>(opRaw);
         // Ripple drawable needs to contrast against the background, so we need the inverse color.
-        SkColor color = transformColorInverse(transform, op->mParams.color);
+        SkColor4f color = transformColorInverse(transform, op->mParams.color);
         const_cast<DrawRippleDrawable*>(op)->mParams.color = color;
     };
 }

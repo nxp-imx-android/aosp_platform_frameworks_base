@@ -79,7 +79,7 @@ public:
     /**
      * See [addArea(uint64_t, SkPaint&)]
      */
-    void addArea(uint64_t area, SkColor color);
+    void addArea(uint64_t area, SkColor4f color);
 
     /**
      * Prefer [addArea(uint64_t, SkPaint&)], unless the area you're measuring doesn't have a paint
