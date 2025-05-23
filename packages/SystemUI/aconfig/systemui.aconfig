@@ -2013,3 +2013,10 @@ flag {
    description: "Enables the growth framework for desktop."
    bug: "383601076"
 }
+
+flag {
+    name: "enable_minmode"
+    namespace: "systemui"
+    description: "Enables MinMode feature"
+    bug: "411746510"
+}
