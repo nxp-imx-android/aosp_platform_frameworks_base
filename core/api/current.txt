@@ -56327,6 +56327,7 @@ package android.view.accessibility {
     field public static final int CONTENT_CHANGE_TYPE_PANE_APPEARED = 16; // 0x10
     field public static final int CONTENT_CHANGE_TYPE_PANE_DISAPPEARED = 32; // 0x20
     field public static final int CONTENT_CHANGE_TYPE_PANE_TITLE = 8; // 0x8
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int CONTENT_CHANGE_TYPE_SORT_DIRECTION = 65536; // 0x10000
     field public static final int CONTENT_CHANGE_TYPE_STATE_DESCRIPTION = 64; // 0x40
     field public static final int CONTENT_CHANGE_TYPE_SUBTREE = 1; // 0x1
     field @FlaggedApi("android.view.accessibility.supplemental_description") public static final int CONTENT_CHANGE_TYPE_SUPPLEMENTAL_DESCRIPTION = 32768; // 0x8000
@@ -56778,10 +56779,15 @@ package android.view.accessibility {
     method public int getRowIndex();
     method public int getRowSpan();
     method @Nullable public String getRowTitle();
+    method @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public int getSortDirection();
     method @Deprecated public boolean isHeading();
     method public boolean isSelected();
     method @Deprecated public static android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo obtain(int, int, int, int, boolean);
     method @Deprecated public static android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo obtain(int, int, int, int, boolean, boolean);
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_ASCENDING = 1; // 0x1
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_DESCENDING = 2; // 0x2
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_NONE = 0; // 0x0
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_OTHER = 3; // 0x3
   }
 
   public static final class AccessibilityNodeInfo.CollectionItemInfo.Builder {
@@ -56795,6 +56801,7 @@ package android.view.accessibility {
     method @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setRowSpan(int);
     method @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setRowTitle(@Nullable String);
     method @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setSelected(boolean);
+    method @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setSortDirection(int);
   }
 
   public static final class AccessibilityNodeInfo.ExtraRenderingInfo {
