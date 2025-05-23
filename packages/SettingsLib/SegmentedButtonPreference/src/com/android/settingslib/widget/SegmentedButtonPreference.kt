@@ -160,13 +160,16 @@ class SegmentedButtonPreference @JvmOverloads constructor(
     }
 
     private fun applyCheckIndex(index: Int) {
-        buttonGroup?.getChildAt(index)?.let { button ->
-            if (button.id == View.NO_ID || button.isGone) {
-                return
-            }
-
-            buttonGroup?.check(button.id)
+        val button = buttonGroup?.getChildAt(index) ?: run {
+            buttonGroup?.clearChecked()
+            return
         }
+        if (button.id == View.NO_ID || button.isGone) {
+            buttonGroup?.clearChecked()
+            return
+        }
+
+        buttonGroup?.check(button.id)
     }
 
     private sealed interface SegmentedButtonIcon {
