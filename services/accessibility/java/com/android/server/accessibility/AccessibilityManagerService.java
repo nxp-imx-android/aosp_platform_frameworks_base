@@ -416,6 +416,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     boolean mRestarting;
     boolean mInputSessionRequested;
     private SparseArray<SurfaceControl> mA11yOverlayLayers = new SparseArray<>();
+    private ComponentName mTrustedAccessibilityServiceForTesting = null;
 
     private final FlashNotificationsController mFlashNotificationsController;
     private final HearingDevicePhoneCallNotificationController mHearingDeviceNotificationController;
@@ -4717,6 +4718,41 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
     }
 
+    @Override
+    public boolean enableTrustedAccessibilityService(
+            @NonNull ComponentName trustedAccessibilityService, @UserIdInt int userId) {
+        if (!android.view.accessibility.Flags.enableTrustedAccessibilityServiceApi()) {
+            return false;
+        }
+        if (!mSecurityPolicy.isValidPackageForUid(
+                trustedAccessibilityService.getPackageName(), getCallingUid())) {
+            return false;
+        }
+        synchronized (mLock) {
+            if (userId != mCurrentUserId) {
+                return false;
+            }
+            final AccessibilityServiceInfo info = getCurrentUserStateLocked()
+                    .getInstalledServiceInfoLocked(trustedAccessibilityService);
+            if (info != null && isAccessibilityServicePreinstalledAndTrusted(info)) {
+                enableAccessibilityServiceLocked(trustedAccessibilityService, userId);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    @Override
+    @EnforcePermission(MANAGE_ACCESSIBILITY)
+    public void setTrustedAccessibilityServiceForTesting(
+            @Nullable ComponentName trustedAccessibilityService) {
+        setTrustedAccessibilityServiceForTesting_enforcePermission();
+        if (!android.view.accessibility.Flags.enableTrustedAccessibilityServiceApi()) {
+            return;
+        }
+        mTrustedAccessibilityServiceForTesting = trustedAccessibilityService;
+    }
+
     /**
      * Enables accessibility service specified by {@param componentName} for the {@param userId}.
      */
@@ -5193,6 +5229,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     private boolean isAccessibilityServicePreinstalledAndTrusted(AccessibilityServiceInfo info) {
         final ComponentName componentName = info.getComponentName();
+        if (componentName.equals(mTrustedAccessibilityServiceForTesting)) {
+            return true;
+        }
         final boolean isPreinstalled =
                 info.getResolveInfo().serviceInfo.applicationInfo.isSystemApp();
         if (isPreinstalled) {
