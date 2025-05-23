@@ -40,11 +40,10 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.flags.FeatureFlags
-import com.android.systemui.flags.Flags
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -58,6 +57,7 @@ import com.android.systemui.shade.data.repository.defaultShadeDisplayPolicy
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -99,7 +99,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         mSetFlagsRule.setFlagsParameterization(flags)
     }
 
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val mStatusBarConfigurationController = kosmos.mockStatusBarConfigurationController
     private val statusBarContentInsetsProviderStore = kosmos.fakeStatusBarContentInsetsProviderStore
     private val statusBarContentInsetsProvider = statusBarContentInsetsProviderStore.defaultDisplay
@@ -608,7 +608,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @EnableSceneContainer
     fun dualShade_qsIsExpandedOnEndSideContentMouseClick() =
         kosmos.runTest {
-            kosmos.enableDualShade(wideLayout = true)
+            enableDualShade(wideLayout = true)
 
             val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
             assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
@@ -627,7 +627,8 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         }
 
     @Test
-    fun shadeIsExpandedOnEndSideContentMouseClick() {
+    fun shadeIsExpandedOnEndSideContentMouseClick_singleShade_expandsNotificationsShade() {
+        kosmos.enableSingleShade()
         val view = createViewMock(view)
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             controller = createAndInitController(view)
@@ -637,6 +638,21 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         verify(shadeControllerImpl).animateExpandShade()
         verify(shadeControllerImpl, never()).animateExpandQs()
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun shadeIsExpandedOnEndSideContentMouseClick_dualShade_expandsQuickSettingsShade() {
+        kosmos.enableDualShade()
+        val view = createViewMock(view)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            controller = createAndInitController(view)
+        }
+        val endSideContainer = view.requireViewById<View>(R.id.system_icons)
+        endSideContainer.dispatchTouchEvent(getActionUpEventFromSource(InputDevice.SOURCE_MOUSE))
+
+        verify(shadeControllerImpl, never()).animateExpandShade()
+        verify(shadeControllerImpl).animateExpandQs()
     }
 
     @Test
