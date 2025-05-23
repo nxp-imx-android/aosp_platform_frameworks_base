@@ -24,6 +24,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
@@ -55,6 +56,7 @@ import java.util.Objects;
  *       the stricter of the two is what is normally observed. Of course, a properly implemented
  *       hardware rate-limiter is more secure and is always supposed to be present too.
  *   <li>Reject guesses of too-short LSKFs before they count as real guesses.
+ *   <li>Log LSKF authentication attempts to <code>statsd</code>.
  * </ol>
  */
 class SoftwareRateLimiter {
@@ -134,6 +136,12 @@ class SoftwareRateLimiter {
          */
         public int numWrongGuesses;
 
+        /** The number of duplicate wrong guesses since the last correct guess or reboot */
+        public int numDuplicateWrongGuesses;
+
+        /** The type of the LSKF, as a value of the stats CredentialType enum */
+        public final int statsCredentialType;
+
         /**
          * The time since boot at which the number of wrong guesses was last incremented, or zero if
          * the number of wrong guesses was last incremented before the current boot.
@@ -147,8 +155,9 @@ class SoftwareRateLimiter {
         public final LockscreenCredential[] savedWrongGuesses =
                 new LockscreenCredential[MAX_SAVED_WRONG_GUESSES];
 
-        RateLimiterState(int numWrongGuesses) {
+        RateLimiterState(int numWrongGuesses, LockscreenCredential firstGuess) {
             this.numWrongGuesses = numWrongGuesses;
+            this.statsCredentialType = getStatsCredentialType(firstGuess);
         }
     }
 
@@ -211,7 +220,7 @@ class SoftwareRateLimiter {
                             // without the device being powered on.
                             //
                             // Likewise, rebooting causes any saved wrong guesses to be forgotten.
-                            return new RateLimiterState(readWrongGuessCounter(id));
+                            return new RateLimiterState(readWrongGuessCounter(id), guess);
                         });
 
         // Check for remaining delay. Note that the case of a positive remaining delay normally
@@ -242,6 +251,8 @@ class SoftwareRateLimiter {
                     state.savedWrongGuesses[j] = state.savedWrongGuesses[j - 1];
                 }
                 state.savedWrongGuesses[0] = wrongGuess;
+                state.numDuplicateWrongGuesses++;
+                writeStats(state, /* success= */ false);
                 return mEnforcing
                         ? SoftwareRateLimiterResult.duplicateWrongGuess()
                         : SoftwareRateLimiterResult.continueToHardware();
@@ -258,11 +269,13 @@ class SoftwareRateLimiter {
      */
     synchronized void reportSuccess(LskfIdentifier id) {
         RateLimiterState state = getExistingState(id);
+        writeStats(state, /* success= */ true);
         // If the wrong guess counter is still 0, then there is no need to write it. Nor can there
         // be any saved wrong guesses, so there is no need to forget them. This optimizes for the
         // common case where the first guess is correct.
         if (state.numWrongGuesses != 0) {
             state.numWrongGuesses = 0;
+            state.numDuplicateWrongGuesses = 0;
             writeWrongGuessCounter(id, state);
             forgetSavedWrongGuesses(state);
         }
@@ -299,8 +312,9 @@ class SoftwareRateLimiter {
     synchronized Duration reportWrongGuess(LskfIdentifier id, LockscreenCredential newWrongGuess) {
         RateLimiterState state = getExistingState(id);
 
-        // In non-enforcing mode, ignore duplicate guesses here since they were already counted.
-        // In enforcing mode, this method isn't passed duplicate guesses.
+        // In non-enforcing mode, ignore duplicate wrong guesses here since they were already
+        // counted by apply(), including having stats written for them. In enforcing mode, this
+        // method isn't passed duplicate wrong guesses.
         if (!mEnforcing && ArrayUtils.contains(state.savedWrongGuesses, newWrongGuess)) {
             return Duration.ZERO;
         }
@@ -312,6 +326,8 @@ class SoftwareRateLimiter {
         // reported to the UI, and that it be done synchronously e.g. by fsync()-ing the file and
         // its containing directory. This minimizes the risk of the counter being rolled back.
         writeWrongGuessCounter(id, state);
+
+        writeStats(state, /* success= */ false);
 
         insertNewWrongGuess(state, newWrongGuess);
 
@@ -333,6 +349,34 @@ class SoftwareRateLimiter {
                 SAVED_WRONG_GUESS_TIMEOUT.toMillis());
 
         return getCurrentDelay(state);
+    }
+
+    private static int getStatsCredentialType(LockscreenCredential firstGuess) {
+        if (firstGuess.isPin()) {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__PIN;
+        } else if (firstGuess.isPattern()) {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__PATTERN;
+            // Check isUnifiedProfilePassword() before isPassword(), since
+            // isUnifiedProfilePassword() is a subset of isPassword().
+        } else if (firstGuess.isUnifiedProfilePassword()) {
+            return FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__UNIFIED_PROFILE_PASSWORD;
+        } else if (firstGuess.isPassword()) {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__PASSWORD;
+        } else {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__CREDENTIAL_TYPE__UNKNOWN_TYPE;
+        }
+    }
+
+    @GuardedBy("this")
+    private void writeStats(RateLimiterState state, boolean success) {
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED,
+                /* success= */ success,
+                /* num_unique_guesses= */ state.numWrongGuesses + (success ? 1 : 0),
+                /* num_duplicate_guesses= */ state.numDuplicateWrongGuesses,
+                /* credential_type= */ state.statsCredentialType,
+                /* software_rate_limiter_enforcing= */ mEnforcing);
     }
 
     @GuardedBy("this")
@@ -426,6 +470,8 @@ class SoftwareRateLimiter {
             final RateLimiterState state = mState.valueAt(index);
             pw.increaseIndent();
             pw.println("numWrongGuesses=" + state.numWrongGuesses);
+            pw.println("numDuplicateWrongGuesses=" + state.numDuplicateWrongGuesses);
+            pw.println("statsCredentialType=" + state.statsCredentialType);
             pw.println("timeSinceBootOfLastWrongGuess=" + state.timeSinceBootOfLastWrongGuess);
             pw.println(
                     "numSavedWrongGuesses="
