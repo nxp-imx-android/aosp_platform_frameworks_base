@@ -31,18 +31,28 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"‏به &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; اجازه داده شود &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; را مدیریت کند؟"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"دستگاه"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"این برنامه قادر خواهد بود به این اجازه‌ها در <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> شما دسترسی پیدا کند"</string>
-    <string name="title_app_streaming" msgid="1047090167914857893">"‏به &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; اجازه می‌دهید برنامه‌ها و ویژگی‌های سیستم <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> را در &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; جاری‌سازی کند؟"</string>
-    <string name="summary_app_streaming" msgid="7990244299655610920">"‏‫<xliff:g id="APP_NAME_0">%1$s</xliff:g> به هرچیزی که در <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> شما نمایان است یا پخش می‌شود، ازجمله صداها، عکس‌ها، اطلاعات پرداخت، گذرواژه‌ها، و پیام‌ها دسترسی خواهد داشت.&lt;br/&gt;&lt;br/&gt;تا زمانی‌که دسترسی به این اجازه را حذف نکنید، <xliff:g id="APP_NAME_1">%1$s</xliff:g> می‌تواند برنامه‌ها را در <xliff:g id="DEVICE_NAME">%3$s</xliff:g> جاری‌سازی کند."</string>
-    <string name="helper_summary_app_streaming" msgid="1872657107404139828">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> ازطرف <xliff:g id="DEVICE_NAME">%2$s</xliff:g> اجازه می‌خواهد برنامه‌ها و ویژگی‌های سیستم را از <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> شما جاری‌سازی کند"</string>
+    <!-- no translation found for title_app_streaming (237666000400427614) -->
+    <skip />
+    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
+    <skip />
+    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
+    <skip />
+    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
+    <skip />
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"‏به &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; اجازه دهید به این اطلاعات در <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> شما دسترسی داشته باشد"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> ازطرف <xliff:g id="DEVICE_NAME">%2$s</xliff:g> اجازه می‌خواهد به عکس‌ها، رسانه‌ها، و اعلان‌های <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> شما دسترسی پیدا کند"</string>
-    <string name="title_nearby_device_streaming" msgid="2727103756701741359">"‏به &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; اجازه می‌دهید برنامه‌های <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> را در &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; جاری‌سازی کند؟"</string>
-    <string name="summary_nearby_device_streaming" msgid="70434958004946884">"‏‫<xliff:g id="APP_NAME_0">%1$s</xliff:g> به هرچیزی که در <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> شما نمایان است یا پخش می‌شود، ازجمله صداها، عکس‌ها، اطلاعات پرداخت، گذرواژه‌ها، و پیام‌ها دسترسی خواهد داشت.&lt;br/&gt;&lt;br/&gt;تا زمانی‌که دسترسی به این اجازه را حذف نکنید، <xliff:g id="APP_NAME_2">%1$s</xliff:g> می‌تواند برنامه‌ها را در <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> جاری‌سازی کند."</string>
+    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
+    <skip />
+    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
+    <skip />
+    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
+    <skip />
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> ازطرف <xliff:g id="DEVICE_NAME">%2$s</xliff:g> اجازه می‌خواهد برنامه‌ها را از <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> شما جاری‌سازی کند"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"‏به &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; اجازه می‌دهید صدا و ویژگی‌های سیستم را بین <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> و &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; جاری‌سازی کند؟"</string>
-    <string name="summary_virtual_device" msgid="3502592544171322817">"‏‫«<xliff:g id="APP_NAME_0">%2$s</xliff:g>» به هرچیزی که در <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> پخش می‌شود دسترسی خواهد داشت.&lt;br/&gt;&lt;br/&gt;تا زمانی‌که دسترسی به این اجازه را برندارید، «<xliff:g id="APP_NAME_2">%2$s</xliff:g>» می‌تواند به جاری‌سازی صدا در <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> ادامه دهد."</string>
+    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
+    <skip />
     <string name="profile_name_generic" msgid="6851028682723034988">"دستگاه"</string>
     <string name="summary_generic" msgid="1761976003668044801">"این برنامه مجاز می‌شود اطلاعتی مثل نام شخصی را که تماس می‌گیرد بین تلفن شما و دستگاه انتخاب‌شده همگام‌سازی کند"</string>
     <string name="consent_yes" msgid="8344487259618762872">"اجازه دادن"</string>
@@ -69,7 +79,6 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"جاری‌سازی داده‌ها در <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"قرینه‌سازی صفحه‌نمایش"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"جاری‌سازی برنامه‌ها"</string>
-    <string name="permission_add_always_unlocked_display" msgid="241771924570133893">"جاری‌سازی هنگام قفل بودن"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"برقراری و مدیریت تماس‌های تلفنی"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"خواندن و نوشتن گزارش تماس تلفنی"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"ارسال و مشاهده پیامک‌ها"</string>
@@ -83,8 +92,8 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ارسال اعلان‌ها برای شما"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"‏داده‌های میکروفون، دوربین و سایر حسگرها را از &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; در <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> خود جاری‌سازی کنید."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"‏صفحه‌نمایش <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> خود را ضبط کنید، و محتوای آن را با &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; پخش یا هم‌رسانی کنید.&lt;br/&gt;&lt;br/&gt;‫<xliff:g id="APP_NAME">%1$s</xliff:g> به هرآنچه که در <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> شما قابل‌مشاهده باشد یا پخش شده باشد، ازجمله صدا، عکس‌ها، اطلاعات پرداخت، گذرواژه‌ها و پیام‌ها دسترسی خواهد داشت."</string>
-    <string name="permission_add_trusted_display_summary" msgid="915796221330306051">"‏برنامه‌های <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> خود را در &lt;strong&gt;<xliff:g id="DEVICE_NAME_0">%3$s</xliff:g>&lt;/strong&gt; جاری‌سازی کنید.&lt;br/&gt;&lt;br/&gt;‫<xliff:g id="APP_NAME">%1$s</xliff:g> به هرآنچه که در <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> شما قابل‌مشاهده باشد یا پخش شده باشد، ازجمله صدا، عکس‌ها، اطلاعات پرداخت، گذرواژه‌ها و پیام‌ها دسترسی خواهد داشت."</string>
-    <string name="permission_add_always_unlocked_display_summary" msgid="4915600630073253190">"برنامه‌های <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> خود را جاری‌سازی کنید حتی زمانی‌که قفل است."</string>
+    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"دسترسی به فهرست دستگاه‌های دردسترس و کنترل اینکه کدام دستگاه صدا یا ویدیو را از برنامه‌های دیگر جاری‌سازی یا پخش کند"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"تلفن"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"رایانه لوحی"</string>
