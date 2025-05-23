@@ -2006,3 +2006,10 @@ flag {
      purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+   name: "enable_desktop_growth"
+   namespace: "systemui"
+   description: "Enables the growth framework for desktop."
+   bug: "383601076"
+}
