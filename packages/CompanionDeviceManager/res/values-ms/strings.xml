@@ -31,18 +31,28 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Benarkan &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; mengurus &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"peranti"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Apl ini akan dibenarkan untuk mengakses kebenaran yang berikut pada <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> anda"</string>
-    <string name="title_app_streaming" msgid="1047090167914857893">"Benarkan &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; untuk menstrim apl dan ciri sistem <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda kepada &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="summary_app_streaming" msgid="7990244299655610920">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> akan mendapat akses kepada semua kandungan yang dipaparkan atau dimainkan pada <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda, termasuk audio, foto, maklumat pembayaran, kata laluan dan mesej.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> akan dapat menstrim apl kepada <xliff:g id="DEVICE_NAME">%3$s</xliff:g> sehingga anda mengalih keluar akses kepada kebenaran ini."</string>
-    <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> meminta kebenaran bagi pihak <xliff:g id="DEVICE_NAME">%2$s</xliff:g> untuk menstrim apl dan ciri sistem daripada <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> anda"</string>
+    <!-- no translation found for title_app_streaming (237666000400427614) -->
+    <skip />
+    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
+    <skip />
+    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
+    <skip />
+    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
+    <skip />
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Benarkan &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; untuk mengakses maklumat ini daripada <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> sedang meminta kebenaran bagi pihak <xliff:g id="DEVICE_NAME">%2$s</xliff:g> anda untuk mengakses foto, media dan pemberitahuan <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> anda"</string>
-    <string name="title_nearby_device_streaming" msgid="2727103756701741359">"Benarkan &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; untuk menstrim apl <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda kepada &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> akan mendapat akses kepada semua kandungan yang dipaparkan atau dimainkan pada <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, termasuk audio, foto, maklumat pembayaran, kata laluan dan mesej.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> akan dapat menstrim apl kepada <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> sehingga anda mengalih keluar akses kepada kebenaran ini."</string>
+    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
+    <skip />
+    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
+    <skip />
+    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
+    <skip />
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> meminta kebenaran bagi pihak <xliff:g id="DEVICE_NAME">%2$s</xliff:g> untuk menstrim apl daripada <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> anda"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Benarkan &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; menstrim audio dan ciri sistem antara <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> anda dengan &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="summary_virtual_device" msgid="3502592544171322817">"<xliff:g id="APP_NAME_0">%2$s</xliff:g> akan mendapat akses kepada semua kandungan yang dimainkan pada <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%2$s</xliff:g> akan dapat menstrim audio kepada <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> sehingga anda mengalih keluar akses kepada kebenaran ini."</string>
+    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
+    <skip />
     <string name="profile_name_generic" msgid="6851028682723034988">"peranti"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Apl ini akan dapat menyegerakkan maklumat seperti nama individu yang memanggil, antara telefon anda dengan peranti yang dipilih"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Benarkan"</string>
@@ -69,7 +79,6 @@
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Strim data kepada <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> anda"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Segerakkan skrin anda"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Strim apl"</string>
-    <string name="permission_add_always_unlocked_display" msgid="241771924570133893">"Strim apl semasa dikunci"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Membuat dan mengurus panggilan telefon"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Baca dan tulis log panggilan telefon"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"Menghantar dan melihat mesej SMS"</string>
@@ -83,8 +92,8 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Hantar pemberitahuan kepada anda"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Strim mikrofon, kamera dan data penderia lain daripada &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; kepada <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rakam, hantar atau kongsi skrin <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> dengan &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> akan mendapat akses kepada semua kandungan yang dipaparkan atau dimainkan pada <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> anda, termasuk audio, foto, maklumat pembayaran, kata laluan dan mesej."</string>
-    <string name="permission_add_trusted_display_summary" msgid="915796221330306051">"Strim apl <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda kepada &lt;strong&gt;<xliff:g id="DEVICE_NAME_0">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aakan mendapat akses kepada semua kandungan yang dipaparkan atau dimainkan pada <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, termasuk audio, foto, maklumat pembayaran, kata laluan dan mesej."</string>
-    <string name="permission_add_always_unlocked_display_summary" msgid="4915600630073253190">"Strim apl <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> anda walaupun semasa dikunci."</string>
+    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Akses senarai peranti tersedia dan kawal peranti yang menstrim atau menghantar audio atau video daripada apl lain"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
