@@ -69,16 +69,7 @@ abstract class MoveToNextDisplay {
         val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
         testApp.enterDesktopMode(wmHelper, device)
 
-        testApp.moveToNextDisplayViaKeyboard(wmHelper)
-
-        wmHelper.StateSyncBuilder().apply {
-            add("testApp is on the connected display") { dump ->
-                val display = requireNotNull(dump.wmState.getDisplay(connectedDisplayId)) {
-                    "Display $connectedDisplayId not found"
-                }
-                display.containsActivity(testApp)
-            }
-        }.waitForAndVerify()
+        testApp.moveToNextDisplayViaKeyboard(wmHelper, connectedDisplayId)
     }
 
     @After
