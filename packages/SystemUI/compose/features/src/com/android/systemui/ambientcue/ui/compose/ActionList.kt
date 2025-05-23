@@ -26,6 +26,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ fun ActionList(
         actions.forEachIndexed { index, action ->
             AnimatedVisibility(
                 visible = visible,
+                modifier = Modifier.padding(horizontal = 32.dp),
                 enter =
                     slideInVertically(
                         spring(
