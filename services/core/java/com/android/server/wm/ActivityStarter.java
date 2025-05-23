@@ -80,8 +80,6 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLAS
 import static com.android.server.wm.ActivityTaskManagerService.ANIMATE;
 import static com.android.server.wm.ActivityTaskSupervisor.DEFER_RESUME;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
-import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_DEFAULT;
-import static com.android.server.wm.BackgroundActivityStartController.BAL_BLOCK;
 import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.PHASE_BOUNDS;
 import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.PHASE_DISPLAY;
 import static com.android.server.wm.Task.REPARENT_MOVE_ROOT_TASK_TO_FRONT;
@@ -151,7 +149,6 @@ import com.android.server.power.ShutdownCheckPoints;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
-import com.android.server.wm.BackgroundActivityStartController.BalCode;
 import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.TaskFragment.EmbeddingCheckResult;
@@ -216,10 +213,9 @@ class ActivityStarter {
     private int mRealCallingUid;
     private ActivityOptions mOptions;
 
-    // If it is BAL_BLOCK, background activity can only be started in an existing task that contains
-    // an activity with same uid, or if activity starts are enabled in developer options.
-    @BalCode
-    private int mBalCode;
+    // If the code is BAL_BLOCK, background activity can only be started in an existing task that
+    // contains an activity with same uid, or if activity starts are enabled in developer options.
+    private BalVerdict mBalVerdict;
 
     private int mLaunchMode;
     private boolean mLaunchTaskBehind;
@@ -748,7 +744,7 @@ class ActivityStarter {
         mCallingUid = starter.mCallingUid;
         mRealCallingUid = starter.mRealCallingUid;
         mOptions = starter.mOptions;
-        mBalCode = starter.mBalCode;
+        mBalVerdict = starter.mBalVerdict;
 
         mLaunchTaskBehind = starter.mLaunchTaskBehind;
         mLaunchFlags = starter.mLaunchFlags;
@@ -1895,7 +1891,7 @@ class ActivityStarter {
                     remoteTransition, null /* displayChange */);
         } else if (result == START_SUCCESS && mStartActivity.isState(RESUMED)) {
             // Do nothing if the activity is started and is resumed directly.
-        } else if (isStarted && (mBalCode != BAL_BLOCK || mDoResume)) {
+        } else if (isStarted && (mBalVerdict.allows() || mDoResume)) {
             // Make the collecting transition wait until this request is ready.
             if (transition != null) {
                 transition.setReady(started, false);
@@ -1919,7 +1915,7 @@ class ActivityStarter {
             TaskFragment inTaskFragment, BalVerdict balVerdict,
             NeededUriGrants intentGrants, int realCallingUid) {
         setInitialState(r, options, inTask, inTaskFragment, startFlags, sourceRecord,
-                voiceSession, voiceInteractor, balVerdict.getCode(), realCallingUid);
+                voiceSession, voiceInteractor, balVerdict, realCallingUid);
 
         computeLaunchingTaskFlags();
         mIntent.setFlags(mLaunchFlags);
@@ -2282,7 +2278,7 @@ class ActivityStarter {
                 || !targetTask.isUidPresent(mCallingUid)
                 || (LAUNCH_SINGLE_INSTANCE == mLaunchMode && targetTask.inPinnedWindowingMode()));
 
-        if (mBalCode == BAL_BLOCK && blockBalInTask
+        if (mBalVerdict.blocks() && blockBalInTask
                 && handleBackgroundActivityAbort(r)) {
             Slog.e(TAG, "Abort background activity starts from " + mCallingUid);
             return START_ABORTED;
@@ -2344,8 +2340,8 @@ class ActivityStarter {
         }
 
         if (!mSupervisor.getBackgroundActivityLaunchController().checkActivityAllowedToStart(
-                mSourceRecord, r, newTask, avoidMoveToFront(), targetTask, mLaunchFlags, mBalCode,
-                mCallingUid, mRealCallingUid, mPreferredTaskDisplayArea)) {
+                mSourceRecord, r, newTask, avoidMoveToFront(), targetTask, mLaunchFlags,
+                mBalVerdict, mCallingUid, mRealCallingUid, mPreferredTaskDisplayArea)) {
             return START_ABORTED;
         }
 
@@ -2438,7 +2434,7 @@ class ActivityStarter {
         if (mAddingToTask) {
             mSupervisor.getBackgroundActivityLaunchController().clearTopIfNeeded(targetTask,
                     mSourceRecord, mStartActivity, mCallingUid, mRealCallingUid, mLaunchFlags,
-                    mBalCode);
+                    mBalVerdict);
             return START_SUCCESS;
         }
 
@@ -2665,7 +2661,7 @@ class ActivityStarter {
         mCallingUid = -1;
         mRealCallingUid = -1;
         mOptions = null;
-        mBalCode = BAL_ALLOW_DEFAULT;
+        mBalVerdict = BalVerdict.ALLOW_BY_DEFAULT;
 
         mLaunchTaskBehind = false;
         mLaunchFlags = 0;
@@ -2711,7 +2707,7 @@ class ActivityStarter {
     private void setInitialState(ActivityRecord r, ActivityOptions options, Task inTask,
             TaskFragment inTaskFragment, int startFlags,
             ActivityRecord sourceRecord, IVoiceInteractionSession voiceSession,
-            IVoiceInteractor voiceInteractor, @BalCode int balCode, int realCallingUid) {
+            IVoiceInteractor voiceInteractor, BalVerdict balVerdict, int realCallingUid) {
         reset(false /* clearRequest */);
 
         mStartActivity = r;
@@ -2723,7 +2719,7 @@ class ActivityStarter {
         mSourceRootTask = mSourceRecord != null ? mSourceRecord.getRootTask() : null;
         mVoiceSession = voiceSession;
         mVoiceInteractor = voiceInteractor;
-        mBalCode = balCode;
+        mBalVerdict = balVerdict;
 
         mLaunchParams.reset();
 
@@ -2880,7 +2876,7 @@ class ActivityStarter {
 
         mNoAnimation = (mLaunchFlags & FLAG_ACTIVITY_NO_ANIMATION) != 0;
 
-        if (mBalCode == BAL_BLOCK && !mService.isBackgroundActivityStartsEnabled()) {
+        if (mBalVerdict.blocks() && !mService.isBackgroundActivityStartsEnabled()) {
             mCanMoveToFrontCode = MOVE_TO_FRONT_AVOID_LEGACY;
             mDoResume = false;
         }
