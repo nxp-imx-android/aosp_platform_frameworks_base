@@ -24,6 +24,7 @@ import android.app.ActivityManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.view.SurfaceControl;
+import android.window.ActivityTransitionInfo;
 import android.window.TransitionInfo;
 import android.window.WindowContainerTransaction;
 
@@ -53,12 +54,13 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
     private final BubbleController mBubbleController;
     @NonNull
     private final BubbleData mBubbleData;
+    @NonNull
     private final TaskViewTransitions mTaskViewTransitions;
     private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
 
     public BubblesTransitionObserver(@NonNull BubbleController controller,
             @NonNull BubbleData bubbleData,
-            TaskViewTransitions taskViewTransitions,
+            @NonNull TaskViewTransitions taskViewTransitions,
             Lazy<Optional<SplitScreenController>> splitScreenController) {
         mBubbleController = controller;
         mBubbleData = bubbleData;
@@ -100,35 +102,58 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             if (!TransitionUtil.isOpeningType(change.getMode())) {
                 continue;
             }
-            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-            // We only handle task transitions.
-            if (taskInfo == null || taskInfo.taskId == INVALID_TASK_ID) {
-                continue;
-            }
-            // If the opening task id is the same as the expanded bubble, skip collapsing
-            // because it is our bubble that is opening.
-            if (taskInfo.taskId == expandedTaskId) {
-                continue;
-            }
-            // If the opening task is on a different display, skip collapsing because the task
-            // opening does not visually overlap with the bubbles.
-            if (taskInfo.displayId != bubbleViewDisplayId) {
-                continue;
-            }
-            // If the opening task was launched by another bubble, skip collapsing the existing one
-            // since BubbleTransitions will start a new bubble for it
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()
-                    && mBubbleController.shouldBeAppBubble(taskInfo)) {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TransitionObserver.onTransitionReady(): "
-                        + "skipping app bubble for taskId=%d", taskInfo.taskId);
+            // If the opening transition is on a different display, skip collapsing because
+            // it does not visually overlap with the bubbles.
+            if (change.getEndDisplayId() != bubbleViewDisplayId) {
                 continue;
             }
 
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TransitionObserver.onTransitionReady(): "
-                    + "collapsing bubble for taskId=%d", taskInfo.taskId);
+            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
+            final ActivityTransitionInfo activityInfo = change.getActivityTransitionInfo();
+            if (taskInfo != null) {  // Task transition.
+                if (shouldBypassCollapseForTask(taskInfo.taskId, expandedTaskId)) {
+                    continue;
+                }
+
+                // If the opening task was launched by another bubble, skip collapsing the
+                // existing one since BubbleTransitions will start a new bubble for it.
+                if (BubbleAnythingFlagHelper.enableCreateAnyBubble()
+                        && mBubbleController.shouldBeAppBubble(taskInfo)) {
+                    ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                            "BubblesTransitionObserver.onTransitionReady(): "
+                                    + "skipping app bubble for taskId=%d", taskInfo.taskId);
+                    continue;
+                }
+            } else if (activityInfo != null) {  // Activity transition.
+                if (shouldBypassCollapseForTask(activityInfo.getTaskId(), expandedTaskId)) {
+                    continue;
+                }
+            } else {  // Invalid transition.
+                continue;
+            }
+
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
+                    + "collapse the expanded bubble for taskId=%d", expandedTaskId);
             mBubbleData.setExpanded(false);
             return;
         }
+    }
+
+    /** Checks if a task should be skipped for bubble collapse based on task ID. */
+    private boolean shouldBypassCollapseForTask(int taskId, int expandedTaskId) {
+        if (taskId == INVALID_TASK_ID) {
+            ProtoLog.w(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
+                    + "task id is invalid so skip collapsing");
+            return true;
+        }
+        // If the opening task id is the same as the expanded bubble, skip collapsing
+        // because it is our bubble that is opening.
+        if (taskId == expandedTaskId) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
+                    + "task %d is our bubble so skip collapsing", taskId);
+            return true;
+        }
+        return false;
     }
 
     private void removeBubbleIfLaunchingToSplit(@NonNull TransitionInfo info) {
@@ -141,10 +166,8 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
             if (bubble == null) continue;
             if (!splitScreenController.isTaskRootOrStageRoot(taskInfo.parentTaskId)) continue;
             // There is a bubble task that is moving to split screen
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                    "TransitionObserver.onTransitionReady(): removing bubble for task launching "
-                            + "into split taskId=%d",
-                    taskInfo.taskId);
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubblesTransitionObserver.onTransitionReady(): "
+                    + "removing bubble for task launching into split taskId=%d", taskInfo.taskId);
             TaskViewTaskController taskViewTaskController = bubble.getTaskView().getController();
             ShellTaskOrganizer taskOrganizer = taskViewTaskController.getTaskOrganizer();
             WindowContainerTransaction wct = BubbleUtilsKt.getExitBubbleTransaction(taskInfo.token,

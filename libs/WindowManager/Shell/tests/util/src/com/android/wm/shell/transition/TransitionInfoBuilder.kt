@@ -33,11 +33,13 @@ import org.mockito.kotlin.mock
  * @param type the type of the transition. See [WindowManager.TransitionType].
  * @param flags the flags for the transition. See [WindowManager.TransitionFlags].
  * @param asNoOp if true, the root leash will not be added.
+ * @param displayId the display ID for the root leash and transition changes.
  */
 class TransitionInfoBuilder @JvmOverloads constructor(
     @WindowManager.TransitionType type: Int,
     @WindowManager.TransitionFlags flags: Int = 0,
     asNoOp: Boolean = false,
+    private val displayId: Int = DEFAULT_DISPLAY_ID,
 ) {
     // The underlying TransitionInfo object being built.
     private val info: TransitionInfo = TransitionInfo(type, flags).apply {
@@ -46,7 +48,7 @@ class TransitionInfoBuilder @JvmOverloads constructor(
         }
         // Add a root leash by default, unless asNoOp is true.
         addRootLeash(
-            DISPLAY_ID,
+            displayId,
             createMockSurface(), /* leash */
             0, /* offsetLeft */
             0, /* offsetTop */
@@ -132,7 +134,7 @@ class TransitionInfoBuilder @JvmOverloads constructor(
      */
     fun addChange(change: TransitionInfo.Change): TransitionInfoBuilder {
         // Set the display ID for the change.
-        change.setDisplayId(DISPLAY_ID /* start */, DISPLAY_ID /* end */)
+        change.setDisplayId(displayId /* start */, displayId /* end */)
         // Add the change to the internal TransitionInfo object.
         info.addChange(change)
         return this // Return this for fluent builder pattern.
@@ -149,7 +151,7 @@ class TransitionInfoBuilder @JvmOverloads constructor(
 
     companion object {
         // Default display ID for root leashes and changes.
-        const val DISPLAY_ID = 0
+        const val DEFAULT_DISPLAY_ID = 0
 
         // Create a mock SurfaceControl for testing.
         private fun createMockSurface() = mock<SurfaceControl> {
