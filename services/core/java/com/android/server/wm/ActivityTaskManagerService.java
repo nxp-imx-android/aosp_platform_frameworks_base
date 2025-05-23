@@ -890,8 +890,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mTaskSupervisor.onSystemReady();
             mActivityClientController.onSystemReady();
             mAppWarnings.onSystemReady();
-            // TODO(b/258792202) Cleanup once ASM is ready to launch
-            ActivitySecurityModelFeatureFlags.initialize(mContext.getMainExecutor());
             mGrammaticalManagerInternal = LocalServices.getService(
                     GrammaticalInflectionManagerInternal.class);
         }

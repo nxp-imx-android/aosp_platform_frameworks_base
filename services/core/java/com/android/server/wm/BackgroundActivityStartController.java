@@ -114,6 +114,10 @@ public class BackgroundActivityStartController {
 
     private static final long ASM_GRACEPERIOD_TIMEOUT_MS = TIMEOUT_MS;
     private static final int ASM_GRACEPERIOD_MAX_REPEATS = 5;
+    private static final String DOC_LINK = "go/android-asm";
+
+    /** Used to determine which version of the ASM logic was used in logs while we iterate */
+    private static final int ASM_VERSION = 12;
     private static final int NO_PROCESS_UID = -1;
 
     private static final BalCheckConfiguration BAL_CHECK_FOREGROUND = new BalCheckConfiguration(
@@ -1419,7 +1423,7 @@ public class BackgroundActivityStartController {
                 : FrameworkStatsLog.ACTIVITY_ACTION_BLOCKED__ACTION__ACTIVITY_START_DIFFERENT_TASK);
 
         boolean enforceBlock = bas.mTopActivityOptedIn
-                && ActivitySecurityModelFeatureFlags.shouldRestrictActivitySwitch(callingUid);
+                && shouldRestrictActivitySwitch(callingUid);
 
         boolean allowedByGracePeriod = allowedByAsmGracePeriod(callingUid, sourceRecord, targetTask,
                 balVerdict, taskToFront, avoidMoveTaskToFront);
@@ -1452,7 +1456,7 @@ public class BackgroundActivityStartController {
                 /* action */
                 action,
                 /* version */
-                ActivitySecurityModelFeatureFlags.ASM_VERSION,
+                ASM_VERSION,
                 /* multi_window - we have our source not in the target task, but both are visible */
                 targetTask != null && sourceRecord != null
                         && !targetTask.equals(sourceRecord.getTask()) && targetTask.isVisible(),
@@ -1463,8 +1467,8 @@ public class BackgroundActivityStartController {
         );
 
         String launchedFromPackageName = targetRecord.launchedFromPackage;
-        if (ActivitySecurityModelFeatureFlags.shouldShowToast(callingUid)) {
-            String toastText = ActivitySecurityModelFeatureFlags.DOC_LINK
+        if (shouldShowToast(callingUid)) {
+            String toastText = DOC_LINK
                     + (enforceBlock ? " blocked " : " would block ")
                     + getApplicationLabel(getService().mContext.getPackageManager(),
                     launchedFromPackageName);
@@ -1521,8 +1525,7 @@ public class BackgroundActivityStartController {
         // Find the first activity which matches a safe UID and is not finishing. Clear everything
         // above it
         int[] finishCount = new int[1];
-        boolean shouldBlockActivityStart = ActivitySecurityModelFeatureFlags
-                .shouldRestrictActivitySwitch(callingUid);
+        boolean shouldBlockActivityStart = shouldRestrictActivitySwitch(callingUid);
         BlockActivityStart bas = checkCrossUidActivitySwitchFromBelow(
                 targetTaskTop, callingUid, new BlockActivityStart());
         if (shouldBlockActivityStart && bas.mTopActivityOptedIn) {
@@ -1539,12 +1542,12 @@ public class BackgroundActivityStartController {
             }
         }
 
-        if (ActivitySecurityModelFeatureFlags.shouldShowToast(callingUid)
+        if (shouldShowToast(callingUid)
                 && (!shouldBlockActivityStart || finishCount[0] > 0)) {
             showToast((shouldBlockActivityStart
                     ? "Top activities cleared by "
                     : "Top activities would be cleared by ")
-                    + ActivitySecurityModelFeatureFlags.DOC_LINK);
+                    + DOC_LINK);
 
             Slog.i(TAG, getDebugInfoForActivitySecurity("Clear Top", sourceRecord, targetRecord,
                     targetTask, targetTaskTop, realCallingUid, balVerdict, shouldBlockActivityStart,
@@ -1614,7 +1617,7 @@ public class BackgroundActivityStartController {
                 /* action */
                 FrameworkStatsLog.ACTIVITY_ACTION_BLOCKED__ACTION__FINISH_TASK,
                 /* version */
-                ActivitySecurityModelFeatureFlags.ASM_VERSION,
+                ASM_VERSION,
                 /* multi_window */
                 false,
                 /* bal_code */
@@ -1623,8 +1626,8 @@ public class BackgroundActivityStartController {
                 null
         );
 
-        boolean restrictActivitySwitch = ActivitySecurityModelFeatureFlags
-                .shouldRestrictActivitySwitch(callingUid) && bas.mTopActivityOptedIn;
+        boolean restrictActivitySwitch = shouldRestrictActivitySwitch(callingUid)
+                && bas.mTopActivityOptedIn;
 
         PackageManager pm = getService().mContext.getPackageManager();
         String callingPackage = pm.getNameForUid(callingUid);
@@ -1636,8 +1639,8 @@ public class BackgroundActivityStartController {
             callingLabel = getApplicationLabel(pm, callingPackage);
         }
 
-        if (ActivitySecurityModelFeatureFlags.shouldShowToast(callingUid)) {
-            showToast((ActivitySecurityModelFeatureFlags.DOC_LINK
+        if (shouldShowToast(callingUid)) {
+            showToast((DOC_LINK
                     + (restrictActivitySwitch ? " returned home due to "
                     : " would return home due to ")
                     + callingLabel));
@@ -1823,12 +1826,10 @@ public class BackgroundActivityStartController {
         joiner.add(prefix + "------ Activity Security " + action + " Debug Logging Start ------");
         joiner.add(prefix + "Block Enabled: " + enforceBlock);
         if (!enforceBlock) {
-            joiner.add(prefix + "Feature Flag Enabled: " + android.security
-                    .Flags.asmRestrictionsEnabled());
-            joiner.add(prefix + "Mendel Override: " + ActivitySecurityModelFeatureFlags
-                    .asmRestrictionsEnabledForAll());
+            joiner.add(prefix + "Restrictions Enabled: " + android.security
+                    .Flags.asmRestrictionsV2());
         }
-        joiner.add(prefix + "ASM Version: " + ActivitySecurityModelFeatureFlags.ASM_VERSION);
+        joiner.add(prefix + "ASM Version: " + ASM_VERSION);
         joiner.add(prefix + "System Time: " + SystemClock.uptimeMillis());
         joiner.add(prefix + "Activity Opted In: " + recordToString.apply(activityOptedIn));
 
@@ -2197,5 +2198,14 @@ public class BackgroundActivityStartController {
                 }
             }, ASM_GRACEPERIOD_TIMEOUT_MS);
         }
+    }
+
+    static boolean shouldShowToast(int uid) {
+        return android.security.Flags.asmToastsEnabled();
+    }
+
+    static boolean shouldRestrictActivitySwitch(int uid) {
+        return android.security.Flags.asmRestrictionsV2()
+                && CompatChanges.isChangeEnabled(ASM_RESTRICTIONS, uid);
     }
 }
