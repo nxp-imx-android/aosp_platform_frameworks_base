@@ -18,6 +18,7 @@ package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
 import android.icu.util.TimeZone
+import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.RelativeLayout
@@ -192,9 +193,14 @@ open class SimpleDigitalHandLayerController(
         object : ClockFaceEvents {
             override fun onTimeTick() {
                 refreshTime()
-                if (layerCfg.timespec == DigitalTimespec.TIME_FULL_FORMAT) {
-                    view.contentDescription = timespec.getContentDescription()
-                }
+
+                view.contentDescription = timespec.getContentDescription()
+                view.importantForAccessibility =
+                    if (view.contentDescription == null) {
+                        View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    } else {
+                        View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                    }
             }
 
             override fun onFontSettingChanged(fontSizePx: Float) {
