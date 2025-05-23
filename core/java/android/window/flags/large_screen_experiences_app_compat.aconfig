@@ -150,16 +150,6 @@ flag {
 }
 
 flag {
-  name: "release_user_aspect_ratio_wm"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Whether to release UserAspectRatioSettingsWindowManager when button is hidden"
-  bug: "385049711"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "backup_and_restore_for_user_aspect_ratio_settings"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether B&R for user aspect ratio settings is enabled"

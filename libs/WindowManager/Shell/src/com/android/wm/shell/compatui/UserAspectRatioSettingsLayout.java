@@ -173,9 +173,7 @@ public class UserAspectRatioSettingsLayout extends LinearLayout {
             @Override
             public void onAnimationEnd(Animator animation) {
                 view.setVisibility(View.GONE);
-                if (Flags.releaseUserAspectRatioWm()) {
-                    mWindowManager.release();
-                }
+                mWindowManager.release();
             }
         });
         fadeOut.start();
