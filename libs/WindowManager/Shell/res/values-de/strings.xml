@@ -36,6 +36,8 @@
     <string name="dock_multi_instances_not_supported_text" msgid="5011042177901502928">"Diese App kann nur in einem einzigen Fenster geöffnet werden"</string>
     <string name="forced_resizable_secondary_display" msgid="1768046938673582671">"Die App funktioniert auf einem sekundären Display möglicherweise nicht."</string>
     <string name="activity_launch_on_secondary_display_failed_text" msgid="4226485344988071769">"Die App unterstützt den Start auf sekundären Displays nicht."</string>
+    <!-- no translation found for bubble_not_supported_text (8843806122229754809) -->
+    <skip />
     <string name="accessibility_divider" msgid="6407584574218956849">"Bildschirmteiler"</string>
     <string name="divider_title" msgid="1963391955593749442">"Bildschirmteiler"</string>
     <string name="accessibility_action_divider_left_full" msgid="1792313656305328536">"Vollbild links"</string>

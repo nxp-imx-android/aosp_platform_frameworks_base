@@ -36,6 +36,8 @@
     <string name="dock_multi_instances_not_supported_text" msgid="5011042177901502928">"ဤအက်ပ်ကို ဝင်းဒိုး ၁ ခုတွင်သာ ဖွင့်နိုင်သည်"</string>
     <string name="forced_resizable_secondary_display" msgid="1768046938673582671">"ဤအက်ပ်အနေဖြင့် ဒုတိယဖန်သားပြင်ပေါ်တွင် အလုပ်လုပ်မည် မဟုတ်ပါ။"</string>
     <string name="activity_launch_on_secondary_display_failed_text" msgid="4226485344988071769">"ဤအက်ပ်အနေဖြင့် ဖွင့်ရန်စနစ်ကို ဒုတိယဖန်သားပြင်မှ အသုံးပြုရန် ပံ့ပိုးမထားပါ။"</string>
+    <!-- no translation found for bubble_not_supported_text (8843806122229754809) -->
+    <skip />
     <string name="accessibility_divider" msgid="6407584574218956849">"မျက်နှာပြင် ခွဲ၍ပြသခြင်း ပိုင်းခြားစနစ်"</string>
     <string name="divider_title" msgid="1963391955593749442">"မျက်နှာပြင် ခွဲ၍ပြသခြင်း ပိုင်းခြားစနစ်"</string>
     <string name="accessibility_action_divider_left_full" msgid="1792313656305328536">"ဘယ်ဘက် မျက်နှာပြင်အပြည့်"</string>
