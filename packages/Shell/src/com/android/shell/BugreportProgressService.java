@@ -88,9 +88,9 @@ import com.android.internal.app.ChooserActivity;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 
-import libcore.io.Streams;
-
 import com.google.android.collect.Lists;
+
+import libcore.io.Streams;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -1481,7 +1481,6 @@ public class BugreportProgressService extends Service {
         final Notification.Builder builder = newBaseNotification(mContext)
                 .setContentTitle(title)
                 .setTicker(title)
-                .setProgress(100 /* max value of progress percentage */, 100, false)
                 .setOnlyAlertOnce(false)
                 .setContentText(content);
 
