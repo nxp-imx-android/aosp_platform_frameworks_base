@@ -66,7 +66,7 @@ public class ProtectedPackages {
 
     @Nullable
     @GuardedBy("this")
-    private String mVerificationServiceProviderPackage;
+    private String mDeveloperVerificationServiceProviderPackage;
 
     @Nullable
     @GuardedBy("this")
@@ -101,10 +101,10 @@ public class ProtectedPackages {
         }
     }
 
-    /** Sets verification service provider package which should be protected. */
-    public synchronized void setVerificationServiceProviderPackage(
+    /** Sets developer verification service provider package which should be protected. */
+    public synchronized void setDeveloperVerificationServiceProviderPackage(
             @Nullable String verificationServiceProviderPackage) {
-        mVerificationServiceProviderPackage = verificationServiceProviderPackage;
+        mDeveloperVerificationServiceProviderPackage = verificationServiceProviderPackage;
     }
 
     private synchronized boolean hasDeviceOwnerOrProfileOwner(int userId, String packageName) {
@@ -152,7 +152,7 @@ public class ProtectedPackages {
         if (Flags.protectSupervisionPackages() && isSupervisionPackage(userId, packageName)) {
             return true;
         }
-        if (packageName.equals(mVerificationServiceProviderPackage)) {
+        if (packageName.equals(mDeveloperVerificationServiceProviderPackage)) {
             return true;
         }
         return false;

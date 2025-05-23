@@ -9196,35 +9196,35 @@
 
     <!-- @SystemApi
         @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
-        Allows app to be the verification agent to verify packages.
+        Allows app to be the developer verification agent to verify packages.
         <p>Protection level: signature|privileged
         @hide
     -->
-    <permission android:name="android.permission.VERIFICATION_AGENT"
+    <permission android:name="android.permission.DEVELOPER_VERIFICATION_AGENT"
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.content.pm.verification_service" />
 
     <!-- @SystemApi
         @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
-        Must be required by a privileged {@link android.content.pm.verify.pkg.VerifierService}
+        Must be required by a privileged {@link android.content.pm.verify.developer.DeveloperVerifierService}
         to ensure that only the system can bind to it.
         This permission should not be held by anything other than the system.
         <p>Not for use by third-party applications. </p>
         <p>Protection level: signature
         @hide
     -->
-    <permission android:name="android.permission.BIND_VERIFICATION_AGENT"
+    <permission android:name="android.permission.BIND_DEVELOPER_VERIFICATION_AGENT"
         android:protectionLevel="internal"
         android:featureFlag="android.content.pm.verification_service" />
 
      <!-- @SystemApi
         @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
         Allows only the default PackageInstaller app to set user's response for
-        an incomplete verification.
+        an incomplete developer verification.
         <p>Protection level: internal|installer
         @hide
     -->
-    <permission android:name="android.permission.SET_VERIFICATION_USER_RESPONSE"
+    <permission android:name="android.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE"
         android:protectionLevel="internal|installer"
         android:featureFlag="android.content.pm.verification_service" />
 

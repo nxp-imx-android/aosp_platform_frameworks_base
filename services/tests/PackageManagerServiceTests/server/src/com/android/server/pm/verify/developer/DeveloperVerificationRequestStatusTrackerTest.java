@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.pm.verify.pkg;
+package com.android.server.pm.verify.developer;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class VerificationStatusTrackerTest {
+public class DeveloperVerificationRequestStatusTrackerTest {
     private static final String TEST_PACKAGE_NAME = "com.foo";
     private static final long TEST_REQUEST_START_TIME = 100L;
     private static final long TEST_TIMEOUT_DURATION_MILLIS = TimeUnit.MINUTES.toMillis(1);
@@ -45,8 +45,8 @@ public class VerificationStatusTrackerTest {
             TimeUnit.MINUTES.toMillis(10);
 
     @Mock
-    VerifierController.Injector mInjector;
-    private VerificationStatusTracker mTracker;
+    DeveloperVerifierController.Injector mInjector;
+    private DeveloperVerificationRequestStatusTracker mTracker;
 
     @Before
     public void setUp() {
@@ -62,7 +62,7 @@ public class VerificationStatusTrackerTest {
                 .thenReturn(TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS)
                 .thenReturn(TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS - 100)
                 .thenReturn(TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS);
-        mTracker = new VerificationStatusTracker(TEST_TIMEOUT_DURATION_MILLIS,
+        mTracker = new DeveloperVerificationRequestStatusTracker(TEST_TIMEOUT_DURATION_MILLIS,
                 TEST_MAX_TIMEOUT_DURATION_MILLIS, mInjector, 0);
     }
 

@@ -48,6 +48,7 @@ public final class KnownPackages {
             PACKAGE_RECENTS,
             PACKAGE_AMBIENT_CONTEXT_DETECTION,
             PACKAGE_WEARABLE_SENSING,
+            PACKAGE_DEVELOPER_VERIFICATION_SERVICE_PROVIDER
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface KnownPackage {
@@ -73,10 +74,10 @@ public final class KnownPackages {
     public static final int PACKAGE_RECENTS = 17;
     public static final int PACKAGE_AMBIENT_CONTEXT_DETECTION = 18;
     public static final int PACKAGE_WEARABLE_SENSING = 19;
-    public static final int PACKAGE_VERIFICATION_SERVICE_PROVIDER = 20;
+    public static final int PACKAGE_DEVELOPER_VERIFICATION_SERVICE_PROVIDER = 20;
     // Integer value of the last known package ID. Increases as new ID is added to KnownPackage.
     // Please note the numbers should be continuous.
-    public static final int LAST_KNOWN_PACKAGE = PACKAGE_VERIFICATION_SERVICE_PROVIDER;
+    public static final int LAST_KNOWN_PACKAGE = PACKAGE_DEVELOPER_VERIFICATION_SERVICE_PROVIDER;
 
     static final String SYSTEM_PACKAGE_NAME = "android";
 
@@ -97,7 +98,7 @@ public final class KnownPackages {
     private final String mRetailDemoPackage;
     private final String mOverlayConfigSignaturePackage;
     private final String mRecentsPackage;
-    private final String mVerificationServiceProviderPackage;
+    private final String mDeveloperVerificationServiceProviderPackage;
 
     KnownPackages(DefaultAppProvider defaultAppProvider, String requiredInstallerPackage,
             String requiredUninstallerPackage, String setupWizardPackage,
@@ -107,7 +108,7 @@ public final class KnownPackages {
             String ambientContextDetectionPackage, String wearableSensingPackage,
             String appPredictionServicePackage, String companionPackageName,
             String retailDemoPackage, String overlayConfigSignaturePackage, String recentsPackage,
-            String verificationServiceProviderPackage) {
+            String developerVerificationServiceProviderPackage) {
         mDefaultAppProvider = defaultAppProvider;
         mRequiredInstallerPackage = requiredInstallerPackage;
         mRequiredUninstallerPackage = requiredUninstallerPackage;
@@ -125,7 +126,7 @@ public final class KnownPackages {
         mRetailDemoPackage = retailDemoPackage;
         mOverlayConfigSignaturePackage = overlayConfigSignaturePackage;
         mRecentsPackage = recentsPackage;
-        mVerificationServiceProviderPackage = verificationServiceProviderPackage;
+        mDeveloperVerificationServiceProviderPackage = developerVerificationServiceProviderPackage;
     }
 
     /**
@@ -177,8 +178,8 @@ public final class KnownPackages {
                 return "Ambient Context Detection";
             case PACKAGE_WEARABLE_SENSING:
                 return "Wearable sensing";
-            case PACKAGE_VERIFICATION_SERVICE_PROVIDER:
-                return "Verification service provider";
+            case PACKAGE_DEVELOPER_VERIFICATION_SERVICE_PROVIDER:
+                return "Developer verification service provider";
         }
         return "Unknown";
     }
@@ -222,8 +223,9 @@ public final class KnownPackages {
                 return snapshot.filterOnlySystemPackages(mOverlayConfigSignaturePackage);
             case PACKAGE_RECENTS:
                 return snapshot.filterOnlySystemPackages(mRecentsPackage);
-            case PACKAGE_VERIFICATION_SERVICE_PROVIDER:
-                return snapshot.filterOnlySystemPackages(mVerificationServiceProviderPackage);
+            case PACKAGE_DEVELOPER_VERIFICATION_SERVICE_PROVIDER:
+                return snapshot.filterOnlySystemPackages(
+                        mDeveloperVerificationServiceProviderPackage);
             default:
                 return ArrayUtils.emptyArray(String.class);
         }

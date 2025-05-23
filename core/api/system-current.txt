@@ -63,6 +63,7 @@ package android {
     field public static final String BIND_CONTENT_CAPTURE_SERVICE = "android.permission.BIND_CONTENT_CAPTURE_SERVICE";
     field public static final String BIND_CONTENT_SUGGESTIONS_SERVICE = "android.permission.BIND_CONTENT_SUGGESTIONS_SERVICE";
     field @FlaggedApi("android.content.pm.sdk_dependency_installer") public static final String BIND_DEPENDENCY_INSTALLER = "android.permission.BIND_DEPENDENCY_INSTALLER";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String BIND_DEVELOPER_VERIFICATION_AGENT = "android.permission.BIND_DEVELOPER_VERIFICATION_AGENT";
     field public static final String BIND_DIRECTORY_SEARCH = "android.permission.BIND_DIRECTORY_SEARCH";
     field public static final String BIND_DISPLAY_HASHING_SERVICE = "android.permission.BIND_DISPLAY_HASHING_SERVICE";
     field @FlaggedApi("com.android.internal.telephony.flags.use_oem_domain_selection_service") public static final String BIND_DOMAIN_SELECTION_SERVICE = "android.permission.BIND_DOMAIN_SELECTION_SERVICE";
@@ -101,7 +102,6 @@ package android {
     field public static final String BIND_TRANSLATION_SERVICE = "android.permission.BIND_TRANSLATION_SERVICE";
     field public static final String BIND_TRUST_AGENT = "android.permission.BIND_TRUST_AGENT";
     field public static final String BIND_TV_REMOTE_SERVICE = "android.permission.BIND_TV_REMOTE_SERVICE";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String BIND_VERIFICATION_AGENT = "android.permission.BIND_VERIFICATION_AGENT";
     field public static final String BIND_VISUAL_QUERY_DETECTION_SERVICE = "android.permission.BIND_VISUAL_QUERY_DETECTION_SERVICE";
     field public static final String BIND_WALLPAPER_EFFECTS_GENERATION_SERVICE = "android.permission.BIND_WALLPAPER_EFFECTS_GENERATION_SERVICE";
     field public static final String BIND_WEARABLE_SENSING_SERVICE = "android.permission.BIND_WEARABLE_SENSING_SERVICE";
@@ -146,6 +146,7 @@ package android {
     field public static final String CREATE_USERS = "android.permission.CREATE_USERS";
     field public static final String CREATE_VIRTUAL_DEVICE = "android.permission.CREATE_VIRTUAL_DEVICE";
     field public static final String CRYPT_KEEPER = "android.permission.CRYPT_KEEPER";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String DEVELOPER_VERIFICATION_AGENT = "android.permission.DEVELOPER_VERIFICATION_AGENT";
     field public static final String DEVICE_POWER = "android.permission.DEVICE_POWER";
     field public static final String DISABLE_SYSTEM_SOUND_EFFECTS = "android.permission.DISABLE_SYSTEM_SOUND_EFFECTS";
     field public static final String DISPATCH_PROVISIONING_MESSAGE = "android.permission.DISPATCH_PROVISIONING_MESSAGE";
@@ -393,6 +394,7 @@ package android {
     field public static final String SET_ACTIVITY_WATCHER = "android.permission.SET_ACTIVITY_WATCHER";
     field public static final String SET_CLIP_SOURCE = "android.permission.SET_CLIP_SOURCE";
     field public static final String SET_DEFAULT_ACCOUNT_FOR_CONTACTS = "android.permission.SET_DEFAULT_ACCOUNT_FOR_CONTACTS";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String SET_DEVELOPER_VERIFICATION_USER_RESPONSE = "android.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE";
     field public static final String SET_HARMFUL_APP_WARNINGS = "android.permission.SET_HARMFUL_APP_WARNINGS";
     field public static final String SET_LOW_POWER_STANDBY_PORTS = "android.permission.SET_LOW_POWER_STANDBY_PORTS";
     field public static final String SET_MEDIA_KEY_LISTENER = "android.permission.SET_MEDIA_KEY_LISTENER";
@@ -401,7 +403,6 @@ package android {
     field public static final String SET_SCREEN_COMPATIBILITY = "android.permission.SET_SCREEN_COMPATIBILITY";
     field public static final String SET_SYSTEM_AUDIO_CAPTION = "android.permission.SET_SYSTEM_AUDIO_CAPTION";
     field public static final String SET_UNRESTRICTED_KEEP_CLEAR_AREAS = "android.permission.SET_UNRESTRICTED_KEEP_CLEAR_AREAS";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String SET_VERIFICATION_USER_RESPONSE = "android.permission.SET_VERIFICATION_USER_RESPONSE";
     field public static final String SET_VOLUME_KEY_LONG_PRESS_LISTENER = "android.permission.SET_VOLUME_KEY_LONG_PRESS_LISTENER";
     field public static final String SET_WALLPAPER_COMPONENT = "android.permission.SET_WALLPAPER_COMPONENT";
     field public static final String SET_WALLPAPER_DIM_AMOUNT = "android.permission.SET_WALLPAPER_DIM_AMOUNT";
@@ -445,7 +446,6 @@ package android {
     field @FlaggedApi("android.app.ondeviceintelligence.flags.enable_on_device_intelligence") public static final String USE_ON_DEVICE_INTELLIGENCE = "android.permission.USE_ON_DEVICE_INTELLIGENCE";
     field public static final String USE_RESERVED_DISK = "android.permission.USE_RESERVED_DISK";
     field public static final String UWB_PRIVILEGED = "android.permission.UWB_PRIVILEGED";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String VERIFICATION_AGENT = "android.permission.VERIFICATION_AGENT";
     field @FlaggedApi("android.os.vibrator.vendor_vibration_effects") public static final String VIBRATE_VENDOR_EFFECTS = "android.permission.VIBRATE_VENDOR_EFFECTS";
     field public static final String WHITELIST_AUTO_REVOKE_PERMISSIONS = "android.permission.WHITELIST_AUTO_REVOKE_PERMISSIONS";
     field public static final String WHITELIST_RESTRICTED_PERMISSIONS = "android.permission.WHITELIST_RESTRICTED_PERMISSIONS";
@@ -4300,20 +4300,29 @@ package android.content.pm {
   }
 
   public class PackageInstaller {
-    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.VERIFICATION_AGENT) public final int getVerificationPolicy();
-    method @FlaggedApi("android.content.pm.verification_service") @Nullable public android.content.pm.PackageInstaller.VerificationUserConfirmationInfo getVerificationUserConfirmationInfo(int);
+    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT) public final int getDeveloperVerificationPolicy();
+    method @FlaggedApi("android.content.pm.verification_service") @Nullable @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE) public android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int);
     method @NonNull public android.content.pm.PackageInstaller.InstallInfo readInstallInfo(@NonNull java.io.File, int) throws android.content.pm.PackageInstaller.PackageParsingException;
     method @FlaggedApi("android.content.pm.read_install_info") @NonNull public android.content.pm.PackageInstaller.InstallInfo readInstallInfo(@NonNull android.os.ParcelFileDescriptor, @Nullable String, int) throws android.content.pm.PackageInstaller.PackageParsingException;
+    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT) public final boolean setDeveloperVerificationPolicy(int);
+    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE) public void setDeveloperVerificationUserResponse(int, int);
     method @RequiresPermission(android.Manifest.permission.INSTALL_PACKAGES) public void setPermissionsResult(int, boolean);
-    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.VERIFICATION_AGENT) public final boolean setVerificationPolicy(int);
-    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.SET_VERIFICATION_USER_RESPONSE) public void setVerificationUserResponse(int, int);
     field public static final String ACTION_CONFIRM_INSTALL = "android.content.pm.action.CONFIRM_INSTALL";
     field public static final String ACTION_CONFIRM_PRE_APPROVAL = "android.content.pm.action.CONFIRM_PRE_APPROVAL";
     field @FlaggedApi("android.content.pm.sdk_dependency_installer") public static final String ACTION_INSTALL_DEPENDENCY = "android.content.pm.action.INSTALL_DEPENDENCY";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String ACTION_NOTIFY_VERIFICATION_INCOMPLETE = "android.content.pm.action.NOTIFY_VERIFICATION_INCOMPLETE";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE = "android.content.pm.action.NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE";
     field public static final int DATA_LOADER_TYPE_INCREMENTAL = 2; // 0x2
     field public static final int DATA_LOADER_TYPE_NONE = 0; // 0x0
     field public static final int DATA_LOADER_TYPE_STREAMING = 1; // 0x1
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED = 3; // 0x3
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN = 1; // 0x1
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN = 2; // 0x2
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_NONE = 0; // 0x0
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL = 1; // 0x1
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR = 0; // 0x0
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 4; // 0x4
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_OK = 2; // 0x2
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY = 3; // 0x3
     field public static final String EXTRA_CALLBACK = "android.content.pm.extra.CALLBACK";
     field public static final String EXTRA_DATA_LOADER_TYPE = "android.content.pm.extra.DATA_LOADER_TYPE";
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_DELETE_FLAGS = "android.content.pm.extra.DELETE_FLAGS";
@@ -4325,15 +4334,20 @@ package android.content.pm {
     field public static final int REASON_CONFIRM_PACKAGE_CHANGE = 0; // 0x0
     field public static final int REASON_OWNERSHIP_CHANGED = 1; // 0x1
     field public static final int REASON_REMIND_OWNERSHIP = 2; // 0x2
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_POLICY_BLOCK_FAIL_CLOSED = 3; // 0x3
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_POLICY_BLOCK_FAIL_OPEN = 1; // 0x1
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_POLICY_BLOCK_FAIL_WARN = 2; // 0x2
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_POLICY_NONE = 0; // 0x0
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_USER_RESPONSE_CANCEL = 1; // 0x1
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_USER_RESPONSE_ERROR = 0; // 0x0
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 4; // 0x4
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_USER_RESPONSE_OK = 2; // 0x2
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_USER_RESPONSE_RETRY = 3; // 0x3
+  }
+
+  @FlaggedApi("android.content.pm.verification_service") public static final class PackageInstaller.DeveloperVerificationUserConfirmationInfo implements android.os.Parcelable {
+    ctor public PackageInstaller.DeveloperVerificationUserConfirmationInfo();
+    ctor public PackageInstaller.DeveloperVerificationUserConfirmationInfo(int, int);
+    method public int describeContents();
+    method public int getVerificationPolicy();
+    method public int getVerificationUserActionNeededReason();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo> CREATOR;
+    field public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED = 2; // 0x2
+    field public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION = 3; // 0x3
+    field public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE = 1; // 0x1
+    field public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN = 0; // 0x0
   }
 
   public static class PackageInstaller.InstallInfo {
@@ -4386,20 +4400,6 @@ package android.content.pm {
     method @RequiresPermission(android.Manifest.permission.MANAGE_ROLLBACKS) public void setRollbackImpactLevel(int);
     method @FlaggedApi("android.content.pm.rollback_lifetime") @RequiresPermission(android.Manifest.permission.MANAGE_ROLLBACKS) public void setRollbackLifetimeMillis(long);
     method @RequiresPermission(android.Manifest.permission.INSTALL_PACKAGES) public void setStaged();
-  }
-
-  @FlaggedApi("android.content.pm.verification_service") public static final class PackageInstaller.VerificationUserConfirmationInfo implements android.os.Parcelable {
-    ctor public PackageInstaller.VerificationUserConfirmationInfo();
-    ctor public PackageInstaller.VerificationUserConfirmationInfo(int, int);
-    method public int describeContents();
-    method public int getVerificationPolicy();
-    method public int getVerificationUserActionNeededReason();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PackageInstaller.VerificationUserConfirmationInfo> CREATOR;
-    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION = 3; // 0x3
-    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE = 1; // 0x1
-    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED = 2; // 0x2
-    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN = 0; // 0x0
   }
 
   public class PackageItemInfo {
@@ -4468,7 +4468,7 @@ package android.content.pm {
     method @Deprecated @RequiresPermission(android.Manifest.permission.INTENT_FILTER_VERIFICATION_AGENT) public abstract void verifyIntentFilter(int, int, @NonNull java.util.List<java.lang.String>);
     field public static final String ACTION_REQUEST_PERMISSIONS = "android.content.pm.action.REQUEST_PERMISSIONS";
     field public static final String ACTION_REQUEST_PERMISSIONS_FOR_OTHER = "android.content.pm.action.REQUEST_PERMISSIONS_FOR_OTHER";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String ACTION_VERIFY_PACKAGE = "android.content.pm.action.VERIFY_PACKAGE";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String ACTION_VERIFY_DEVELOPER = "android.content.pm.action.VERIFY_DEVELOPER";
     field @FlaggedApi("android.content.pm.asl_in_apk_app_metadata_source") public static final int APP_METADATA_SOURCE_APK = 1; // 0x1
     field @FlaggedApi("android.content.pm.asl_in_apk_app_metadata_source") public static final int APP_METADATA_SOURCE_INSTALLER = 2; // 0x2
     field @FlaggedApi("android.content.pm.asl_in_apk_app_metadata_source") public static final int APP_METADATA_SOURCE_SYSTEM_IMAGE = 3; // 0x3
@@ -4745,6 +4745,64 @@ package android.content.pm.permission {
 
 }
 
+package android.content.pm.verify.developer {
+
+  @FlaggedApi("android.content.pm.verification_service") public final class DeveloperVerificationSession implements android.os.Parcelable {
+    method public int describeContents();
+    method public long extendTimeRemaining(long);
+    method @NonNull public java.util.List<android.content.pm.SharedLibraryInfo> getDeclaredLibraries();
+    method @NonNull public android.os.PersistableBundle getExtensionParams();
+    method public int getId();
+    method public int getInstallSessionId();
+    method @NonNull public String getPackageName();
+    method @NonNull public android.content.pm.SigningInfo getSigningInfo();
+    method @NonNull public android.net.Uri getStagedPackageUri();
+    method public long getTimeoutTime();
+    method public int getVerificationPolicy();
+    method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus);
+    method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus, @NonNull android.os.PersistableBundle);
+    method public void reportVerificationIncomplete(int);
+    method public boolean setVerificationPolicy(int);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationSession> CREATOR;
+    field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
+    field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN = 0; // 0x0
+  }
+
+  @FlaggedApi("android.content.pm.verification_service") public final class DeveloperVerificationStatus implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAslStatus();
+    method @NonNull public String getFailureMessage();
+    method public boolean isLite();
+    method public boolean isVerified();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationStatus> CREATOR;
+    field public static final int DEVELOPER_VERIFIER_STATUS_ASL_BAD = 2; // 0x2
+    field public static final int DEVELOPER_VERIFIER_STATUS_ASL_GOOD = 1; // 0x1
+    field public static final int DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED = 0; // 0x0
+  }
+
+  public static final class DeveloperVerificationStatus.Builder {
+    ctor public DeveloperVerificationStatus.Builder();
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus build();
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setAslStatus(int);
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setFailureMessage(@NonNull String);
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setLite(boolean);
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setVerified(boolean);
+  }
+
+  @FlaggedApi("android.content.pm.verification_service") public abstract class DeveloperVerifierService extends android.app.Service {
+    ctor public DeveloperVerifierService();
+    method @Nullable public android.os.IBinder onBind(@Nullable android.content.Intent);
+    method public abstract void onPackageNameAvailable(@NonNull String);
+    method public abstract void onVerificationCancelled(@NonNull String);
+    method public abstract void onVerificationRequired(@NonNull android.content.pm.verify.developer.DeveloperVerificationSession);
+    method public abstract void onVerificationRetry(@NonNull android.content.pm.verify.developer.DeveloperVerificationSession);
+    method public abstract void onVerificationTimeout(int);
+  }
+
+}
+
 package android.content.pm.verify.domain {
 
   public final class DomainOwner implements android.os.Parcelable {
@@ -4796,64 +4854,6 @@ package android.content.pm.verify.domain {
 
   public final class DomainVerificationUserState implements android.os.Parcelable {
     method @NonNull public java.util.UUID getIdentifier();
-  }
-
-}
-
-package android.content.pm.verify.pkg {
-
-  @FlaggedApi("android.content.pm.verification_service") public final class VerificationSession implements android.os.Parcelable {
-    method public int describeContents();
-    method public long extendTimeRemaining(long);
-    method @NonNull public java.util.List<android.content.pm.SharedLibraryInfo> getDeclaredLibraries();
-    method @NonNull public android.os.PersistableBundle getExtensionParams();
-    method public int getId();
-    method public int getInstallSessionId();
-    method @NonNull public String getPackageName();
-    method @NonNull public android.content.pm.SigningInfo getSigningInfo();
-    method @NonNull public android.net.Uri getStagedPackageUri();
-    method public long getTimeoutTime();
-    method public int getVerificationPolicy();
-    method public void reportVerificationComplete(@NonNull android.content.pm.verify.pkg.VerificationStatus);
-    method public void reportVerificationComplete(@NonNull android.content.pm.verify.pkg.VerificationStatus, @NonNull android.os.PersistableBundle);
-    method public void reportVerificationIncomplete(int);
-    method public boolean setVerificationPolicy(int);
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.pkg.VerificationSession> CREATOR;
-    field public static final int VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
-    field public static final int VERIFICATION_INCOMPLETE_UNKNOWN = 0; // 0x0
-  }
-
-  @FlaggedApi("android.content.pm.verification_service") public final class VerificationStatus implements android.os.Parcelable {
-    method public int describeContents();
-    method public int getAslStatus();
-    method @NonNull public String getFailureMessage();
-    method public boolean isLite();
-    method public boolean isVerified();
-    method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.pkg.VerificationStatus> CREATOR;
-    field public static final int VERIFIER_STATUS_ASL_BAD = 2; // 0x2
-    field public static final int VERIFIER_STATUS_ASL_GOOD = 1; // 0x1
-    field public static final int VERIFIER_STATUS_ASL_UNDEFINED = 0; // 0x0
-  }
-
-  public static final class VerificationStatus.Builder {
-    ctor public VerificationStatus.Builder();
-    method @NonNull public android.content.pm.verify.pkg.VerificationStatus build();
-    method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setAslStatus(int);
-    method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setFailureMessage(@NonNull String);
-    method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setLite(boolean);
-    method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setVerified(boolean);
-  }
-
-  @FlaggedApi("android.content.pm.verification_service") public abstract class VerifierService extends android.app.Service {
-    ctor public VerifierService();
-    method @Nullable public android.os.IBinder onBind(@Nullable android.content.Intent);
-    method public abstract void onPackageNameAvailable(@NonNull String);
-    method public abstract void onVerificationCancelled(@NonNull String);
-    method public abstract void onVerificationRequired(@NonNull android.content.pm.verify.pkg.VerificationSession);
-    method public abstract void onVerificationRetry(@NonNull android.content.pm.verify.pkg.VerificationSession);
-    method public abstract void onVerificationTimeout(int);
   }
 
 }

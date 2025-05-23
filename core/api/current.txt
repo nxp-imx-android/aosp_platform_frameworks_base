@@ -13235,10 +13235,10 @@ package android.content.pm {
     method @Deprecated @Nullable public android.content.pm.PackageInstaller.SessionInfo getActiveStagedSession();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getActiveStagedSessions();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getAllSessions();
+    method @FlaggedApi("android.content.pm.verification_service") @Nullable public final String getDeveloperVerificationServiceProvider();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getMySessions();
     method @Nullable public android.content.pm.PackageInstaller.SessionInfo getSessionInfo(int);
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getStagedSessions();
-    method @FlaggedApi("android.content.pm.verification_service") @Nullable public final String getVerificationServiceProvider();
     method @RequiresPermission(allOf={android.Manifest.permission.INSTALL_PACKAGES, "com.android.permission.INSTALL_EXISTING_PACKAGES"}) public void installExistingPackage(@NonNull String, int, @Nullable android.content.IntentSender);
     method @FlaggedApi("android.content.pm.archiving") @RequiresPermission(android.Manifest.permission.INSTALL_PACKAGES) public void installPackageArchived(@NonNull android.content.pm.ArchivedPackageInfo, @NonNull android.content.pm.PackageInstaller.SessionParams, @NonNull android.content.IntentSender);
     method @NonNull public android.content.pm.PackageInstaller.Session openSession(int) throws java.io.IOException;
@@ -13259,6 +13259,12 @@ package android.content.pm {
     field public static final String ACTION_SESSION_COMMITTED = "android.content.pm.action.SESSION_COMMITTED";
     field public static final String ACTION_SESSION_DETAILS = "android.content.pm.action.SESSION_DETAILS";
     field public static final String ACTION_SESSION_UPDATED = "android.content.pm.action.SESSION_UPDATED";
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED = 2; // 0x2
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE = 1; // 0x1
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN = 0; // 0x0
+    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE = "android.content.pm.extra.DEVELOPER_VERIFICATION_EXTENSION_RESPONSE";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON = "android.content.pm.extra.DEVELOPER_VERIFICATION_FAILURE_REASON";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED = "android.content.pm.extra.DEVELOPER_VERIFICATION_LITE_PERFORMED";
     field public static final String EXTRA_INSTALL_CONSTRAINTS = "android.content.pm.extra.INSTALL_CONSTRAINTS";
     field public static final String EXTRA_INSTALL_CONSTRAINTS_RESULT = "android.content.pm.extra.INSTALL_CONSTRAINTS_RESULT";
     field public static final String EXTRA_OTHER_PACKAGE_NAME = "android.content.pm.extra.OTHER_PACKAGE_NAME";
@@ -13273,9 +13279,6 @@ package android.content.pm {
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_UNARCHIVE_ID = "android.content.pm.extra.UNARCHIVE_ID";
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_UNARCHIVE_PACKAGE_NAME = "android.content.pm.extra.UNARCHIVE_PACKAGE_NAME";
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_UNARCHIVE_STATUS = "android.content.pm.extra.UNARCHIVE_STATUS";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_VERIFICATION_EXTENSION_RESPONSE = "android.content.pm.extra.VERIFICATION_EXTENSION_RESPONSE";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_VERIFICATION_FAILURE_REASON = "android.content.pm.extra.VERIFICATION_FAILURE_REASON";
-    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_VERIFICATION_LITE_PERFORMED = "android.content.pm.extra.VERIFICATION_LITE_PERFORMED";
     field public static final int PACKAGE_SOURCE_DOWNLOADED_FILE = 4; // 0x4
     field public static final int PACKAGE_SOURCE_LOCAL_FILE = 3; // 0x3
     field public static final int PACKAGE_SOURCE_OTHER = 1; // 0x1
@@ -13298,9 +13301,6 @@ package android.content.pm {
     field @FlaggedApi("android.content.pm.archiving") public static final int UNARCHIVAL_ERROR_USER_ACTION_NEEDED = 1; // 0x1
     field @FlaggedApi("android.content.pm.archiving") public static final int UNARCHIVAL_GENERIC_ERROR = 100; // 0x64
     field @FlaggedApi("android.content.pm.archiving") public static final int UNARCHIVAL_OK = 0; // 0x0
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE = 1; // 0x1
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED = 2; // 0x2
-    field @FlaggedApi("android.content.pm.verification_service") public static final int VERIFICATION_FAILED_REASON_UNKNOWN = 0; // 0x0
   }
 
   public static final class PackageInstaller.InstallConstraints implements android.os.Parcelable {

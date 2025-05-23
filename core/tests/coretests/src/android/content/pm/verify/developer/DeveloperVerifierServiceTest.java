@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package android.content.pm.verify;
+package android.content.pm.verify.developer;
 
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -27,10 +27,6 @@ import static org.mockito.Mockito.when;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.SigningInfo;
-import android.content.pm.verify.pkg.IVerificationSessionInterface;
-import android.content.pm.verify.pkg.IVerifierService;
-import android.content.pm.verify.pkg.VerificationSession;
-import android.content.pm.verify.pkg.VerifierService;
 import android.net.Uri;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
@@ -49,31 +45,31 @@ import java.util.ArrayList;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class VerifierServiceTest {
+public class DeveloperVerifierServiceTest {
     private static final int TEST_ID = 100;
     private static final int TEST_INSTALL_SESSION_ID = 33;
     private static final String TEST_PACKAGE_NAME = "com.foo";
     private static final Uri TEST_PACKAGE_URI = Uri.parse("test://test");
     private static final SigningInfo TEST_SIGNING_INFO = new SigningInfo();
-    private static final int TEST_POLICY = VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
-    private VerifierService mService;
-    private VerificationSession mSession;
+    private static final int TEST_POLICY = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+    private DeveloperVerifierService mService;
+    private DeveloperVerificationSession mSession;
 
     @Before
     public void setUp() {
-        mService = Mockito.mock(VerifierService.class, Answers.CALLS_REAL_METHODS);
-        mSession = new VerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
+        mService = Mockito.mock(DeveloperVerifierService.class, Answers.CALLS_REAL_METHODS);
+        mSession = new DeveloperVerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
                 TEST_PACKAGE_NAME, TEST_PACKAGE_URI, TEST_SIGNING_INFO,
                 new ArrayList<>(), new PersistableBundle(), TEST_POLICY, Mockito.mock(
-                IVerificationSessionInterface.class));
+                IDeveloperVerificationSessionInterface.class));
     }
 
     @Test
     public void testBind() throws Exception {
         Intent intent = Mockito.mock(Intent.class);
-        when(intent.getAction()).thenReturn(PackageManager.ACTION_VERIFY_PACKAGE);
-        IVerifierService binder =
-                (IVerifierService) mService.onBind(intent);
+        when(intent.getAction()).thenReturn(PackageManager.ACTION_VERIFY_DEVELOPER);
+        IDeveloperVerifierService binder =
+                (IDeveloperVerifierService) mService.onBind(intent);
         assertThat(binder).isNotNull();
         binder.onPackageNameAvailable(TEST_PACKAGE_NAME);
         verify(mService).onPackageNameAvailable(eq(TEST_PACKAGE_NAME));

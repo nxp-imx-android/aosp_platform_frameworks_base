@@ -19,17 +19,17 @@ package com.android.packageinstaller;
 import static android.content.pm.PackageInstaller.EXTRA_SESSION_ID;
 import static android.content.pm.PackageInstaller.SessionInfo;
 import static android.content.pm.PackageInstaller.SessionInfo.INVALID_ID;
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_WARN;
-import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_CANCEL;
-import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_ERROR;
-import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
-import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_OK;
-import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_RETRY;
-import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
-import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
-import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED;
-import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_OK;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
+import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
+import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
+import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
+import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 
 import static com.android.packageinstaller.PackageUtil.AppSnippet;
 
@@ -40,7 +40,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
-import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo;
+import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,9 +51,9 @@ import androidx.annotation.Nullable;
 
 import java.io.File;
 
-public class ConfirmVerification extends Activity {
+public class ConfirmDeveloperVerification extends Activity {
 
-    private static final String TAG = ConfirmVerification.class.getSimpleName();
+    private static final String TAG = ConfirmDeveloperVerification.class.getSimpleName();
     public static final int FLAG_VERIFICATION_FAILED_MAY_RETRY = 1 << 0;
     public static final int FLAG_VERIFICATION_FAILED_MAY_BYPASS = 1 << 1;
     public static final int FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS =
@@ -83,18 +83,18 @@ public class ConfirmVerification extends Activity {
         String resolvedPath = sessionInfo != null ? sessionInfo.getResolvedBaseApkPath() : null;
         if (sessionInfo == null || !sessionInfo.isSealed() || resolvedPath == null) {
             Log.e(TAG, "Session " + sessionId + " in funky state; ignoring");
-            mPackageInstaller.setVerificationUserResponse(sessionId,
-                    VERIFICATION_USER_RESPONSE_ERROR);
+            mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                    DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR);
             finish();
             return;
         }
 
-        VerificationUserConfirmationInfo verificationInfo =
-                mPackageInstaller.getVerificationUserConfirmationInfo(sessionId);
+        DeveloperVerificationUserConfirmationInfo verificationInfo =
+                mPackageInstaller.getDeveloperVerificationUserConfirmationInfo(sessionId);
         if (verificationInfo == null) {
             Log.e(TAG, "Could not get VerificationInfo for sessionId " + sessionId);
-            mPackageInstaller.setVerificationUserResponse(sessionId,
-                    VERIFICATION_USER_RESPONSE_ERROR);
+            mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                    DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR);
             finish();
             return;
         }
@@ -105,8 +105,8 @@ public class ConfirmVerification extends Activity {
             if (mLocalLOGV) {
                 Log.d(TAG, "Failed to generate AppSnippet for path " + resolvedPath);
             }
-            mPackageInstaller.setVerificationUserResponse(sessionId,
-                    VERIFICATION_USER_RESPONSE_ERROR);
+            mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                    DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR);
             finish();
             return;
         }
@@ -124,50 +124,50 @@ public class ConfirmVerification extends Activity {
                 == FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS) {
             // allow retry and bypass
             builder.setPositiveButton(R.string.try_again, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_RETRY);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY);
                 finish();
             }).setNegativeButton(R.string.dont_install, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_CANCEL);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL);
                 finish();
             }).setNeutralButton(R.string.install_anyway, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY);
                 finish();
             });
         } else if ((dialogTypeFlag & FLAG_VERIFICATION_FAILED_MAY_RETRY) != 0) {
             // only allow retry
             builder.setPositiveButton(R.string.ok, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_OK);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_OK);
                 finish();
             }).setNegativeButton(R.string.try_again, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_RETRY);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY);
                 finish();
             });
         } else if ((dialogTypeFlag & FLAG_VERIFICATION_FAILED_MAY_BYPASS) != 0) {
             // only allow bypass
             builder.setPositiveButton(R.string.dont_install, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_CANCEL);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL);
                 finish();
             }).setNegativeButton(R.string.install_anyway, (dialog, which) -> {
-                mPackageInstaller.setVerificationUserResponse(sessionId,
-                        VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY);
+                mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY);
                 finish();
             });
         } else {
             // allow only acknowledging the error
             builder.setPositiveButton(
                     (userActionNeededReason
-                            == VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED)
+                            == DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED)
                             ? R.string.close
                             : R.string.ok,
                     (dialog, which) -> {
-                        mPackageInstaller.setVerificationUserResponse(sessionId,
-                                VERIFICATION_USER_RESPONSE_OK);
+                        mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                                DEVELOPER_VERIFICATION_USER_RESPONSE_OK);
                         finish();
                     });
         }
@@ -179,8 +179,8 @@ public class ConfirmVerification extends Activity {
         mDialog.show();
 
         mDialog.setOnCancelListener(dialog -> {
-            mPackageInstaller.setVerificationUserResponse(sessionId,
-                    VERIFICATION_USER_RESPONSE_CANCEL);
+            mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
+                    DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL);
             finish();
         });
 
@@ -209,32 +209,32 @@ public class ConfirmVerification extends Activity {
      * action.
      */
     public static int getUserConfirmationDialogFlag(
-            VerificationUserConfirmationInfo verificationInfo) {
+            PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo) {
         int userActionNeededReason = verificationInfo.getVerificationUserActionNeededReason();
         int verificationPolicy = verificationInfo.getVerificationPolicy();
 
         return switch (userActionNeededReason) {
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED -> 0;
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED -> 0;
 
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE -> {
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE -> {
                 int flag = FLAG_VERIFICATION_FAILED_MAY_RETRY;
-                if (verificationPolicy == VERIFICATION_POLICY_BLOCK_FAIL_OPEN
-                        || verificationPolicy == VERIFICATION_POLICY_BLOCK_FAIL_WARN) {
+                if (verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
+                        || verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN) {
                     flag |= FLAG_VERIFICATION_FAILED_MAY_BYPASS;
                 }
                 yield flag;
             }
 
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN -> {
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN -> {
                 int flag = 0;
-                if (verificationPolicy == VERIFICATION_POLICY_BLOCK_FAIL_OPEN
-                        || verificationPolicy == VERIFICATION_POLICY_BLOCK_FAIL_WARN) {
+                if (verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
+                        || verificationPolicy == DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN) {
                     flag |= FLAG_VERIFICATION_FAILED_MAY_BYPASS;
                 }
                 yield flag;
             }
 
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
                     FLAG_VERIFICATION_FAILED_MAY_BYPASS;
 
             default -> {
@@ -246,13 +246,13 @@ public class ConfirmVerification extends Activity {
 
     private int getDialogMessageResourceId(int userActionNeededReason) {
         return switch (userActionNeededReason) {
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN ->
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN ->
                     R.string.cannot_install_verification_unavailable_summary;
 
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE ->
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE ->
                     R.string.verification_incomplete_summary;
 
-            case VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
+            case DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION ->
                     R.string.lite_verification_summary;
 
             default -> R.string.cannot_install_package_summary;

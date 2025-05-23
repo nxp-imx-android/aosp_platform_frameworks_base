@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package android.content.pm.verify;
+package android.content.pm.verify.developer;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.content.pm.verify.pkg.VerificationStatus;
 import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.Presubmit;
@@ -33,20 +32,21 @@ import org.junit.runner.RunWith;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class VerificationStatusTest {
+public class DeveloperVerificationStatusTest {
     private static final boolean TEST_VERIFIED = true;
     private static final boolean TEST_LITE = true;
-    private static final int TEST_ASL_STATUS = VerificationStatus.VERIFIER_STATUS_ASL_GOOD;
+    private static final int TEST_ASL_STATUS =
+            DeveloperVerificationStatus.DEVELOPER_VERIFIER_STATUS_ASL_GOOD;
     private static final String TEST_FAILURE_MESSAGE = "test test";
     private static final String TEST_KEY = "test key";
     private static final String TEST_VALUE = "test value";
     private final PersistableBundle mTestExtras = new PersistableBundle();
-    private VerificationStatus mStatus;
+    private DeveloperVerificationStatus mStatus;
 
     @Before
     public void setUpWithBuilder() {
         mTestExtras.putString(TEST_KEY, TEST_VALUE);
-        mStatus = new VerificationStatus.Builder()
+        mStatus = new DeveloperVerificationStatus.Builder()
                 .setAslStatus(TEST_ASL_STATUS)
                 .setFailureMessage(TEST_FAILURE_MESSAGE)
                 .setVerified(TEST_VERIFIED)
@@ -67,7 +67,8 @@ public class VerificationStatusTest {
         Parcel parcel = Parcel.obtain();
         mStatus.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        VerificationStatus statusFromParcel = VerificationStatus.CREATOR.createFromParcel(parcel);
+        DeveloperVerificationStatus statusFromParcel =
+                DeveloperVerificationStatus.CREATOR.createFromParcel(parcel);
         assertThat(statusFromParcel.isVerified()).isEqualTo(TEST_VERIFIED);
         assertThat(statusFromParcel.getAslStatus()).isEqualTo(TEST_ASL_STATUS);
         assertThat(statusFromParcel.getFailureMessage()).isEqualTo(TEST_FAILURE_MESSAGE);
