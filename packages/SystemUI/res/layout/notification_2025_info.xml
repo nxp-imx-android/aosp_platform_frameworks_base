@@ -138,6 +138,7 @@
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:importantForAccessibility="yes"
             style="@*android:style/TextAppearance.DeviceDefault.Notification" />
 
         <!-- Non configurable app/channel text. appears instead of @+id/interruptiveness_settings-->
@@ -147,6 +148,7 @@
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:importantForAccessibility="yes"
             style="@*android:style/TextAppearance.DeviceDefault.Notification" />
 
         <!-- Non configurable multichannel text. appears instead of @+id/interruptiveness_settings-->
@@ -156,6 +158,7 @@
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:importantForAccessibility="yes"
             style="@*android:style/TextAppearance.DeviceDefault.Notification" />
 
         <LinearLayout
