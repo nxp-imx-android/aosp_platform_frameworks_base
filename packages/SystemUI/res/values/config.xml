@@ -1141,6 +1141,9 @@
     <!-- Whether to enable features improving large screen interaction -->
     <bool name="config_improveLargeScreenInteractionOnLockscreen">false</bool>
 
+    <!-- Whether to enable "Sign out" button on keyguard's status bar  -->
+    <bool name="config_enableSignOutButtonOnKeyguardStatusBar">false</bool>
+
     <!-- Package name for the growth app. -->
     <string name="config_growthAppPackageName" translatable="false" />
     <!-- Class name for the growth app's receiver. -->

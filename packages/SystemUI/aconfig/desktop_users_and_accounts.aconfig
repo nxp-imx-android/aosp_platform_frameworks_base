@@ -18,6 +18,13 @@ flag {
 }
 
 flag {
+    name: "sign_out_button_on_keyguard_status_bar"
+    namespace: "desktop_users_and_accounts"
+    description: "Add a 'Sign out' button on keyguard's status bar"
+    bug: "392052370"
+}
+
+flag {
     name: "user_switcher_add_sign_out_option"
     namespace: "desktop_users_and_accounts"
     description: "Add a sign out option to the user switcher menu if sign out is possible"

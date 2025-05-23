@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.data.repository
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Point
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.widget.LockPatternUtils
@@ -42,6 +43,7 @@ import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -239,6 +241,9 @@ interface KeyguardRepository {
      */
     val isEncryptedOrLockdown: Flow<Boolean>
 
+    /** Whether to enable "Sign out" button on keyguard's status bar */
+    val isSignOutButtonOnStatusBarEnabledInConfig: Boolean
+
     /**
      * Returns `true` if the keyguard is showing; `false` otherwise.
      *
@@ -320,6 +325,7 @@ constructor(
     private val dreamOverlayCallbackController: DreamOverlayCallbackController,
     @Main private val mainDispatcher: CoroutineDispatcher,
     @Application private val scope: CoroutineScope,
+    @Application private val applicationContext: Context,
     private val systemClock: SystemClock,
     facePropertyRepository: FacePropertyRepository,
     private val userTracker: UserTracker,
@@ -565,6 +571,12 @@ constructor(
 
     private val _isQuickSettingsVisible = MutableStateFlow(false)
     override val isQuickSettingsVisible: Flow<Boolean> = _isQuickSettingsVisible.asStateFlow()
+
+    override val isSignOutButtonOnStatusBarEnabledInConfig: Boolean
+        get() =
+            applicationContext.resources.getBoolean(
+                R.bool.config_enableSignOutButtonOnKeyguardStatusBar
+            )
 
     init {
         val callback =
