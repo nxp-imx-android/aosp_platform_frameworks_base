@@ -3291,12 +3291,13 @@
   <java-symbol type="dimen" name="notification_content_margin_top" />
   <java-symbol type="dimen" name="notification_content_margin" />
   <java-symbol type="dimen" name="notification_2025_margin" />
+  <java-symbol type="dimen" name="notification_2025_content_margin_end" />
   <java-symbol type="dimen" name="notification_2025_content_margin_top" />
   <java-symbol type="dimen" name="notification_2025_content_margin_start" />
   <java-symbol type="dimen" name="notification_2025_expand_button_horizontal_icon_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_reduced_end_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_right_icon_spacing" />
-  <java-symbol type="dimen" name="notification_2025_right_icon_expanded_margin_end" />
+  <java-symbol type="dimen" name="notification_2025_right_icon_margin_end" />
   <java-symbol type="dimen" name="notification_2025_extra_space_for_expander" />
   <java-symbol type="dimen" name="notification_2025_action_list_margin_bottom" />
   <java-symbol type="dimen" name="notification_2025_smart_reply_container_margin" />
