@@ -16690,6 +16690,8 @@ package android.telephony.data {
     method public final void notifyApnUnthrottled(@NonNull String);
     method public final void notifyDataCallListChanged(java.util.List<android.telephony.data.DataCallResponse>);
     method public final void notifyDataProfileUnthrottled(@NonNull android.telephony.data.DataProfile);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_user_data_toggle_notify") public void notifyUserDataEnabled(boolean, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_user_data_toggle_notify") public void notifyUserDataRoamingEnabled(boolean, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method public void requestDataCallList(@NonNull android.telephony.data.DataServiceCallback);
     method public void requestNetworkValidation(int, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method public void setDataProfile(@NonNull java.util.List<android.telephony.data.DataProfile>, boolean, @NonNull android.telephony.data.DataServiceCallback);
