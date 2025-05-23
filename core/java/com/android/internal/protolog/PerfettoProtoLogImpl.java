@@ -212,12 +212,15 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mDataSource.unregisterOnStopCallback(this::onTracingInstanceStop);
 
         if (android.tracing.Flags.clientSideProtoLogging()) {
-            try {
-                mConfigurationService.unregisterClient(this);
-            } catch (RemoteException e) {
-                throw new RuntimeException("Failed to unregister ProtoLog client", e);
-            }
+            mBackgroundLoggingService.execute(() -> {
+                try {
+                    mConfigurationService.unregisterClient(this);
+                } catch (RemoteException e) {
+                    throw new RuntimeException("Failed to unregister ProtoLog client", e);
+                }
+            });
         }
+        mBackgroundLoggingService.shutdown();
     }
 
     @NonNull
