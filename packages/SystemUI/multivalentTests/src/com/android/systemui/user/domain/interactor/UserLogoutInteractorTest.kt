@@ -116,6 +116,41 @@ class UserLogoutInteractorTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    fun logOutToSystemUser_doesNothing_whenPolicyManagerLogoutIsEnabled() {
+        testScope.runTest {
+            val isLogoutToSystemUserEnabled by
+                collectLastValue(underTest.isLogoutToSystemUserEnabled)
+            val secondaryUserLogoutCount = userRepository.logOutWithPolicyManagerCallCount
+            val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
+            userRepository.setPolicyManagerLogoutEnabled(true)
+            assertThat(isLogoutToSystemUserEnabled).isFalse()
+            underTest.logOutToSystemUser()
+            assertThat(userRepository.logOutWithPolicyManagerCallCount)
+                .isEqualTo(secondaryUserLogoutCount)
+            assertThat(userRepository.logOutWithUserManagerCallCount)
+                .isEqualTo(logoutToSystemUserCount)
+        }
+    }
+
+    @Test
+    fun logOutToSystemUser_whenBothLogoutOptionsAreEnabled() {
+        testScope.runTest {
+            val isLogoutToSystemUserEnabled by
+                collectLastValue(underTest.isLogoutToSystemUserEnabled)
+            val secondaryUserLogoutCount = userRepository.logOutWithPolicyManagerCallCount
+            val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
+            userRepository.setUserManagerLogoutEnabled(true)
+            userRepository.setPolicyManagerLogoutEnabled(true)
+            assertThat(isLogoutToSystemUserEnabled).isTrue()
+            underTest.logOutToSystemUser()
+            assertThat(userRepository.logOutWithPolicyManagerCallCount)
+                .isEqualTo(secondaryUserLogoutCount)
+            assertThat(userRepository.logOutWithUserManagerCallCount)
+                .isEqualTo(logoutToSystemUserCount + 1)
+        }
+    }
+
     companion object {
         private val USER_INFOS =
             listOf(
