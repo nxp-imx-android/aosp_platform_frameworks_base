@@ -18,7 +18,6 @@ package com.android.wm.shell.pip2.phone;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
@@ -81,6 +80,7 @@ import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
+import com.android.wm.shell.pip2.phone.transition.ContentPipHandler;
 import com.android.wm.shell.pip2.phone.transition.PipDisplayChangeObserver;
 import com.android.wm.shell.pip2.phone.transition.PipExpandHandler;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
@@ -146,6 +146,7 @@ public class PipTransition extends PipTransitionController implements
     // Internal state and relevant cached info
     //
     private final PipExpandHandler mExpandHandler;
+    private final ContentPipHandler mContentPipHandler;
     private final PipDisplayChangeObserver mPipDisplayChangeObserver;
 
     private Transitions.TransitionFinishCallback mFinishCallback;
@@ -195,6 +196,8 @@ public class PipTransition extends PipTransitionController implements
                 pipBoundsState, pipBoundsAlgorithm,
                 pipTransitionState, pipDisplayLayoutState, pipDesktopState, pipInteractionHandler,
                 splitScreenControllerOptional);
+        mContentPipHandler = new ContentPipHandler(mContext, mPipSurfaceTransactionHelper,
+                pipTransitionState);
         mPipDisplayChangeObserver = new PipDisplayChangeObserver(pipTransitionState,
                 pipBoundsState);
     }
@@ -223,16 +226,15 @@ public class PipTransition extends PipTransitionController implements
     //
 
     @Override
-    public void startExpandTransition(WindowContainerTransaction out, boolean toSplit) {
-        if (out == null) return;
+    public void startExpandTransition(WindowContainerTransaction wct, boolean toSplit) {
+        if (wct == null) return;
         mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
         mExitViaExpandTransition = mTransitions.startTransition(toSplit ? TRANSIT_EXIT_PIP_TO_SPLIT
-                : TRANSIT_EXIT_PIP, out, this);
+                : TRANSIT_EXIT_PIP, wct, this);
     }
 
     @Override
-    public void startRemoveTransition(boolean withFadeout) {
-        final WindowContainerTransaction wct = getRemovePipTransaction();
+    public void startRemoveTransition(WindowContainerTransaction wct, boolean withFadeout) {
         if (wct == null) return;
         mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
         mPendingRemoveWithFadeout = withFadeout;
@@ -342,6 +344,10 @@ public class PipTransition extends PipTransitionController implements
                 // handle this transition as a special case with no-op animation.
                 return handleSwipePipToHomeTransition(info, startTransaction, finishTransaction,
                         finishCallback);
+            }
+            if (mContentPipHandler.startAnimation(transition, info,
+                    startTransaction, finishTransaction, finishCallback)) {
+                return true;
             }
             if (isLegacyEnter(info)) {
                 // If this is a legacy-enter-pip (auto-enter is off and PiP activity went to pause),
@@ -888,19 +894,6 @@ public class PipTransition extends PipTransitionController implements
         WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.movePipActivityToPinnedRootTask(token, entryBounds);
         wct.deferConfigToTransitionEnd(token);
-        return wct;
-    }
-
-    @Nullable
-    private WindowContainerTransaction getRemovePipTransaction() {
-        WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
-        if (pipTaskToken == null) {
-            return null;
-        }
-        WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setBounds(pipTaskToken, null);
-        wct.setWindowingMode(pipTaskToken, WINDOWING_MODE_UNDEFINED);
-        wct.reorder(pipTaskToken, false);
         return wct;
     }
 
