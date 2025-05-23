@@ -46,7 +46,7 @@ fun MainSwitchPreference(model: SwitchPreferenceModel) {
                 true -> MaterialTheme.colorScheme.primaryContainer
                 else -> MaterialTheme.colorScheme.secondaryContainer
             },
-        shape = if (isSpaExpressiveEnabled) CircleShape else SettingsShape.CornerExtraLarge,
+        shape = if (isSpaExpressiveEnabled) CircleShape else SettingsShape.CornerExtraLarge1,
     ) {
         InternalSwitchPreference(
             title = model.title,

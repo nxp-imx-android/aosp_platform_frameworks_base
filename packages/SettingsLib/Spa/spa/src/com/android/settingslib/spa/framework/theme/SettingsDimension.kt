@@ -20,23 +20,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 
 object SettingsDimension {
-    val extraSmall2 = 4.dp
-    val extraSmall3 = 6.dp
-    val extraSmall4 = 8.dp
-    val extraSmall5 = 10.dp
-    val extraSmall6 = 12.dp
-    val small1 = 16.dp
-    val small4 = 24.dp
-
     val paddingTiny = 2.dp
-    val paddingExtraSmall1 = 6.dp
     val paddingSmall = if (isSpaExpressiveEnabled) 8.dp else 4.dp
     val paddingLarge = 16.dp
     val paddingExtraLarge = 24.dp
     val paddingExtraLarge1 = 28.dp
-
-    val spinnerHorizontalPadding = paddingExtraLarge
-    val spinnerVerticalPadding = paddingLarge
 
     val actionIconSize = 40.dp
     val actionIconPadding = 8.dp
@@ -46,7 +34,8 @@ object SettingsDimension {
     val itemIconContainerSize = 72.dp
     val itemPaddingStart = if (isSpaExpressiveEnabled) paddingLarge else paddingExtraLarge
     val itemPaddingEnd = paddingLarge
-    val itemPaddingVertical = if (isSpaExpressiveEnabled) extraSmall6 else paddingLarge
+    val itemPaddingVertical =
+        if (isSpaExpressiveEnabled) SettingsSpace.extraSmall6 else paddingLarge
     val itemPadding = PaddingValues(
         start = itemPaddingStart,
         top = itemPaddingVertical,
@@ -100,7 +89,4 @@ object SettingsDimension {
     val illustrationCornerRadius = 28.dp
 
     val preferenceMinHeight = 72.dp
-
-    val spinnerOptionMinHeight = 48.dp
-    val spinnerIconSize = 20.dp
 }

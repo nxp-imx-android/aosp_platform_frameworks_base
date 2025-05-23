@@ -39,6 +39,8 @@ import com.android.settingslib.spa.framework.compose.thenIf
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsOpacity.alphaForEnabled
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSize
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 import com.android.settingslib.spa.widget.ui.LocalIsInCategory
@@ -69,7 +71,7 @@ internal fun BaseLayout(
                 .thenIf(isSpaExpressiveEnabled && LocalIsInCategory.current) {
                     Modifier.highlightBackground(
                         originalColor = surfaceBright,
-                        shape = SettingsShape.CornerExtraSmall,
+                        shape = SettingsShape.CornerExtraSmall2,
                     )
                 }
                 .padding(end = paddingEnd),
@@ -93,12 +95,12 @@ internal fun BaseIcon(icon: @Composable (() -> Unit)?, modifier: Modifier, paddi
         Spacer(modifier = Modifier.width(width = paddingStart))
         if (icon != null) {
             Box(
-                modifier = modifier.size(SettingsDimension.itemIconContainerSizeSmall),
+                modifier = modifier.size(SettingsSize.medium3),
                 contentAlignment = Alignment.Center,
             ) {
                 icon()
             }
-            Spacer(modifier = Modifier.width(width = SettingsDimension.extraSmall6))
+            Spacer(modifier = Modifier.width(width = SettingsSpace.extraSmall6))
         }
     } else {
         if (icon != null) {

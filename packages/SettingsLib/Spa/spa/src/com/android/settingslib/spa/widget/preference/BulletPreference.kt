@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.settingslib.spa.framework.theme.SettingsDimension
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -43,13 +44,13 @@ fun BulletPreference(title: String, summary: String, icon: ImageVector) {
             Modifier
                 .fillMaxWidth()
                 .semantics(mergeDescendants = true) {}
-                .padding(SettingsDimension.small1),
+                .padding(SettingsSpace.small1),
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier
-                .padding(end = SettingsDimension.small1)
+                .padding(end = SettingsSpace.small1)
                 .size(SettingsDimension.itemIconSize),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

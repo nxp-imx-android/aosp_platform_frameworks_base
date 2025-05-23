@@ -57,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.divider
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
@@ -86,7 +87,7 @@ fun ActionButtons(actionButtons: List<ActionButton>) {
         Row(
             Modifier
                 .padding(SettingsDimension.buttonPadding)
-                .clip(SettingsShape.CornerExtraLarge)
+                .clip(SettingsShape.CornerExtraLarge1)
                 .height(IntrinsicSize.Min)
         ) {
             for ((index, actionButton) in actionButtons.withIndex()) {
@@ -103,7 +104,7 @@ private fun RowScope.ActionButton(actionButton: ActionButton) {
     if (isSpaExpressiveEnabled) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             IconButton(actionButton)
-            Spacer(Modifier.height(SettingsDimension.extraSmall3))
+            Spacer(Modifier.height(SettingsSpace.extraSmall3))
             Text(
                 text = actionButton.text,
                 modifier = Modifier.clearAndSetSemantics {}, // semantics set in IconButton
@@ -156,7 +157,7 @@ private fun RowScope.ActionButton(actionButton: ActionButton) {
 private fun IconButton(actionButton: ActionButton) {
     FilledIconButton(
         onClick = actionButton.onClick,
-        shape = IconButtonDefaults.mediumRoundShape,
+        shapes = IconButtonDefaults.shapes(),
         modifier =
             Modifier
                 .size(
