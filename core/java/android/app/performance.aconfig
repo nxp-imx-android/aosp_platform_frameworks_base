@@ -48,3 +48,10 @@ flag {
      description: "Updated test mode for PIC"
      bug: "396173886"
 }
+
+flag {
+     name: "app_exit_info_debug_memory_api"
+     namespace: "system_performance"
+     description: "Controls the ability to get Debug.MemoryInfo stats from ApplicationExitInfo api"
+     bug: "283096463"
+}
