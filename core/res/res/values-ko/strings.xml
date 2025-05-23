@@ -1184,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"<xliff:g id="COUNT">%d</xliff:g>시간 후"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"<xliff:g id="COUNT">%d</xliff:g>일 후"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"<xliff:g id="COUNT">%d</xliff:g>년 후"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g>분 전"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g>시간 전"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g>일 전"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g>년 전"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g>분"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g>시간"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g>일"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g>년"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g>분 후"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"<xliff:g id="COUNT">%d</xliff:g>시간 후"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"<xliff:g id="COUNT">%d</xliff:g>일 후"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"<xliff:g id="COUNT">%d</xliff:g>년 후"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g>분 전"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g>시간 전"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g>일 전"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g>년 전"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{#분 전}other{#분 전}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{#시간 전}other{#시간 전}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{#일 전}other{#일 전}}"</string>
@@ -1818,7 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"한 손 모드"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"더 어둡게"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"청각 보조 기기"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"자동 클릭(드웰 타임)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"자동 클릭(포인터 정지 시간)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"마우스 키"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"연결 끊김"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"연결됨"</string>

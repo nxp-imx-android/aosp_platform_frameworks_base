@@ -382,10 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"एपलाई स्थिति पट्टि विस्तार वा संकुचन गर्न अनुमति दिन्छ।"</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"लक गरिएको डिभाइसमा स्क्रिनभरि देखिने सूचनाहरू देखाउनुहोस्"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"यो अनुमति दिइएमा एपले लक गरिएको डिभाइसमा स्क्रिनभरि देखिने सूचनाहरू देखाउन सक्छ"</string>
-    <!-- no translation found for permlab_postPromotedNotifications (4873499297871691102) -->
-    <skip />
-    <!-- no translation found for permdesc_postPromotedNotifications (4530634734172420651) -->
-    <skip />
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"लाइभ अपडेट देखाउने"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"यसले यो एपलाई जारी तथा समयमै सम्पन्न गर्नु पर्ने कार्यसम्बन्धी नोटिफिकेसनहरू स्ट्याटस बार र लक स्क्रिनमा देखाउने अनुमति दिन्छ"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"सर्टकट इन्स्टल गर्ने"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"प्रयोगकर्ताको हस्तक्षेप बिना एउटा एपलाई सर्टकटमा हाल्ने अनुमति दिन्छ।"</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"सर्टकटहरूको स्थापन रद्द गर्नुहोस्"</string>
@@ -1186,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"<xliff:g id="COUNT">%d</xliff:g> घण्टाभित्र"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"<xliff:g id="COUNT">%d</xliff:g> दिनभित्र"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"<xliff:g id="COUNT">%d</xliff:g> वर्षभित्र"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> मिनेटअघि"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> घण्टाअघि"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> दिनअघि"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> वर्षअघि"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> मिनेट"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> घण्टा"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> दिन"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> वर्ष"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g> मिनेटपछि"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"<xliff:g id="COUNT">%d</xliff:g> घण्टापछि"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"<xliff:g id="COUNT">%d</xliff:g> दिनपछि"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"<xliff:g id="COUNT">%d</xliff:g> वर्षपछि"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> मिनेटअघि"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> घण्टाअघि"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> दिनअघि"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> वर्षअघि"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# मिनेटअघि}other{# मिनेटअघि}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# घण्टाअघि}other{# घण्टाअघि}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# दिनअघि}other{# दिनअघि}}"</string>
@@ -1713,18 +1697,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"बााह्य डिभाइस"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"हेडफोनहरू"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
-    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
-    <skip />
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"टिभीको अडियो"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"एनालग"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"डिजिटल"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"प्रणाली"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"ब्लुटुथ अडियो"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"ताररहित प्रदर्शन"</string>

@@ -1184,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"<xliff:g id="COUNT">%d</xliff:g>小时后"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"<xliff:g id="COUNT">%d</xliff:g>天后"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"<xliff:g id="COUNT">%d</xliff:g>年后"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> 分钟前"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> 小时前"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> 天前"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> 年前"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> 分钟"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> 小时"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> 天"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> 年"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g> 分钟后"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"<xliff:g id="COUNT">%d</xliff:g> 小时后"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"<xliff:g id="COUNT">%d</xliff:g> 天后"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"<xliff:g id="COUNT">%d</xliff:g> 年后"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> 分钟前"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> 小时前"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> 天前"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> 年前"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# 分钟前}other{# 分钟前}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# 小时前}other{# 小时前}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# 天前}other{# 天前}}"</string>
@@ -1670,7 +1656,7 @@
     <string name="extract_edit_menu_button" msgid="63954536535863040">"修改"</string>
     <string name="data_usage_warning_title" msgid="9034893717078325845">"数据流量警告"</string>
     <string name="data_usage_warning_body" msgid="1669325367188029454">"您已使用 <xliff:g id="APP">%s</xliff:g> 的数据流量"</string>
-    <string name="data_usage_mobile_limit_title" msgid="3911447354393775241">"已达到移动数据流量上限"</string>
+    <string name="data_usage_mobile_limit_title" msgid="3911447354393775241">"已达到移动流量使用上限"</string>
     <string name="data_usage_wifi_limit_title" msgid="2069698056520812232">"已达到 WLAN 流量上限"</string>
     <string name="data_usage_limit_body" msgid="3567699582000085710">"已暂停使用数据网络连接，直到这个周期结束为止"</string>
     <string name="data_usage_mobile_limit_snoozed_title" msgid="101888478915677895">"已超出移动数据流量上限"</string>
