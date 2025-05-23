@@ -224,12 +224,16 @@ class PresentationController implements DisplayManager.DisplayListener {
     void removePresentation(int displayId, @NonNull String reason) {
         final Presentation presentation = mPresentations.get(displayId);
         if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && presentation != null) {
-            ProtoLog.v(WmProtoLogGroups.WM_DEBUG_PRESENTATION, "Removing Presentation %s for "
-                    + "reason %s", mPresentations.get(displayId), reason);
             final WindowState win = presentation.mWin;
             win.mWmService.mAtmService.mH.post(() -> {
                 synchronized (win.mWmService.mGlobalLock) {
-                    win.removeIfPossible();
+                    // Invoke removeIfPossible() only if the presentation isn't being removed.
+                    if (!win.mAnimatingExit || !win.mRemoveOnExit) {
+                        ProtoLog.v(WmProtoLogGroups.WM_DEBUG_PRESENTATION,
+                                "Removing Presentation %s for reason %s",
+                                mPresentations.get(displayId), reason);
+                        win.removeIfPossible();
+                    }
                 }
             });
         }

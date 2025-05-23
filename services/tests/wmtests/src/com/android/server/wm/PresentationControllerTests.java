@@ -173,6 +173,33 @@ public class PresentationControllerTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
+    public void testInvisiblePresentationIsNotAllowed() {
+        final int uid = Binder.getCallingUid();
+        final Task task = createTask(mDefaultDisplay);
+        task.effectiveUid = uid;
+        final ActivityRecord activity = createActivityRecord(task);
+        assertTrue(activity.isVisible());
+
+        // Add a presentation window on a presentation display.
+        final DisplayContent presentationDisplay = createPresentationDisplay();
+        final WindowState window = addPresentationWindow(uid, presentationDisplay.getDisplayId());
+        window.setViewVisibility(View.VISIBLE);
+        final Transition addTransition = window.mTransitionController.getCollectingTransition();
+        completeTransition(addTransition, /*abortSync=*/ true);
+        assertTrue(window.isVisible());
+
+        // Making the presentation view invisible automatically removes it.
+        window.setViewVisibility(View.GONE);
+        assertTrue(window.isVisible());
+        waitHandlerIdle(window.mWmService.mAtmService.mH);
+        final Transition removeTransition = window.mTransitionController.getCollectingTransition();
+        assertEquals(TRANSIT_CLOSE, removeTransition.mType);
+        completeTransition(removeTransition, /*abortSync=*/ false);
+        assertFalse(window.isVisible());
+    }
+
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @Test
     public void testPresentationCannotLaunchOnNonPresentationDisplayWithoutHostHavingGlobalFocus() {
         final int uid = Binder.getCallingUid();
         // Adding a presentation window on an internal display requires a host task
