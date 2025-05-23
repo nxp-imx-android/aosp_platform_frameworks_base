@@ -384,10 +384,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Дозволяє програмі розгортати чи згортати рядок стану."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"Показувати сповіщення як активності на весь екран заблокованого пристрою"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Додаток зможе показувати сповіщення як активності на весь екран заблокованого пристрою"</string>
-    <!-- no translation found for permlab_postPromotedNotifications (4873499297871691102) -->
-    <skip />
-    <!-- no translation found for permdesc_postPromotedNotifications (4530634734172420651) -->
-    <skip />
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Показувати сповіщення в реальному часі"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Дозволяє додатку показувати поточні термінові сповіщення в рядку стану й на заблокованому екрані"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Створювати ярлики"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Дозволяє програмі самостійно додавати ярлики на головний екран."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"видаляти ярлики"</string>
@@ -1188,22 +1186,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"через <xliff:g id="COUNT">%d</xliff:g> год"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"через <xliff:g id="COUNT">%d</xliff:g> дн."</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"через <xliff:g id="COUNT">%d</xliff:g> р."</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> хв тому"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> год тому"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> дн. тому"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> р. тому"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> хв"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> год"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> дн."</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> р."</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"через <xliff:g id="COUNT">%d</xliff:g> хв"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"через <xliff:g id="COUNT">%d</xliff:g> год"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"через <xliff:g id="COUNT">%d</xliff:g> дн."</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"через <xliff:g id="COUNT">%d</xliff:g> р."</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> хв тому"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> год тому"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> дн. тому"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> р. тому"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# хвилину тому}one{# хвилину тому}few{# хвилини тому}many{# хвилин тому}other{# хвилини тому}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# день тому}one{# день тому}few{# дні тому}many{# днів тому}other{# дня тому}}"</string>

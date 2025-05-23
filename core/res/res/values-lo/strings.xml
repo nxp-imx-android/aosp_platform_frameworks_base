@@ -382,10 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"ອະນຸຍາດໃຫ້ແອັບຯ ຂະຫຍາຍ ຫຼືຫຍໍ້ແຖບສະຖານະ."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"ສະແດງການແຈ້ງເຕືອນເປັນການເຄື່ອນໄຫວແບບເຕັມຈໍຢູ່ອຸປະກອນທີ່ລັອກໄວ້"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"ອະນຸຍາດໃຫ້ແອັບສະແດງການແຈ້ງເຕືອນເປັນການເຄື່ອນໄຫວແບບເຕັມຈໍຢູ່ອຸປະກອນທີ່ລັອກໄວ້"</string>
-    <!-- no translation found for permlab_postPromotedNotifications (4873499297871691102) -->
-    <skip />
-    <!-- no translation found for permdesc_postPromotedNotifications (4530634734172420651) -->
-    <skip />
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"ສະແດງອັບເດດສົດ"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"ອະນຸຍາດໃຫ້ແອັບສະແດງການແຈ້ງເຕືອນທີ່ເລັ່ງດ່ວນຢ່າງຕໍ່ເນື່ອງໃນແຖບສະຖານະ ແລະ ໜ້າຈໍລັອກ"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"ຕິດຕັ້ງທາງລັດ"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"ອະນຸຍາດໃຫ້ແອັບພລິເຄຊັນເພີ່ມທາງລັດໄດ້ ໂດຍບໍ່ຕ້ອງຮັບການຢືນຢັນຈາກຜູ່ໃຊ້."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"ຖອນທາງລັດ"</string>
@@ -1186,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"ໃນ <xliff:g id="COUNT">%d</xliff:g>ຊມ"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"ໃນ <xliff:g id="COUNT">%d</xliff:g>ມ"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"ໃນ <xliff:g id="COUNT">%d</xliff:g>ປ"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> ນາທີກ່ອນ"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> ຊົ່ວໂມງກ່ອນ"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> ມື້ກ່ອນ"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> ປີກ່ອນ"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> ນາທີ"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> ຊົ່ວໂມງ"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> ມື້"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> ປີ"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"ໃນ <xliff:g id="COUNT">%d</xliff:g> ນາທີ"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"ໃນ <xliff:g id="COUNT">%d</xliff:g> ຊົ່ວໂມງ"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"ໃນ <xliff:g id="COUNT">%d</xliff:g> ມື້"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"ໃນ <xliff:g id="COUNT">%d</xliff:g> ປີ"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> ນາທີກ່ອນ"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> ຊົ່ວໂມງກ່ອນ"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> ມື້ກ່ອນ"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> ປີກ່ອນ"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# ນາທີກ່ອນ}other{# ນາທີກ່ອນ}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# ຊົ່ວໂມງກ່ອນ}other{# ຊົ່ວໂມງກ່ອນ}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# ມື້ກ່ອນ}other{# ມື້ກ່ອນ}}"</string>
