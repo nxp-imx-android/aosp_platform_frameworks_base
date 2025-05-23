@@ -21148,6 +21148,9 @@ public final class Settings {
             /**
              * Setting indicating the duration, in days, between two gesture hint sessions.
              *
+             * <p>A value of 0 means that gesture hints will always show without any delay, and a
+             * value of -1 means that gesture hints will never show.
+             *
              * @hide
              */
             public static final String GESTURE_HINT_PERIOD_DAYS = "gesture_hint_period_days";
