@@ -46,6 +46,8 @@ import static android.internal.perfetto.protos.TracePacketOuterClass.TracePacket
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.internal.perfetto.protos.Protolog.ProtoLogViewerConfig.MessageData;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ShellCommand;
@@ -74,7 +76,6 @@ import com.android.internal.protolog.common.LogLevel;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,15 +84,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -122,22 +117,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @NonNull
     private final ReadWriteLock mConfigUpdaterLock = new ReentrantReadWriteLock();
 
-    private final Lock mBackgroundServiceLock = new ReentrantLock();
+    @NonNull
+    private final HandlerThread mBackgroundThread;
 
-    // NOTE: This is a single-thread executor configured with a ThreadPoolExecutor and a
-    // LinkedBlockingQueue. This ensures that tasks are executed in FIFO (First-In, First-Out)
-    // order, which is crucial for operations like connecting to the configuration service before
-    // other logging activities, and synchronizing queued logging tasks on tracing start and stop.
-    // Configuration:
-    //   corePoolSize: 1 (single thread)
-    //   maximumPoolSize: 1 (single thread)
-    //   keepAliveTime: 0L (threads do not time out)
-    //   workQueue: LinkedBlockingQueue (unbounded, FIFO)
+    // Handler associated with the mBackgroundThread, ensuring tasks are processed sequentially
+    // on a single background thread. This is crucial for operations like connecting to the
+    // configuration service before other logging activities, and synchronizing queued
+    // logging tasks on tracing start and stop.
     @VisibleForTesting
-    public final ExecutorService mBackgroundLoggingService =
-            new ThreadPoolExecutor(1, 1,
-                    0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>());
+    @NonNull
+    public final Handler mBackgroundHandler;
 
     // Set to true once this is ready to accept protolog to logcat requests.
     private boolean mLogcatReady = false;
@@ -163,6 +152,10 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mCacheUpdater = cacheUpdater;
         mConfigurationService = configurationService;
 
+        mBackgroundThread = new HandlerThread("ProtoLogBackground");
+        mBackgroundThread.start();
+        mBackgroundHandler = Handler.createAsync(mBackgroundThread.getLooper());
+
         registerGroupsLocally(groups);
     }
 
@@ -186,7 +179,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
 
-        mBackgroundLoggingService.execute(() -> {
+        mBackgroundHandler.post(() -> {
             try {
                 var args = createConfigurationServiceRegisterClientArgs();
 
@@ -217,7 +210,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mDataSource.unregisterOnStopCallback(this);
 
         if (android.tracing.Flags.clientSideProtoLogging()) {
-            mBackgroundLoggingService.execute(() -> {
+            mBackgroundHandler.post(() -> {
                 try {
                     mConfigurationService.unregisterClient(this);
                 } catch (RemoteException e) {
@@ -225,7 +218,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 }
             });
         }
-        mBackgroundLoggingService.shutdown();
+
+        mBackgroundThread.quitSafely();
     }
 
     @NonNull
@@ -413,39 +407,34 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             } else {
                 stacktrace = null;
             }
-            mBackgroundServiceLock.lock();
-            try {
-                mBackgroundLoggingService.execute(() -> {
-                    try {
-                        logToProto(logLevel, group, message, args, tsNanos,
-                                stacktrace);
-                    } catch (RuntimeException e) {
-                        // An error occurred during the logging process itself.
-                        // Log this error along with information about the original log call.
-                        final var sb = new StringBuilder();
-                        sb.append("Failed to log to ProtoLog for ");
+            mBackgroundHandler.post(() -> {
+                try {
+                    logToProto(logLevel, group, message, args, tsNanos,
+                            stacktrace);
+                } catch (RuntimeException e) {
+                    // An error occurred during the logging process itself.
+                    // Log this error along with information about the original log call.
+                    final var sb = new StringBuilder();
+                    sb.append("Failed to log to ProtoLog for ");
 
-                        if (message.mMessageString != null) {
-                            sb.append("message: \"").append(message.mMessageString).append("\"");
-                        } else if (message.mMessageHash != null) {
-                            sb.append("message with hash: ").append(message.mMessageHash);
-                        } else {
-                            sb.append("message: (info unavailable)");
-                        }
-
-                        if (stacktrace != null && !stacktrace.isEmpty()) {
-                            sb.append("\nOriginal Call Site Stack Trace:\n");
-                            for (String line : stacktrace.split("\n")) {
-                                sb.append("    ").append(line).append("\n");
-                            }
-                        }
-
-                        throw new RuntimeException(sb.toString(), e);
+                    if (message.mMessageString != null) {
+                        sb.append("message: \"").append(message.mMessageString).append("\"");
+                    } else if (message.mMessageHash != null) {
+                        sb.append("message with hash: ").append(message.mMessageHash);
+                    } else {
+                        sb.append("message: (info unavailable)");
                     }
-                });
-            } finally {
-                mBackgroundServiceLock.unlock();
-            }
+
+                    if (stacktrace != null && !stacktrace.isEmpty()) {
+                        sb.append("\nOriginal Call Site Stack Trace:\n");
+                        for (String line : stacktrace.split("\n")) {
+                            sb.append("    ").append(line).append("\n");
+                        }
+                    }
+
+                    throw new RuntimeException(sb.toString(), e);
+                }
+            });
         }
         if (group.isLogToLogcat()) {
             logToLogcat(group.getTag(), logLevel, message, args);
@@ -932,12 +921,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     private void waitForExistingBackgroundTasksToComplete() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        mBackgroundHandler.post(() -> {
+            Log.i(LOG_TAG, "Completed all pending background tasks");
+            latch.countDown();
+        });
         try {
-            this.mBackgroundLoggingService.submit(() -> {
-                Log.i(LOG_TAG, "Completed all pending background tasks");
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
+            latch.await();
+        } catch (InterruptedException e) {
             Log.e(LOG_TAG, "Failed to wait for tracing service background tasks to complete", e);
+            Thread.currentThread().interrupt(); // Preserve interrupt status
         }
     }
 

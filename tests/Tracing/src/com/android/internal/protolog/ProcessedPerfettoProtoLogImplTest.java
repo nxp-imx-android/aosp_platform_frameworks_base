@@ -975,7 +975,7 @@ public class ProcessedPerfettoProtoLogImplTest {
                     sProtoLog.isProtoEnabled());
 
             // Submit a task that will block the executor queue.
-            sProtoLog.mBackgroundLoggingService.execute(() -> {
+            sProtoLog.mBackgroundHandler.post(() -> {
                 try {
                     blockingTaskStartedExecution.set(true);
                     processingHasStartedLatch.countDown(); // Signal that this task has started
@@ -1017,7 +1017,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             allowProcessingToContinueLatch.countDown();
 
             // Stop tracing immediately. The implementation should wait for the
-            // mBackgroundLoggingService to process all queued messages (including the
+            // mBackgroundHandler to process all queued messages (including the
             // now-unblocked first task and all subsequent log messages).
         } finally {
             // Ensure the latch is always counted down if an exception occurred before stop,
