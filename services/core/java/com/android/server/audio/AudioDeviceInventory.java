@@ -31,6 +31,7 @@ import static android.media.AudioSystem.isBluetoothScoOutDevice;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.media.audio.Flags.asDeviceConnectionFailure;
+import static com.android.media.audio.Flags.updatePreferredDevicesForStrategy;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1375,6 +1376,31 @@ public class AudioDeviceInventory {
     /*package*/ int removePreferredDevicesForStrategyInt(int strategy) {
         return clearDevicesRoleForStrategy(
                     strategy, AudioSystem.DEVICE_ROLE_PREFERRED, true /*internal */);
+    }
+
+    /*package*/ List<AudioDeviceAttributes> getPreferredDevicesForStrategy(int strategy) {
+        synchronized (mDevicesLock) {
+            try (SafeCloseable ignored = ClearCallingIdentityContext.create()) {
+                List<AudioDeviceAttributes> devices = new ArrayList<>();
+                if (updatePreferredDevicesForStrategy()) {
+                    Pair<Integer, Integer> key =
+                            new Pair<>(strategy, AudioSystem.DEVICE_ROLE_PREFERRED);
+                    devices = mAppliedStrategyRoles.get(key);
+                    if (devices == null) {
+                        return new ArrayList<AudioDeviceAttributes>();
+                    }
+                } else {
+                    int status = AudioSystem.getDevicesForRoleAndStrategy(
+                            strategy, AudioSystem.DEVICE_ROLE_PREFERRED, devices);
+                    if (status != AudioSystem.SUCCESS) {
+                        Log.e(TAG, String.format("Error %d in getPreferredDeviceForStrategy(%d)",
+                                status, strategy));
+                        return new ArrayList<AudioDeviceAttributes>();
+                    }
+                }
+                return devices;
+            }
+        }
     }
 
     /*package*/ int setDeviceAsNonDefaultForStrategyAndSave(int strategy,

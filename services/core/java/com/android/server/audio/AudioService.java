@@ -79,6 +79,7 @@ import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.replaceStreamBtSco;
 import static com.android.media.audio.Flags.ringMyCar;
 import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
+import static com.android.media.audio.Flags.updatePreferredDevicesForStrategy;
 import static com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl;
 import static com.android.server.audio.SoundDoseHelper.ACTION_CHECK_MUSIC_ACTIVE;
 import static com.android.server.utils.EventLogger.Event.ALOGE;
@@ -3553,22 +3554,10 @@ public class AudioService extends IAudioService.Stub
     public List<AudioDeviceAttributes> getPreferredDevicesForStrategy(int strategy) {
         super.getPreferredDevicesForStrategy_enforcePermission();
 
-        List<AudioDeviceAttributes> devices = new ArrayList<>();
-        int status = AudioSystem.SUCCESS;
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            status = AudioSystem.getDevicesForRoleAndStrategy(
-                    strategy, AudioSystem.DEVICE_ROLE_PREFERRED, devices);
-        } finally {
-            Binder.restoreCallingIdentity(identity);
-        }
-        if (status != AudioSystem.SUCCESS) {
-            Log.e(TAG, String.format("Error %d in getPreferredDeviceForStrategy(%d)",
-                    status, strategy));
-            return new ArrayList<AudioDeviceAttributes>();
-        } else {
-            return anonymizeAudioDeviceAttributesList(devices);
-        }
+        List<AudioDeviceAttributes> devices =
+                mDeviceBroker.getPreferredDevicesForStrategy(strategy);
+
+        return anonymizeAudioDeviceAttributesList(devices);
     }
 
     /**
@@ -5285,6 +5274,8 @@ public class AudioService extends IAudioService.Stub
                 + unifyAbsoluteVolumeManagement());
         pw.println("\tandroid.media.audio.Flags.registerVolumeCallbackApiHardening:"
                 + registerVolumeCallbackApiHardening());
+        pw.println("\tcom.android.media.audio.Flags.updatePreferredDevicesForStrategy:"
+                + updatePreferredDevicesForStrategy());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
