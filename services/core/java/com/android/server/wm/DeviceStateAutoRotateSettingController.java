@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_UNLOCKED;
 import static android.provider.Settings.System.ACCELEROMETER_ROTATION;
@@ -54,9 +53,6 @@ import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 
 /**
  * Syncs ACCELEROMETER_ROTATION and DEVICE_STATE_ROTATION_LOCK setting to consistent values.
@@ -75,7 +71,6 @@ import java.util.stream.IntStream;
 
 public class DeviceStateAutoRotateSettingController {
     private static final String TAG = "DSAutoRotateCtrl";
-    private static final String SEPARATOR_REGEX = ":";
     private static final int ACCELEROMETER_ROTATION_OFF = 0;
     private static final int ACCELEROMETER_ROTATION_ON = 1;
     private static final int INVALID_DEVICE_STATE = -1;
@@ -310,14 +305,15 @@ public class DeviceStateAutoRotateSettingController {
         }
 
         if (!equals(mDeviceStateAutoRotateSetting, persistedDeviceStateAutoRotateSetting)) {
-            final String serializedDeviceStateAutoRotateSetting =
-                    convertIntArrayToSerializedSetting(mDeviceStateAutoRotateSetting);
-            Settings.Secure.putStringForUser(mContentResolver, DEVICE_STATE_ROTATION_LOCK,
-                    serializedDeviceStateAutoRotateSetting, UserHandle.USER_CURRENT);
+            mDeviceStateAutoRotateSettingManager.updateSetting(
+                    mDeviceStateAutoRotateSetting.clone(),
+                    persistedDeviceStateAutoRotateSetting == null
+                            ? getDefaultDeviceStateAutoRotateSetting()
+                            : persistedDeviceStateAutoRotateSetting.clone());
 
             if (DEBUG) {
                 Slog.d(TAG, "Wrote into persisted setting:\n" + "DEVICE_STATE_ROTATION_LOCK="
-                        + serializedDeviceStateAutoRotateSetting);
+                        + mDeviceStateAutoRotateSetting);
             }
         }
     }
@@ -371,13 +367,6 @@ public class DeviceStateAutoRotateSettingController {
     @VisibleForTesting
     Handler getHandler() {
         return mWm.mH;
-    }
-
-    private static String convertIntArrayToSerializedSetting(
-            SparseIntArray intArray) {
-        return IntStream.range(0, intArray.size())
-                .mapToObj(i -> intArray.keyAt(i) + SEPARATOR_REGEX + intArray.valueAt(i))
-                .collect(Collectors.joining(SEPARATOR_REGEX));
     }
 
     private static boolean equals(SparseIntArray a, SparseIntArray b) {

@@ -16,6 +16,7 @@
 
 package com.android.settingslib.devicestate;
 
+import android.annotation.Discouraged;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.util.Dumpable;
@@ -52,8 +53,33 @@ public interface DeviceStateAutoRotateSettingManager extends Dumpable {
     void updateSetting(int deviceState, boolean rotationLock);
 
     /**
-     * Get {@link DEVICE_STATE_ROTATION_LOCK} setting value for {@code deviceState}. Returns null if
-     * string value of {@link DEVICE_STATE_ROTATION_LOCK} is corrupted.
+     * <p>
+     * This method is exclusively for internal use by the
+     * {@link com.android.server.wm.DeviceStateAutoRotateSettingController}.
+     * </p>
+     * <p>
+     * Direct invocation by other clients can bypass crucial validation or business
+     * logic, potentially leading to an inconsistent or corrupt settings state.
+     * </p>
+     * <p>
+     * The designated API for updating settings is {@link #updateSetting(int, boolean)}. Please
+     * use that method.
+     * </p>
+     *
+     * @param proposedSetting Settings maps desired to be written into persisted setting.
+     * @param currentSetting  Current settings map
+     */
+    @Discouraged(message = "This method is exclusively for internal use. The designated API for "
+            + "updating settings is #updateSetting(int, boolean) in com.android.settingslib"
+            + ".devicestate.DeviceStateAutoRotateSettingManager. Please use that method.")
+    void updateSetting(SparseIntArray proposedSetting, SparseIntArray currentSetting);
+
+    /**
+     * Get {@link DEVICE_STATE_ROTATION_LOCK} setting value for {@code deviceState}.
+     * Note that the returned setting values in map are "resolved". This means that for device
+     * states where the auto-rotate setting is not user-settable, the value returned will be the
+     * same as the value configured for its designated fallback posture.
+     * Returns null if string value of {@link DEVICE_STATE_ROTATION_LOCK} is corrupted.
      * <p>
      * If the value is null, system_server will shortly reset the value of
      * {@link DEVICE_STATE_ROTATION_LOCK}. Clients can either subscribe to setting changes or query
@@ -64,6 +90,9 @@ public interface DeviceStateAutoRotateSettingManager extends Dumpable {
 
     /**
      * Get {@link DEVICE_STATE_ROTATION_LOCK} setting value in form of integer to integer map.
+     * Note that the returned setting values are "resolved". This means that for device states where
+     * the auto-rotate setting is not user-settable, the value returned will be the same as the
+     * value configured for its designated fallback posture.
      * Returns null if string value of {@link DEVICE_STATE_ROTATION_LOCK} is corrupted.
      * <p>
      * If the value is null, system_server will shortly reset the value of

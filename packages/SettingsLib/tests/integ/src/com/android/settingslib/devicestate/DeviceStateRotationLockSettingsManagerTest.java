@@ -24,6 +24,7 @@ import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWAR
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
@@ -34,6 +35,7 @@ import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.util.SparseIntArray;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
@@ -188,6 +190,15 @@ public class DeviceStateRotationLockSettingsManagerTest {
         mExpect.that(manager.getRotationLockSetting(0)).isEqualTo(2);
         mExpect.that(manager.getRotationLockSetting(1)).isEqualTo(1);
         mExpect.that(manager.getRotationLockSetting(2)).isEqualTo(1);
+    }
+
+    @Test
+    public void updateSettingMap_throwsUnsupportedOperationException() {
+        final UnsupportedOperationException exception = assertThrows(
+                UnsupportedOperationException.class,
+                () -> mManager.updateSetting(new SparseIntArray(), new SparseIntArray()));
+        assertThat(exception.getMessage()).isEqualTo(
+                "This API is only support by refactored settings manager.");
     }
 
     private void persistSettings(String value) {
