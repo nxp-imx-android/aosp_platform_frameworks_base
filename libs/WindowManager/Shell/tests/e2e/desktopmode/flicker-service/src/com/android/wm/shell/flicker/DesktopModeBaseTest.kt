@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker
 
+import android.platform.test.rule.ScreenRecordRule
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 
@@ -36,9 +37,13 @@ import com.android.server.wm.flicker.taskBarWindowIsAlwaysVisible
  *
  * This will ensure that all the appropriate methods are called before running the tests.
  */
+@ScreenRecordRule.ScreenRecord
 abstract class DesktopModeBaseTest(flicker: LegacyFlickerTest) : BaseBenchmarkTest(flicker) {
     @get:Rule
     val testName = TestName()
+
+    @get:Rule
+    val screenRecordRule = ScreenRecordRule(keepTestLevelRecordingOnSuccess = false)
 
     // Override this set with the test method names that you want to exclude from the test
     open val excludedTests: Set<String> = emptySet()
