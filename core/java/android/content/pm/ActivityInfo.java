@@ -1688,6 +1688,32 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS = 388014743L;
 
     /**
+     * This change id converts {@link android.view.MotionEvent} from a mouse device into touch
+     * events by rewriting its source and tool type when they're delivered to the application.
+     *
+     * <p>Some apps don't work well with mouse events. The override enabled by this change id allows
+     * them to work better with mouse devices by simulating touch events. This is disabled by
+     * default, and can be enabled by device manufacturers on a per-application basis, controlled
+     * via
+     * <a href="https://developer.android.com/guide/practices/device-compatibility-mode#device_manufacturer_per-app_overrides">Device manufacturer per-app overrides</a>.
+     *
+     * <p>App developers whose apps can correctly handle mouse events but are affected by this
+     * override can opt-out by declaring the {@link PackageManager.FEATURE_PC} feature in the
+     * application's manifest.
+     *
+     * <p><b>Syntax to opt-out:</b>
+     * <pre>
+     * &lt;uses-feature android:name="android.hardware.type.pc"
+     *               android:required="false" /&gt;
+     * </pre>
+     * @hide
+     */
+    @ChangeId
+    @Overridable
+    @Disabled
+    public static final long OVERRIDE_MOUSE_TO_TOUCH = 413207127L;
+
+    /**
      * Optional set of a certificates identifying apps that are allowed to embed this activity. From
      * the "knownActivityEmbeddingCerts" attribute.
      */

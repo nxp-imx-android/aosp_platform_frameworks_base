@@ -215,3 +215,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "mouse_to_touch_per_app_compat"
+    namespace: "lse_desktop_experience"
+    description: "Enables per-app overrides compatibility for mouse to touch"
+    bug: "413207127"
+}
