@@ -155,6 +155,7 @@ constructor(
                                                     shelfHeight =
                                                         controller.getShelfHeight().toFloat(),
                                                     stack = controller.view,
+                                                    reason = "getStackAbsoluteBottomOnLockscreen",
                                                 )
                                             },
                                         ),
@@ -205,6 +206,9 @@ constructor(
         }
 
         controller.setOnHeightChangedRunnable { viewModel.notificationStackChanged() }
+        controller.setOnKeyguardTopLevelNotificationRemovedRunnable {
+            viewModel.notificationStackChangedInstant()
+        }
         disposables += DisposableHandle { controller.setOnHeightChangedRunnable(null) }
         disposables += view.onLayoutChanged { viewModel.notificationStackChanged() }
 

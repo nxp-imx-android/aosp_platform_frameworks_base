@@ -51,7 +51,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 /**
@@ -132,9 +131,6 @@ constructor(
     }
 
     private fun minimalismFeatureSettingEnabled(): Flow<Boolean> {
-        if (!NotificationMinimalism.isEnabled) {
-            return flowOf(false)
-        }
         return seenNotificationsInteractor.isLockScreenNotificationMinimalismEnabled()
     }
 
