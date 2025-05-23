@@ -24,6 +24,8 @@ data class ActionModel(
     val label: String,
     val attribution: String?,
     val onPerformAction: () -> Unit,
+    // This is used to perform a long click on the expanded action chip.
+    val onPerformLongClick: () -> Unit,
     val taskId: Int = INVALID_TASK_ID,
     val actionType: String? = null,
 )
