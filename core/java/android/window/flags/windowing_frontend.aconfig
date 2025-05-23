@@ -52,13 +52,6 @@ flag {
 }
 
 flag {
-  name: "edge_to_edge_by_default"
-  namespace: "windowing_frontend"
-  description: "Make app go edge-to-edge by default when targeting SDK 35 or greater"
-  bug: "309578419"
-}
-
-flag {
   name: "enforce_edge_to_edge"
   is_exported: true
   namespace: "windowing_frontend"
