@@ -1503,6 +1503,38 @@ public class SettingsState {
         }
     }
 
+    public static boolean verifySettingsFileIntegrity(File file) {
+        if (!file.exists()) {
+            return false;
+        }
+        try {
+            FileInputStream in = new AtomicFile(file).openRead();
+            try {
+                TypedXmlPullParser parser = Xml.resolvePullParser(in);
+                int outerDepth = parser.getDepth();
+                int type;
+                while ((type = parser.next()) != XmlPullParser.END_DOCUMENT
+                        && (type != XmlPullParser.END_TAG || parser.getDepth() > outerDepth)) {
+                    if (type == XmlPullParser.END_TAG || type == XmlPullParser.TEXT) {
+                        continue;
+                    }
+
+                    String tagName = parser.getName();
+                    if (tagName.equals(TAG_SETTINGS)) {
+                        return true;
+                    } else if (tagName.equals(TAG_NAMESPACE_HASHES)) {
+                        return true;
+                    }
+                }
+            } finally {
+                IoUtils.closeQuietly(in);
+            }
+        } catch (XmlPullParserException | IOException e) {
+            Slog.e(LOG_TAG, "verify settings xml failed", e);
+        }
+        return false;
+    }
+
     /**
      * Uses AtomicFile to check if the file or its backup exists.
      *

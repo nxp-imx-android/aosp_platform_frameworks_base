@@ -3185,15 +3185,15 @@ public class SettingsProvider extends ContentProvider {
     }
 
     /**
-     * For each file in the given list, if it exists, copy it to a back up file. Ignore failures.
+     * For each file in the given list, if it exists and is complete, copy it to a back up file.
+     * Ignore failures.
      * @param filePaths List of paths of files that need to be backed up
      */
     public static void writeFallBackSettingsFiles(List<String> filePaths) {
-        final int numFiles = filePaths.size();
-        for (int i = 0; i < numFiles; i++) {
-            final String filePath = filePaths.get(i);
+        for (String filePath : filePaths) {
             final File originalFile = new File(filePath);
-            if (SettingsState.stateFileExists(originalFile)) {
+            if (SettingsState.stateFileExists(originalFile) &&
+                    SettingsState.verifySettingsFileIntegrity(originalFile)) {
                 final File fallBackFile = new File(filePath + FALLBACK_FILE_SUFFIX);
                 try {
                     FileUtils.copy(originalFile, fallBackFile);
