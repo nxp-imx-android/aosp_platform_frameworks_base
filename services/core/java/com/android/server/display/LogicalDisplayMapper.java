@@ -1099,12 +1099,14 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             decidedGroupId = calculateGroupId(requiredGroupType, mDisplayGroups);
             groupName = requiredGroupType;
         }
+
         // Get the new display group if a change is needed, if display group name is empty and
         // {@code DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP} is not set, and required group type
         // has not been decided, the display is assigned to the default display group.
         final boolean needsOwnDisplayGroup =
                 (displayDeviceInfo.flags & DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP) != 0
                         || !TextUtils.isEmpty(groupName);
+
         final boolean hasOwnDisplayGroup = groupId != Display.DEFAULT_DISPLAY_GROUP;
         final boolean needsDeviceDisplayGroup =
                 !needsOwnDisplayGroup && linkedDeviceUniqueId != null;
@@ -1115,7 +1117,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 || hasDeviceDisplayGroup != needsDeviceDisplayGroup
                 || decidedGroupId != Display.INVALID_DISPLAY_GROUP) {
             groupId =
-                    assignDisplayGroupIdLocked(needsDeviceDisplayGroup, needsOwnDisplayGroup,
+                    assignDisplayGroupIdLocked(needsOwnDisplayGroup,
                             display.getLayoutGroupNameLocked(), needsDeviceDisplayGroup,
                             linkedDeviceUniqueId, decidedGroupId);
         }
@@ -1129,9 +1131,8 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
 
             int reason = mDisplayGroupAllocator.getContentModeForDisplayLocked(
                     display, displayDeviceInfo.type);
-            if (groupId != Display.DEFAULT_DISPLAY_GROUP
-                    && (reason == REASON_PROJECTED || reason == REASON_EXTENDED
-                    || reason == REASON_NON_DESKTOP)) {
+            if (reason == REASON_PROJECTED || reason == REASON_EXTENDED
+                    || reason == REASON_NON_DESKTOP) {
                 newGroup.setFlags(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
             }
         }
@@ -1342,10 +1343,9 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         }
     }
 
-    private int assignDisplayGroupIdLocked(boolean needsDeviceDisplayGroup,
-            boolean isOwnDisplayGroup, String displayGroupName,
+    private int assignDisplayGroupIdLocked(boolean isOwnDisplayGroup, String displayGroupName,
             boolean isDeviceDisplayGroup, Integer linkedDeviceUniqueId, int decidedGroupId) {
-        if (decidedGroupId != Display.INVALID_DISPLAY_GROUP && !needsDeviceDisplayGroup) {
+        if (decidedGroupId != Display.INVALID_DISPLAY_GROUP) {
             return decidedGroupId;
         }
         if (isDeviceDisplayGroup && linkedDeviceUniqueId != null) {
