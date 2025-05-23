@@ -1079,7 +1079,11 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             // PIP into stashed mode.
             final boolean stashFromDroppingOnEdge = droppingOnLeft || droppingOnRight;
 
-            return stashFromFlingToEdge || stashFromDroppingOnEdge;
+            // If dragging PiP across displays is allowed, then ensure that stashing only occurs
+            // when no drag mirrors of the window are shown, meaning that it wasn't partially shown
+            // on another display
+            return (stashFromFlingToEdge || stashFromDroppingOnEdge)
+                    && !mPipDisplayTransferHandler.isMirrorShown();
         }
     }
 
