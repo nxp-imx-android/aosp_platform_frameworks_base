@@ -71,6 +71,7 @@ import android.view.InputEventReceiver;
 import android.view.InputMonitor;
 import android.view.InsetsState;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.View;
@@ -1037,7 +1038,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTilingDecorViewModel.onDeskRemoved(deskId);
     }
 
-    private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
+    @VisibleForTesting
+    public class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
             implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
             View.OnGenericMotionListener, DragDetector.MotionEventHandler {
         private static final long APP_HANDLE_HOLD_TO_DRAG_DURATION_MS = 100;
@@ -1051,6 +1053,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private final GestureDetector mGestureDetector;
         private final int mDisplayId;
         private final Rect mOnDragStartInitialBounds = new Rect();
+        private final Rect mCurrentBounds = new Rect();
 
         /**
          * Whether to pilfer the next motion event to send cancellations to the windows below.
@@ -1067,6 +1070,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private boolean mLongClickDisabled;
         private int mDragPointerId = -1;
         private MotionEvent mMotionEvent;
+        private int mCurrentPointerIconType = PointerIcon.TYPE_ARROW;
 
         private DesktopModeTouchEventListener(
                 RunningTaskInfo taskInfo,
@@ -1357,6 +1361,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                 e.getRawY(0));
                         updateDragStatus(decoration, e);
                         mOnDragStartInitialBounds.set(initialBounds);
+                        mCurrentBounds.set(initialBounds);
                     }
                     // Do not consume input event if a button is touched, otherwise it would
                     // prevent the button's ripple effect from showing.
@@ -1372,17 +1377,36 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mDragPointerId = e.getPointerId(0);
                     }
                     final int dragPointerIdx = e.findPointerIndex(mDragPointerId);
-                    final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningMove(
-                            e.getDisplayId(),
-                            e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
+
+                    if (DesktopExperienceFlags
+                            .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
+                        final boolean inDesktopModeDisplay = isDisplayInDesktopMode(
+                                e.getDisplayId());
+                        // TODO: b/418651425 - Use a more specific pointer icon when available.
+                        updatePointerIcon(e, dragPointerIdx, v.getViewRootImpl().getInputToken(),
+                                inDesktopModeDisplay ? PointerIcon.TYPE_ARROW
+                                        : PointerIcon.TYPE_NO_DROP);
+                        // Allow bounds update only when cursor is on desktop-mode displays.
+                        // Otherwise, ignore the MOVE event and the window holds its current bounds.
+                        if (inDesktopModeDisplay) {
+                            mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
+                                    e.getDisplayId(),
+                                    e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
+                        }
+                    } else {
+                        mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
+                                e.getDisplayId(),
+                                e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
+                    }
+
                     mDesktopTasksController.onDragPositioningMove(taskInfo,
-                            decoration.mTaskSurface,
+                            decoration.getLeash(),
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx),
                             e.getRawY(dragPointerIdx),
-                            newTaskBounds);
+                            mCurrentBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
-                    if (mIsDragging || !newTaskBounds.equals(mOnDragStartInitialBounds)) {
+                    if (mIsDragging || !mCurrentBounds.equals(mOnDragStartInitialBounds)) {
                         updateDragStatus(decoration, e);
                     }
                     return true;
@@ -1402,11 +1426,23 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningEnd(
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
+
+                    if (DesktopExperienceFlags
+                            .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
+                        updatePointerIcon(e, dragPointerIdx, v.getViewRootImpl().getInputToken(),
+                                PointerIcon.TYPE_ARROW);
+                        // If the cursor ends on a non-desktop-mode display, revert the window
+                        // to its initial bounds prior to the drag starting.
+                        if (!isDisplayInDesktopMode(e.getDisplayId())) {
+                            newTaskBounds.set(mOnDragStartInitialBounds);
+                        }
+                    }
+
                     // Tasks bounds haven't actually been updated (only its leash), so pass to
                     // DesktopTasksController to allow secondary transformations (i.e. snap resizing
                     // or transforming to fullscreen) before setting new task bounds.
                     mDesktopTasksController.onDragPositioningEnd(
-                            taskInfo, decoration.mTaskSurface,
+                            taskInfo, decoration.getLeash(),
                             e.getDisplayId(),
                             new PointF(e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
                             newTaskBounds, decoration.calculateValidDragArea(),
@@ -1423,6 +1459,21 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 }
             }
             return true;
+        }
+
+        private void updatePointerIcon(MotionEvent e, int dragPointerIdx, IBinder inputToken,
+                int iconType) {
+            if (mCurrentPointerIconType == iconType) {
+                return;
+            }
+            mInputManager.setPointerIcon(PointerIcon.getSystemIcon(mContext, iconType),
+                    e.getDisplayId(), e.getDeviceId(), e.getPointerId(dragPointerIdx), inputToken);
+            mCurrentPointerIconType = iconType;
+        }
+
+        private boolean isDisplayInDesktopMode(int displayId) {
+            return mDesktopState.isDesktopModeSupportedOnDisplay(displayId)
+                    && mDesktopTasksController.getActiveDeskId(displayId) != null;
         }
 
         private void updateDragStatus(DesktopModeWindowDecoration decor, MotionEvent e) {
