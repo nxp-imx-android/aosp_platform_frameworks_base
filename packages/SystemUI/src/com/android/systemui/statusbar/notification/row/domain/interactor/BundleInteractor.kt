@@ -22,7 +22,6 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.runtime.snapshotFlow
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.qualifiers.Background
@@ -60,12 +59,16 @@ constructor(
         get() = repository.bundleIcon
 
     val previewIcons: Flow<List<Drawable>> =
-        snapshotFlow { repository.appDataList }
-            .mapLatestConflated { appList ->
-                withContext(backgroundDispatcher) {
-                    appList.asSequence().distinct().mapNotNull(::fetchAppIcon).take(3).toList()
-                }
+        repository.appDataList.mapLatestConflated { appList ->
+            withContext(backgroundDispatcher) {
+                appList
+                    .asSequence()
+                    .distinct()
+                    .mapNotNull(::fetchAppIcon)
+                    .take(3)
+                    .toList()
             }
+        }
 
     var state: MutableSceneTransitionLayoutState? by repository::state
 
