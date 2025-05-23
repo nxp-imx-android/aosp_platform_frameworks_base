@@ -208,11 +208,13 @@ public class MediaQualityService extends SystemService {
                 mMediaQuality.setSoundProfileAdjustmentListener(mSoundProfileAdjListener);
 
                 synchronized (mPictureProfileLock) {
-                    String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                            + BaseParameters.PARAMETER_NAME + " = ?";
+                    String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
+                            + BaseParameters.PARAMETER_NAME + " = ? OR "
+                            + BaseParameters.PARAMETER_NAME + " = ?)";
                     String[] selectionArguments = {
                             Integer.toString(PictureProfile.TYPE_SYSTEM),
-                            PictureProfile.NAME_DEFAULT
+                            PictureProfile.NAME_DEFAULT,
+                            PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR
                     };
                     List<PictureProfile> packageDefaultPictureProfiles =
                             mMqDatabaseUtils.getPictureProfilesBasedOnConditions(MediaQualityUtils
@@ -401,6 +403,25 @@ public class MediaQualityService extends SystemService {
                     }
                 }
             });
+        }
+
+        @Override
+        public void changeStreamStatus(
+                @NonNull String profileId, @NonNull String newStatus, int userId) {
+            Long dbId = null;
+            synchronized (mPictureProfileLock) {
+                dbId = mPictureProfileTempIdMap.getKey(profileId);
+                if (dbId == null) {
+                    return;
+                }
+            }
+            try {
+                mPictureProfileAdjListener.onStreamStatusChanged(
+                        dbId, mPictureProfileAdjListener.toHalStatus(newStatus));
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+
         }
 
         private boolean hasPermissionToRemovePictureProfile(PictureProfile toDelete, int uid) {
@@ -655,12 +676,14 @@ public class MediaQualityService extends SystemService {
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
             }
             String[] columns = {BaseParameters.PARAMETER_ID};
-            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                    + BaseParameters.PARAMETER_NAME + " = ? AND "
+            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
+                    + BaseParameters.PARAMETER_NAME + " = ? OR "
+                    + BaseParameters.PARAMETER_NAME + " = ?) AND "
                     + BaseParameters.PARAMETER_INPUT_ID + " = ?";
             String[] selectionArguments = {
                     Integer.toString(PictureProfile.TYPE_SYSTEM),
                     PictureProfile.NAME_DEFAULT,
+                    PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR,
                     inputId
             };
             synchronized (mPictureProfileLock) {
@@ -2223,6 +2246,48 @@ public class MediaQualityService extends SystemService {
                     return PictureProfile.STATUS_FMM_HDR_VIVID;
                 default:
                     return "";
+            }
+        }
+
+        private byte toHalStatus(@NonNull String profileStatus) {
+            // TODO: use biMap
+            switch (profileStatus) {
+                case PictureProfile.STATUS_SDR:
+                    return StreamStatus.SDR;
+                case PictureProfile.STATUS_HDR10:
+                    return StreamStatus.HDR10;
+                case PictureProfile.STATUS_TCH:
+                    return StreamStatus.TCH;
+                case PictureProfile.STATUS_DOLBY_VISION:
+                    return StreamStatus.DOLBYVISION;
+                case PictureProfile.STATUS_HLG:
+                    return StreamStatus.HLG;
+                case PictureProfile.STATUS_HDR10_PLUS:
+                    return StreamStatus.HDR10PLUS;
+                case PictureProfile.STATUS_HDR_VIVID:
+                    return StreamStatus.HDRVIVID;
+                case PictureProfile.STATUS_IMAX_SDR:
+                    return StreamStatus.IMAXSDR;
+                case PictureProfile.STATUS_IMAX_HDR10:
+                    return StreamStatus.IMAXHDR10;
+                case PictureProfile.STATUS_IMAX_HDR10_PLUS:
+                    return StreamStatus.IMAXHDR10PLUS;
+                case PictureProfile.STATUS_FMM_SDR:
+                    return StreamStatus.FMMSDR;
+                case PictureProfile.STATUS_FMM_HDR10:
+                    return StreamStatus.FMMHDR10;
+                case PictureProfile.STATUS_FMM_HDR10_PLUS:
+                    return StreamStatus.FMMHDR10PLUS;
+                case PictureProfile.STATUS_FMM_HLG:
+                    return StreamStatus.FMMHLG;
+                case PictureProfile.STATUS_FMM_DOLBY:
+                    return StreamStatus.FMMDOLBY;
+                case PictureProfile.STATUS_FMM_TCH:
+                    return StreamStatus.FMMTCH;
+                case PictureProfile.STATUS_FMM_HDR_VIVID:
+                    return StreamStatus.FMMHDRVIVID;
+                default:
+                    return (byte) 0;
             }
         }
 
