@@ -1067,6 +1067,11 @@ public class NotificationShelf extends ActivatableNotificationView {
         return false;
     }
 
+    @Override
+    protected boolean usesTransparentBackground() {
+        return super.usesTransparentBackground() && !mAmbientState.isOnKeyguard();
+    }
+
     public void setCanModifyColorOfNotifications(boolean canModifyColorOfNotifications) {
         mCanModifyColorOfNotifications = canModifyColorOfNotifications;
     }
