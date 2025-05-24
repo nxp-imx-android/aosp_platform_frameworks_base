@@ -37,6 +37,7 @@ import org.mockito.MockitoAnnotations
 /** atest SystemUITests:MonitoringNoteTaskEventListenerTest */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 internal class NoteTaskEventLoggerTest : SysuiTestCase() {
 
     @Mock lateinit var uiEventLogger: UiEventLogger

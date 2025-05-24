@@ -39,6 +39,7 @@ import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class PrivacyConfigFlagsTest : SysuiTestCase() {
     companion object {
         private const val MIC_CAMERA = SystemUiDeviceConfigFlags.PROPERTY_MIC_CAMERA_ENABLED

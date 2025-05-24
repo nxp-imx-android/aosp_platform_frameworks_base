@@ -46,6 +46,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
+@android.platform.test.annotations.EnabledOnRavenwood
 class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()

@@ -47,6 +47,7 @@ import java.text.Collator
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
+@android.platform.test.annotations.EnabledOnRavenwood
 class AppAdapterTest : SysuiTestCase() {
     private val fakeSystemClock = FakeSystemClock()
     private val backgroundExecutor = FakeExecutor(fakeSystemClock)

@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class FontScalingTileDataInteractorTest : SysuiTestCase() {
     private val underTest: FontScalingTileDataInteractor = FontScalingTileDataInteractor()
     private val testUser = UserHandle.of(1)

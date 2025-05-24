@@ -73,6 +73,7 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @UiThreadTest
+@android.platform.test.annotations.EnabledOnRavenwood
 public class DozeMachineTest extends SysuiTestCase {
 
     DozeMachine mMachine;

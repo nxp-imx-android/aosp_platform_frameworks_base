@@ -33,6 +33,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DumpManagerTest : SysuiTestCase() {
 
     @Mock private lateinit var dumpable1: Dumpable

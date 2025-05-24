@@ -93,6 +93,7 @@ import platform.test.screenshot.Displays.Phone
 @RunWithLooper
 @EnableSceneContainer
 @MotionTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class BouncerPredictiveBackTest : SysuiTestCase() {
 
     private val deviceSpec = DeviceEmulationSpec(Phone)

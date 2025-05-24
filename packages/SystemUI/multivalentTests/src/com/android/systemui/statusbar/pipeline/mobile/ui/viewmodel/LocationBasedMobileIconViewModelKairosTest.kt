@@ -55,6 +55,7 @@ import org.mockito.kotlin.mock
 @OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class LocationBasedMobileIconViewModelKairosTest : SysuiTestCase() {
 
     private val Kosmos.commonImpl: MobileIconViewModelKairosCommon by ActivatedKairosFixture {

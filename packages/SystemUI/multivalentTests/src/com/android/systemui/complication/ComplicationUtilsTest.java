@@ -46,6 +46,7 @@ import java.util.Set;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class ComplicationUtilsTest extends SysuiTestCase {
     @Test
     public void testConvertComplicationType() {

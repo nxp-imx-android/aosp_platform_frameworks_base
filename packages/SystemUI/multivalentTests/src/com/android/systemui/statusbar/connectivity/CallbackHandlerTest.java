@@ -44,6 +44,7 @@ import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class CallbackHandlerTest extends SysuiTestCase {
 
     private CallbackHandler mHandler;

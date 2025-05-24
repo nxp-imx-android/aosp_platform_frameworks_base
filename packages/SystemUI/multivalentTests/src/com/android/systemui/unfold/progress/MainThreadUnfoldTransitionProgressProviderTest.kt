@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
+@android.platform.test.annotations.EnabledOnRavenwood
 class MainThreadUnfoldTransitionProgressProviderTest : SysuiTestCase() {
 
     private val wrappedProgressProvider = FakeUnfoldTransitionProvider()

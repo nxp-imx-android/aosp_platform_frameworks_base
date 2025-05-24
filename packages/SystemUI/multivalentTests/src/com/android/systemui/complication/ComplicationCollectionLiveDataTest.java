@@ -50,6 +50,7 @@ import java.util.HashSet;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class ComplicationCollectionLiveDataTest extends SysuiTestCase {
 
     private FakeExecutor mExecutor;

@@ -39,6 +39,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @EnableFlags(StatusBarPopupChips.FLAG_NAME)
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val underTest = kosmos.statusBarPopupChipsViewModelFactory.create()

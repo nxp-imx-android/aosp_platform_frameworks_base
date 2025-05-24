@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class MediaTttReceiverUiEventLoggerTest : SysuiTestCase() {
     private lateinit var uiEventLoggerFake: UiEventLoggerFake
     private lateinit var logger: MediaTttReceiverUiEventLogger

@@ -23,6 +23,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class NearbyMediaDevicesManagerTest : SysuiTestCase() {
 
     private lateinit var manager: NearbyMediaDevicesManager

@@ -40,6 +40,7 @@ import org.mockito.Mockito.verify
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class FoldStateRepositoryTest : SysuiTestCase() {
 
     private val foldStateProvider = mock<FoldStateProvider>()

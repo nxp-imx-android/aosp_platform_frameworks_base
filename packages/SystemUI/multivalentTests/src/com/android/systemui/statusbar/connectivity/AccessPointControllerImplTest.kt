@@ -51,6 +51,7 @@ import org.mockito.kotlin.mock
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper(setAsMainLooper = true)
+@android.platform.test.annotations.EnabledOnRavenwood
 class AccessPointControllerImplTest : SysuiTestCase() {
 
     @Mock private lateinit var userManager: UserManager

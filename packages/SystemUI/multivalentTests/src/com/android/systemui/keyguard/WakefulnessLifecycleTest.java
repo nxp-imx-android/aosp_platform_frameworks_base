@@ -41,6 +41,7 @@ import java.io.PrintWriter;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 public class WakefulnessLifecycleTest extends SysuiTestCase {
 
     private WakefulnessLifecycle mWakefulness;

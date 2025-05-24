@@ -41,6 +41,7 @@ import org.junit.runner.RunWith
 @OptIn(ExperimentalKairosApi::class, ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class MobileIconInteractorKairosAdapterTest : MobileIconInteractorTestBase() {
 
     var job: Job? = null

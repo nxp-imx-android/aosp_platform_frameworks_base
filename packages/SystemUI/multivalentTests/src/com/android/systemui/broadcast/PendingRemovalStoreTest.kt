@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class PendingRemovalStoreTest : SysuiTestCase() {
 
     @Mock

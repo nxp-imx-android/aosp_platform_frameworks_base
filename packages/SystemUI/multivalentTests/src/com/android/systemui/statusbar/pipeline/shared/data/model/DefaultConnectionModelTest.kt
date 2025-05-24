@@ -26,6 +26,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DefaultConnectionModelTest : SysuiTestCase() {
     @Test
     fun messageInitializerAndPrinter_isValidatedFalse_hasCorrectInfo() {

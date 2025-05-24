@@ -36,6 +36,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+@android.platform.test.annotations.EnabledOnRavenwood
 class ShadeDisplayDialogInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val dialogManager: SystemUIDialogManager = kosmos.systemUIDialogManager

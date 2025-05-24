@@ -41,6 +41,7 @@ import org.mockito.kotlin.stub
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class CarProjectionRepositoryImplTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

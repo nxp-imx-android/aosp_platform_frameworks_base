@@ -32,6 +32,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class ProfileMessageControllerTest : SysuiTestCase() {
     @Test
     fun personalScreenshot() = runTest {

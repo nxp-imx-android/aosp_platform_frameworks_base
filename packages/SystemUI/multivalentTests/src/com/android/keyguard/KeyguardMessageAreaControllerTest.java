@@ -44,6 +44,7 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @TestableLooper.RunWithLooper
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class KeyguardMessageAreaControllerTest extends SysuiTestCase {
     @Mock
     private ConfigurationController mConfigurationController;

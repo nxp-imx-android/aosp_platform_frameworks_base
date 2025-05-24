@@ -39,6 +39,7 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class ConfigurationInteractorTest : SysuiTestCase() {
     private lateinit var testScope: TestScope
     private lateinit var configuration: Configuration
