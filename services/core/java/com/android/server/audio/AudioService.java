@@ -4893,8 +4893,11 @@ public class AudioService extends IAudioService.Stub
             Log.e(TAG, "VSS for stream type " + streamType + " is null");
             return;
         }
-        setDeviceVolumeInt(vi, vss, ada, callingPackage, /*flags=*/0, /*changeMute=*/false,
-                "setVolumeForDevice");
+
+        final AudioDeviceAttributes currDev = getDeviceAttributesForStream(
+                streamType, /*selectAbsoluteDevices=*/true);
+        setDeviceVolumeInt(vi, vss, ada, callingPackage, /*flags=*/0, /*changeMute=*/
+                ada.equalTypeAddress(currDev), "setVolumeForDevice");
     }
 
     /**
@@ -4920,7 +4923,6 @@ public class AudioService extends IAudioService.Stub
         AudioService.sVolumeLogger.enqueue(
                 new DeviceVolumeEvent(streamType, direction, ada, /*deviceForStream=*/-1,
                         callingPackage, /*skipped=*/false, /*event=*/"adjustVolumeForDevice"));
-
 
         adjustStreamVolume(streamType, direction, /*flags=*/0, ada, callingPackage,
                 "adjustVolumeForDevice", Binder.getCallingUid(), Binder.getCallingPid(),
@@ -4961,15 +4963,16 @@ public class AudioService extends IAudioService.Stub
             return;
         }
 
-        final int currDev = getDeviceForStream(streamType, /*selectAbsoluteDevices=*/true);
+        final AudioDeviceAttributes currDev = getDeviceAttributesForStream(
+                streamType, /*selectAbsoluteDevices=*/true);
 
+        final boolean currDevIsAda = currDev.equalTypeAddress(ada);
         AudioService.sVolumeLogger.enqueue(
                 new DeviceVolumeEvent(streamType, vi.getVolumeIndex(), ada, callingPackage,
-                        currDev == ada.getInternalType()));
+                        currDevIsAda));
 
-        setDeviceVolumeInt(vi, vss, ada, callingPackage,
-                FLAG_ABSOLUTE_VOLUME, currDev == ada.getInternalType(),
-                "notifyAbsoluteVolumeChanged");
+        setDeviceVolumeInt(vi, vss, ada, callingPackage, FLAG_ABSOLUTE_VOLUME, /*changeMute=*/
+                currDevIsAda, "notifyAbsoluteVolumeChanged");
     }
 
     private static boolean isVolumeInfoValid(VolumeInfo vi, boolean forAdjust) {
@@ -4995,16 +4998,33 @@ public class AudioService extends IAudioService.Stub
             String callingPackage, int flags, boolean changeMute, String caller) {
         int streamType = vss.getStreamType();
         int index = vi.getVolumeIndex();
+        final boolean streamMuted = isStreamMute(streamType);
+
         // if a stream is not muted but the VolumeInfo is for muting, set the volume index
         // for the device to min volume
         boolean hasMuteState = deviceVolumeApis() ? vi.hasMuteState() : vi.hasMuteCommand();
-        if (hasMuteState && vi.isMuted() && !isStreamMute(streamType)) {
-            setStreamVolumeWithAttributionInt(streamType,
-                    vss.getMinIndex(),
-                    flags,
-                    ada, callingPackage, null,
-                    changeMute);
-            return;
+        Slog.v(TAG,
+                "setDeviceVolumeInt from caller " + caller + " changeMute " + changeMute + " index "
+                        + index + " muteState " + (hasMuteState ? vi.isMuted() : "no state")
+                        + " streamType " + streamType + " streamMuted " + streamMuted + " device "
+                        + Integer.toHexString(ada.getInternalType()));
+        if (hasMuteState) {
+            // if not allowed to change mute we are only setting the index to min
+            if (vi.isMuted() && !streamMuted && !changeMute) {
+                setStreamVolumeWithAttributionInt(streamType,
+                        vss.getMinIndex(),
+                        flags,
+                        ada, callingPackage, null,
+                        changeMute);
+                return;
+            }
+            if (deviceVolumeApis() && changeMute && vi.isMuted() != streamMuted) {
+                adjustStreamVolumeWithAttribution(streamType,
+                        vi.isMuted() ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE, flags,
+                        getPackageNameForUid(Binder.getCallingUid()), /*attributionTag=*/null);
+                // do not change the mute if we also set an index
+                changeMute = false;
+            }
         }
 
         if (vi.getMinVolumeIndex() == VolumeInfo.INDEX_NOT_SET
@@ -5012,6 +5032,10 @@ public class AudioService extends IAudioService.Stub
             // assume index meant to be in stream type range, validate
             if ((index * 10) < vss.getMinIndex()
                     || (index * 10) > vss.getMaxIndex()) {
+                if (hasMuteState) {
+                    // no need to set an index if we have a mute state
+                    return;
+                }
                 throw new IllegalArgumentException("invalid volume index " + index
                         + " not between min/max for stream " + vi.getStreamType());
             }
@@ -5650,7 +5674,6 @@ public class AudioService extends IAudioService.Stub
             }
         }
 
-        final boolean muted = streamState.mIsMuted;
         if (!mSoundDoseHelper.willDisplayWarningAfterCheckVolume(streamType, index,
                 deviceType, flags)) {
             onSetStreamVolume(streamType, index, flags, deviceType, caller, hasModifyAudioSettings,
@@ -5660,7 +5683,8 @@ public class AudioService extends IAudioService.Stub
             index = streamState.getIndex(deviceType);
         }
 
-        handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, muted, flags);
+        handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, streamState.mIsMuted,
+                flags);
 
         synchronized (mHdmiClientLock) {
             if (streamTypeAlias == AudioSystem.STREAM_MUSIC
@@ -6151,7 +6175,7 @@ public class AudioService extends IAudioService.Stub
                 index = (vss.getIndex(ada.getInternalType()) + 5) / 10;
             }
             vib.setVolumeIndex(index);
-            // only set as a mute command if stream muted
+            // only set as a mute state if stream muted
             if (vss.mIsMuted) {
                 vib.setMuted(true);
             }
