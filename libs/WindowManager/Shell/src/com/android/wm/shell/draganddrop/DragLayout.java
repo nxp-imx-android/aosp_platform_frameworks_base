@@ -36,9 +36,12 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.PendingIntent;
 import android.app.StatusBarManager;
+import android.content.ClipDescription;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ShortcutInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -47,6 +50,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.graphics.drawable.Drawable;
+import android.os.UserHandle;
 import android.view.DragEvent;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -65,12 +69,12 @@ import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.R;
-import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
+import com.android.wm.shell.bubbles.bar.DragToBubbleController;
 import com.android.wm.shell.common.split.SplitScreenUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
-import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.draganddrop.DragAndDropConstants;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 
 import java.io.PrintWriter;
@@ -108,9 +112,8 @@ public class DragLayout extends LinearLayout
     private boolean mIsLeftRightSplit;
 
     private SplitDragPolicy.Target mCurrentTarget = null;
-    private final BubbleBarDragListener mBubbleBarDragListener;
-    private final Map<BubbleBarLocation, Rect> mBubbleBarLocations = new HashMap<>();
-    private BubbleBarLocation mCurrentBubbleBarTarget = null;
+    private final @Nullable DragToBubbleController mDragToBubbleController;
+    private boolean mIsOverBubblesDropZone = false;
     private DropZoneView mDropZoneView1;
     private DropZoneView mDropZoneView2;
     private int mDisplayMargin;
@@ -134,12 +137,12 @@ public class DragLayout extends LinearLayout
     @SuppressLint("WrongConstant")
     public DragLayout(Context context,
             SplitScreenController splitScreenController,
-            BubbleBarDragListener bubbleBarDragListener,
+            @Nullable DragToBubbleController dragToBubbleController,
             IconProvider iconProvider) {
         super(context);
         mSplitScreenController = splitScreenController;
         mIconProvider = iconProvider;
-        mBubbleBarDragListener = bubbleBarDragListener;
+        mDragToBubbleController = dragToBubbleController;
         mPolicy = new SplitDragPolicy(context, splitScreenController, this);
         mStatusBarManager = context.getSystemService(StatusBarManager.class);
         mLastConfiguration.setTo(context.getResources().getConfiguration());
@@ -195,12 +198,6 @@ public class DragLayout extends LinearLayout
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
         updateTouchableRegion();
-        updateBubbleBarRegions(l, t, r, b);
-    }
-
-    private void updateBubbleBarRegions(int l, int t, int r, int b) {
-        mBubbleBarLocations.clear();
-        mBubbleBarLocations.putAll(mBubbleBarDragListener.getBubbleBarDropZones(l, t, r, b));
     }
 
     /**
@@ -604,39 +601,15 @@ public class DragLayout extends LinearLayout
     }
 
     private boolean interceptBubbleBarEvent(int x, int y) {
-        BubbleBarLocation bubbleBarLocation = getBubbleBarLocation(x, y);
-        boolean isOverTheBubbleBar = bubbleBarLocation != null;
-        if (mCurrentBubbleBarTarget != bubbleBarLocation) {
-            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_DRAG_AND_DROP, "Current bubble bar location: %s",
-                    isOverTheBubbleBar);
-            mCurrentBubbleBarTarget = bubbleBarLocation;
-            if (isOverTheBubbleBar) {
-                mBubbleBarDragListener.onDragItemOverBubbleBarDragZone(bubbleBarLocation);
-                if (mCurrentTarget != null) {
-                    animateToNoTarget();
-                    mCurrentTarget = null;
-                }
-            } else {
-                mBubbleBarDragListener.onItemDraggedOutsideBubbleBarDropZone();
-            }
-            //TODO(b/388894910): handle accessibility
+        boolean interceptBubbleBarEvent = mDragToBubbleController != null
+                && mDragToBubbleController.onDragUpdate(x, y);
+        if (interceptBubbleBarEvent && !mIsOverBubblesDropZone && mCurrentTarget != null) {
+            // only animate for no target if we first enter bubble bar drop zone and have a target
+            animateToNoTarget();
+            mCurrentTarget = null;
         }
-        return isOverTheBubbleBar;
-    }
-
-    @Nullable
-    private BubbleBarLocation getBubbleBarLocation(int x, int y) {
-        Intent appData = mSession.appData;
-        if (appData == null) {
-            // there is no app data, so drop event over the bubble bar can not be handled
-            return null;
-        }
-        for (BubbleBarLocation location : mBubbleBarLocations.keySet()) {
-            if (mBubbleBarLocations.get(location).contains(x, y)) {
-                return location;
-            }
-        }
-        return null;
+        mIsOverBubblesDropZone = interceptBubbleBarEvent;
+        return interceptBubbleBarEvent;
     }
 
     private void animateToNoTarget() {
@@ -663,10 +636,10 @@ public class DragLayout extends LinearLayout
                     mSession = null;
             }
         });
-        if (mCurrentBubbleBarTarget != null) {
+        if (mIsOverBubblesDropZone) {
             // bubble bar is still showing drop target, notify bubbles of drag cancel
-            mCurrentBubbleBarTarget = null;
-            mBubbleBarDragListener.onItemDraggedOutsideBubbleBarDropZone();
+            mIsOverBubblesDropZone = false;
+            Objects.requireNonNull(mDragToBubbleController).onDragEnded();
         }
         // Reset the state if we previously force-ignore the bottom margin
         mDropZoneView1.setForceIgnoreBottomMargin(false);
@@ -683,19 +656,19 @@ public class DragLayout extends LinearLayout
      */
     public boolean drop(DragEvent event, @NonNull SurfaceControl dragSurface,
             @Nullable WindowContainerToken hideTaskToken, Runnable dropCompleteCallback) {
-        final boolean handledDrop = mCurrentTarget != null || mCurrentBubbleBarTarget != null;
+        final boolean handledDrop = mCurrentTarget != null || mIsOverBubblesDropZone;
         mHasDropped = true;
         Intent appData = mSession.appData;
 
         // Process the drop exclusive by DropTarget OR by the BubbleBar
         if (mCurrentTarget != null) {
             mPolicy.onDropped(mCurrentTarget, hideTaskToken);
-        } else if (appData != null && mCurrentBubbleBarTarget != null
+        } else if (appData != null
+                && mIsOverBubblesDropZone
                 && BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
-            mBubbleBarDragListener.onItemDroppedOverBubbleBarDragZone(mCurrentBubbleBarTarget,
-                    appData);
+            handleDropOnBubbleBar(appData, Objects.requireNonNull(mDragToBubbleController));
         }
-        mCurrentBubbleBarTarget = null;
+        mIsOverBubblesDropZone = false;
 
         // Start animating the drop UI out with the drag surface
         hide(event, dropCompleteCallback);
@@ -703,6 +676,26 @@ public class DragLayout extends LinearLayout
             hideDragSurface(dragSurface);
         }
         return handledDrop;
+    }
+
+    private void handleDropOnBubbleBar(Intent appData,
+            DragToBubbleController dragToBubbleController) {
+        ShortcutInfo shortcutInfo = appData.getParcelableExtra(
+                DragAndDropConstants.EXTRA_SHORTCUT_INFO,
+                ShortcutInfo.class
+        );
+        if (shortcutInfo != null) {
+            dragToBubbleController.onItemDropped(shortcutInfo);
+            return;
+        }
+        UserHandle user = appData.getParcelableExtra(Intent.EXTRA_USER, UserHandle.class);
+        PendingIntent pendingIntent = appData.getParcelableExtra(
+                ClipDescription.EXTRA_PENDING_INTENT,
+                PendingIntent.class
+        );
+        if (pendingIntent != null && user != null) {
+            dragToBubbleController.onItemDropped(pendingIntent, user);
+        }
     }
 
     private void hideDragSurface(@NonNull SurfaceControl dragSurface) {
