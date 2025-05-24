@@ -138,11 +138,6 @@ public final class VerifyCredentialResponse implements Parcelable {
         mGatekeeperPasswordHandle = gatekeeperPasswordHandle;
     }
 
-    public VerifyCredentialResponse stripPayload() {
-        return new VerifyCredentialResponse(mResponseCode, mTimeout,
-                null /* gatekeeperHAT */, 0L /* gatekeeperPasswordHandle */);
-    }
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(mResponseCode);

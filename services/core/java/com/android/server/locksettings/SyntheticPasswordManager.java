@@ -705,11 +705,32 @@ class SyntheticPasswordManager {
     }
 
     /**
-     * Verify the supplied key against a weaver slot, returning a response indicating whether
-     * the verification is successful, throttled or failed. If successful, the bound secret
-     * is also returned.
+     * Translate a {@link WeaverReadResponse} to a {@link VerifyCredentialResponse}.
+     *
+     * <p>This isn't a static method in {@link VerifyCredentialResponse} because {@link
+     * WeaverReadResponse} isn't visible from {@link VerifyCredentialResponse}.
      */
-    private VerifyCredentialResponse weaverVerify(IWeaver weaver, int slot, byte[] key) {
+    private static VerifyCredentialResponse verifyCredentialResponseFromWeaverResponse(
+            WeaverReadResponse weaverResponse) {
+        switch (weaverResponse.status) {
+            case WeaverReadStatus.OK:
+                return VerifyCredentialResponse.OK;
+            case WeaverReadStatus.THROTTLE:
+                return responseFromTimeout(weaverResponse);
+            case WeaverReadStatus.INCORRECT_KEY:
+                if (weaverResponse.timeout != 0) {
+                    return responseFromTimeout(weaverResponse);
+                }
+                break;
+        }
+        return VerifyCredentialResponse.ERROR;
+    }
+
+    /**
+     * Tries to read from the given Weaver slot using the given key. Returns the resulting {@link
+     * WeaverReadResponse}.
+     */
+    private WeaverReadResponse weaverVerify(IWeaver weaver, int slot, byte[] key) {
         if (slot == INVALID_WEAVER_SLOT || slot >= mWeaverConfig.slots) {
             throw new IllegalArgumentException("Invalid slot for weaver");
         }
@@ -718,39 +739,37 @@ class SyntheticPasswordManager {
         } else if (key.length != mWeaverConfig.keySize) {
             throw new IllegalArgumentException("Invalid key size for weaver");
         }
-        final WeaverReadResponse readResponse;
+        WeaverReadResponse response;
         try {
-            readResponse = weaver.read(slot, key);
+            response = weaver.read(slot, key);
         } catch (RemoteException e) {
             Slog.e(TAG, "weaver read failed, slot: " + slot, e);
-            return VerifyCredentialResponse.ERROR;
+            response = new WeaverReadResponse();
+            response.status = WeaverReadStatus.FAILED;
+            return response;
         }
 
-        switch (readResponse.status) {
+        switch (response.status) {
             case WeaverReadStatus.OK:
-                return new VerifyCredentialResponse.Builder()
-                                      .setGatekeeperHAT(readResponse.value)
-                                      .build();
+                break;
             case WeaverReadStatus.THROTTLE:
                 Slog.e(TAG, "weaver read failed (THROTTLE), slot: " + slot);
-                return responseFromTimeout(readResponse);
+                break;
             case WeaverReadStatus.INCORRECT_KEY:
-                if (readResponse.timeout == 0) {
+                if (response.timeout == 0) {
                     Slog.e(TAG, "weaver read failed (INCORRECT_KEY), slot: " + slot);
-                    return VerifyCredentialResponse.ERROR;
                 } else {
                     Slog.e(TAG, "weaver read failed (INCORRECT_KEY/THROTTLE), slot: " + slot);
-                    return responseFromTimeout(readResponse);
                 }
+                break;
             case WeaverReadStatus.FAILED:
                 Slog.e(TAG, "weaver read failed (FAILED), slot: " + slot);
-                return VerifyCredentialResponse.ERROR;
+                break;
             default:
-                Slog.e(TAG,
-                        "weaver read unknown status " + readResponse.status
-                                + ", slot: " + slot);
-                return VerifyCredentialResponse.ERROR;
+                Slog.e(TAG, "weaver read unknown status " + response.status + ", slot: " + slot);
+                break;
         }
+        return response;
     }
 
     public void removeUser(IGateKeeperService gatekeeper, int userId) {
@@ -1123,8 +1142,9 @@ class SyntheticPasswordManager {
             byte[] stretchedLskf = stretchLskf(userCredential, pwd);
             int weaverSlot = persistentData.userId;
 
-            return weaverVerify(weaver, weaverSlot,
-                    stretchedLskfToWeaverKey(stretchedLskf)).stripPayload();
+            WeaverReadResponse weaverResponse =
+                    weaverVerify(weaver, weaverSlot, stretchedLskfToWeaverKey(stretchedLskf));
+            return verifyCredentialResponseFromWeaverResponse(weaverResponse);
         } else {
             Slog.e(TAG, "persistentData.type must be TYPE_SP_GATEKEEPER or TYPE_SP_WEAVER, but is "
                     + persistentData.type);
@@ -1424,13 +1444,12 @@ class SyntheticPasswordManager {
                     return result;
                 }
                 weaverKey = stretchedLskfToWeaverKey(stretchedLskf);
-                result.response = weaverVerify(weaver, weaverSlot, weaverKey);
-                if (result.response.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK) {
+                WeaverReadResponse weaverResponse = weaverVerify(weaver, weaverSlot, weaverKey);
+                if (weaverResponse.status != WeaverReadStatus.OK) {
+                    result.response = verifyCredentialResponseFromWeaverResponse(weaverResponse);
                     return result;
                 }
-                protectorSecret =
-                        transformUnderWeaverSecret(
-                                stretchedLskf, result.response.getGatekeeperHAT());
+                protectorSecret = transformUnderWeaverSecret(stretchedLskf, weaverResponse.value);
             } else {
                 // Weaver is unavailable, so the protector uses Gatekeeper to verify the LSKF,
                 // unless the LSKF is empty in which case Gatekeeper might not have been used at
@@ -1611,16 +1630,20 @@ class SyntheticPasswordManager {
                 result.response = VerifyCredentialResponse.ERROR;
                 return result;
             }
-            VerifyCredentialResponse response = weaverVerify(weaver, slotId, null);
-            if (response.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK ||
-                    response.getGatekeeperHAT() == null) {
+            WeaverReadResponse weaverResponse = weaverVerify(weaver, slotId, null);
+            byte[] secdiscardableEncryptionKey = weaverResponse.value;
+            if (weaverResponse.status != WeaverReadStatus.OK
+                    || secdiscardableEncryptionKey == null) {
                 Slog.e(TAG,
                         "Failed to retrieve Weaver secret when unlocking token-based protector");
                 result.response = VerifyCredentialResponse.ERROR;
                 return result;
             }
-            secdiscardable = SyntheticPasswordCrypto.decrypt(response.getGatekeeperHAT(),
-                    PERSONALIZATION_WEAVER_TOKEN, secdiscardable);
+            secdiscardable =
+                    SyntheticPasswordCrypto.decrypt(
+                            secdiscardableEncryptionKey,
+                            PERSONALIZATION_WEAVER_TOKEN,
+                            secdiscardable);
         }
         byte[] protectorSecret = transformUnderSecdiscardable(token, secdiscardable);
         result.syntheticPassword = unwrapSyntheticPasswordBlob(protectorId, expectedProtectorType,
