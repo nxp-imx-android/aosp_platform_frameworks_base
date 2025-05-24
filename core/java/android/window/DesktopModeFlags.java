@@ -137,16 +137,12 @@ public enum DesktopModeFlags {
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
     EXCLUDE_CAPTION_FROM_APP_BOUNDS(Flags::excludeCaptionFromAppBounds, true),
-    FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
-            Flags::forceCloseTopTransparentFullscreenTask, false),
     IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
             Flags::ignoreAspectRatioRestrictionsForResizeableFreeformActivities, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
     INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES(
             Flags::inheritTaskBoundsForTrampolineTaskLaunches, true),
-    PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH(
-            Flags::preserveRecentsTaskConfigurationOnRelaunch, false),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(
             Flags::skipDecorViewRelayoutWhenClosingBugfix, true),
     // go/keep-sorted end

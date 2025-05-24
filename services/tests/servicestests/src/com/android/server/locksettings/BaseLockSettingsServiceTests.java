@@ -236,6 +236,8 @@ public abstract class BaseLockSettingsServiceTests {
 
         setDeviceProvisioned(true);
         mLocalService = LocalServices.getService(LockSettingsInternal.class);
+
+        when(mUserManagerInternal.isMainUserPermanentAdmin()).thenReturn(true);
     }
 
     private Resources createMockResources() {
@@ -247,13 +249,18 @@ public abstract class BaseLockSettingsServiceTests {
         when(res.getBoolean(
                 eq(com.android.internal.R.bool.config_enableCredentialFactoryResetProtection)))
                 .thenReturn(true);
-        when(res.getBoolean(eq(com.android.internal.R.bool.config_isMainUserPermanentAdmin)))
-                .thenReturn(true);
         when(res.getBoolean(eq(com.android.internal.R.bool.config_strongAuthRequiredOnBoot)))
                 .thenReturn(true);
         when(res.getBoolean(eq(com.android.internal.R.bool.config_repairModeSupported)))
                 .thenReturn(true);
+        when(res.getBoolean(
+                        eq(com.android.internal.R.bool.config_softwareLskfRateLimiterEnforcing)))
+                .thenReturn(isSoftwareLskfRateLimiterEnforcing());
         return res;
+    }
+
+    protected boolean isSoftwareLskfRateLimiterEnforcing() {
+        return true;
     }
 
     protected void setDeviceProvisioned(boolean provisioned) {

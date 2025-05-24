@@ -47,6 +47,7 @@ import android.widget.RemoteViews;
 import com.android.app.tracing.TraceUtils;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.ImageMessageConsumer;
+import com.android.server.notification.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.NotifInflation;
 import com.android.systemui.media.controls.util.MediaFeatureFlag;
@@ -54,6 +55,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.InflationTask;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
+import com.android.systemui.statusbar.notification.CustomViewMemorySizeExceededException;
 import com.android.systemui.statusbar.notification.InflationException;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationUtils;
@@ -834,6 +836,34 @@ public class NotificationContentInflater implements NotificationRowContentBinder
 
             @Override
             public void onViewApplied(View v) {
+                if (Flags.notificationCustomViewUriRestriction()) {
+                    onViewAppliedUsingException(v);
+                } else {
+                    onViewAppliedLegacy(v);
+                }
+            }
+
+            private void onViewAppliedUsingException(View v) {
+                try {
+                    validateView(v, entry, row.getResources());
+                    if (isNewView) {
+                        applyCallback.setResultView(v);
+                    } else if (existingWrapper != null) {
+                        existingWrapper.onReinflated();
+                    }
+                } catch (InflationException e) {
+                    runningInflations.remove(inflationId);
+                    handleInflationError(runningInflations, e,
+                            row, entry, callback, logger, "applied invalid view");
+                    return;
+                }
+                runningInflations.remove(inflationId);
+                finishIfDone(result, isMinimized,
+                        reInflateFlags, remoteViewCache, runningInflations,
+                        callback, entry, row, logger);
+            }
+
+            private void onViewAppliedLegacy(View v) {
                 String invalidReason = isValidView(v, entry, row.getResources());
                 if (invalidReason != null) {
                     handleInflationError(runningInflations, new InflationException(invalidReason),
@@ -912,12 +942,6 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             return "inflated notification does not meet minimum height requirement";
         }
 
-        if (NotificationCustomContentMemoryVerifier.requiresImageViewMemorySizeCheck(entry)) {
-            if (!NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry)) {
-                return "inflated notification does not meet maximum memory size requirement";
-            }
-        }
-
         return null;
     }
 
@@ -965,6 +989,12 @@ public class NotificationContentInflater implements NotificationRowContentBinder
         String invalidReason = isValidView(view, entry, resources);
         if (invalidReason != null) {
             throw new InflationException(invalidReason);
+        }
+
+        if (NotificationCustomContentMemoryVerifier.requiresImageViewMemorySizeCheck(entry)) {
+            if (!NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry)) {
+                throw new CustomViewMemorySizeExceededException("Custom view memory size exceeded");
+            }
         }
     }
 

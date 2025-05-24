@@ -91,6 +91,7 @@ import com.android.server.pm.UserManagerService.BootStrategy;
 import com.android.server.pm.UserManagerService.UserData;
 import com.android.server.storage.DeviceStorageMonitorInternal;
 
+import com.google.common.primitives.Ints;
 import com.google.common.truth.Expect;
 
 import org.junit.After;
@@ -832,17 +833,19 @@ public final class UserManagerServiceMockedTest {
     @Test
     @EnableFlags({android.multiuser.Flags.FLAG_ALLOW_SUPERVISING_PROFILE})
     public void testGetProfileIdsIncludingAlwaysVisible_supervisingProfile() {
+        assumeTrue(mUms.canAddMoreUsersOfType(USER_TYPE_FULL_SECONDARY));
+        UserInfo secondaryUser = mUms.createUserWithThrow("Secondary", USER_TYPE_FULL_SECONDARY, 0);
         UserInfo supervisingProfile = mUms.createUserWithThrow("Supervising",
                 USER_TYPE_PROFILE_SUPERVISING, 0);
-        int mainUserId = mUms.getMainUserId();
-        assertThat(mUmi.getProfileIds(mainUserId, /* enabledOnly */ true,
+        assertThat(mUmi.getProfileIds(secondaryUser.id, /* enabledOnly */ true,
                 /* includeAlwaysVisible */ true)).asList().containsExactly(
-                        mainUserId, supervisingProfile.id);
-        assertThat(mUmi.getProfileIds(mainUserId, /* enabledOnly */ true,
-                /* includeAlwaysVisible */ false)).asList().containsExactly(mainUserId);
-        assertThat(mUmi.getProfileIds(supervisingProfile.id, /* enabledOnly */ true,
-                /* includeAlwaysVisible */ true)).asList().containsExactly(
-                        mainUserId, supervisingProfile.id);
+                        secondaryUser.id, supervisingProfile.id);
+        assertThat(mUmi.getProfileIds(secondaryUser.id, /* enabledOnly */ true,
+                /* includeAlwaysVisible */ false)).asList().containsExactly(secondaryUser.id);
+
+        assertThat(mUmi.getProfileIds(
+                supervisingProfile.id, /* enabledOnly */ true, /* includeAlwaysVisible */ true))
+                .asList().containsExactlyElementsIn(Ints.asList(mUms.getUserIds()));
     }
 
     @Test

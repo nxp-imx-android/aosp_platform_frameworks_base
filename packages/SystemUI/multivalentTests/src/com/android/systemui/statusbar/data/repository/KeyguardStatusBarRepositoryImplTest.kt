@@ -35,6 +35,7 @@ import org.mockito.Mockito.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardStatusBarRepositoryImplTest : SysuiTestCase() {
     private val testScope = TestScope()
     private val configurationController = mock<ConfigurationController>()

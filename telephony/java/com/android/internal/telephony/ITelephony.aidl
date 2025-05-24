@@ -3195,9 +3195,11 @@ interface ITelephony {
      *                     To disable the override, use -1 for handoverType.
      * @param delaySeconds The event EVENT_DISPLAY_EMERGENCY_MESSAGE will be sent to Dialer
      *                     delaySeconds after the emergency call starts.
+     * @param simSlotIndex The SIM slot index to use for loading T911 conversation thread.
      * @return {@code true} if the handover type is set successfully, {@code false} otherwise.
      */
-    boolean setEmergencyCallToSatelliteHandoverType(int handoverType, int delaySeconds);
+    boolean setEmergencyCallToSatelliteHandoverType(
+            int handoverType, int delaySeconds, int simSlotIndex);
 
     /**
      * This API should be used by only CTS tests to forcefully set the country codes.
@@ -3534,6 +3536,34 @@ interface ITelephony {
      * @return {@code true} if the setting is successful, {@code false} otherwise.
      */
     boolean setIsSatelliteCommunicationAllowedForCurrentLocationCache(in String state);
+
+    /**
+     * This API can be used by only CTS to override the satellite entitlement status response.
+     *
+     * @param overriddenEntilementStatusResponse the overridden entitlement status response.
+     * @param throwException whether to throw exception when receiving a request for entitlement
+     *                       status.
+     * @return {@code true} if the setting is successful, {@code false} otherwise.
+     */
+    boolean overrideSatelliteEntilementStatusResponseForCtsTest(
+            in String overriddenEntilementStatusResponse, in boolean throwException);
+    /**
+     * This API can be used by only CTS to override the entitlement query conditions.
+     *
+     * @param ignoreInternetConnection whether to ignore the internet connection check.
+     * @param ignoreRefreshCondition whether to ignore the refresh condition.
+     * @return {@code true} if the setting is successful, {@code false} otherwise.
+     */
+    boolean overrideSatelliteEntilementQueryConditions(
+            boolean ignoreInternetConnection, boolean ignoreRefreshCondition);
+
+    /**
+     * This API can be used by only CTS to control the max allowed data mode.
+     *
+     * @param maxAllowedDataMode The max allowed data mode.
+     * @return {@code true} if the value is set successfully, {@code false} otherwise.
+     */
+    boolean setMaxAllowedSatelliteDataModeForCtsTest(int maxAllowedDataMode);
 
     /**
      * Request to get the session stats of the satellite service.

@@ -22,6 +22,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -52,6 +53,7 @@ import com.android.compose.modifiers.thenIf
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
@@ -191,7 +193,23 @@ private fun ChipBody(
 
         val isIconOnly = model.content is OngoingActivityChipModel.Content.IconOnly
         if (!isIconOnly) {
-            ChipContent(viewModel = model.content, icon = model.icon, colors = model.colors)
+            ChipContent(
+                viewModel = model.content,
+                icon = model.icon,
+                colors = model.colors,
+                modifier = Modifier.sysuiResTag(STATUS_BAR_CHIP_CONTENT_ID),
+            )
+        }
+
+        model.decorativeIcon?.let {
+            Icon(
+                icon = it.icon,
+                modifier =
+                    modifier
+                        .background(color = it.backgroundColor, shape = it.backgroundShape)
+                        .padding(vertical = 2.dp, horizontal = 8.dp)
+                        .size(12.dp),
+            )
         }
     }
 }
@@ -279,4 +297,6 @@ private fun StatusBarIcon(
 }
 
 private const val TAG = "OngoingActivityChip"
+// Used for end-to-end tests - if changing this, be sure to change the status bar e2e tests also.
+private const val STATUS_BAR_CHIP_CONTENT_ID = "ongoing_activity_chip_content"
 @IdRes private val CUSTOM_ICON_VIEW_ID = R.id.ongoing_activity_chip_custom_icon

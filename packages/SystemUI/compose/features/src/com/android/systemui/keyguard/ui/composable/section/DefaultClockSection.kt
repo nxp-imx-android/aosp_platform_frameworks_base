@@ -126,7 +126,8 @@ constructor(
             val dir = if (transition.toContent == splitShadeLargeClockScene) -1f else 1f
             val distance = dir * getClockCenteringDistance()
             val largeClock = checkNotNull(currentClock).largeClock
-            largeClock.animations.onPositionUpdated(distance = distance, fraction = progress)
+            // TODO(b/418824686): Migrate stepping animation to compose and ensure it works in RTL
+            // largeClock.animations.onPositionAnimated(distance = distance, fraction = progress)
         }
 
         Element(key = largeClockElementKey, modifier = modifier) {
@@ -143,7 +144,9 @@ constructor(
         }
     }
 
-    fun getClockCenteringDistance(): Float {
-        return Resources.getSystem().displayMetrics.widthPixels / 4f
+    companion object {
+        fun getClockCenteringDistance(): Float {
+            return Resources.getSystem().displayMetrics.widthPixels / 4f
+        }
     }
 }

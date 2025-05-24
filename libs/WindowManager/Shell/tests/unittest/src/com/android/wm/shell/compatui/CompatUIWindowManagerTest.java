@@ -399,7 +399,6 @@ public class CompatUIWindowManagerTest extends ShellTestCase {
 
     @Test
     @RequiresFlagsDisabled(FLAG_APP_COMPAT_UI_FRAMEWORK)
-    @EnableFlags(Flags.FLAG_ALLOW_HIDE_SCM_BUTTON)
     public void testShouldShowSizeCompatRestartButton() {
         doReturn(85).when(mCompatUIConfiguration).getHideSizeCompatRestartButtonTolerance();
         mWindowManager = new CompatUIWindowManager(mContext, mTaskInfo, mSyncTransactionQueue,

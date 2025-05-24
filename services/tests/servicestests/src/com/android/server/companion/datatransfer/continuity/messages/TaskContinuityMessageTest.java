@@ -30,6 +30,8 @@ import org.junit.runner.RunWith;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -64,7 +66,7 @@ public class TaskContinuityMessageTest {
     @Test
     public void testBuilder_setData_hasData() {
         ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(1);
+            = new ContinuityDeviceConnected(1, new ArrayList<>());
 
         TaskContinuityMessage taskContinuityMessage
             = new TaskContinuityMessage.Builder()
@@ -78,8 +80,12 @@ public class TaskContinuityMessageTest {
     @Test
     public void testToBytes_writesValidProto() throws IOException {
         int currentForegroundTaskId = 1234;
+        List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(currentForegroundTaskId);
+            = new ContinuityDeviceConnected(
+                currentForegroundTaskId,
+                remoteTasks);
+
         TaskContinuityMessage taskContinuityMessage
             = new TaskContinuityMessage.Builder()
                     .setData(continuityDeviceConnected)
@@ -108,8 +114,12 @@ public class TaskContinuityMessageTest {
     @Test
     public void testWriteAndRead_roundTrip_works() throws IOException {
         int currentForegroundTaskId = 1234;
+        List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         ContinuityDeviceConnected expectedData
-            = new ContinuityDeviceConnected(currentForegroundTaskId);
+            = new ContinuityDeviceConnected(
+                currentForegroundTaskId,
+                remoteTasks);
+
         TaskContinuityMessage expected
             = new TaskContinuityMessage.Builder().setData(expectedData).build();
 

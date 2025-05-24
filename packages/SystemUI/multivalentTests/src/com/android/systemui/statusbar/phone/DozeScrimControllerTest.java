@@ -40,6 +40,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 public class DozeScrimControllerTest extends SysuiTestCase {
 
     @Mock

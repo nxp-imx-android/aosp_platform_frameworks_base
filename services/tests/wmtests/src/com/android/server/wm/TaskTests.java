@@ -2193,6 +2193,55 @@ public class TaskTests extends WindowTestsBase {
         assertFalse(task.isForceExcludedFromRecents());
     }
 
+    @EnableFlags(Flags.FLAG_UPDATE_TASK_MIN_DIMENSIONS_WITH_ROOT_ACTIVITY)
+    @Test
+    public void testAllowRelingquish_updateMinDimensions() {
+        // r0 allows relingquish
+        final ActivityRecord r0 = new ActivityBuilder(mAtm)
+                .setCreateTask(true)
+                .setWindowLayout(new ActivityInfo.WindowLayout(
+                        0, 0, 0, 0, 0, 500 /* minWidth */, 1000 /* minHeight*/))
+                .setActivityFlags(FLAG_RELINQUISH_TASK_IDENTITY)
+                .build();
+        final Task task = r0.getTask();
+
+        assertEquals(500, task.mMinWidth);
+        assertEquals(1000, task.mMinHeight);
+
+        final ActivityRecord r1 = new ActivityBuilder(mAtm)
+                .setTask(task)
+                .setWindowLayout(new ActivityInfo.WindowLayout(
+                        0, 0, 0, 0, 0, 1000 /* minWidth */, 500 /* minHeight*/))
+                .build();
+
+        assertEquals(1000, task.mMinWidth);
+        assertEquals(500, task.mMinHeight);
+    }
+
+    @EnableFlags(Flags.FLAG_UPDATE_TASK_MIN_DIMENSIONS_WITH_ROOT_ACTIVITY)
+    @Test
+    public void testDisallowRelingquish_notUpdateMinDimensions() {
+        // r0 disallows relingquish
+        final ActivityRecord r0 = new ActivityBuilder(mAtm)
+                .setCreateTask(true)
+                .setWindowLayout(new ActivityInfo.WindowLayout(
+                        0, 0, 0, 0, 0, 500 /* minWidth */, 1000 /* minHeight*/))
+                .build();
+        final Task task = r0.getTask();
+
+        assertEquals(500, task.mMinWidth);
+        assertEquals(1000, task.mMinHeight);
+
+        final ActivityRecord r1 = new ActivityBuilder(mAtm)
+                .setTask(task)
+                .setWindowLayout(new ActivityInfo.WindowLayout(
+                        0, 0, 0, 0, 0, 1000 /* minWidth */, 500 /* minHeight*/))
+                .build();
+
+        assertEquals(500, task.mMinWidth);
+        assertEquals(1000, task.mMinHeight);
+    }
+
     private Task getTestTask() {
         return new TaskBuilder(mSupervisor).setCreateActivity(true).build();
     }

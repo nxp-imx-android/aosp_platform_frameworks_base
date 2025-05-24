@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles.util
 
 import android.app.WindowConfiguration
+import android.graphics.Rect
 import android.os.IBinder
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE
@@ -65,6 +66,7 @@ fun verifyEnterBubbleTransaction(
     assertThat(change.forceExcludedFromRecents).isTrue()
     assertThat(change.disablePip).isTrue()
     assertThat(change.disableLaunchAdjacent).isTrue()
+    assertThat(change.interceptBackPressed).isTrue()
 }
 
 /** Verifies the [WindowContainerTransaction] to exit Bubble. */
@@ -99,4 +101,6 @@ fun verifyExitBubbleTransaction(
     assertThat(change.forceExcludedFromRecents).isFalse()
     assertThat(change.disablePip).isFalse()
     assertThat(change.disableLaunchAdjacent).isFalse()
+    assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
+    assertThat(change.interceptBackPressed).isFalse()
 }

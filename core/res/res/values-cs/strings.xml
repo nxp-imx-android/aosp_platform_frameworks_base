@@ -384,6 +384,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Umožňuje aplikaci rozbalit či sbalit stavový řádek."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"zobrazovat oznámení na celé obrazovce zamčeného zařízení"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Umožňuje aplikaci zobrazovat oznámení na celé obrazovce zamčeného zařízení"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Zobrazovat aktuality živě"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Umožňuje aplikaci zobrazovat průběžná, časově omezená oznámení na stavovém řádku a na obrazovce uzamčení."</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Instalace zástupců"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Umožňuje aplikaci přidat zástupce na plochu bez zásahu uživatele."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"odinstalace zástupců"</string>
@@ -1184,22 +1186,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"za <xliff:g id="COUNT">%d</xliff:g> h"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"za <xliff:g id="COUNT">%d</xliff:g> d"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"za <xliff:g id="COUNT">%d</xliff:g> r"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"před <xliff:g id="COUNT">%d</xliff:g> min"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"před <xliff:g id="COUNT">%d</xliff:g> h"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"před <xliff:g id="COUNT">%d</xliff:g> d"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"před <xliff:g id="COUNT">%d</xliff:g> r"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> min"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> h"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> d"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> r"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"za <xliff:g id="COUNT">%d</xliff:g> min"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"za <xliff:g id="COUNT">%d</xliff:g> h"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"za <xliff:g id="COUNT">%d</xliff:g> d"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"za <xliff:g id="COUNT">%d</xliff:g> r"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"před <xliff:g id="COUNT">%d</xliff:g> min"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"před <xliff:g id="COUNT">%d</xliff:g> h"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"před <xliff:g id="COUNT">%d</xliff:g> d"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"před <xliff:g id="COUNT">%d</xliff:g> r"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{před # minutou}few{před # minutami}many{před # minuty}other{před # minutami}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{před # hodinou}few{před # hodinami}many{před # hodiny}other{před # hodinami}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{Před # dnem}few{před # dny}many{před # dne}other{před # dny}}"</string>
@@ -1711,6 +1699,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Externí zařízení"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Sluchátka"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Systém"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Bluetooth Audio"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Bezdrátový displej"</string>
@@ -1832,8 +1832,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"Odhlašování uživatele <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Vlastník"</string>
     <string name="guest_name" msgid="8502103277839834324">"Host"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"Systémový uživatel"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Chyba"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Administrátor tuto změnu zakázal"</string>
     <string name="app_not_found" msgid="3429506115332341800">"Aplikace potřebná k provedení této akce nebyla nalezena"</string>

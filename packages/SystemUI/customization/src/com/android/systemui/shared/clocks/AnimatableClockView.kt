@@ -39,8 +39,8 @@ import com.android.systemui.animation.TypefaceVariantCacheImpl
 import com.android.systemui.customization.R
 import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.customization.clocks.ClockLogger.Companion.escapeTime
+import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
-import com.android.systemui.log.core.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.MessageBuffer
 import java.io.PrintWriter
 import java.util.Calendar

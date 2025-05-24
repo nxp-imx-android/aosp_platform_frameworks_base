@@ -18,9 +18,11 @@ package android.companion.virtual.camera;
 
 import static java.util.Objects.requireNonNull;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.companion.virtual.VirtualDevice;
@@ -29,6 +31,9 @@ import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.impl.CameraMetadataNative;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.ArraySet;
@@ -87,6 +92,8 @@ public final class VirtualCameraConfig implements Parcelable {
     @SensorOrientation
     private final int mSensorOrientation;
     private final int mLensFacing;
+    private final boolean mPerFrameCameraMetadataEnabled;
+    private final CameraCharacteristics mCameraCharacteristics;
 
     private VirtualCameraConfig(
             @NonNull String name,
@@ -94,10 +101,18 @@ public final class VirtualCameraConfig implements Parcelable {
             @NonNull Executor executor,
             @NonNull VirtualCameraCallback callback,
             @SensorOrientation int sensorOrientation,
-            int lensFacing) {
+            int lensFacing,
+            boolean perFrameCameraMetadataEnabled,
+            @Nullable CameraCharacteristics cameraCharacteristics) {
         mName = requireNonNull(name, "Missing name");
-        if (lensFacing == LENS_FACING_UNKNOWN) {
-            throw new IllegalArgumentException("Lens facing must be set");
+        if (cameraCharacteristics != null) {
+            Integer characteristicsLensFacing = cameraCharacteristics.get(
+                    CameraCharacteristics.LENS_FACING);
+            if (characteristicsLensFacing != null && lensFacing != LENS_FACING_UNKNOWN
+                    && characteristicsLensFacing != lensFacing) {
+                throw new IllegalArgumentException("Different values are set for "
+                        + "lensFacing and CameraCharacteristics.LENS_FACING");
+            }
         }
         mLensFacing = lensFacing;
         mStreamConfigurations =
@@ -111,6 +126,8 @@ public final class VirtualCameraConfig implements Parcelable {
                         requireNonNull(callback, "Missing callback"),
                         requireNonNull(executor, "Missing callback executor"));
         mSensorOrientation = sensorOrientation;
+        mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
+        mCameraCharacteristics = cameraCharacteristics;
     }
 
     private VirtualCameraConfig(@NonNull Parcel in) {
@@ -123,6 +140,14 @@ public final class VirtualCameraConfig implements Parcelable {
                                 VirtualCameraStreamConfig.class));
         mSensorOrientation = in.readInt();
         mLensFacing = in.readInt();
+        mPerFrameCameraMetadataEnabled = in.readBoolean();
+        final CameraMetadataNative nativeMetadata =
+                in.readTypedObject(CameraMetadataNative.CREATOR);
+        if (nativeMetadata != null) {
+            mCameraCharacteristics = new CameraCharacteristics(nativeMetadata);
+        } else {
+            mCameraCharacteristics = null;
+        }
     }
 
     @Override
@@ -138,6 +163,12 @@ public final class VirtualCameraConfig implements Parcelable {
                 mStreamConfigurations.toArray(new VirtualCameraStreamConfig[0]), flags);
         dest.writeInt(mSensorOrientation);
         dest.writeInt(mLensFacing);
+        dest.writeBoolean(mPerFrameCameraMetadataEnabled);
+        if (mCameraCharacteristics != null) {
+            dest.writeTypedObject(mCameraCharacteristics.getNativeMetadata(), flags);
+        } else {
+            dest.writeTypedObject(null, flags);
+        }
     }
 
     /**
@@ -189,6 +220,27 @@ public final class VirtualCameraConfig implements Parcelable {
     }
 
     /**
+     * Returns true if the virtual camera has per frame support for camera metadata.
+     *
+     * @see Builder#setPerFrameCameraMetadataEnabled(boolean)
+     */
+    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+    public boolean isPerFrameCameraMetadataEnabled() {
+        return mPerFrameCameraMetadataEnabled;
+    }
+
+    /**
+     * Returns the {@link CameraCharacteristics} for this virtual camera config.
+     *
+     * @see Builder#setCameraCharacteristics(CameraCharacteristics)
+     */
+    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+    @Nullable
+    public CameraCharacteristics getCameraCharacteristics() {
+        return mCameraCharacteristics;
+    }
+
+    /**
      * Builder for {@link VirtualCameraConfig}.
      *
      * <p>To build an instance of {@link VirtualCameraConfig} the following conditions must be met:
@@ -205,6 +257,8 @@ public final class VirtualCameraConfig implements Parcelable {
         private VirtualCameraCallback mCallback;
         private int mSensorOrientation = SENSOR_ORIENTATION_0;
         private int mLensFacing = LENS_FACING_UNKNOWN;
+        private boolean mPerFrameCameraMetadataEnabled = false;
+        private CameraCharacteristics mCameraCharacteristics = null;
 
         /**
          * Creates a new instance of {@link Builder}.
@@ -308,6 +362,52 @@ public final class VirtualCameraConfig implements Parcelable {
             return this;
         }
 
+        // TODO: b/371167033 - update docs and add links to
+        //  onSessionConfigured, onProcessCaptureRequest, CaptureResultConsumer
+        /**
+         * Declares that the virtual camera owner wants to receive and provide
+         * {@link CaptureRequest} and {@link CaptureResult} for every frame.
+         *
+         * <p>This changes what methods from the {@link VirtualCameraCallback} are called.
+         * When enabled,
+         * {@link VirtualCameraCallback#onProcessCaptureRequest(int, long, CaptureRequest)}
+         * is called and a non null {@link CaptureResultConsumer} is received in
+         * {@link VirtualCameraCallback#onSessionConfigured(SessionConfiguration, CaptureResultConsumer)}.
+         * When set, the virtual camera expects the {@link CaptureResult} to be passed for each
+         * frame.
+         *
+         * @param perFrameCameraMetadataEnabled if camera metadata is handled for each frame
+         * @see onSessionConfigured
+         * @see onProcessCaptureRequest
+         * @see CaptureResultConsumer
+         */
+        @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+        @NonNull
+        public Builder setPerFrameCameraMetadataEnabled(boolean perFrameCameraMetadataEnabled) {
+            mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
+            return this;
+        }
+
+        /**
+         * Sets the {@link CameraCharacteristics} to expose for the configured virtual camera.
+         * This field is optional and can be omitted.
+         * When set, this {@link CameraCharacteristics} becomes the source of truth and
+         * {@link #setLensFacing} and {@link #setSensorOrientation} are ignored.
+         * <p>
+         * This also means that the corresponding key must be set in the
+         * {@link CameraCharacteristics}.
+         *
+         * @param cameraCharacteristics The instance of the {@link CameraCharacteristics}
+         *                              to be associated with the virtual camera.
+         */
+        @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+        @NonNull
+        public Builder setCameraCharacteristics(
+                @Nullable CameraCharacteristics cameraCharacteristics) {
+            mCameraCharacteristics = cameraCharacteristics;
+            return this;
+        }
+
         /**
          * Sets the {@link VirtualCameraCallback} used by the framework to communicate with the
          * {@link VirtualCamera} owner.
@@ -337,7 +437,7 @@ public final class VirtualCameraConfig implements Parcelable {
         public VirtualCameraConfig build() {
             return new VirtualCameraConfig(
                     mName, mStreamConfigurations, mCallbackExecutor, mCallback, mSensorOrientation,
-                    mLensFacing);
+                    mLensFacing, mPerFrameCameraMetadataEnabled, mCameraCharacteristics);
         }
     }
 

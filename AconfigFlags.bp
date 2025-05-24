@@ -72,6 +72,7 @@ aconfig_declarations_group {
         "android.service.controls.flags-aconfig-java",
         "android.service.dreams.flags-aconfig-java",
         "android.service.notification.flags-aconfig-java",
+        "android.service.quicksettings.flags-aconfig-java",
         "android.service.quickaccesswallet.flags-aconfig-java",
         "android.service.selinux.flags-aconfig-java",
         "android.service.voice.flags-aconfig-java",
@@ -271,6 +272,18 @@ java_aconfig_library {
     name: "com.android.window.flags.window-aconfig-java",
     aconfig_declarations: "com.android.window.flags.window-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "com.android.window.flags.window-aconfig-java-export",
+    aconfig_declarations: "com.android.window.flags.window-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
+    min_sdk_version: "30",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
 }
 
 cc_aconfig_library {
@@ -1402,6 +1415,22 @@ java_aconfig_library {
         "//apex_available:platform",
         "com.android.extservices",
     ],
+}
+
+// Quick Settings
+aconfig_declarations {
+    name: "android.service.quicksettings.flags-aconfig",
+    package: "android.service.quicksettings",
+    exportable: true,
+    container: "system",
+    srcs: ["core/java/android/service/quicksettings/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.service.quicksettings.flags-aconfig-java",
+    aconfig_declarations: "android.service.quicksettings.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
 }
 
 // Contextual Search

@@ -26,7 +26,6 @@ import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -62,6 +61,7 @@ import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
+import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModelStore
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
@@ -80,12 +80,9 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityMo
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
-import com.android.wm.shell.windowdecor.viewholder.AppHandles
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.util.Optional
-import java.util.concurrent.Executor
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -122,6 +119,11 @@ interface HomeStatusBarViewModel : Activatable {
 
     /** Factory to create the view model for system status icons */
     val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory
+
+    /**
+     * Factory to create the view model for storing bounds of child views in/around the status bar.
+     */
+    val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory
 
     /**
      * True if the device is currently transitioning from lockscreen to occluded and false
@@ -225,6 +227,7 @@ constructor(
     override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory,
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
+    override val statusBarBoundsViewModelFactory: StatusBarBoundsViewModel.Factory,
     tableLoggerFactory: TableLogBufferFactory,
     homeStatusBarInteractor: HomeStatusBarInteractor,
     homeStatusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
@@ -247,8 +250,6 @@ constructor(
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
-    appHandles: Optional<AppHandles>,
-    @Main sysuiMainExecutor: Executor,
 ) : HomeStatusBarViewModel, ExclusiveActivatable() {
 
     private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
@@ -329,6 +330,21 @@ constructor(
             isShadeVisibleOnAnyDisplay ->
             hasShade && isShadeVisibleOnAnyDisplay
         }
+
+    /** Whether keyguard is transitioning from Gone to Dreaming. */
+    private val isTransitioningFromGoneToDream: Flow<Boolean> =
+        keyguardTransitionInteractor
+            .isInTransition(
+                Edge.create(from = Scenes.Gone, to = DREAMING),
+                edgeWithoutSceneContainer = Edge.create(from = GONE, to = DREAMING),
+            )
+            .distinctUntilChanged()
+            .logDiffsForTable(
+                tableLogBuffer = tableLogger,
+                columnName = COL_GONE_TO_DREAM,
+                initialValue = false,
+            )
+            .flowOn(bgDispatcher)
 
     private val isHomeStatusBarAllowedByScene: Flow<Boolean> =
         combine(
@@ -432,7 +448,8 @@ constructor(
                 isHomeStatusBarAllowed,
                 keyguardInteractor.isSecureCameraActive,
                 headsUpNotificationInteractor.statusBarHeadsUpStatus,
-            ) { isHomeStatusBarAllowed, isSecureCameraActive, headsUpState ->
+                isTransitioningFromGoneToDream,
+            ) { isHomeStatusBarAllowed, isSecureCameraActive, headsUpState, isGoneToDream ->
                 val showForHeadsUp =
                     if (StatusBarNoHunBehavior.isEnabled) {
                         false
@@ -448,7 +465,11 @@ constructor(
                 // the icons and tells us to hide them. To ensure that this high-visibility
                 // animation is smooth, keep the icons hidden during a camera launch. See
                 // b/257292822.
-                showForHeadsUp || (isHomeStatusBarAllowed && !isSecureCameraActive)
+                // Similar to launching the camera: when dream is launched, the icons are
+                // momentarily visible because the dream animation has finished, but SysUI has not
+                // been informed that the dream is full-screen. See b/273314977.
+                showForHeadsUp ||
+                    (isHomeStatusBarAllowed && !isSecureCameraActive && !isGoneToDream)
             }
             .distinctUntilChanged()
             .logDiffsForTable(
@@ -504,7 +525,7 @@ constructor(
             isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
         }
 
-    private val chipsVisibilityModel: Flow<ChipsVisibilityModel> =
+    private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
         combine(ongoingActivityChipsViewModel.chips, canShowOngoingActivityChips) { chips, canShow
                 ->
                 ChipsVisibilityModel(chips, areChipsAllowed = canShow)
@@ -512,6 +533,14 @@ constructor(
             .traceEach(trackGroup(TRACK_GROUP, "chips"), logcat = true) {
                 "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
             }
+            .stateIn(
+                bgScope,
+                SharingStarted.WhileSubscribed(),
+                ChipsVisibilityModel(
+                    chips = MultipleOngoingActivityChipsModel(),
+                    areChipsAllowed = false,
+                ),
+            )
 
     override val ongoingActivityChips: ChipsVisibilityModel by
         hydrator.hydratedStateOf(
@@ -652,6 +681,7 @@ constructor(
 
     companion object {
         private const val COL_LOCK_TO_OCCLUDED = "Lock->Occluded"
+        private const val COL_GONE_TO_DREAM = "Gone->Dreaming"
         private const val COL_ALLOWED_LEGACY = "allowedLegacy"
         private const val COL_ALLOWED_BY_SCENE = "allowedByScene"
         private const val COL_SHADE_EXPANDED_ENOUGH = "shadeExpandedEnough"

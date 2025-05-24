@@ -19,13 +19,15 @@ package com.android.wm.shell.flicker.bubbles
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.tools.flicker.subject.events.EventLogSubject
-import android.tools.traces.component.ComponentNameMatcher
-import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
 import com.android.wm.shell.Flags
-import com.android.wm.shell.flicker.bubbles.EnterBubbleViaBubbleMenuTest.Companion.testApp
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleStackAlwaysVisibleTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
+import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
+import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleViaBackKey
+import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
+import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -46,13 +48,38 @@ import org.junit.runners.MethodSorters
  * ```
  *     Collapse bubble via back key
  * ```
+ *
+ * Verified tests:
+ * - [BubbleFlickerTestBase]
+ * - [BubbleStackAlwaysVisibleTestCases]
+ * - [BubbleAppBecomesNotExpandedTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class CollapseBubbleViaBackTest : BubbleFlickerTestBase() {
+class CollapseBubbleViaBackTest :
+    BubbleFlickerTestBase(),
+    BubbleStackAlwaysVisibleTestCases,
+    BubbleAppBecomesNotExpandedTestCases
+{
+
+    /**
+     * Verifies bubble app window becomes invisible at the end of the transition.
+     */
+    @Test
+    fun appWindowIsInvisibleAtEnd() {
+        wmStateSubjectAtEnd.isAppWindowInvisible(testApp)
+    }
+
+    /**
+     * Verifies bubble app layer becomes invisible at the end of the transition.
+     */
+    @Test
+    fun appLayerIsInvisibleAtEnd() {
+        layerTraceEntrySubjectAtEnd.isInvisible(testApp, mustExist = true)
+    }
 
     companion object : FlickerPropertyInitializer() {
 
@@ -70,78 +97,4 @@ class CollapseBubbleViaBackTest : BubbleFlickerTestBase() {
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
-
-    // TODO(b/396020056): Verify bubble scenarios in 3-button mode.
-    override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
-
-// region Bubble related tests
-
-    /**
-     * Verifies the bubble window is visible at the end of transition.
-     */
-    @Test
-    fun bubbleWindowIsAlwaysVisible() {
-        wmTraceSubject.isAboveAppWindowVisible(ComponentNameMatcher.BUBBLE)
-    }
-
-    /**
-     * Verifies the bubble layer is visible at the end of transition.
-     */
-    @Test
-    fun bubbleLayerIsAlwaysVisible() {
-        layersTraceSubject.isVisible(ComponentNameMatcher.BUBBLE)
-    }
-
-// endregion
-
-// region launcher related tests
-
-    /**
-     * Verifies the focus changed from launcher to [testApp].
-     */
-    @Test
-    fun focusChanges() {
-        EventLogSubject(
-            traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
-            traceDataReader
-        ).focusChanges(
-            testApp.toWindowName(),
-            LAUNCHER.toWindowName(),
-        )
-    }
-
-    /**
-     * Verifies the [testApp] replaces launcher to be the top window.
-     */
-    @Test
-    fun launcherWindowReplacesTestAppAsTopWindow() {
-        wmTraceSubject
-            .isAppWindowOnTop(testApp)
-            .then()
-            .isAppWindowOnTop(LAUNCHER)
-            .forAllEntries()
-    }
-
-    /**
-     * Verifies [LAUNCHER] is the top window at the end of transition.
-     */
-    @Test
-    fun appWindowAsTopWindowAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowOnTop(LAUNCHER)
-    }
-
-    /**
-     * Verifies the [LAUNCHER] becomes the top window.
-     */
-    @Test
-    fun launcherWindowBecomesTopWindow() {
-        wmTraceSubject
-            .skipUntilFirstAssertion()
-            .isAppWindowNotOnTop(LAUNCHER)
-            .then()
-            .isAppWindowOnTop(LAUNCHER)
-            .forAllEntries()
-    }
-
-// endregion
 }

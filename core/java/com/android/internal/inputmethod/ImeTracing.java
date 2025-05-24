@@ -60,13 +60,7 @@ public abstract class ImeTracing {
      */
     public static ImeTracing getInstance() {
         if (sInstance == null) {
-            if (android.tracing.Flags.perfettoIme()) {
-                sInstance = new ImeTracingPerfettoImpl();
-            } else if (isSystemProcess()) {
-                sInstance = new ImeTracingServerImpl();
-            } else {
-                sInstance = new ImeTracingClientImpl();
-            }
+            sInstance = new ImeTracingPerfettoImpl();
         }
         return sInstance;
     }

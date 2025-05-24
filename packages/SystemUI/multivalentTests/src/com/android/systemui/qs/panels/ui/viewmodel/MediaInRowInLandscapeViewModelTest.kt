@@ -48,6 +48,7 @@ import platform.test.runner.parameterized.Parameters
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class MediaInRowInLandscapeViewModelTest(private val testData: TestData) : SysuiTestCase() {
 
     private val kosmos = testKosmos().apply { usingMediaInComposeFragment = testData.usingMedia }

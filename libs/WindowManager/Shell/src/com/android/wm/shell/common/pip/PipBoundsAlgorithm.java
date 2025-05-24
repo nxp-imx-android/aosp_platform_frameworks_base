@@ -38,7 +38,7 @@ import java.io.PrintWriter;
 /**
  * Calculates the default, normal, entry, inset and movement bounds of the PIP.
  */
-public class PipBoundsAlgorithm {
+public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListener {
 
     private static final String TAG = PipBoundsAlgorithm.class.getSimpleName();
     private static final float INVALID_SNAP_FRACTION = -1f;
@@ -63,6 +63,7 @@ public class PipBoundsAlgorithm {
         mSnapAlgorithm = pipSnapAlgorithm;
         mPipKeepClearAlgorithm = pipKeepClearAlgorithm;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
         mSizeSpecSource = sizeSpecSource;
         reloadResources(context);
         // Initialize the aspect ratio to the default aspect ratio.  Don't do this in reload
@@ -96,6 +97,11 @@ public class PipBoundsAlgorithm {
 
     /** Responds to configuration change. */
     public void onConfigurationChanged(Context context) {
+        reloadResources(context);
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
         reloadResources(context);
     }
 
@@ -360,29 +366,11 @@ public class PipBoundsAlgorithm {
     }
 
     /**
-     * @return the movement bounds for the given stackBounds and the current state of the
-     *         controller.
-     */
-    public Rect getMovementBounds(Rect stackBounds, boolean adjustForIme) {
-        return getMovementBounds(stackBounds, adjustForIme,
-                mPipDisplayLayoutState.getDisplayLayout() /* displayLayout */);
-    }
-
-    /**
-     * @return the movement bounds for the given stackBounds on a given displayLayout and the
-     *         current state of the controller.
-     */
-    public Rect getMovementBounds(Rect stackBounds, DisplayLayout displayLayout) {
-        return getMovementBounds(stackBounds, true /* adjustForIme */, displayLayout);
-    }
-
-    /**
      * @return the movement bounds for the given stackBounds on a given displayLayout and the
      *         current state of the controller.
      */
     public Rect getMovementBounds(Rect stackBounds, boolean adjustForIme,
             DisplayLayout displayLayout) {
-        // TODO(b/415107549): Refactor and reduce the number of `getMovementBounds()` overrides
         final Rect movementBounds = new Rect();
         getInsetBounds(movementBounds, displayLayout);
 
@@ -501,7 +489,8 @@ public class PipBoundsAlgorithm {
      */
     public void snapToMovementBoundsEdge(Rect bounds, DisplayLayout displayLayout) {
         // Get the movement bounds of the display
-        final Rect movementBounds = getMovementBounds(bounds, displayLayout);
+        final Rect movementBounds = getMovementBounds(bounds, true /* adjustForIme */,
+                displayLayout);
         final int leftEdge = bounds.left;
 
         final int fromLeft = Math.abs(leftEdge - movementBounds.left);

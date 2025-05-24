@@ -515,7 +515,8 @@ public class AccessibilitySecurityPolicy {
                 || userId == UserHandle.USER_CURRENT_OR_SELF);
     }
 
-    private boolean isValidPackageForUid(String packageName, int uid) {
+    /** Returns true if the package name belongs to the calling uid. */
+    public boolean isValidPackageForUid(String packageName, int uid) {
         final long token = Binder.clearCallingIdentity();
         try {
             // Since we treat calls from a profile as if made by its parent, using

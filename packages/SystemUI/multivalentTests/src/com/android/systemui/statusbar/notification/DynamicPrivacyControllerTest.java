@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
+@android.platform.test.annotations.EnabledOnRavenwood
 public class DynamicPrivacyControllerTest extends SysuiTestCase {
 
     private DynamicPrivacyController mDynamicPrivacyController;

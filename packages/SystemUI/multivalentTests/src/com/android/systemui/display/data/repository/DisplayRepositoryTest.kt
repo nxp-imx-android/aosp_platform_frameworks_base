@@ -63,6 +63,7 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class DisplayRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

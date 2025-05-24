@@ -44,6 +44,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class FavoritesModelTest : SysuiTestCase() {
 
     companion object {

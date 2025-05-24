@@ -557,6 +557,11 @@ class DesktopTasksController(
             userId,
             enforceDeskLimit,
         )
+        if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+            // Display does not support desktops, no-op.
+            logW("createDesk displayId $displayId does not support desktops, ignoring request")
+            return
+        }
         val repository = userRepositories.getProfile(userId)
         if (enforceDeskLimit && !canCreateDesks(repository)) {
             // At the limit, no-op.
@@ -1173,7 +1178,7 @@ class DesktopTasksController(
             } else {
                 taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
             }
-
+        snapEventHandler.removeTaskIfTiled(displayId, taskId)
         val isMinimizingToPip =
             DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
                 (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false) &&
@@ -1219,7 +1224,6 @@ class DesktopTasksController(
             val transition = freeformTaskTransitionStarter.startPipTransition(wct)
             desktopExitRunnable?.invoke(transition)
         } else {
-            snapEventHandler.removeTaskIfTiled(displayId, taskId)
             val willExitDesktop =
                 if (
                     DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
@@ -3035,11 +3039,11 @@ class DesktopTasksController(
         )
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(transition, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
+            snapEventHandler.removeTaskIfTiled(task.displayId, taskIdToMinimize)
             return wct
         }
         addPendingTaskLimitTransition(transition, deskId, task.taskId)
         if (!wct.isEmpty) {
-            snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             return wct
         }
         return null
@@ -3172,7 +3176,7 @@ class DesktopTasksController(
             if (!inDesktop && !forceEnterDesktop(displayId)) return null
             if (
                 isTransparentTask &&
-                    (DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
+                    (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
                         DesktopModeFlags
                             .INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                             .isTrue)
@@ -3204,7 +3208,7 @@ class DesktopTasksController(
         }
         if (
             isTransparentTask &&
-                (DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
+                (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
                     DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                         .isTrue)
         ) {
@@ -3427,9 +3431,11 @@ class DesktopTasksController(
                 // If caption insets should be excluded from app bounds, ensure caption insets
                 // are excluded from the ideal initial bounds when scaling non-resizeable apps.
                 // Caption insets stay fixed and don't scale with bounds.
+                val displayId = taskRepository.getDisplayForDesk(deskId)
+                val displayContext = displayController.getDisplayContext(displayId) ?: context
                 val captionInsets =
                     if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
-                        getDesktopViewAppHeaderHeightPx(context)
+                        getDesktopViewAppHeaderHeightPx(displayContext)
                     } else {
                         0
                     }
@@ -3639,7 +3645,7 @@ class DesktopTasksController(
      * null and may be used to run other desktop policies, such as minimizing another task if the
      * task limit has been exceeded.
      */
-    private fun addDeskActivationChanges(
+    fun addDeskActivationChanges(
         deskId: Int,
         wct: WindowContainerTransaction,
         newTask: TaskInfo? = null,
@@ -3747,7 +3753,7 @@ class DesktopTasksController(
     }
 
     private fun closeTopTransparentFullscreenTask(wct: WindowContainerTransaction, deskId: Int) {
-        if (!DesktopModeFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return
+        if (!DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue) return
         val data = taskRepository.getTopTransparentFullscreenTaskData(deskId)
         if (data != null) {
             logD("closeTopTransparentFullscreenTask: taskId=%d, deskId=%d", data.taskId, deskId)

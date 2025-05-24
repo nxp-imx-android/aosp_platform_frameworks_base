@@ -135,12 +135,15 @@ interface ICompanionDeviceManager {
     @EnforcePermission("MANAGE_COMPANION_DEVICES")
     void enableSecureTransport(boolean enabled);
 
-    void setDeviceId(int associationId, in DeviceId deviceId);
-
     byte[] getBackupPayload(int userId);
 
     void applyRestoredPayload(in byte[] payload, int userId);
 
     @EnforcePermission("BLUETOOTH_CONNECT")
     boolean removeBond(int associationId, in String packageName, int userId);
+
+    @EnforcePermission("ACCESS_COMPANION_INFO")
+    AssociationInfo getAssociationByDeviceId(int userId, in DeviceId deviceId);
+
+    DeviceId setDeviceId(int associationId, in DeviceId deviceId);
 }

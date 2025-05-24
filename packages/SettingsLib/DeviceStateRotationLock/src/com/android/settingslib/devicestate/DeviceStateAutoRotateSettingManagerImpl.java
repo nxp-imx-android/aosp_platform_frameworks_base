@@ -20,6 +20,7 @@ import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_IGNORE
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.os.Handler;
@@ -39,6 +40,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Implementation of {@link DeviceStateAutoRotateSettingManager}. This implementation is a part of
@@ -106,44 +109,24 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     public Integer getRotationLockSetting(int deviceState) {
         final int devicePosture = mPostureDeviceStateConverter.deviceStateToPosture(deviceState);
         final SparseIntArray deviceStateAutoRotateSetting = getRotationLockSetting();
-        final Integer autoRotateSettingValue = extractSettingForDevicePosture(devicePosture,
-                deviceStateAutoRotateSetting);
 
-        // If the setting is ignored for this posture, check the fallback posture.
-        if (autoRotateSettingValue != null
-                && autoRotateSettingValue == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
-            final int fallbackPosture = mFallbackPostureMap.get(devicePosture,
-                    DEVICE_STATE_ROTATION_LOCK_IGNORED);
-            return extractSettingForDevicePosture(fallbackPosture, deviceStateAutoRotateSetting);
-        }
-
-        return autoRotateSettingValue;
+        return extractSettingForDevicePosture(devicePosture, deviceStateAutoRotateSetting);
     }
 
     @Override
     public SparseIntArray getRotationLockSetting() {
         final String serializedSetting = mSecureSettings.getStringForUser(
-                DEVICE_STATE_ROTATION_LOCK,
-                UserHandle.USER_CURRENT);
-        if (serializedSetting == null || serializedSetting.isEmpty()) return null;
-        final String[] deserializedSettings = serializedSetting.split(SEPARATOR_REGEX);
-        if (deserializedSettings.length % 2 != 0) {
-            Log.e(TAG, "Invalid format in serializedSetting=" + serializedSetting
-                    + "\nOdd number of elements in the list");
-            return null;
-        }
-        final SparseIntArray deviceStateAutoRotateSetting = new SparseIntArray();
-        for (int i = 0; i < deserializedSettings.length; i += 2) {
-            final int key = Integer.parseInt(deserializedSettings[i]);
-            final int value = Integer.parseInt(deserializedSettings[i + 1]);
-            if (value < 0 || value > 2) {
-                Log.e(TAG, "Invalid format in serializedSetting=" + serializedSetting
-                        + "\nInvalid value in pair: key=" + deserializedSettings[i] + ", value="
-                        + deserializedSettings[i + 1]);
-                return null;
-            }
-            deviceStateAutoRotateSetting.put(key, value);
-        }
+                DEVICE_STATE_ROTATION_LOCK, UserHandle.USER_CURRENT);
+
+        final SparseIntArray deviceStateAutoRotateSetting =
+                deserializeSettingStringToMap(serializedSetting);
+
+        if (!areAllDefaultsPresent(deviceStateAutoRotateSetting)) return null;
+
+        final boolean allIgnoredStatesResolved = resolveIgnoredAutoRotateStates(
+                deviceStateAutoRotateSetting);
+        if (!allIgnoredStatesResolved) return null;
+
         return deviceStateAutoRotateSetting;
     }
 
@@ -178,6 +161,67 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     }
 
     @Override
+    public void updateSetting(SparseIntArray proposedSetting, SparseIntArray currentSetting) {
+        if (!areAllDefaultsPresent(proposedSetting) || !areAllDefaultsPresent(currentSetting)) {
+            // Either the postures in proposed setting or current setting map do not match with
+            // device postures defined in the default in configuration. We should still go ahead
+            // with the update because after the write, the checks we have setup should be able
+            // correct it.
+            Log.w(TAG, "The postures in proposed setting or current setting map does not "
+                    + "match with device postures defined in the default in configuration.\n"
+                    + "proposedSetting=" + proposedSetting + "\ncurrentSetting="
+                    + currentSetting);
+        }
+
+        for (int i = 0; i < mFallbackPostureMap.size(); i++) {
+            final int devicePosture = mFallbackPostureMap.keyAt(i);
+            final int fallbackPosture = mFallbackPostureMap.valueAt(i);
+
+            final int proposedAutoRotateForDevicePosture =
+                    getValueFromIntArray(devicePosture, proposedSetting);
+            final int proposedAutoRotateForFallbackDevicePosture =
+                    getValueFromIntArray(fallbackPosture, proposedSetting);
+            final int currentAutoRotateForDevicePosture =
+                    getValueFromIntArray(devicePosture, currentSetting);
+            final int currentAutoRotateForFallbackDevicePosture =
+                    getValueFromIntArray(fallbackPosture, currentSetting);
+
+            if (proposedAutoRotateForDevicePosture != currentAutoRotateForDevicePosture
+                    && proposedAutoRotateForFallbackDevicePosture
+                    != currentAutoRotateForFallbackDevicePosture
+                    && proposedAutoRotateForDevicePosture
+                    != proposedAutoRotateForFallbackDevicePosture) {
+
+                final StringBuilder errorMessage = new StringBuilder();
+                errorMessage.append("Auto-rotate setting for both device state and its fallback "
+                                + "state are being updated to different values.")
+                        .append("\nProposed setting value for device posture:")
+                        .append(proposedAutoRotateForDevicePosture)
+                        .append("\nCurrent setting value for device posture:")
+                        .append(currentAutoRotateForDevicePosture)
+                        .append("\nProposed setting value for fallback device posture:")
+                        .append(proposedAutoRotateForFallbackDevicePosture)
+                        .append("\nCurrent setting value for fallback device posture:")
+                        .append(currentAutoRotateForFallbackDevicePosture)
+                        .append("\nSetting value of ").append(fallbackPosture)
+                        .append("will be set to ").append(proposedAutoRotateForDevicePosture);
+
+                Log.w(TAG, errorMessage.toString());
+            }
+            if (proposedAutoRotateForDevicePosture != currentAutoRotateForDevicePosture
+                    && proposedAutoRotateForDevicePosture != DEVICE_STATE_ROTATION_LOCK_IGNORED) {
+                proposedSetting.put(fallbackPosture, proposedAutoRotateForDevicePosture);
+            }
+            proposedSetting.put(devicePosture, DEVICE_STATE_ROTATION_LOCK_IGNORED);
+        }
+
+        final String serializedDeviceStateAutoRotateSetting =
+                convertIntArrayToSerializedSetting(proposedSetting);
+        mSecureSettings.putStringForUser(DEVICE_STATE_ROTATION_LOCK,
+                serializedDeviceStateAutoRotateSetting, UserHandle.USER_CURRENT);
+    }
+
+    @Override
     public void dump(@NonNull PrintWriter writer, String[] args) {
         IndentingPrintWriter indentingWriter = new IndentingPrintWriter(writer, "  ");
         indentingWriter.println("DeviceStateAutoRotateSettingManagerImpl");
@@ -190,7 +234,10 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     @NonNull
     @Override
     public SparseIntArray getDefaultRotationLockSetting() {
-        return mDefaultDeviceStateAutoRotateSetting.clone();
+        final SparseIntArray defaultDeviceStateAutoRotateSetting =
+                mDefaultDeviceStateAutoRotateSetting.clone();
+        resolveIgnoredAutoRotateStates(defaultDeviceStateAutoRotateSetting);
+        return defaultDeviceStateAutoRotateSetting;
     }
 
     private void notifyListeners() {
@@ -200,10 +247,9 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     }
 
     /**
-     * Loads the {@link R.array#config_perDeviceStateRotationLockDefaults} array and populates the
-     * {@link #mFallbackPostureMap}, {@link #mSettableDeviceState}, and
-     * {@link #mDefaultDeviceStateAutoRotateSetting}
-     * fields.
+     * Loads the {@link R.array#config_perDeviceStateRotationLockDefaults} array and populates
+     * the {@link #mFallbackPostureMap}, {@link #mSettableDeviceState}, and
+     * {@link #mDefaultDeviceStateAutoRotateSetting} fields.
      */
     private void loadAutoRotateDeviceStates(Context context) {
         final String[] perDeviceStateAutoRotateDefaults =
@@ -255,13 +301,180 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
         }
     }
 
+
+    /**
+     * Deserializes the string value from {@link Settings.Secure#DEVICE_STATE_ROTATION_LOCK}
+     * into a {@link SparseIntArray}.
+     *
+     * The expected format is a series of key-value pairs separated by {@link #SEPARATOR_REGEX},
+     * e.g., "posture1:value1:posture2:value2".
+     *
+     * @param serializedSetting The string read from settings.
+     * @return A {@link SparseIntArray} representing the settings, or null if the input string
+     * is null, empty, or has an invalid format.
+     */
+    @Nullable
+    private SparseIntArray deserializeSettingStringToMap(String serializedSetting) {
+        if (serializedSetting == null || serializedSetting.isEmpty()) return null;
+        final String[] deserializedSettings = serializedSetting.split(SEPARATOR_REGEX);
+        if (deserializedSettings.length % 2 != 0) {
+            Log.e(TAG, "Invalid format in serializedSetting=" + serializedSetting
+                    + "\nOdd number of elements in the list");
+            return null;
+        }
+        final SparseIntArray deviceStateAutoRotateSetting = new SparseIntArray(
+                deserializedSettings.length / 2);
+
+        for (int i = 0; i < deserializedSettings.length; i += 2) {
+            try {
+                final int key = Integer.parseInt(deserializedSettings[i]);
+                final int value = Integer.parseInt(deserializedSettings[i + 1]);
+                // Check if the value is within the expected range (0, 1, or 2).
+                if (value < 0 || value > 2) {
+                    Log.e(TAG, "Invalid format in serializedSetting=" + serializedSetting
+                            + "\nInvalid value in pair: key=" + deserializedSettings[i] + ", value="
+                            + deserializedSettings[i + 1]);
+                    return null;
+                }
+                deviceStateAutoRotateSetting.put(key, value);
+            } catch (NumberFormatException e) {
+                Log.e(TAG, "Invalid number format in serializedSetting=" + serializedSetting
+                        + "\nError parsing pair: " + deserializedSettings[i] + ":"
+                        + deserializedSettings[i + 1], e);
+                return null;
+            }
+        }
+        return deviceStateAutoRotateSetting;
+    }
+
+    /**
+     * Return true if all device postures defined in the default configuration
+     * ({@link #mDefaultDeviceStateAutoRotateSetting}) are present in the provided
+     * {@code deviceStateAutoRotateSetting} map. Return false otherwise.
+     *
+     * @param deviceStateAutoRotateSetting The settings map to be tested.
+     */
+    private boolean areAllDefaultsPresent(SparseIntArray deviceStateAutoRotateSetting) {
+        if (deviceStateAutoRotateSetting == null || deviceStateAutoRotateSetting.size()
+                != mDefaultDeviceStateAutoRotateSetting.size()) {
+            return false;
+        }
+        // Iterate through the default settings to find any postures that might be missing.
+        for (int i = 0; i < mDefaultDeviceStateAutoRotateSetting.size(); i++) {
+            final int devicePosture = mDefaultDeviceStateAutoRotateSetting.keyAt(i);
+            final int indexOfDevicePosture = deviceStateAutoRotateSetting.indexOfKey(devicePosture);
+
+            if (indexOfDevicePosture < 0) {
+                // The posture is not found in the current settings.
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * <p>
+     * Applies the "resolved" logic to the provided settings map. For device postures
+     * that are marked as {@link #DEVICE_STATE_ROTATION_LOCK_IGNORED} in the default
+     * configuration, this method substitutes their value with the setting of their
+     * designated fallback posture.
+     * </p>
+     * <p>
+     * If a posture is marked as ignored in the default config but has a non-ignored
+     * value in the current settings, it indicates a data inconsistency, and the
+     * settings map is should be made null to trigger a reset.
+     * </p>
+     *
+     * @param deviceStateAutoRotateSetting The settings map to resolve ignored states for.
+     * @return True if ignored states were successfully resolved and false if resolution wasn't
+     * successful.
+     */
+    private boolean resolveIgnoredAutoRotateStates(SparseIntArray deviceStateAutoRotateSetting) {
+        if (deviceStateAutoRotateSetting == null) return false;
+        // Iterate through the default settings to identify ignored states.
+        for (int i = 0; i < mDefaultDeviceStateAutoRotateSetting.size(); i++) {
+            final int devicePosture = mDefaultDeviceStateAutoRotateSetting.keyAt(i);
+            final int defaultAutoRotateValue = mDefaultDeviceStateAutoRotateSetting.valueAt(i);
+            final int indexOfDevicePosture = deviceStateAutoRotateSetting.indexOfKey(devicePosture);
+            if (indexOfDevicePosture < 0) return false;
+            final int autoRotateValue = deviceStateAutoRotateSetting.valueAt(indexOfDevicePosture);
+
+            if (defaultAutoRotateValue == DEVICE_STATE_ROTATION_LOCK_IGNORED) {
+                // If the current setting for an ignored posture is NOT ignored, data is corrupt.
+                if (autoRotateValue != DEVICE_STATE_ROTATION_LOCK_IGNORED) {
+                    Log.w(TAG, "Data corruption: Ignored posture " + devicePosture
+                            + " has non-ignored setting value " + autoRotateValue);
+                    return false;
+                }
+                // If the setting is ignored for this posture, check the fallback posture
+                // and use its resolved setting.
+                final Integer fallbackAutoRotateValue = getFallbackAutoRotateSetting(devicePosture,
+                        deviceStateAutoRotateSetting);
+                if (fallbackAutoRotateValue != null) {
+                    deviceStateAutoRotateSetting.put(devicePosture, fallbackAutoRotateValue);
+                } else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Retrieves the value associated with the given key from the SparseIntArray.
+     * <p>
+     * This method is intended for use cases where the specified {@code key} is strongly expected to
+     * exist within the {@code intArray}. If the key is not found, this method throws an
+     * {@link IllegalStateException}. This behavior assumes that a missing key in this context
+     * signifies a critical inconsistency or an unexpected program state, rather than a common
+     * 'not found' scenario.
+     * </p>
+     */
+    private int getValueFromIntArray(int key, SparseIntArray intArray) {
+        final int indexOfKey = intArray.indexOfKey(key);
+        if (indexOfKey < 0) {
+            throw new IllegalStateException(
+                    "Key " + key + " not found in SparseIntArray=" + intArray);
+        }
+        return intArray.valueAt(indexOfKey);
+    }
+
+    @Nullable
+    private Integer getFallbackAutoRotateSetting(int devicePosture,
+            SparseIntArray deviceStateAutoRotateSetting) {
+        final int indexOfFallback = mFallbackPostureMap.indexOfKey(devicePosture);
+        if (indexOfFallback < 0) {
+            Log.w(TAG, "Setting is ignored, but no fallback was specified.");
+            return null;
+        }
+        int fallbackPosture = mFallbackPostureMap.valueAt(indexOfFallback);
+        return extractSettingForDevicePosture(fallbackPosture, deviceStateAutoRotateSetting);
+    }
+
+    /**
+     * Safely extracts the setting value for a specific {@code devicePosture} from the
+     * provided {@code deviceStateAutoRotateSetting} map.
+     */
+    @Nullable
     private Integer extractSettingForDevicePosture(
             int devicePosture,
             SparseIntArray deviceStateAutoRotateSetting
     ) {
-        return deviceStateAutoRotateSetting == null ? null : deviceStateAutoRotateSetting.get(
-                devicePosture,
-                DEVICE_STATE_ROTATION_LOCK_IGNORED);
+        if (deviceStateAutoRotateSetting == null) return null;
+
+        final int indexOfDevicePosture = deviceStateAutoRotateSetting.indexOfKey(devicePosture);
+        if (indexOfDevicePosture < 0) {
+            return null;
+        } else {
+            return deviceStateAutoRotateSetting.get(devicePosture);
+        }
+    }
+
+    private static String convertIntArrayToSerializedSetting(
+            SparseIntArray intArray) {
+        return IntStream.range(0, intArray.size())
+                .mapToObj(i -> intArray.keyAt(i) + SEPARATOR_REGEX + intArray.valueAt(i))
+                .collect(Collectors.joining(SEPARATOR_REGEX));
     }
 
     private record PostureEntry(int posture, int autoRotateValue, Integer fallbackPosture) {

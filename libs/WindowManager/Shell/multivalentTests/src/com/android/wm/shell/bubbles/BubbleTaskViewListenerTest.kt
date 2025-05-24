@@ -44,6 +44,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
+import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleMetadataFlagListener
@@ -525,10 +526,26 @@ class BubbleTaskViewListenerTest {
 
         verify(expandedViewManager).removeBubble(eq(b.key), eq(Bubbles.DISMISS_TASK_FINISHED))
         verify(mockTaskView).release()
-        verify(taskOrganizer).setInterceptBackPressedOnTaskRoot(eq(taskViewTaskToken), eq(false))
+
+        // Capture the WCT used to clean up the task
+        val wct = argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
+            verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+            wctCaptor.lastValue
+        }
+        val change = wct.changes[taskViewTaskToken.asBinder()]!!
+        assertThat(change.interceptBackPressed).isFalse()
         assertThat(parentView.lastRemovedView).isEqualTo(mockTaskView)
         assertThat(bubbleTaskViewListener.taskView).isNull()
         verify(listenerCallback).onTaskRemovalStarted()
+    }
+
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun onTaskInfoChanged() {
+        getInstrumentation().runOnMainSync {
+            bubbleTaskViewListener.onTaskInfoChanged(taskInfo)
+        }
+        verify(listenerCallback).onTaskInfoChanged(taskInfo)
     }
 
     @Test

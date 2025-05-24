@@ -43,6 +43,7 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
+@android.platform.test.annotations.EnabledOnRavenwood
 class RingerModeLiveDataTest : SysuiTestCase() {
 
     companion object {

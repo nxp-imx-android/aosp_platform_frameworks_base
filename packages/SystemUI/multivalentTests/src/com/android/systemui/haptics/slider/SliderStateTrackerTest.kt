@@ -38,6 +38,7 @@ import org.mockito.kotlin.eq
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class SliderStateTrackerTest : SysuiTestCase() {
 
     @Mock private lateinit var sliderStateListener: SliderStateListener

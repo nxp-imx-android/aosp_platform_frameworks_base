@@ -17,36 +17,64 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import android.graphics.Rect
 import androidx.compose.runtime.getValue
+import com.android.systemui.Flags
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTouchHandlingInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.google.android.msdl.data.model.MSDLToken
+import com.google.android.msdl.domain.MSDLPlayer
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 
 /** Models UI state to support top-level touch handling in the lock screen. */
+@OptIn(ExperimentalCoroutinesApi::class)
 class KeyguardTouchHandlingViewModel
 @AssistedInject
-constructor(private val interactor: KeyguardTouchHandlingInteractor) : ExclusiveActivatable() {
-
+constructor(
+    private val interactor: KeyguardTouchHandlingInteractor,
+    private val msdlPlayer: MSDLPlayer,
+    deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
+) : ExclusiveActivatable() {
     private val hydrator = Hydrator("KeyguardTouchHandlingViewModel.hydrator")
 
+    /**
+     * Bounds of the UDFPS accessibility overlay. This is needed in order to prevent interrupted
+     * accessibility feedback from user interaction where the keyguard touch handling view and the
+     * accessibility overlay overlap.
+     */
+    val accessibilityOverlayBoundsWhenListeningForUdfps: Flow<Rect?> =
+        combine(
+            interactor.udfpsAccessibilityOverlayBounds,
+            deviceEntryUdfpsInteractor.isListeningForUdfps,
+        ) { bounds, isListeningForUdfps ->
+            if (isListeningForUdfps) {
+                bounds
+            } else {
+                null
+            }
+        }
+
     /** Whether the long-press handling feature should be enabled. */
-    val isLongPressHandlingEnabled: Boolean by hydrator.hydratedStateOf(
-        traceName = "longPressHandlingEnabled",
-        initialValue = false,
-        source = interactor.isLongPressHandlingEnabled
-    )
+    val isLongPressHandlingEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "longPressHandlingEnabled",
+            initialValue = false,
+            source = interactor.isLongPressHandlingEnabled,
+        )
 
     /** Whether the double tap handling feature should be enabled. */
-    val isDoubleTapHandlingEnabled: Boolean by hydrator.hydratedStateOf(
-        traceName = "doubleTapHandlingEnabled",
-        initialValue = false,
-        source = interactor.isDoubleTapHandlingEnabled
-    )
+    val isDoubleTapHandlingEnabled: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "doubleTapHandlingEnabled",
+            initialValue = false,
+            source = interactor.isDoubleTapHandlingEnabled,
+        )
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
@@ -58,6 +86,9 @@ constructor(private val interactor: KeyguardTouchHandlingInteractor) : Exclusive
      * @param isA11yAction: Whether the action was performed as an a11y action
      */
     fun onLongPress(isA11yAction: Boolean) {
+        if (Flags.msdlFeedback()) {
+            msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+        }
         interactor.onLongPress(isA11yAction)
     }
 

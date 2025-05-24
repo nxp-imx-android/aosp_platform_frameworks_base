@@ -119,8 +119,6 @@ class BubbleTaskStackListener(
         val wct = getExitBubbleTransaction(task.token, bubble.taskView.captionInsetsOwner)
         taskOrganizer.applyTransaction(wct)
 
-        taskOrganizer.setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)
-
         taskViewTaskController.notifyTaskRemovalStarted(task)
     }
 }

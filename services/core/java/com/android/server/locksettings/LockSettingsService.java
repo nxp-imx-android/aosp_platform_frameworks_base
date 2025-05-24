@@ -75,7 +75,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
-import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.authsecret.IAuthSecret;
@@ -132,7 +131,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
-import com.android.internal.pm.RoSystemFeatures;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.DumpUtils;
 import com.android.internal.util.IndentingPrintWriter;
@@ -172,6 +170,7 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -278,6 +277,7 @@ public class LockSettingsService extends ILockSettings.Stub {
     private final SynchronizedStrongAuthTracker mStrongAuthTracker;
     private final BiometricDeferredQueue mBiometricDeferredQueue;
     private final LongSparseArray<byte[]> mGatekeeperPasswords;
+    private final SoftwareRateLimiter mSoftwareRateLimiter;
 
     private final NotificationManager mNotificationManager;
     protected final UserManager mUserManager;
@@ -653,10 +653,33 @@ public class LockSettingsService extends ILockSettings.Stub {
         public boolean isHeadlessSystemUserMode() {
             return UserManager.isHeadlessSystemUserMode();
         }
+    }
 
-        public boolean isMainUserPermanentAdmin() {
-            return Resources.getSystem()
-                    .getBoolean(com.android.internal.R.bool.config_isMainUserPermanentAdmin);
+    private class SoftwareRateLimiterInjector implements SoftwareRateLimiter.Injector {
+
+        @Override
+        public int readWrongGuessCounter(LskfIdentifier id) {
+            return mSpManager.readWrongGuessCounter(id);
+        }
+
+        @Override
+        public void writeWrongGuessCounter(LskfIdentifier id, int count) {
+            mSpManager.writeWrongGuessCounter(id, count);
+        }
+
+        @Override
+        public Duration getTimeSinceBoot() {
+            return Duration.ofMillis(SystemClock.elapsedRealtime());
+        }
+
+        @Override
+        public void removeCallbacksAndMessages(Object token) {
+            Handler.getMain().removeCallbacksAndMessages(token);
+        }
+
+        @Override
+        public void postDelayed(Runnable runnable, Object token, long delayMillis) {
+            Handler.getMain().postDelayed(runnable, token, delayMillis);
         }
     }
 
@@ -674,6 +697,14 @@ public class LockSettingsService extends ILockSettings.Stub {
         mHandler = injector.getHandler(injector.getServiceThread());
         mStrongAuth = injector.getStrongAuth();
         mActivityManager = injector.getActivityManager();
+
+        boolean enforcing =
+                mContext.getResources()
+                        .getBoolean(
+                                com.android.internal.R.bool
+                                        .config_softwareLskfRateLimiterEnforcing);
+        mSoftwareRateLimiter =
+                new SoftwareRateLimiter(new SoftwareRateLimiterInjector(), enforcing);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_STARTING);
@@ -1297,7 +1328,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         mContext.enforceCallingOrSelfPermission(
                 Manifest.permission.MANAGE_WEAK_ESCROW_TOKEN,
                 "Requires MANAGE_WEAK_ESCROW_TOKEN permission.");
-        if (!RoSystemFeatures.hasFeatureAutomotive(mContext)) {
+        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
             throw new IllegalArgumentException(
                     "Weak escrow token are only for automotive devices.");
         }
@@ -1895,8 +1926,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      * Set a new LSKF for the given user/profile. Only succeeds if the synthetic password for the
      * user is protected by the given {@param savedCredential}.
      * <p>
-     * When {@link android.security.Flags#clearStrongAuthOnAddingPrimaryCredential()} is enabled and
-     * setting a new credential where there was none, updates the strong auth state for
+     * When setting a new credential where there was none, updates the strong auth state for
      * {@param userId} to <tt>STRONG_AUTH_NOT_REQUIRED</tt>.
      *
      * @param savedCredential if the user is a profile with unified challenge and savedCredential is
@@ -1927,7 +1957,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             final long oldProtectorId = getCurrentLskfBasedProtectorId(userId);
             AuthenticationResult authResult = mSpManager.unlockLskfBasedProtector(
                     getGateKeeperService(), oldProtectorId, savedCredential, userId, null);
-            VerifyCredentialResponse response = authResult.gkResponse;
+            VerifyCredentialResponse response = authResult.response;
             SyntheticPassword sp = authResult.syntheticPassword;
 
             if (sp == null) {
@@ -1946,8 +1976,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
             onSyntheticPasswordUnlocked(userId, sp);
             setLockCredentialWithSpLocked(credential, sp, userId);
-            if (android.security.Flags.clearStrongAuthOnAddingPrimaryCredential()
-                    && savedCredential.isNone() && !credential.isNone()) {
+            if (savedCredential.isNone() && !credential.isNone()) {
                 // Clear the strong auth value, since the LSKF has just been entered and set,
                 // but only when the previous credential was None.
                 mStrongAuth.reportUnlock(userId);
@@ -2406,6 +2435,24 @@ public class LockSettingsService extends ILockSettings.Stub {
         VerifyCredentialResponse response;
 
         synchronized (mSpManager) {
+            final long protectorId =
+                    isSpecialUserId(userId)
+                            ? SyntheticPasswordManager.NULL_PROTECTOR_ID
+                            : getCurrentLskfBasedProtectorId(userId);
+            final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+            if (android.security.Flags.softwareRatelimiter()) {
+                SoftwareRateLimiterResult res = mSoftwareRateLimiter.apply(lskfId, credential);
+                switch (res.code) {
+                    case SoftwareRateLimiterResult.CONTINUE_TO_HARDWARE:
+                        break;
+                    case SoftwareRateLimiterResult.RATE_LIMITED:
+                        return VerifyCredentialResponse.fromTimeout(res.remainingDelay);
+                    case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
+                    case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
+                    default:
+                        return VerifyCredentialResponse.fromError();
+                }
+            }
             if (isSpecialUserId(userId)) {
                 response = mSpManager.verifySpecialUserCredential(userId, getGateKeeperService(),
                         credential, progressCallback);
@@ -2413,13 +2460,11 @@ public class LockSettingsService extends ILockSettings.Stub {
                         && userId == USER_FRP) {
                     mStorage.deactivateFactoryResetProtectionWithoutSecret();
                 }
-                return response;
+                return reportResultToSoftwareRateLimiter(response, lskfId, credential);
             }
-
-            long protectorId = getCurrentLskfBasedProtectorId(userId);
             authResult = mSpManager.unlockLskfBasedProtector(
                     getGateKeeperService(), protectorId, credential, userId, progressCallback);
-            response = authResult.gkResponse;
+            response = reportResultToSoftwareRateLimiter(authResult.response, lskfId, credential);
 
             if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
                 if ((flags & VERIFY_FLAG_WRITE_REPAIR_MODE_PW) != 0) {
@@ -2452,6 +2497,35 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
         final boolean success = response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK;
         notifyLockSettingsStateListeners(success, userId);
+        return response;
+    }
+
+    /**
+     * Reports the result of the real credential check to the software rate-limiter, if enabled.
+     * Returns either the same {@link VerifyCredentialResponse}, or a modified {@link
+     * VerifyCredentialResponse} with a larger timeout.
+     */
+    private VerifyCredentialResponse reportResultToSoftwareRateLimiter(
+            VerifyCredentialResponse response,
+            LskfIdentifier lskfId,
+            LockscreenCredential credential) {
+        if (android.security.Flags.softwareRatelimiter()) {
+            if (response.isMatched()) {
+                mSoftwareRateLimiter.reportSuccess(lskfId);
+            } else {
+                // TODO(b/395976735): don't count transient failures
+                Duration swTimeout = mSoftwareRateLimiter.reportWrongGuess(lskfId, credential);
+
+                // The software rate-limiter may use longer delays than the hardware one. While the
+                // long-term solution is to update the hardware rate-limiter to match, for now this
+                // case needs to be handled by reporting the maximum of the two delays so that the
+                // lock screen doesn't allow another attempt until both rate-limiters allow it.
+                Duration hwTimeout = response.getTimeoutAsDuration();
+                if (swTimeout.compareTo(hwTimeout) > 0) {
+                    response = VerifyCredentialResponse.fromTimeout(swTimeout);
+                }
+            }
+        }
         return response;
     }
 
@@ -2610,6 +2684,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         removeBiometricsForUser(userId);
         mSpManager.removeUser(getGateKeeperService(), userId);
         mStrongAuth.removeUser(userId);
+
+        if (android.security.Flags.softwareRatelimiter()) {
+            mSoftwareRateLimiter.clearUserState(userId);
+        }
 
         AndroidKeyStoreMaintenance.onUserRemoved(userId);
         mUnifiedProfilePasswordCache.removePassword(userId);
@@ -2919,7 +2997,8 @@ public class LockSettingsService extends ILockSettings.Stub {
                 return;
             }
             authSecret = sp.deriveVendorAuthSecret();
-        } else if (!mInjector.isMainUserPermanentAdmin() || !userInfo.isFull()) {
+        } else if (!mInjector.getUserManagerInternal().isMainUserPermanentAdmin()
+                || !userInfo.isFull()) {
             // Only full users can receive or pass on the auth secret.
             // If there is no main permanent admin user, we don't try to create or send
             // an auth secret, since there may sometimes be no full users.
@@ -3132,6 +3211,9 @@ public class LockSettingsService extends ILockSettings.Stub {
             for (Map.Entry<Integer, LockscreenCredential> entry : profilePasswords.entrySet()) {
                 entry.getValue().zeroize();
             }
+        }
+        if (android.security.Flags.softwareRatelimiter()) {
+            mSoftwareRateLimiter.clearLskfState(new LskfIdentifier(userId, oldProtectorId));
         }
         mSpManager.destroyLskfBasedProtector(oldProtectorId, userId);
         Slogf.i(TAG, "Successfully changed lockscreen credential of user %d", userId);
@@ -3374,7 +3456,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             Slog.w(TAG, "Invalid escrow token supplied");
             return false;
         }
-        if (result.gkResponse.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK) {
+        if (result.response.getResponseCode() != VerifyCredentialResponse.RESPONSE_OK) {
             // Most likely, an untrusted credential reset happened in the past which
             // changed the synthetic password
             Slog.e(TAG, "Obsolete token: synthetic password decrypted but it fails GK "
@@ -3511,6 +3593,14 @@ public class LockSettingsService extends ILockSettings.Stub {
         pw.println();
         pw.decreaseIndent();
 
+        if (android.security.Flags.softwareRatelimiter()) {
+            pw.println("SoftwareRateLimiter:");
+            pw.increaseIndent();
+            mSoftwareRateLimiter.dump(pw);
+            pw.println();
+            pw.decreaseIndent();
+        }
+
         pw.println("PasswordHandleCount: " + mGatekeeperPasswords.size());
         synchronized (mUserCreationAndRemovalLock) {
             pw.println("ThirdPartyAppsStarted: " + mThirdPartyAppsStarted);
@@ -3559,7 +3649,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
 
         // Escrow tokens are enabled on automotive builds.
-        if (RoSystemFeatures.hasFeatureAutomotive(mContext)) {
+        if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
             return;
         }
 

@@ -34,6 +34,9 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.log.LogAssertKt;
+import com.android.systemui.log.LogcatOnlyMessageBuffer;
+import com.android.systemui.log.core.LogLevel;
+import com.android.systemui.log.core.MessageBuffer;
 import com.android.systemui.plugins.Plugin;
 import com.android.systemui.plugins.PluginLifecycleManager;
 import com.android.systemui.plugins.PluginListener;
@@ -118,7 +121,6 @@ public class PluginInstanceTest extends SysuiTestCase {
         mPluginInstance = mPluginInstanceFactory.create(
                 mContext, mAppInfo, TEST_PLUGIN_COMPONENT_NAME,
                 TestPlugin.class, mPluginListener);
-        mPluginInstance.setLogFunc((tag, msg) -> Log.d((String) tag, (String) msg));
         mPluginContext = new WeakReference<>(mPluginInstance.getPluginContext());
     }
 
@@ -343,6 +345,11 @@ public class PluginInstanceTest extends SysuiTestCase {
         public int mDetachedCount = 0;
         public int mLoadCount = 0;
         public int mUnloadCount = 0;
+
+        @Override
+        public MessageBuffer getLogBuffer() {
+            return new LogcatOnlyMessageBuffer(LogLevel.DEBUG);
+        }
 
         @Override
         public boolean onPluginAttached(PluginLifecycleManager<TestPlugin> manager) {

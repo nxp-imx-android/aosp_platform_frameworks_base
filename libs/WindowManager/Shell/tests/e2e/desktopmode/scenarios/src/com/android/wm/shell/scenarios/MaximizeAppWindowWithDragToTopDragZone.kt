@@ -18,6 +18,7 @@ package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
 import android.tools.NavBar
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -29,6 +30,7 @@ import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -54,7 +56,10 @@ abstract class MaximizeAppWindowWithDragToTopDragZone(
     @Before
     fun setup() {
         val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         // Skip the test when the drag-to-maximize is disabled on this device.
         Assume.assumeTrue(desktopConfig.shouldMaximizeWhenDragToTopEdge)
         tapl.setEnableRotation(true)

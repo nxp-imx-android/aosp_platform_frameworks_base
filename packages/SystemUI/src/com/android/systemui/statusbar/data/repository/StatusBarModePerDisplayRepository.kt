@@ -31,6 +31,7 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewInitializedListener
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarAppearance
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.layout.BoundsPair
@@ -102,14 +103,6 @@ interface StatusBarModePerDisplayRepository : OnStatusBarViewInitializedListener
     fun showTransient()
 
     /**
-     * Requests for the status bar to be no longer showing transiently.
-     *
-     * TODO(b/277764509): Don't allow [CentralSurfaces] to set the transient mode; have it
-     *   determined internally instead.
-     */
-    fun clearTransient()
-
-    /**
      * Called when the [StatusBarModePerDisplayRepository] should stop doing any work and clean up
      * if needed.
      */
@@ -179,11 +172,22 @@ constructor(
             }
         }
 
+    private var statusBarBoundsProvider: StatusBarBoundsProvider? = null
+    private var isStarted = false
+
     override fun start() {
+        isStarted = true
+        if (StatusBarRootModernization.isEnabled) {
+            statusBarBoundsProvider?.start()
+        }
         commandQueue.addCallback(commandQueueCallback)
     }
 
     override fun stop() {
+        isStarted = false
+        if (StatusBarRootModernization.isEnabled) {
+            statusBarBoundsProvider?.stop()
+        }
         commandQueue.removeCallback(commandQueueCallback)
     }
 
@@ -195,14 +199,17 @@ constructor(
     private val _statusBarBounds = MutableStateFlow(BoundsPair(Rect(), Rect()))
 
     override fun onStatusBarViewInitialized(component: HomeStatusBarComponent) {
-        val statusBarBoundsProvider = component.boundsProvider
+        statusBarBoundsProvider = component.boundsProvider
         val listener =
             object : StatusBarBoundsProvider.BoundsChangeListener {
                 override fun onStatusBarBoundsChanged(bounds: BoundsPair) {
                     _statusBarBounds.value = bounds
                 }
             }
-        statusBarBoundsProvider.addChangeListener(listener)
+        statusBarBoundsProvider?.addChangeListener(listener)
+        if (StatusBarRootModernization.isEnabled && isStarted) {
+            statusBarBoundsProvider?.start()
+        }
     }
 
     private val _ongoingProcessRequiresStatusBarVisible = MutableStateFlow(false)
@@ -319,10 +326,6 @@ constructor(
 
     override fun showTransient() {
         _isTransientShown.value = true
-    }
-
-    override fun clearTransient() {
-        _isTransientShown.value = false
     }
 
     private fun modifyAppearanceIfNeeded(

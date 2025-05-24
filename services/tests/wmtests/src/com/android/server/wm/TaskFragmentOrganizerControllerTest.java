@@ -90,6 +90,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.RemoteAnimationDefinition;
 import android.view.SurfaceControl;
@@ -108,6 +109,8 @@ import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
+
+import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -1946,6 +1949,40 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
 
         assertTaskFragmentErrorTransaction(OP_TYPE_PRIVILEGED_SET_CAN_AFFECT_SYSTEM_UI_FLAGS,
                 SecurityException.class);
+    }
+
+    @EnableFlags(Flags.FLAG_FIX_SET_ADJACENT_TASK_FRAGMENTS_WITH_PARAMS)
+    @Test
+    public void testApplyTransaction_setAdjacentTaskFragments_withParams() {
+        final Task task = createTask(mDisplayContent);
+        mTaskFragment = new TaskFragmentBuilder(mAtm)
+                .setParentTask(task)
+                .setFragmentToken(mFragmentToken)
+                .setOrganizer(mOrganizer)
+                .build();
+        mWindowOrganizerController.mLaunchTaskFragments.put(mFragmentToken, mTaskFragment);
+        final IBinder fragmentToken2 = new Binder();
+        final TaskFragment taskFragment2 = new TaskFragmentBuilder(mAtm)
+                .setParentTask(task)
+                .setFragmentToken(fragmentToken2)
+                .setOrganizer(mOrganizer)
+                .build();
+        mWindowOrganizerController.mLaunchTaskFragments.put(fragmentToken2, taskFragment2);
+
+        assertFalse(mTaskFragment.isDelayLastActivityRemoval());
+        assertFalse(taskFragment2.isDelayLastActivityRemoval());
+
+        final WindowContainerTransaction.TaskFragmentAdjacentParams params =
+                new WindowContainerTransaction.TaskFragmentAdjacentParams();
+        params.setShouldDelayPrimaryLastActivityRemoval(true);
+        params.setShouldDelaySecondaryLastActivityRemoval(true);
+        mTransaction.setAdjacentTaskFragments(mFragmentToken, fragmentToken2, params);
+        mOrganizer.applyTransaction(mTransaction, TASK_FRAGMENT_TRANSIT_CHANGE,
+                false /* shouldApplyIndependently */);
+
+        assertApplyTransactionAllowed(mTransaction);
+        assertTrue(mTaskFragment.isDelayLastActivityRemoval());
+        assertTrue(taskFragment2.isDelayLastActivityRemoval());
     }
 
     @NonNull

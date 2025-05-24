@@ -20,9 +20,16 @@ import static android.app.AppOpsManager.ATTRIBUTION_CHAIN_ID_NONE;
 import static android.app.AppOpsManager.ATTRIBUTION_FLAG_ACCESSOR;
 import static android.app.AppOpsManager.ATTRIBUTION_FLAG_RECEIVER;
 import static android.app.AppOpsManager.ATTRIBUTION_FLAG_TRUSTED;
+import static android.app.AppOpsManager.HISTORY_FLAG_AGGREGATE;
+import static android.app.AppOpsManager.HISTORY_FLAG_DISCRETE;
 import static android.app.AppOpsManager.flagsToString;
 import static android.app.AppOpsManager.getUidStateName;
 
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ;
+import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN;
 import static com.android.server.appop.HistoricalRegistry.AggregationTimeWindow;
 
 import android.annotation.NonNull;
@@ -147,11 +154,12 @@ public class AppOpHistoryHelper {
             @Nullable String packageNameFilter,
             @Nullable String[] opNamesFilter,
             @Nullable String attributionTagFilter, int opFlagsFilter,
-            Set<String> attributionExemptPkgs) {
+            Set<String> attributionExemptPkgs, @AppOpsManager.OpHistoryFlags int historyFlags) {
         List<AggregatedAppOpAccessEvent> discreteOps = getAppOpHistory(result,
                 beginTimeMillis, endTimeMillis, filter, uidFilter, packageNameFilter, opNamesFilter,
                 attributionTagFilter, opFlagsFilter);
-        boolean assembleChains = attributionExemptPkgs != null;
+        boolean includeDiscreteEvents = (historyFlags & HISTORY_FLAG_DISCRETE) != 0;
+        boolean assembleChains = attributionExemptPkgs != null && includeDiscreteEvents;
         LongSparseArray<AttributionChain> attributionChains = null;
         if (assembleChains) {
             attributionChains = createAttributionChains(discreteOps, attributionExemptPkgs);
@@ -171,10 +179,15 @@ public class AppOpHistoryHelper {
                             proxyEvent.packageName(), proxyEvent.attributionTag());
                 }
             }
-            result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
-                    event.attributionTag(), event.uidState(), event.opFlags(),
-                    discretizeTimestamp(event.accessTimeMillis()),
-                    discretizeDuration(event.durationMillis()), proxy);
+            if (includeDiscreteEvents) {
+                result.addDiscreteAccess(event.opCode(), event.uid(), event.packageName(),
+                        event.attributionTag(), event.uidState(), event.opFlags(),
+                        discretizeTimestamp(event.accessTimeMillis()),
+                        discretizeDuration(event.durationMillis()), proxy);
+            }
+            if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
+                addAppOpAccessEventToHistoricalOps(result, event);
+            }
         }
     }
 
@@ -188,19 +201,24 @@ public class AppOpHistoryHelper {
                 beginTimeMillis, endTimeMillis, filter, uidFilter, packageNameFilter, opNamesFilter,
                 attributionTagFilter, opFlagsFilter);
         for (AggregatedAppOpAccessEvent opEvent : appOpHistoryAccesses) {
-            result.increaseAccessCount(opEvent.opCode(), opEvent.uid(),
-                    opEvent.packageName(),
-                    opEvent.attributionTag(), opEvent.uidState(), opEvent.opFlags(),
-                    opEvent.totalAccessCount());
-            result.increaseRejectCount(opEvent.opCode(), opEvent.uid(),
-                    opEvent.packageName(),
-                    opEvent.attributionTag(), opEvent.uidState(), opEvent.opFlags(),
-                    opEvent.totalRejectCount());
-            result.increaseAccessDuration(opEvent.opCode(), opEvent.uid(),
-                    opEvent.packageName(),
-                    opEvent.attributionTag(), opEvent.uidState(), opEvent.opFlags(),
-                    opEvent.totalDurationMillis());
+            addAppOpAccessEventToHistoricalOps(result, opEvent);
         }
+    }
+
+    private void addAppOpAccessEventToHistoricalOps(AppOpsManager.HistoricalOps result,
+            AggregatedAppOpAccessEvent opEvent) {
+        result.increaseAccessCount(opEvent.opCode(), opEvent.uid(),
+                opEvent.packageName(),
+                opEvent.attributionTag(), opEvent.uidState(), opEvent.opFlags(),
+                opEvent.totalAccessCount());
+        result.increaseRejectCount(opEvent.opCode(), opEvent.uid(),
+                opEvent.packageName(),
+                opEvent.attributionTag(), opEvent.uidState(), opEvent.opFlags(),
+                opEvent.totalRejectCount());
+        result.increaseAccessDuration(opEvent.opCode(), opEvent.uid(),
+                opEvent.packageName(),
+                opEvent.attributionTag(), opEvent.uidState(), opEvent.opFlags(),
+                opEvent.totalDurationMillis());
     }
 
     private List<AggregatedAppOpAccessEvent> getAppOpHistory(AppOpsManager.HistoricalOps result,
@@ -211,9 +229,11 @@ public class AppOpHistoryHelper {
         IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNamesFilter);
         // flush the cache into database before read.
         if (opCodes != null) {
-            mDbHelper.insertAppOpHistory(mCache.evict(opCodes));
+            mDbHelper.insertAppOpHistory(mCache.evict(opCodes),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         } else {
-            mDbHelper.insertAppOpHistory(mCache.evictAll());
+            mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         }
         // Adjust begin & end time to time window's boundary.
         beginTimeMillis = Math.max(discretizeTimestamp(beginTimeMillis),
@@ -237,7 +257,8 @@ public class AppOpHistoryHelper {
 
     void shutdown() {
         mSqliteWriteHandler.removeAllPendingMessages();
-        mDbHelper.insertAppOpHistory(mCache.evictAll());
+        mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN);
         mDbHelper.close();
     }
 
@@ -262,7 +283,8 @@ public class AppOpHistoryHelper {
     }
 
     void migrateDiscreteAppOpHistory(List<AggregatedAppOpAccessEvent> appOpEvents) {
-        mDbHelper.insertAppOpHistory(appOpEvents);
+        mDbHelper.insertAppOpHistory(appOpEvents,
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION);
     }
 
     @VisibleForTesting
@@ -284,9 +306,11 @@ public class AppOpHistoryHelper {
         IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNamesFilter);
         // flush the cache into database before read.
         if (opCodes != null) {
-            mDbHelper.insertAppOpHistory(mCache.evict(opCodes));
+            mDbHelper.insertAppOpHistory(mCache.evict(opCodes),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         } else {
-            mDbHelper.insertAppOpHistory(mCache.evictAll());
+            mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                    SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         }
         // Adjust begin & end time to time window's boundary.
         beginTimeMillis = Math.max(discretizeTimestamp(beginTimeMillis),
@@ -323,7 +347,8 @@ public class AppOpHistoryHelper {
             @AppOpsManager.HistoricalOpsRequestFilter int filter, @NonNull SimpleDateFormat sdf,
             @NonNull Date date, int limit) {
         // flush caches to the database
-        mDbHelper.insertAppOpHistory(mCache.evictAll());
+        mDbHelper.insertAppOpHistory(mCache.evictAll(),
+                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         long currentTime = System.currentTimeMillis();
         long beginTimeMillis = discretizeTimestamp(currentTime - mHistoryRetentionMillis);
         IntArray opCodes = new IntArray();
@@ -381,7 +406,8 @@ public class AppOpHistoryHelper {
             switch (msg.what) {
                 case WRITE_DATABASE_PERIODIC -> {
                     try {
-                        mDbHelper.insertAppOpHistory(mCache.evict());
+                        mDbHelper.insertAppOpHistory(mCache.evict(),
+                                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
                     }
@@ -397,7 +423,8 @@ public class AppOpHistoryHelper {
                                 evictedEvents.addAll(mCache.evictAll());
                             }
                         }
-                        mDbHelper.insertAppOpHistory(evictedEvents);
+                        mDbHelper.insertAppOpHistory(evictedEvents,
+                                SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
                     }

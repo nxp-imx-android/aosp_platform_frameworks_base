@@ -56,6 +56,7 @@ import java.util.Random;
 @SmallTest
 @TestableLooper.RunWithLooper
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class KeyguardStateControllerTest extends SysuiTestCase {
 
     @Mock

@@ -1807,8 +1807,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @Override
     public void dismiss(boolean refocusOnDismiss) {
         super.dismiss(refocusOnDismiss);
-        setLongPressListener(null);
-        setDragController(null);
+        if (!isBundle()) {
+            setLongPressListener(null);
+            setDragController(null);
+        }
         mGroupParentWhenDismissed = mNotificationParent;
         mChildAfterViewWhenDismissed = null;
         if (isChildInGroup()) {
@@ -3583,7 +3585,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
 
         final boolean shouldSkipHideSensitiveAnimation =
-                Flags.skipHideSensitiveNotifAnimation() && isShowingLayoutNotChanged;
+                Flags.skipHideSensitiveNotifAnimation()
+                        && mShowingPublic && isShowingLayoutNotChanged;
         if (!animated || shouldSkipHideSensitiveAnimation) {
             if (!NotificationContentAlphaOptimization.isEnabled()
                     || mShowingPublic != oldShowingPublic) {

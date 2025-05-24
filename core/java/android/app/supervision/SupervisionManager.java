@@ -22,6 +22,7 @@ import static android.Manifest.permission.QUERY_USERS;
 import static android.permission.flags.Flags.FLAG_ENABLE_SYSTEM_SUPERVISION_ROLE_BEHAVIOR;
 
 import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
@@ -44,6 +45,41 @@ import android.os.RemoteException;
 @SystemApi
 @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
 public class SupervisionManager {
+    /**
+     * Listener for supervision state changes.
+     *
+     * @hide
+     */
+    public abstract static class SupervisionListener {
+        protected final ISupervisionListener mListener =
+                new ISupervisionListener.Stub() {
+                    @Override
+                    public void onSetSupervisionEnabled(int userId, boolean enabled) {
+                        if (enabled) {
+                            onSupervisionEnabled(userId);
+                        } else {
+                            onSupervisionDisabled(userId);
+                        }
+                    }
+                };
+
+        /**
+         * Called after supervision has been enabled for a given user.
+         *
+         * @param userId Int ID of the user for whom supervision was enabled.
+         * @hide
+         */
+        public abstract void onSupervisionEnabled(@UserIdInt int userId);
+
+        /**
+         * Called after supervision has been enabled for a given user.
+         *
+         * @param userId Int ID of the user for whom supervision was enabled.
+         * @hide
+         */
+        public abstract void onSupervisionDisabled(@UserIdInt int userId);
+    }
+
     private final Context mContext;
     @Nullable private final ISupervisionManager mService;
 
@@ -262,5 +298,37 @@ public class SupervisionManager {
             }
         }
         return false;
+    }
+
+    /**
+     * Registers a listener to be notified on supervision state changes.
+     *
+     * @param listener Listener to be registered. Can't be null.
+     * @hide
+     */
+    public void registerSupervisionListener(@NonNull SupervisionListener listener) {
+        if (mService != null) {
+            try {
+                mService.registerSupervisionListener(listener.mListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Unregisters a listener that was previously registered.
+     *
+     * @param listener Listener to be unregistered. Can't be null.
+     * @hide
+     */
+    public void unregisterSupervisionListener(@NonNull SupervisionListener listener) {
+        if (mService != null) {
+            try {
+                mService.unregisterSupervisionListener(listener.mListener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
     }
 }

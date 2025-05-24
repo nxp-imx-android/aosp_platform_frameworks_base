@@ -38,6 +38,7 @@ import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
+import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
@@ -202,12 +203,8 @@ class DefaultClockController(
         override fun recomputePadding(targetRegion: Rect?) {}
 
         /** See documentation at [AnimatableClockView.offsetGlyphsForStepClockAnimation]. */
-        fun offsetGlyphsForStepClockAnimation(fromLeft: Int, direction: Int, fraction: Float) {
-            view.offsetGlyphsForStepClockAnimation(fromLeft, direction, fraction)
-        }
-
-        fun offsetGlyphsForStepClockAnimation(distance: Float, fraction: Float) {
-            view.offsetGlyphsForStepClockAnimation(distance, fraction)
+        fun offsetGlyphsForStepClockAnimation(args: ClockPositionAnimationArgs) {
+            view.offsetGlyphsForStepClockAnimation(args.fromLeft, args.direction, args.fraction)
         }
     }
 
@@ -285,9 +282,7 @@ class DefaultClockController(
             view.translationY = 0.5f * view.bottom * (1 - swipingFraction)
         }
 
-        override fun onPositionUpdated(fromLeft: Int, direction: Int, fraction: Float) {}
-
-        override fun onPositionUpdated(distance: Float, fraction: Float) {}
+        override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
 
         override fun onFidgetTap(x: Float, y: Float) {}
 
@@ -299,12 +294,8 @@ class DefaultClockController(
         dozeFraction: Float,
         foldFraction: Float,
     ) : DefaultClockAnimations(view, dozeFraction, foldFraction) {
-        override fun onPositionUpdated(fromLeft: Int, direction: Int, fraction: Float) {
-            largeClock.offsetGlyphsForStepClockAnimation(fromLeft, direction, fraction)
-        }
-
-        override fun onPositionUpdated(distance: Float, fraction: Float) {
-            largeClock.offsetGlyphsForStepClockAnimation(distance, fraction)
+        override fun onPositionAnimated(args: ClockPositionAnimationArgs) {
+            largeClock.offsetGlyphsForStepClockAnimation(args)
         }
     }
 

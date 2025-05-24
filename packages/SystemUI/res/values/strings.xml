@@ -490,6 +490,11 @@
     <!-- Content description for the more options button on biometric prompt content view. [CHAR LIMIT=60] -->
     <string name="biometric_dialog_content_view_more_options_button">More Options</string>
 
+    <string name="biometric_dialog_fallback_title">More Options</string>
+    <string name="biometric_dialog_fallback_button">Verify another way</string>
+    <string name="biometric_dialog_manage_identity_check">Manage Identity Check</string>
+    <string name="biometric_dialog_identity_check_pin_footer">PIN can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
+
     <!-- Button text shown on BiometricPrompt giving the user the option to use an alternate form of authentication (Pin) [CHAR LIMIT=30] -->
     <string name="biometric_dialog_use_pin">Use PIN</string>
     <!-- Button text shown on BiometricPrompt giving the user the option to use an alternate form of authentication (Pattern) [CHAR LIMIT=30] -->
@@ -669,6 +674,8 @@
     <string name="accessibility_desc_qs_notification_shade">Quick settings and Notification shade.</string>
     <!-- Content description for the lock screen (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_desc_lock_screen">Lock screen</string>
+    <!-- Content description for the lock screen customization action. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_desc_customize_lock_screen">Lock screen, double tap and hold to customize lock screen.</string>
     <!-- Content description for the work profile lock screen. This prevents work profile apps from being used, but personal apps can be used as normal (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_desc_work_lock">Work lock screen</string>
     <!-- Content description for the close button in the zen mode panel introduction message. [CHAR LIMIT=NONE] -->
@@ -924,6 +931,11 @@
     <string name="quick_settings_flashlight_label">Flashlight</string>
     <!-- QuickSettings: Flashlight, used when it's not available due to camera in use [CHAR LIMIT=NONE] -->
     <string name="quick_settings_flashlight_camera_in_use">Camera in use</string>
+    <!-- Flashlight dialog title [CHAR LIMIT=NONE] -->
+    <string name="flashlight_dialog_title">Flashlight Strength</string>
+    <!-- QuickSettings: Flashlight tile level percentage [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_flashlight_tile_level_percentage"><xliff:g id="percentage" example="46">%1$d</xliff:g>%%</string>
+
     <!-- QuickSettings: Cellular detail panel title [CHAR LIMIT=NONE] -->
     <string name="quick_settings_cellular_detail_title">Mobile data</string>
     <!-- QuickSettings: Cellular detail panel, data usage title [CHAR LIMIT=NONE] -->

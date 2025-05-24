@@ -24,6 +24,7 @@ import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+import static android.content.pm.PackageManager.GET_PERMISSIONS;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
@@ -284,6 +285,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1014,6 +1016,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private final StorageEventHelper mStorageEventHelper;
     private final FreeStorageHelper mFreeStorageHelper;
 
+    private static Set<String> sRestrictedPermissions;
 
     private static final boolean ENABLE_BOOST = false;
 
@@ -8317,5 +8320,25 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private static boolean isSystemOrPhone(int uid) {
         return UserHandle.isSameApp(uid, Process.SYSTEM_UID)
                 || UserHandle.isSameApp(uid, Process.PHONE_UID);
+    }
+
+    /**
+     * @hide
+     */
+    @NonNull
+    public Set<String> getAllPlatformRestrictedPermissions() {
+        if (sRestrictedPermissions == null) {
+            sRestrictedPermissions = new HashSet<>();
+            PackageInfo pi = snapshotComputer().getPackageInfo(
+                    PLATFORM_PACKAGE_NAME, GET_PERMISSIONS, UserHandle.USER_SYSTEM);
+            if (pi.permissions != null) {
+                for (int i = 0; i < pi.permissions.length; i++) {
+                    if (pi.permissions[i].isRestricted()) {
+                        sRestrictedPermissions.add(pi.permissions[i].name);
+                    }
+                }
+            }
+        }
+        return sRestrictedPermissions;
     }
 }

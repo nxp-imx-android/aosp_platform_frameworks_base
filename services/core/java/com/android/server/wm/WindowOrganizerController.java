@@ -53,6 +53,7 @@ import static android.window.TaskFragmentOperation.PRIVILEGED_OP_START;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FOCUSABLE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_FORCE_TRANSLUCENT;
 import static android.window.WindowContainerTransaction.Change.CHANGE_HIDDEN;
+import static android.window.WindowContainerTransaction.Change.CHANGE_INTERCEPT_BACK_PRESSED;
 import static android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE;
 import static android.window.WindowContainerTransaction.Change.CHANGE_RELATIVE_BOUNDS;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER;
@@ -1025,6 +1026,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             tr.setSelfMovable(c.getSelfMovable());
         }
 
+        if ((c.getChangeMask() & CHANGE_INTERCEPT_BACK_PRESSED) != 0) {
+            mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(tr.mTaskId,
+                    c.getInterceptBackPressed());
+        }
+
         return effects;
     }
 
@@ -1769,7 +1775,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
 
-                final Bundle bundle = hop.getLaunchOptions();
+                final Bundle bundle = Flags.fixSetAdjacentTaskFragmentsWithParams()
+                        ? operation.getBundle()
+                        : hop.getLaunchOptions();
                 final WindowContainerTransaction.TaskFragmentAdjacentParams adjacentParams =
                         bundle != null
                                 ? new WindowContainerTransaction.TaskFragmentAdjacentParams(bundle)

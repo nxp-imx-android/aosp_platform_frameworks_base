@@ -45,6 +45,7 @@ import java.util.Map;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class FakeSettingsTest extends SysuiTestCase {
     @Mock
     ContentObserver mContentObserver;

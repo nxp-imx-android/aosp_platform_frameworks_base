@@ -25,20 +25,23 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Launch
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,11 +51,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.divider
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
@@ -82,7 +87,7 @@ fun ActionButtons(actionButtons: List<ActionButton>) {
         Row(
             Modifier
                 .padding(SettingsDimension.buttonPadding)
-                .clip(SettingsShape.CornerExtraLarge)
+                .clip(SettingsShape.CornerExtraLarge1)
                 .height(IntrinsicSize.Min)
         ) {
             for ((index, actionButton) in actionButtons.withIndex()) {
@@ -93,45 +98,18 @@ fun ActionButtons(actionButtons: List<ActionButton>) {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun RowScope.ActionButton(actionButton: ActionButton) {
     if (isSpaExpressiveEnabled) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            FilledTonalButton(
-                onClick = actionButton.onClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(100.dp)),
-                enabled = actionButton.enabled,
-                // Because buttons could appear, disappear or change positions, reset the interaction source
-                // to prevent highlight the wrong button.
-                interactionSource = remember(actionButton) { MutableInteractionSource() },
-                shape = RectangleShape,
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-            ) {
-                Icon(
-                    imageVector = actionButton.imageVector,
-                    contentDescription = null,
-                    modifier = Modifier.size(SettingsDimension.itemIconSize),
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .padding(top = 6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = actionButton.text,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-            }
+            IconButton(actionButton)
+            Spacer(Modifier.height(SettingsSpace.extraSmall3))
+            Text(
+                text = actionButton.text,
+                modifier = Modifier.clearAndSetSemantics {}, // semantics set in IconButton
+                style = MaterialTheme.typography.titleSmallEmphasized,
+            )
         }
     } else {
         FilledTonalButton(
@@ -171,6 +149,37 @@ private fun RowScope.ActionButton(actionButton: ActionButton) {
                 }
             }
         }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private fun IconButton(actionButton: ActionButton) {
+    FilledIconButton(
+        onClick = actionButton.onClick,
+        shapes = IconButtonDefaults.shapes(),
+        modifier =
+            Modifier
+                .size(
+                    IconButtonDefaults.mediumContainerSize(
+                        IconButtonDefaults.IconButtonWidthOption.Wide
+                    )
+                ),
+        enabled = actionButton.enabled,
+        // Because buttons could appear, disappear or change positions, reset the interaction source
+        // to prevent highlight the wrong button.
+        interactionSource = remember(actionButton) { MutableInteractionSource() },
+        colors = IconButtonDefaults.filledIconButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.surface,
+        ),
+    ) {
+        Icon(
+            imageVector = actionButton.imageVector,
+            contentDescription = actionButton.text,
+            modifier = Modifier.size(SettingsDimension.itemIconSize),
+        )
     }
 }
 

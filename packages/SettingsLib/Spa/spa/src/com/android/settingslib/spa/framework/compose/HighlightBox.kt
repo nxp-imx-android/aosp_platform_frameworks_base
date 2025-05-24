@@ -23,6 +23,8 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -31,6 +33,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -72,9 +75,15 @@ internal fun Modifier.highlightBackground(
         highlightItemKey != null && navController.isHighLightItem(highlightItemKey)
     }
 
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    LaunchedEffect(Unit) { if (isHighLight) bringIntoViewRequester.bringIntoView() }
+
     val animateColor by animateBackgroundColor(isHighLight, originalColor)
 
-    then(Modifier.background(color = animateColor, shape = shape))
+    then(
+        Modifier.background(color = animateColor, shape = shape)
+            .bringIntoViewRequester(bringIntoViewRequester)
+    )
 }
 
 /**

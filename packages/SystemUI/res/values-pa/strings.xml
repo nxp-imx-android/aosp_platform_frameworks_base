@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ਆਗਿਆ ਦਿਓ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ਫ਼ਿਲਹਾਲ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਸਾਈਨ-ਇਨ ਕੀਤਾ ਵਰਤੋਂਕਾਰ ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਨੂੰ ਚਾਲੂ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਇਸ ਵਿਸ਼ੇਸ਼ਤਾ ਨੂੰ ਵਰਤਣ ਲਈ, ਪ੍ਰਸ਼ਾਸਕ ਵਰਤੋਂਕਾਰ \'ਤੇ ਸਵਿੱਚ ਕਰੋ।"</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"ਤੁਸੀਂ ਲੌਗ-ਇਨ ਕਰਨ ਤੋਂ ਬਾਅਦ ਇਹ ਸੈਟਿੰਗ ਬਦਲ ਸਕਦੇ ਹੋ"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ਪੋਰਟ ਬੰਦ ਕੀਤਾ ਗਿਆ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਣੀ ਅਤੇ ਧੂੜ-ਮਿੱਟੀ ਤੋਂ ਬਚਾਉਣ ਲਈ, USB ਪੋਰਟ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ ਅਤੇ ਕੋਈ ਵੀ ਐਕਸੈਸਰੀ ਪਛਾਣੀ ਨਹੀਂ ਜਾਵੇਗੀ।\n\nUSB ਪੋਰਟ ਨੂੰ ਦੁਬਾਰਾ ਵਰਤਣਾ ਠੀਕ ਹੋਣ \'ਤੇ ਤੁਹਾਨੂੰ ਸੂਚਿਤ ਕੀਤਾ ਜਾਵੇਗਾ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ਚਾਰਜਰਾਂ ਅਤੇ ਉਪਸਾਧਨਾਂ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ USB ਪੋਰਟ ਚਾਲੂ ਹੈ"</string>
@@ -204,6 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ਪ੍ਰਮਾਣਿਤ ਹੋਇਆ"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ਪ੍ਰਮਾਣੀਕਰਨ ਰੱਦ ਕਰੋ"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ਹੋਰ ਵਿਕਲਪ"</string>
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"ਹੋਰ ਵਿਕਲਪ"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ਕਿਸੇ ਹੋਰ ਢੰਗ ਨਾਲ ਪੁਸ਼ਟੀ ਕਰੋ"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ਪਛਾਣ ਦੀ ਜਾਂਚ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ਪਿੰਨ ਨੂੰ ਪੁਸ਼ਟੀਕਰਨ ਲਈ ਨਹੀਂ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਪਛਾਣ ਦੀ ਜਾਂਚ ਚਾਲੂ ਹੈ ਅਤੇ ਇਸਦੇ ਲਈ ਬਾਇਓਮੈਟ੍ਰਿਕ ਦੀ ਲੋੜ ਹੈ। ਪਛਾਣ ਦੀ ਜਾਂਚ ਬਾਰੇ ਹੋਰ ਜਾਣੋ"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ਪਿੰਨ ਵਰਤੋ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ਪੈਟਰਨ ਵਰਤੋ"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"ਪਾਸਵਰਡ ਵਰਤੋ"</string>
@@ -271,6 +274,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"ਬੈਟਰੀ ਚਾਰਜ ਹੋ ਰਹੀ ਹੈ, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> ਪ੍ਰਤੀਸ਼ਤ ਹੋ ਗਈ।"</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"ਬੈਟਰੀ <xliff:g id="PERCENTAGE">%d</xliff:g> ਫ਼ੀਸਦ, ਬੈਟਰੀ ਦੀ ਸੁਰੱਖਿਆ ਲਈ ਚਾਰਜਿੰਗ ਨੂੰ ਰੋਕਿਆ ਨੂੰ ਚਲਾਉਂਦੀ ਹੈ"</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"ਬੈਟਰੀ <xliff:g id="PERCENTAGE">%1$d</xliff:g> ਫ਼ੀਸਦ, <xliff:g id="TIME">%2$s</xliff:g>, ਬੈਟਰੀ ਦੀ ਸੁਰੱਖਿਆ ਲਈ ਚਾਰਜਿੰਗ ਨੂੰ ਰੋਕਿਆ ਗਿਆ।"</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"ਬੈਟਰੀ <xliff:g id="NUMBER">%d</xliff:g> ਫ਼ੀਸਦ ਹੈ। ਬੈਟਰੀ ਸੇਵਰ ਚਾਲੂ ਹੈ।"</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਦੇਖੋ"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"ਟੈਲੀ ਟਾਈਪਰਾਈਟਰ ਸਮਰਥਿਤ।"</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"ਰਿੰਗਰ ਥਰਥਰਾਹਟ।"</string>
@@ -281,6 +285,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ।"</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਅਤੇ ਸੂਚਨਾ ਸ਼ੇਡ।"</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"ਲਾਕ ਸਕ੍ਰੀਨ"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"ਕਾਰਜ-ਸਥਾਨ  ਲਾਕ  ਸਕ੍ਰੀਨ"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"ਬੰਦ ਕਰੋ"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"ਪੂਰਾ ਸ਼ਾਂਤ"</string>
@@ -375,6 +381,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# ਡੀਵਾਈਸ}one{# ਡੀਵਾਈਸ}other{# ਡੀਵਾਈਸ}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"ਫਲੈਸ਼ਲਾਈਟ"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"ਕੈਮਰਾ ਵਰਤੋਂ ਵਿੱਚ ਹੈ"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"ਮੋਬਾਈਲ ਡਾਟਾ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"ਡਾਟਾ ਵਰਤੋਂ"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"ਬਾਕੀ  ਡਾਟਾ"</string>
@@ -813,6 +823,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ਚਾਲੂ ਕਰੋ"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ਚਾਲੂ ਹੈ - ਚਿਹਰਾ-ਆਧਾਰਿਤ"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ਖਮੋਸ਼ੀ ਅਤੇ ਬੰਡਲ"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਲਈ"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ਵਿਕਰੀਆਂ, ਨਵੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ਪ੍ਰਮੁੱਖ ਕਹਾਣੀਆਂ, ਸੰਪਾਦਕੀਆਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ਪਸੰਦਾਂ, ਪੋਸਟਾਂ ਅਤੇ ਹੋਰ ਬਹੁਤ ਕੁਝ"</string>
@@ -840,10 +851,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਐਪ ਗੱਲਬਾਤ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ਵਿਚਾਰ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ਖਾਰਜ ਕਰੋ"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ਪਿੰਨ ਕੀਤੇ ਵਜੋਂ ਨਾ ਦਿਖਾਓ"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"ਬੰਦ ਕਰੋ"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"ਇਸ ਐਪ ਤੋਂ ਲਾਈਵ ਅੱਪਡੇਟਾਂ ਬਲਾਕ ਕਰੋ"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"ਲਾਈਵ ਅੱਪਡੇਟ ਦਿਖਾਏ ਜਾ ਰਹੇ ਹਨ"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"ਪਿੰਨ ਕੀਤੀਆਂ ਸੂਚਨਾਵਾਂ ਐਪਾਂ ਤੋਂ ਲਾਈਵ ਜਾਣਕਾਰੀ ਦਿਖਾਉਂਦੀਆਂ ਹਨ ਅਤੇ ਇਹ ਜਾਣਕਾਰੀ ਹਮੇਸ਼ਾਂ ਸਥਿਤੀ ਪੱਟੀ ਅਤੇ ਲਾਕ ਸਕ੍ਰੀਨ \'ਤੇ ਦਿਖਦੀ ਹੈ"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"ਲਾਈਵ ਅੱਪਡੇਟ"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"ਬੰਦ ਹੋਣ \'ਤੇ, ਇਸ ਐਪ ਤੋਂ ਪ੍ਰਾਪਤ ਨਿਰੰਤਰ ਸੂਚਨਾਵਾਂ ਦਾ ਪ੍ਰਚਾਰ ਤੁਹਾਡੀ ਲਾਕ ਸਕ੍ਰੀਨ ਅਤੇ ਸਥਿਤੀ ਪੱਟੀ \'ਤੇ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ਇਹਨਾਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ਕਾਲ ਸੰਬੰਧੀ ਸੂਚਨਾਵਾਂ ਨੂੰ ਸੋਧਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ਇਹ ਸੂਚਨਾਵਾਂ ਦਾ ਗਰੁੱਪ ਇੱਥੇ ਸੰਰੂਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ"</string>
@@ -870,8 +881,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> ਲਈ ਸਨੂਜ਼ ਕੀਤਾ ਗਿਆ"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ਘੰਟਾ}=2{# ਘੰਟੇ}one{# ਘੰਟਾ}other{# ਘੰਟੇ}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ਮਿੰਟ}one{# ਮਿੰਟ}other{# ਮਿੰਟ}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ਡਿਮੋਸ਼ਨ ਮੀਨੂ ਖੋਲ੍ਹਣ ਲਈ"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ਬੈਟਰੀ ਸੇਵਰ"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ਬਟਨ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1156,10 +1166,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"ਸੰਪਾਦਨ ਮੋਡ ਤੋਂ ਬਾਹਰ ਜਾਓ"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"ਆਕਾਰ ਬਦਲਣ ਲਈ ਕੋਨਾ ਘਸੀਟੋ"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"ਟੇਡੀ ਦਿਸ਼ਾ ਵਿੱਚ ਸਕ੍ਰੋਲ ਕਰਨ ਦਿਓ"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"ਟਾਈਪਿੰਗ ਦਾ ਅਨੁਸਰਣ ਕਰੋ"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"ਕੀ-ਬੋਰਡ ਨੂੰ ਵੱਡਦਰਸ਼ੀ ਕਰੋ"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"ਆਕਾਰ ਬਦਲੋ"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"ਵੱਡਦਰਸ਼ੀਕਰਨ ਦੀ ਕਿਸਮ ਬਦਲੋ"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"ਆਕਾਰ ਬਦਲਣਾ ਸਮਾਪਤ ਕਰੋ"</string>
@@ -1275,7 +1283,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"ਗਰੁੱਪ"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 ਡੀਵਾਈਸ ਨੂੰ ਚੁਣਿਆ ਗਿਆ"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> ਡੀਵਾਈਸਾਂ ਨੂੰ ਚੁਣਿਆ ਗਿਆ"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(ਡਿਸਕਨੈਕਟ ਹੈ)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"ਕਨੈਕਟ ਹੈ"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ।"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ਡੀਵਾਈਸ ਕਨੈਕਟ ਕਰੋ"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ਡੀਵਾਈਸ ਕਨੈਕਟ ਕਰੋ"</string>
@@ -1286,8 +1294,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ਕਨੈਕਟ ਕੀਤੇ ਸਪੀਕਰ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ਸਪੀਕਰ ਅਤੇ ਡਿਸਪਲੇਆਂ"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"ਸੁਝਾਏ ਗਏ"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"ਸੁਝਾਏ ਗਏ ਡੀਵਾਈਸ"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ਇਨਪੁੱਟ"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"ਆਊਟਪੁੱਟ"</string>

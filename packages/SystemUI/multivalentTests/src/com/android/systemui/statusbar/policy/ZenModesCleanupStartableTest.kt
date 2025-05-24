@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.policy
 
 import android.app.AutomaticZenRule
 import android.app.NotificationManager
+import android.content.ComponentName
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -35,6 +36,7 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -61,13 +63,13 @@ class ZenModesCleanupStartableTest : SysuiTestCase() {
     }
 
     @Test
-    fun start_withGamingModeZenRule_deletesIt() =
+    fun start_withGamingModeZenRules_deletesThem() =
         testScope.runTest {
             whenever(notificationManager.automaticZenRules)
                 .thenReturn(
                     mutableMapOf(
                         Pair(
-                            "gaming",
+                            "gaming1",
                             AutomaticZenRule.Builder(
                                     "Gaming Mode",
                                     Uri.parse(
@@ -75,6 +77,41 @@ class ZenModesCleanupStartableTest : SysuiTestCase() {
                                     ),
                                 )
                                 .setPackage("com.android.systemui")
+                                .build(),
+                        ),
+                        Pair(
+                            "gaming2",
+                            AutomaticZenRule.Builder(
+                                    "Gaming Mode #2",
+                                    Uri.parse(
+                                        "android-app://com.android.systemui/game-mode-dnd-controller"
+                                    ),
+                                )
+                                .setConfigurationActivity(
+                                    ComponentName("com.android.systemui", "SomeActivity")
+                                )
+                                .build(),
+                        ),
+                        Pair(
+                            "gaming3",
+                            AutomaticZenRule.Builder(
+                                    "Gaming Mode #3",
+                                    Uri.parse(
+                                        "android-app://com.android.settings/game-mode-dnd-controller"
+                                    ),
+                                )
+                                .setPackage("com.android.systemui")
+                                .build(),
+                        ),
+                        Pair(
+                            "notQuiteGaming",
+                            AutomaticZenRule.Builder(
+                                    "Same conditionId somehow, but not owned by systemui",
+                                    Uri.parse(
+                                        "android-app://com.android.systemui/game-mode-dnd-controller"
+                                    ),
+                                )
+                                .setPackage("com.other.package")
                                 .build(),
                         ),
                         Pair(
@@ -89,7 +126,10 @@ class ZenModesCleanupStartableTest : SysuiTestCase() {
             underTest.start()
             runCurrent()
 
-            verify(notificationManager).removeAutomaticZenRule(eq("gaming"))
+            verify(notificationManager, times(3)).removeAutomaticZenRule(any())
+            verify(notificationManager).removeAutomaticZenRule(eq("gaming1"))
+            verify(notificationManager).removeAutomaticZenRule(eq("gaming2"))
+            verify(notificationManager).removeAutomaticZenRule(eq("gaming3"))
         }
 
     @Test

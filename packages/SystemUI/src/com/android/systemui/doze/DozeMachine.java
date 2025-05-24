@@ -21,6 +21,7 @@ import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_AWA
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_WAKING;
 
 import android.annotation.MainThread;
+import android.annotation.Nullable;
 import android.content.res.Configuration;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.util.Log;
@@ -259,16 +260,16 @@ public class DozeMachine {
     }
 
     /**
-     * @return the current state.
-     *
-     * This must not be called during a transition.
+     * @return the current state. Returns null if the DozeMachine is currently executing a
+     * transition.
      */
     @MainThread
-    public State getState() {
+    public @Nullable State getState() {
         Assert.isMainThread();
         if (isExecutingTransition()) {
-            throw new IllegalStateException("Cannot get state because there were pending "
-                    + "transitions: " + mQueuedRequests);
+            Log.w(TAG, "Returning null for DozeMachine.getState because there were pending"
+                    + " transitions: " + mQueuedRequests);
+            return null;
         }
         return mState;
     }

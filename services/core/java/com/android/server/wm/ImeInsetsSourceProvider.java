@@ -16,12 +16,12 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.InsetsSource.ID_IME;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
-import static com.android.server.wm.ImeInsetsSourceProviderProto.IME_TARGET_FROM_IME_IDENTIFIER;
-import static com.android.server.wm.ImeInsetsSourceProviderProto.INSETS_SOURCE_PROVIDER;
 import static com.android.server.wm.WindowManagerService.H.UPDATE_MULTI_WINDOW_STACKS;
 
 import android.annotation.NonNull;
@@ -70,7 +70,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     private boolean mFrozen;
 
     /**
-     * The server visibility of the source provider's window container. This is out of sync with
+     * The server visibility of the source provider's window. This is out of sync with
      * {@link InsetsSourceProvider#mServerVisible} while {@link #mFrozen} is {@code true}.
      *
      * @see #setServerVisible
@@ -85,7 +85,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     private boolean mGivenInsetsReady = false;
 
     /**
-     * The last state of the windowContainer. This is used to reset server visibility, in case of
+     * The last drawn state of the window. This is used to reset server visibility, in case of
      * the IME (temporarily) redrawing  (e.g. during a rotation), to dispatch the control with
      * leash again after it has finished drawing.
      */
@@ -103,10 +103,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         super.onPostLayout();
 
         if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            final WindowState ws =
-                    mWindowContainer != null ? mWindowContainer.asWindowState() : null;
-            final boolean givenInsetsPending = ws != null && ws.mGivenInsetsPending;
-            mLastDrawn = ws != null && ws.isDrawn();
+            final boolean givenInsetsPending = mWin != null && mWin.mGivenInsetsPending;
+            mLastDrawn = mWin != null && mWin.isDrawn();
 
             // isLeashReadyForDispatching (used to dispatch the leash of the control) is
             // depending on mGivenInsetsReady. Therefore, triggering notifyControlChanged here
@@ -158,9 +156,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             // 1. parent isLeashReadyForDispatching, 2. mGivenInsetsReady (means there are no
             // givenInsetsPending), 3. the IME surface is drawn, 4. either the IME is
             // serverVisible (the unfrozen state)
-            final WindowState ws =
-                    mWindowContainer != null ? mWindowContainer.asWindowState() : null;
-            final boolean isDrawn = ws != null && ws.isDrawn();
+            final boolean isDrawn = mWin != null && mWin.isDrawn();
             return super.isLeashReadyForDispatching()
                     && isServerVisible() && isDrawn && mGivenInsetsReady;
         } else {
@@ -176,14 +172,13 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     protected boolean isSurfaceVisible() {
         final boolean isSurfaceVisible = super.isSurfaceVisible();
         if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            final WindowState windowState = mWindowContainer.asWindowState();
-            if (mControl != null && windowState != null) {
-                final boolean isDrawn = windowState.isDrawn();
+            if (mControl != null) {
+                final boolean isDrawn = mWin != null && mWin.isDrawn();
                 if (!isServerVisible() && isSurfaceVisible) {
                     // In case the IME becomes visible, we need to check if it is already drawn and
                     // does not have given insets pending. If it's not yet drawn, we do not set
                     // server visibility
-                    return isDrawn && !windowState.mGivenInsetsPending;
+                    return isDrawn && !mWin.mGivenInsetsPending;
                 } else if (mLastDrawn && !isDrawn) {
                     // If the IME was drawn before, but is not drawn anymore, we need to reset
                     // server visibility, which will also reset {@link
@@ -507,12 +502,11 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         if (callerWindow == null) {
             return;
         }
-        WindowToken imeToken = mWindowContainer.asWindowState() != null
-                ? mWindowContainer.asWindowState().mToken : null;
+        final WindowToken imeToken = mWin != null ? mWin.mToken : null;
         final var rotationController = mDisplayContent.getAsyncRotationController();
-        if ((rotationController != null && rotationController.isTargetToken(imeToken)) || (
-                imeToken != null && imeToken.isSelfAnimating(0 /* flags */,
-                        SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFORM))) {
+        if ((rotationController != null && rotationController.isTargetToken(imeToken))
+                || (imeToken != null && imeToken.isSelfAnimating(0 /* flags */,
+                    SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFORM))) {
             // Skip reporting IME drawn state when the control target is in fixed
             // rotation, AsyncRotationController will report after the animation finished.
             return;
@@ -526,7 +520,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             return;
         }
         if (callerWindow.getTask().isOrganized()) {
-            mWindowContainer.mWmService.mAtmService.mTaskOrganizerController
+            mWin.mWmService.mAtmService.mTaskOrganizerController
                     .reportImeDrawnOnTask(caller.getWindow().getTask());
         }
     }
@@ -661,19 +655,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             return false;
         }
         if (!mServerVisible || mFrozen) {
-            // The window container is not available and considered visible.
+            // The window is not available and considered visible.
             // If frozen, the server visibility is not set until unfrozen.
             return false;
         }
-        if (mWindowContainer == null) {
-            // No window container set.
+        if (mWin == null) {
+            // No window set.
             return false;
         }
-        final WindowState windowState = mWindowContainer.asWindowState();
-        if (windowState == null) {
-            throw new IllegalArgumentException("IME insets must be provided by a window.");
-        }
-        if (!windowState.isDrawn() || windowState.mGivenInsetsPending) {
+        if (!mWin.isDrawn() || mWin.mGivenInsetsPending) {
             // The window is not drawn, or it has pending insets.
             return false;
         }
@@ -745,7 +735,6 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
      * @param aborted whether the scheduled show IME request was aborted or cancelled.
      */
     private void logIsScheduledAndReadyToShowIme(boolean aborted) {
-        final var windowState = mWindowContainer != null ? mWindowContainer.asWindowState() : null;
         final var imeLayeringTarget = mDisplayContent.getImeLayeringTarget();
         final var controlTarget = getControlTarget();
         final var sb = new StringBuilder();
@@ -754,11 +743,10 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         sb.append(", mImeRequester: ").append(mImeRequester);
         sb.append(", serverVisible: ").append(mServerVisible);
         sb.append(", frozen: ").append(mFrozen);
-        sb.append(", mWindowContainer is: ").append(mWindowContainer != null ? "non-null" : "null");
-        sb.append(", windowState: ").append(windowState);
-        if (windowState != null) {
-            sb.append(", isDrawn: ").append(windowState.isDrawn());
-            sb.append(", mGivenInsetsPending: ").append(windowState.mGivenInsetsPending);
+        sb.append(", mWin is: ").append(mWin != null ? "non-null" : "null");
+        if (mWin != null) {
+            sb.append(", isDrawn: ").append(mWin.isDrawn());
+            sb.append(", mGivenInsetsPending: ").append(mWin.mGivenInsetsPending);
         }
         sb.append(", imeLayeringTarget: ").append(imeLayeringTarget);
         sb.append(", controlTarget: ").append(controlTarget);

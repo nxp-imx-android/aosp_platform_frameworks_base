@@ -103,13 +103,21 @@ public class CrashRecoveryUtilsTest {
     }
 
     @Test
-    public void testPutAndReadKeyValues() throws IOException {
+    public void testKeyValuesUtils() throws IOException {
         SparseArray<String> keyValues = new SparseArray<>();
         keyValues.put(123, "com.android.foo");
         keyValues.put(456, "com.android.bar");
+        keyValues.put(789, "com.android.zoo");
 
         testPutKeyValue(keyValues);
         testReadAllKeyValues(keyValues);
+
+        SparseArray<String> newKeyValues = new SparseArray<>();
+        newKeyValues.put(123, "com.android.foo2");
+        newKeyValues.put(222, "com.android.bar2");
+
+        testWriteAllKeyValues(newKeyValues);
+        testReadAllKeyValues(newKeyValues);
     }
 
     private void testLogCrashRecoveryEvent() {
@@ -155,6 +163,16 @@ public class CrashRecoveryUtilsTest {
             String value = keyValues.get(key);
             CrashRecoveryUtils.putKeyValue(keyValuesTempFile, key, value);
         }
+
+        final Path keyValuesTempFilePath = Paths.get(keyValuesTempFile.getAbsolutePath());
+        try (Stream<String> lines = Files.lines(keyValuesTempFilePath, StandardCharsets.UTF_8)) {
+            assertThat(lines.count()).isEqualTo(keyValues.size());
+        }
+    }
+
+    private void testWriteAllKeyValues(SparseArray<String> keyValues) throws IOException {
+        final File keyValuesTempFile = getKeyValuesTempFile();
+        CrashRecoveryUtils.writeAllKeyValues(keyValuesTempFile, keyValues);
 
         final Path keyValuesTempFilePath = Paths.get(keyValuesTempFile.getAbsolutePath());
         try (Stream<String> lines = Files.lines(keyValuesTempFilePath, StandardCharsets.UTF_8)) {

@@ -205,7 +205,7 @@ constructor(
     private fun createShareScreenToAppStopDialog(
         projectionModel: ProjectionChipModel.Projecting
     ): MediaProjectionStopDialogModel {
-        val dialogDelegate = createShareScreenToAppDialogDelegate(projectionModel)
+        val dialogDelegate = createShareScreenToAppDialogDelegate(context, projectionModel)
         return MediaProjectionStopDialogModel.Shown(
             dialogDelegate,
             onDismissAction = ::onStopDialogDismissed,
@@ -213,7 +213,7 @@ constructor(
     }
 
     private fun createGenericShareScreenToAppStopDialog(): MediaProjectionStopDialogModel {
-        val dialogDelegate = createGenericShareToAppDialogDelegate()
+        val dialogDelegate = createGenericShareToAppDialogDelegate(context)
         return MediaProjectionStopDialogModel.Shown(
             dialogDelegate,
             onDismissAction = ::onStopDialogDismissed,
@@ -241,9 +241,10 @@ constructor(
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
-                    createShareScreenToAppDialogDelegate(state),
+                    { context -> createShareScreenToAppDialogDelegate(context, state) },
                     dialogTransitionAnimator,
                     DIALOG_CUJ,
+                    key = KEY,
                     instanceId = instanceId,
                     uiEventLogger = uiEventLogger,
                     logger = logger,
@@ -253,9 +254,10 @@ constructor(
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     onClick =
                         createDialogLaunchOnClickCallback(
-                            createShareScreenToAppDialogDelegate(state),
+                            { context -> createShareScreenToAppDialogDelegate(context, state) },
                             dialogTransitionAnimator,
                             DIALOG_CUJ,
+                            key = KEY,
                             instanceId = instanceId,
                             uiEventLogger = uiEventLogger,
                             logger = logger,
@@ -284,9 +286,10 @@ constructor(
             colors = ColorsModel.Red,
             onClickListenerLegacy =
                 createDialogLaunchOnClickListener(
-                    createGenericShareToAppDialogDelegate(),
+                    { context -> createGenericShareToAppDialogDelegate(context) },
                     dialogTransitionAnimator,
                     DIALOG_CUJ_AUDIO_ONLY,
+                    key = KEY,
                     instanceId = instanceId,
                     uiEventLogger = uiEventLogger,
                     logger = logger,
@@ -295,9 +298,10 @@ constructor(
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
                     createDialogLaunchOnClickCallback(
-                        createGenericShareToAppDialogDelegate(),
+                        { context -> createGenericShareToAppDialogDelegate(context) },
                         dialogTransitionAnimator,
                         DIALOG_CUJ_AUDIO_ONLY,
+                        key = KEY,
                         instanceId = instanceId,
                         uiEventLogger = uiEventLogger,
                         logger = logger,
@@ -308,7 +312,10 @@ constructor(
         )
     }
 
-    private fun createShareScreenToAppDialogDelegate(state: ProjectionChipModel.Projecting) =
+    private fun createShareScreenToAppDialogDelegate(
+        context: Context,
+        state: ProjectionChipModel.Projecting,
+    ) =
         EndShareScreenToAppDialogDelegate(
             endMediaProjectionDialogHelper,
             context,
@@ -316,7 +323,7 @@ constructor(
             state,
         )
 
-    private fun createGenericShareToAppDialogDelegate() =
+    private fun createGenericShareToAppDialogDelegate(context: Context) =
         EndGenericShareToAppDialogDelegate(
             endMediaProjectionDialogHelper,
             context,

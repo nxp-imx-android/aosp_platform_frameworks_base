@@ -12701,6 +12701,87 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testArchiveCanceledBundledGroupSummary_restoresSummaryFlag() throws Exception {
+        // Enables Notification History setting
+        setUpPrefsForHistory(mUserId, true /* =enabled */);
+
+        // Add a group summary + child notification
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, originalGroupName, false);
+        mService.addNotification(r1);
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, true);
+        mService.addNotification(summary);
+        final String originalGroupKey = summary.getGroupKey();
+        final int originalSummaryFlags = summary.getFlags();
+
+        // Regroup first child notification
+        r1.setOverrideGroupKey("newGroup");
+        when(mGroupHelper.wasSummaryBeforeAutoGrouping(summary)).thenReturn(true);
+
+        // Check that removeAppProvidedSummaryOnClassificationLocked is null
+        //  => there is still one child left in the original group
+        assertThat(mService.removeAppProvidedSummaryOnClassificationLocked(r1.getKey(),
+                originalGroupKey)).isEqualTo(summary);
+        waitForIdle();
+        verify(mWorkerHandler, times(1)).scheduleCancelNotification(any(), eq(summaryId));
+        assertThat(mService.mSummaryByGroupKey).doesNotContainKey(originalGroupKey);
+        assertThat(summary.getNotification().flags & FLAG_GROUP_SUMMARY).isEqualTo(0);
+
+        // Checks that notification history's recently canceled archive contains the notification.
+        StatusBarNotification[] notifs = mBinderService.getHistoricalNotificationsWithAttribution(
+                mPkg, mContext.getAttributionTag(), 5 /* count */, false /* includeSnoozed */);
+        waitForIdle();
+        assertThat(notifs).hasLength(1);
+        assertThat(notifs[0].getKey()).isEqualTo(summary.getKey());
+        assertThat(notifs[0].getNotification().flags).isEqualTo(originalSummaryFlags);
+        assertThat(notifs[0].getNotification().flags & FLAG_GROUP_SUMMARY).isEqualTo(
+                FLAG_GROUP_SUMMARY);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testArchiveCanceledBundledGroupSummaryOtherReason_doesNotRestoreSummaryFlag()
+            throws Exception {
+        // Enables Notification History setting
+        setUpPrefsForHistory(mUserId, true /* =enabled */);
+
+        // Add a group summary + child notification
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, originalGroupName, false);
+        mService.addNotification(r1);
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, true);
+        mService.addNotification(summary);
+
+        // Regroup first child notification
+        r1.setOverrideGroupKey("newGroup");
+        when(mGroupHelper.wasSummaryBeforeAutoGrouping(summary)).thenReturn(true);
+
+        // Remove FLAG_GROUP_SUMMARY
+        summary.getSbn().getNotification().flags = (summary.mOriginalFlags & ~FLAG_GROUP_SUMMARY);
+
+        // Cancel the summary with REASON_APP_CANCEL
+        mBinderService.cancelNotificationWithTag(mPkg, mPkg, summary.getSbn().getTag(),
+                summary.getSbn().getId(), summary.getSbn().getUserId());
+        waitForIdle();
+        verify(mWorkerHandler, times(1)).scheduleCancelNotification(any(), eq(summaryId));
+
+        // Checks that notification history's recently canceled archive contains the notification.
+        StatusBarNotification[] notifs = mBinderService.getHistoricalNotificationsWithAttribution(
+                mPkg, mContext.getAttributionTag(), 5 /* count */, false /* includeSnoozed */);
+        waitForIdle();
+        assertThat(notifs).hasLength(1);
+        assertThat(notifs[0].getKey()).isEqualTo(summary.getKey());
+        assertThat(notifs[0].getNotification().flags & FLAG_GROUP_SUMMARY).isEqualTo(0);
+    }
+
+    @Test
     public void testNotificationHistory_addNoisyNotification() throws Exception {
         NotificationRecord nr = generateNotificationRecord(mTestNotificationChannel,
                 null /* tvExtender */);

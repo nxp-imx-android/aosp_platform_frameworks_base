@@ -20,6 +20,7 @@ package com.android.systemui.shade;
 import static android.view.WindowInsets.Type.ime;
 
 import static com.android.systemui.Flags.qsComposeFragmentEarlyExpansion;
+import static com.android.systemui.Flags.shadeQsvisibleLogic;
 import static com.android.systemui.classifier.Classifier.QS_COLLAPSE;
 import static com.android.systemui.shade.NotificationPanelViewController.COUNTER_PANEL_OPEN_QS;
 import static com.android.systemui.shade.NotificationPanelViewController.FLING_COLLAPSE;
@@ -1196,13 +1197,18 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     void setClippingBounds() {
         float qsExpansionFraction = computeExpansionFraction();
         final int qsPanelBottomY = calculateBottomPosition(qsExpansionFraction);
+        int top = calculateTopClippingBound(qsPanelBottomY);
         // Split shade has no QQS
-        final boolean qqsVisible =
-                !mSplitShadeEnabled && qsExpansionFraction == 0 && qsPanelBottomY > 0;
+        final boolean qqsVisible;
+        if (shadeQsvisibleLogic()) {
+            qqsVisible = !mSplitShadeEnabled && qsExpansionFraction == 0 && top > 0;
+        } else {
+            qqsVisible = !mSplitShadeEnabled && qsExpansionFraction == 0 && qsPanelBottomY > 0;
+        }
+
         final boolean qsVisible = qsExpansionFraction > 0;
         final boolean qsOrQqsVisible = qqsVisible || qsVisible;
 
-        int top = calculateTopClippingBound(qsPanelBottomY);
         int bottom = calculateBottomClippingBound(top);
         int left = calculateLeftClippingBound();
         int right = calculateRightClippingBound();
@@ -1590,7 +1596,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         if (mAccessibilityManager.isEnabled()) {
             // TODO (b/265193930): remove dependency on NPVC
-            mPanelView.setAccessibilityPaneTitle(
+            mPanelView.getRootView().setAccessibilityPaneTitle(
                     mPanelViewControllerLazy.get().determineAccessibilityPaneTitle());
         }
         mNotificationStackScrollLayoutController.setMaxTopPadding(mMaxExpansionHeight);
@@ -1660,9 +1666,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             mInitialHeightOnTouch = mExpansionHeight;
             mInitialTouchY = event.getY();
             mInitialTouchX = event.getX();
-            if (qsComposeFragmentEarlyExpansion() && mQs != null) {
-                mQs.setExpanded(true);
-            }
+            maybeSetEarlyExpansion();
         }
         if (!isFullyCollapsed && !isShadeOrQsHeightAnimationRunning) {
             handleDown(event);
@@ -1681,9 +1685,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             mConflictingExpansionGesture = false;
-            if (qsComposeFragmentEarlyExpansion()) {
-                updateQsState();
-            }
+            maybeResetEarlyExpansion();
         }
         if (action == MotionEvent.ACTION_DOWN && isFullyCollapsed && isExpansionEnabled()) {
             mTwoFingerExpandPossible = true;
@@ -1752,9 +1754,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 mInitialHeightOnTouch = mExpansionHeight;
                 initVelocityTracker();
                 trackMovement(event);
-                if (qsComposeFragmentEarlyExpansion() && mQs != null) {
-                    mQs.setExpanded(true);
-                }
+                maybeSetEarlyExpansion();
                 break;
 
             case MotionEvent.ACTION_POINTER_UP:
@@ -1792,9 +1792,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     flingQsWithCurrentVelocity(y,
                             event.getActionMasked() == MotionEvent.ACTION_CANCEL);
                 } else {
-                    if (qsComposeFragmentEarlyExpansion()) {
-                        updateQsState();
-                    }
+                    maybeResetEarlyExpansion();
                     traceQsJank(false,
                             event.getActionMasked() == MotionEvent.ACTION_CANCEL);
                 }
@@ -1880,9 +1878,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     mInitialTouchY = y;
                     mInitialTouchX = x;
                     mNotificationStackScrollLayoutController.cancelLongPress();
-                    if (qsComposeFragmentEarlyExpansion() && mQs != null) {
-                        mQs.setExpanded(true);
-                    }
+                    maybeSetEarlyExpansion();
                     return true;
                 } else {
                     mShadeLog.logQsTrackingNotStarted(mInitialTouchY, y, h, touchSlop,
@@ -2061,6 +2057,20 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         float displayDensity = mPanelViewControllerLazy.get().getDisplayDensity();
         mLockscreenGestureLogger.write(gesture,
                 (int) ((y - getInitialTouchY()) / displayDensity), (int) (vel / displayDensity));
+    }
+
+    private void maybeSetEarlyExpansion() {
+        if (QSComposeFragment.isEnabled() && qsComposeFragmentEarlyExpansion() && mQs != null) {
+            mQs.setExpanded(true);
+            mMediaHierarchyManager.setQsExpanded(true);
+        }
+    }
+
+    private void maybeResetEarlyExpansion() {
+        if (QSComposeFragment.isEnabled() && qsComposeFragmentEarlyExpansion()) {
+            updateQsState();
+            mMediaHierarchyManager.setQsExpanded(getExpanded());
+        }
     }
 
     @NeverCompile

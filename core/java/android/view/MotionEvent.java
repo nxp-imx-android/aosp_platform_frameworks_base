@@ -582,6 +582,26 @@ public final class MotionEvent extends InputEvent implements Parcelable {
     public static final int FLAG_TARGET_ACCESSIBILITY_FOCUS =
             MotionEventFlag.TARGET_ACCESSIBILITY_FOCUS;
 
+    /**
+     * This flag is not used in Java, but is added here for completeness / so that it gets properly
+     * displayed in tracing tools.
+     * @deprecated This flag is not used in Java.
+     * @hide
+     */
+    @Deprecated
+    public static final int FLAG_SUPPORTS_ORIENTATION =
+            MotionEventFlag.PRIVATE_FLAG_SUPPORTS_ORIENTATION;
+
+    /**
+     * This flag is not used in Java, but is added here for completeness / so that it gets properly
+     * displayed in tracing tools.
+     * @deprecated This flag is not used in Java.
+     * @hide
+     */
+    @Deprecated
+    public static final int FLAG_SUPPORTS_DIRECTIONAL_ORIENTATION =
+            MotionEventFlag.PRIVATE_FLAG_SUPPORTS_DIRECTIONAL_ORIENTATION;
+
     /** @hide */
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
             FLAG_WINDOW_IS_OBSCURED,

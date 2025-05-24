@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 
 @RunWith(AndroidJUnit4.class)
 @MediumTest
+@android.platform.test.annotations.EnabledOnRavenwood
 public class LeakReporterTest extends SysuiTestCase {
 
     private LeakDetector mLeakDetector;

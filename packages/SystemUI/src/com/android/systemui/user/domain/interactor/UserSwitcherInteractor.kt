@@ -764,16 +764,10 @@ constructor(
     }
 
     private suspend fun isAnyUserUnlocked(): Boolean {
-        return manager
-            .getUsers(
-                /* excludePartial= */ true,
-                /* excludeDying= */ true,
-                /* excludePreCreated= */ true,
-            )
-            .any { user ->
-                user.id != UserHandle.USER_SYSTEM &&
-                    withContext(backgroundDispatcher) { manager.isUserUnlocked(user.userHandle) }
-            }
+        return manager.getAliveUsers().any { user ->
+            user.id != UserHandle.USER_SYSTEM &&
+                withContext(backgroundDispatcher) { manager.isUserUnlocked(user.userHandle) }
+        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

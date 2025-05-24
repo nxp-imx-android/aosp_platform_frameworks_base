@@ -282,7 +282,11 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             // so go ahead and hide the task entirely
             updateTaskVisibility();
         }
-        mTaskOrganizer.setInterceptBackPressedOnTaskRoot(mTaskToken, true /* intercept */);
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setInterceptBackPressedOnTaskRoot(mTaskToken, true);
+        mTaskOrganizer.applyTransaction(wct);
+
         mSyncQueue.runInSync((t) -> {
             mTaskViewBase.onTaskAppeared(taskInfo, leash);
         });
@@ -316,6 +320,13 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
     @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         mTaskViewBase.onTaskInfoChanged(taskInfo);
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            if (mListener != null) {
+                mListenerExecutor.execute(() -> {
+                    mListener.onTaskInfoChanged(taskInfo);
+                });
+            }
+        }
     }
 
     @Override
@@ -337,12 +348,20 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
 
     @Override
     public void attachChildSurfaceToTask(int taskId, SurfaceControl.Builder b) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // TODO(b/419342398): Add a notifier when the surface is ready for this to be called.
+            if (!mIsInitialized) return;
+        }
         b.setParent(findTaskSurface(taskId));
     }
 
     @Override
     public void reparentChildSurfaceToTask(int taskId, SurfaceControl sc,
             SurfaceControl.Transaction t) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
+            // TODO(b/419342398): Add a notifier when the surface is ready for this to be called.
+            if (!mIsInitialized) return;
+        }
         t.reparent(sc, findTaskSurface(taskId));
     }
 

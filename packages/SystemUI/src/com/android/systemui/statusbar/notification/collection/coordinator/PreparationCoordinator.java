@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.systemui.statusbar.notification.CustomViewMemorySizeExceededException;
 import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
@@ -254,34 +255,51 @@ public class PreparationCoordinator implements Coordinator {
 
     private final NotifInflationErrorListener mInflationErrorListener =
             new NotifInflationErrorListener() {
-        @Override
-        public void onNotifInflationError(NotificationEntry entry, Exception e) {
-            mViewBarn.removeViewForEntry(entry);
-            mInflationStates.put(entry, STATE_ERROR);
-            try {
-                final StatusBarNotification sbn = entry.getSbn();
-                // report notification inflation errors back up
-                // to notification delegates
-                mStatusBarService.onNotificationError(
-                        sbn.getPackageName(),
-                        sbn.getTag(),
-                        sbn.getId(),
-                        sbn.getUid(),
-                        sbn.getInitialPid(),
-                        e.getMessage(),
-                        sbn.getUser().getIdentifier());
-            } catch (RemoteException ex) {
-                // System server is dead, nothing to do about that
-            }
-            mNotifInflationErrorFilter.invalidateList("onNotifInflationError for " + logKey(entry));
-        }
+                @Override
+                public void onNotifInflationError(NotificationEntry entry, Exception e) {
+                    // If the notification views exceeded their memory restriction, we strip
+                    // it down to the basic template and reinflate it in that basic form.
+                    if (e instanceof CustomViewMemorySizeExceededException
+                            // Prevent endless loop if no custom views are present.
+                            && entry.containsCustomViews()) {
+                        // "lighten" strips out all notification custom views, large bitmaps and
+                        // other extras.
+                        entry.getSbn().getNotification().lightenPayload();
+                        // Clear the error state and trigger reinflation of changed notification.
+                        mNotifErrorManager.clearInflationError(entry);
+                        mNotifCollectionListener.onEntryUpdated(entry);
+                        mNotifInflationErrorFilter.invalidateList(
+                                "reinflate for MemorySizeExceeded for " + logKey(entry));
+                        return;
+                    }
 
-        @Override
-        public void onNotifInflationErrorCleared(NotificationEntry entry) {
-            mNotifInflationErrorFilter.invalidateList(
-                    "onNotifInflationErrorCleared for " + logKey(entry));
-        }
-    };
+                    mViewBarn.removeViewForEntry(entry);
+                    mInflationStates.put(entry, STATE_ERROR);
+                    try {
+                        final StatusBarNotification sbn = entry.getSbn();
+                        // report notification inflation errors back up
+                        // to notification delegates
+                        mStatusBarService.onNotificationError(
+                                sbn.getPackageName(),
+                                sbn.getTag(),
+                                sbn.getId(),
+                                sbn.getUid(),
+                                sbn.getInitialPid(),
+                                e.getMessage(),
+                                sbn.getUser().getIdentifier());
+                    } catch (RemoteException ex) {
+                        // System server is dead, nothing to do about that
+                    }
+                    mNotifInflationErrorFilter.invalidateList(
+                            "onNotifInflationError for " + logKey(entry));
+                }
+
+                @Override
+                public void onNotifInflationErrorCleared(NotificationEntry entry) {
+                    mNotifInflationErrorFilter.invalidateList(
+                            "onNotifInflationErrorCleared for " + logKey(entry));
+                }
+            };
 
     private void purgeCaches(Collection<PipelineEntry> entries) {
         Set<String> wantedPackages = getPackages(entries);

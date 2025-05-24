@@ -1582,7 +1582,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         val finalBounds = findBoundsChange(wct, task)
-        val captionInsets = getDesktopViewAppHeaderHeightPx(context)
+        val displayId = taskRepository.getDisplayForDesk(deskId = 0)
+        val displayContext = displayController.getDisplayContext(displayId) ?: context
+        val captionInsets = getDesktopViewAppHeaderHeightPx(displayContext)
         finalBounds!!.top += captionInsets
         val finalAspectRatio =
             maxOf(finalBounds.height(), finalBounds.width()) /
@@ -1604,7 +1606,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.addMoveToDeskTaskChanges(wct, task, deskId = 0)
 
         val finalBounds = findBoundsChange(wct, task)
-        val captionInsets = getDesktopViewAppHeaderHeightPx(context)
+        val displayId = taskRepository.getDisplayForDesk(deskId = 0)
+        val displayContext = displayController.getDisplayContext(displayId) ?: context
+        val captionInsets = getDesktopViewAppHeaderHeightPx(displayContext)
         finalBounds!!.top += captionInsets
         val finalAspectRatio =
             maxOf(finalBounds.height(), finalBounds.width()) /
@@ -3985,6 +3989,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.onDesktopWindowClose(wct, displayId = DEFAULT_DISPLAY, task)
         // Doesn't modify transaction
         assertThat(wct.hierarchyOps).isEmpty()
+    }
+
+    @Test
+    fun tilingBroken_onTaskMinimised() {
+        val task = setUpFreeformTask()
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.TASK_LIMIT)
+
+        verify(snapEventHandler, times(1)).removeTaskIfTiled(task.displayId, task.taskId)
     }
 
     @Test
@@ -9612,6 +9634,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         val currentDeskCount = taskRepository.getNumberOfDesks(DEFAULT_DISPLAY)
         whenever(desksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
             invocation ->
@@ -9626,6 +9649,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk_invalidDisplay_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         controller.createDesk(INVALID_DISPLAY)
 
         verify(desksOrganizer, never()).createDesk(any(), any(), any())
@@ -9634,6 +9658,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk_systemUser_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         assumeTrue(UserManager.isHeadlessSystemUserMode())
 
         controller.createDesk(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM)
@@ -9644,9 +9669,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testCreateDesk_enforceLimitAndOverLimit_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         desktopConfig.maxDeskLimit = 2
         // Add a second desk to bring the number up to the limit.
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+
+        controller.createDesk(DEFAULT_DISPLAY)
+
+        verify(desksOrganizer, never()).createDesk(any(), any(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testCreateDesk_displayDoesNotSupportDesks_dropsRequest() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
 
         controller.createDesk(DEFAULT_DISPLAY)
 

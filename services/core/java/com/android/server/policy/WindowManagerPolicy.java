@@ -1165,7 +1165,8 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
 
     /**
      * Write the WindowManagerPolicy's state into the protocol buffer.
-     * The message is described in {@link com.android.server.wm.WindowManagerPolicyProto}
+     * The message is described in
+     * {@link android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto}
      *
      * @param proto The protocol buffer output stream to write to.
      */

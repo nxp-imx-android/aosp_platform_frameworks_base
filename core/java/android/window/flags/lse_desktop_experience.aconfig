@@ -1316,6 +1316,7 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
     bug: "400407139"
+    is_exported: true
 }
 
 flag {
@@ -1333,6 +1334,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Throttle recent tasks reload operations for Taskbar."
     bug: "415090968"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_block_non_desktop_display_window_drag_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Block window drag to a non-desktop-mode display."
+    bug: "383069176"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -383,6 +383,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Permite que la aplicación muestre y oculte la barra de estado."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"mostrar notificaciones como actividades de pantalla completa en un dispositivo bloqueado"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Permite que la app muestre notificaciones como actividades de pantalla completa en un dispositivo bloqueado"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Mostrar novedades en tiempo real"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Permite que la app muestre notificaciones continuas y sujetas a horarios específicos en la barra de estado y la pantalla de bloqueo"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Instalar accesos directos"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Permite que una aplicación agregue accesos directos a la pantalla principal sin que el usuario intervenga."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"desinstalar accesos directos"</string>
@@ -1183,22 +1185,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"en <xliff:g id="COUNT">%d</xliff:g> h"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"en <xliff:g id="COUNT">%d</xliff:g> d"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"en <xliff:g id="COUNT">%d</xliff:g> años"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> min atrás"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> h atrás"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> d atrás"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> años atrás"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> min"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> h"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> d"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> años"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"en <xliff:g id="COUNT">%d</xliff:g> min"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"en <xliff:g id="COUNT">%d</xliff:g> h"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"en <xliff:g id="COUNT">%d</xliff:g> d"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"en <xliff:g id="COUNT">%d</xliff:g> año"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> min atrás"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> h atrás"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> d atrás"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> años atrás"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{Hace # minuto}many{Hace # minutos}other{Hace # minutos}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{Hace # hora}many{Hace # de horas}other{Hace # horas}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{Hace # día}many{Hace # de días}other{Hace # días}}"</string>
@@ -1710,6 +1698,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Dispositivo externo"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Auriculares"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Sistema"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Audio Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Pantalla inalámbrica"</string>
@@ -1771,7 +1771,7 @@
     <string name="safe_media_volume_warning" product="default" msgid="3751676824423049994">"¿Quieres subir el volumen por encima del nivel recomendado?\n\nEscuchar a un alto volumen durante largos períodos puede dañar tu audición."</string>
     <string name="csd_dose_reached_warning" product="default" msgid="491875107583931974">"¿Quieres seguir escuchando a un volumen alto?\n\nEl volumen de los auriculares se mantuvo elevado por más tiempo del recomendado, lo que te podría dañar la audición"</string>
     <string name="csd_momentary_exposure_warning" product="default" msgid="7730840903435405501">"Se detectaron sonidos fuertes\n\nEl volumen de los auriculares se mantuvo más alto de lo recomendado, lo que te podría dañar la audición"</string>
-    <string name="accessibility_shortcut_warning_dialog_title" msgid="4017995837692622933">"¿Usar acceso directo de accesibilidad?"</string>
+    <string name="accessibility_shortcut_warning_dialog_title" msgid="4017995837692622933">"¿Usar atajo de accesibilidad?"</string>
     <string name="accessibility_shortcut_toogle_warning" msgid="4161716521310929544">"Cuando la combinación de teclas está activada, puedes presionar los botones de volumen durante 3 segundos para iniciar una función de accesibilidad."</string>
     <string name="accessibility_shortcut_multiple_service_warning_title" msgid="3135860819356676426">"¿Quieres activar la combinación de teclas para las funciones de accesibilidad?"</string>
     <string name="accessibility_shortcut_multiple_service_warning" msgid="3740723309483706911">"Si mantienes presionadas las dos teclas de volumen durante unos segundos, se activarán las funciones de accesibilidad. Esto puede cambiar el funcionamiento de tu dispositivo.\n\nFunciones actuales:\n<xliff:g id="SERVICE">%1$s</xliff:g>\nPuedes cambiar las funciones seleccionadas en Configuración &gt; Accesibilidad."</string>
@@ -1831,8 +1831,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"Saliendo de <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Propietario"</string>
     <string name="guest_name" msgid="8502103277839834324">"Invitado"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"Usuario del sistema"</string>
     <string name="error_message_title" msgid="4082495589294631966">"Error"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"Tu administrador no permite este cambio"</string>
     <string name="app_not_found" msgid="3429506115332341800">"No se encontró una aplicación para manejar esta acción."</string>
@@ -2259,9 +2258,9 @@
     <string name="accessibility_system_action_lock_screen_label" msgid="5484190691945563838">"Bloquear pantalla"</string>
     <string name="accessibility_system_action_screenshot_label" msgid="3581566515062741676">"Captura de pantalla"</string>
     <string name="accessibility_system_action_headset_hook_label" msgid="8524691721287425468">"Gancho para auriculares"</string>
-    <string name="accessibility_system_action_on_screen_a11y_shortcut_label" msgid="8488701469459210309">"Acceso directo de accesibilidad en pantalla"</string>
-    <string name="accessibility_system_action_on_screen_a11y_shortcut_chooser_label" msgid="1057878690209817886">"Selector del acceso directo de accesibilidad en pantalla"</string>
-    <string name="accessibility_system_action_hardware_a11y_shortcut_label" msgid="5764644187715255107">"Acceso directo de accesibilidad"</string>
+    <string name="accessibility_system_action_on_screen_a11y_shortcut_label" msgid="8488701469459210309">"Atajo de accesibilidad en pantalla"</string>
+    <string name="accessibility_system_action_on_screen_a11y_shortcut_chooser_label" msgid="1057878690209817886">"Selector del atajo de accesibilidad en pantalla"</string>
+    <string name="accessibility_system_action_hardware_a11y_shortcut_label" msgid="5764644187715255107">"Atajo de accesibilidad"</string>
     <string name="accessibility_system_action_dismiss_notification_shade" msgid="8931637495533770352">"Descartar panel de notificaciones"</string>
     <string name="accessibility_system_action_menu_label" msgid="3385283204496447040">"Menú"</string>
     <string name="accessibility_system_action_media_play_pause_label" msgid="1905647491347119748">"Reproducir o pausar contenido multimedia"</string>

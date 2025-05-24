@@ -22,20 +22,26 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.runtime.snapshotFlow
+import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-private const val TAG = "BundleInteractor"
-
 /** Provides functionality for UI to interact with a Notification Bundle. */
-class BundleInteractor(
+@BundleRowScope
+class BundleInteractor
+@Inject
+constructor(
     private val repository: BundleRepository,
     private val appIconProvider: AppIconProvider,
     private val context: Context,
@@ -52,20 +58,33 @@ class BundleInteractor(
     val bundleIcon: Int
         get() = repository.bundleIcon
 
-    /**
-     * A cold flow of app icon [Drawable]s fetched asynchronously based on changes to
-     * `repository.appDataList` each time this flow is collected.
-     */
     val previewIcons: Flow<List<Drawable>> =
-        snapshotFlow { repository.appDataList }
-            .mapLatestConflated { appList ->
-                withContext(backgroundDispatcher) {
-                    appList.asSequence().distinct().mapNotNull(::fetchAppIcon).take(3).toList()
-                }
+        repository.appDataList.mapLatestConflated { appList ->
+            withContext(backgroundDispatcher) {
+                appList
+                    .asSequence()
+                    .distinct()
+                    .mapNotNull(::fetchAppIcon)
+                    .take(3)
+                    .toList()
             }
+        }
 
-    private fun fetchAppIcon(appData: AppData): Drawable? =
-        try {
+    var state: MutableSceneTransitionLayoutState? by repository::state
+
+    var composeScope: CoroutineScope? = null
+
+    fun setExpansionState(isExpanded: Boolean) {
+        state?.setTargetScene(
+            if (isExpanded) BundleHeader.Scenes.Expanded else BundleHeader.Scenes.Collapsed,
+            composeScope!!,
+        )
+    }
+
+    fun setTargetScene(scene: SceneKey) = state?.setTargetScene(scene, composeScope!!)
+
+    private fun fetchAppIcon(appData: AppData): Drawable? {
+        return try {
             appIconProvider.getOrFetchAppIcon(
                 packageName = appData.packageName,
                 // TODO(b/416126107) remove context and withWorkProfileBadge after we add them to
@@ -78,4 +97,9 @@ class BundleInteractor(
             Log.w(TAG, "Failed to load app icon for ${appData.packageName}", e)
             null
         }
+    }
+
+    companion object {
+        private const val TAG = "BundleInteractor"
+    }
 }

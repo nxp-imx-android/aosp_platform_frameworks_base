@@ -54,4 +54,5 @@ include(":SettingsLib:Color")
 project(":SettingsLib:Color").projectDir = File(rootDir, "../Color")
 
 // Uncomment this for screenshot
-// include(":screenshot")
+// include(":Spa:screenshot")
+// project(":Spa:screenshot").projectDir = File(rootDir, "screenshot")

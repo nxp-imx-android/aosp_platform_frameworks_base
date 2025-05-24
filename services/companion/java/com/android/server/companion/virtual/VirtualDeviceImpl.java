@@ -49,6 +49,7 @@ import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.IVirtualDeviceIntentInterceptor;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
+import android.companion.virtual.ViewConfigurationParams;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
@@ -149,6 +150,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     @ChangeId
     @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     public static final long DO_NOT_SHOW_TOAST_WHEN_SECURE_SURFACE_SHOWN = 311101667L;
+
+    /**
+     * Check the {@link android.Manifest.permission.ADD_MIRROR_DISPLAY} permission instead of
+     * relying on the app streaming role. VDM clients must declare the new permission
+     * after {@link android.os.Build.VERSION_CODES#BAKLAVA}.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
+    public static final long CHECK_ADD_MIRROR_DISPLAY_PERMISSION = 378605160L;
 
     private static final int DEFAULT_VIRTUAL_DISPLAY_FLAGS =
             DisplayManager.VIRTUAL_DISPLAY_FLAG_TOUCH_FEEDBACK_DISABLED
@@ -490,10 +500,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         }
         mVirtualCameraController = virtualCameraController;
         mViewConfigurationController = viewConfigurationController;
-        if (mViewConfigurationController != null) {
-            mViewConfigurationController.applyViewConfigurationParams(deviceId,
-                    params.getViewConfigurationParams());
-        }
         try {
             token.linkToDeath(this, 0);
         } catch (RemoteException e) {
@@ -529,6 +535,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                             "android.server.companion.virtual:LOCKDOWN_ENDED");
                 }
             }
+        }
+    }
+
+    void applyViewConfigurationParams(@Nullable ViewConfigurationParams viewConfigurationParams) {
+        if (mViewConfigurationController != null) {
+            mViewConfigurationController.applyViewConfigurationParams(mDeviceId,
+                    viewConfigurationParams);
         }
     }
 
@@ -1381,11 +1394,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
     @Override
     public boolean canCreateMirrorDisplays() {
-        if (!android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()) {
-            return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
+        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()
+                && CompatChanges.isChangeEnabled(CHECK_ADD_MIRROR_DISPLAY_PERMISSION,
+                    mOwnerPackageName,  UserHandle.getUserHandleForUid(mOwnerUid))) {
+          return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
+              == PackageManager.PERMISSION_GRANTED;
         }
-        return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
-                == PackageManager.PERMISSION_GRANTED;
+
+      // If the VDM owner app targets B or earlier, we rely on the role instead of the permission.
+      return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
     }
 
     private boolean hasCustomAudioInputSupportInternal() {
@@ -1465,8 +1482,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             }
 
             return new GenericWindowPolicyController(
-                    WindowManager.LayoutParams.FLAG_SECURE,
-                    WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS,
                     mAttributionSource,
                     getAllowedUserHandles(),
                     activityLaunchAllowedByDefault,
@@ -1608,12 +1623,16 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             DisplayWindowPolicyController dwpc) {
         final boolean isMirrorDisplay =
                 mDisplayManagerInternal.getDisplayIdToMirror(displayId) != Display.INVALID_DISPLAY;
-        final boolean isTrustedDisplay =
-                (mDisplayManagerInternal.getDisplayInfo(displayId).flags & Display.FLAG_TRUSTED)
-                        == Display.FLAG_TRUSTED;
+        final int flags = mDisplayManagerInternal.getDisplayInfo(displayId).flags;
+        final boolean isTrustedDisplay = (flags & Display.FLAG_TRUSTED) == Display.FLAG_TRUSTED;
+        final boolean isSecureDisplay = (flags & Display.FLAG_SECURE) == Display.FLAG_SECURE;
 
         GenericWindowPolicyController gwpc = (GenericWindowPolicyController) dwpc;
-        gwpc.setDisplayId(displayId, isMirrorDisplay);
+        if (!isSecureDisplay) {
+            gwpc.setInterestedWindowFlags(WindowManager.LayoutParams.FLAG_SECURE,
+                    WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);
+        }
+        gwpc.setDisplayId(displayId, isMirrorDisplay, isSecureDisplay);
         PowerManager.WakeLock wakeLock =
                 isTrustedDisplay ? createWakeLockForDisplay(displayId) : null;
         synchronized (mVirtualDeviceLock) {

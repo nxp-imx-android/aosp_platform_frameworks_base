@@ -111,6 +111,7 @@ import android.util.SparseArray;
 import android.view.Display;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.ActivityTransitionInfo;
 import android.window.ScreenCapture;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
@@ -2120,6 +2121,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         if (!Flags.removeStartingInTransition()) {
             return;
         }
+        // Skip if player is not enabled.
+        if (!mIsPlayerEnabled) {
+            return;
+        }
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final ActivityRecord ar = mParticipants.valueAt(i).asActivityRecord();
             if (ar == null || ar.mStartingData == null || ar.mStartingSurface == null
@@ -3188,7 +3193,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
 
             if (activityRecord != null) {
-                change.setActivityComponent(activityRecord.mActivityComponent);
+                change.setActivityTransitionInfo(new ActivityTransitionInfo(
+                        activityRecord.mActivityComponent, activityRecord.getTask().mTaskId));
             }
 
             change.setRotation(info.mRotation, endRotation);
@@ -3322,6 +3328,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
     }
 
+    /** Mirrors {@link com.android.wm.shell.shared.TransitionUtil#isOrderOnly}. */
+    private static boolean isOrderOnly(ChangeInfo chgInfo) {
+        final WindowContainer wc = chgInfo.mContainer;
+        return (chgInfo.mFlags & ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP) != 0
+                    && chgInfo.getTransitMode(wc) == TRANSIT_CHANGE
+                    && wc.getBounds().equals(chgInfo.mAbsoluteBounds);
+    }
+
     /**
      * Finds the top-most common ancestor of app targets.
      *
@@ -3329,8 +3343,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      * be covered by other windows below the previous parent. For example, when reparenting an
      * activity from PiP Task to split screen Task.
      */
+    @VisibleForTesting
     @NonNull
-    private static WindowContainer<?> findCommonAncestor(
+    static WindowContainer<?> findCommonAncestor(
             @NonNull ArrayList<ChangeInfo> targets,
             @NonNull WindowContainer<?> topApp) {
         final int displayId = getDisplayId(topApp);
@@ -3342,6 +3357,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             final WindowContainer wc = change.mContainer;
             if (isWallpaper(wc) || getDisplayId(wc) != displayId) {
                 // Skip the non-app window or windows on a different display
+                continue;
+            }
+            // Skip order-only display-level changes since the display itself isn't changing.
+            if (wc.asDisplayContent() != null && isOrderOnly(change)
+                    && change.mRotation == wc.getWindowConfiguration().getRotation()) {
                 continue;
             }
             // Re-initiate the last parent as the initial ancestor instead of the top target.
@@ -3602,7 +3622,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         private static final int FLAG_CHANGE_YES_ANIMATION = 0x10;
 
         /** Whether this change's container moved to the top. */
-        private static final int FLAG_CHANGE_MOVED_TO_TOP = 0x20;
+        @VisibleForTesting
+        static final int FLAG_CHANGE_MOVED_TO_TOP = 0x20;
 
         /** Whether this change contains config-at-end members. */
         private static final int FLAG_CHANGE_CONFIG_AT_END = 0x40;

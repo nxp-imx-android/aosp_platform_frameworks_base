@@ -301,8 +301,9 @@ public class BubbleTransitions {
     }
 
     /** Starts a transition that converts a floating expanded bubble to a bar bubble. */
-    public BubbleTransition startFloatingToBarConversion(Bubble bubble) {
-        return new FloatingToBarConversion(bubble);
+    public BubbleTransition startFloatingToBarConversion(Bubble bubble,
+            BubblePositioner positioner) {
+        return new FloatingToBarConversion(bubble, positioner);
     }
 
     /** Starts a transition that converts a dragged bubble icon to a full screen task. */
@@ -470,6 +471,7 @@ public class BubbleTransitions {
     @VisibleForTesting
     class LaunchNewTaskBubbleForExistingTransition implements TransitionHandler, BubbleTransition {
         final BubbleBarLayerView mLayerView;
+        final BubblePositioner mPositioner;
         private final TransitionProgress mTransitionProgress;
         Bubble mBubble;
         IBinder mTransition;
@@ -499,6 +501,7 @@ public class BubbleTransitions {
             mBubble = bubble;
             mTransition = transition;
             mTransitionProgress = new TransitionProgress(bubble);
+            mPositioner = positioner;
             mLayerView = layerView;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
@@ -527,9 +530,6 @@ public class BubbleTransitions {
             if (!mBubble.isShortcut() && !mBubble.isApp()) {
                 throw new IllegalArgumentException("Unsupported bubble type");
             }
-            final Rect launchBounds = new Rect();
-            mLayerView.getExpandedViewRestBounds(launchBounds);
-
             final TaskView tv = b.getTaskView();
             tv.setSurfaceLifecycle(SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT);
             final TaskViewRepository.TaskViewState state = mRepository.byTaskView(
@@ -723,6 +723,7 @@ public class BubbleTransitions {
     @VisibleForTesting
     class LaunchOrConvertToBubble implements TransitionHandler, BubbleTransition {
         final BubbleBarLayerView mLayerView;
+        final BubblePositioner mPositioner;
         private final TransitionProgress mTransitionProgress;
         Bubble mBubble;
         IBinder mTransition;
@@ -755,6 +756,7 @@ public class BubbleTransitions {
                     layerView.isExpanded());
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress(bubble);
+            mPositioner = positioner;
             mLayerView = layerView;
             mBubble.setInflateSynchronously(inflateSync);
             mBubble.setPreparingTransition(this);
@@ -782,7 +784,7 @@ public class BubbleTransitions {
                 throw new IllegalArgumentException("Unsupported bubble type");
             }
             final Rect launchBounds = new Rect();
-            mLayerView.getExpandedViewRestBounds(launchBounds);
+            mPositioner.getTaskViewRestBounds(launchBounds);
 
             final TaskView tv = b.getTaskView();
             tv.setSurfaceLifecycle(SurfaceView.SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT);
@@ -1069,6 +1071,7 @@ public class BubbleTransitions {
     @VisibleForTesting
     class ConvertToBubble implements Transitions.TransitionHandler, BubbleTransition {
         final BubbleBarLayerView mLayerView;
+        final BubblePositioner mPositioner;
         final HomeIntentProvider mHomeIntentProvider;
         Bubble mBubble;
         @Nullable
@@ -1094,6 +1097,7 @@ public class BubbleTransitions {
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress(bubble);
             mTaskInfo = taskInfo;
+            mPositioner = positioner;
             mLayerView = layerView;
             mHomeIntentProvider = homeIntentProvider;
             mDragData = dragData;
@@ -1118,7 +1122,7 @@ public class BubbleTransitions {
                 throw new IllegalArgumentException("inflate callback doesn't match bubble");
             }
             final Rect launchBounds = new Rect();
-            mLayerView.getExpandedViewRestBounds(launchBounds);
+            mPositioner.getTaskViewRestBounds(launchBounds);
             final boolean reparentToTda =
                     mTaskInfo.getWindowingMode() == WINDOWING_MODE_MULTI_WINDOW
                             && mTaskInfo.getParentTaskId() != INVALID_TASK_ID;
@@ -1330,7 +1334,6 @@ public class BubbleTransitions {
             final Binder captionInsetsOwner = mBubble.getTaskView().getCaptionInsetsOwner();
             final WindowContainerTransaction wct =
                     getExitBubbleTransaction(token, captionInsetsOwner);
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(
                     mBubble.getTaskView().getController(),
                     () -> {
@@ -1495,7 +1498,6 @@ public class BubbleTransitions {
             if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
                 wct.setHidden(token, false);
             }
-            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false /* intercept */);
             mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
                 mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);
                 return mTransition;
@@ -1623,7 +1625,7 @@ public class BubbleTransitions {
      * once the bubble bar location on the screen is known.
      */
     class FloatingToBarConversion implements TransitionHandler, BubbleTransition {
-
+        private final BubblePositioner mPositioner;
         private final Bubble mBubble;
         private final TransactionProvider mTransactionProvider;
         IBinder mTransition;
@@ -1633,15 +1635,17 @@ public class BubbleTransitions {
         private SurfaceControl.Transaction mFinishTransaction;
         private boolean mIsStarted = false;
 
-        FloatingToBarConversion(Bubble bubble) {
-            this(bubble, SurfaceControl.Transaction::new);
+        FloatingToBarConversion(Bubble bubble, BubblePositioner positioner) {
+            this(bubble, SurfaceControl.Transaction::new, positioner);
         }
 
         @VisibleForTesting
-        FloatingToBarConversion(Bubble bubble, TransactionProvider transactionProvider) {
+        FloatingToBarConversion(Bubble bubble, TransactionProvider transactionProvider,
+                BubblePositioner positioner) {
             mBubble = bubble;
             mBubble.setPreparingTransition(this);
             mTransactionProvider = transactionProvider;
+            mPositioner = positioner;
         }
 
         @Override
@@ -1717,7 +1721,7 @@ public class BubbleTransitions {
 
         @Override
         public void continueConvert(BubbleBarLayerView layerView) {
-            layerView.getExpandedViewRestBounds(mBounds);
+            mPositioner.getTaskViewRestBounds(mBounds);
             mWct.setBounds(mBubble.getTaskView().getTaskInfo().token, mBounds);
             if (!mIsStarted) {
                 startTransition();

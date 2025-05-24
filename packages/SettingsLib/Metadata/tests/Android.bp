@@ -1,0 +1,23 @@
+package {
+    default_applicable_licenses: ["frameworks_base_license"],
+}
+
+android_app {
+    name: "SettingsLibMetadataShell",
+    platform_apis: true,
+}
+
+android_robolectric_test {
+    name: "SettingsLibMetadataTest",
+    srcs: ["src/**/*.kt"],
+    static_libs: [
+        "SettingsLibMetadata",
+        "androidx.test.ext.junit",
+        "kotlin-parcelize-runtime",
+        "truth",
+    ],
+    kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
+    instrumentation_for: "SettingsLibMetadataShell",
+    coverage_libs: ["SettingsLibMetadata"],
+    upstream: true,
+}

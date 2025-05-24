@@ -22,6 +22,7 @@ import android.content.Context
 import android.hardware.biometrics.BiometricAuthenticator
 import android.hardware.biometrics.BiometricConstants
 import android.hardware.biometrics.BiometricPrompt
+import android.hardware.biometrics.Flags
 import android.hardware.face.FaceManager
 import android.util.Log
 import android.view.MotionEvent
@@ -32,6 +33,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
@@ -44,12 +46,15 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieCompositionFactory
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.biometrics.Utils.ellipsize
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.asBiometricModality
+import com.android.systemui.biometrics.ui.view.BiometricPromptFallbackView
 import com.android.systemui.biometrics.ui.viewmodel.FingerprintStartMode
+import com.android.systemui.biometrics.ui.viewmodel.PromptFallbackViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptMessage
 import com.android.systemui.biometrics.ui.viewmodel.PromptSize
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
@@ -84,6 +89,7 @@ object BiometricViewBinder {
         applicationScope: CoroutineScope,
         vibratorHelper: VibratorHelper,
         msdlPlayer: MSDLPlayer,
+        promptFallbackViewModelFactory: PromptFallbackViewModel.Factory,
     ): Spaghetti {
         val accessibilityManager = view.context.getSystemService(AccessibilityManager::class.java)!!
 
@@ -123,10 +129,18 @@ object BiometricViewBinder {
         val negativeButton = view.requireViewById<Button>(R.id.button_negative)
         val cancelButton = view.requireViewById<Button>(R.id.button_cancel)
         val credentialFallbackButton = view.requireViewById<Button>(R.id.button_use_credential)
+        val fallbackButton = view.requireViewById<Button>(R.id.button_fallback)
 
         // Positive-side (right) buttons
         val confirmationButton = view.requireViewById<Button>(R.id.button_confirm)
         val retryButton = view.requireViewById<Button>(R.id.button_try_again)
+
+        val moreOptionsScreen = view.requireViewById<ComposeView>(R.id.fallback_view)
+        if (Flags.bpFallbackOptions()) {
+            moreOptionsScreen.setContent {
+                PlatformTheme { BiometricPromptFallbackView(viewModel, legacyCallback) }
+            }
+        }
 
         // Handles custom "Cancel Authentication" talkback action
         val cancelDelegate: AccessibilityDelegateCompat =
@@ -205,11 +219,13 @@ object BiometricViewBinder {
             )
 
             // set button listeners
-            negativeButton.setOnClickListener { legacyCallback.onButtonNegative() }
             cancelButton.setOnClickListener { legacyCallback.onUserCanceled() }
             credentialFallbackButton.setOnClickListener {
                 viewModel.onSwitchToCredential()
                 legacyCallback.onUseDeviceCredential()
+            }
+            if (Flags.bpFallbackOptions()) {
+                fallbackButton.setOnClickListener { viewModel.onSwitchToFallback() }
             }
             confirmationButton.setOnClickListener { viewModel.confirmAuthenticated() }
             retryButton.setOnClickListener {
@@ -308,6 +324,18 @@ object BiometricViewBinder {
                         }
                         .collect { credentialFallbackButton.text = it }
                 }
+                launch {
+                    viewModel.usingFallbackAsNegative.collect { usingFallbackAsNegative ->
+                        if (usingFallbackAsNegative) {
+                            negativeButton.setOnClickListener {
+                                // If using the negative button to show a fallback, there's only one
+                                legacyCallback.onFallbackOptionPressed(0)
+                            }
+                        } else {
+                            negativeButton.setOnClickListener { legacyCallback.onButtonNegative() }
+                        }
+                    }
+                }
                 launch { viewModel.negativeButtonText.collect { negativeButton.text = it } }
                 launch {
                     viewModel.isConfirmButtonVisible.collect { show ->
@@ -332,6 +360,13 @@ object BiometricViewBinder {
                 launch {
                     viewModel.isCredentialButtonVisible.collect { show ->
                         credentialFallbackButton.visibility = show.asVisibleOrGone()
+                    }
+                }
+                launch {
+                    viewModel.isFallbackButtonVisible.collect { show ->
+                        if (Flags.bpFallbackOptions()) {
+                            fallbackButton.visibility = show.asVisibleOrGone()
+                        }
                     }
                 }
 
@@ -480,6 +515,8 @@ class Spaghetti(
         fun onStartDelayedFingerprintSensor()
 
         fun onAuthenticatedAndConfirmed()
+
+        fun onFallbackOptionPressed(optionIndex: Int)
     }
 
     private var lifecycleScope: CoroutineScope? = null

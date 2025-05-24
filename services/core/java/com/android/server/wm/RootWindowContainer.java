@@ -25,6 +25,9 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK;
 import static android.content.res.Configuration.EMPTY;
+import static android.internal.perfetto.protos.Windowmanagerservice.RootWindowContainerProto.IS_HOME_RECENTS_COMPONENT;
+import static android.internal.perfetto.protos.Windowmanagerservice.RootWindowContainerProto.KEYGUARD_CONTROLLER;
+import static android.internal.perfetto.protos.Windowmanagerservice.RootWindowContainerProto.WINDOW_CONTAINER;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
@@ -69,9 +72,6 @@ import static com.android.server.wm.ActivityTaskSupervisor.DEFER_RESUME;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
 import static com.android.server.wm.ActivityTaskSupervisor.dumpHistoryList;
 import static com.android.server.wm.ActivityTaskSupervisor.printThisActivity;
-import static com.android.server.wm.RootWindowContainerProto.IS_HOME_RECENTS_COMPONENT;
-import static com.android.server.wm.RootWindowContainerProto.KEYGUARD_CONTROLLER;
-import static com.android.server.wm.RootWindowContainerProto.WINDOW_CONTAINER;
 import static com.android.server.wm.Task.REPARENT_LEAVE_ROOT_TASK_IN_PLACE;
 import static com.android.server.wm.Task.REPARENT_MOVE_ROOT_TASK_TO_FRONT;
 import static com.android.server.wm.TaskFragment.TASK_FRAGMENT_VISIBILITY_VISIBLE;
@@ -1760,6 +1760,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     @Nullable
+    Task getTopDisplayFocusedLeafTask() {
+        final Task rootTask = getTopDisplayFocusedRootTask();
+        return rootTask != null
+                ? rootTask.getTopLeafTask(TaskFragment::isFocusableAndVisible)
+                : null;
+    }
+
+    @Nullable
     ActivityRecord getTopResumedActivity() {
         final Task focusedRootTask = getTopDisplayFocusedRootTask();
         if (focusedRootTask == null) {
@@ -2237,10 +2245,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             // TODO(remove-legacy-transit): Move this to the `singleActivity` case when removing
             //                              legacy transit.
             rootTask.setRootTaskWindowingMode(WINDOWING_MODE_PINNED);
-            if (isPip2ExperimentEnabled() && bounds != null) {
-                // set the final pip bounds in advance if pip2 is enabled
-                rootTask.setBounds(bounds);
-            }
 
             // Set the launch bounds for launch-into-pip Activity on the root task.
             if (r.getOptions() != null && r.getOptions().isLaunchIntoPip()) {
@@ -2248,8 +2252,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 // We do this early in the process to make sure the right snapshot is used for
                 // entering content-pip animation.
                 mWindowManager.mTaskSnapshotController.recordSnapshot(task);
-                rootTask.setBounds(r.pictureInPictureArgs.getSourceRectHint());
+                if (!isPip2ExperimentEnabled()) {
+                    // PiP2 always supplies bounds from Shell, so we can skip this.
+                    rootTask.setBounds(r.pictureInPictureArgs.getSourceRectHint());
+                }
             }
+
+            if (isPip2ExperimentEnabled() && bounds != null) {
+                // set the final pip bounds in advance if pip2 is enabled
+                rootTask.setBounds(bounds);
+            }
+
             rootTask.setDeferTaskAppear(false);
 
             if (!isPip2ExperimentEnabled()) {

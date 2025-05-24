@@ -64,7 +64,8 @@ import java.util.Optional;
  */
 public class PipMotionHelper implements PipAppOpsListener.Callback,
         FloatingContentCoordinator.FloatingContent,
-        PipTransitionState.PipTransitionStateChangedListener {
+        PipTransitionState.PipTransitionStateChangedListener,
+        PipDisplayLayoutState.DisplayIdListener {
     private static final String TAG = "PipMotionHelper";
     private static final String FLING_BOUNDS_CHANGE = "fling_bounds_change";
     private static final String ANIMATING_BOUNDS_CHANGE = "animating_bounds_change";
@@ -81,7 +82,7 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
     /** How much of the dismiss circle size to use when scaling down PIP. **/
     private static final float DISMISS_CIRCLE_PERCENT = 0.85f;
 
-    private final Context mContext;
+    private Context mContext;
     @NonNull private final PipBoundsState mPipBoundsState;
     @NonNull private final PipDisplayLayoutState mPipDisplayLayoutState;
     @NonNull private final PipScheduler mPipScheduler;
@@ -173,7 +174,9 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
             PhonePipMenuController menuController, PipSnapAlgorithm snapAlgorithm,
             FloatingContentCoordinator floatingContentCoordinator, PipScheduler pipScheduler,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
-            PipTransitionState pipTransitionState, PipUiEventLogger pipUiEventLogger,
+            PipTransitionState pipTransitionState,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
+            PipUiEventLogger pipUiEventLogger,
             PipDisplayLayoutState pipDisplayLayoutState) {
         mContext = context;
         mPipBoundsState = pipBoundsState;
@@ -191,8 +194,9 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipUiEventLogger = pipUiEventLogger;
-        mSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
+        mSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mPipDisplayLayoutState = pipDisplayLayoutState;
+        mPipDisplayLayoutState.addDisplayIdListener(this);
     }
 
     void init() {
@@ -356,7 +360,14 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         }
         cancelPhysicsAnimation();
         mMenuController.hideMenu(ANIM_TYPE_NONE, false /* resize */);
-        mPipScheduler.scheduleExitPipViaExpand();
+
+        boolean isContentPip = mPipTransitionState.getPipTaskInfo() != null
+                && mPipTransitionState.getPipTaskInfo().launchIntoPipHostTaskId != -1;
+        if (isContentPip) {
+            mPipScheduler.scheduleRemovePip(true /* withFadeout */);
+        } else {
+            mPipScheduler.scheduleExitPipViaExpand();
+        }
     }
 
     /**
@@ -746,6 +757,11 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         extra.putBoolean(ANIMATING_BOUNDS_CHANGE, true);
         extra.putInt(ANIMATING_BOUNDS_CHANGE_DURATION, duration);
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
+    }
+
+    @Override
+    public void onDisplayIdChanged(@NonNull Context context) {
+        mContext = context;
     }
 
     @Override

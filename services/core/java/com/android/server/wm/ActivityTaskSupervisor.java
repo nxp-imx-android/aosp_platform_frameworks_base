@@ -109,6 +109,7 @@ import android.app.servertransaction.LaunchActivityItem;
 import android.app.servertransaction.PauseActivityItem;
 import android.app.servertransaction.ResumeActivityItem;
 import android.app.servertransaction.StopActivityItem;
+import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -140,6 +141,7 @@ import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.WorkSource;
+import android.permission.PermissionManager;
 import android.provider.MediaStore;
 import android.util.ArrayMap;
 import android.util.Slog;
@@ -291,6 +293,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     private WindowManagerService mWindowManager;
 
     private AppOpsManager mAppOpsManager;
+    private PermissionManager mPermissionManager;
     private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
 
     /** Common synchronization logic used to save things to disks. */
@@ -932,6 +935,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // a resume.
             r.setState(RESUMED, "realStartActivityLocked");
             r.completeResumeLocked();
+            makeNonTopVisibleActivitiesActiveIfNeeded(r, task);
         } else if (r.isVisibleRequested()) {
             // This activity is not starting in the resumed state... which should look like we asked
             // it to pause+stop (but remain visible), and it has done so and reported back the
@@ -940,6 +944,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     + "(starting in paused state)", r);
             r.setState(PAUSED, "realStartActivityLocked");
             mRootWindowContainer.executeAppTransitionForAllDisplay();
+            makeNonTopVisibleActivitiesActiveIfNeeded(r, task);
         } else {
             // This activity is starting while invisible, so it should be stopped.
             r.setState(STOPPING, "realStartActivityLocked");
@@ -1079,6 +1084,24 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             }
         }
         return null;
+    }
+
+    /**
+     * Sends lifecycle item (e.g. StartActivityItem) to non-top visible activities in the same task
+     * of the launched activity if ensureActivitiesVisible was called with notifyClients=false.
+     */
+    private static void makeNonTopVisibleActivitiesActiveIfNeeded(@NonNull ActivityRecord launched,
+            @NonNull Task task) {
+        if (!task.inMultiWindowMode() || (launched.occludesParent() && !launched.isEmbedded())) {
+            // Skip if this activity may trigger other activities to pause, because activityPaused
+            // will call ensureActivitiesVisible with notifyClients=true.
+            return;
+        }
+        task.forAllActivities(r -> {
+            if (r != launched && r.isVisibleRequested()) {
+                r.makeActiveIfNeeded(null /* activeActivity */);
+            }
+        });
     }
 
     void updateHomeProcessIfNeeded(@NonNull ActivityRecord r) {
@@ -1353,6 +1376,13 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         return mAppOpsManager;
     }
 
+    private PermissionManager getPermissionManager() {
+        if (mPermissionManager == null) {
+            mPermissionManager = mService.mContext.getSystemService(PermissionManager.class);
+        }
+        return mPermissionManager;
+    }
+
     BackgroundActivityStartController getBackgroundActivityLaunchController() {
         return mBalController;
     }
@@ -1368,6 +1398,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
         if (activityInfo.permission == null) {
             return ACTIVITY_RESTRICTION_NONE;
+        }
+
+        // TODO(b/419317335): Fully migrate to PermissionManager behind additional flags
+        if (com.android.media.projection.flags.Flags.recordingOverlay()) {
+            if (ignoreTargetSecurity || getPermissionManager().checkPermissionForDataDelivery(
+                    activityInfo.permission,
+                    new AttributionSource(callingUid, callingPackage, callingFeatureId), "")
+                    == PermissionManager.PERMISSION_GRANTED) {
+                return ACTIVITY_RESTRICTION_NONE;
+            }
         }
 
         final int opCode = AppOpsManager.permissionToOpCode(activityInfo.permission);

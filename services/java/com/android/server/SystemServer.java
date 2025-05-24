@@ -2922,9 +2922,18 @@ public final class SystemServer implements Dumpable {
         t.traceEnd();
 
         // AdServicesManagerService (PP API service)
-        t.traceBegin("StartAdServicesManagerService");
-        mSystemServiceManager.startService(AD_SERVICES_MANAGER_SERVICE_CLASS);
-        t.traceEnd();
+        if (!isWatch || !android.server.Flags.removeAdServicesManagerServiceFromWear()
+                || SystemProperties.getBoolean("ro.system_settings.service.adservices_enabled",
+                true)) {
+            t.traceBegin("StartAdServicesManagerService");
+            try {
+                mSystemServiceManager.startService(AD_SERVICES_MANAGER_SERVICE_CLASS);
+            } finally {
+                t.traceEnd();
+            }
+        } else {
+            Slog.d(TAG, "Not starting AdServicesManagerService");
+        }
 
         // OnDevicePersonalizationSystemService
         if (SystemProperties.getBoolean("ro.system_settings.service.odp_enabled", true)) {
@@ -3034,7 +3043,6 @@ public final class SystemServer implements Dumpable {
         final HsumBootUserInitializer hsumBootUserInitializer =
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
                         mPackageManagerService, mContentResolver,
-                        context.getResources().getBoolean(R.bool.config_isMainUserPermanentAdmin),
                         context.getResources().getBoolean(R.bool.config_createInitialUser)
                         );
         if (hsumBootUserInitializer != null) {

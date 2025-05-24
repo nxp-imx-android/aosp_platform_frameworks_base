@@ -488,13 +488,6 @@ public class BubbleBarLayerView extends FrameLayout
                 taskLeash, animFinish);
     }
 
-    /**
-     * Populates {@param out} with the rest bounds of an expanded bubble.
-     */
-    public void getExpandedViewRestBounds(Rect out) {
-        mAnimationHelper.getExpandedViewRestBounds(out);
-    }
-
     public void removeBubble(@NonNull Bubble bubble, @NonNull Runnable endAction) {
         final boolean inTransition = bubble.getPreparingTransition() != null;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY,

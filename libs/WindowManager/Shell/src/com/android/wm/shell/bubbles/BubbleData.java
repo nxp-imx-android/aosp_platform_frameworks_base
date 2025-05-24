@@ -371,6 +371,11 @@ public class BubbleData {
         dispatchPendingChanges();
     }
 
+    /** Sets the expanded state to false without dispatching changes. */
+    public void collapseNoUpdate() {
+        mExpanded = false;
+    }
+
     /**
      * Sets the selected bubble and expands it, but doesn't dispatch changes
      * to {@link BubbleData.Listener}. This is used for updates coming from launcher whose views

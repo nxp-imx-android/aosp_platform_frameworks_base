@@ -41,6 +41,7 @@ import org.mockito.kotlin.verify
 /** Tests for [SettingsProxyExt]. */
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class SettingsProxyExtTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope

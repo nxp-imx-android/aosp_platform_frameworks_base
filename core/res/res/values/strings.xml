@@ -3201,26 +3201,6 @@
         in <xliff:g id="count">%d</xliff:g>y
     </string>
 
-    <!-- Phrase describing a time duration using minutes that is as short as possible, preferrably one character. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=14] -->
-    <string name="duration_minutes_shortest_past">
-        <xliff:g id="count">%d</xliff:g>m ago
-    </string>
-
-    <!-- Phrase describing a time duration using hours that is as short as possible, preferrably one character. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=14] -->
-    <string name="duration_hours_shortest_past">
-        <xliff:g id="count">%d</xliff:g>h ago
-    </string>
-
-    <!-- Phrase describing a time duration using days that is as short as possible, preferrably one character. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=14] -->
-    <string name="duration_days_shortest_past">
-        <xliff:g example="1" id="count">%d</xliff:g>d ago
-    </string>
-
-    <!-- Phrase describing a time duration using years that is as short as possible, preferrably one character. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=14] -->
-    <string name="duration_years_shortest_past">
-        <xliff:g id="count">%d</xliff:g>y ago
-    </string>
-
     <!-- Phrase describing a time duration using minutes that is a medium length, preferrably two or three characters. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=8] -->
     <string name="duration_minutes_medium">
         <xliff:g id="count">%d</xliff:g>min
@@ -3229,56 +3209,6 @@
     <!-- Phrase describing a time duration using hours that is a medium length, preferrably two or three characters. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=8] -->
     <string name="duration_hours_medium">
         <xliff:g id="count">%d</xliff:g>hr
-    </string>
-
-    <!-- Phrase describing a time duration using days that is a medium length, preferrably two or three characters. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=8] -->
-    <string name="duration_days_medium">
-       <xliff:g id="count">%d</xliff:g>d
-    </string>
-
-    <!-- Phrase describing a time duration using years that is a medium length, preferrably two or three characters. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=8] -->
-    <string name="duration_years_medium">
-        <xliff:g id="count">%d</xliff:g>yr
-    </string>
-
-    <!-- Phrase describing a time duration using minutes that is a medium length, preferrably two or three characters. This version should be a future point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_minutes_medium_future">
-        in <xliff:g id="count">%d</xliff:g>min
-    </string>
-
-    <!-- Phrase describing a time duration using hours that is a medium length, preferrably two or three characters. This version should be a future point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_hours_medium_future">
-        in <xliff:g id="count">%d</xliff:g>hr
-    </string>
-
-    <!-- Phrase describing a time duration using days that is a medium length, preferrably two or three characters. This version should be a future point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_days_medium_future">
-        in <xliff:g example="1" id="count">%d</xliff:g>d
-    </string>
-
-    <!-- Phrase describing a time duration using years that is a medium length, preferrably two or three characters. This version should be a future point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_years_medium_future">
-        in <xliff:g id="count">%d</xliff:g>yr
-    </string>
-
-    <!-- Phrase describing a time duration using minutes that is a medium length, preferrably two or three characters. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_minutes_medium_past">
-        <xliff:g id="count">%d</xliff:g>min ago
-    </string>
-
-    <!-- Phrase describing a time duration using hours that is a medium length, preferrably two or three characters. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_hours_medium_past">
-        <xliff:g id="count">%d</xliff:g>hr ago
-    </string>
-
-    <!-- Phrase describing a time duration using days that is a medium length, preferrably two or three characters. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_days_medium_past">
-        <xliff:g example="1" id="count">%d</xliff:g>d ago
-    </string>
-
-    <!-- Phrase describing a time duration using years that is a medium length, preferrably two or three characters. This version should be a past point in time. If the language needs a space in between the integer and the unit, please also integrate it in the string, but preferably it should not have a space in between.[CHAR LIMIT=18] -->
-    <string name="duration_years_medium_past">
-        <xliff:g id="count">%d</xliff:g>yr ago
     </string>
 
     <!-- Phrase describing a relative time using minutes in the past that is not shown on the screen but used for accessibility. [CHAR LIMIT=NONE] -->
@@ -4677,6 +4607,24 @@
 
     <!-- Name of the default audio route when USB is connected. [CHAR LIMIT=50] -->
     <string name="default_audio_route_name_usb">USB</string>
+
+    <!-- Name of the default audio route when HDMI is connected on a TV device. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_hdmi_tv">TV Audio</string>
+
+    <!-- Name of the default audio route for TV when ARC audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_arc">ARC</string>
+
+    <!-- Name of the default audio route for TV when eARC audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_earc">eARC</string>
+
+    <!-- Name of the default audio route for TV when analog audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_analog">Analog</string>
+
+    <!-- Name of the default audio route for TV when digital audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_digital">Digital</string>
+
+    <!-- Name of the default audio route for TV when AUX audio device is connected. [CHAR LIMIT=50] -->
+    <string name="default_audio_route_name_aux">AUX</string>
 
     <!-- Name of the default audio route category. [CHAR LIMIT=50] -->
     <string name="default_audio_route_category_name">System</string>
@@ -6878,10 +6826,23 @@ ul.</string>
     <string name="fingerprint_loe_notification_msg">Your fingerprints can no longer be recognized. Set up Fingerprint Unlock again.</string>
 
     <!--  AdvancedProtectionService USB notifications -->
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title">USB device plugged in when locked</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text">USB device is plugged in when Android is locked. To use device, please unlock Android first.</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text">USB device is plugged in when Android is locked. To use device, please unlock Android first and then reinsert USB device to use it.</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text">Charging capability may be reduced or unavailable when locked.</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title">Security &amp; privacy</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title">Advanced Protection for USB</string>
+
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text">Unlock device for data transfer</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text">You may need to unlock and reconnect your device for data transfer</string>
+
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text">Unlock device for fast charging and data transferring</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text">You may need to unlock and reconnect your device for fast charging and data transferring</string>
+
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text">Unlock device for fast charging</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text">You may need to unlock and reconnect your device for fast charging</string>
+
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text">Silence</string>
+
+    <string name="usb_apm_usb_notification_silenced_title">Notification silenced</string>
+    <string name="usb_apm_usb_notification_silenced_text">Silenced until you restart your device</string>
+
     <string name="usb_apm_usb_suspicious_activity_notification_title">Suspicious USB activity</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text">USB data signal has been disabled.</string>
 

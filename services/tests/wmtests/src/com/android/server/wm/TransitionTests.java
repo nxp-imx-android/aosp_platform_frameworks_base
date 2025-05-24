@@ -87,6 +87,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.window.ActivityTransitionInfo;
 import android.window.IDisplayAreaOrganizer;
 import android.window.IRemoteTransition;
 import android.window.ITaskFragmentOrganizer;
@@ -108,6 +109,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -205,13 +207,14 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     public void testCreateInfo_Activity() {
-        final Transition transition = createTestTransition(TRANSIT_OPEN);
-        ArrayMap<WindowContainer, Transition.ChangeInfo> changes = transition.mChanges;
-        ArraySet<WindowContainer> participants = transition.mParticipants;
-
         final Task theTask = createTask(mDisplayContent);
         final ActivityRecord closing = createActivityRecord(theTask);
         final ActivityRecord opening = createActivityRecord(theTask);
+        final ActivityTransitionInfo closingActivityTransitionInfo =
+                new ActivityTransitionInfo(closing.mActivityComponent, theTask.mTaskId);
+        final ActivityTransitionInfo openingActivityTransitionInfo =
+                new ActivityTransitionInfo(opening.mActivityComponent, theTask.mTaskId);
+        final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = new ArrayMap<>();
         // Start states.
         changes.put(theTask, new Transition.ChangeInfo(theTask, true /* vis */, false /* exChg */));
         changes.put(opening, new Transition.ChangeInfo(opening, false /* vis */, true /* exChg */));
@@ -220,17 +223,24 @@ public class TransitionTests extends WindowTestsBase {
         // End states.
         closing.setVisibleRequested(false);
         opening.setVisibleRequested(true);
-
-        final int transit = transition.mType;
-        int flags = 0;
-
-        participants.add(opening);
-        participants.add(closing);
-        ArrayList<Transition.ChangeInfo> targets =
+        final ArraySet<WindowContainer> participants =
+                new ArraySet<>(new WindowContainer[]{opening, closing});
+        final ArrayList<Transition.ChangeInfo> targets =
                 Transition.calculateTargets(participants, changes);
-        TransitionInfo info = Transition.calculateTransitionInfo(transit, flags, targets, mMockT);
-        assertEquals(2, info.getChanges().size());
-        assertEquals(info.getChanges().get(1).getActivityComponent(), closing.mActivityComponent);
+
+        final TransitionInfo info =
+                Transition.calculateTransitionInfo(TRANSIT_OPEN, 0 /* flags */, targets, mMockT);
+
+        final List<TransitionInfo.Change> transitionChanges = info.getChanges();
+        assertEquals(2, transitionChanges.size());
+        final TransitionInfo.Change openingChange = transitionChanges.get(0);
+        assertEquals(TRANSIT_OPEN, openingChange.getMode());
+        assertEquals(opening.mActivityComponent, openingChange.getActivityComponent());
+        assertEquals(openingActivityTransitionInfo, openingChange.getActivityTransitionInfo());
+        final TransitionInfo.Change closingChange = transitionChanges.get(1);
+        assertEquals(TRANSIT_TO_BACK, closingChange.getMode());
+        assertEquals(closing.mActivityComponent, closingChange.getActivityComponent());
+        assertEquals(closingActivityTransitionInfo, closingChange.getActivityTransitionInfo());
     }
 
     @Test
@@ -3055,6 +3065,29 @@ public class TransitionTests extends WindowTestsBase {
         condition1.meetAlternate("reason1");
         assertTrue(transit.mReadyTracker.isReady());
         assertEquals("reason1", condition1.mAlternate);
+    }
+
+    @Test
+    public void testCommonAncestor_excludeOrderOnlyDisplay() {
+        DisplayContent otherDisplay = createNewDisplay();
+
+        final Task display0Task = createTask(mDisplayContent);
+        final Task display1Task = createTask(otherDisplay);
+        display0Task.setVisibleRequested(true);
+        display1Task.setVisibleRequested(true);
+
+        // Build target-list as-if originally task 0 was focused/front and then the user focused
+        // task 1 (bringing it and display 1 to front).
+        final ArrayList<Transition.ChangeInfo> sortedTargets = new ArrayList<>();
+        sortedTargets.add(
+                new Transition.ChangeInfo(display1Task, true /* vis */, false /* exChg */));
+        sortedTargets.getLast().mFlags |= Transition.ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP;
+        sortedTargets.add(
+                new Transition.ChangeInfo(otherDisplay, true /* vis */, false /* exChg */));
+        sortedTargets.getLast().mFlags |= Transition.ChangeInfo.FLAG_CHANGE_MOVED_TO_TOP;
+
+        WindowContainer ancestor = Transition.findCommonAncestor(sortedTargets, display1Task);
+        assertTrue(ancestor.isDescendantOf(otherDisplay.getParent()));
     }
 
     private void tryFinishTransitionSyncSet(Transition transition) {

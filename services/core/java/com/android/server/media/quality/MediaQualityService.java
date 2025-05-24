@@ -208,11 +208,13 @@ public class MediaQualityService extends SystemService {
                 mMediaQuality.setSoundProfileAdjustmentListener(mSoundProfileAdjListener);
 
                 synchronized (mPictureProfileLock) {
-                    String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                            + BaseParameters.PARAMETER_NAME + " = ?";
+                    String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
+                            + BaseParameters.PARAMETER_NAME + " = ? OR "
+                            + BaseParameters.PARAMETER_NAME + " = ?)";
                     String[] selectionArguments = {
                             Integer.toString(PictureProfile.TYPE_SYSTEM),
-                            PictureProfile.NAME_DEFAULT
+                            PictureProfile.NAME_DEFAULT,
+                            PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR
                     };
                     List<PictureProfile> packageDefaultPictureProfiles =
                             mMqDatabaseUtils.getPictureProfilesBasedOnConditions(MediaQualityUtils
@@ -342,6 +344,9 @@ public class MediaQualityService extends SystemService {
                             .contains(values.getAsLong(BaseParameters.PARAMETER_ID))) {
                         updateDatabaseOnPictureProfileAndNotifyManager(
                                 values, pp.getParameters(), callingUid, callingPid, true);
+                    } else {
+                        updateDatabaseOnPictureProfileAndNotifyManager(
+                                values, pp.getParameters(), callingUid, callingPid, false);
                     }
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
@@ -400,6 +405,25 @@ public class MediaQualityService extends SystemService {
             });
         }
 
+        @Override
+        public void changeStreamStatus(
+                @NonNull String profileId, @NonNull String newStatus, int userId) {
+            Long dbId = null;
+            synchronized (mPictureProfileLock) {
+                dbId = mPictureProfileTempIdMap.getKey(profileId);
+                if (dbId == null) {
+                    return;
+                }
+            }
+            try {
+                mPictureProfileAdjListener.onStreamStatusChanged(
+                        dbId, mPictureProfileAdjListener.toHalStatus(newStatus));
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
         private boolean hasPermissionToRemovePictureProfile(PictureProfile toDelete, int uid) {
             if (toDelete != null) {
                 return toDelete.getName().equalsIgnoreCase(getPackageOfUid(uid));
@@ -414,7 +438,8 @@ public class MediaQualityService extends SystemService {
             int callingUid = Binder.getCallingUid();
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
                     + BaseParameters.PARAMETER_NAME + " = ? AND "
-                    + BaseParameters.PARAMETER_PACKAGE + " = ?";
+                    + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
+                    + BaseParameters.PARAMETER_INPUT_ID + " IS NULL";
             String[] selectionArguments = {
                     Integer.toString(type), name, getPackageOfUid(callingUid)};
 
@@ -430,10 +455,11 @@ public class MediaQualityService extends SystemService {
                         return null;
                     }
                     if (count > 1) {
-                        Log.wtf(TAG, TextUtils.formatSimple(String.valueOf(Locale.US), "%d "
-                                        + "entries found for type=%d and name=%s in %s. Should"
-                                        + " only ever be 0 or 1.", count, type, name,
-                                mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME));
+                        Log.wtf(TAG,
+                                TextUtils.formatSimple("%d entries found for type=%d and name=%s "
+                                                       + "in %s. Should only ever be 0 or 1.",
+                                        count, type, name,
+                                        mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME));
                         return null;
                     }
                     cursor.moveToFirst();
@@ -501,7 +527,7 @@ public class MediaQualityService extends SystemService {
                 if (currentDefaultPictureProfile != null) {
                     return currentDefaultPictureProfile;
                 } else {
-                    return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId);
+                    return mMqDatabaseUtils.getPictureProfile(defaultPictureProfileId, true);
                 }
             }
             return null;
@@ -650,12 +676,14 @@ public class MediaQualityService extends SystemService {
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
             }
             String[] columns = {BaseParameters.PARAMETER_ID};
-            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                    + BaseParameters.PARAMETER_NAME + " = ? AND "
+            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
+                    + BaseParameters.PARAMETER_NAME + " = ? OR "
+                    + BaseParameters.PARAMETER_NAME + " = ?) AND "
                     + BaseParameters.PARAMETER_INPUT_ID + " = ?";
             String[] selectionArguments = {
                     Integer.toString(PictureProfile.TYPE_SYSTEM),
                     PictureProfile.NAME_DEFAULT,
+                    PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR,
                     inputId
             };
             synchronized (mPictureProfileLock) {
@@ -689,7 +717,7 @@ public class MediaQualityService extends SystemService {
             if (profileHandle == -1) {
                 return null;
             }
-            return mMqDatabaseUtils.getPictureProfile(profileHandle);
+            return mMqDatabaseUtils.getPictureProfile(profileHandle, true);
         }
 
         public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId, int userId) {
@@ -700,7 +728,7 @@ public class MediaQualityService extends SystemService {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
             }
-            String[] columns = {BaseParameters.PARAMETER_ID};
+            String[] columns = MediaQualityUtils.getMediaProfileColumns(/* includeParams= */ true);
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
                     + BaseParameters.PARAMETER_INPUT_ID + " = ?";
             String[] selectionArguments = {
@@ -2103,6 +2131,7 @@ public class MediaQualityService extends SystemService {
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
+                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
@@ -2148,6 +2177,7 @@ public class MediaQualityService extends SystemService {
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
+                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
@@ -2216,6 +2246,48 @@ public class MediaQualityService extends SystemService {
                     return PictureProfile.STATUS_FMM_HDR_VIVID;
                 default:
                     return "";
+            }
+        }
+
+        private byte toHalStatus(@NonNull String profileStatus) {
+            // TODO: use biMap
+            switch (profileStatus) {
+                case PictureProfile.STATUS_SDR:
+                    return StreamStatus.SDR;
+                case PictureProfile.STATUS_HDR10:
+                    return StreamStatus.HDR10;
+                case PictureProfile.STATUS_TCH:
+                    return StreamStatus.TCH;
+                case PictureProfile.STATUS_DOLBY_VISION:
+                    return StreamStatus.DOLBYVISION;
+                case PictureProfile.STATUS_HLG:
+                    return StreamStatus.HLG;
+                case PictureProfile.STATUS_HDR10_PLUS:
+                    return StreamStatus.HDR10PLUS;
+                case PictureProfile.STATUS_HDR_VIVID:
+                    return StreamStatus.HDRVIVID;
+                case PictureProfile.STATUS_IMAX_SDR:
+                    return StreamStatus.IMAXSDR;
+                case PictureProfile.STATUS_IMAX_HDR10:
+                    return StreamStatus.IMAXHDR10;
+                case PictureProfile.STATUS_IMAX_HDR10_PLUS:
+                    return StreamStatus.IMAXHDR10PLUS;
+                case PictureProfile.STATUS_FMM_SDR:
+                    return StreamStatus.FMMSDR;
+                case PictureProfile.STATUS_FMM_HDR10:
+                    return StreamStatus.FMMHDR10;
+                case PictureProfile.STATUS_FMM_HDR10_PLUS:
+                    return StreamStatus.FMMHDR10PLUS;
+                case PictureProfile.STATUS_FMM_HLG:
+                    return StreamStatus.FMMHLG;
+                case PictureProfile.STATUS_FMM_DOLBY:
+                    return StreamStatus.FMMDOLBY;
+                case PictureProfile.STATUS_FMM_TCH:
+                    return StreamStatus.FMMTCH;
+                case PictureProfile.STATUS_FMM_HDR_VIVID:
+                    return StreamStatus.FMMHDRVIVID;
+                default:
+                    return (byte) 0;
             }
         }
 
@@ -2454,8 +2526,16 @@ public class MediaQualityService extends SystemService {
     }
 
     private boolean isPackageDefaultPictureProfile(PictureProfile pp) {
-        return pp != null && pp.getProfileType() == PictureProfile.TYPE_SYSTEM &&
-               pp.getName().equals(PictureProfile.NAME_DEFAULT);
+        if (pp == null || pp.getProfileType() != PictureProfile.TYPE_SYSTEM) {
+            return false;
+        }
+        String pictureProfileName = pp.getName();
+        String[] arr = mPictureProfileAdjListener.splitNameAndStatus(pictureProfileName);
+        String profileName = arr[0];
+        String profileStatus = arr[1];
+        return profileName.equals(PictureProfile.NAME_DEFAULT)
+                && (MediaQualityUtils.isValidStreamStatus(profileStatus)
+                || profileStatus.isEmpty());
     }
 
     private boolean hasGlobalPictureQualityServicePermission(int uid, int pid) {

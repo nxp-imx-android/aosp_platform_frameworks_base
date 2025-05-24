@@ -142,7 +142,7 @@ public final class ApplicationExitInfo implements Parcelable {
 
     /**
      * Application process was killed, because the user it is running as on devices
-     * with mutlple users, was stopped.
+     * with multiple users, was stopped.
      */
     public static final int REASON_USER_STOPPED = 11;
 
@@ -185,7 +185,7 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * Application process kills subreason is unknown.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_UNKNOWN = 0;
@@ -194,7 +194,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * Application process was killed because user quit it on the "wait for debugger" dialog;
      * this would be set when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_WAIT_FOR_DEBUGGER = 1;
@@ -203,7 +203,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * Application process was killed by the activity manager because there were too many cached
      * processes; this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_TOO_MANY_CACHED = 2;
@@ -212,7 +212,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * Application process was killed by the activity manager because there were too many empty
      * processes; this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_TOO_MANY_EMPTY = 3;
@@ -222,7 +222,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * processes and this process had been in empty state for a long time;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_TRIM_EMPTY = 4;
@@ -232,7 +232,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * and this process took large amount of cached memory;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_LARGE_CACHED = 5;
@@ -242,7 +242,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * pressure for a significant amount of time since last idle;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_MEMORY_PRESSURE = 6;
@@ -251,7 +251,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * Application process was killed by the activity manager due to excessive CPU usage;
      * this would be set only when the reason is {@link #REASON_EXCESSIVE_RESOURCE_USAGE}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_EXCESSIVE_CPU = 7;
@@ -260,7 +260,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * System update has done (so the system update process should be killed);
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_SYSTEM_UPDATE_DONE = 8;
@@ -270,7 +270,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * mode for the managed profile;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_KILL_ALL_FG = 9;
@@ -280,7 +280,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * when the density of the default display is changed;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_KILL_ALL_BG_EXCEPT = 10;
@@ -290,7 +290,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * it could be because of platform compatibility overrides;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_KILL_UID = 11;
@@ -300,7 +300,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * the low memory for surfaces;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_KILL_PID = 12;
@@ -309,7 +309,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The start of the process was invalid;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_INVALID_START = 13;
@@ -319,7 +319,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * it's triggered from SHELL;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_INVALID_STATE = 14;
@@ -329,7 +329,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * in a bad state;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_IMPERCEPTIBLE = 15;
@@ -338,7 +338,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because it's being moved out from LRU list;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_REMOVE_LRU = 16;
@@ -347,7 +347,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because it's isolated and was in a cached state;
      * this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_ISOLATED_NOT_NEEDED = 17;
@@ -356,7 +356,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because it's in forced-app-standby state, and it's cached and
      * its uid state is idle; this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_CACHED_IDLE_FORCED_APP_STANDBY = 18;
@@ -366,7 +366,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * or query binder frozen info while being frozen.
      * this would be set only when the reason is {@link #REASON_FREEZER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_FREEZER_BINDER_IOCTL = 19;
@@ -376,7 +376,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * while being frozen.
      * this would be set only when the reason is {@link #REASON_FREEZER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_FREEZER_BINDER_TRANSACTION = 20;
@@ -386,7 +386,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * the user clicked the "Force stop" button of the application in the Settings;
      * this would be set only when the reason is {@link #REASON_USER_REQUESTED}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_FORCE_STOP = 21;
@@ -395,7 +395,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because the user removed the application away from Recents;
      * this would be set only when the reason is {@link #REASON_USER_REQUESTED}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_REMOVE_TASK = 22;
@@ -404,17 +404,17 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because the user stopped the application from the task manager;
      * this would be set only when the reason is {@link #REASON_USER_REQUESTED}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_STOP_APP = 23;
 
     /**
      * The process was killed because the user stopped the application from developer options,
-     * or via the adb shell commmand interface; this would be set only when the reason is
+     * or via the adb shell command interface; this would be set only when the reason is
      * {@link #REASON_USER_REQUESTED}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_KILL_BACKGROUND = 24;
@@ -423,7 +423,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because of package update; this would be set only when the reason is
      * {@link #REASON_USER_REQUESTED}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      *
      * @deprecated starting {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE},
      * an app being killed due to a package update will have the reason
@@ -437,7 +437,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because of undelivered broadcasts; this would be set only when the
      * reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_UNDELIVERED_BROADCAST = 26;
@@ -446,7 +446,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because its associated SDK sandbox process (where it had loaded SDKs)
      * had died; this would be set only when the reason is {@link #REASON_DEPENDENCY_DIED}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_SDK_SANDBOX_DIED = 27;
@@ -455,7 +455,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because it was an SDK sandbox process that was either not usable or
      * was no longer being used; this would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_SDK_SANDBOX_NOT_NEEDED = 28;
@@ -463,7 +463,7 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * The process was killed because the binder proxy limit for system server was exceeded.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_EXCESSIVE_BINDER_OBJECTS = 29;
@@ -472,7 +472,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed by the [kernel] Out-of-memory (OOM) killer; this
      * would be set only when the reason is {@link #REASON_LOW_MEMORY}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_OOM_KILL = 30;
@@ -482,7 +482,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * while being frozen.
      * this would be set only when the reason is {@link #REASON_FREEZER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_FREEZER_BINDER_ASYNC_FULL = 31;
@@ -491,7 +491,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * The process was killed because it was sending too many broadcasts while it is in the
      * Cached state. This would be set only when the reason is {@link #REASON_OTHER}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      * @hide
      */
     public static final int SUBREASON_EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED = 32;
@@ -522,12 +522,14 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * @see #getProcessName
      */
+    @Nullable
     private String mProcessName;
 
     /**
      * @see #getReason
      */
-    private @Reason int mReason;
+    @Reason
+    private int mReason;
 
     /**
      * @see #getStatus
@@ -537,7 +539,8 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * @see #getImportance
      */
-    private @Importance int mImportance;
+    @Importance
+    private int mImportance;
 
     /**
      * @see #getPss
@@ -552,17 +555,20 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * @see #getTimestamp
      */
-    private @CurrentTimeMillisLong long mTimestamp;
+    @CurrentTimeMillisLong
+    private long mTimestamp;
 
     /**
      * @see #getDescription
      */
-    private @Nullable String mDescription;
+    @Nullable
+    private String mDescription;
 
     /**
      * @see #getSubReason
      */
-    private @SubReason int mSubReason;
+    @SubReason
+    private int mSubReason;
 
     /**
      * @see #getConnectionGroup
@@ -572,31 +578,36 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * @see #getPackageName
      */
+    @Nullable
     private String mPackageName;
 
     /**
      * @see #getPackageList
      */
+    @Nullable
     private String[] mPackageList;
 
     /**
      * @see #getProcessStateSummary
      */
+    @Nullable
     private byte[] mState;
 
     /**
      * The file to the trace file in the storage;
      *
-     * for system internal use only, will not retain across processes.
+     * <p>For system internal use only, will not retain across processes.
      *
      * @see #getTraceInputStream
      */
+    @Nullable
     private File mTraceFile;
 
     /**
      * The Binder interface to retrieve the file descriptor to
      * the trace file from the system.
      */
+    @Nullable
     private IAppTraceRetriever mAppTraceRetriever;
 
     /**
@@ -604,19 +615,20 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @see #getTraceInputStream
      */
+    @Nullable
     private IParcelFileDescriptorRetriever mNativeTombstoneRetriever;
 
     /**
      * Whether or not we've logged this into the statsd.
      *
-     * for system internal use only, will not retain across processes.
+     * <p>For system internal use only, will not retain across processes.
      */
     private boolean mLoggedInStatsd;
 
     /**
      * Whether or not this process hosts one or more foreground services.
      *
-     * for system internal use only, will not retain across processes.
+     * <p>For system internal use only, will not retain across processes.
      */
     private boolean mHasForegroundServices;
 
@@ -641,7 +653,8 @@ public final class ApplicationExitInfo implements Parcelable {
         REASON_PACKAGE_UPDATED,
     })
     @Retention(RetentionPolicy.SOURCE)
-    public @interface Reason {}
+    public @interface Reason {
+    }
 
     /** @hide */
     @IntDef(prefix = { "SUBREASON_" }, value = {
@@ -663,6 +676,7 @@ public final class ApplicationExitInfo implements Parcelable {
         SUBREASON_IMPERCEPTIBLE,
         SUBREASON_REMOVE_LRU,
         SUBREASON_ISOLATED_NOT_NEEDED,
+        SUBREASON_CACHED_IDLE_FORCED_APP_STANDBY,
         SUBREASON_FREEZER_BINDER_IOCTL,
         SUBREASON_FREEZER_BINDER_TRANSACTION,
         SUBREASON_FORCE_STOP,
@@ -671,13 +685,16 @@ public final class ApplicationExitInfo implements Parcelable {
         SUBREASON_KILL_BACKGROUND,
         SUBREASON_PACKAGE_UPDATE,
         SUBREASON_UNDELIVERED_BROADCAST,
+        SUBREASON_SDK_SANDBOX_DIED,
+        SUBREASON_SDK_SANDBOX_NOT_NEEDED,
         SUBREASON_EXCESSIVE_BINDER_OBJECTS,
         SUBREASON_OOM_KILL,
         SUBREASON_FREEZER_BINDER_ASYNC_FULL,
         SUBREASON_EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED,
     })
     @Retention(RetentionPolicy.SOURCE)
-    public @interface SubReason {}
+    public @interface SubReason {
+    }
 
     /**
      * The process id of the process that died.
@@ -720,14 +737,16 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * The actual process name it was running with.
      */
-    public @NonNull String getProcessName() {
+    @NonNull
+    public String getProcessName() {
         return mProcessName;
     }
 
     /**
      * The reason code of the process's death.
      */
-    public @Reason int getReason() {
+    @Reason
+    public int getReason() {
         return mReason;
     }
 
@@ -742,7 +761,8 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * The importance of the process that it used to have before the death.
      */
-    public @Importance int getImportance() {
+    @Importance
+    public int getImportance() {
         return mImportance;
     }
 
@@ -772,7 +792,8 @@ public final class ApplicationExitInfo implements Parcelable {
      * The timestamp of the process's death, in milliseconds since the epoch,
      * as returned by {@link java.lang.System#currentTimeMillis() System.currentTimeMillis()}.
      */
-    public @CurrentTimeMillisLong long getTimestamp() {
+    @CurrentTimeMillisLong
+    public long getTimestamp() {
         return mTimestamp;
     }
 
@@ -782,7 +803,8 @@ public final class ApplicationExitInfo implements Parcelable {
      * <p class="note">Note: only intended to be human-readable and the system provides no
      * guarantees that the format is stable across devices or Android releases.</p>
      */
-    public @Nullable String getDescription() {
+    @Nullable
+    public String getDescription() {
         final StringBuilder sb = new StringBuilder();
 
         if (mSubReason != SUBREASON_UNKNOWN) {
@@ -792,7 +814,7 @@ public final class ApplicationExitInfo implements Parcelable {
         }
 
         if (!TextUtils.isEmpty(mDescription)) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(" ");
             }
             sb.append(mDescription);
@@ -804,7 +826,8 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * Return the user id of the record on a multi-user system.
      */
-    public @NonNull UserHandle getUserHandle() {
+    @NonNull
+    public UserHandle getUserHandle() {
         return UserHandle.of(UserHandle.getUserId(mRealUid));
     }
 
@@ -816,7 +839,8 @@ public final class ApplicationExitInfo implements Parcelable {
      * @return The process-customized data
      * @see ActivityManager#setProcessStateSummary(byte[])
      */
-    public @Nullable byte[] getProcessStateSummary() {
+    @Nullable
+    public byte[] getProcessStateSummary() {
         return mState;
     }
 
@@ -836,7 +860,8 @@ public final class ApplicationExitInfo implements Parcelable {
      * @return The input stream to the traces that was taken by the system
      *         prior to the death of the process.
      */
-    public @Nullable InputStream getTraceInputStream() throws IOException {
+    @Nullable
+    public InputStream getTraceInputStream() throws IOException {
         if (mAppTraceRetriever == null && mNativeTombstoneRetriever == null) {
             return null;
         }
@@ -865,30 +890,33 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * Similar to {@link #getTraceInputStream} but return the File object.
      *
-     * For internal use only.
+     * <p>For internal use only.
      *
      * @hide
      */
-    public @Nullable File getTraceFile() {
+    @Nullable
+    public File getTraceFile() {
         return mTraceFile;
     }
 
     /**
      * A subtype reason in conjunction with {@link #mReason}.
      *
-     * For internal use only.
+     * <p>For internal use only.
      *
      * @hide
      */
-    public @SubReason int getSubReason() {
+    @SubReason
+    public int getSubReason() {
         return mSubReason;
     }
 
     /**
      * The connection group this process belongs to, if there is any.
-     * @see android.content.Context#updateServiceGroup
      *
-     * For internal use only.
+     * <p>For internal use only.
+     *
+     * @see android.content.Context#updateServiceGroup
      *
      * @hide
      */
@@ -901,6 +929,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
+    @Nullable
     public String getPackageName() {
         return mPackageName;
     }
@@ -908,10 +937,11 @@ public final class ApplicationExitInfo implements Parcelable {
     /**
      * List of packages running in this process;
      *
-     * For system internal use only, will not retain across processes.
+     * <p>For system internal use only, will not retain across processes.
      *
      * @hide
      */
+    @Nullable
     public String[] getPackageList() {
         return mPackageList;
     }
@@ -957,7 +987,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setProcessName(final String processName) {
+    public void setProcessName(@Nullable final String processName) {
         mProcessName = intern(processName);
     }
 
@@ -966,7 +996,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setReason(final @Reason int reason) {
+    public void setReason(@Reason final int reason) {
         mReason = reason;
     }
 
@@ -984,7 +1014,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setImportance(final @Importance int importance) {
+    public void setImportance(@Importance final int importance) {
         mImportance = importance;
     }
 
@@ -1011,7 +1041,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setTimestamp(final @CurrentTimeMillisLong long timestamp) {
+    public void setTimestamp(@CurrentTimeMillisLong final long timestamp) {
         mTimestamp = timestamp;
     }
 
@@ -1020,7 +1050,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setDescription(final String description) {
+    public void setDescription(@Nullable final String description) {
         mDescription = intern(description);
     }
 
@@ -1029,7 +1059,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setSubReason(final @SubReason int subReason) {
+    public void setSubReason(@SubReason final int subReason) {
         mSubReason = subReason;
     }
 
@@ -1047,7 +1077,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setPackageName(final String packageName) {
+    public void setPackageName(@Nullable final String packageName) {
         mPackageName = intern(packageName);
     }
 
@@ -1056,7 +1086,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setPackageList(final String[] packageList) {
+    public void setPackageList(@Nullable final String[] packageList) {
         mPackageList = packageList;
     }
 
@@ -1065,7 +1095,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setProcessStateSummary(final byte[] state) {
+    public void setProcessStateSummary(@Nullable final byte[] state) {
         mState = state;
     }
 
@@ -1074,7 +1104,7 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setTraceFile(final File traceFile) {
+    public void setTraceFile(@Nullable final File traceFile) {
         mTraceFile = traceFile;
     }
 
@@ -1083,16 +1113,17 @@ public final class ApplicationExitInfo implements Parcelable {
      *
      * @hide
      */
-    public void setAppTraceRetriever(final IAppTraceRetriever retriever) {
+    public void setAppTraceRetriever(@Nullable final IAppTraceRetriever retriever) {
         mAppTraceRetriever = retriever;
     }
 
     /**
-     * @see mNativeTombstoneRetriever
+     * @see #mNativeTombstoneRetriever
      *
      * @hide
      */
-    public void setNativeTombstoneRetriever(final IParcelFileDescriptorRetriever retriever) {
+    public void setNativeTombstoneRetriever(
+            @Nullable final IParcelFileDescriptorRetriever retriever) {
         mNativeTombstoneRetriever = retriever;
     }
 
@@ -1174,7 +1205,7 @@ public final class ApplicationExitInfo implements Parcelable {
     }
 
     /** @hide */
-    public ApplicationExitInfo(ApplicationExitInfo other) {
+    public ApplicationExitInfo(@NonNull ApplicationExitInfo other) {
         mPid = other.mPid;
         mRealUid = other.mRealUid;
         mPackageUid = other.mPackageUid;
@@ -1226,12 +1257,13 @@ public final class ApplicationExitInfo implements Parcelable {
         }
     }
 
+    @Nullable
     private static String intern(@Nullable String source) {
         return source != null ? source.intern() : null;
     }
 
-    public @NonNull static final Creator<ApplicationExitInfo> CREATOR =
-            new Creator<ApplicationExitInfo>() {
+    @NonNull
+    public static final Creator<ApplicationExitInfo> CREATOR = new Creator<>() {
         @Override
         public ApplicationExitInfo createFromParcel(Parcel in) {
             return new ApplicationExitInfo(in);
@@ -1246,7 +1278,7 @@ public final class ApplicationExitInfo implements Parcelable {
     /** @hide */
     public void dump(@NonNull PrintWriter pw, @Nullable String prefix, @Nullable String seqSuffix,
             @NonNull SimpleDateFormat sdf) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append(prefix)
                 .append("ApplicationExitInfo ").append(seqSuffix).append(':')
                 .append('\n');
@@ -1272,17 +1304,21 @@ public final class ApplicationExitInfo implements Parcelable {
         DebugUtils.sizeValueToString(mPss << 10, sb);
         sb.append(" rss=");
         DebugUtils.sizeValueToString(mRss << 10, sb);
-        sb.append(" description=").append(mDescription)
-                .append(" state=").append((ArrayUtils.isEmpty(mState)
-                            ? "empty" : Integer.toString(mState.length) + " bytes"))
-                .append(" trace=").append(mTraceFile)
+        sb.append(" description=").append(mDescription);
+        sb.append(" state=");
+        if (ArrayUtils.isEmpty(mState)) {
+            sb.append("empty");
+        } else {
+            sb.append(mState.length).append(" bytes");
+        }
+        sb.append(" trace=").append(mTraceFile)
                 .append('\n');
-        pw.print(sb.toString());
+        pw.print(sb);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("ApplicationExitInfo(timestamp=");
         sb.append(new SimpleDateFormat().format(new Date(mTimestamp)));
         sb.append(" pid=").append(mPid);
@@ -1300,14 +1336,19 @@ public final class ApplicationExitInfo implements Parcelable {
         sb.append(" pss="); DebugUtils.sizeValueToString(mPss << 10, sb);
         sb.append(" rss="); DebugUtils.sizeValueToString(mRss << 10, sb);
         sb.append(" description=").append(mDescription);
-        sb.append(" state=").append(ArrayUtils.isEmpty(mState)
-                ? "empty" : Integer.toString(mState.length) + " bytes");
+        sb.append(" state=");
+        if (ArrayUtils.isEmpty(mState)) {
+            sb.append("empty");
+        } else {
+            sb.append(mState.length).append(" bytes");
+        }
         sb.append(" trace=").append(mTraceFile);
 
         return sb.toString();
     }
 
     /** @hide */
+    @NonNull
     public static String reasonCodeToString(@Reason int reason) {
         switch (reason) {
             case REASON_EXIT_SELF:
@@ -1342,12 +1383,14 @@ public final class ApplicationExitInfo implements Parcelable {
                 return "STATE CHANGE";
             case REASON_PACKAGE_UPDATED:
                 return "PACKAGE UPDATED";
+            case REASON_UNKNOWN:
             default:
                 return "UNKNOWN";
         }
     }
 
     /** @hide */
+    @NonNull
     public static String subreasonToString(@SubReason int subreason) {
         switch (subreason) {
             case SUBREASON_WAIT_FOR_DEBUGGER:
@@ -1384,6 +1427,8 @@ public final class ApplicationExitInfo implements Parcelable {
                 return "REMOVE LRU";
             case SUBREASON_ISOLATED_NOT_NEEDED:
                 return "ISOLATED NOT NEEDED";
+            case SUBREASON_CACHED_IDLE_FORCED_APP_STANDBY:
+                return "CACHED IDLE FORCED APP STANDBY";
             case SUBREASON_FREEZER_BINDER_IOCTL:
                 return "FREEZER BINDER IOCTL";
             case SUBREASON_FREEZER_BINDER_TRANSACTION:
@@ -1400,6 +1445,10 @@ public final class ApplicationExitInfo implements Parcelable {
                 return "PACKAGE UPDATE";
             case SUBREASON_UNDELIVERED_BROADCAST:
                 return "UNDELIVERED BROADCAST";
+            case SUBREASON_SDK_SANDBOX_DIED:
+                return "SDK SANDBOX DIED";
+            case SUBREASON_SDK_SANDBOX_NOT_NEEDED:
+                return "SDK SANDBOX NOT NEEDED";
             case SUBREASON_EXCESSIVE_BINDER_OBJECTS:
                 return "EXCESSIVE BINDER OBJECTS";
             case SUBREASON_OOM_KILL:
@@ -1408,6 +1457,7 @@ public final class ApplicationExitInfo implements Parcelable {
                 return "FREEZER BINDER ASYNC FULL";
             case SUBREASON_EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED:
                 return "EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED";
+            case SUBREASON_UNKNOWN:
             default:
                 return "UNKNOWN";
         }
@@ -1421,7 +1471,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * @param fieldId  Field Id of the ApplicationExitInfo as defined in the parent message
      * @hide
      */
-    public void writeToProto(ProtoOutputStream proto, long fieldId) {
+    public void writeToProto(@NonNull ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
         proto.write(ApplicationExitInfoProto.PID, mPid);
         proto.write(ApplicationExitInfoProto.REAL_UID, mRealUid);
@@ -1451,7 +1501,7 @@ public final class ApplicationExitInfo implements Parcelable {
      * @param fieldId Field Id of the ApplicationExitInfo as defined in the parent message
      * @hide
      */
-    public void readFromProto(ProtoInputStream proto, long fieldId)
+    public void readFromProto(@NonNull ProtoInputStream proto, long fieldId)
             throws IOException, WireTypeMismatchException {
         final long token = proto.start(fieldId);
         while (proto.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
@@ -1514,10 +1564,9 @@ public final class ApplicationExitInfo implements Parcelable {
 
     @Override
     public boolean equals(@Nullable Object other) {
-        if (other == null || !(other instanceof ApplicationExitInfo)) {
+        if (!(other instanceof ApplicationExitInfo o)) {
             return false;
         }
-        ApplicationExitInfo o = (ApplicationExitInfo) other;
         return mPid == o.mPid && mRealUid == o.mRealUid && mPackageUid == o.mPackageUid
                 && mDefiningUid == o.mDefiningUid
                 && mConnectionGroup == o.mConnectionGroup && mReason == o.mReason

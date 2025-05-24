@@ -185,6 +185,7 @@ public class PowerManagerServiceTest {
     @Mock private LightsManager mLightsManagerMock;
     @Mock private DisplayManagerInternal mDisplayManagerInternalMock;
     @Mock private DisplayManager mDisplayManagerMock;
+    @Mock private SensorManager mSensorManagerMock;
     @Mock private BatteryManagerInternal mBatteryManagerInternalMock;
     @Mock private ActivityManagerInternal mActivityManagerInternalMock;
     @Mock private AttentionManagerInternal mAttentionManagerInternalMock;
@@ -278,6 +279,7 @@ public class PowerManagerServiceTest {
         mResourcesSpy = spy(mContextSpy.getResources());
         when(mContextSpy.getResources()).thenReturn(mResourcesSpy);
         when(mContextSpy.getSystemService(DisplayManager.class)).thenReturn(mDisplayManagerMock);
+        when(mContextSpy.getSystemService(SensorManager.class)).thenReturn(mSensorManagerMock);
         setBatterySaverSupported();
 
         MockContentResolver cr = new MockContentResolver(mContextSpy);

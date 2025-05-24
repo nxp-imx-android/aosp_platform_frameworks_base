@@ -203,6 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Authenticated"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancel Authentication"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"More Options"</string>
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"More Options"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verify another way"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Manage Identity Check"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Use PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Use pattern"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Use password"</string>
@@ -270,6 +274,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Battery charging, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> percent."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Battery <xliff:g id="PERCENTAGE">%d</xliff:g> percent, charging paused for battery protection."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Battery <xliff:g id="PERCENTAGE">%1$d</xliff:g> percent, <xliff:g id="TIME">%2$s</xliff:g>, charging paused for battery protection."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"Battery <xliff:g id="NUMBER">%d</xliff:g> percent. Battery saver is on."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"See all notifications"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"TeleTypewriter enabled."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Ringer vibrate."</string>
@@ -280,6 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Quick settings."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Quick settings and Notification shade."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Lock screen"</string>
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"Lock screen, double tap and hold to customize lock screen."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Work lock screen"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"Close"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"total silence"</string>
@@ -374,6 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# device}other{# devices}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Flashlight"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Camera in use"</string>
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"Flashlight Strength"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Mobile data"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Data usage"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Remaining data"</string>
@@ -812,6 +820,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Turn on"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"On - Face-based"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silence and bundle"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"For <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sales, new features, and more"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Top stories, editorials, and more"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Likes, posts, and more"</string>
@@ -839,10 +848,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> doesn’t support conversation features"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Dismiss"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Don\'t show as pinned"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"Turn off"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"Block Live Updates from this app"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"Showing Live Updates"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"Pinned notifications display live info from apps, and always appear on the status bar and lock screen"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"Live updates"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"When turned off, ongoing notifications from this app won\'t be promoted on your lock screen and status bar"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"These notifications can\'t be modified."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Call notifications can\'t be modified."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"This group of notifications cannot be configured here"</string>
@@ -1271,7 +1280,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Group"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 device selected"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> devices selected"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(disconnected)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"Connected"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Can\'t switch. Tap to try again."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Connect a device"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connect Device"</string>
@@ -1282,8 +1291,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Connected speakers"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers &amp; Displays"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggested"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"Suggested Devices"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"Input"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"Output"</string>

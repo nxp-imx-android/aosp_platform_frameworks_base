@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -25,6 +26,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -36,11 +38,14 @@ open class OpenAppFromTaskbar() : TestScenarioBase() {
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val browserApp = BrowserAppHelper(instrumentation)
+    val browserApp = BrowserAppHelper(instrumentation)
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         tapl.setEnableRotation(true)
         tapl.enableTransientTaskbar(false)
         testApp.enterDesktopMode(wmHelper, device)
@@ -59,6 +64,4 @@ open class OpenAppFromTaskbar() : TestScenarioBase() {
         browserApp.exit(wmHelper)
         testApp.exit(wmHelper)
     }
-
-    fun getOpenedApp() = browserApp
 }

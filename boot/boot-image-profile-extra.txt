@@ -22,6 +22,9 @@ HSPLandroid/graphics/Color;->luminance()F
 
 # For now, compile all methods in MessageQueue to avoid performance cliffs for
 # flagged/evolving hot code paths. See: b/338098106
+# TODO(shayba): clean up redundant entries after the generated profile is updated
+# to include all hot MessageQueue methods, and the inner classes are profiled
+# as well.
 HSPLandroid/os/MessageQueue;->*
 HSPLandroid/os/MessageQueue$FileDescriptorRecord;->*
 HSPLandroid/os/MessageQueue$IdleHandler;->*
@@ -45,6 +48,14 @@ HSPLandroid/os/MessageQueue$OnFileDescriptorEventListener;->*
 HSPLandroid/os/MessageQueue$StackNodeType;->*
 HSPLandroid/os/MessageQueue$StateNode;->*
 HSPLandroid/os/MessageQueue$TimedParkStateNode;->*
+
+# Concurrent MessageQueue uses ConcurrentSkipListMap.
+# See: b/415954362
+# TODO(shayba): clean up redundant entries after ag/33686358 is merged.
+HSPLjava/util/concurrent/ConcurrentSkipListMap;->*
+HSPLjava/util/concurrent/ConcurrentSkipListMap$KeyIterator;->*
+HSPLjava/util/concurrent/ConcurrentSkipListMap$KeySet;->*
+HSPLjava/util/concurrent/ConcurrentSkipListSet;->*
 
 # For now, compile all methods in PerfettoTrace and PerfettoTrackEventExtra.
 # Similar to the existing Trace APIs, these new APIs can impact the performance

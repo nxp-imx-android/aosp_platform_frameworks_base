@@ -16,6 +16,7 @@
 
 package com.android.systemui.topwindoweffects
 
+import android.os.SystemProperties
 import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
@@ -29,7 +30,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
@@ -80,7 +80,13 @@ constructor(
             squeezeEffectInteractor.isEffectEnabledAndPowerButtonPressedAsSingleGesture
                 .collectLatest { enabledAndPressed ->
                     if (enabledAndPressed) {
-                        startSqueeze()
+                        val hapticsOption =
+                            SystemProperties.get(
+                                /*key=*/ "persist.lpp_invocation.haptics",
+                                /*def=*/ "no_rumble",
+                            )
+                        val useHapticRumble = hapticsOption == "with_rumble"
+                        startSqueeze(useHapticRumble)
                     } else {
                         cancelSqueeze()
                     }
@@ -88,28 +94,37 @@ constructor(
         }
     }
 
-    private suspend fun startSqueeze() {
-        delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMs())
+    private suspend fun startSqueeze(useHapticRumble: Boolean) {
+        delay(squeezeEffectInteractor.getInvocationEffectInitialDelayMillis())
         setRequestTopUi(true)
         val inwardsAnimationDuration =
-            squeezeEffectInteractor.getInvocationEffectInwardsAnimationDurationMs()
+            squeezeEffectInteractor.getInvocationEffectInAnimationDurationMillis()
+        val outwardsAnimationDuration =
+            squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis()
+        if (useHapticRumble) {
+            hapticPlayer?.playRumble(inwardsAnimationDuration.toInt())
+        }
         animateSqueezeProgressTo(
             targetProgress = 1f,
             duration = inwardsAnimationDuration,
             interpolator = InterpolatorsAndroidX.LEGACY,
         ) {
+            hapticPlayer?.startZoomOutEffect(
+                durationMillis =
+                    (HAPTIC_OUTWARD_EFFECT_DURATION_SCALE * outwardsAnimationDuration).toInt()
+            )
             animateSqueezeProgressTo(
                 targetProgress = 0f,
-                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
-                interpolator = InterpolatorsAndroidX.LEGACY,
+                duration = outwardsAnimationDuration,
+                interpolator = InterpolatorsAndroidX.EMPHASIZED,
             ) {
                 finishAnimation()
             }
         }
-        hapticPlayer?.start(inwardsAnimationDuration.toInt() + DEFAULT_OUTWARD_EFFECT_DURATION)
         squeezeEffectInteractor.isPowerButtonLongPressed.collectLatest { isLongPressed ->
             if (isLongPressed) {
                 isAnimationInterruptible = false
+                hapticPlayer?.playLppIndicator()
             }
         }
     }
@@ -119,8 +134,8 @@ constructor(
             hapticPlayer?.cancel()
             animateSqueezeProgressTo(
                 targetProgress = 0f,
-                duration = DEFAULT_OUTWARD_EFFECT_DURATION.toLong(),
-                interpolator = InterpolatorsAndroidX.LEGACY,
+                duration = squeezeEffectInteractor.getInvocationEffectOutAnimationDurationMillis(),
+                interpolator = InterpolatorsAndroidX.EMPHASIZED,
             ) {
                 finishAnimation()
             }
@@ -167,10 +182,18 @@ constructor(
         pw.println("$TAG:")
         pw.println("  isAnimationInterruptible=$isAnimationInterruptible")
         pw.println("  squeezeProgress=$squeezeProgress")
+        squeezeEffectInteractor.dump(pw, args)
     }
 
     companion object {
         @VisibleForTesting const val TAG = "TopLevelWindowEffects"
+
+        /**
+         * A scale applied to the outward animation duration to derive the duration of the haptic
+         * effect. This number is fine tuned to produce a haptic effect that suits the outward
+         * animator interpolator well.
+         */
+        @VisibleForTesting const val HAPTIC_OUTWARD_EFFECT_DURATION_SCALE = 0.53
     }
 }
 

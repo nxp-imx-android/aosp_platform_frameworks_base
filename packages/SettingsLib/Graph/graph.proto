@@ -197,8 +197,11 @@ message IntentProto {
 
 // Proto of android.os.Bundle
 message BundleProto {
-  // Bundle data.
+  // Bundle data. Absent when `parcel_bytes` is provided.
   map<string, BundleValue> values = 1;
+  // The byte array that this `Bundle` object is marshalled by `Parcel`. It is flexible to support
+  // unknown value types (e.g. `Parcelable`) but the data size is way larger than `values`.
+  bytes parcel_bytes = 2;
 
   message BundleValue {
     // Bundle data value for the associated key name.

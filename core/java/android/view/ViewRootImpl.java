@@ -22,7 +22,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.pm.ActivityInfo.OVERRIDE_SANDBOX_VIEW_BOUNDS_APIS;
 import static android.graphics.HardwareRenderer.SYNC_CONTEXT_IS_STOPPED;
 import static android.graphics.HardwareRenderer.SYNC_LOST_SURFACE_REWARD_IF_FOUND;
-import static android.os.IInputConstants.INVALID_INPUT_EVENT_ID;
 import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.util.SequenceUtils.getInitSeq;
 import static android.util.SequenceUtils.isIncomingSeqStale;
@@ -100,8 +99,10 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INSET_PARENT_
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPTIMIZE_MEASURE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OVERRIDE_LAYOUT_IN_DISPLAY_CUTOUT_MODE;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_ADDITIONAL;
@@ -150,6 +151,7 @@ import android.annotation.Size;
 import android.annotation.UiContext;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
+import android.app.AppOpsManager;
 import android.app.ResourcesManager;
 import android.app.UiModeManager;
 import android.app.UiModeManager.ForceInvertStateChangeListener;
@@ -365,13 +367,6 @@ public final class ViewRootImpl implements ViewParent,
      * this, WindowCallbacks will not fire.
      */
     private static final boolean MT_RENDERER_AVAILABLE = true;
-
-    /**
-     * Whether or not to report end-to-end input latency. Can be disabled temporarily as a
-     * risk mitigation against potential jank caused by acquiring a weak reference
-     * per frame.
-     */
-    private static final boolean ENABLE_INPUT_LATENCY_TRACKING = true;
 
     /**
      * Whether the client (system UI) is handling the transient gesture and the corresponding
@@ -997,6 +992,7 @@ public final class ViewRootImpl implements ViewParent,
     private final ImeFocusController mImeFocusController;
 
     private boolean mIsSurfaceOpaque;
+    private boolean mIsSurfaceColorSpaceAgnostic;
 
     private final BackgroundBlurDrawable.Aggregator mBlurRegionAggregator =
             new BackgroundBlurDrawable.Aggregator(this);
@@ -1602,6 +1598,14 @@ public final class ViewRootImpl implements ViewParent,
                     mWindowAttributes.privateFlags |= PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED;
                 }
 
+                // TODO(b/395054309): Replace with calls to LayoutParams#setSystemApplicationOverlay
+                //  in next API bump
+                if (com.android.media.projection.flags.Flags.recordingOverlay()
+                        && mWindowAttributes.type == TYPE_APPLICATION_OVERLAY
+                        && hasSystemApplicationOverlayAppOp()) {
+                    mWindowAttributes.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+                }
+
                 try {
                     mOrigWindowType = mWindowAttributes.type;
                     mAttachInfo.mRecomputeGlobalAttributes = true;
@@ -1730,14 +1734,8 @@ public final class ViewRootImpl implements ViewParent,
                         mInputQueueCallback.onInputQueueCreated(mInputQueue);
                     }
                     mInputEventReceiver = new WindowInputEventReceiver(inputChannel,
-                            Looper.myLooper());
+                            Looper.myLooper(), mAttachInfo.mThreadedRenderer);
 
-                    if (ENABLE_INPUT_LATENCY_TRACKING && mAttachInfo.mThreadedRenderer != null) {
-                        InputMetricsListener listener = new InputMetricsListener();
-                        mHardwareRendererObserver = new HardwareRendererObserver(
-                                listener, listener.data, mHandler, true /*waitForPresentTime*/);
-                        mAttachInfo.mThreadedRenderer.addObserver(mHardwareRendererObserver);
-                    }
                     // Update unbuffered request when set the root view.
                     mUnbufferedInputSource = mView.mUnbufferedInputSource;
                 }
@@ -2157,6 +2155,13 @@ public final class ViewRootImpl implements ViewParent,
             // Calling this before copying prevents redundant LAYOUT_CHANGED.
             final int layoutInDisplayCutoutModeFromCaller = adjustLayoutInDisplayCutoutMode(attrs);
 
+            // Keep PRIVATE_FLAG_SYSTEM_APPLICATION overlay if AppOp is granted
+            // TODO(b/395054309): Replace with calls to LayoutParams#setSystemApplicationOverlay
+            //  in next API bump
+            if (shouldKeepSystemApplicationOverlay(mWindowAttributes, attrs)) {
+                attrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+            }
+
             final int changes = mWindowAttributes.copyFrom(attrs);
             if ((changes & WindowManager.LayoutParams.TRANSLUCENT_FLAGS_CHANGED) != 0) {
                 // Recompute system ui visibility.
@@ -2216,6 +2221,35 @@ public final class ViewRootImpl implements ViewParent,
             scheduleTraversals();
             setAccessibilityWindowAttributesIfNeeded();
         }
+    }
+
+    private boolean shouldKeepSystemApplicationOverlay(WindowManager.LayoutParams current,
+            WindowManager.LayoutParams incoming) {
+        if (!com.android.media.projection.flags.Flags.recordingOverlay()) {
+            return false;
+        }
+        final boolean hasSystemApplicationOverlay =
+                (current.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0;
+        if (!hasSystemApplicationOverlay) {
+            return false;
+        }
+
+        if ((incoming.privateFlags & PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY) != 0) {
+            return false;
+        }
+
+        if (!hasSystemApplicationOverlayAppOp()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean hasSystemApplicationOverlayAppOp() {
+        return mContext.getSystemService(AppOpsManager.class).checkOpRawNoThrow(
+                AppOpsManager.OPSTR_SYSTEM_APPLICATION_OVERLAY,
+                mView.mContext.getAttributionSource().getUid(),
+                mView.mContext.getPackageName(), null) == AppOpsManager.MODE_ALLOWED;
     }
 
     private int adjustLayoutInDisplayCutoutMode(WindowManager.LayoutParams attrs) {
@@ -3859,12 +3893,19 @@ public final class ViewRootImpl implements ViewParent,
                     }
 
                     if (setScPropertiesInClient()) {
+                        if (surfaceControlChanged) {
+                            // Reset to default for a new SurfaceControl.
+                            mIsSurfaceColorSpaceAgnostic = false;
+                        }
                         if (surfaceControlChanged || windowAttributesChanged) {
                             boolean colorSpaceAgnostic = (lp.privateFlags
                                     & WindowManager.LayoutParams.PRIVATE_FLAG_COLOR_SPACE_AGNOSTIC)
                                     != 0;
-                            mTransaction.setColorSpaceAgnostic(mSurfaceControl, colorSpaceAgnostic)
-                                    .apply();
+                            if (colorSpaceAgnostic != mIsSurfaceColorSpaceAgnostic) {
+                                mIsSurfaceColorSpaceAgnostic = colorSpaceAgnostic;
+                                mTransaction.setColorSpaceAgnostic(
+                                        mSurfaceControl, colorSpaceAgnostic).applyAsyncUnsafe();
+                            }
                         }
                     }
                 }
@@ -10643,8 +10684,14 @@ public final class ViewRootImpl implements ViewParent,
     final TraversalRunnable mTraversalRunnable = new TraversalRunnable();
 
     final class WindowInputEventReceiver extends InputEventReceiver {
-        public WindowInputEventReceiver(InputChannel inputChannel, Looper looper) {
+        private final HardwareRenderer mRenderer;
+        WindowInputEventReceiver(InputChannel inputChannel, Looper looper,
+                HardwareRenderer renderer) {
             super(inputChannel, looper);
+            mRenderer = renderer;
+            if (mRenderer != null) {
+                mRenderer.addObserver(getNativeFrameMetricsObserver());
+            }
         }
 
         @Override
@@ -10696,43 +10743,14 @@ public final class ViewRootImpl implements ViewParent,
         @Override
         public void dispose() {
             unscheduleConsumeBatchedInput();
+            if (mRenderer != null) {
+                mRenderer.removeObserver(getNativeFrameMetricsObserver());
+            }
             super.dispose();
         }
     }
     private WindowInputEventReceiver mInputEventReceiver;
 
-    final class InputMetricsListener
-            implements HardwareRendererObserver.OnFrameMetricsAvailableListener {
-        public long[] data = new long[FrameMetrics.Index.FRAME_STATS_COUNT];
-
-        @Override
-        public void onFrameMetricsAvailable(int dropCountSinceLastInvocation) {
-            final int inputEventId = (int) data[FrameMetrics.Index.INPUT_EVENT_ID];
-            if (inputEventId == INVALID_INPUT_EVENT_ID) {
-                return;
-            }
-            final long presentTime = data[FrameMetrics.Index.DISPLAY_PRESENT_TIME];
-            if (presentTime <= 0) {
-                // Present time is not available for this frame. If the present time is not
-                // available, we cannot compute end-to-end input latency metrics.
-                return;
-            }
-            final long gpuCompletedTime = data[FrameMetrics.Index.GPU_COMPLETED];
-            if (mInputEventReceiver == null) {
-                return;
-            }
-            if (gpuCompletedTime >= presentTime) {
-                final double discrepancyMs = (gpuCompletedTime - presentTime) * 1E-6;
-                final long vsyncId = data[FrameMetrics.Index.FRAME_TIMELINE_VSYNC_ID];
-                Log.w(TAG, "Not reporting timeline because gpuCompletedTime is " + discrepancyMs
-                        + "ms ahead of presentTime. FRAME_TIMELINE_VSYNC_ID=" + vsyncId
-                        + ", INPUT_EVENT_ID=" + inputEventId);
-                // TODO(b/186664409): figure out why this sometimes happens
-                return;
-            }
-            mInputEventReceiver.reportTimeline(inputEventId, gpuCompletedTime, presentTime);
-        }
-    }
     HardwareRendererObserver mHardwareRendererObserver;
 
     final class ConsumeBatchedInputRunnable implements Runnable {

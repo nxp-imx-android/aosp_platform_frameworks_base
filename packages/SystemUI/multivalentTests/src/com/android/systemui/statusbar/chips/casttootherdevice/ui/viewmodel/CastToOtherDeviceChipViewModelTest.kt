@@ -16,13 +16,17 @@
 
 package com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel
 
+import android.content.Context
 import android.content.DialogInterface
+import android.testing.TestableLooper.RunWithLooper
 import android.view.View
+import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.Cuj
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogCuj
+import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.mockDialogTransitionAnimator
 import com.android.systemui.common.shared.model.ContentDescription
@@ -59,6 +63,7 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -66,6 +71,7 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@RunWithLooper(setAsMainLooper = true)
 class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().also { it.testCase = this }
     private val testScope = kosmos.testScope
@@ -75,18 +81,22 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
 
     private val mockScreenCastDialog = mock<SystemUIDialog>()
     private val mockGenericCastDialog = mock<SystemUIDialog>()
-    private val chipBackgroundView = mock<ChipBackgroundContainer>()
+    private val chipBackgroundView =
+        mock<ChipBackgroundContainer> { on { context } doReturn context }
     private val chipView =
-        mock<View>().apply {
-            whenever(
-                    this.requireViewById<ChipBackgroundContainer>(
-                        R.id.ongoing_activity_chip_background
-                    )
-                )
-                .thenReturn(chipBackgroundView)
+        mock<View> {
+            on {
+                requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
+            } doReturn chipBackgroundView
+            on { context } doReturn context
         }
+    private val viewRootImpl = mock<ViewRootImpl> { on { view } doReturn chipView }
+    private val dialogTransitionController =
+        mock<DialogTransitionAnimator.Controller> { on { viewRoot } doReturn viewRootImpl }
     private val mockExpandable: Expandable =
-        mock<Expandable>().apply { whenever(dialogTransitionController(any())).thenReturn(mock()) }
+        mock<Expandable> {
+            on { dialogTransitionController(any()) } doReturn dialogTransitionController
+        }
 
     private val underTest = kosmos.castToOtherDeviceChipViewModel
 
@@ -96,13 +106,15 @@ class CastToOtherDeviceChipViewModelTest : SysuiTestCase() {
 
         whenever(
                 kosmos.mockSystemUIDialogFactory.create(
-                    any<EndCastScreenToOtherDeviceDialogDelegate>()
+                    any<EndCastScreenToOtherDeviceDialogDelegate>(),
+                    any<Context>(),
                 )
             )
             .thenReturn(mockScreenCastDialog)
         whenever(
                 kosmos.mockSystemUIDialogFactory.create(
-                    any<EndGenericCastToOtherDeviceDialogDelegate>()
+                    any<EndGenericCastToOtherDeviceDialogDelegate>(),
+                    any<Context>(),
                 )
             )
             .thenReturn(mockGenericCastDialog)

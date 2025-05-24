@@ -22,9 +22,10 @@ import static org.testng.Assert.expectThrows;
 
 import android.companion.TaskContinuityMessage;
 
+import android.app.ActivityManager;
+import android.app.TaskInfo;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
-
 import android.util.proto.ProtoOutputStream;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoParseException;
@@ -32,6 +33,9 @@ import android.util.proto.ProtoParseException;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 
 @Presubmit
@@ -39,12 +43,19 @@ import java.io.IOException;
 public class ContinuityDeviceConnectedTest {
 
     @Test
-    public void testConstructor_fromCurrentForegroundTaskId() {
+    public void testConstructor_fromObjects() {
         final int currentForegroundTaskId = 1234;
+        final List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
+
         final ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(currentForegroundTaskId);
+            = new ContinuityDeviceConnected(
+                currentForegroundTaskId,
+                remoteTasks);
+
         assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
             .isEqualTo(currentForegroundTaskId);
+        assertThat(continuityDeviceConnected.getRemoteTasks())
+            .isEqualTo(remoteTasks);
     }
 
     @Test
@@ -84,8 +95,11 @@ public class ContinuityDeviceConnectedTest {
     @Test
     public void testWriteToProto_writesValidProto() throws IOException {
         int currentForegroundTaskId = 1234;
+        List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(currentForegroundTaskId);
+            = new ContinuityDeviceConnected(
+                currentForegroundTaskId,
+                remoteTasks);
         final ProtoOutputStream pos = new ProtoOutputStream();
         continuityDeviceConnected.writeToProto(pos);
         pos.flush();
@@ -104,9 +118,25 @@ public class ContinuityDeviceConnectedTest {
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws IOException {
+        int expectedTaskId = 1;
+        String expectedLabel = "test";
+        long expectedLastActiveTime = 0;
+
+        TaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.taskId = expectedTaskId;
+        taskInfo.taskDescription
+            = new ActivityManager.TaskDescription(expectedLabel);
+        taskInfo.lastActiveTime = expectedLastActiveTime;
+
         int currentForegroundTaskId = 1234;
+        List<RemoteTaskInfo> remoteTasks = Arrays.asList(
+            new RemoteTaskInfo(taskInfo));
+
         ContinuityDeviceConnected expected
-            = new ContinuityDeviceConnected(currentForegroundTaskId);
+            = new ContinuityDeviceConnected(
+                currentForegroundTaskId,
+                remoteTasks);
+
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
         pos.flush();
@@ -117,5 +147,14 @@ public class ContinuityDeviceConnectedTest {
 
         assertThat(actual.getCurrentForegroundTaskId())
             .isEqualTo(expected.getCurrentForegroundTaskId());
+        assertThat(actual.getRemoteTasks())
+            .hasSize(1);
+        RemoteTaskInfo actualTaskInfo = actual.getRemoteTasks().get(0);
+        assertThat(actualTaskInfo.getId())
+            .isEqualTo(expectedTaskId);
+        assertThat(actualTaskInfo.getLabel())
+            .isEqualTo(expectedLabel);
+        assertThat(actualTaskInfo.getLastUsedTimeMillis())
+            .isEqualTo(expectedLastActiveTime);
     }
 }

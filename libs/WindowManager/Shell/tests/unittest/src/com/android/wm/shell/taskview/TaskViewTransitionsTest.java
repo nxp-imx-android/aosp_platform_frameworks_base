@@ -56,6 +56,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.wm.shell.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -65,6 +66,7 @@ import com.android.wm.shell.transition.Transitions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -97,9 +99,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
 
     @Mock
     Transitions mTransitions;
-    @Mock
     TaskViewTaskController mTaskViewTaskController;
-    @Mock
     WindowContainerToken mToken;
     @Mock
     ShellTaskOrganizer mOrganizer;
@@ -122,27 +122,28 @@ public class TaskViewTransitionsTest extends ShellTestCase {
             doReturn(true).when(mTransitions).isRegistered();
         }
 
-        when(mToken.asBinder()).thenReturn(new Binder());
+        mToken = new MockToken().token();
 
-        mTaskInfo = new ActivityManager.RunningTaskInfo();
-        mTaskInfo.token = mToken;
-        mTaskInfo.taskId = 314;
-        mTaskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
+        mTaskInfo = createMockTaskInfo(314, mToken);
 
         mTaskViewRepository = new TaskViewRepository();
         when(mOrganizer.getExecutor()).thenReturn(mExecutor);
         mTaskViewTransitions = spy(new TaskViewTransitions(mTransitions, mTaskViewRepository,
                 mOrganizer, mSyncQueue));
+        mTaskViewTaskController = createMockTaskController(mTaskInfo);
         mTaskViewTransitions.registerTaskView(mTaskViewTaskController);
-        when(mTaskViewTaskController.getTaskInfo()).thenReturn(mTaskInfo);
-        when(mTaskViewTaskController.getTaskToken()).thenReturn(mToken);
     }
 
     @Test
     public void testMoveTaskViewToFullscreen_resetsInterceptBackPressed() {
         mTaskViewTransitions.moveTaskViewToFullscreen(mTaskViewTaskController);
 
-        verify(mOrganizer).setInterceptBackPressedOnTaskRoot(mToken, false);
+        ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(mTransitions).startTransition(anyInt(), wctCaptor.capture(), any());
+        WindowContainerTransaction.Change chg =
+                wctCaptor.getValue().getChanges().get(mToken.asBinder());
+        assertThat(chg.getInterceptBackPressed()).isFalse();
     }
 
     @EnableFlags({
@@ -455,6 +456,51 @@ public class TaskViewTransitionsTest extends ShellTestCase {
         mTaskViewTransitions.onExternalDone(transition);
 
         assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
+    @Test
+    public void removePendingTransitions_removePerTask() {
+        WindowContainerToken otherToken = new MockToken().token();
+        ActivityManager.RunningTaskInfo otherTaskInfo = createMockTaskInfo(999, otherToken);
+        TaskViewTaskController otherController = createMockTaskController(otherTaskInfo);
+        mTaskViewTransitions.registerTaskView(otherController);
+
+        mTaskViewTransitions.setTaskViewVisible(mTaskViewTaskController, true);
+        mTaskViewTransitions.setTaskViewVisible(otherController, true);
+
+        // There should be two pending transitions, one for each task
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+        assertThat(mTaskViewTransitions.findPending(mTaskViewTaskController,
+                TRANSIT_TO_FRONT)).isNotNull();
+        assertThat(mTaskViewTransitions.findPending(otherController, TRANSIT_TO_FRONT)).isNotNull();
+
+        // Remove pending for one task, keep the other
+        mTaskViewTransitions.removePendingTransitions(mTaskViewTaskController);
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+        assertThat(mTaskViewTransitions.findPending(mTaskViewTaskController,
+                TRANSIT_TO_FRONT)).isNull();
+        assertThat(mTaskViewTransitions.findPending(otherController, TRANSIT_TO_FRONT)).isNotNull();
+
+        // Remove the last one
+        mTaskViewTransitions.removePendingTransitions(otherController);
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+    }
+
+    private ActivityManager.RunningTaskInfo createMockTaskInfo(int taskId,
+            WindowContainerToken token) {
+        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.token = token;
+        taskInfo.taskId = taskId;
+        taskInfo.taskDescription = mock(ActivityManager.TaskDescription.class);
+        return taskInfo;
+    }
+
+    private TaskViewTaskController createMockTaskController(
+            ActivityManager.RunningTaskInfo taskInfo) {
+        TaskViewTaskController controller = mock(TaskViewTaskController.class);
+        when(controller.getTaskInfo()).thenReturn(taskInfo);
+        when(controller.getTaskToken()).thenReturn(taskInfo.token);
+        return controller;
     }
 
     private SurfaceControl.Transaction createMockTransaction() {

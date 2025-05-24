@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
+import android.app.supervision.ISupervisionListener
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
 import android.app.supervision.flags.Flags
@@ -40,8 +41,10 @@ import android.os.PersistableBundle
 import android.os.UserHandle
 import android.os.UserHandle.MIN_SECONDARY_USER_ID
 import android.os.UserHandle.USER_SYSTEM
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
 import android.provider.Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED
 import android.provider.Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED
@@ -77,11 +80,13 @@ import org.mockito.kotlin.whenever
 class SupervisionServiceTest {
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule val mocks: MockitoRule = MockitoJUnit.rule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     @Mock private lateinit var mockDpmInternal: DevicePolicyManagerInternal
     @Mock private lateinit var mockKeyguardManager: KeyguardManager
     @Mock private lateinit var mockPackageManager: PackageManager
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
+    @Mock private lateinit var mockSupervisionListener: ISupervisionListener
 
     private lateinit var context: Context
     private lateinit var lifecycle: SupervisionService.Lifecycle
@@ -426,6 +431,27 @@ class SupervisionServiceTest {
         whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(false)
 
         assertThat(service.hasSupervisionCredentials()).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
+    fun setSupervisionEnabledForUser_notifiesSupervisionListener() {
+        service.registerSupervisionListener(mockSupervisionListener)
+
+        assertThat(service.mSupervisionListeners.size).isEqualTo(1)
+        assertThat(service.mSupervisionListeners).containsExactly(mockSupervisionListener)
+
+        service.setSupervisionEnabledForUser(USER_ID, true)
+
+        verify(mockSupervisionListener).onSetSupervisionEnabled(eq(USER_ID), eq(true))
+
+        service.setSupervisionEnabledForUser(USER_ID, false)
+
+        verify(mockSupervisionListener).onSetSupervisionEnabled(eq(USER_ID), eq(false))
+
+        service.unregisterSupervisionListener(mockSupervisionListener)
+
+        assertThat(service.mSupervisionListeners.size).isEqualTo(0)
     }
 
     private val systemSupervisionPackage: String

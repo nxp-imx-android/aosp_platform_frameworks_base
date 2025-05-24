@@ -18,6 +18,7 @@ package com.android.wm.shell.scenarios
 
 import android.platform.test.annotations.Postsubmit
 import android.app.Instrumentation
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -27,6 +28,7 @@ import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
 import com.android.window.flags.Flags
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -39,7 +41,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 open class EnterDesktopWithAppHandleMenuExistingWindows : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val imeApp = ImeAppHelper(instrumentation)
@@ -48,7 +49,10 @@ open class EnterDesktopWithAppHandleMenuExistingWindows : TestScenarioBase() {
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         testApp.enterDesktopMode(wmHelper, device)
         imeApp.launchViaIntent(wmHelper)
         newTaskApp.launchViaIntent(wmHelper)

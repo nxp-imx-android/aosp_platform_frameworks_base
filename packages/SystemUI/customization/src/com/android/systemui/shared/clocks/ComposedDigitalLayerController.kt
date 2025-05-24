@@ -26,6 +26,7 @@ import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceEvents
+import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
@@ -150,9 +151,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
                 view.animateCharge()
             }
 
-            override fun onPositionUpdated(fromLeft: Int, direction: Int, fraction: Float) {}
-
-            override fun onPositionUpdated(distance: Float, fraction: Float) {}
+            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
 
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 

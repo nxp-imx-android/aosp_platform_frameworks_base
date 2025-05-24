@@ -17,7 +17,6 @@
 package com.android.server.locksettings;
 
 import static android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION;
-import static android.security.Flags.FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL;
 
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
@@ -263,21 +262,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL)
-    public void setLockCredential_forPrimaryUser_clearsStrongAuthWhenFlagIsOn()
+    public void setLockCredential_forPrimaryUser_clearsStrongAuth()
             throws Exception {
         setCredential(PRIMARY_USER_ID, newPassword("password"));
 
         verify(mStrongAuth).reportUnlock(PRIMARY_USER_ID);
-    }
-
-    @Test
-    @RequiresFlagsDisabled(FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL)
-    public void setLockCredential_forPrimaryUser_leavesStrongAuthWhenFlagIsOff()
-            throws Exception {
-        setCredential(PRIMARY_USER_ID, newPassword("password"));
-
-        verify(mStrongAuth, never()).reportUnlock(anyInt());
     }
 
     @Test
@@ -311,25 +300,13 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL)
-    public void setLockCredential_profileWithNewSeparateChallenge_clearsStrongAuthWhenFlagIsOn()
+    public void setLockCredential_profileWithNewSeparateChallenge_clearsStrongAuth()
             throws Exception {
         mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, true, null);
 
         setCredential(MANAGED_PROFILE_USER_ID, newPattern("12345"));
 
         verify(mStrongAuth).reportUnlock(MANAGED_PROFILE_USER_ID);
-    }
-
-    @Test
-    @RequiresFlagsDisabled(FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL)
-    public void setLockCredential_profileWithNewSeparateChallenge_leavesStrongAuthWhenFlagIsOff()
-            throws Exception {
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, true, null);
-
-        setCredential(MANAGED_PROFILE_USER_ID, newPattern("12345"));
-
-        verify(mStrongAuth, never()).reportUnlock(anyInt());
     }
 
     @Test
@@ -376,8 +353,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL)
-    public void setLockCredential_primaryWithUnifiedProfile_clearsStrongAuthForBothWhenFlagIsOn()
+    public void setLockCredential_primaryWithUnifiedProfile_clearsStrongAuthForBoth()
             throws Exception {
         final LockscreenCredential credential = newPassword("oldPassword");
         setCredential(PRIMARY_USER_ID, credential);
@@ -390,22 +366,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         verify(mStrongAuth).reportUnlock(PRIMARY_USER_ID);
         verify(mStrongAuth).reportUnlock(MANAGED_PROFILE_USER_ID);
     }
-
-    @Test
-    @RequiresFlagsDisabled(FLAG_CLEAR_STRONG_AUTH_ON_ADDING_PRIMARY_CREDENTIAL)
-    public void setLockCredential_primaryWithUnifiedProfile_leavesStrongAuthForBothWhenFlagIsOff()
-            throws Exception {
-        final LockscreenCredential credential = newPassword("oldPassword");
-        setCredential(PRIMARY_USER_ID, credential);
-        mService.setSeparateProfileChallengeEnabled(MANAGED_PROFILE_USER_ID, false, null);
-        clearCredential(PRIMARY_USER_ID, credential);
-        reset(mStrongAuth);
-
-        setCredential(PRIMARY_USER_ID, credential);
-
-        verify(mStrongAuth, never()).reportUnlock(anyInt());
-    }
-
 
     @Test
     public void setLockCredential_primaryWithUnifiedProfileWithCredential_leavesStrongAuthForBoth()
@@ -675,6 +635,65 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     @Test(expected=NullPointerException.class)
     public void testSetStringRejectsNullKey() {
         mService.setString(null, "value", 0);
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testDuplicateWrongGuessesAreNotCounted() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        final LockscreenCredential wrongPin = newPin("1111");
+        final int numGuesses = 100;
+
+        mSpManager.enableWeaver();
+        setCredential(userId, pin);
+        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+
+        // The software and hardware counters start at 0.
+        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
+
+        // Try the same wrong PIN repeatedly.
+        for (int i = 0; i < numGuesses; i++) {
+            VerifyCredentialResponse response =
+                    mService.verifyCredential(wrongPin, userId, 0 /* flags */);
+            assertFalse(response.isMatched());
+            assertEquals(0, response.getTimeout());
+        }
+        // The software and hardware counters should now be 1, for 1 unique guess.
+        assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(1, mSpManager.getSumOfWeaverFailureCounters());
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testSoftwareRateLimiterFlagDisabled() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        final LockscreenCredential wrongPin = newPin("1111");
+        final int numGuesses = 100;
+
+        mSpManager.enableWeaver();
+        setCredential(userId, pin);
+        final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
+
+        // The software and hardware counters start at 0.
+        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
+
+        // Try the same wrong PIN repeatedly.
+        for (int i = 0; i < numGuesses; i++) {
+            VerifyCredentialResponse response =
+                    mService.verifyCredential(wrongPin, userId, 0 /* flags */);
+            assertFalse(response.isMatched());
+        }
+        // The software counter should still be 0, since the software rate-limiter is fully disabled
+        // and thus it should have never been told about the guesses at all. The hardware counter
+        // should now be numGuesses, as all the (duplicate) guesses should have been sent to it.
+        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(numGuesses, mSpManager.getSumOfWeaverFailureCounters());
     }
 
     private void checkRecordedFrpNotificationIntent() {

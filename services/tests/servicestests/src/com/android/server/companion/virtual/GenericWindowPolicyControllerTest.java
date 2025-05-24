@@ -48,6 +48,8 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -116,7 +118,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void containsUid() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
 
         assertThat(gwpc.containsUid(TEST_UID)).isFalse();
 
@@ -130,15 +131,12 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void isEnteringPipAllowed_falseByDefault() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         assertThat(gwpc.isEnteringPipAllowed(TEST_UID)).isFalse();
     }
 
     @Test
     public void isEnteringPipAllowed_dpcSupportsPinned_allowed() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setSupportedWindowingModes(new HashSet<>(
                 Arrays.asList(WindowConfiguration.WINDOWING_MODE_FULLSCREEN,
                         WindowConfiguration.WINDOWING_MODE_PINNED)));
@@ -148,7 +146,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void userNotAllowlisted_launchIsBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithNoAllowedUsers();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
 
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -162,8 +159,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void userNotAllowlisted_systemUser_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithNoAllowedUsers();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -175,8 +170,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void userNotAllowlisted_systemUserCanLaunchBlockedAppStreamingActivity() {
         GenericWindowPolicyController gwpc = createGwpcWithNoAllowedUsers();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_APP_STREAMING_COMPONENT.getPackageName(),
                 BLOCKED_APP_STREAMING_COMPONENT.getClassName(),
@@ -188,8 +181,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void openNonBlockedAppOnVirtualDisplay_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -201,8 +192,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void activityDoesNotSupportDisplayOnRemoteDevices_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -214,8 +203,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void openBlockedComponentOnVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithBlockedComponent(BLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_PACKAGE_NAME,
                 BLOCKED_PACKAGE_NAME,
@@ -227,7 +214,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void addActivityPolicyExemption_openBlockedOnVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(true);
         gwpc.addActivityPolicyExemption(BLOCKED_COMPONENT);
 
@@ -242,7 +228,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void addActivityPolicyPackageExemption_openBlockedOnVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(true);
         gwpc.addActivityPolicyExemption(BLOCKED_COMPONENT.getPackageName());
 
@@ -257,8 +242,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void openNotAllowedComponentOnBlocklistVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithAllowedComponent(NONBLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_PACKAGE_NAME,
                 BLOCKED_PACKAGE_NAME,
@@ -270,7 +253,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void addActivityPolicyExemption_openNotAllowedOnVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(false);
         gwpc.addActivityPolicyExemption(NONBLOCKED_COMPONENT);
 
@@ -285,7 +267,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void addActivityPolicyPackageExemption_openNotAllowedOnVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(false);
         gwpc.addActivityPolicyExemption(NONBLOCKED_COMPONENT.getPackageName());
 
@@ -300,8 +281,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void openAllowedComponentOnBlocklistVirtualDisplay_startsActivity() {
         GenericWindowPolicyController gwpc = createGwpcWithAllowedComponent(NONBLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -313,7 +292,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void addActivityPolicyExemption_openAllowedOnVirtualDisplay_startsActivity() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(false);
         gwpc.addActivityPolicyExemption(NONBLOCKED_COMPONENT);
 
@@ -328,7 +306,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void addActivityPolicyPackageExemption_openAllowedOnVirtualDisplay_startsActivity() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(false);
         gwpc.addActivityPolicyExemption(NONBLOCKED_COMPONENT.getPackageName());
 
@@ -343,7 +320,7 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void openNonBlockedAppOnMirrorVirtualDisplay_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ true);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ true, /* isSecureDisplay= */ false);
 
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -356,7 +333,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_mismatchingUserHandle_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
 
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -370,8 +346,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_blockedAppStreamingComponent_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_APP_STREAMING_COMPONENT.getPackageName(),
                 BLOCKED_APP_STREAMING_COMPONENT.getClassName(),
@@ -384,8 +358,6 @@ public class GenericWindowPolicyControllerTest {
     public void canActivityBeLaunched_blockedAppStreamingComponentExplicitlyBlocked_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithBlockedComponent(
                 BLOCKED_APP_STREAMING_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_APP_STREAMING_COMPONENT.getPackageName(),
                 BLOCKED_APP_STREAMING_COMPONENT.getClassName(),
@@ -398,7 +370,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_blockedAppStreamingComponentExemptFromStreaming_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(true);
         gwpc.addActivityPolicyExemption(BLOCKED_APP_STREAMING_COMPONENT);
 
@@ -414,7 +385,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_blockedAppStreamingPackageExempt_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(true);
         gwpc.addActivityPolicyExemption(BLOCKED_APP_STREAMING_COMPONENT.getPackageName());
 
@@ -430,8 +400,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_blockedAppStreamingComponentNotAllowlisted_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithAllowedComponent(NONBLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_APP_STREAMING_COMPONENT.getPackageName(),
                 BLOCKED_APP_STREAMING_COMPONENT.getClassName(),
@@ -444,7 +412,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_blockedAppStreamingComponentNotExemptFromBlocklist_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(false);
         gwpc.addActivityPolicyExemption(NONBLOCKED_COMPONENT);
 
@@ -460,7 +427,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_blockedAppStreamingPAckageNotExempt_isNeverBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         gwpc.setActivityLaunchDefaultAllowed(false);
         gwpc.addActivityPolicyExemption(NONBLOCKED_COMPONENT.getPackageName());
 
@@ -476,8 +442,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_customDisplayCategoryMatches_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithDisplayCategory(DISPLAY_CATEGORY);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -490,8 +454,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_customDisplayCategoryDoesNotMatch_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithDisplayCategory(DISPLAY_CATEGORY);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -503,8 +465,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void canActivityBeLaunched_crossTaskLaunch_fromDefaultDisplay_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -518,8 +478,6 @@ public class GenericWindowPolicyControllerTest {
     public void canActivityBeLaunched_crossTaskLaunchFromVirtualDisplay_notExplicitlyBlocked_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithCrossTaskNavigationBlockedFor(
                 BLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -534,8 +492,6 @@ public class GenericWindowPolicyControllerTest {
     public void canActivityBeLaunched_crossTaskLaunchFromVirtualDisplay_explicitlyBlocked_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithCrossTaskNavigationBlockedFor(
                 BLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_PACKAGE_NAME,
                 BLOCKED_PACKAGE_NAME,
@@ -549,8 +505,6 @@ public class GenericWindowPolicyControllerTest {
     public void canActivityBeLaunched_crossTaskLaunchFromVirtualDisplay_notAllowed_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithCrossTaskNavigationAllowed(
                 NONBLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 BLOCKED_PACKAGE_NAME,
                 BLOCKED_PACKAGE_NAME,
@@ -564,8 +518,6 @@ public class GenericWindowPolicyControllerTest {
     public void canActivityBeLaunched_crossTaskLaunchFromVirtualDisplay_allowed_isNotBlocked() {
         GenericWindowPolicyController gwpc = createGwpcWithCrossTaskNavigationAllowed(
                 NONBLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -575,11 +527,10 @@ public class GenericWindowPolicyControllerTest {
                 WindowConfiguration.WINDOWING_MODE_FULLSCREEN, activityInfo);
     }
 
+    @DisableFlags(android.companion.virtualdevice.flags.Flags.FLAG_GWPC_AWARE_WINDOWING_MODE)
     @Test
     public void canActivityBeLaunched_unsupportedWindowingMode_isBlocked() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -589,12 +540,24 @@ public class GenericWindowPolicyControllerTest {
                 activityInfo);
     }
 
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_GWPC_AWARE_WINDOWING_MODE)
+    @Test
+    public void canActivityBeLaunched_unsupportedWindowingMode_isNotBlocked() {
+        GenericWindowPolicyController gwpc = createGwpc();
+        ActivityInfo activityInfo = getActivityInfo(
+                NONBLOCKED_APP_PACKAGE_NAME,
+                NONBLOCKED_APP_PACKAGE_NAME,
+                /* displayOnRemoteDevices */ true,
+                /* targetDisplayCategory */ null);
+        assertActivityCanBeLaunched(gwpc, DISPLAY_ID, true,
+                WindowConfiguration.WINDOWING_MODE_PINNED, activityInfo);
+    }
+
+
     @Test
     public void registerRunningAppsChangedListener_onRunningAppsChanged_listenersNotified() {
         ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         gwpc.registerRunningAppsChangedListener(mRunningAppsChangedListener);
         gwpc.onRunningAppsChanged(uids);
 
@@ -606,8 +569,6 @@ public class GenericWindowPolicyControllerTest {
     public void onRunningAppsChanged_empty_onDisplayEmpty() {
         ArraySet<Integer> uids = new ArraySet<>();
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         gwpc.onRunningAppsChanged(uids);
 
         assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(0);
@@ -618,8 +579,6 @@ public class GenericWindowPolicyControllerTest {
     public void noRunningAppsChangedListener_onRunningAppsChanged_doesNotThrowException() {
         ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         gwpc.onRunningAppsChanged(uids);
 
         assertThat(gwpc.getRunningAppsChangedListenersSizeForTesting()).isEqualTo(0);
@@ -631,8 +590,6 @@ public class GenericWindowPolicyControllerTest {
     public void registerUnregisterRunningAppsChangedListener_onRunningAppsChanged_doesNotThrowException() {
         ArraySet<Integer> uids = new ArraySet<>(Arrays.asList(TEST_UID));
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         gwpc.registerRunningAppsChangedListener(mRunningAppsChangedListener);
         gwpc.unregisterRunningAppsChangedListener(mRunningAppsChangedListener);
         gwpc.onRunningAppsChanged(uids);
@@ -654,7 +611,6 @@ public class GenericWindowPolicyControllerTest {
         doReturn(interceptor).when(interceptor).queryLocalInterface(anyString());
 
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -681,7 +637,6 @@ public class GenericWindowPolicyControllerTest {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("testing"));
 
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -702,7 +657,6 @@ public class GenericWindowPolicyControllerTest {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("testing"));
 
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -722,7 +676,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void onTopActivitychanged_null_noCallback() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
 
         gwpc.onTopActivityChanged(null, 0, 0);
         verify(mActivityListener, after(TIMEOUT_MILLIS).never())
@@ -733,7 +686,6 @@ public class GenericWindowPolicyControllerTest {
     public void onTopActivitychanged_activityListenerCallbackObserved() {
         int userId = 1000;
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
 
         gwpc.onTopActivityChanged(BLOCKED_COMPONENT, 0, userId);
         verify(mActivityListener, timeout(TIMEOUT_MILLIS))
@@ -743,8 +695,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void keepActivityOnWindowFlagsChanged_noChange() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -763,8 +713,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void keepActivityOnWindowFlagsChanged_flagSecure_isAllowedAfterTM() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -786,8 +734,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void keepActivityOnWindowFlagsChanged_systemFlagHideNonSystemOverlayWindows_isAllowedAfterTM() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         ActivityInfo activityInfo = getActivityInfo(
                 NONBLOCKED_APP_PACKAGE_NAME,
                 NONBLOCKED_APP_PACKAGE_NAME,
@@ -807,8 +753,6 @@ public class GenericWindowPolicyControllerTest {
     @Test
     public void getCustomHomeComponent_noneSet() {
         GenericWindowPolicyController gwpc = createGwpc();
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         assertThat(gwpc.getCustomHomeComponent()).isNull();
     }
 
@@ -816,15 +760,11 @@ public class GenericWindowPolicyControllerTest {
     public void getCustomHomeComponent_returnsHomeComponent() {
         GenericWindowPolicyController gwpc = createGwpcWithCustomHomeComponent(
                 NONBLOCKED_COMPONENT);
-        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false);
-
         assertThat(gwpc.getCustomHomeComponent()).isEqualTo(NONBLOCKED_COMPONENT);
     }
 
     private GenericWindowPolicyController createGwpc() {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -836,12 +776,12 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithNoAllowedUsers() {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -853,13 +793,13 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithCustomHomeComponent(
             ComponentName homeComponent) {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -871,13 +811,13 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ homeComponent);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithBlockedComponent(
             ComponentName blockedComponent) {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -889,13 +829,13 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithAllowedComponent(
             ComponentName allowedComponent) {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ false,
@@ -907,13 +847,13 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithDisplayCategory(
             String displayCategory) {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -925,13 +865,13 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ Collections.singleton(displayCategory),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithCrossTaskNavigationBlockedFor(
             ComponentName blockedComponent) {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -943,13 +883,13 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private GenericWindowPolicyController createGwpcWithCrossTaskNavigationAllowed(
             ComponentName allowedComponent) {
-        return new GenericWindowPolicyController(
-                0,
-                0,
+        var gwpc = new GenericWindowPolicyController(
                 AttributionSource.myAttributionSource(),
                 /* allowedUsers= */ new ArraySet<>(getCurrentUserId()),
                 /* activityLaunchAllowedByDefault= */ true,
@@ -961,6 +901,8 @@ public class GenericWindowPolicyControllerTest {
                 /* displayCategories= */ new ArraySet<>(),
                 /* showTasksInHostDeviceRecents= */ true,
                 /* customHomeComponent= */ null);
+        gwpc.setDisplayId(DISPLAY_ID, /* isMirrorDisplay= */ false, /* isSecureDisplay= */ false);
+        return gwpc;
     }
 
     private Set<UserHandle> getCurrentUserId() {

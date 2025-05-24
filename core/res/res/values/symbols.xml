@@ -1087,9 +1087,15 @@
   <java-symbol type="string" name="granularity_label_line" />
   <java-symbol type="string" name="default_audio_route_id" />
   <java-symbol type="string" name="default_audio_route_name" />
+  <java-symbol type="string" name="default_audio_route_name_analog" />
+  <java-symbol type="string" name="default_audio_route_name_arc" />
+  <java-symbol type="string" name="default_audio_route_name_aux" />
+  <java-symbol type="string" name="default_audio_route_name_digital" />
   <java-symbol type="string" name="default_audio_route_name_dock_speakers" />
+  <java-symbol type="string" name="default_audio_route_name_earc" />
   <java-symbol type="string" name="default_audio_route_name_external_device" />
   <java-symbol type="string" name="default_audio_route_name_headphones" />
+  <java-symbol type="string" name="default_audio_route_name_hdmi_tv" />
   <java-symbol type="string" name="default_audio_route_name_usb" />
   <java-symbol type="string" name="default_audio_route_category_name" />
   <java-symbol type="string" name="stk_cc_ss_to_dial" />
@@ -1531,6 +1537,7 @@
   <java-symbol type="drawable" name="ic_account_circle" />
   <java-symbol type="drawable" name="ic_dual_screen" />
   <java-symbol type="drawable" name="ic_thermostat" />
+  <java-symbol type="drawable" name="ic_security_privacy_notification_badge" />
   <java-symbol type="color" name="user_icon_1" />
   <java-symbol type="color" name="user_icon_2" />
   <java-symbol type="color" name="user_icon_3" />
@@ -1548,6 +1555,7 @@
   <java-symbol type="color" name="profile_badge_2_dark" />
   <java-symbol type="color" name="profile_badge_3_dark" />
   <java-symbol type="color" name="instant_app_badge" />
+  <java-symbol type="color" name="security_privacy_notification_tint_normal" />
 
   <java-symbol type="layout" name="action_bar_home" />
   <java-symbol type="layout" name="action_bar_title_item" />
@@ -3426,23 +3434,9 @@
   <java-symbol type="string" name="duration_hours_shortest_future" />
   <java-symbol type="string" name="duration_days_shortest_future" />
   <java-symbol type="string" name="duration_years_shortest_future" />
-  <java-symbol type="string" name="duration_minutes_shortest_past" />
-  <java-symbol type="string" name="duration_hours_shortest_past" />
-  <java-symbol type="string" name="duration_days_shortest_past" />
-  <java-symbol type="string" name="duration_years_shortest_past" />
 
   <java-symbol type="string" name="duration_minutes_medium" />
   <java-symbol type="string" name="duration_hours_medium" />
-  <java-symbol type="string" name="duration_days_medium" />
-  <java-symbol type="string" name="duration_years_medium" />
-  <java-symbol type="string" name="duration_minutes_medium_future" />
-  <java-symbol type="string" name="duration_hours_medium_future" />
-  <java-symbol type="string" name="duration_days_medium_future" />
-  <java-symbol type="string" name="duration_years_medium_future" />
-  <java-symbol type="string" name="duration_minutes_medium_past" />
-  <java-symbol type="string" name="duration_hours_medium_past" />
-  <java-symbol type="string" name="duration_days_medium_past" />
-  <java-symbol type="string" name="duration_years_medium_past" />
 
   <java-symbol type="string" name="duration_minutes_relative" />
   <java-symbol type="string" name="duration_hours_relative" />
@@ -4143,6 +4137,7 @@
 
   <java-symbol type="bool" name="config_enableCredentialFactoryResetProtection" />
   <java-symbol type="bool" name="config_disableWeaverOnUnsecuredUsers" />
+  <java-symbol type="bool" name="config_softwareLskfRateLimiterEnforcing" />
 
   <!-- ETWS primary messages -->
   <java-symbol type="string" name="etws_primary_default_message_earthquake" />
@@ -5860,6 +5855,7 @@
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_divider_width" />
   <java-symbol type="id" name="accessibility_autoclick_type_panel" />
   <java-symbol type="id" name="accessibility_autoclick_button_group_container" />
+  <java-symbol type="id" name="accessibility_autoclick_click_type_button_group_container" />
   <java-symbol type="id" name="accessibility_autoclick_left_click_layout" />
   <java-symbol type="id" name="accessibility_autoclick_left_click_button" />
   <java-symbol type="id" name="accessibility_autoclick_right_click_layout" />
@@ -6182,10 +6178,22 @@
   <java-symbol type="string" name="config_help_url_action_disabled_by_advanced_protection" />
 
   <!-- Advanced Protection Service USB feature -->
+
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_app_title" />
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_title" />
+
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_text" />
-<java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" />
+
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" />
+
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_for_power_brick_notification_text" />
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" />
+
+  <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" />
+  <java-symbol type="string" name="usb_apm_usb_notification_silenced_title" />
+  <java-symbol type="string" name="usb_apm_usb_notification_silenced_text" />
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_title" />
   <java-symbol type="string" name="usb_apm_usb_suspicious_activity_notification_text" />
 

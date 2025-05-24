@@ -346,18 +346,17 @@ public final class DisplayTopology implements Parcelable {
                     float offset;
                     int pos;
                     if (xOverlap > yOverlap) {
-                        // Deviation in each dimension is a penalty in the potential parenting. To
-                        // get the X deviation, overlap is subtracted from the lesser width so that
-                        // a maximum overlap results in a deviation of zero.
-                        // Note that because xOverlap is *subtracted* from the lesser width, no
-                        // overlap in X becomes a *penalty* if we are attaching on the top+bottom
-                        // edges.
+                        // Deviation in each dimension is a penalty in the potential parenting. In
+                        // the next line, a negative xOverlap (no shared coverage in the x axis)
+                        // results in an xDeviation (a penalty) but a non-negative xOverlap does
+                        // not. A non-negative xOverlap indicates no horizontal shifting is needed
+                        // to obtain a POSITION_TOP or POSITION_BOTTOM attachment.
                         //
                         // The Y deviation is simply the distance from the clamping edges.
                         //
                         // Treatment of the X and Y deviations are swapped for
                         // POSITION_LEFT/POSITION_RIGHT attachments in the "else" block below.
-                        xDeviation = Math.min(child.getWidth(), parent.getWidth()) - xOverlap;
+                        xDeviation = Math.min(xOverlap, 0);
                         if (childPos.y < parentPos.y) {
                             yDeviation = childBottom - parentPos.y;
                             pos = POSITION_TOP;
@@ -367,7 +366,7 @@ public final class DisplayTopology implements Parcelable {
                         }
                         offset = childPos.x - parentPos.x;
                     } else {
-                        yDeviation = Math.min(child.getHeight(), parent.getHeight()) - yOverlap;
+                        yDeviation = Math.min(yOverlap, 0);
                         if (childPos.x < parentPos.x) {
                             xDeviation = childRight - parentPos.x;
                             pos = POSITION_LEFT;

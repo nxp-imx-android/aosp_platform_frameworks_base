@@ -31,19 +31,28 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; құрылғысын басқаруға рұқсат беру керек пе?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"құрылғы"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Бұл қолданба құрылғыда (<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>) осы рұқсаттарды пайдалана алады."</string>
-    <string name="title_app_streaming" msgid="1047090167914857893">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына құрылғыңыздағы (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) қолданбалар мен жүйе функцияларын &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысына трансляциялауға рұқсат берілсін бе?"</string>
-    <string name="summary_app_streaming" msgid="7990244299655610920">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> қолданбасы құрылғыңызда (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) көрінетін не ойнатылатын барлық контентті, соның ішінде аудиофайлдарды, фотосуреттерді, төлем туралы ақпаратты, құпия сөздер мен хабарларды пайдалана алады.&lt;br/&gt;&lt;br/&gt;Осы рұқсатты өшірмесеңіз, <xliff:g id="APP_NAME_1">%1$s</xliff:g> қолданбасы құрылғыға (<xliff:g id="DEVICE_NAME">%3$s</xliff:g>) қолданбаларды трансляциялай алады."</string>
-    <string name="helper_summary_app_streaming" msgid="1872657107404139828">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME">%2$s</xliff:g> атынан құрылғыдағы (<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>) қолданбалар мен жүйе функцияларын трансляциялауға рұқсат сұрайды."</string>
+    <!-- no translation found for title_app_streaming (237666000400427614) -->
+    <skip />
+    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
+    <skip />
+    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
+    <skip />
+    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
+    <skip />
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
-    <!-- no translation found for title_computer (5040395223341777259) -->
-    <skip />
+    <string name="title_computer" msgid="5040395223341777259">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; қолданбасына құрылғыңыздағы (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) осы ақпаратты пайдалануға рұқсат беріңіз."</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME">%2$s</xliff:g> атынан құрылғыңыздағы (<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>) фотосуреттерді, медиафайлдар мен хабарландыруларды пайдалануға рұқсат сұрайды."</string>
-    <string name="title_nearby_device_streaming" msgid="2727103756701741359">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына құрылғыңыздағы (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) қолданбаларды &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысына трансляциялауға рұқсат берілсін бе?"</string>
-    <string name="summary_nearby_device_streaming" msgid="70434958004946884">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> қолданбасы құрылғыда (<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>) көрінетін не ойнатылатын барлық контентті, соның ішінде аудиофайлдарды, фотосуреттерді, төлем туралы ақпаратты, құпия сөздер мен хабарларды пайдалана алады.&lt;br/&gt;&lt;br/&gt;Осы рұқсатты өшірмесеңіз, <xliff:g id="APP_NAME_2">%1$s</xliff:g> қолданбасы құрылғыға (<xliff:g id="DEVICE_NAME_3">%3$s</xliff:g>) қолданбаларды трансляциялай алады."</string>
+    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
+    <skip />
+    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
+    <skip />
+    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
+    <skip />
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME">%2$s</xliff:g> атынан құрылғыдағы (<xliff:g id="DEVICE_TYPE">%3$s</xliff:g>) қолданбаларды трансляциялауға рұқсат сұрайды."</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> құрылғыңыз бен &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; құрылғысы арасында аудио және жүйе функцияларын трансляциялауға рұқсат берілсін бе?"</string>
-    <string name="summary_virtual_device" msgid="3502592544171322817">"<xliff:g id="APP_NAME_0">%2$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> құрылғысында ойнатылатын барлық контентті пайдалана алады.&lt;br/&gt;&lt;br/&gt;Бұл рұқсатты өшірмесеңіз, <xliff:g id="APP_NAME_2">%2$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> құрылғысына аудионы трансляциялай алады."</string>
+    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
+    <skip />
     <string name="profile_name_generic" msgid="6851028682723034988">"Құрылғы"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Бұл қолданба телефон мен таңдалған құрылғы арасында деректі (мысалы, қоңырау шалушының атын) синхрондай алады."</string>
     <string name="consent_yes" msgid="8344487259618762872">"Рұқсат беру"</string>
@@ -67,6 +76,9 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Мультимедиа шығысын өзгерту"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Фотосуреттер мен медиафайлдар"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Хабарландырулар"</string>
+    <string name="permission_create_virtual_device" msgid="1102905050922460040">"Деректерді <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> құрылғысына трансляциялау"</string>
+    <string name="permission_add_mirror_display" msgid="3743433250535606288">"Экранды синхрондау"</string>
+    <string name="permission_add_trusted_display" msgid="9052824856626276723">"Қолданбаларды трансляциялау"</string>
     <string name="permission_phone_summary" msgid="8246321093970051702">"Қоңырау шалу және телефон қоңырауларын басқару"</string>
     <string name="permission_call_logs_summary" msgid="7545243592757693321">"Телефонның қоңыраулар журналын оқу және жазу"</string>
     <string name="permission_sms_summary" msgid="8499509535410068616">"SMS хабарларын жіберу және көру"</string>
@@ -75,8 +87,13 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Аудио жазу"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Маңайдағы құрылғыларды тауып, олармен байланысып, бір-біріне қатысты локациясын анықтайды."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Барлық хабарландыруды, соның ішінде контактілер, хабарлар және фотосуреттер сияқты ақпаратты оқиды."</string>
-    <string name="permission_notifications_summary" msgid="2272810466047367030">"• Барлық хабарландыруды, соның ішінде контактілер, хабарлар және фотосуреттер сияқты ақпаратты оқиды&lt;br/&gt;• Хабарландырулар жібереді&lt;br/&gt;&lt;br/&gt;Бұл қолданбаның хабарландыруларды оқу және жіберу мүмкіндігін \"Параметрлер &gt; Хабарландырулар\" тармағында кез келген уақытта басқара аласыз."</string>
+    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Барлық хабарландыруды, соның ішінде контактілер, хабарлар және фотосуреттер сияқты ақпаратты оқиды&lt;br/&gt;• Сізге хабарландырулар жібереді&lt;br/&gt;&lt;br/&gt;Бұл қолданбаның хабарландыруларды оқу және жіберу мүмкіндігін \"Параметрлер &gt; Хабарландырулар\" тармағында кез келген уақытта басқара аласыз."</string>
     <string name="permission_storage_summary" msgid="3918240895519506417"></string>
+    <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Сізге хабарландырулар жіберу"</string>
+    <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысындағы микрофон, камера мен басқа датчик деректерін <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> құрылғысына трансляциялау."</string>
+    <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> экранын &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысына жазуға, трансляциялауға немесе бөлісуге болады.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> құрылғысында көрінетін немесе ойнайтын кез келген нәрсеге, соның ішінде аудиоға, фотосуреттерге, төлем туралы ақпаратқа, құпия сөздер мен хабарларға қол жеткізе алады."</string>
+    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
+    <skip />
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Қолжетімді құрылғылар тізімін ашып, қай құрылғының басқа қолданбалардан аудионы не бейнені трансляциялайтынын басқара аласыз."</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"планшет"</string>

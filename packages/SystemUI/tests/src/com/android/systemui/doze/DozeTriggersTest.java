@@ -438,13 +438,27 @@ public class DozeTriggersTest extends SysuiTestCase {
     }
 
     @Test
-    public void testIsExecutingTransition_dropPulse() {
+    public void nullState_dropUdfpsLongPressPulse() {
         when(mHost.isPulsePending()).thenReturn(false);
-        when(mMachine.isExecutingTransition()).thenReturn(true);
+        when(mMachine.getState()).thenReturn(null);
 
         mTriggers.onSensor(DozeLog.PULSE_REASON_SENSOR_LONG_PRESS, 100, 100, null);
 
         verify(mDozeLog).tracePulseDropped(anyString(), eq(null));
+    }
+
+    @Test
+    public void testIsExecutingTransition_dropPulseForUdfpsLongPress() {
+        when(mHost.isPulsePending()).thenReturn(false);
+        when(mMachine.isExecutingTransition()).thenReturn(true);
+
+        mTriggers.onSensor(DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, 100, 100, null);
+
+        // THEN pulse is dropped
+        verify(mDozeLog).tracePulseDropped(anyString(), eq(null));
+
+        // THEN aod interrupt is not sent
+        verify(mAuthController, never()).onAodInterrupt(anyInt(), anyInt(), anyFloat(), anyFloat());
     }
 
     @Test
@@ -503,13 +517,6 @@ public class DozeTriggersTest extends SysuiTestCase {
 
         // THEN aod interrupt never be sent
         verify(mAuthController, never()).onAodInterrupt(anyInt(), anyInt(), anyFloat(), anyFloat());
-    }
-
-    @Test
-    public void udfpsLongPress_dozeState_notRegistered() {
-        // GIVEN device is DOZE_AOD_PAUSED
-        when(mMachine.getState()).thenReturn(DozeMachine.State.DOZE);
-        // beverlyt
     }
 
     @Test

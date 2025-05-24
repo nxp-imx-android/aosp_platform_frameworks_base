@@ -106,7 +106,6 @@ public class PhoneStatusBarPolicy
 
     static final int LOCATION_STATUS_ICON_ID = PrivacyType.TYPE_LOCATION.getIconId();
 
-    private final String mSlotCast;
     private final String mSlotHotspot;
     private final String mSlotBluetooth;
     private final String mSlotTty;
@@ -221,7 +220,6 @@ public class PhoneStatusBarPolicy
         mZenModeInteractor = zenModeInteractor;
         mJavaAdapter = javaAdapter;
 
-        mSlotCast = resources.getString(com.android.internal.R.string.status_bar_cast);
         mSlotConnectedDisplay = resources.getString(
                 com.android.internal.R.string.status_bar_connected_display);
         mSlotHotspot = resources.getString(com.android.internal.R.string.status_bar_hotspot);
@@ -293,10 +291,6 @@ public class PhoneStatusBarPolicy
                 mResources.getString(R.string.accessibility_ringer_silent));
         mIconController.setIconVisibility(mSlotMute, false);
         updateVolumeZen();
-
-        // cast
-        mIconController.setIcon(mSlotCast, R.drawable.stat_sys_cast, null);
-        mIconController.setIconVisibility(mSlotCast, false);
 
         // connected display
         mIconController.setIcon(mSlotConnectedDisplay, R.drawable.stat_sys_connected_display,

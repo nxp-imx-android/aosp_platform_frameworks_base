@@ -42,7 +42,7 @@ abstract class SpaSearchIndexablesProvider : SearchIndexablesProvider() {
             for (item in searchIndexablePage.itemsProvider(context)) {
                 cursor
                     .newRow()
-                    .add(RawData.COLUMN_KEY, item.searchLandingKey)
+                    .add(RawData.COLUMN_KEY, item.searchLandingKey.encodeToString())
                     .add(RawData.COLUMN_TITLE, item.itemTitle)
                     .add(RawData.COLUMN_KEYWORDS, item.keywords)
                     .add(RawData.COLUMN_SCREEN_TITLE, item.pageTitle)

@@ -46,7 +46,7 @@ import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
-import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardContent
+import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor.Companion.keyguardScenes
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
 import com.android.systemui.model.SceneContainerPluginImpl
@@ -454,7 +454,7 @@ constructor(
                     val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
                     if (!deviceUnlockStatus.isUnlocked) {
                         return@mapNotNull if (
-                            renderedScenes.any { it in keyguardContent } ||
+                            renderedScenes.any { it in keyguardScenes } ||
                                 Overlays.Bouncer in renderedOverlays
                         ) {
                             // Already on a keyguard scene or bouncer, no need to change scenes.

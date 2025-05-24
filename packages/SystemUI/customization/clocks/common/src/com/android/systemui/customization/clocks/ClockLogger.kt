@@ -18,8 +18,8 @@ package com.android.systemui.customization.clocks
 
 import android.view.View
 import android.view.View.MeasureSpec
+import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
-import com.android.systemui.log.core.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.clocks.VPointF

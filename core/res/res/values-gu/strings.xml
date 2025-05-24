@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"ઍપ્લિકેશનને સ્ટેટસ બાર વિસ્તૃત કરવાની અને સંકુચિત કરવાની મંજૂરી આપે છે."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"લૉક કરેલા ડિવાઇસ પર પૂર્ણ સ્ક્રીન પરની પ્રવૃતિઓની જેમ નોટિફિકેશન બતાવો"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"ઍપને લૉક કરેલા ડિવાઇસ પર પૂર્ણ સ્ક્રીન પરની પ્રવૃતિઓની જેમ નોટિફિકેશન બતાવવાની મંજૂરી આપે છે"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"લાઇવ અપડેટ બતાવો"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"ઍપને સ્ટેટસ બાર અને લૉક સ્ક્રીન પર ચાલુ, સમય પ્રત્યે સંવેદનશીલ નોટિફિકેશન ડિસ્પ્લે કરવાની મંજૂરી આપે છે"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"શૉર્ટકટ ઇન્સ્ટૉલ કરો"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"એપ્લિકેશનને વપરાશકર્તા હસ્તક્ષેપ વગર હોમસ્ક્રીન શોર્ટકટ્સ ઉમેરવાની મંજૂરી આપે છે."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"શોર્ટકટ્સ અનઇન્સ્ટોલ કરો"</string>
@@ -1182,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"<xliff:g id="COUNT">%d</xliff:g> કલાકમાં"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"<xliff:g id="COUNT">%d</xliff:g> દિવસમાં"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"<xliff:g id="COUNT">%d</xliff:g> વર્ષમાં"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> મિનિટ પહેલાં"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> કલાક પહેલાં"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> દિવસ પહેલાં"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> વર્ષ પહેલાં"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> મિનિટ"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> કલાક"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> દિવસ"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> વર્ષ"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g> મિનિટમાં"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"<xliff:g id="COUNT">%d</xliff:g> કલાકમાં"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"<xliff:g id="COUNT">%d</xliff:g> દિવસમાં"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"<xliff:g id="COUNT">%d</xliff:g> વર્ષમાં"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> મિનિટ પહેલાં"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> કલાક પહેલાં"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> દિવસ પહેલાં"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> વર્ષ પહેલાં"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# મિનિટ પહેલાં}one{# મિનિટ પહેલાં}other{# મિનિટ પહેલાં}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# કલાક પહેલાં}one{# કલાક પહેલાં}other{# કલાક પહેલાં}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# દિવસ પહેલાં}one{# દિવસ પહેલાં}other{# દિવસ પહેલાં}}"</string>
@@ -1709,6 +1697,18 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"બહારનું ડિવાઇસ"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"હેડફોન"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
+    <skip />
+    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
+    <skip />
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"સિસ્ટમ"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"બ્લૂટૂથ ઑડિયો"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"વાયરલેસ ડિસ્પ્લે"</string>
@@ -1830,8 +1830,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> લોગ આઉટ થઈ રહ્યાં છે…"</string>
     <string name="owner_name" msgid="8713560351570795743">"માલિક"</string>
     <string name="guest_name" msgid="8502103277839834324">"અતિથિ"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"સિસ્ટમ વપરાશકર્તા"</string>
     <string name="error_message_title" msgid="4082495589294631966">"ભૂલ"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"તમારા વ્યવસ્થાપકે આ ફેરફારની મંજૂરી આપી નથી"</string>
     <string name="app_not_found" msgid="3429506115332341800">"આ ક્રિયાને હેન્ડલ કરવા માટે કોઈ ઍપ્લિકેશન મળી નહીં"</string>

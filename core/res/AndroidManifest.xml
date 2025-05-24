@@ -4480,7 +4480,22 @@
 
          <p>Not for use by third-party applications. -->
     <permission android:name="android.permission.SYSTEM_APPLICATION_OVERLAY"
-                android:protectionLevel="signature|recents|role|installer"/>
+        android:protectionLevel="signature|recents|role|installer|appop"
+        android:featureFlag="com.android.media.projection.flags.recording_overlay" />
+
+    <!-- @SystemApi @hide Allows an application to create windows using the type
+         {@link android.view.WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY},
+         shown on top of all other apps.
+
+         Allows an application to use
+         {@link android.view.WindowManager.LayoutsParams#setSystemApplicationOverlay(boolean)}
+         to create overlays that will stay visible, even if another window is requesting overlays to
+         be hidden through {@link android.view.Window#setHideOverlayWindows(boolean)}.
+
+         <p>Not for use by third-party applications. -->
+    <permission android:name="android.permission.SYSTEM_APPLICATION_OVERLAY"
+        android:protectionLevel="signature|recents|role|installer"
+        android:featureFlag="!com.android.media.projection.flags.recording_overlay" />
 
     <!-- @deprecated Use {@link android.Manifest.permission#REQUEST_COMPANION_RUN_IN_BACKGROUND}
          @hide
@@ -6554,6 +6569,17 @@
     -->
     <permission android:name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE"
                 android:protectionLevel="signature|privileged" />
+
+    <!-- Allow applications to access other companion apps' association and device presence
+         information.
+         <p>Not for use by third-party applications.
+         @FlaggedApi(android.companion.Flags.FLAG_ASSOCIATION_VERIFICATION)
+         @SystemApi
+         @hide
+    -->
+    <permission android:name="android.permission.ACCESS_COMPANION_INFO"
+        android:featureFlag="android.companion.association_verification"
+        android:protectionLevel="signature|privileged" />
 
     <!-- Allows an application to deliver companion messages to system
          -->
@@ -8710,7 +8736,8 @@
     <!-- Allows applications to register listeners for key activeness through
          InputManagerService.
          <p>Protection level: signature
-         @hide -->
+         @hide
+         @FlaggedApi("com.android.hardware.input.key_event_activity_detection") -->
     <permission android:name="android.permission.LISTEN_FOR_KEY_ACTIVITY"
                 android:protectionLevel="signature"
                 android:featureFlag="com.android.hardware.input.key_event_activity_detection" />
@@ -9381,8 +9408,14 @@
                   android:excludeFromRecents="true"
                   android:exported="true"
                   android:permission="android.permission.MANAGE_GAME_ACTIVITY"
-                  android:theme="@style/Theme.GameSessionTrampoline">
+                  android:theme="@style/Theme.HiddenWindowTrampoline">
         </activity>
+        <activity android:name="android.appwidget.AppWidgetConfigActivityProxy"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.HiddenWindowTrampoline">
+        </activity>
+
 
         <receiver android:name="com.android.server.BootReceiver"
                 android:exported="true"

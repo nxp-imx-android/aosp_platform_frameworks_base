@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.domain.interactor
 
+import android.graphics.Rect
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepository
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import javax.inject.Inject
@@ -26,6 +27,9 @@ class AmbientCueInteractor @Inject constructor(private val repository: AmbientCu
     val isRootViewAttached: StateFlow<Boolean> = repository.isRootViewAttached
     val actions: StateFlow<List<ActionModel>> = repository.actions
     val isImeVisible: StateFlow<Boolean> = repository.isImeVisible
+    val isGestureNav: StateFlow<Boolean> = repository.isGestureNav
+    val recentsButtonPosition: StateFlow<Rect?> = repository.recentsButtonPosition
+    val isTaskBarVisible: StateFlow<Boolean> = repository.isTaskBarVisible
 
     fun setDeactivated(isDeactivated: Boolean) {
         repository.isDeactivated.update { isDeactivated }

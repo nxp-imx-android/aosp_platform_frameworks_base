@@ -822,10 +822,18 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
                 }
             }
             // Update windowing mode if necessary, e.g. launch into a different windowing mode.
-            if (windowingMode != WINDOWING_MODE_UNDEFINED && candidateTask.isRootTask()
+            if (windowingMode != WINDOWING_MODE_UNDEFINED
                     && candidateTask.getWindowingMode() != windowingMode) {
                 candidateTask.mTransitionController.collect(candidateTask);
-                candidateTask.setRootTaskWindowingMode(windowingMode);
+                // We only explicitly change the windowing mode if it's a root task.
+                // If it's not a root task, we don't do anything. But, if the desired windowing
+                // mode is the same as its parent's, then we will set it undefined so it inherits.
+                if (candidateTask.isRootTask()) {
+                    candidateTask.setRootTaskWindowingMode(windowingMode);
+                } else if (candidateTask.getParent() != null
+                        && windowingMode == candidateTask.getParent().getWindowingMode()) {
+                    candidateTask.setWindowingMode(WINDOWING_MODE_UNDEFINED);
+                }
             }
             return candidateTask.getRootTask();
         }
@@ -1212,6 +1220,16 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         return someActivityPaused[0] > 0;
     }
 
+    /**
+     * Returns whether the {@param windowingMode} is supported.
+     * @param windowingMode The windowing mode to check for.
+     * @return Whether this windowing mode is supported.
+     */
+    boolean isWindowingModeSupported(@WindowConfiguration.WindowingMode int windowingMode) {
+        return isWindowingModeSupported(windowingMode, mAtmService.mSupportsMultiWindow,
+                mAtmService.mSupportsFreeformWindowManagement,
+                mAtmService.mSupportsPictureInPicture);
+    }
 
     /**
      * Returns true if the {@param windowingMode} is supported based on other parameters passed in.
@@ -1222,12 +1240,14 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      * @param supportsPip         If we should consider support for picture-in-picture mutli-window.
      * @return true if the windowing mode is supported.
      */
-    static boolean isWindowingModeSupported(int windowingMode, boolean supportsMultiWindow,
+    boolean isWindowingModeSupported(int windowingMode, boolean supportsMultiWindow,
             boolean supportsFreeform, boolean supportsPip) {
-
         if (windowingMode == WINDOWING_MODE_UNDEFINED
                 || windowingMode == WINDOWING_MODE_FULLSCREEN) {
             return true;
+        }
+        if (mDisplayContent != null && !mDisplayContent.isWindowingModeSupported(windowingMode)) {
+            return false;
         }
         if (!supportsMultiWindow) {
             return false;

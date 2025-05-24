@@ -220,7 +220,7 @@ private class ActiveNotificationsStoreBuilder(
             bucket = bucket,
             callType = sbn.toCallType(),
             promotedContent = promotedContent,
-            requestedPromotion = sbn.notification.hasRequestedPromotedOngoing(),
+            requestedPromotion = sbn.notification.isRequestPromotedOngoing(),
         )
     }
 }

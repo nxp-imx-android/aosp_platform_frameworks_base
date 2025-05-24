@@ -848,7 +848,8 @@ public class PipController implements PipTransitionController.PipTransitionCallb
             // Calculate the PiP bounds in the new orientation based on same fraction along the
             // rotated movement bounds.
             final Rect postChangeMovementBounds = mPipBoundsAlgorithm.getMovementBounds(
-                    postChangeBounds, false /* adjustForIme */);
+                    postChangeBounds, false /* adjustForIme */,
+                    mPipDisplayLayoutState.getDisplayLayout());
             pipSnapAlgorithm.applySnapFraction(postChangeBounds, postChangeMovementBounds,
                     snapFraction, mPipBoundsState.getStashedState(),
                     mPipBoundsState.getStashOffset(),
@@ -1201,7 +1202,8 @@ public class PipController implements PipTransitionController.PipTransitionCallb
         // Calculate the stack bounds in the new orientation based on same fraction along the
         // rotated movement bounds.
         final Rect postChangeMovementBounds = mPipBoundsAlgorithm.getMovementBounds(
-                postChangeStackBounds, false /* adjustForIme */);
+                postChangeStackBounds, false /* adjustForIme */,
+                mPipDisplayLayoutState.getDisplayLayout());
         pipSnapAlgorithm.applySnapFraction(postChangeStackBounds, postChangeMovementBounds,
                 snapFraction, mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
                 mPipDisplayLayoutState.getDisplayBounds(),

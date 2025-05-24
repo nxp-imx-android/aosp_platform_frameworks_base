@@ -13378,12 +13378,8 @@ public class BatteryStatsImpl extends BatteryStats {
                 mPowerStatsCollectorEnabled.get(BatteryConsumer.POWER_COMPONENT_ANY));
         mCustomEnergyConsumerPowerStatsCollector.schedule();
 
-        mHandler.post(() -> {
-            synchronized (BatteryStatsImpl.this) {
-                noteCustomEnergyConsumerNamesLocked(
-                        mCustomEnergyConsumerPowerStatsCollector.getCustomEnergyConsumerNames());
-            }
-        });
+        noteCustomEnergyConsumerNamesAsync(
+                mCustomEnergyConsumerPowerStatsCollector.getCustomEnergyConsumerNames());
 
         mSystemReady = true;
     }
@@ -14455,8 +14451,16 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @VisibleForTesting
+    protected void noteCustomEnergyConsumerNamesAsync(@NonNull String[] names) {
+        mHandler.post(() -> {
+            synchronized (BatteryStatsImpl.this) {
+                noteCustomEnergyConsumerNamesLocked(names);
+            }
+        });
+    }
+
     @GuardedBy("this")
-    protected void noteCustomEnergyConsumerNamesLocked(@NonNull String[] names) {
+    private void noteCustomEnergyConsumerNamesLocked(@NonNull String[] names) {
         if (Arrays.equals(names, mCustomEnergyConsumerNames)) {
             return;
         }

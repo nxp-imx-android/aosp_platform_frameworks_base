@@ -811,7 +811,9 @@ public class BatteryUsageStatsProviderTest {
 
         batteryStats.setPowerStatsCollectorEnabled(BatteryConsumer.POWER_COMPONENT_ANY, true);
 
-        batteryStats.noteCustomEnergyConsumerNamesLocked(new String[]{"FOO", "BAR"});
+        batteryStats.noteCustomEnergyConsumerNamesAsync(new String[]{"FOO", "BAR"});
+        batteryStats.awaitCompletion();
+
         int componentId0 = BatteryConsumer.FIRST_CUSTOM_POWER_COMPONENT_ID;
         int componentId1 = BatteryConsumer.FIRST_CUSTOM_POWER_COMPONENT_ID + 1;
 
@@ -884,7 +886,8 @@ public class BatteryUsageStatsProviderTest {
     @Test
     public void testAggregateBatteryStats_incompatibleSnapshot() throws IOException {
         MockBatteryStatsImpl batteryStats = mStatsRule.getBatteryStats();
-        batteryStats.noteCustomEnergyConsumerNamesLocked(new String[]{"FOO", "BAR"});
+        batteryStats.noteCustomEnergyConsumerNamesAsync(new String[]{"FOO", "BAR"});
+        batteryStats.awaitCompletion();
 
         PowerStatsStore powerStatsStore = mock(PowerStatsStore.class);
 

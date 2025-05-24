@@ -40,6 +40,7 @@ import android.widget.RemoteViews.OnViewAppliedListener
 import com.android.app.tracing.TraceUtils
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.widget.ImageMessageConsumer
+import com.android.server.notification.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.NotifInflation
 import com.android.systemui.res.R
@@ -47,6 +48,7 @@ import com.android.systemui.statusbar.InflationTask
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
+import com.android.systemui.statusbar.notification.CustomViewMemorySizeExceededException
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -525,7 +527,7 @@ constructor(
                             entry,
                             row,
                             remoteViewClickHandler,
-                            this /* callback */,
+                            /* callback= */ this,
                             logger,
                         )
                 }
@@ -543,7 +545,10 @@ constructor(
             Log.e(TAG, "couldn't inflate view for notification $ident", e)
             callback?.handleInflationException(
                 if (NotificationBundleUi.isEnabled) entry else row.entryLegacy,
-                InflationException("Couldn't inflate contentViews$e"),
+                when (e) {
+                    is InflationException -> e
+                    else -> InflationException("Couldn't inflate contentViews: $e")
+                },
             )
 
             // Cancel any image loading tasks, not useful any more
@@ -1318,6 +1323,14 @@ constructor(
                     }
 
                     override fun onViewApplied(v: View) {
+                        if (Flags.notificationCustomViewUriRestriction()) {
+                            onViewAppliedUsingException(v)
+                        } else {
+                            onViewAppliedLegacy(v)
+                        }
+                    }
+
+                    private fun onViewAppliedLegacy(v: View) {
                         val invalidReason = isValidView(v, entry, row.resources)
                         if (invalidReason != null) {
                             handleInflationError(
@@ -1351,11 +1364,46 @@ constructor(
                         )
                     }
 
+                    private fun onViewAppliedUsingException(v: View) {
+                        try {
+                            validateView(v, entry, row.resources)
+                            if (isNewView) {
+                                applyCallback.setResultView(v)
+                            } else {
+                                existingWrapper?.onReinflated()
+                            }
+                        } catch (e: InflationException) {
+                            runningInflations.remove(inflationId)
+                            handleInflationError(
+                                runningInflations,
+                                e,
+                                row,
+                                entry,
+                                callback,
+                                logger,
+                                "applied invalid view",
+                            )
+                            return
+                        }
+
+                        runningInflations.remove(inflationId)
+                        finishIfDone(
+                            result,
+                            isMinimized,
+                            reInflateFlags,
+                            remoteViewCache,
+                            runningInflations,
+                            callback,
+                            entry,
+                            row,
+                            logger,
+                        )
+                    }
+
                     override fun onError(e: Exception) {
                         // Uh oh the async inflation failed. Due to some bugs (see b/38190555), this
-                        // could
-                        // actually also be a system issue, so let's try on the UI thread again to
-                        // be safe.
+                        // could actually also be a system issue, so let's try on the UI thread
+                        // again to be safe.
                         try {
                             val newView =
                                 if (isNewView) {
@@ -1424,12 +1472,6 @@ constructor(
                 return "inflated notification does not meet minimum height requirement"
             }
 
-            if (NotificationCustomContentMemoryVerifier.requiresImageViewMemorySizeCheck(entry)) {
-                if (!NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry)) {
-                    return "inflated notification does not meet maximum memory size requirement"
-                }
-            }
-
             return null
         }
 
@@ -1481,6 +1523,12 @@ constructor(
             val invalidReason = isValidView(view, entry, resources)
             if (invalidReason != null) {
                 throw InflationException(invalidReason)
+            }
+
+            if (NotificationCustomContentMemoryVerifier.requiresImageViewMemorySizeCheck(entry)) {
+                if (!NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry)) {
+                    throw CustomViewMemorySizeExceededException("Custom view memory size exceeded")
+                }
             }
         }
 

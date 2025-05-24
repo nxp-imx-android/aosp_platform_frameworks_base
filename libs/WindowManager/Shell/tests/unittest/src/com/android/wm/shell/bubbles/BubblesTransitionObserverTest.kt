@@ -20,6 +20,7 @@ import android.app.ActivityManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.content.ComponentName
 import android.platform.test.annotations.EnableFlags
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
@@ -27,6 +28,7 @@ import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.view.WindowManager.TransitionType
+import android.window.ActivityTransitionInfo
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
@@ -40,23 +42,26 @@ import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.TransitionInfoBuilder
+import com.android.wm.shell.transition.TransitionInfoBuilder.Companion.DEFAULT_DISPLAY_ID
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import java.util.Optional
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.verifyNoInteractions
 
 /**
  * Unit tests of [BubblesTransitionObserver].
  *
- * Build/Install/Run: atest WMShellUnitTests:BubblesTransitionObserverTest
+ * Build/Install/Run:
+ * atest WMShellUnitTests:BubblesTransitionObserverTest
  */
 @SmallTest
 @RunWith(TestParameterInjector::class)
@@ -68,13 +73,14 @@ class BubblesTransitionObserverTest : ShellTestCase() {
     private val bubbleData = mock<BubbleData> {
         on { isExpanded } doReturn true
         on { selectedBubble } doReturn bubble
+        on { hasBubbles() } doReturn true
     }
     private val bubbleController = mock<BubbleController> {
         on { isStackAnimating } doReturn false
     }
     private val taskViewTransitions = mock<TaskViewTransitions>()
     private val splitScreenController = mock<SplitScreenController> {
-        on { isTaskRootOrStageRoot(anyInt()) } doReturn false
+        on { isTaskRootOrStageRoot(any()) } doReturn false
     }
     private val transitionObserver =
         BubblesTransitionObserver(
@@ -94,11 +100,37 @@ class BubblesTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
+    fun testOnTransitionReady_noneBubbleActivityTransition_collapsesStack() {
+        val info = createActivityTransition(TRANSIT_OPEN, taskId = 2)
+
+        transitionObserver.onTransitionReady(mock(), info, mock(), mock())
+
+        verify(bubbleData).setExpanded(false)
+    }
+
+    @Test
+    fun testOnTransitionReady_expandedBubbleActivityTransition_doesNotCollapseStack() {
+        val info = createActivityTransition(TRANSIT_OPEN, taskId = 1)
+
+        transitionObserver.onTransitionReady(mock(), info, mock(), mock())
+
+        verify(bubbleData, never()).setExpanded(false)
+    }
+
+    @Test
+    fun testOnTransitionReady_activityTransitionOnAnotherDisplay_doesNotCollapseStack() {
+        val displayId = 1 // not DEFAULT_DISPLAY
+        val info = createActivityTransition(TRANSIT_OPEN, taskId = 1, displayId)
+
+        transitionObserver.onTransitionReady(mock(), info, mock(), mock())
+
+        verify(bubbleData, never()).setExpanded(false)
+    }
+
+    @Test
     fun testOnTransitionReady_openTaskOnAnotherDisplay_doesNotCollapseStack() {
-        val taskInfo = createTaskInfo(taskId = 2).apply {
-            displayId = 1 // not DEFAULT_DISPLAY
-        }
-        val info = createTaskTransition(TRANSIT_OPEN, taskInfo)
+        val displayId = 1 // not DEFAULT_DISPLAY
+        val info = createTaskTransition(TRANSIT_OPEN, taskId = 2, displayId)
 
         transitionObserver.onTransitionReady(mock(), info, mock(), mock())
 
@@ -138,10 +170,8 @@ class BubblesTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    fun testOnTransitionReady_noTaskId_skip() {
-        val info = createTaskTransition(TRANSIT_OPEN, taskId = INVALID_TASK_ID) // Invalid task id
-
-        transitionObserver.onTransitionReady(mock(), info, mock(), mock())
+    fun testOnTransitionReady_noTaskId_skip(@TestParameter tc: InvalidTaskIdTestCase) {
+        transitionObserver.onTransitionReady(mock(), tc.info, mock(), mock())
 
         verify(bubbleData, never()).setExpanded(false)
     }
@@ -151,6 +181,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
         transitionObserver.onTransitionReady(mock(), tc.info, mock(), mock())
 
         verify(bubbleData, never()).setExpanded(false)
+        verifyNoInteractions(splitScreenController)
     }
 
     @Test
@@ -239,6 +270,18 @@ class BubblesTransitionObserverTest : ShellTestCase() {
         )
     }
 
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @Test
+    fun testOnTransitionReady_noBubbles_doesNotCheckForSplitState() {
+        bubbleData.stub {
+            on { hasBubbles() } doReturn false
+        }
+        val info = createTaskTransition(TRANSIT_TO_FRONT, taskId = 1)
+        transitionObserver.onTransitionReady(mock(), info, mock(), mock())
+
+        verifyNoInteractions(splitScreenController)
+    }
+
     // Transits that aren't opening.
     enum class TransitNotOpeningTestCase(
         @TransitionType private val changeType: Int,
@@ -252,20 +295,46 @@ class BubblesTransitionObserverTest : ShellTestCase() {
             get() = createTaskTransition(changeType, taskId)
     }
 
+    // Invalid task id.
+    enum class InvalidTaskIdTestCase(
+        private val transitionCreator: (changeType: Int, taskId: Int) -> TransitionInfo,
+    ) {
+        ACTIVITY_TRANSITION(transitionCreator = ::createActivityTransition),
+        TASK_TRANSITION(transitionCreator = ::createTaskTransition);
+
+        val info: TransitionInfo
+            get() = transitionCreator(TRANSIT_OPEN, INVALID_TASK_ID)
+    }
+
     companion object {
-        private fun createTaskTransition(@TransitionType changeType: Int, taskId: Int) =
-            createTaskTransition(changeType, taskInfo = createTaskInfo(taskId))
+        private val COMPONENT = ComponentName("com.example.app", "com.example.app.MainActivity")
+
+        private fun createTaskTransition(
+            @TransitionType changeType: Int,
+            taskId: Int,
+            displayId: Int = DEFAULT_DISPLAY_ID,
+        ) = createTaskTransition(changeType, taskInfo = createTaskInfo(taskId), displayId)
 
         private fun createTaskTransition(
             @TransitionType changeType: Int,
             taskInfo: ActivityManager.RunningTaskInfo?,
-        ) = TransitionInfoBuilder(TRANSIT_OPEN).addChange(changeType, taskInfo).build()
+            displayId: Int = DEFAULT_DISPLAY_ID,
+        ) = TransitionInfoBuilder(TRANSIT_OPEN, displayId = displayId)
+            .addChange(changeType, taskInfo)
+            .build()
 
-        private fun createTaskInfo(taskId: Int) =
-            ActivityManager.RunningTaskInfo().apply {
-                this.taskId = taskId
-                this.token = MockToken().token()
-                this.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-            }
+        private fun createActivityTransition(
+            @TransitionType changeType: Int,
+            taskId: Int,
+            displayId: Int = DEFAULT_DISPLAY_ID,
+        ) = TransitionInfoBuilder(TRANSIT_OPEN, displayId = displayId)
+            .addChange(changeType, ActivityTransitionInfo(COMPONENT, taskId))
+            .build()
+
+        private fun createTaskInfo(taskId: Int) = ActivityManager.RunningTaskInfo().apply {
+            this.taskId = taskId
+            this.token = MockToken().token()
+            this.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        }
     }
 }

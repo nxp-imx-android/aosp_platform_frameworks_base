@@ -70,7 +70,7 @@ constructor(
                 setPaddingRelative(
                     resources.getDimensionPixelSize(R.dimen.below_clock_padding_start_icons),
                     0,
-                    0,
+                    resources.getDimensionPixelOffset(R.dimen.shelf_icon_container_padding),
                     0,
                 )
                 setVisibility(View.INVISIBLE)

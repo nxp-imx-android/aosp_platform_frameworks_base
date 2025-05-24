@@ -18,11 +18,13 @@ package com.android.wm.shell.bubbles.bar;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
+import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.isValidToBubble;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import static java.lang.Math.max;
 
 import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Insets;
 import android.graphics.Outline;
@@ -36,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -286,7 +289,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             }
 
             // Handle view needs to draw on top of task view.
-            bringChildToFront(mHandleView);
+            mHandleView.setElevation(1);
 
             mHandleView.setAccessibilityDelegate(new HandleViewAccessibilityDelegate());
         }
@@ -432,6 +435,15 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     public void onTaskRemovalStarted() {
         if (mRegionSamplingHelper != null) {
             mRegionSamplingHelper.stopAndDestroy();
+        }
+    }
+
+    @Override
+    public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
+        if (!isValidToBubble(taskInfo)) {
+            // TODO(b/411558731): Besides just showing a warning toast, also force the app to return
+            // to fullscreen, similar to split screen behavior when not supported.
+            Toast.makeText(mContext, R.string.bubble_not_supported_text, Toast.LENGTH_SHORT).show();
         }
     }
 

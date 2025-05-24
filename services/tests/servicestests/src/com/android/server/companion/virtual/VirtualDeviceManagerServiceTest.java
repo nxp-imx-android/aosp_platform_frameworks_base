@@ -1841,7 +1841,7 @@ public class VirtualDeviceManagerServiceTest {
 
     @Test
     @EnableFlags(Flags.FLAG_VIEWCONFIGURATION_APIS)
-    public void createVirtualDeviceWithViewConfigurationParams_appliesParams() {
+    public void applyViewConfigurationParams_appliesParams() {
         ViewConfigurationParams viewConfigurationParams = new ViewConfigurationParams.Builder()
                 .setTapTimeoutDuration(Duration.ofMillis(10L))
                 .setDoubleTapTimeoutDuration(Duration.ofMillis(10L))
@@ -1851,12 +1851,11 @@ public class VirtualDeviceManagerServiceTest {
                 .setMaximumFlingVelocityDpPerSecond(10f)
                 .setTouchSlopDp(10f)
                 .build();
-        VirtualDeviceParams virtualDeviceParams =
-                new VirtualDeviceParams.Builder()
-                        .setViewConfigurationParams(viewConfigurationParams)
-                        .build();
 
-        createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, virtualDeviceParams);
+        VirtualDeviceImpl virtualDevice = createVirtualDevice(VIRTUAL_DEVICE_ID_1,
+                DEVICE_OWNER_UID_1);
+        virtualDevice.applyViewConfigurationParams(viewConfigurationParams);
+
         verify(mViewConfigurationControllerMock).applyViewConfigurationParams(
                 eq(VIRTUAL_DEVICE_ID_1), eq(viewConfigurationParams));
     }
@@ -1946,6 +1945,7 @@ public class VirtualDeviceManagerServiceTest {
                 /* associatedDevice= */ null, /* selfManaged= */ true,
                 /* notifyOnDeviceNearby= */ false, /* revoked= */ false, /* pending= */ false,
                 /* timeApprovedMs= */0, /* lastTimeConnectedMs= */0,
-                /* systemDataSyncFlags= */ -1, /* deviceIcon= */ null, /* deviceId= */ null);
+                /* systemDataSyncFlags= */ -1, /* deviceIcon= */ null, /* deviceId= */ null,
+                /* packageToNotify= */ null);
     }
 }

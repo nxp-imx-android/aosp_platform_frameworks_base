@@ -228,11 +228,12 @@ public abstract class Pip2Module {
             PipTransitionState pipTransitionState,
             PipScheduler pipScheduler, RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             PipBoundsState pipBoundsState, DisplayController displayController,
-            PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm
+            PipDisplayLayoutState pipDisplayLayoutState, PipBoundsAlgorithm pipBoundsAlgorithm,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper
     ) {
         return new PipDisplayTransferHandler(context, pipTransitionState, pipScheduler,
                 rootTaskDisplayAreaOrganizer, pipBoundsState, displayController,
-                pipDisplayLayoutState, pipBoundsAlgorithm);
+                pipDisplayLayoutState, pipBoundsAlgorithm, pipSurfaceTransactionHelper);
     }
 
     @WMSingleton
@@ -244,10 +245,12 @@ public abstract class Pip2Module {
             PipScheduler pipScheduler,
             Optional<PipPerfHintController> pipPerfHintControllerOptional,
             PipTransitionState pipTransitionState,
+            PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             PipUiEventLogger pipUiEventLogger, PipDisplayLayoutState pipDisplayLayoutState) {
         return new PipMotionHelper(context, pipBoundsState, menuController, pipSnapAlgorithm,
                 floatingContentCoordinator, pipScheduler, pipPerfHintControllerOptional,
-                pipTransitionState, pipUiEventLogger, pipDisplayLayoutState);
+                pipTransitionState, pipSurfaceTransactionHelper, pipUiEventLogger,
+                pipDisplayLayoutState);
     }
 
     @WMSingleton
@@ -267,14 +270,15 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static PipTaskListener providePipTaskListener(Context context,
+            @NonNull PipSurfaceTransactionHelper pipSurfaceTransactionHelper,
             ShellTaskOrganizer shellTaskOrganizer,
             PipTransitionState pipTransitionState,
             PipScheduler pipScheduler,
             PipBoundsState pipBoundsState,
             PipBoundsAlgorithm pipBoundsAlgorithm,
             @ShellMainThread ShellExecutor mainExecutor) {
-        return new PipTaskListener(context, shellTaskOrganizer, pipTransitionState,
-                pipScheduler, pipBoundsState, pipBoundsAlgorithm, mainExecutor);
+        return new PipTaskListener(context, pipSurfaceTransactionHelper, shellTaskOrganizer,
+                pipTransitionState, pipScheduler, pipBoundsState, pipBoundsAlgorithm, mainExecutor);
     }
 
     @WMSingleton
@@ -324,7 +328,8 @@ public abstract class Pip2Module {
 
     @WMSingleton
     @Provides
-    static PipSurfaceTransactionHelper providePipSurfaceTransactionHelper(Context context) {
-        return new PipSurfaceTransactionHelper(context);
+    static PipSurfaceTransactionHelper providePipSurfaceTransactionHelper(Context context,
+            @NonNull ShellInit shellInit, PipDisplayLayoutState pipDisplayLayoutState) {
+        return new PipSurfaceTransactionHelper(context, shellInit, pipDisplayLayoutState);
     }
 }

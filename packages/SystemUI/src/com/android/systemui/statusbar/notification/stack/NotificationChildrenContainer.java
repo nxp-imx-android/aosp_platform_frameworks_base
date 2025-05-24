@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.notification.stack;
 
 import static android.app.Flags.notificationsRedesignTemplates;
 
+import static com.android.systemui.Flags.notificationRowIsRemovedFix;
+
 import android.app.Notification;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -432,13 +434,14 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     private static boolean shouldRestoreChild(ExpandableNotificationRow row) {
-        // TODO: b/417457086 - We're only checking for isChangingPosition here as a quick-and-dirty
-        //  fix for b/415665263, but the real issue is that isRemoved is currently ALWAYS false.
-        //  We need to fix that behind a flag, so this hack is temporary.
-        if (USE_IS_CHANGING_POSITION_TO_RESTORE) {
-            return !row.isRemoved() && row.isChangingPosition();
-        } else {
+        if (notificationRowIsRemovedFix() || !USE_IS_CHANGING_POSITION_TO_RESTORE) {
             return !row.isRemoved();
+        } else {
+            // TODO: b/417457086 - We're only checking for isChangingPosition here as a
+            //  quick-and-dirty fix for b/415665263, but the real issue is that isRemoved is
+            //  currently ALWAYS false. This should be fixed when notification_row_is_removed_fix
+            //  is enabled.
+            return !row.isRemoved() && row.isChangingPosition();
         }
     }
 
@@ -546,10 +549,13 @@ public class NotificationChildrenContainer extends ViewGroup
     }
 
     private void initBundleDimens() {
+        Resources res = getResources();
         NotificationBundleUi.unsafeAssertInNewMode();
         mCollapsedHeaderMargin = mHeaderHeight;
         mAdditionalExpandedHeaderMargin = 0;
         mCollapsedBottomPadding = 0;
+        mDividerHeight = res.getDimensionPixelOffset(
+                R.dimen.bundle_children_container_divider_height);
     }
 
     /**
@@ -961,13 +967,25 @@ public class NotificationChildrenContainer extends ViewGroup
             mHeaderViewState.setAlpha(mHeaderVisibleAmount);
 
             if (notificationsRedesignTemplates()) {
+                // While mUserLocked, the expandFactor reflects where in the drag-to-expand gesture
+                // we are so that we can calculate the intermediary translation needed for the
+                // header components. Otherwise, we just set the final desired translation based
+                // on whether the group is expanded or not.
+                float topLineTranslation = 0, expandButtonTranslation = 0;
+                if (mUserLocked) {
+                    topLineTranslation = mGroupHeader.getTopLineTranslation() * expandFactor;
+                    expandButtonTranslation =
+                            mGroupHeader.getExpandButtonTranslation() * expandFactor;
+                } else if (mChildrenExpanded) {
+                    topLineTranslation = mGroupHeader.getTopLineTranslation();
+                    expandButtonTranslation = mGroupHeader.getExpandButtonTranslation();
+                }
+
                 mTopLineViewState = initStateForGroupHeader(mTopLineViewState);
-                mTopLineViewState.setYTranslation(
-                        mGroupHeader.getTopLineTranslation() * expandFactor);
+                mTopLineViewState.setYTranslation(topLineTranslation);
 
                 mExpandButtonViewState = initStateForGroupHeader(mExpandButtonViewState);
-                mExpandButtonViewState.setYTranslation(
-                        mGroupHeader.getExpandButtonTranslation() * expandFactor);
+                mExpandButtonViewState.setYTranslation(expandButtonTranslation);
             }
         }
     }
@@ -1180,10 +1198,10 @@ public class NotificationChildrenContainer extends ViewGroup
         int childCount = mAttachedChildren.size();
         ViewState tmpState = new ViewState();
         float expandFraction = getGroupExpandFraction();
-        final boolean isExpanding = !showingAsLowPriority()
+        final boolean isExpansionChanging = !showingAsLowPriority()
                 && (mUserLocked || mContainingNotification.isGroupExpansionChanging());
         final boolean dividersVisible = (mChildrenExpanded && mShowDividersWhenExpanded)
-                || (isExpanding && !mHideDividersDuringExpand);
+                || (isExpansionChanging && !mHideDividersDuringExpand);
         for (int i = childCount - 1; i >= 0; i--) {
             ExpandableNotificationRow child = mAttachedChildren.get(i);
             ExpandableViewState viewState = child.getViewState();
@@ -1214,10 +1232,21 @@ public class NotificationChildrenContainer extends ViewGroup
             }
             mGroupOverFlowState.animateTo(mOverflowNumber, properties);
         }
-        if (mGroupHeader != null && mHeaderViewState != null) {
-            // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
-            //  but mHeaderViewState is null.
-            mHeaderViewState.applyToView(mGroupHeader);
+        if (mGroupHeader != null) {
+            if (mHeaderViewState != null) {
+                // TODO(389839492): For Groups in Bundles mGroupHeader might be initialized
+                //  but mHeaderViewState is null.
+                mHeaderViewState.applyToView(mGroupHeader);
+            }
+
+            if (notificationsRedesignTemplates()) {
+                if (mTopLineViewState != null) {
+                    mTopLineViewState.animateTo(mGroupHeader.getTopLineView(), properties);
+                }
+                if (mExpandButtonViewState != null) {
+                    mExpandButtonViewState.animateTo(mGroupHeader.getExpandButton(), properties);
+                }
+            }
         }
         updateChildrenClipping();
     }
@@ -1246,6 +1275,9 @@ public class NotificationChildrenContainer extends ViewGroup
         updateExpansionStates();
         if (mGroupHeaderWrapper != null) {
             mGroupHeaderWrapper.setExpanded(childrenExpanded);
+        }
+        if (mBundleHeaderViewModel != null) {
+            mBundleHeaderViewModel.setExpansionState(childrenExpanded);
         }
         final int count = mAttachedChildren.size();
         for (int childIdx = 0; childIdx < count; childIdx++) {

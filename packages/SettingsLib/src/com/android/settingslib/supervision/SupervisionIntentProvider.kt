@@ -38,6 +38,7 @@ object SupervisionIntentProvider {
     private const val SETTINGS_PKG: String = "com.android.settings"
     private const val ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
         "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS"
+    private const val EXTRA_FORCE_CONFIRMATION = "force_confirmation"
 
     enum class PinRecoveryAction(val action: String) {
         SET(ACTION_SETUP_PIN_RECOVERY),
@@ -95,5 +96,19 @@ object SupervisionIntentProvider {
         val activities =
             context.packageManager.queryIntentActivitiesAsUser(intent, 0, context.userId)
         return if (activities.isNotEmpty()) intent else null
+    }
+
+    /**
+     * Returns an [Intent] to confirm supervision credentials or null if the intent is not
+     * resolvable.
+     *
+     * If [forceConfirm], user will be prompted to confirm supervision credentials regardless of
+     * whether there is an active authentication session (i.e. if the supervision credentials have
+     * been recently confirmed for some other purpose).
+     */
+    @JvmStatic
+    fun getConfirmSupervisionCredentialsIntent(context: Context, forceConfirm: Boolean): Intent? {
+        return getConfirmSupervisionCredentialsIntent(context)
+            ?.putExtra(EXTRA_FORCE_CONFIRMATION, forceConfirm)
     }
 }

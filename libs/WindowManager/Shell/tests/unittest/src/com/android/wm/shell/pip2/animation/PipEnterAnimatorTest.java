@@ -32,7 +32,9 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.testing.AndroidTestingRunner;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.TestableLooper;
 import android.view.Surface;
 import android.view.SurfaceControl;
@@ -40,26 +42,30 @@ import android.view.SurfaceControl;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.wm.shell.R;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.phone.PipAppIconOverlay;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
+import java.util.List;
 
 /**
  * Unit test against {@link PipEnterAnimator}.
  */
 @SmallTest
 @TestableLooper.RunWithLooper
-@RunWith(AndroidTestingRunner.class)
+@EnableFlags(Flags.FLAG_ENABLE_PIP2)
+@RunWith(ParameterizedAndroidJunit4.class)
 public class PipEnterAnimatorTest {
-    private static final float TEST_CORNER_RADIUS = 1f;
-    private static final float TEST_SHADOW_RADIUS = 2f;
-
     @Mock private Context mMockContext;
     @Mock private Resources mMockResources;
     @Mock private PipSurfaceTransactionHelper.SurfaceControlTransactionFactory mMockFactory;
@@ -77,6 +83,22 @@ public class PipEnterAnimatorTest {
     private Rect mEndBounds;
     private PipEnterAnimator mPipEnterAnimator;
 
+    @Mock
+    private PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_PIP_BOX_SHADOWS);
+    }
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    public PipEnterAnimatorTest(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -84,10 +106,6 @@ public class PipEnterAnimatorTest {
         when(mMockResources.getInteger(anyInt())).thenReturn(0);
         when(mMockFactory.getTransaction()).thenReturn(mMockAnimateTransaction);
         when(mMockPipAppIconOverlay.getLeash()).thenReturn(mMockAppIconOverlayLeash);
-        when(mMockResources.getDimensionPixelSize(R.dimen.pip_corner_radius))
-                .thenReturn((int) TEST_CORNER_RADIUS);
-        when(mMockResources.getDimensionPixelSize(R.dimen.pip_shadow_radius))
-                .thenReturn((int) TEST_SHADOW_RADIUS);
 
         prepareTransaction(mMockAnimateTransaction);
         prepareTransaction(mMockStartTransaction);
@@ -105,7 +123,7 @@ public class PipEnterAnimatorTest {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
         mPipEnterAnimator = new PipEnterAnimator(mMockContext,
-                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mPipSurfaceTransactionHelper, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -121,10 +139,11 @@ public class PipEnterAnimatorTest {
         verifyNoMoreInteractions(mMockEndCallback);
 
         // Check corner and shadow radii were set
-        verify(mMockAnimateTransaction, atLeastOnce())
-                .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
-        verify(mMockAnimateTransaction, atLeastOnce())
-                .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+        verify(mPipSurfaceTransactionHelper, atLeastOnce())
+                .round(eq(mMockAnimateTransaction), eq(mTestLeash), eq(true));
+        verify(mPipSurfaceTransactionHelper, atLeastOnce())
+                .shadow(eq(mMockAnimateTransaction), eq(mTestLeash), eq(true));
+
     }
 
     @Test
@@ -132,7 +151,7 @@ public class PipEnterAnimatorTest {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
         mPipEnterAnimator = new PipEnterAnimator(mMockContext,
-                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mPipSurfaceTransactionHelper, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -148,10 +167,10 @@ public class PipEnterAnimatorTest {
         verify(mMockEndCallback).run();
 
         // Check corner and shadow radii were set
-        verify(mMockAnimateTransaction, atLeastOnce())
-                .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
-        verify(mMockAnimateTransaction, atLeastOnce())
-                .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+        verify(mPipSurfaceTransactionHelper, atLeastOnce())
+                .round(eq(mMockAnimateTransaction), eq(mTestLeash), eq(true));
+        verify(mPipSurfaceTransactionHelper, atLeastOnce())
+                .shadow(eq(mMockAnimateTransaction), eq(mTestLeash), eq(true));
     }
 
     @Test
@@ -159,7 +178,7 @@ public class PipEnterAnimatorTest {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
         mPipEnterAnimator = new PipEnterAnimator(mMockContext,
-                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mPipSurfaceTransactionHelper, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -177,7 +196,7 @@ public class PipEnterAnimatorTest {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
         mPipEnterAnimator = new PipEnterAnimator(mMockContext,
-                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mPipSurfaceTransactionHelper, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -196,7 +215,7 @@ public class PipEnterAnimatorTest {
         mRotation = Surface.ROTATION_0;
         mEndBounds = new Rect(100, 100, 500, 500);
         mPipEnterAnimator = new PipEnterAnimator(mMockContext,
-                new PipSurfaceTransactionHelper(mMockContext), mTestLeash,
+                mPipSurfaceTransactionHelper, mTestLeash,
                 mMockStartTransaction, mMockFinishTransaction,
                 mEndBounds, mRotation);
         mPipEnterAnimator.setSurfaceControlTransactionFactory(mMockFactory);
@@ -212,10 +231,10 @@ public class PipEnterAnimatorTest {
                 eq(mMockAnimateTransaction), anyFloat(), eq(fraction), eq(mEndBounds));
 
         // Check corner and shadow radii were set
-        verify(mMockAnimateTransaction, atLeastOnce())
-                .setCornerRadius(eq(mTestLeash), eq(TEST_CORNER_RADIUS));
-        verify(mMockAnimateTransaction, atLeastOnce())
-                .setShadowRadius(eq(mTestLeash), eq(TEST_SHADOW_RADIUS));
+        verify(mPipSurfaceTransactionHelper, atLeastOnce())
+                .round(eq(mMockAnimateTransaction), eq(mTestLeash), eq(true));
+        verify(mPipSurfaceTransactionHelper, atLeastOnce())
+                .shadow(eq(mMockAnimateTransaction), eq(mTestLeash), eq(true));
     }
 
     // set up transaction chaining

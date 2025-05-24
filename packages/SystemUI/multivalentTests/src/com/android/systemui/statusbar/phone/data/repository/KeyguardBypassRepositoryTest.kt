@@ -45,6 +45,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
+@android.platform.test.annotations.EnabledOnRavenwood
 class KeyguardBypassRepositoryTest : SysuiTestCase() {
 
     private lateinit var postureControllerCallback: DevicePostureController.Callback

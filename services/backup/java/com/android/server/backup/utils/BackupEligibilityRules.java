@@ -76,16 +76,18 @@ public class BackupEligibilityRules {
             systemPackagesAllowedForProfileUser,
             Sets.newArraySet(WALLPAPER_PACKAGE, SETTINGS_PACKAGE));
 
-    static {
-        if (UserManager.isHeadlessSystemUserMode()) {
-            systemPackagesAllowedForNonSystemUsers.add(TELEPHONY_PROVIDER_PACKAGE);
-        }
-    }
+    /**
+     * List of system packages that are eligible for backup for the main user in Headless System
+     * User Mode (HSUM). In HSUM, certain packages are only backed up for the main user.
+     */
+    private static final Set<String> systemPackagesAllowedForHsumMainUser = SetUtils.union(
+            systemPackagesAllowedForNonSystemUsers,
+            Sets.newArraySet(TELEPHONY_PROVIDER_PACKAGE));
 
     private final PackageManager mPackageManager;
     private final PackageManagerInternal mPackageManagerInternal;
+    private final UserManager mUserManager;
     private final int mUserId;
-    private boolean mIsProfileUser = false;
     @BackupDestination  private final int mBackupDestination;
     private final boolean mSkipRestoreForLaunchedApps;
 
@@ -134,8 +136,7 @@ public class BackupEligibilityRules {
         mPackageManagerInternal = packageManagerInternal;
         mUserId = userId;
         mBackupDestination = backupDestination;
-        UserManager userManager = context.getSystemService(UserManager.class);
-        mIsProfileUser = userManager.isProfile();
+        mUserManager = context.getSystemService(UserManager.class);
         mSkipRestoreForLaunchedApps = skipRestoreForLaunchedApps;
     }
 
@@ -167,20 +168,13 @@ public class BackupEligibilityRules {
 
         // 2. they run as a system-level uid
         if (UserHandle.isCore(app.uid)) {
-            // and the backup is happening for a non-system user or profile on a package that is
-            // not explicitly allowed.
-            if (mUserId != UserHandle.USER_SYSTEM) {
-                if (mIsProfileUser && !systemPackagesAllowedForProfileUser.contains(
-                        app.packageName)) {
-                    return false;
-                }
-                if (!mIsProfileUser && !systemPackagesAllowedForNonSystemUsers.contains(
-                        app.packageName)) {
-                    return false;
-                }
+            // System apps are additionally checked:
+            // ...if not allowed for the current user (governed by user-specific allowlists)
+            if (!isSystemPackageAllowedForCurrentUser(app.packageName)) {
+                return false;
             }
 
-            // or do not supply their own backup agent
+            // ...or do not supply their own backup agent
             if (app.backupAgentName == null) {
                 return false;
             }
@@ -197,6 +191,33 @@ public class BackupEligibilityRules {
         }
 
         return !appIsDisabled(app);
+    }
+
+    /**
+     * Checks if a given system package is allowed for backup for the current user.
+     * True for system user ({@link android.os.UserHandle#USER_SYSTEM}); for others,
+     * eligibility depends on user type (profile, HSUM main, etc.) and specific allowlists.
+     */
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
+    private boolean isSystemPackageAllowedForCurrentUser(String packageName) {
+        if (mUserId == UserHandle.USER_SYSTEM) {
+            return true;
+        }
+
+        if (mUserManager.isProfile()) {
+            return systemPackagesAllowedForProfileUser.contains(packageName);
+        }
+
+        // In Headless System User Mode, certain packages are only backed up for the main user.
+        if (UserManager.isHeadlessSystemUserMode()) {
+            UserHandle mainUser = mUserManager.getMainUser();
+            if (mainUser != null && mainUser.getIdentifier() == mUserId) {
+                return systemPackagesAllowedForHsumMainUser.contains(packageName);
+            }
+        }
+
+        // Default allowlist for other non-system users (including non-main users in HSUM).
+        return systemPackagesAllowedForNonSystemUsers.contains(packageName);
     }
 
     /**

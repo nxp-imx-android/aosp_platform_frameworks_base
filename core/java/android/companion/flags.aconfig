@@ -72,3 +72,11 @@ flag {
     description: "Enable task continuity API"
     bug: "400970610"
 }
+
+flag {
+    name: "association_verification"
+    is_exported: true
+    namespace: "companion"
+    description: "Enable association verification APIs"
+    bug: "371198526"
+}

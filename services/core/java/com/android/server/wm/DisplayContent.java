@@ -33,6 +33,34 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.APP_TRANSITION;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.CURRENT_FOCUS_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_FRAMES;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_INFO;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_READY;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DISPLAY_ROTATION;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.DPI;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.FOCUSED_APP;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.FOCUSED_ROOT_TASK_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.IME_POLICY;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_CONTROL_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_INPUT_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INPUT_METHOD_LAYERING_TARGET_IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.IS_SLEEPING;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.KEEP_CLEAR_AREAS;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.REMOTE_INSETS_CONTROL_TARGET;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.RESUMED_ACTIVITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.ROOT_DISPLAY_AREA;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.SLEEP_TOKENS;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.USER_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.RemoteInsetsControlTargetProto.ANIMATING_TYPES;
+import static android.internal.perfetto.protos.Windowmanagerservice.RemoteInsetsControlTargetProto.IDENTIFIER;
+import static android.internal.perfetto.protos.Windowmanagerservice.RemoteInsetsControlTargetProto.REQUESTED_VISIBLE_TYPES;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.DISPLAY_CONTENT;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.os.UserHandle.USER_NULL;
@@ -107,38 +135,10 @@ import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_L
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
-import static com.android.server.wm.DisplayContentProto.APP_TRANSITION;
-import static com.android.server.wm.DisplayContentProto.CURRENT_FOCUS_IDENTIFIER;
-import static com.android.server.wm.DisplayContentProto.DISPLAY_FRAMES;
-import static com.android.server.wm.DisplayContentProto.DISPLAY_INFO;
-import static com.android.server.wm.DisplayContentProto.DISPLAY_READY;
-import static com.android.server.wm.DisplayContentProto.DISPLAY_ROTATION;
-import static com.android.server.wm.DisplayContentProto.DPI;
-import static com.android.server.wm.DisplayContentProto.FOCUSED_APP;
-import static com.android.server.wm.DisplayContentProto.FOCUSED_ROOT_TASK_ID;
-import static com.android.server.wm.DisplayContentProto.ID;
-import static com.android.server.wm.DisplayContentProto.IME_POLICY;
-import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_CONTROL_TARGET_IDENTIFIER;
-import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_INPUT_TARGET_IDENTIFIER;
-import static com.android.server.wm.DisplayContentProto.INPUT_METHOD_LAYERING_TARGET_IDENTIFIER;
-import static com.android.server.wm.DisplayContentProto.IS_SLEEPING;
-import static com.android.server.wm.DisplayContentProto.KEEP_CLEAR_AREAS;
-import static com.android.server.wm.DisplayContentProto.MIN_SIZE_OF_RESIZEABLE_TASK_DP;
-import static com.android.server.wm.DisplayContentProto.REMOTE_INSETS_CONTROL_TARGET;
-import static com.android.server.wm.DisplayContentProto.RESUMED_ACTIVITY;
-import static com.android.server.wm.DisplayContentProto.ROOT_DISPLAY_AREA;
-import static com.android.server.wm.DisplayContentProto.SLEEP_TOKENS;
 import static com.android.server.wm.EventLogTags.IMF_REMOVE_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_SHOW_IME_SCREENSHOT;
 import static com.android.server.wm.EventLogTags.IMF_UPDATE_IME_PARENT;
-import static com.android.server.wm.IdentifierProto.HASH_CODE;
-import static com.android.server.wm.IdentifierProto.TITLE;
-import static com.android.server.wm.IdentifierProto.USER_ID;
-import static com.android.server.wm.RemoteInsetsControlTargetProto.ANIMATING_TYPES;
-import static com.android.server.wm.RemoteInsetsControlTargetProto.IDENTIFIER;
-import static com.android.server.wm.RemoteInsetsControlTargetProto.REQUESTED_VISIBLE_TYPES;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_WINDOW_ANIMATION;
-import static com.android.server.wm.WindowContainerChildProto.DISPLAY_CONTENT;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_DISPLAY;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_INPUT_METHOD;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_LAYOUT;
@@ -167,6 +167,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.app.WindowConfiguration;
 import android.content.ComponentCallbacks;
 import android.content.ComponentName;
 import android.content.Context;
@@ -4148,8 +4149,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     void setInputMethodWindowLocked(WindowState win) {
         mInputMethodWindow = win;
-        mInsetsStateController.getImeSourceProvider().setWindowContainer(win,
-                mDisplayPolicy.getImeSourceFrameProvider(), null);
+        mInsetsStateController.getImeSourceProvider().setWindow(win,
+                mDisplayPolicy.getImeSourceFrameProvider(), null /* overrideFrameProviders */);
         computeImeLayeringTarget(true /* update */);
         updateImeControlTarget(false /* forceUpdateImeParent */);
     }
@@ -5483,8 +5484,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     void reapplyMagnificationSpec() {
+        reapplyMagnificationSpec(getPendingTransaction());
+    }
+
+    void reapplyMagnificationSpec(Transaction t) {
         if (mMagnificationSpec != null) {
-            applyMagnificationSpec(getPendingTransaction(), mMagnificationSpec);
+            applyMagnificationSpec(t, mMagnificationSpec);
         }
     }
 
@@ -5711,7 +5716,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (!mWmService.mForceDesktopModeOnExternalDisplays || isDefaultDisplay || isPrivate()) {
             return false;
         }
-        if (mDwpcHelper != null && !mDwpcHelper.isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
+        if (!isWindowingModeSupported(WINDOWING_MODE_FREEFORM)) {
             return false;
         }
         // Virtual displays need to explicitly opt in via the system decorations.
@@ -5721,6 +5726,26 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
         return true;
+    }
+
+    /**
+     * Returns whether the {@param windowingMode} is supported on this display.
+     * @param windowingMode The windowing mode to check for.
+     * @return Whether this windowing mode is supported.
+     */
+    boolean isWindowingModeSupported(@WindowConfiguration.WindowingMode int windowingMode) {
+        if (!android.companion.virtualdevice.flags.Flags.gwpcAwareWindowingMode()) {
+            return true;
+        }
+        if (mDwpcHelper != null && !mDwpcHelper.isWindowingModeSupported(windowingMode)) {
+            return false;
+        }
+        return switch (windowingMode) {
+            case WINDOWING_MODE_FREEFORM -> mAtmService.mSupportsFreeformWindowManagement;
+            case WINDOWING_MODE_PINNED -> mAtmService.mSupportsPictureInPicture;
+            case WINDOWING_MODE_MULTI_WINDOW -> mAtmService.mSupportsMultiWindow;
+            default -> true;
+        };
     }
 
     /**

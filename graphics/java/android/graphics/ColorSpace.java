@@ -35,6 +35,7 @@ import libcore.util.NativeAllocationRegistry;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.function.DoubleUnaryOperator;
 
 /**
@@ -236,7 +237,7 @@ public abstract class ColorSpace {
 
     // See static initialization block next to #get(Named)
     private static final HashMap<Integer, ColorSpace> sNamedColorSpaceMap =
-            new HashMap<>();
+            new LinkedHashMap<>();
 
     private static final SparseIntArray sDataToColorSpaces = new SparseIntArray();
 

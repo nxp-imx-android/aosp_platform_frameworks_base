@@ -24,9 +24,11 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.platform.test.annotations.DisableFlags
 import android.view.View
+import android.view.ViewRootImpl
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -66,6 +68,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -83,18 +86,22 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
     private val mediaProjectionState = kosmos.fakeMediaProjectionRepository.mediaProjectionState
 
     private val mockSystemUIDialog = mock<SystemUIDialog>()
-    private val chipBackgroundView = mock<ChipBackgroundContainer>()
+    private val chipBackgroundView =
+        mock<ChipBackgroundContainer> { on { context } doReturn context }
     private val chipView =
-        mock<View>().apply {
-            whenever(
-                    this.requireViewById<ChipBackgroundContainer>(
-                        R.id.ongoing_activity_chip_background
-                    )
-                )
-                .thenReturn(chipBackgroundView)
+        mock<View> {
+            on {
+                requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
+            } doReturn chipBackgroundView
+            on { context } doReturn context
         }
+    private val viewRootImpl = mock<ViewRootImpl> { on { view } doReturn chipView }
+    private val dialogTransitionController =
+        mock<DialogTransitionAnimator.Controller> { on { viewRoot } doReturn viewRootImpl }
     private val mockExpandable: Expandable =
-        mock<Expandable>().apply { whenever(dialogTransitionController(any())).thenReturn(mock()) }
+        mock<Expandable> {
+            on { dialogTransitionController(any()) } doReturn dialogTransitionController
+        }
 
     private val Kosmos.underTest by Kosmos.Fixture { ongoingActivityChipsViewModel }
 
@@ -367,7 +374,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
                     return@doAnswer dialog
                 }
                 .whenever(kosmos.mockSystemUIDialogFactory)
-                .create(any<SystemUIDialog.Delegate>())
+                .create(any<SystemUIDialog.Delegate>(), any<Context>())
             whenever(kosmos.packageManager.getApplicationInfo(eq(NORMAL_PACKAGE), any<Int>()))
                 .thenThrow(PackageManager.NameNotFoundException())
 

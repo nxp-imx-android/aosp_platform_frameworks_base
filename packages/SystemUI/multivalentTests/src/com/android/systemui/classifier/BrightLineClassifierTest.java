@@ -57,6 +57,7 @@ import java.util.Set;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@android.platform.test.annotations.EnabledOnRavenwood
 public class BrightLineClassifierTest extends SysuiTestCase {
     private BrightLineFalsingManager mBrightLineFalsingManager;
     @Mock

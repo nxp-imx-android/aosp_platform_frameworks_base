@@ -16,6 +16,7 @@
 
 package com.android.systemui.topwindoweffects.data.repository
 
+import java.io.PrintWriter
 import kotlinx.coroutines.flow.Flow
 
 interface SqueezeEffectRepository {
@@ -26,7 +27,11 @@ interface SqueezeEffectRepository {
 
     val isPowerButtonLongPressed: Flow<Boolean>
 
-    suspend fun getInvocationEffectInitialDelayMs(): Long
+    fun getInvocationEffectInitialDelayMillis(): Long
 
-    suspend fun getInvocationEffectInwardsAnimationDurationMs(): Long
+    fun getInvocationEffectInAnimationDurationMillis(): Long
+
+    fun getInvocationEffectOutAnimationDurationMillis(): Long
+
+    fun dump(pw: PrintWriter, args: Array<out String>)
 }

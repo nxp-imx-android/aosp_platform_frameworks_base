@@ -16,9 +16,10 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Surfaceanimator.SurfaceAnimatorProto.ANIMATION_ADAPTER;
+import static android.internal.perfetto.protos.Surfaceanimator.SurfaceAnimatorProto.LEASH;
+
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
-import static com.android.server.wm.SurfaceAnimatorProto.ANIMATION_ADAPTER;
-import static com.android.server.wm.SurfaceAnimatorProto.LEASH;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
@@ -413,7 +414,7 @@ public class SurfaceAnimator {
 
     /**
      * Write to a protocol buffer output stream. Protocol buffer message definition is at {@link
-     * com.android.server.wm.SurfaceAnimatorProto}.
+     * android.internal.perfetto.protos.Surfaceanimator.SurfaceAnimatorProto}.
      *
      * @param proto Stream to write the SurfaceAnimator object to.
      * @param fieldId Field Id of the SurfaceAnimator as defined in the parent message.

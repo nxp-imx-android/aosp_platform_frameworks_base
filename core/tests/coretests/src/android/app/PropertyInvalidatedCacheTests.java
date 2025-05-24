@@ -23,6 +23,8 @@ import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
 import static android.app.PropertyInvalidatedCache.MODULE_TEST;
 import static android.app.PropertyInvalidatedCache.NonceStore.INVALID_NONCE_INDEX;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -33,17 +35,13 @@ import static org.junit.Assert.fail;
 
 import android.annotation.SuppressLint;
 import android.app.PropertyInvalidatedCache.Args;
-import android.app.PropertyInvalidatedCache.NonceWatcher;
 import android.app.PropertyInvalidatedCache.NonceStore;
+import android.app.PropertyInvalidatedCache.NonceWatcher;
 import android.os.Binder;
-import android.util.Log;
-import com.android.internal.os.ApplicationSharedMemory;
-
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.filters.SmallTest;
 
@@ -54,6 +52,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -799,5 +799,75 @@ public class PropertyInvalidatedCacheTests {
         assertEquals(null, cache.query(30));
         // The recompute is 4 because nulls were not cached.
         assertEquals(4, cache.getRecomputeCount());
+    }
+
+    // Collect the dumpsys output.  The boolean is for brief output.
+    private static String getDumpsys(boolean brief) {
+        final String[] args;
+        if (brief) {
+            args = new String[] { "-brief" };
+        } else {
+            args = new String[0];
+        }
+
+        ByteArrayOutputStream barray = new ByteArrayOutputStream();
+        PrintWriter bout = new PrintWriter(barray);
+        PropertyInvalidatedCache.dumpCacheInfo(bout, args);
+        bout.close();
+        return barray.toString();
+    }
+
+    @Test
+    public void testDumpsysCacheinfo() {
+        // Construct one well-known cache.
+        TestCache cache = new TestCache(new Args(MODULE_TEST)
+                .maxEntries(4).api("testDumpsys").cacheNulls(true),
+                new TestQuery());
+        cache.invalidateCache();
+
+        String dump = getDumpsys(/* brief */ false);
+        String p;
+
+        // Test of the test.  If this test fails, it is likely that the dumpsys is badly broken.
+        p = "Cache-key:";
+        assertThat(dump).containsMatch(p);
+
+        // Test of the test: this should fail.  This is not a functional test: if this test passes
+        // then the logic in this test routine is faulty.
+        p = "Cache-key: +notACache\\R +invalidated:1";
+        assertThat(dump).doesNotContainMatch(p);
+
+        // Verify that there is a handler for test/testDumpsys and it has one invalidation.
+        p = "Cache-key: +test/testDumpsys\\R +invalidated:1";
+        assertThat(dump).containsMatch(p);
+
+        // Verify that the testDumpsys cache is present.  It has zero hits, misses, and clears.
+        p = "Cache Name: testDumpsys\\R +Key: test/testDumpsys\\R"
+            + " +Hits: 0, Misses: 0, Skips: 0";
+        assertThat(dump).containsMatch(p);
+
+        // Construct a brief listing.
+        dump = getDumpsys(/* brief */ true);
+
+        // Verify that there is a handler for test/testDumpsys and it has one invalidation.
+        p = "Cache-key: +test/testDumpsys\\R +invalidated:1";
+        assertThat(dump).containsMatch(p);
+
+        // Verify that the testDumpsys cache is present.  It has zero hits, misses, and clears.
+        p = "Cache Name: testDumpsys";
+        assertThat(dump).doesNotContainMatch(p);
+
+        // Add some activity.  Two misses and one hit.
+        cache.query(1);
+        cache.query(2);
+        cache.query(1);
+
+        // Construct a brief listing.
+        dump = getDumpsys(/* brief */ true);
+
+        // Verify that testDumpsys cache is present and it has the expected attributes.
+        p = "Cache Name: testDumpsys\\R +Key: test/testDumpsys\\R"
+            + " +Hits: 1, Misses: 2, Skips: 0";
+        assertThat(dump).containsMatch(p);
     }
 }

@@ -384,6 +384,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Leidžiama programai išskleisti arba sutraukti būsenos juostą."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"pateikti pranešimus kaip veiklą viso ekrano režimu užrakintame įrenginyje"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Leidžiama programai pateikti pranešimus kaip veiklą viso ekrano režimu užrakintame įrenginyje"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Rodyti tiesiogines naujienas"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Leidžiama programai būsenos juostoje ir užrakinimo ekrane pateikti šiuo metu rodomus bei skubius pranešimus"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"įdiegti sparčiuosius klavišus"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Programai leidžiama pridėti sparčiuosius klavišus prie pagrindinio ekrano be naudotojo įsikišimo."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"pašalinti sparčiuosius klavišus"</string>
@@ -1184,22 +1186,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"po <xliff:g id="COUNT">%d</xliff:g> val."</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"po <xliff:g id="COUNT">%d</xliff:g> d."</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"po <xliff:g id="COUNT">%d</xliff:g> m."</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"prieš <xliff:g id="COUNT">%d</xliff:g> min."</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"prieš <xliff:g id="COUNT">%d</xliff:g> val."</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"prieš <xliff:g id="COUNT">%d</xliff:g> d."</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"prieš <xliff:g id="COUNT">%d</xliff:g> m."</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> min."</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> val."</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> d."</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> m."</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"po <xliff:g id="COUNT">%d</xliff:g> min."</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"po <xliff:g id="COUNT">%d</xliff:g> val."</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"po <xliff:g id="COUNT">%d</xliff:g> d."</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"po <xliff:g id="COUNT">%d</xliff:g> m."</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"prieš <xliff:g id="COUNT">%d</xliff:g> min."</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"prieš <xliff:g id="COUNT">%d</xliff:g> val."</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"prieš <xliff:g id="COUNT">%d</xliff:g> d."</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"prieš <xliff:g id="COUNT">%d</xliff:g> m."</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{Prieš # minutę}one{Prieš # minutę}few{Prieš # minutes}many{Prieš # minutės}other{Prieš # minučių}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{Prieš # valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{Prieš # dieną}one{Prieš # dieną}few{Prieš # dienas}many{Prieš # dienos}other{Prieš # dienų}}"</string>
@@ -1711,6 +1699,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Išorinis įrenginys"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Ausinės"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"TV garso įrašas"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"Analoginis"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"Skaitmeninis"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Sistema"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"„Bluetooth“ garsas"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Belaidis rodymas"</string>

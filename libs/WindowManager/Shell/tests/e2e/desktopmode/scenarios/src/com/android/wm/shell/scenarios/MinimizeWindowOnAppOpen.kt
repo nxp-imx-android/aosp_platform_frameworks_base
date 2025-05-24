@@ -17,6 +17,11 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.tools.PlatformConsts.DEFAULT_DISPLAY
+import android.tools.device.apphelpers.BrowserAppHelper
+import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -26,6 +31,7 @@ import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
@@ -34,43 +40,102 @@ import org.junit.Test
 
 /**
  * Base scenario test for minimizing the least recently used window when a new window is opened
- * above the window limit. For tangor devices, which this test currently runs on, the window limit
+ * above the window limit. For Tangor devices, which this test currently runs on, the window limit
  * is 4.
  */
 @Ignore("Test Base Class")
-abstract class MinimizeWindowOnAppOpen() : TestScenarioBase() {
+abstract class MinimizeWindowOnAppOpen : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val mailApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
     private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
+
+    private val testAppHelper = SimpleAppHelper(instrumentation)
+    private val testAppDesktopHelper = DesktopModeAppHelper(testAppHelper)
+    private val mailAppHelper = MailAppHelper(instrumentation)
+    private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
+    private val browserAppHelper = BrowserAppHelper(instrumentation)
+    private val browserAppDesktopHelper = DesktopModeAppHelper(browserAppHelper)
 
     private val maxNum = desktopConfig.maxTaskLimit
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
+        Assume.assumeTrue(
+            DesktopState.fromContext(instrumentation.context)
+                .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
+        )
         Assume.assumeTrue(maxNum > 0)
-        testApp.enterDesktopMode(wmHelper, device)
-        // Launch new [maxNum-1] tasks, which ends up opening [maxNum] tasks in total.
-        for (i in 1..maxNum - 1) {
-            mailApp.launchViaIntent(wmHelper)
-        }
+        tapl.enableTransientTaskbar(false)
+        tapl.showTaskbarIfHidden()
+        testAppDesktopHelper.enterDesktopMode(wmHelper, device)
     }
 
     @Test
-    open fun openAppToMinimizeWindow() {
-        // Launch a new tasks, which ends up opening [maxNum]+1 tasks in total. This should
+    open fun openAppFromAllApps() {
+        openMailApps(maxNum - 1)
+        // Launch a new task, which ends up opening [maxNum]+1 tasks in total. This should
         // result in the first app we opened to be minimized.
-        mailApp.launchViaIntent(wmHelper)
+        tapl.launchedAppState.taskbar
+            .openAllApps()
+            .getAppIcon(browserAppHelper.appName)
+            .launch(browserAppHelper.packageName)
+        assertWindowManagerState(appShouldBeMinimized = testAppHelper, appShouldBeOnTop = browserAppHelper)
+    }
+
+    @Test
+    open fun openAppFromTaskbar() {
+        openMailApps(maxNum - 1)
+        // Launch a new task, which ends up opening [maxNum]+1 tasks in total. This should
+        // result in the first app we opened to be minimized.
+        tapl.launchedAppState.taskbar
+            .getAppIcon(browserAppHelper.appName)
+            .launch(browserAppHelper.packageName)
+        assertWindowManagerState(appShouldBeMinimized = testAppHelper, appShouldBeOnTop = browserAppHelper)
+    }
+
+    @Test
+    open fun unminimizeApp() {
+        openMailApps(maxNum - 2)
+        browserAppHelper.launchViaIntent(wmHelper)
+        browserAppHelper.closePopupsIfNeeded(device)
+        browserAppDesktopHelper.minimizeDesktopApp(wmHelper, device)
+        openMailApps(1)
+        tapl.launchedAppState.taskbar
+            .getAppIcon(browserAppHelper.appName)
+            .launch(browserAppHelper.packageName)
+        assertWindowManagerState(appShouldBeMinimized = testAppHelper, appShouldBeOnTop = browserAppHelper)
+    }
+
+    private fun openMailApps(limit: Int) {
+        for (i in 0..<limit) {
+            mailAppDesktopHelper.launchViaIntent(
+                wmHelper,
+                mailAppHelper.openAppIntent.apply {
+                    addFlags(FLAG_ACTIVITY_MULTIPLE_TASK or FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+        }
+    }
+
+    private fun assertWindowManagerState(
+        appShouldBeMinimized: StandardAppHelper,
+        appShouldBeOnTop: StandardAppHelper
+    ) {
+        wmHelper
+            .StateSyncBuilder()
+            .withWindowSurfaceDisappeared(appShouldBeMinimized.componentMatcher)
+            .withLayerVisible(mailAppHelper.componentMatcher)
+            .withTopVisibleApp(appShouldBeOnTop.componentMatcher)
+            .waitForAndVerify()
     }
 
     @After
     fun teardown() {
-        testApp.exit(wmHelper)
-        mailApp.exit(wmHelper)
+        browserAppHelper.exit(wmHelper)
+        mailAppDesktopHelper.exit(wmHelper)
+        testAppDesktopHelper.exit(wmHelper)
+        tapl.goHome()
     }
 }

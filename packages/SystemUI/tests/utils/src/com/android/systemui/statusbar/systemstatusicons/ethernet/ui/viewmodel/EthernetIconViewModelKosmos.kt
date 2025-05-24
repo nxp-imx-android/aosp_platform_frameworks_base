@@ -16,15 +16,14 @@
 
 package com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel
 
+import android.content.Context
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.pipeline.ethernet.domain.ethernetInteractor
-
-private val Kosmos.ethernetIconViewModel: EthernetIconViewModel by
-    Kosmos.Fixture { EthernetIconViewModel(ethernetInteractor) }
 
 val Kosmos.ethernetIconViewModelFactory: EthernetIconViewModel.Factory by
     Kosmos.Fixture {
         object : EthernetIconViewModel.Factory {
-            override fun create(): EthernetIconViewModel = ethernetIconViewModel
+            override fun create(context: Context) =
+                EthernetIconViewModel(context, ethernetInteractor)
         }
     }

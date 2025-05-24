@@ -69,6 +69,7 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.approachLayout
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
@@ -83,6 +84,7 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.util.fastRoundToInt
@@ -122,6 +124,7 @@ import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelpe
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.media.controls.ui.controller.MediaViewLogger
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
@@ -146,6 +149,7 @@ import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExc
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.res.R
 import com.android.systemui.util.LifecycleFragment
+import com.android.systemui.util.animation.MeasurementInput
 import com.android.systemui.util.animation.UniqueObjectHostView
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.children
@@ -174,6 +178,7 @@ constructor(
     @QSFragmentComposeClippingTableLog private val qsClippingTableLogBuffer: TableLogBuffer,
     private val dumpManager: DumpManager,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    private val mediaLogger: MediaViewLogger,
 ) : LifecycleFragment(), QS, Dumpable {
 
     private val scrollListener = MutableStateFlow<QS.ScrollListener?>(null)
@@ -190,6 +195,7 @@ constructor(
     private val composeViewPositionOnScreen = Rect()
     private val scrollState = ScrollState(0)
     private val locationTemp = IntArray(2)
+    private var bottomBarPositionInRoot = IntRect(IntOffset(0, 0), 0)
     private val containerView: FrameLayoutTouchPassthrough?
         get() = view as? FrameLayoutTouchPassthrough
 
@@ -249,6 +255,10 @@ constructor(
                 viewModel::emitMotionEventForFalsingSwipeNested,
                 qsClippingTableLogBuffer,
                 backgroundDispatcher,
+                isInBottomReservedArea = { x, y ->
+                    viewModel.isEditing &&
+                        bottomBarPositionInRoot.contains(IntOffset(x.toInt(), y.toInt()))
+                },
             )
         frame.addView(
             composeView,
@@ -387,7 +397,23 @@ constructor(
             }
 
             scene(SceneKeys.EditMode) {
-                Element(SceneKeys.EditMode.rootElementKey, Modifier) { EditModeElement() }
+                Box(Modifier.fillMaxSize()) {
+                    Element(SceneKeys.EditMode.rootElementKey, Modifier) { EditModeElement() }
+                    /*
+                     * This provides the position of the bottom nav bar wrt to the root. As it's
+                     * full screen (and the container view has the same bounds) this can be used to
+                     * filter out touches in this bottom bar, and allow the shade to process them
+                     * if necessary.
+                     */
+                    Spacer(
+                        Modifier
+                            // default debounce 64ms (4+ frames of stability)
+                            .onLayoutRectChanged { bottomBarPositionInRoot = it.boundsInRoot }
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .windowInsetsBottomHeight(WindowInsets.systemBars)
+                    )
+                }
             }
         }
     }
@@ -715,6 +741,7 @@ constructor(
                                 // (b/383085298)
                                 modifier = Modifier.requiredHeightIn(max = Dp.Infinity),
                                 mediaHost = viewModel.qqsMediaHost,
+                                mediaLogger = mediaLogger,
                             )
                         }
                     }
@@ -869,6 +896,7 @@ constructor(
                                 if (viewModel.qsMediaVisible) {
                                     MediaObject(
                                         mediaHost = viewModel.qsMediaHost,
+                                        mediaLogger = mediaLogger,
                                         update = { translationY = viewModel.qsMediaTranslationY },
                                     )
                                 }
@@ -1128,10 +1156,12 @@ private const val EDIT_MODE_TIME_MILLIS = 500
 
 /**
  * Performs different touch handling based on the state of the ComposeView:
- * * Ignore touches below the value returned by [clippingTopProvider], when clipping is enabled, as
- *   per [clippingEnabledProvider].
+ * * Ignore touches below the value returned by [clipData.second.top], when clipping is enabled, as
+ *   per [clipData.first].
  * * Intercept touches that would overscroll QS forward and instead allow them to be used to close
  *   the shade.
+ * * Ignore touches in [isInBottomReservedArea] (bottom area when editing). This allows the shade to
+ *   close on bottom swipes when editing when using gesture nav.
  */
 private class FrameLayoutTouchPassthrough(
     context: Context,
@@ -1139,6 +1169,7 @@ private class FrameLayoutTouchPassthrough(
     private val emitMotionEventForFalsing: () -> Unit,
     private val logBuffer: TableLogBuffer,
     private val backgroundDispatcher: CoroutineDispatcher,
+    private val isInBottomReservedArea: (Float, Float) -> Boolean,
 ) : FrameLayout(context) {
 
     init {
@@ -1244,6 +1275,8 @@ private class FrameLayoutTouchPassthrough(
     ): Boolean {
         return if (clipEnabled && y + translationY > clipParams.top) {
             false
+        } else if (isInBottomReservedArea(x, y)) { // no translation as it's relative to root
+            false
         } else {
             super.isTransformedTouchPointInView(x, y, child, outLocalPoint)
         }
@@ -1342,6 +1375,7 @@ private fun Modifier.gesturesDisabled(disabled: Boolean) =
 private fun MediaObject(
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
+    mediaLogger: MediaViewLogger,
     update: UniqueObjectHostView.() -> Unit = {},
 ) {
     Box {
@@ -1361,10 +1395,16 @@ private fun MediaObject(
                 // Update layout params if host view bounds are higher than its child.
                 val height = mediaHost.hostView.height
                 val width = mediaHost.hostView.width
+                var measure = false
                 mediaHost.hostView.children.forEach { child ->
                     if (child is FrameLayout && (height > child.height || width > child.width)) {
+                        measure = true
                         child.layoutParams = FrameLayout.LayoutParams(width, height)
                     }
+                }
+                if (measure) {
+                    mediaHost.hostView.measurementManager.onMeasure(MeasurementInput(width, height))
+                    mediaLogger.logMediaSize("update size in compose", width, height)
                 }
             },
             onReset = {},

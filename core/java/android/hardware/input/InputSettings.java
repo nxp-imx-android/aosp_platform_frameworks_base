@@ -1137,7 +1137,7 @@ public class InputSettings {
     @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
     @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
     public static void setAccessibilityMouseKeysAcceleration(@NonNull Context context,
-            int acceleration) {
+            float acceleration) {
         if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
             return;
         }

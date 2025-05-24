@@ -66,8 +66,7 @@ public final class ImeInsetsSourceConsumer extends InsetsSourceConsumer {
                         mController.getHost().getInputMethodManager(), null /* icProto */);
             }
             boolean insetsChanged = false;
-            if (Flags.predictiveBackIme() && !running && isShowRequested()
-                    && mAnimationState == ANIMATION_STATE_HIDE) {
+            if (!running && isShowRequested() && mAnimationState == ANIMATION_STATE_HIDE) {
                 // A user controlled hide animation may have ended in the shown state (e.g.
                 // cancelled predictive back animation) -> Insets need to be reset to shown.
                 insetsChanged |= applyLocalVisibilityOverride();

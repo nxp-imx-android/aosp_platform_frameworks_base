@@ -53,6 +53,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class StatusBarSignalPolicyTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

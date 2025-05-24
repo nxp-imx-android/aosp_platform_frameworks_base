@@ -279,6 +279,13 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun testCreateDesk_notAddedAsChildLeash() = runTest {
+        val desk = createDeskSuspending()
+        assertThat(organizer.childLeashes.contains(desk.deskRoot.taskInfo.taskId)).isFalse()
+        assertThat(organizer.childLeashes.contains(desk.minimizationRoot.taskInfo.taskId)).isFalse()
+    }
+
+    @Test
     fun testCreateMinimizationRoot_marksHidden() = runTest {
         val desk = createDeskSuspending()
 
@@ -348,6 +355,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.onTaskAppeared(child, SurfaceControl())
 
         assertThat(desk.deskRoot.children).contains(child.taskId)
+        assertThat(organizer.childLeashes.contains(child.taskId)).isTrue()
     }
 
     @Test
@@ -358,6 +366,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.onTaskAppeared(child, SurfaceControl())
 
         assertThat(desk.minimizationRoot.children).contains(child.taskId)
+        assertThat(organizer.childLeashes.contains(child.taskId)).isTrue()
     }
 
     @Test
@@ -371,6 +380,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
         assertThat(desk.deskRoot.children).doesNotContain(child.taskId)
         assertThat(desk.minimizationRoot.children).contains(child.taskId)
+        assertThat(organizer.childLeashes.contains(child.taskId)).isTrue()
     }
 
     @Test
@@ -382,6 +392,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.onTaskVanished(child)
 
         assertThat(desk.deskRoot.children).doesNotContain(child.taskId)
+        assertThat(organizer.childLeashes.contains(child.taskId)).isFalse()
     }
 
     @Test
@@ -393,6 +404,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         organizer.onTaskVanished(child)
 
         assertThat(desk.minimizationRoot.children).doesNotContain(child.taskId)
+        assertThat(organizer.childLeashes.contains(child.taskId)).isFalse()
     }
 
     @Test

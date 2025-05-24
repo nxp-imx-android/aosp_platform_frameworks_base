@@ -36,6 +36,8 @@
     <string name="dock_multi_instances_not_supported_text" msgid="5011042177901502928">"此应用只能在 1 个窗口中打开"</string>
     <string name="forced_resizable_secondary_display" msgid="1768046938673582671">"应用可能无法在辅显示屏上正常运行。"</string>
     <string name="activity_launch_on_secondary_display_failed_text" msgid="4226485344988071769">"应用不支持在辅显示屏上启动。"</string>
+    <!-- no translation found for bubble_not_supported_text (8843806122229754809) -->
+    <skip />
     <string name="accessibility_divider" msgid="6407584574218956849">"分屏分隔线"</string>
     <string name="divider_title" msgid="1963391955593749442">"分屏分隔线"</string>
     <string name="accessibility_action_divider_left_full" msgid="1792313656305328536">"左侧全屏"</string>

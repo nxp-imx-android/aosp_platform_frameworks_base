@@ -16,13 +16,17 @@
 
 package com.android.server.appwidget;
 
+import static android.appwidget.flags.Flags.remoteAdapterConversion;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +40,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetManagerInternal;
 import android.appwidget.AppWidgetProviderInfo;
 import android.appwidget.PendingHostUpdate;
+import android.appwidget.flags.Flags;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContextWrapper;
@@ -44,8 +49,11 @@ import android.content.IntentFilter;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ShortcutServiceInternal;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.test.InstrumentationTestCase;
 import android.util.ArraySet;
 import android.util.AtomicFile;
@@ -61,6 +69,7 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
 
+import org.junit.Rule;
 import org.mockito.ArgumentCaptor;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -88,6 +97,9 @@ import java.util.concurrent.CountDownLatch;
  */
 @SmallTest
 public class AppWidgetServiceImplTest extends InstrumentationTestCase {
+
+    @Rule
+    public SetFlagsRule setFlagsRule = new SetFlagsRule();
 
     private static final int HOST_ID = 42;
 
@@ -170,6 +182,7 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
 
     public void testRequestPinAppWidget() {
         ComponentName provider = new ComponentName(mTestContext, TestAppWidgetProvider.class);
+        doReturn(true).when(mMockPackageManager).isSameApp(eq(mPkgName), anyInt(), anyInt());
         // Set up users.
         when(mMockShortcutService.requestPinAppWidget(anyString(),
                 any(AppWidgetProviderInfo.class), eq(null), eq(null), anyInt()))
@@ -194,6 +207,7 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
                 eq(LauncherApps.PinItemRequest.REQUEST_TYPE_APPWIDGET));
     }
 
+    @EnableFlags(Flags.FLAG_REMOTE_ADAPTER_CONVERSION)
     public void testProviderUpdatesReceived() throws Exception {
         int widgetId = setupHostAndWidget();
         RemoteViews view = new RemoteViews(mPkgName, android.R.layout.simple_list_item_1);
@@ -208,7 +222,7 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
         reset(mMockHost);
         mManager.notifyAppWidgetViewDataChanged(widgetId, 22);
         flushMainThread();
-        verify(mMockHost, times(1)).viewDataChanged(eq(widgetId), eq(22));
+        verify(mMockHost, never()).viewDataChanged(anyInt(), anyInt());
     }
 
     public void testProviderUpdatesNotReceived() throws Exception {
@@ -277,7 +291,7 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
         List<PendingHostUpdate> updates = mService.startListening(
                 mMockHost, mPkgName, HOST_ID, new int[]{widgetId}).getList();
         // 3 updates corresponding to the first widget
-        assertEquals(3, updates.size());
+        assertEquals(remoteAdapterConversion() ? 1 : 3, updates.size());
     }
 
     public void testUpdatesReceived_queueNotEmpty_widgetIdProvided2() {
@@ -291,18 +305,18 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
         List<PendingHostUpdate> updates = mService.startListening(
                 mMockHost, mPkgName, HOST_ID, new int[]{widgetId2}).getList();
         // 4 updates corresponding to the second widget
-        assertEquals(4, updates.size());
+        assertEquals(remoteAdapterConversion() ? 1 : 4, updates.size());
     }
 
     public void testReceiveBroadcastBehavior_enableAndUpdate() {
         TestAppWidgetProvider testAppWidgetProvider = new TestAppWidgetProvider();
-        Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_ENABLE_AND_UPDATE);
+        Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_ENABLE_AND_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{2});
 
         testAppWidgetProvider.onReceive(mTestContext, intent);
 
         assertTrue(testAppWidgetProvider.isBehaviorSuccess());
     }
-
 
     public void testUpdatesReceived_queueNotEmpty_multipleWidgetIdProvided() {
         int widgetId = setupHostAndWidget();
@@ -315,7 +329,7 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
         List<PendingHostUpdate> updates = mService.startListening(
                 mMockHost, mPkgName, HOST_ID, new int[]{widgetId, widgetId2}).getList();
         // 3 updates for first widget and 4 for second
-        assertEquals(7, updates.size());
+        assertEquals(remoteAdapterConversion() ? 2 : 7 , updates.size());
     }
 
     public void testUpdatesReceived_queueEmptyAfterStartListening() {
@@ -329,13 +343,28 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
         List<PendingHostUpdate> updates = mService.startListening(
                 mMockHost, mPkgName, HOST_ID, new int[]{widgetId, widgetId2}).getList();
         // 3 updates for first widget and 4 for second
-        assertEquals(7, updates.size());
+        assertEquals(remoteAdapterConversion() ? 2 : 7, updates.size());
 
         // Stop and start listening again
         mService.stopListening(mPkgName, HOST_ID);
         updates = mService.startListening(
                 mMockHost, mPkgName, HOST_ID, new int[]{widgetId, widgetId2}).getList();
         assertTrue(updates.isEmpty());
+    }
+
+    public void testIsFirstConfigActivityPending_without_config() {
+        int widgetId = setupHostAndWidget();
+        assertFalse(mService.isFirstConfigActivityPending(mPkgName, widgetId));
+    }
+
+    public void testIsFirstConfigActivityPending_with_config() {
+        mManager.updateAppWidgetProviderInfo(
+                new ComponentName(mTestContext, TestAppWidgetProvider.class), "info_with_config");
+        int widgetId = setupHostAndWidget();
+        assertTrue(mService.isFirstConfigActivityPending(mPkgName, widgetId));
+
+        mManager.setConfigActivityComplete(widgetId);
+        assertFalse(mService.isFirstConfigActivityPending(mPkgName, widgetId));
     }
 
     public void testGetInstalledProvidersForPackage() {
@@ -607,6 +636,12 @@ public class AppWidgetServiceImplTest extends InstrumentationTestCase {
         @Override
         public void sendBroadcastAsUser(Intent intent, UserHandle user) {
             // ignore.
+        }
+
+        @Override
+        public void sendBroadcastAsUser(
+                Intent intent, UserHandle user, String receiverPermission, Bundle options) {
+            // Ignore
         }
     }
 }

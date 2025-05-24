@@ -16,8 +16,11 @@
 
 package android.security.authenticationpolicy;
 
+import android.os.UserHandle;
+import android.proximity.IProximityResultCallback;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
+import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 
 /**
  * Communication channel from AuthenticationPolicyManager to AuthenticationPolicyService.
@@ -25,8 +28,24 @@ import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
  */
 interface IAuthenticationPolicyService {
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
-    int enableSecureLockDevice(in EnableSecureLockDeviceParams params);
+    int enableSecureLockDevice(in UserHandle user, in EnableSecureLockDeviceParams params);
 
     @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
-    int disableSecureLockDevice(in DisableSecureLockDeviceParams params);
+    int disableSecureLockDevice(in UserHandle user, in DisableSecureLockDeviceParams params);
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    int isSecureLockDeviceAvailable(in UserHandle user);
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    boolean isSecureLockDeviceEnabled();
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    void registerSecureLockDeviceStatusListener(in UserHandle user,
+            in ISecureLockDeviceStatusListener listener);
+
+    @EnforcePermission("MANAGE_SECURE_LOCK_DEVICE")
+    void unregisterSecureLockDeviceStatusListener(in ISecureLockDeviceStatusListener listener);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    void startWatchRangingForIdentityCheck(in IProximityResultCallback resultCallback);
 }

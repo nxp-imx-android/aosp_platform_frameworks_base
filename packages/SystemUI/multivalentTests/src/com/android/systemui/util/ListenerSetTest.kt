@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 open class ListenerSetTest : SysuiTestCase() {
 
     private val runnableSet: IListenerSet<Runnable> = makeRunnableListenerSet()

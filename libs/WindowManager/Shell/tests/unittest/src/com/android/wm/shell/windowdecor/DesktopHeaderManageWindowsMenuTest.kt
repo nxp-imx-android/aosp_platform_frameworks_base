@@ -104,8 +104,8 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
 
     @After
     fun tearDown() {
+        menu?.removeFromContainer()
         mockitoSession.finishMocking()
-        menu?.animateClose()
     }
 
     @Test

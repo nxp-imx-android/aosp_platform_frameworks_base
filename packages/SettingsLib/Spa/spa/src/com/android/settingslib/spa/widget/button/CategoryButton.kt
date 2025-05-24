@@ -32,7 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import com.android.settingslib.spa.framework.theme.SettingsDimension
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 
 @Composable
@@ -45,9 +45,10 @@ fun CategoryButton(
     val size = ButtonDefaults.MediumContainerHeight
     TextButton(
         onClick = onClick,
+        shapes = ButtonDefaults.shapes(),
         modifier = Modifier
             .heightIn(size)
-            .padding(horizontal = SettingsDimension.paddingLarge),
+            .padding(horizontal = SettingsSpace.small1),
         colors = ButtonDefaults.textButtonColors().copy(
             containerColor = MaterialTheme.colorScheme.surfaceBright,
             contentColor = MaterialTheme.colorScheme.primary,

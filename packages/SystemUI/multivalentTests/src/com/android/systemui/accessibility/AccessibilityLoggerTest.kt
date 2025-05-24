@@ -35,6 +35,7 @@ import org.mockito.junit.MockitoJUnit
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class AccessibilityLoggerTest : SysuiTestCase() {
     @JvmField @Rule val mockito = MockitoJUnit.rule()
 

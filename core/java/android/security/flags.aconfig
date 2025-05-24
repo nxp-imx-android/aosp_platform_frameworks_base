@@ -42,6 +42,13 @@ flag {
 }
 
 flag {
+    name: "software_ratelimiter"
+    namespace: "security"
+    description: "Enable support for SoftwareRateLimiter in LockSettingsService"
+    bug: "395976735"
+}
+
+flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"
@@ -55,16 +62,6 @@ flag {
   namespace: "biometrics"
   description: "Causes TrustManagerService to listen for credential attempts and ignore reports from upstream"
   bug: "323086607"
-}
-
-flag {
-    name: "clear_strong_auth_on_adding_primary_credential"
-    namespace: "biometrics"
-    description: "Clear StrongAuth on adding credential"
-    bug: "320817991"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -106,6 +103,14 @@ flag {
     namespace: "biometrics"
     description: "Feature flag for Secure Lockdown feature"
     bug: "373422357"
+    is_exported: true
+}
+
+flag {
+    name: "secure_lock_device"
+    namespace: "biometrics"
+    description: "Feature flag for Secure Lock Device feature"
+    bug: "401645997"
     is_exported: true
 }
 

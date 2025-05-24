@@ -43,6 +43,7 @@ import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,6 +63,7 @@ import org.mockito.kotlin.whenever
 @RunWithLooper
 @RunWith(AndroidTestingRunner::class)
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+@Ignore("Non-hermetic test - b/419771302")
 class DesktopModeVisualIndicatorTest : ShellTestCase() {
 
     @JvmField @Rule val animatorTestRule = AnimatorTestRule(this)

@@ -31,6 +31,7 @@ import com.android.wm.shell.common.pip.LegacySizeSpecSource;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 import com.android.wm.shell.common.pip.SizeSpecSource;
+import com.android.wm.shell.sysui.ShellInit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +49,8 @@ public class TvPipGravityTest extends ShellTestCase {
     private PipSnapAlgorithm mMockPipSnapAlgorithm;
     @Mock
     private DisplayController mDisplayController;
+    @Mock
+    private ShellInit mShellInit;
 
     private TvPipBoundsState mTvPipBoundsState;
     private TvPipBoundsAlgorithm mTvPipBoundsAlgorithm;
@@ -59,7 +62,10 @@ public class TvPipGravityTest extends ShellTestCase {
         assumeTelevision();
 
         MockitoAnnotations.initMocks(this);
-        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController);
+        mPipDisplayLayoutState = new PipDisplayLayoutState(mContext, mDisplayController,
+                mShellInit);
+        // Directly call onInit instead of using ShellInit
+        mPipDisplayLayoutState.onInit();
         mSizeSpecSource = new LegacySizeSpecSource(mContext, mPipDisplayLayoutState);
         mTvPipBoundsState = new TvPipBoundsState(mContext, mSizeSpecSource,
                 mPipDisplayLayoutState);

@@ -203,6 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"認証済み"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"認証をキャンセルします"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"その他のオプション"</string>
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"その他のオプション"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"別の方法で検証"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ID チェックの管理"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ID チェックが ON になっているため、PIN は確認に使用できません。生体認証が必要です。ID チェックの詳細"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN を使用"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"パターンを使用"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"パスワードを使用"</string>
@@ -270,6 +274,9 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"電池充電中: <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g>パーセント"</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"バッテリー残量 <xliff:g id="PERCENTAGE">%d</xliff:g>%%: バッテリー保護のため、充電を一時停止しました。"</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"バッテリー残量 <xliff:g id="PERCENTAGE">%1$d</xliff:g>%%、<xliff:g id="TIME">%2$s</xliff:g>: バッテリー保護のため、充電を一時停止しました。"</string>
+    <!-- String.format failed for translation -->
+    <!-- no translation found for accessibility_battery_level_battery_saver_with_percent (4529897661660196093) -->
+    <skip />
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"通知をすべて表示"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"テレタイプライターが有効です。"</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"バイブレーション着信。"</string>
@@ -280,6 +287,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"クイック設定"</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"クイック設定と通知シェード。"</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"ロック画面"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"仕事用プロファイルのロック画面"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"閉じる"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"サイレント"</string>
@@ -374,6 +383,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# 台のデバイス}other{# 台のデバイス}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"ライト"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"カメラを使用中"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"モバイルデータ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"データ使用量"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"残りのデータ"</string>
@@ -812,6 +825,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ONにする"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ON - 顔ベース"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ミュートしてまとめる"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"対象: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"セールス情報、新機能など"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"トップニュース、論説など"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"高評価、投稿など"</string>
@@ -839,10 +853,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g>は会話機能に対応していません"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"フィードバック"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"閉じる"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"固定表示しない"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"OFF にする"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"このアプリのライブ情報を非表示"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"ライブ情報が表示されます"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"固定した通知にアプリのライブ情報が表示され、常にステータスバーとロック画面に表示されます"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"ライブ情報"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"OFF にすると、このアプリからの進行中の通知がロック画面やステータスバーに表示されなくなります"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"これらの通知は変更できません。"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"着信通知は変更できません。"</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"このグループの通知はここでは設定できません"</string>
@@ -869,8 +883,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"スヌーズ: <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# 時間}=2{# 時間}other{# 時間}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# 分}other{# 分}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"降格メニューを開く"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"バッテリー セーバー"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> ボタン"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1272,7 +1285,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"グループ"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"選択したデバイス: 1 台"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"選択したデバイス: <xliff:g id="COUNT">%1$d</xliff:g> 台"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"（接続解除済み）"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"接続済み"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"切り替えられません。タップしてやり直してください。"</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"デバイスを接続"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"デバイスを接続"</string>
@@ -1283,8 +1296,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"接続済みのスピーカー"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"スピーカーとディスプレイ"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"候補"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"デバイスの候補"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"入力"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"出力"</string>

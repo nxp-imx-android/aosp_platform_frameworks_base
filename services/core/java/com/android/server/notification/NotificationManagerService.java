@@ -151,6 +151,7 @@ import static android.service.notification.NotificationListenerService.REASON_CH
 import static android.service.notification.NotificationListenerService.REASON_CLEAR_DATA;
 import static android.service.notification.NotificationListenerService.REASON_CLICK;
 import static android.service.notification.NotificationListenerService.REASON_ERROR;
+import static android.service.notification.NotificationListenerService.REASON_GROUP_OPTIMIZATION;
 import static android.service.notification.NotificationListenerService.REASON_GROUP_SUMMARY_CANCELED;
 import static android.service.notification.NotificationListenerService.REASON_LISTENER_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_LISTENER_CANCEL_ALL;
@@ -7707,7 +7708,7 @@ public class NotificationManagerService extends SystemService {
                     Binder.getCallingPid(), r.getSbn().getPackageName(),
                     r.getSbn().getTag(), r.getSbn().getId(), 0, 0,
                     false, r.getUserId(),
-                    NotificationListenerService.REASON_GROUP_OPTIMIZATION, null);
+                    REASON_GROUP_OPTIMIZATION, null);
         }
     }
 
@@ -7746,10 +7747,10 @@ public class NotificationManagerService extends SystemService {
                         canceledSummary = groupSummary;
                         mSummaryByGroupKey.remove(oldGroupKey);
                         cancelNotification(Binder.getCallingUid(), Binder.getCallingPid(),
-                            groupSummary.getSbn().getPackageName(),
-                            groupSummary.getSbn().getTag(),
-                            groupSummary.getSbn().getId(), 0, 0, false, groupSummary.getUserId(),
-                            NotificationListenerService.REASON_GROUP_OPTIMIZATION, null);
+                                groupSummary.getSbn().getPackageName(),
+                                groupSummary.getSbn().getTag(),
+                                groupSummary.getSbn().getId(), 0, 0, false,
+                                groupSummary.getUserId(), REASON_GROUP_OPTIMIZATION, null);
                     }
                 }
             }
@@ -11121,7 +11122,7 @@ public class NotificationManagerService extends SystemService {
 
         // Save it for users of getHistoricalNotifications(), unless the whole channel was deleted
         if (reason != REASON_CHANNEL_REMOVED) {
-            mArchive.record(r.getSbn(), reason);
+            mArchive.record(getSbnForArchive(r, reason), reason);
         }
 
         final long now = System.currentTimeMillis();
@@ -11140,6 +11141,20 @@ public class NotificationManagerService extends SystemService {
             mNotificationRecordLogger.logNotificationCancelled(r, reason,
                     r.getStats().getDismissalSurface());
         }
+    }
+
+    @GuardedBy("mNotificationLock")
+    private StatusBarNotification getSbnForArchive(@NonNull NotificationRecord r, int reason) {
+        final StatusBarNotification sbn = r.getSbn();
+        if (notificationClassification()) {
+            if (reason == REASON_GROUP_OPTIMIZATION
+                    && mGroupHelper.wasSummaryBeforeAutoGrouping(r)) {
+                StatusBarNotification sbnClone = sbn.cloneLight();
+                sbnClone.getNotification().flags |= FLAG_GROUP_SUMMARY;
+                return sbnClone;
+            }
+        }
+        return sbn;
     }
 
     private static void sendDeleteIntent(@Nullable PendingIntent deleteIntent, String fromPkg) {

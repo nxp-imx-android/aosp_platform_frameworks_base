@@ -31,6 +31,8 @@ import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_ABOVE_SUB_PANEL;
@@ -85,6 +87,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import android.app.AppOpsManager;
 import android.content.ContentResolver;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
@@ -104,10 +107,12 @@ import android.util.ArraySet;
 import android.util.MergedConfiguration;
 import android.view.Gravity;
 import android.view.IWindow;
+import android.view.InputDevice;
 import android.view.InputWindowHandle;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
+import android.view.KeyCharacterMap;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.WindowInsets;
@@ -119,6 +124,7 @@ import android.window.TaskFragmentOrganizer;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.compatibility.common.util.SystemUtil;
 import com.android.internal.R;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.testutils.StubTransaction;
@@ -126,6 +132,7 @@ import com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import com.android.window.flags.Flags;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -145,6 +152,14 @@ import java.util.List;
 @Presubmit
 @RunWith(WindowTestRunner.class)
 public class WindowStateTests extends WindowTestsBase {
+
+    @Before
+    public void setUp() {
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_TOUCHSCREEN).build()
+        });
+        mWm.onInputDevicesChanged();
+    }
 
     @After
     public void tearDown() {
@@ -284,7 +299,7 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @DisableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
+    public void testMagnifyIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
@@ -300,7 +315,7 @@ public class WindowStateTests extends WindowTestsBase {
         imeDialogWindow.setHasSurface(true);
         navWindow.setHasSurface(true);
 
-        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
@@ -309,7 +324,7 @@ public class WindowStateTests extends WindowTestsBase {
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndSettingsDisabled_typeIsIme_shouldNotMagnify() {
+    public void testMagnifyIme_flagOnAndSettingsDisabled_typeIsIme_shouldNotMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0);
@@ -325,34 +340,37 @@ public class WindowStateTests extends WindowTestsBase {
         imeDialogWindow.setHasSurface(true);
         navWindow.setHasSurface(true);
 
-        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
     }
 
     @Test
-    public void testMagnifyNavAndIme_typeIsMagnification_shouldNotMagnify() {
+    public void testMagnifyIme_typeIsMagnification_shouldNotMagnify() {
         final WindowState a11yMagWindow = newWindowBuilder("a11yMagWindow",
                 TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY).build();
         final WindowState magWindow = newWindowBuilder("magWindow",
                 TYPE_MAGNIFICATION_OVERLAY).build();
         final WindowState navPanelWindow = newWindowBuilder("navPanelWindow",
                 TYPE_NAVIGATION_BAR_PANEL).build();
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
 
         a11yMagWindow.setHasSurface(true);
         magWindow.setHasSurface(true);
         navPanelWindow.setHasSurface(true);
+        navWindow.setHasSurface(true);
 
         assertFalse(a11yMagWindow.shouldMagnify());
         assertFalse(magWindow.shouldMagnify());
         assertFalse(navPanelWindow.shouldMagnify());
+        assertFalse(navWindow.shouldMagnify());
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndSettingsEnabled_typeIsIme_shouldMagnify() {
+    public void testMagnifyIme_flagOnAndSettingsEnabled_typeIsIme_shouldMagnify() {
         final ContentResolver cr = useFakeSettingsProvider();
         Settings.Secure.putInt(cr,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
@@ -362,22 +380,19 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
 
-        assertTrue(mWm.isMagnifyNavAndImeEnabled());
+        assertTrue(mWm.isMagnifyImeEnabled());
         assertTrue(imeWindow.shouldMagnify());
         assertTrue(imeDialogWindow.shouldMagnify());
-        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndDefaultEnable_typeIsIme_shouldMagnify() {
+    public void testMagnifyIme_flagOnAndDefaultEnable_typeIsIme_shouldMagnify() {
         useFakeSettingsProvider();  // This resets the Settings.Secure value.
         spyOn(mContext.getResources());
         when(mContext.getResources().getBoolean(
@@ -386,24 +401,21 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
 
         mWm.mSettingsObserver.loadSettings();
 
-        assertTrue(mWm.isMagnifyNavAndImeEnabled());
+        assertTrue(mWm.isMagnifyImeEnabled());
         assertTrue(imeWindow.shouldMagnify());
         assertTrue(imeDialogWindow.shouldMagnify());
-        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test
     @EnableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
-    public void testMagnifyNavAndIme_flagOnAndDefaultDisable_typeIsIme_shouldNotMagnify() {
+    public void testMagnifyIme_flagOnAndDefaultDisable_typeIsIme_shouldNotMagnify() {
         useFakeSettingsProvider();  // This resets the Settings.Secure value.
         spyOn(mContext.getResources());
         when(mContext.getResources().getBoolean(
@@ -420,10 +432,95 @@ public class WindowStateTests extends WindowTestsBase {
 
         mWm.mSettingsObserver.loadSettings();
 
-        assertFalse(mWm.isMagnifyNavAndImeEnabled());
+        assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
         assertFalse(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavBar_WhenImeIsMagnified_shouldNotMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(true /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        navWindow.setHasSurface(true);
+
+        // Here are examples of devices that should not trigger magnifying nav bar:
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_TOUCHSCREEN).build(),
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_GAMEPAD).build(),
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_ROTARY_ENCODER).build(),
+                // A disabled device.
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_MOUSE)
+                        .setEnabled(false).build(),
+                // A non-full alphabetic keyboard.
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_KEYBOARD)
+                        .setKeyboardType(InputDevice.KEYBOARD_TYPE_NON_ALPHABETIC).build(),
+                // A virtual keyboard.
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_KEYBOARD)
+                        .setId(KeyCharacterMap.VIRTUAL_KEYBOARD).build(),
+        });
+        mWm.onInputDevicesChanged();
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+        assertFalse(mWm.isMagnifyNavBarEnabled());
+        assertFalse(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavBar_WhenImeIsMagnified_withMouse_shouldMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(true /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        navWindow.setHasSurface(true);
+
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_MOUSE).build()
+        });
+        mWm.onInputDevicesChanged();
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+        assertTrue(mWm.isMagnifyNavBarEnabled());
+        assertTrue(navWindow.shouldMagnify());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testMagnifyNavBar_WhenImeIsMagnified_withKeyboard_shouldMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putInt(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1);
+        mWm.mSettingsObserver.onChange(true /* selfChange */,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME));
+
+        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        navWindow.setHasSurface(true);
+
+        when(mWm.mInputManager.getInputDevices()).thenReturn(new InputDevice[]{
+                new InputDevice.Builder().setSources(InputDevice.SOURCE_KEYBOARD).setKeyboardType(
+                        InputDevice.KEYBOARD_TYPE_ALPHABETIC).build()
+        });
+        mWm.onInputDevicesChanged();
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+        assertTrue(mWm.isMagnifyNavBarEnabled());
+        assertTrue(navWindow.shouldMagnify());
     }
 
     @Test
@@ -656,8 +753,7 @@ public class WindowStateTests extends WindowTestsBase {
         final int statusBarId = InsetsSource.createId(null, 0, statusBars());
         mDisplayContent.getInsetsStateController()
                 .getOrCreateSourceProvider(statusBarId, statusBars())
-                .setWindowContainer(statusBar, null /* frameProvider */,
-                        null /* imeFrameProvider */);
+                .setWindow(statusBar, null /* frameProvider */, null /* imeFrameProvider */);
         mDisplayContent.getInsetsStateController().onBarControlTargetChanged(
                 app, null /* fakeTopControlling */, app, null /* fakeNavControlling */);
         app.setRequestedVisibleTypes(0, statusBars());
@@ -681,8 +777,8 @@ public class WindowStateTests extends WindowTestsBase {
         final int statusBarId = InsetsSource.createId(null, 0, statusBars());
         final var statusBarProvider = mDisplayContent.getInsetsStateController()
                 .getOrCreateSourceProvider(statusBarId, statusBars());
-        statusBarProvider.setWindowContainer(statusBar, null /* frameProvider */,
-                        null /* imeFrameProvider */);
+        statusBarProvider.setWindow(statusBar, null /* frameProvider */,
+                null /* imeFrameProvider */);
 
         statusBar.updateSourceFrame(new Rect(0, 0, 500, 200));
         assertTrue("InsetsSourceProvider frame should not be updated before relayout",
@@ -1336,7 +1432,7 @@ public class WindowStateTests extends WindowTestsBase {
         makeWindowVisibleAndDrawn(mImeWindow);
 
         final InsetsStateController controller = mDisplayContent.getInsetsStateController();
-        controller.getImeSourceProvider().setWindowContainer(mImeWindow, null, null);
+        controller.getImeSourceProvider().setWindow(mImeWindow, null, null);
 
         // Simulate appWin2 requests IME.
         appWin2.setRequestedVisibleTypes(ime(), ime());
@@ -1377,7 +1473,7 @@ public class WindowStateTests extends WindowTestsBase {
         mDisplayContent.setRemoteInsetsController(createDisplayWindowInsetsController());
 
         final InsetsStateController controller = mDisplayContent.getInsetsStateController();
-        controller.getImeSourceProvider().setWindowContainer(mImeWindow, null, null);
+        controller.getImeSourceProvider().setWindow(mImeWindow, null, null);
 
         // Simulate appWin1 in multi-window mode is going to background to switch to the
         // fullscreen appWin2 which requests IME.
@@ -1453,7 +1549,7 @@ public class WindowStateTests extends WindowTestsBase {
         mNotificationShadeWindow.mAttrs.flags &= ~FLAG_NOT_FOCUSABLE;
         assertTrue(mNotificationShadeWindow.canBeImeLayeringTarget());
         mDisplayContent.getInsetsStateController().getOrCreateSourceProvider(ID_IME, ime())
-                .setWindowContainer(mImeWindow, null, null);
+                .setWindow(mImeWindow, null, null);
 
         mDisplayContent.computeImeLayeringTarget(true /* update */);
         assertEquals(mNotificationShadeWindow, mDisplayContent.getImeLayeringTarget());
@@ -1746,5 +1842,140 @@ public class WindowStateTests extends WindowTestsBase {
 
         mWm.mSensitiveContentPackages.removeBlockScreenCaptureForApps(blockedPackages);
         assertFalse(window.isSecureLocked());
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_default() {
+        final WindowState window = newWindowBuilder("window", TYPE_APPLICATION).build();
+
+        assertThat(window.isWindowTrustedOverlay()).isFalse();
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_isTrustedOverlay() {
+        List<Integer> trustedTypes = List.of(
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
+                WindowManager.LayoutParams.TYPE_MAGNIFICATION_OVERLAY,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE,
+                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR,
+                WindowManager.LayoutParams.TYPE_NAVIGATION_BAR_PANEL,
+                WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.TYPE_DOCK_DIVIDER,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.TYPE_INPUT_CONSUMER,
+                WindowManager.LayoutParams.TYPE_VOICE_INTERACTION,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_ADDITIONAL);
+
+        for (Integer type : trustedTypes) {
+            final WindowState window = newWindowBuilder("window", type).build();
+            assertThat(window.isWindowTrustedOverlay()).isTrue();
+        }
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_noPrivateFlagTrustedOverlay_internalWindowPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+            assertThat(window.isWindowTrustedOverlay()).isFalse();
+        });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_privateFlagTrustedOverlay_internalWindowPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+            window.mAttrs.privateFlags |= PRIVATE_FLAG_TRUSTED_OVERLAY;
+            assertThat(window.mAttrs.privateFlags & PRIVATE_FLAG_TRUSTED_OVERLAY).isGreaterThan(0);
+
+            assertThat(window.isWindowTrustedOverlay()).isTrue();
+        });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_withoutPrivateFlag_applicationOverlayPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+
+            assertThat(window.isWindowTrustedOverlay()).isFalse();
+        });
+    }
+
+    @Test
+    public void testIsWindowTrustedOverlay_withPrivateFlag_applicationOverlayPermission() {
+        SystemUtil.runWithShellPermissionIdentity(() -> {
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+            window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+
+            assertThat(window.isWindowTrustedOverlay()).isTrue();
+        });
+    }
+
+    @Test
+    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void testIsWindowTrustedOverlay_recordingOverlay_isApplicationOverlay_hasOp() {
+        AppOpsManager mAppOps = mContext.getSystemService(AppOpsManager.class);
+        int originalState = mAppOps.unsafeCheckOpRawNoThrow(
+                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                mContext.getPackageName());
+        try {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), AppOpsManager.MODE_ALLOWED);
+            SystemUtil.runWithShellPermissionIdentity(() -> {
+                final WindowState window = newWindowBuilder("window",
+                        TYPE_APPLICATION_OVERLAY).build();
+                window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+
+                assertThat(window.isWindowTrustedOverlay()).isTrue();
+            });
+        } finally {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), originalState);
+        }
+    }
+
+    @Test
+    @EnableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void testIsWindowTrustedOverlay_recordingOverlay_isNotApplicationOverlay_hasOp() {
+        AppOpsManager mAppOps = mContext.getSystemService(AppOpsManager.class);
+        int originalState = mAppOps.unsafeCheckOpRawNoThrow(
+                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                mContext.getPackageName());
+        try {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), AppOpsManager.MODE_ALLOWED);
+            SystemUtil.runWithShellPermissionIdentity(() -> {
+                final WindowState window = newWindowBuilder("window",
+                        TYPE_APPLICATION_OVERLAY).build();
+
+                assertThat(window.isWindowTrustedOverlay()).isFalse();
+            });
+        } finally {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), originalState);
+        }
+    }
+
+    @Test
+    @DisableFlags(com.android.media.projection.flags.Flags.FLAG_RECORDING_OVERLAY)
+    public void testIsWindowTrustedOverlay_recordingOverlayDisabled_isApplicationOverlay_hasOp() {
+        AppOpsManager mAppOps = mContext.getSystemService(AppOpsManager.class);
+        int originalState = mAppOps.unsafeCheckOpRawNoThrow(
+                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                mContext.getPackageName());
+        try {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), AppOpsManager.MODE_ALLOWED);
+            final WindowState window = newWindowBuilder("window", TYPE_APPLICATION_OVERLAY).build();
+            window.mAttrs.privateFlags |= PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
+
+            assertThat(window.isWindowTrustedOverlay()).isFalse();
+        } finally {
+            mAppOps.setMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, android.os.Process.myUid(),
+                    mContext.getPackageName(), originalState);
+        }
     }
 }

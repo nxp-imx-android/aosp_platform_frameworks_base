@@ -36,6 +36,16 @@ import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_DELEGATE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_DRAW_COMPLETE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_OCCLUDED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_OCCLUDED_CHANGED;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.KEYGUARD_OCCLUDED_PENDING;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.ORIENTATION;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.ROTATION;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.ROTATION_MODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.SCREEN_ON_FULLY;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.IInputConstants.INVALID_INPUT_DEVICE_ID;
@@ -96,16 +106,6 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_BEHAVIOR_SLEEP;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
-import static com.android.server.wm.WindowManagerPolicyProto.KEYGUARD_DELEGATE;
-import static com.android.server.wm.WindowManagerPolicyProto.KEYGUARD_DRAW_COMPLETE;
-import static com.android.server.wm.WindowManagerPolicyProto.KEYGUARD_OCCLUDED;
-import static com.android.server.wm.WindowManagerPolicyProto.KEYGUARD_OCCLUDED_CHANGED;
-import static com.android.server.wm.WindowManagerPolicyProto.KEYGUARD_OCCLUDED_PENDING;
-import static com.android.server.wm.WindowManagerPolicyProto.ORIENTATION;
-import static com.android.server.wm.WindowManagerPolicyProto.ROTATION;
-import static com.android.server.wm.WindowManagerPolicyProto.ROTATION_MODE;
-import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
-import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticEffect;
 import static com.android.window.flags.Flags.delegateBackGestureToShell;
@@ -1498,6 +1498,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void powerVeryLongPress() {
+        Slog.d(TAG, "powerVeryLongPress: "  + mVeryLongPressOnPowerBehavior);
         switch (mVeryLongPressOnPowerBehavior) {
             case VERY_LONG_PRESS_POWER_NOTHING:
                 break;
@@ -1850,7 +1851,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
         if (dreamManagerInternal != null && dreamManagerInternal.isDreaming()) {
             dreamManagerInternal.stopDream(false /*immediate*/, "short press on home" /*reason*/);
-            return;
+            if (mHasFeatureLeanback) {
+                if (localLOGV) Log.v(TAG, "TV will launch home after stopping dream");
+            } else {
+                return;
+            }
+
         }
 
         // Go home!

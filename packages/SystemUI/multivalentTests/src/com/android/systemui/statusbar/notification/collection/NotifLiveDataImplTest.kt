@@ -36,6 +36,7 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
+@android.platform.test.annotations.EnabledOnRavenwood
 class NotifLiveDataImplTest : SysuiTestCase() {
 
     private val executor = FakeExecutor(FakeSystemClock())

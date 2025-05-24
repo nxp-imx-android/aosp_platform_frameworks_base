@@ -413,6 +413,10 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
             if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
                 builder.setReleaseType(mDeviceRouteController.getSessionReleaseType());
+            } else {
+                // Releasing the system routing session only makes sense in the context of
+                // Flags.enableOutputSwitcherPersonalAudioSharing.
+                builder.setReleaseType(RoutingSessionInfo.RELEASE_UNSUPPORTED);
             }
 
             return builder.setProviderId(mUniqueId).build();
@@ -590,7 +594,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                                 .setTransferInitiator(
                                         newSessionInfo.getTransferInitiatorUserHandle(),
                                         newSessionInfo.getTransferInitiatorPackageName())
-                                .setReleaseType(newSessionInfo.getReleaseType())
+                                .setReleaseType(RoutingSessionInfo.RELEASE_UNSUPPORTED)
                                 .build();
                 return true;
             }

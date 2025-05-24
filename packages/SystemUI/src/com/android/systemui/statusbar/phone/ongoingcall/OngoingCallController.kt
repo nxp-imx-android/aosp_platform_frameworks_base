@@ -174,6 +174,7 @@ constructor(
                 // be safely made false.
                 isAppVisible = false,
                 notificationInstanceId = currentInfo.instanceId,
+                packageName = currentInfo.packageName,
             )
         } else {
             return OngoingCallModel.NoCall
@@ -236,6 +237,7 @@ constructor(
                     notifModel.promotedContent,
                     isOngoing = true,
                     statusBarSwipedAway = callNotificationInfo?.statusBarSwipedAway ?: false,
+                    packageName = notifModel.packageName,
                 )
             if (newOngoingCallInfo == callNotificationInfo) {
                 return
@@ -261,7 +263,7 @@ constructor(
             uidObserver.registerWithUid(currentCallNotificationInfo.uid)
             if (!currentCallNotificationInfo.statusBarSwipedAway) {
                 statusBarWindowControllerStore.defaultDisplay
-                    .setOngoingProcessRequiresStatusBarVisible(true)
+                    .setOngoingProcessRequiresStatusBarVisible(visible = true, source = TAG)
             }
             updateGestureListening()
             sendStateChangeEvent()
@@ -306,7 +308,8 @@ constructor(
 
         callNotificationInfo = null
         statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
-            false
+            visible = false,
+            source = TAG,
         )
         swipeStatusBarAwayGestureHandler.removeOnGestureDetectedCallback(TAG)
         sendStateChangeEvent()
@@ -334,7 +337,8 @@ constructor(
         logger.log(TAG, LogLevel.DEBUG, {}, { "Swipe away gesture detected" })
         callNotificationInfo = callNotificationInfo?.copy(statusBarSwipedAway = true)
         statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
-            false
+            visible = false,
+            source = TAG,
         )
         swipeStatusBarAwayGestureHandler.removeOnGestureDetectedCallback(TAG)
     }
@@ -365,6 +369,7 @@ constructor(
         val isOngoing: Boolean,
         /** True if the user has swiped away the status bar while in this phone call. */
         val statusBarSwipedAway: Boolean,
+        val packageName: String,
     )
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {

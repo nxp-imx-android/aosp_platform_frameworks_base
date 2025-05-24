@@ -17,14 +17,14 @@
 package android.view;
 
 import static android.view.Display.Mode.INVALID_MODE_ID;
-import static android.view.DisplayInfoProto.APP_HEIGHT;
-import static android.view.DisplayInfoProto.APP_WIDTH;
-import static android.view.DisplayInfoProto.CUTOUT;
-import static android.view.DisplayInfoProto.FLAGS;
-import static android.view.DisplayInfoProto.LOGICAL_HEIGHT;
-import static android.view.DisplayInfoProto.LOGICAL_WIDTH;
-import static android.view.DisplayInfoProto.NAME;
-import static android.view.DisplayInfoProto.TYPE;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.APP_HEIGHT;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.APP_WIDTH;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.CUTOUT;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.FLAGS;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.LOGICAL_HEIGHT;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.LOGICAL_WIDTH;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.NAME;
+import static android.internal.perfetto.protos.Displayinfo.DisplayInfoProto.TYPE;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1064,7 +1064,8 @@ public final class DisplayInfo implements Parcelable {
 
     /**
      * Write to a protocol buffer output stream.
-     * Protocol buffer message definition at {@link android.view.DisplayInfoProto}
+     * Protocol buffer message definition at
+     * {@link android.internal.perfetto.protos.Displayinfo.DisplayInfoProto}
      *
      * @param protoOutputStream Stream to write the Rect object to.
      * @param fieldId           Field Id of the DisplayInfoProto as defined in the parent message

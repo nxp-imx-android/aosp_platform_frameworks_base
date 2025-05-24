@@ -36,6 +36,15 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.USER_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskFragmentProto.ACTIVITY_TYPE;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskFragmentProto.DISPLAY_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskFragmentProto.MIN_HEIGHT;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskFragmentProto.MIN_WIDTH;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskFragmentProto.WINDOW_CONTAINER;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.TASK_FRAGMENT;
 import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.UserHandle.USER_NULL;
@@ -58,15 +67,6 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.ActivityTaskManagerService.checkPermission;
 import static com.android.server.wm.ActivityTaskSupervisor.printThisActivity;
-import static com.android.server.wm.IdentifierProto.HASH_CODE;
-import static com.android.server.wm.IdentifierProto.TITLE;
-import static com.android.server.wm.IdentifierProto.USER_ID;
-import static com.android.server.wm.TaskFragmentProto.ACTIVITY_TYPE;
-import static com.android.server.wm.TaskFragmentProto.DISPLAY_ID;
-import static com.android.server.wm.TaskFragmentProto.MIN_HEIGHT;
-import static com.android.server.wm.TaskFragmentProto.MIN_WIDTH;
-import static com.android.server.wm.TaskFragmentProto.WINDOW_CONTAINER;
-import static com.android.server.wm.WindowContainerChildProto.TASK_FRAGMENT;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -665,9 +665,11 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         mResumedActivity = r;
         final ActivityRecord topResumed = mTaskSupervisor.updateTopResumedActivityIfNeeded(reason);
         if (mResumedActivity != null && topResumed != null && topResumed.isEmbedded()
-                && topResumed.getTaskFragment().isAdjacentTo(this)) {
+                && topResumed.getTaskFragment().isAdjacentTo(this)
+                && topResumed.getTaskFragment().isPinned()) {
             // Explicitly updates the last resumed Activity if the resumed activity is
-            // adjacent to the top-resumed embedded activity.
+            // adjacent to the top-resumed embedded activity and the top-resumed TaskFragment is
+            // pinned.
             mAtmService.setLastResumedActivityUncheckLocked(mResumedActivity, reason);
         }
         if (r == null && prevR.mDisplayContent != null
@@ -1895,7 +1897,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (prev.attachedToProcess()) {
             if (shouldAutoPip && ActivityTaskManagerService.isPip2ExperimentEnabled()) {
                 prev.mPauseSchedulePendingForPip = true;
-                boolean willAutoPip = mAtmService.prepareAutoEnterPictureAndPictureMode(prev);
+                boolean willAutoPip = mAtmService.setPipCandidateIfNeeded(prev);
                 ProtoLog.d(WM_DEBUG_STATES, "Auto-PIP allowed, requesting PIP mode "
                         + "via requestStartTransition(): %s, willAutoPip: %b", prev, willAutoPip);
             } else if (shouldAutoPip) {
@@ -2528,8 +2530,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                         && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
                     final Task task = getTask();
                     if (task != null) {
-                        // TODO(b/407669465): Update isAppBubble usage once migrated.
-                        shouldUseTaskBounds |= task.getTaskInfo().isAppBubble;
+                        // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
+                        shouldUseTaskBounds |= task.mLaunchNextToBubble;
                     }
                 }
                 if (shouldUseTaskBounds && !inPipTransition) {

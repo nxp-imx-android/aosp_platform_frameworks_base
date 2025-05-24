@@ -23,6 +23,7 @@ import static android.Manifest.permission.REQUEST_COMPANION_PROFILE_WATCH;
 import static android.graphics.drawable.Icon.TYPE_URI;
 import static android.graphics.drawable.Icon.TYPE_URI_ADAPTIVE_BITMAP;
 
+import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -1245,7 +1246,7 @@ public final class CompanionDeviceManager {
      * process completes, and its result.
      *
      * <p>This API should be used to remove a bluetooth bond that was created either
-     * by using {@link BluetoothDevice#createBond(int)} or by a direct user action.
+     * by using {@link BluetoothDevice#createBond()} or by a direct user action.
      * The association must already exist with this device before calling this method, but
      * this may be done retroactively to remove a bond that was created outside of the
      * CompanionDeviceManager.
@@ -1873,9 +1874,11 @@ public final class CompanionDeviceManager {
      * @param associationId The unique {@link AssociationInfo#getId ID} assigned to the Association
      *                          of the companion device recorded by CompanionDeviceManager.
      * @param deviceId to be used as device identifier to represent the associated device.
+     *
+     * @deprecated use {@link #createAndSetDeviceId(int, DeviceId)} instead.
      */
-    @FlaggedApi(Flags.FLAG_ASSOCIATION_TAG)
-    @UserHandleAware
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_VERIFICATION)
+    @Deprecated
     public void setDeviceId(int associationId, @Nullable DeviceId deviceId) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
@@ -1884,6 +1887,67 @@ public final class CompanionDeviceManager {
 
         try {
             mService.setDeviceId(associationId, deviceId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns a new {@link DeviceId} which can be passed to device manufacturers' apps,
+     * allowing them to fetch {@link AssociationInfo} or observe device presence for this
+     * associated device. This method creates a new object and does not mutate any existing
+     * {@link DeviceId}.
+     *
+     * <p>The system will generate and assign a new, random 128-bit key to this returned
+     * {@link DeviceId}. Each call to this method generates a new key, any previously associated
+     * key will be obsoleted. Therefore, the returned {@link DeviceId} is the one that contains
+     * the newly assigned key and should be used for subsequent operations.
+     *
+     * <p>This device id also helps the system uniquely identify your device for efficient device
+     * management and prevents duplicate entries.
+     *
+     * <p>WARNING: Do not pass the returned DeviceId to apps you do not trust.
+     *
+     * @param associationId The unique {@link AssociationInfo#getId} assigned to the Association
+     *                          of the companion device recorded by CompanionDeviceManager.
+     * @param deviceId to be used as device identifier to represent the associated device.
+     *
+     * @see AssociationInfo#getDeviceId()
+     */
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_VERIFICATION)
+    @Nullable
+    public DeviceId createAndSetDeviceId(int associationId, @Nullable DeviceId deviceId) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return null;
+        }
+
+        try {
+            return mService.setDeviceId(associationId, deviceId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns an {@link AssociationInfo} matching the specified device id, or {@code null}
+     * if not found or the key in the {@link DeviceId} is invalid.
+     *
+     * @param deviceId A device id represents a device identifier managed by the companion app.
+     *
+     * @see #createAndSetDeviceId(int, DeviceId)
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ASSOCIATION_VERIFICATION)
+    @UserHandleAware
+    @SystemApi
+    @RequiresPermission(Manifest.permission.ACCESS_COMPANION_INFO)
+    @Nullable
+    public AssociationInfo getAssociationByDeviceId(@NonNull DeviceId deviceId) {
+        Objects.requireNonNull(deviceId, "DeviceId can not be null.");
+
+        try {
+            return mService.getAssociationByDeviceId(mContext.getUserId(), deviceId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

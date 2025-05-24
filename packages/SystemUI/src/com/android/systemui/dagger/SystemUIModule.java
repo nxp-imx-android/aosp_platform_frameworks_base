@@ -73,6 +73,7 @@ import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.FlagDependenciesModule;
 import com.android.systemui.flags.FlagsModule;
+import com.android.systemui.growth.dagger.GrowthModule;
 import com.android.systemui.haptics.msdl.dagger.MSDLModule;
 import com.android.systemui.inputmethod.InputMethodModule;
 import com.android.systemui.keyboard.KeyboardModule;
@@ -132,6 +133,7 @@ import com.android.systemui.statusbar.dagger.StatusBarModule;
 import com.android.systemui.statusbar.disableflags.dagger.DisableFlagsModule;
 import com.android.systemui.statusbar.events.StatusBarEventsModule;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
+import com.android.systemui.statusbar.featurepods.vc.AvControlsChipModule;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.inflation.NotificationRowBinder;
@@ -141,6 +143,7 @@ import com.android.systemui.statusbar.notification.collection.render.Notificatio
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
 import com.android.systemui.statusbar.notification.people.PeopleHubModule;
+import com.android.systemui.statusbar.notification.row.dagger.BundleRowComponent;
 import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationRowComponent;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
@@ -154,6 +157,7 @@ import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionCont
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.policy.dagger.SmartRepliesInflationModule;
 import com.android.systemui.statusbar.policy.dagger.StatusBarPolicyModule;
+import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsModule;
 import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
 import com.android.systemui.statusbar.window.StatusBarWindowModule;
 import com.android.systemui.telephony.data.repository.TelephonyRepositoryModule;
@@ -209,6 +213,7 @@ import javax.inject.Named;
 @Module(includes = {
         ActivityManagerModule.class,
         AmbientModule.class,
+        AvControlsChipModule.class,
         AppOpsModule.class,
         AssistModule.class,
         AuthenticationModule.class,
@@ -242,6 +247,7 @@ import javax.inject.Named;
         FooterActionsModule.class,
         KairosCoreStartableModule.class,
         GestureModule.class,
+        GrowthModule.class,
         InputMethodModule.class,
         KeyEventRepositoryModule.class,
         KeyboardModule.class,
@@ -279,6 +285,7 @@ import javax.inject.Named;
         StatusBarViewBinderModule.class,
         StatusBarWindowModule.class,
         SystemPropertiesFlagsModule.class,
+        SystemStatusIconsModule.class,
         SysUIConcurrencyModule.class,
         SysUICoroutinesModule.class,
         CommonSystemUIUnfoldModule.class,
@@ -306,6 +313,7 @@ import javax.inject.Named;
                 NotificationRowComponent.class,
                 WindowRootViewComponent.class,
                 SystemUIDisplaySubcomponent.class,
+                BundleRowComponent.class,
         })
 public abstract class SystemUIModule {
 

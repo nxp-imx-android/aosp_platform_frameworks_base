@@ -43,8 +43,10 @@ open class TimeKeeperImpl(private val cal: Calendar = Calendar.getInstance()) : 
     override var timeZone: TimeZone
         get() = cal.timeZone
         set(value) {
-            cal.timeZone = value
-            callbacks.forEach { it.onTimeZoneChanged() }
+            if (cal.timeZone != value) {
+                cal.timeZone = value
+                callbacks.forEach { it.onTimeZoneChanged() }
+            }
         }
 
     override val callbacks = mutableListOf<TimeKeeper.Callback>()
@@ -82,13 +84,23 @@ private fun TimeFormatKind.getContentDescriptionPattern(pattern: String): String
 
 class DigitalTimeFormatter(
     val pattern: String,
-    private val timeKeeper: TimeKeeper,
-    private val enableContentDescription: Boolean = false,
+    val timeKeeper: TimeKeeper,
+    val enableContentDescription: Boolean = false,
 ) : TimeKeeper.Callback {
     var formatKind = TimeFormatKind.HALF_DAY
         set(value) {
-            field = value
-            applyPattern()
+            if (field != value) {
+                field = value
+                applyPattern()
+            }
+        }
+
+    var locale = Locale.getDefault()
+        set(value) {
+            if (field != value) {
+                field = value
+                onLocaleChanged()
+            }
         }
 
     private lateinit var textFormat: SimpleDateFormat
@@ -96,19 +108,19 @@ class DigitalTimeFormatter(
 
     init {
         timeKeeper.callbacks.add(this)
-        updateLocale(Locale.getDefault())
+        onLocaleChanged()
     }
 
-    override fun onTimeZoneChanged() {
-        textFormat.timeZone = TimeZone.getTimeZone(timeKeeper.timeZone.id)
-        contentDescriptionFormat?.timeZone = TimeZone.getTimeZone(timeKeeper.timeZone.id)
-        applyPattern()
-    }
-
-    fun updateLocale(locale: Locale) {
+    fun onLocaleChanged() {
         textFormat = getTextFormat(locale)
         contentDescriptionFormat = getContentDescriptionFormat(locale)
         onTimeZoneChanged()
+    }
+
+    override fun onTimeZoneChanged() {
+        textFormat.timeZone = timeKeeper.timeZone
+        contentDescriptionFormat?.timeZone = timeKeeper.timeZone
+        applyPattern()
     }
 
     private fun getTextFormat(locale: Locale): SimpleDateFormat {

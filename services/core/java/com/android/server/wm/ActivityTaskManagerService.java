@@ -3799,21 +3799,28 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     /**
-     * Prepare to enter PiP mode after {@link TransitionController#requestStartDisplayTransition}.
+     * Sets a PiP candidate into an already collecting transition if needed.
      *
-     * @param r activity auto entering pip
-     * @return true if the activity is about to auto-enter pip or is already in pip mode.
+     * <p>Marking an activity as a PiP candidate in a collecting transition, will dispatch
+     * info about this activity to Shell when the transition is sent to Shell via
+     * requestStartTransition.</p>
+     *
+     * <p>This makes sense when an activity is either auto-enter PiP activity is requested to be
+     * launched into PiP as soon as the activity starts. For these cases, it makes sense to try and
+     * enter PiP in an already collecting transition instead of creating a separate TRANSIT_PIP.</p>
+     *
+     * @param r activity to be set as a PiP-ing candidate in an already collecting transition
      */
-    boolean prepareAutoEnterPictureAndPictureMode(ActivityRecord r) {
+    boolean setPipCandidateIfNeeded(@NonNull ActivityRecord r) {
         // If the activity is already in picture in picture mode, then just return early
         if (r.inPinnedWindowingMode()) {
             return true;
         }
 
         if (r.canAutoEnterPip() && getTransitionController().getCollectingTransition() != null) {
+            // If there is a collecting transition, try to signal a potential PiP candidate
+            // for Shell to consider when that transition is being requested.
             // This will be used later to construct TransitionRequestInfo for Shell to resolve.
-            // It will also be passed into a direct moveActivityToPinnedRootTask() call via
-            // startTransition()
             getTransitionController().getCollectingTransition().setPipActivity(r);
             return true;
         }
@@ -3880,14 +3887,17 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     enterPipTransition.collect(r);
                     getTransitionController().requestStartTransition(enterPipTransition,
                             r.getTask(), null /* remoteTransition */, null /* displayChange */);
-                    mChainTracker.end();
+                    // can run during finish, so partial
+                    mChainTracker.endPartial();
                 });
             };
             if (r.isKeyguardLocked()) {
                 mActivityClientController.dismissKeyguard(r.token, new KeyguardDismissCallback() {
                     @Override
                     public void onDismissSucceeded() {
-                        enterPipRunnable.run();
+                        synchronized (mGlobalLock) {
+                            enterPipRunnable.run();
+                        }
                     }
                 }, null /* message */);
             } else {
@@ -5300,11 +5310,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mTopProcessState = ActivityManager.PROCESS_STATE_TOP;
                 Slog.d(TAG, "Top Process State changed to PROCESS_STATE_TOP");
                 mTaskSupervisor.comeOutOfSleepIfNeededLocked();
-            }
-            mRootWindowContainer.applySleepTokens(true /* applyToRootTasks */);
-            if (wasSleeping) {
                 updateOomAdj = true;
             }
+            mRootWindowContainer.applySleepTokens(true /* applyToRootTasks */);
         } else if (!mSleeping && shouldSleep) {
             mSleeping = true;
             FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,

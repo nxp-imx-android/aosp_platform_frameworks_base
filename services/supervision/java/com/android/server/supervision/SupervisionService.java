@@ -33,7 +33,7 @@ import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
-import android.app.supervision.ISupervisionAppService;
+import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
 import android.app.supervision.SupervisionRecoveryInfo;
@@ -60,6 +60,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
+import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -95,6 +96,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     private final Context mContext;
     private final Injector mInjector;
+    @VisibleForTesting final ArrayList<ISupervisionListener> mSupervisionListeners;
     final SupervisionManagerInternal mInternal = new SupervisionManagerInternalImpl();
 
     @GuardedBy("getLockObject()")
@@ -104,6 +106,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         mContext = context.createAttributionContext(SupervisionLog.TAG);
         mInjector = new Injector(context);
         mInjector.getUserManagerInternal().addUserLifecycleListener(new UserLifecycleListener());
+        mSupervisionListeners = new ArrayList<>();
     }
 
     /**
@@ -244,6 +247,22 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return true;
     }
 
+    @Override
+    public void registerSupervisionListener(@NonNull ISupervisionListener listener) {
+        synchronized (getLockObject()) {
+            if (!mSupervisionListeners.contains(listener)) {
+                mSupervisionListeners.add(listener);
+            }
+        }
+    }
+
+    @Override
+    public void unregisterSupervisionListener(@NonNull ISupervisionListener listener) {
+        synchronized (getLockObject()) {
+            mSupervisionListeners.remove(listener);
+        }
+    }
+
     /**
      * Returns true if there are any non-default non-test users.
      *
@@ -338,8 +357,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                         getSupervisionAppServiceConnections(userId);
                 for (AppServiceConnection conn : connections) {
                     String targetPackage = conn.getFinder().getTargetPackage(userId);
-                    ISupervisionAppService binder =
-                            (ISupervisionAppService) conn.getServiceBinder();
+                    ISupervisionListener binder = (ISupervisionListener) conn.getServiceBinder();
                     if (binder == null) {
                         Slog.d(
                                 SupervisionLog.TAG,
@@ -350,11 +368,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                         continue;
                     }
                     try {
-                        if (enabled) {
-                            binder.onEnabled();
-                        } else {
-                            binder.onDisabled();
-                        }
+                        binder.onSetSupervisionEnabled(userId, enabled);
                     } catch (RemoteException e) {
                         Slog.d(
                                 SupervisionLog.TAG,
@@ -363,6 +377,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                         targetPackage, e));
                     }
                 }
+                dispatchSupervisionListenerEvent(
+                        listener -> listener.onSetSupervisionEnabled(userId, enabled));
             }
             DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
             if (Flags.enableRemovePoliciesOnSupervisionDisable() && !enabled &&
@@ -467,6 +483,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
             }
         }
         checkCallAuthorization(authorized);
+    }
+
+    private void dispatchSupervisionListenerEvent(
+            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
+        List<ISupervisionListener> immutableListener;
+        synchronized (getLockObject()) {
+            immutableListener = List.copyOf(mSupervisionListeners);
+        }
+        for (ISupervisionListener listener : immutableListener) {
+            Binder.withCleanCallingIdentity(() -> action.accept(listener));
+        }
     }
 
     /** Provides local services in a lazy manner. */

@@ -32,6 +32,7 @@ import static android.view.WindowManager.fixScale;
 import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
+import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
@@ -101,7 +102,6 @@ import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.tracing.LegacyTransitionTracer;
 import com.android.wm.shell.transition.tracing.PerfettoTransitionTracer;
 import com.android.wm.shell.transition.tracing.TransitionTracer;
 
@@ -369,11 +369,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         mHomeTransitionObserver = homeTransitionObserver;
         mFocusTransitionObserver = focusTransitionObserver;
 
-        if (android.tracing.Flags.perfettoTransitionTracing()) {
-            mTransitionTracer = new PerfettoTransitionTracer();
-        } else {
-            mTransitionTracer = new LegacyTransitionTracer();
-        }
+        mTransitionTracer = new PerfettoTransitionTracer();
     }
 
     private void onInit() {
@@ -669,6 +665,11 @@ public class Transitions implements RemoteCallable<Transitions>,
             if (!TransitionInfo.isIndependent(change, info)) {
                 continue;
             }
+            // Don't reparent display level if only changing order (since root will be inside it).
+            if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
+                    && change.getStartRotation() == change.getEndRotation()) {
+                continue;
+            }
 
             boolean hasParent = change.getParent() != null;
 
@@ -780,7 +781,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         for (TransitionInfo.Change change : info.getChanges()) {
             if (change.getTaskInfo() != null
                     && DesktopWallpaperActivity.isWallpaperTask(change.getTaskInfo())) {
-                change.setFlags(FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY);
+                change.setFlags(change.getFlags() | FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY);
             }
         }
 
@@ -1811,15 +1812,9 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
         switch (args[0]) {
             case "tracing": {
-                if (!android.tracing.Flags.perfettoTransitionTracing()) {
-                    ((LegacyTransitionTracer) mTransitionTracer)
-                            .onShellCommand(Arrays.copyOfRange(args, 1, args.length), pw);
-                } else {
-                    pw.println("Command not supported. Use the Perfetto command instead to start "
-                            + "and stop this trace instead.");
-                    return false;
-                }
-                return true;
+                pw.println("Command not supported. Use the Perfetto command instead to start "
+                        + "and stop this trace instead.");
+                return false;
             }
             default: {
                 pw.println("Invalid command: " + args[0]);
@@ -1830,12 +1825,7 @@ public class Transitions implements RemoteCallable<Transitions>,
     }
 
     @Override
-    public void printShellCommandHelp(PrintWriter pw, String prefix) {
-        if (!android.tracing.Flags.perfettoTransitionTracing()) {
-            pw.println(prefix + "tracing");
-            ((LegacyTransitionTracer) mTransitionTracer).printShellCommandHelp(pw, prefix + "  ");
-        }
-    }
+    public void printShellCommandHelp(PrintWriter pw, String prefix) {}
 
     private void dump(@NonNull PrintWriter pw, String prefix) {
         pw.println(prefix + TAG);

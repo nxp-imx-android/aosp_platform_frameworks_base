@@ -39,6 +39,7 @@ import com.android.internal.util.function.TriConsumer;
 import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.sysui.ShellInit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,6 +69,7 @@ public class PipBoundsStateTest extends ShellTestCase {
     private ComponentName mTestComponentName1;
     private ComponentName mTestComponentName2;
     @Mock private DisplayController mDisplayController;
+    @Mock private ShellInit mShellInit;
 
     @Before
     public void setUp() {
@@ -77,7 +79,9 @@ public class PipBoundsStateTest extends ShellTestCase {
                 OVERRIDABLE_MIN_SIZE);
 
         PipDisplayLayoutState pipDisplayLayoutState = new PipDisplayLayoutState(mContext,
-                mDisplayController);
+                mDisplayController, mShellInit);
+        // Directly call onInit instead of using ShellInit
+        pipDisplayLayoutState.onInit();
         mSizeSpecSource = new PhoneSizeSpecSource(mContext, pipDisplayLayoutState);
         mPipBoundsState = new PipBoundsState(mContext, mSizeSpecSource, pipDisplayLayoutState);
         mTestComponentName1 = new ComponentName(mContext, "component1");

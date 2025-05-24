@@ -17,7 +17,7 @@ package com.android.server.appbinding.finders;
 
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
-import android.app.supervision.ISupervisionAppService;
+import android.app.supervision.ISupervisionListener;
 import android.app.supervision.SupervisionAppService;
 import android.app.supervision.flags.Flags;
 import android.content.Context;
@@ -37,7 +37,7 @@ import java.util.function.BiConsumer;
 
 /** Finds the @{link SupervisionAppService} implementation within the supervision app. */
 public class SupervisionAppServiceFinder
-        extends AppServiceFinder<SupervisionAppService, ISupervisionAppService> {
+        extends AppServiceFinder<SupervisionAppService, ISupervisionListener> {
 
     private final RoleManager mRoleManager;
 
@@ -66,8 +66,8 @@ public class SupervisionAppServiceFinder
     }
 
     @Override
-    public ISupervisionAppService asInterface(IBinder obj) {
-        return ISupervisionAppService.Stub.asInterface(obj);
+    public ISupervisionListener asInterface(IBinder obj) {
+        return ISupervisionListener.Stub.asInterface(obj);
     }
 
     @Nullable

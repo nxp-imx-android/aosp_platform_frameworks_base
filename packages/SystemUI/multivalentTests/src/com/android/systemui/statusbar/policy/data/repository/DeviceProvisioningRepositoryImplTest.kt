@@ -34,6 +34,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DeviceProvisioningRepositoryImplTest : SysuiTestCase() {
 
     @Mock lateinit var deviceProvisionedController: DeviceProvisionedController

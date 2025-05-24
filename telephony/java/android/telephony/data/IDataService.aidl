@@ -49,4 +49,6 @@ oneway interface IDataService
     void registerForUnthrottleApn(int slotIndex, IDataServiceCallback callback);
     void unregisterForUnthrottleApn(int slotIndex, IDataServiceCallback callback);
     void requestNetworkValidation(int slotId, int cid, IIntegerConsumer callback);
+    void notifyUserDataEnabled(int slotId, boolean enabled, IIntegerConsumer callback);
+    void notifyUserDataRoamingEnabled(int slotId, boolean enabled, IIntegerConsumer callback);
 }

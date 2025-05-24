@@ -157,21 +157,23 @@ public class AmbientVolumeUiControllerTest {
     }
 
     @Test
-    public void loadDevice_ambientControlNotAvailable_ambientLayoutGone() {
+    public void refresh_ambientControlNotAvailable_ambientLayoutGone() {
         when(mVolumeController.isAmbientControlAvailable(mDevice)).thenReturn(false);
         when(mVolumeController.isAmbientControlAvailable(mMemberDevice)).thenReturn(false);
 
         mController.loadDevice(mCachedDevice);
+        mController.refresh();
 
         verify(mAmbientLayout).setVisible(false);
     }
 
     @Test
-    public void loadDevice_supportVcpAndAmbientControlAvailable_ambientLayoutVisible() {
+    public void refresh_supportVcpAndAmbientControlAvailable_ambientLayoutVisible() {
         when(mCachedDevice.getProfiles()).thenReturn(List.of(mVolumeControlProfile));
         when(mVolumeController.isAmbientControlAvailable(mDevice)).thenReturn(true);
 
         mController.loadDevice(mCachedDevice);
+        mController.refresh();
 
         verify(mAmbientLayout).setVisible(true);
     }
@@ -188,10 +190,12 @@ public class AmbientVolumeUiControllerTest {
                 any(CachedBluetoothDevice.Callback.class));
         verify(mCachedMemberDevice).registerCallback(any(Executor.class),
                 any(CachedBluetoothDevice.Callback.class));
+        verify(mController).refresh();
     }
 
     @Test
     public void stop_callbackUnregistered() {
+        mController.start();
         mController.stop();
 
         verify(mEventManager).unregisterCallback(mController);

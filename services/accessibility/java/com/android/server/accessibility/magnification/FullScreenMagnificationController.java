@@ -78,7 +78,7 @@ import java.util.function.Supplier;
  * holding the current state of magnification and animation, and it handles
  * communication between the accessibility manager and window manager.
  *
- * Magnification is limited to the range controlled by
+ * <p>Magnification is limited to the range controlled by
  * {@link MagnificationScaleProvider#constrainScale(float)}, and can only occur inside the
  * magnification region. If a value is out of bounds, it will be adjusted to guarantee these
  * constraints.
@@ -249,6 +249,7 @@ public class FullScreenMagnificationController implements
 
         private final Region mMagnificationRegion = Region.obtain();
         private final Rect mMagnificationBounds = new Rect();
+        private final Region mImeRegion = Region.obtain();
 
         private final Rect mTempRect = new Rect();
         private final Rect mTempRect1 = new Rect();
@@ -447,10 +448,18 @@ public class FullScreenMagnificationController implements
         }
 
         @Override
-        public void onMagnificationRegionChanged(Region magnificationRegion) {
+        public void onMagnificationRegionChanged(@NonNull Region magnificationRegion) {
             final Message m = PooledLambda.obtainMessage(
                     DisplayMagnification::updateMagnificationRegion, this,
                     Region.obtain(magnificationRegion));
+            mControllerCtx.getHandler().sendMessage(m);
+        }
+
+        @Override
+        public void onImeRegionChanged(Region imeRegion) {
+            final Message m = PooledLambda.obtainMessage(
+                    DisplayMagnification::updateImeRegion, this,
+                    Region.obtain(imeRegion));
             mControllerCtx.getHandler().sendMessage(m);
         }
 
@@ -514,6 +523,15 @@ public class FullScreenMagnificationController implements
                     onMagnificationChangedLocked(/* isScaleTransient= */ false);
                 }
                 magnified.recycle();
+            }
+        }
+
+        void updateImeRegion(Region imeRegion) {
+            synchronized (mLock) {
+                if (!mRegistered) {
+                    return;
+                }
+                mImeRegion.set(imeRegion);
             }
         }
 
@@ -630,6 +648,18 @@ public class FullScreenMagnificationController implements
         @GuardedBy("mLock")
         boolean magnificationRegionContains(float x, float y) {
             return mMagnificationRegion.contains((int) x, (int) y);
+        }
+
+        @GuardedBy("mLock")
+        boolean imeRegionContains(float x, float y) {
+            if (!Flags.enableMagnificationMagnifyNavBarAndIme()) {
+                return false;
+            }
+            // mImeRegion uses global unmagnified coordinates, so convert screen-relative
+            // coordinates (x,y) to global unmagnified coordinates first.
+            x = (x - mCurrentMagnificationSpec.offsetX) / mCurrentMagnificationSpec.scale;
+            y = (y - mCurrentMagnificationSpec.offsetY) / mCurrentMagnificationSpec.scale;
+            return mImeRegion.contains((int) x, (int) y);
         }
 
         @GuardedBy("mLock")
@@ -1170,7 +1200,7 @@ public class FullScreenMagnificationController implements
      * Start tracking the magnification region for services that control magnification and the
      * magnification gesture handler.
      *
-     * This tracking imposes a cost on the system, so we avoid tracking this data unless it's
+     * <p>This tracking imposes a cost on the system, so we avoid tracking this data unless it's
      * required.
      *
      * @param displayId The logical display id.
@@ -1361,6 +1391,25 @@ public class FullScreenMagnificationController implements
                 return false;
             }
             return display.magnificationRegionContains(x, y);
+        }
+    }
+
+    /**
+     * Returns whether the keyboard (IME) region contains the specified screen-relative coordinates.
+     *
+     * @param displayId The logical display id.
+     * @param x the screen-relative X coordinate to check
+     * @param y the screen-relative Y coordinate to check
+     * @return {@code true} if the coordinate is contained within the
+     *         keyboard region, otherwise {@code false}
+     */
+    public boolean imeRegionContains(int displayId, float x, float y) {
+        synchronized (mLock) {
+            final DisplayMagnification display = mDisplays.get(displayId);
+            if (display == null) {
+                return false;
+            }
+            return display.imeRegionContains(x, y);
         }
     }
 
@@ -1879,8 +1928,8 @@ public class FullScreenMagnificationController implements
 
     /**
      * Persists the default display magnification scale to the current user's settings
-     * <strong>if scale is >= {@link MagnificationConstants.PERSISTED_SCALE_MIN_VALUE}</strong>.
-     * We assume if the scale is < {@link MagnificationConstants.PERSISTED_SCALE_MIN_VALUE}, there
+     * <strong>if scale is >= {@link MagnificationConstants#PERSISTED_SCALE_MIN_VALUE}</strong>.
+     * We assume if the scale is < {@link MagnificationConstants#PERSISTED_SCALE_MIN_VALUE}, there
      * will be no obvious magnification effect.
      * Only the value of the default display is persisted in user's settings.
      */

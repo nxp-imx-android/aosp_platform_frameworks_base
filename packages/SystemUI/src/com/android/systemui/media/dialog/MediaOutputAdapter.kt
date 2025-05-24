@@ -51,10 +51,15 @@ import com.google.android.material.slider.Slider
 /** A RecyclerView adapter for the legacy UI media output dialog device list. */
 class MediaOutputAdapter(controller: MediaSwitchingController) :
     MediaOutputAdapterBase(controller) {
-    private val mGroupSelectedItems = mController.selectedMediaDevice.size > 1
+    private var mGroupSelectedItems: Boolean? = null // Unset until the first render.
 
     /** Refreshes the RecyclerView dataset and forces re-render. */
     override fun updateItems() {
+        if (mGroupSelectedItems == null) {
+            // Decide whether to group devices only during the initial render.
+            mGroupSelectedItems = mController.selectedMediaDevice.size > 1
+        }
+
         val newList =
             mController.getMediaItemList(false /* addConnectNewDeviceButton */).toMutableList()
 
@@ -83,7 +88,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
     private fun coalesceSelectedDevices(newList: MutableList<MediaItem>) {
         val selectedDevices = newList.filter { this.isSelectedDevice(it) }
 
-        if (mGroupSelectedItems && selectedDevices.size > 1) {
+        if (mGroupSelectedItems == true && selectedDevices.size > 1) {
             newList.removeAll(selectedDevices.toSet())
             if (mController.isGroupListCollapsed) {
                 newList.add(0, MediaItem.createDeviceGroupMediaItem())

@@ -45,6 +45,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class LogcatEchoTrackerDebugTest : SysuiTestCase() {
 
     private val dispatcher = StandardTestDispatcher()

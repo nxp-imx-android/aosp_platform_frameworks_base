@@ -639,10 +639,10 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         info.taskSnapshot = taskSnapshot;
         info.appToken = activity.token;
         final Transition collecting = activity.mTransitionController.getCollectingTransition();
-        if (collecting != null) {
+        if (collecting != null && !activity.mTransitionController.mIsWaitingForDisplayEnabled) {
             info.transitionToken = collecting.getToken();
         } else {
-            Slog.w(TAG, "The starting window is created without transition?");
+            Slog.w(TAG, "The starting window is created without transition.");
         }
         // make this happen prior than prepare surface
         try {
@@ -1094,33 +1094,16 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
     }
 
-    @Override
-    public void setInterceptBackPressedOnTaskRoot(WindowContainerToken token,
-            boolean interceptBackPressed) {
-        enforceTaskPermission("setInterceptBackPressedOnTaskRoot()");
-        final long origId = Binder.clearCallingIdentity();
-        try {
-            synchronized (mGlobalLock) {
-                ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Set intercept back pressed on root=%b",
-                        interceptBackPressed);
-                final WindowContainer wc = WindowContainer.fromBinder(token.asBinder());
-                if (wc == null) {
-                    Slog.w(TAG, "Could not resolve window from token");
-                    return;
-                }
-                final Task task = wc.asTask();
-                if (task == null) {
-                    Slog.w(TAG, "Could not resolve task from token");
-                    return;
-                }
-                if (interceptBackPressed) {
-                    mInterceptBackPressedOnRootTasks.add(task.mTaskId);
-                } else {
-                    mInterceptBackPressedOnRootTasks.remove(task.mTaskId);
-                }
-            }
-        } finally {
-            Binder.restoreCallingIdentity(origId);
+    /**
+     * Sets or unsets whether a back should be intercepted for a given {@param taskId}.
+     */
+    void setInterceptBackPressedOnTaskRoot(int taskId, boolean interceptBackPressed) {
+        ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER, "Set intercept back pressed: taskId=%d intercept=%b",
+                taskId, interceptBackPressed);
+        if (interceptBackPressed) {
+            mInterceptBackPressedOnRootTasks.add(taskId);
+        } else {
+            mInterceptBackPressedOnRootTasks.remove(taskId);
         }
     }
 

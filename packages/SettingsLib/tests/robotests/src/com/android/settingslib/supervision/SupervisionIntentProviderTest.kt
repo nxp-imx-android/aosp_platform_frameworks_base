@@ -137,6 +137,7 @@ class SupervisionIntentProviderTest {
         assertThat(intent).isNull()
     }
 
+    @Test
     fun getConfirmSupervisionCredentialsIntent_unresolvedIntent() {
         mockPackageManager.stub {
             on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
@@ -144,6 +145,22 @@ class SupervisionIntentProviderTest {
         }
 
         val intent = SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(context)
+
+        assertThat(intent).isNull()
+    }
+
+    @Test
+    fun getConfirmSupervisionCredentialsIntent_forceConfirm_unresolvedIntent() {
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                emptyList<ResolveInfo>()
+        }
+
+        val intent =
+            SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(
+                context = context,
+                forceConfirm = true,
+            )
 
         assertThat(intent).isNull()
     }
@@ -274,6 +291,25 @@ class SupervisionIntentProviderTest {
         assertThat(intent?.action)
             .isEqualTo("android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS")
         assertThat(intent?.`package`).isEqualTo("com.android.settings")
+    }
+
+    @Test
+    fun getConfirmSupervisionCredentialsIntent_forceConfirm_resolvedIntent() {
+        mockPackageManager.stub {
+            on { queryIntentActivitiesAsUser(any<Intent>(), any<Int>(), any<Int>()) } doReturn
+                listOf(ResolveInfo())
+        }
+
+        val intent =
+            SupervisionIntentProvider.getConfirmSupervisionCredentialsIntent(
+                context = context,
+                forceConfirm = true,
+            )
+        assertThat(intent).isNotNull()
+        assertThat(intent?.action)
+            .isEqualTo("android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS")
+        assertThat(intent?.`package`).isEqualTo("com.android.settings")
+        assertThat(intent?.extras?.getBoolean("force_confirmation")).isTrue()
     }
 
     private companion object {

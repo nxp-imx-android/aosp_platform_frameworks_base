@@ -583,6 +583,14 @@ public abstract class UserManagerInternal {
     public abstract @UserIdInt int getMainUserId();
 
     /**
+     * Returns the value of {@link com.android.internal.R.bool#config_isMainUserPermanentAdmin}.
+     *
+     * <p>If the main user is a permanent admin user it can't be deleted or downgraded to non-admin
+     * status.
+     */
+    public abstract boolean isMainUserPermanentAdmin();
+
+    /**
      * Returns the id of the user which should be in the foreground after boot completes.
      *
      * <p>If a boot user has been provided by calling {@link UserManager#setBootUser}, the

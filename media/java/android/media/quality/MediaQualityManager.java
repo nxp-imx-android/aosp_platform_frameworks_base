@@ -513,6 +513,19 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Trigger a status change of the given picture profile.
+     * <p>For testing only. TODO: make it a @TestApi.
+     * @hide
+     */
+    public void changeStreamStatus(@NonNull String profileId, @NonNull String newStatus) {
+        try {
+            mService.changeStreamStatus(profileId, newStatus, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Registers a {@link SoundProfileCallback}.
      */
     public void registerSoundProfileCallback(

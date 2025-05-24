@@ -27,6 +27,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Background
@@ -52,7 +53,6 @@ import com.android.systemui.qs.tiles.impl.modes.ui.mapper.ModesTileMapper
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.ModesDialogViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 
 class ModesTile
 @Inject

@@ -22,10 +22,10 @@ import android.os.Trace
 import android.os.UserHandle
 import android.provider.Settings
 import androidx.annotation.OpenForTesting
-import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
-import com.android.systemui.log.core.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.Logger
+import com.android.systemui.log.core.MessageBuffer
 import com.android.systemui.plugins.PluginLifecycleManager
 import com.android.systemui.plugins.PluginListener
 import com.android.systemui.plugins.PluginManager
@@ -125,12 +125,11 @@ open class ClockRegistry(
 
     private val pluginListener =
         object : PluginListener<ClockProviderPlugin> {
+            override fun getLogBuffer(): MessageBuffer = logger.buffer
+
             override fun onPluginAttached(
                 manager: PluginLifecycleManager<ClockProviderPlugin>
             ): Boolean {
-                manager.setLogFunc({ tag, msg ->
-                    (clockBuffers?.infraMessageBuffer as LogBuffer?)?.log(tag, LogLevel.DEBUG, msg)
-                })
                 if (keepAllLoaded) {
                     // Always load new plugins if requested
                     return true
@@ -144,7 +143,7 @@ open class ClockRegistry(
                     return true
                 }
 
-                logger.i({ "Skipping initial load of known clock package package: $str1" }) {
+                logger.i({ "Skipping initial load of known clock package: $str1" }) {
                     str1 = manager.getPackage()
                 }
 

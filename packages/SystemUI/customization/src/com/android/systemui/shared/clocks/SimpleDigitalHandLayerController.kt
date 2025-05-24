@@ -18,6 +18,7 @@ package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
 import android.icu.util.TimeZone
+import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.RelativeLayout
@@ -29,6 +30,7 @@ import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceEvents
+import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
@@ -123,15 +125,17 @@ open class SimpleDigitalHandLayerController(
             override var isReactiveTouchInteractionEnabled = false
 
             override fun onLocaleChanged(locale: Locale) {
-                timespec.formatter.updateLocale(locale)
+                timespec.formatter.locale = locale
                 refreshTime()
             }
 
             override fun onTimeFormatChanged(formatKind: TimeFormatKind) {
+                timespec.formatter.formatKind = formatKind
                 refreshTime()
             }
 
             override fun onTimeZoneChanged(timeZone: TimeZone) {
+                timespec.formatter.timeKeeper.timeZone = timeZone
                 refreshTime()
             }
 
@@ -178,9 +182,7 @@ open class SimpleDigitalHandLayerController(
 
             override fun onPickerCarouselSwiping(swipingFraction: Float) {}
 
-            override fun onPositionUpdated(fromLeft: Int, direction: Int, fraction: Float) {}
-
-            override fun onPositionUpdated(distance: Float, fraction: Float) {}
+            override fun onPositionAnimated(args: ClockPositionAnimationArgs) {}
 
             override fun onFidgetTap(x: Float, y: Float) {
                 view.animateFidget(x, y)
@@ -191,9 +193,14 @@ open class SimpleDigitalHandLayerController(
         object : ClockFaceEvents {
             override fun onTimeTick() {
                 refreshTime()
-                if (layerCfg.timespec == DigitalTimespec.TIME_FULL_FORMAT) {
-                    view.contentDescription = timespec.getContentDescription()
-                }
+
+                view.contentDescription = timespec.getContentDescription()
+                view.importantForAccessibility =
+                    if (view.contentDescription == null) {
+                        View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    } else {
+                        View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                    }
             }
 
             override fun onFontSettingChanged(fontSizePx: Float) {

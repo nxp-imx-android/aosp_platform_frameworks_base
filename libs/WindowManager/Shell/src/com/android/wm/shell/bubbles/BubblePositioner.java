@@ -860,6 +860,31 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 screen.bottom);
     }
 
+
+    /**
+     * Populates {@param out} with the rest bounds of an expanded bubble on screen.
+     * <p>
+     * TODO: b/417226976
+     *  Never used for the overflow or for floating mode on large screen -- bubble bar & phone
+     *  floating only.
+     */
+    public void getTaskViewRestBounds(Rect out) {
+        if (isShowingInBubbleBar()) {
+            getBubbleBarExpandedViewBounds(isBubbleBarOnLeft(), false /* isOverflow */, out);
+        } else {
+            final int top = getExpandedViewYTopAligned();
+            // Can assume left false because that only matters for floating on large screen which
+            // is never used here.
+            final int width = getTaskViewContentWidth(false /* onLeft */);
+            // TODO (b/419347947): this assumes max height for the bubble, chat bubbles can have
+            //  variable height if the developer overrides; will matter for move chat to fullscreen
+            final int height = getMaxExpandedViewHeight(false /* overflow */);
+            final int[] paddings = getExpandedViewContainerPadding(false /* onLeft */,
+                    false /* overflow */);
+            out.set(paddings[0], top, paddings[0] + width, top + height);
+        }
+    }
+
     //
     // Bubble bar specific sizes below.
     //

@@ -16,6 +16,8 @@
 
 package com.android.server.wm;
 
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.IME_INSETS_SOURCE_PROVIDER;
+import static android.internal.perfetto.protos.Windowmanagerservice.DisplayContentProto.INSETS_SOURCE_PROVIDERS;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.InsetsSource.FLAG_FORCE_CONSUMING;
 import static android.view.InsetsSource.ID_IME;
@@ -25,8 +27,6 @@ import static android.view.WindowInsets.Type.mandatorySystemGestures;
 import static android.view.WindowInsets.Type.systemGestures;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
-import static com.android.server.wm.DisplayContentProto.IME_INSETS_SOURCE_PROVIDER;
-import static com.android.server.wm.DisplayContentProto.INSETS_SOURCE_PROVIDERS;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

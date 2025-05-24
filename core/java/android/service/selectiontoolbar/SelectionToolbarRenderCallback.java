@@ -38,10 +38,6 @@ public interface SelectionToolbarRenderCallback {
      */
     void onMenuItemClicked(int itemIndex);
     /**
-     * The toolbar doesn't be dismissed after showing on a given timeout.
-     */
-    void onToolbarShowTimeout();
-    /**
      * The error occurred when operating on the selection toolbar.
      */
     void onError(int errorCode, int sequenceNumber);

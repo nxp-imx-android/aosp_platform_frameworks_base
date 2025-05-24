@@ -1090,6 +1090,7 @@ public final class MediaProjectionManagerService extends SystemService
         private IBinder mToken;
         private IBinder.DeathRecipient mDeathEater;
         private boolean mRestoreSystemAlertWindow;
+        private boolean mRestoreSystemApplicationOverlay;
         private int mTaskId = -1;
         private LaunchCookie mLaunchCookie = null;
         private boolean mIsRecordingOverlay = false;
@@ -1230,8 +1231,20 @@ public final class MediaProjectionManagerService extends SystemService
                                 mRestoreSystemAlertWindow = true;
                             }
                         }
+
+                        // Recording overlays are only allowed for privileged, allowlisted callers.
+                        // Those callers are allowed to hold APPLICATION_OVERLAY for the duration
+                        // of the MediaProjection.
+                        if (mIsRecordingOverlay) {
+                            final int currentMode = mAppOps.unsafeCheckOpRawNoThrow(
+                                    AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, uid, packageName);
+                            if (currentMode == AppOpsManager.MODE_DEFAULT) {
+                                mAppOps.setUidMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, uid,
+                                        AppOpsManager.MODE_ALLOWED);
+                                mRestoreSystemApplicationOverlay = true;
+                            }
+                        }
                     } catch (PackageManager.NameNotFoundException e) {
-                        Slog.w(TAG, "Package not found, aborting MediaProjection", e);
                         return;
                     } finally {
                         Binder.restoreCallingIdentity(token);
@@ -1257,9 +1270,10 @@ public final class MediaProjectionManagerService extends SystemService
                             + "pid=" + Binder.getCallingPid() + ")");
                     return;
                 }
-                if (mRestoreSystemAlertWindow) {
-                    final long token = Binder.clearCallingIdentity();
-                    try {
+
+                final long token = Binder.clearCallingIdentity();
+                try {
+                    if (mRestoreSystemAlertWindow) {
                         // Put the appop back how it was, unless it has been changed from what
                         // we set it to.
                         // Note that WindowManager takes care of removing any existing overlay
@@ -1271,9 +1285,21 @@ public final class MediaProjectionManagerService extends SystemService
                                     AppOpsManager.MODE_DEFAULT);
                         }
                         mRestoreSystemAlertWindow = false;
-                    } finally {
-                        Binder.restoreCallingIdentity(token);
+
                     }
+                    if (mRestoreSystemApplicationOverlay) {
+                        final int appOverlayMode = mAppOps.unsafeCheckOpRawNoThrow(
+                                AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, uid, packageName);
+                        if (appOverlayMode == AppOpsManager.MODE_ALLOWED) {
+                            mAppOps.setUidMode(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY, uid,
+                                    AppOpsManager.MODE_DEFAULT);
+                        }
+                        mRestoreSystemApplicationOverlay = false;
+                    }
+
+                } finally {
+
+                    Binder.restoreCallingIdentity(token);
                 }
                 Slog.d(TAG, "Content Recording: handling stopping this projection token"
                         + " createTime= " + mCreateTimeMillis

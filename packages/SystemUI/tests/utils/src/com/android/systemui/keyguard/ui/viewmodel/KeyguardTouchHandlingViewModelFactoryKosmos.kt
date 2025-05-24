@@ -16,6 +16,8 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
+import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.domain.interactor.keyguardTouchHandlingInteractor
 import com.android.systemui.kosmos.Kosmos
 
@@ -23,7 +25,11 @@ val Kosmos.keyguardTouchHandlingViewModelFactory by
     Kosmos.Fixture {
         object : KeyguardTouchHandlingViewModel.Factory {
             override fun create(): KeyguardTouchHandlingViewModel {
-                return KeyguardTouchHandlingViewModel(keyguardTouchHandlingInteractor)
+                return KeyguardTouchHandlingViewModel(
+                    keyguardTouchHandlingInteractor,
+                    msdlPlayer,
+                    deviceEntryUdfpsInteractor,
+                )
             }
         }
     }

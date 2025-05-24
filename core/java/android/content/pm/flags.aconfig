@@ -220,13 +220,6 @@ flag {
 }
 
 flag {
-    name: "delete_packages_silently_backport"
-    namespace: "package_manager_service"
-    description: "Feature flag to enable the holder of SYSTEM_APP_PROTECTION_SERVICE role to silently delete packages. To be deprecated by delete_packages_silently."
-    bug: "361776825"
-}
-
-flag {
     name: "sdk_dependency_installer"
     is_exported: true
     namespace: "package_manager_service"

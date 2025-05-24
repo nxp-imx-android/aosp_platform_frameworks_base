@@ -49,6 +49,8 @@ interface IMediaQualityManager {
     void setPictureProfileAllowList(in List<String> packages, int userId);
     List<PictureProfileHandle> getPictureProfileHandle(in String[] id, int userId);
 
+    void changeStreamStatus(in String profileId, in String newStatus, int userId);
+
     long getPictureProfileHandleValue(in String id, int userId);
     long getDefaultPictureProfileHandleValue(int userId);
     void notifyPictureProfileHandleSelection(in long handle, int userId);

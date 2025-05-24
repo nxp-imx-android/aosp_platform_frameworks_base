@@ -124,6 +124,9 @@ public class AudioDeviceBroker {
     // Delay before checking it music should be unmuted after processing an A2DP message
     private static final int BTA2DP_MUTE_CHECK_DELAY_MS = 200;
 
+    // Delay before unmuting call after HFP device switch
+    private static final int HFP_SWITCH_CALL_UNMUTE_DELAY_MS = 2000;
+
     private final @NonNull AudioService mAudioService;
     private final @NonNull Context mContext;
     private final @NonNull AudioSystemAdapter mAudioSystem;
@@ -201,7 +204,7 @@ public class AudioDeviceBroker {
 
     /** Indicates if headset profile connection and SCO audio control use the new implementation
      * aligned with other BT profiles. True if both the feature flag Flags.scoManagedByAudio() and
-     * the system property audio.sco.managed.by.audio are true.
+     * the system property bluetooth.sco.managed_by_audio are true.
      */
     private final boolean mScoManagedByAudio;
     /*package*/ boolean isScoManagedByAudio() {
@@ -313,6 +316,14 @@ public class AudioDeviceBroker {
 
     @GuardedBy("mDeviceStateLock")
     /*package*/ void onSetBtScoActiveDevice(BluetoothDevice btDevice, boolean deviceSwitch) {
+        if (deviceSwitch && isBluetoothScoActive()) {
+            mAudioService.setCallMute(true);
+            sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                    0 /*unmute*/, HFP_SWITCH_CALL_UNMUTE_DELAY_MS);
+        } else if (btDevice == null) {
+            sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                    0 /*unmute*/, 0 /*delay */);
+        }
         mBtHelper.onSetBtScoActiveDevice(btDevice, deviceSwitch);
     }
 
@@ -1222,6 +1233,10 @@ public class AudioDeviceBroker {
             if (!mScoManagedByAudio) {
                 postUpdateCommunicationRouteClient(btScoRequesterAS, eventSource);
             }
+            if (on) {
+                sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                        0 /*unmute*/, 0);
+            }
         }
     }
 
@@ -2125,6 +2140,11 @@ public class AudioDeviceBroker {
                         checkMessagesMuteMusic(0);
                     }
                     break;
+                case MSG_I_MUTE_CALL:
+                    synchronized (mDeviceStateLock) {
+                        mAudioService.setCallMute(msg.arg1 == 1);
+                    }
+                    break;
                 case MSG_L_NOTIFY_PREFERRED_AUDIOPROFILE_APPLIED: {
                     final BluetoothDevice btDevice = (BluetoothDevice) msg.obj;
                     BtHelper.onNotifyPreferredAudioProfileApplied(btDevice);
@@ -2205,12 +2225,6 @@ public class AudioDeviceBroker {
     private static final int MSG_I_BT_SERVICE_DISCONNECTED_PROFILE = 22;
     private static final int MSG_IL_BT_SERVICE_CONNECTED_PROFILE = 23;
 
-    // process external command to (dis)connect an A2DP device, obj is BtDeviceConnectionInfo
-    private static final int MSG_L_A2DP_DEVICE_CONNECTION_CHANGE_EXT = 29;
-
-    // process external command to (dis)connect a hearing aid device
-    private static final int MSG_L_HEARING_AID_DEVICE_CONNECTION_CHANGE_EXT = 31;
-
     private static final int MSG_L_COMMUNICATION_ROUTE_CLIENT_DIED = 34;
     private static final int MSG_CHECK_MUTE_MUSIC = 35;
     private static final int MSG_REPORT_NEW_ROUTES_A2DP = 36;
@@ -2238,6 +2252,9 @@ public class AudioDeviceBroker {
     private static final int MSG_L_SET_FORCE_BT_A2DP_USE_NO_MUTE = 60;
     private static final int MSG_IL_BT_HEARING_AID_TIMEOUT = 61;
 
+    private static final int MSG_I_MUTE_CALL = 62;
+
+
     private static boolean isMessageHandledUnderWakelock(int msgId) {
         switch(msgId) {
             case MSG_L_SET_WIRED_DEVICE_CONNECTION_STATE:
@@ -2246,8 +2263,6 @@ public class AudioDeviceBroker {
             case MSG_IIL_BTLEAUDIO_TIMEOUT:
             case MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE:
             case MSG_TOGGLE_HDMI:
-            case MSG_L_A2DP_DEVICE_CONNECTION_CHANGE_EXT:
-            case MSG_L_HEARING_AID_DEVICE_CONNECTION_CHANGE_EXT:
             case MSG_CHECK_MUTE_MUSIC:
             case MSG_IL_BT_HEARING_AID_TIMEOUT:
                 return true;
@@ -2268,6 +2283,10 @@ public class AudioDeviceBroker {
 
     private void sendMsg(int msg, int existingMsgPolicy, int delay) {
         sendIILMsg(msg, existingMsgPolicy, 0, 0, null, delay);
+    }
+
+    private void sendIMsg(int msg, int existingMsgPolicy, int arg, int delay) {
+        sendIILMsg(msg, existingMsgPolicy, arg, 0, 0, delay);
     }
 
     private void sendILMsg(int msg, int existingMsgPolicy, int arg, Object obj, int delay) {
@@ -2373,7 +2392,6 @@ public class AudioDeviceBroker {
         MESSAGES_MUTE_MUSIC.add(MSG_L_BT_ACTIVE_DEVICE_CHANGE_EXT);
         MESSAGES_MUTE_MUSIC.add(MSG_L_SET_BT_ACTIVE_DEVICE);
         MESSAGES_MUTE_MUSIC.add(MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE);
-        MESSAGES_MUTE_MUSIC.add(MSG_L_A2DP_DEVICE_CONNECTION_CHANGE_EXT);
         MESSAGES_MUTE_MUSIC.add(MSG_L_SET_FORCE_BT_A2DP_USE);
     }
 
@@ -2392,7 +2410,6 @@ public class AudioDeviceBroker {
         }
         // Do not mute on bluetooth event if music is playing on a wired headset.
         if ((message == MSG_L_SET_BT_ACTIVE_DEVICE
-                || message == MSG_L_A2DP_DEVICE_CONNECTION_CHANGE_EXT
                 || message == MSG_L_BLUETOOTH_DEVICE_CONFIG_CHANGE)
                 && AudioSystem.isStreamActive(AudioSystem.STREAM_MUSIC, 0)
                 && hasIntersection(mDeviceInventory.DEVICE_OVERRIDE_A2DP_ROUTE_ON_PLUG_SET,

@@ -18,6 +18,12 @@ android:layout_height="match_parent">
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/auth_screen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="button_bar, scrollView, indicator"/>
+
     <View
         android:id="@+id/panel"
         style="@style/AuthCredentialPanelStyle"
@@ -30,6 +36,20 @@ android:layout_height="match_parent">
         app:layout_constraintRight_toLeftOf="@+id/rightGuideline"
         app:layout_constraintLeft_toLeftOf="@+id/leftGuideline"
         app:layout_constraintTop_toTopOf="@+id/topGuideline" />
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/fallback_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:fillViewport="true"
+        app:layout_constrainedHeight="true"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toTopOf="@id/button_bar"
+        app:layout_constraintEnd_toEndOf="@id/panel"
+        app:layout_constraintStart_toStartOf="@id/panel"
+        app:layout_constraintTop_toTopOf="@+id/topGuideline"
+        app:layout_constraintVertical_bias="1.0" />
 
     <com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
         android:id="@+id/biometric_prompt_udfps_accessibility_overlay"
@@ -214,7 +234,7 @@ android:layout_height="match_parent">
         android:layout_height="wrap_content"
         app:barrierAllowsGoneWidgets="false"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="scrollView" />
+        app:constraint_referenced_ids="scrollView, fallback_view" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/leftGuideline"

@@ -10,17 +10,6 @@ flag {
 
 flag {
     namespace: "haptics"
-    name: "cancel_by_appops"
-    description: "Cancels ongoing vibrations when the appops mode changes to disallow them"
-    bug: "230745615"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "haptics"
     name: "vibration_xml_apis"
     is_exported: true
     description: "Enabled System APIs for vibration effect XML parser and serializer"
@@ -59,16 +48,6 @@ flag {
     bug: "332661766"
     metadata {
         purpose: PURPOSE_FEATURE
-    }
-}
-
-flag {
-    namespace: "haptics"
-    name: "fix_audio_coupled_haptics_scaling"
-    description: "Fix the audio-coupled haptics scaling to use same function as VibrationEffect"
-    bug: "356144312"
-    metadata {
-      purpose: PURPOSE_BUGFIX
     }
 }
 
@@ -128,31 +107,11 @@ flag {
 
 flag {
     namespace: "haptics"
-    name: "vibration_pipeline_enabled"
+    name: "vibration_pipeline_fix_enabled"
     description: "Enables functionality to pipeline vibration effects to avoid cancelling short vibrations"
     bug: "344494220"
     metadata {
-        purpose: PURPOSE_FEATURE
-    }
-}
-
-flag {
-    namespace: "haptics"
-    name: "fix_vibration_thread_callback_handling"
-    description: "Fix how the VibrationThread handles late callbacks from the vibrator HAL"
-    bug: "395005081"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "haptics"
-    name: "fix_external_vibration_system_update_aware"
-    description: "Fix the audio-coupled haptics handling of system updates."
-    bug: "372241975"
-    metadata {
-      purpose: PURPOSE_BUGFIX
+        purpose: PURPOSE_BUGFIX
     }
 }
 

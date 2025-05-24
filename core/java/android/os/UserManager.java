@@ -6971,8 +6971,8 @@ public class UserManager {
         /**
          * @hide
          */
-        public EnforcingUser(
-                @UserIdInt int userId, @UserRestrictionSource int userRestrictionSource) {
+        public EnforcingUser(@CanBeALL @CanBeNULL @UserIdInt int userId,
+                @UserRestrictionSource int userRestrictionSource) {
             this.userId = userId;
             this.userRestrictionSource = userRestrictionSource;
         }

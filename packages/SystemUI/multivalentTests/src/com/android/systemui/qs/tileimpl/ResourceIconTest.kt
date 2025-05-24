@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class ResourceIconTest : SysuiTestCase() {
 
     val resIds = (1..1000).toList()

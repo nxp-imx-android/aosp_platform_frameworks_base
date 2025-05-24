@@ -21,6 +21,7 @@ import android.app.StatsManager
 import android.util.Log
 import android.util.StatsEvent
 import androidx.annotation.VisibleForTesting
+import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -32,7 +33,6 @@ import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.runBlocking
 
 /** Periodically logs current state of notification memory consumption. */
 @SysUISingleton
@@ -141,7 +141,7 @@ constructor(
         }
 
     private fun getAllNotificationsOnMainThread() =
-        runBlocking(mainDispatcher) {
+        runBlocking(context = mainDispatcher) {
             traceSection("NML#getNotifications") { notificationPipeline.allNotifs.toList() }
         }
 }

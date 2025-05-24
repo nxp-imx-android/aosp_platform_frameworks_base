@@ -179,6 +179,26 @@ public final class MediaQualityUtils {
             SoundQuality.PARAMETER_SOUND_STYLE
     ));
 
+    private static final Set<String> VALID_STREAM_STATUS = new HashSet<>(Arrays.asList(
+            PictureProfile.STATUS_SDR,
+            PictureProfile.STATUS_HDR10,
+            PictureProfile.STATUS_TCH,
+            PictureProfile.STATUS_DOLBY_VISION,
+            PictureProfile.STATUS_HLG,
+            PictureProfile.STATUS_HDR10_PLUS,
+            PictureProfile.STATUS_HDR_VIVID,
+            PictureProfile.STATUS_IMAX_SDR,
+            PictureProfile.STATUS_IMAX_HDR10,
+            PictureProfile.STATUS_IMAX_HDR10_PLUS,
+            PictureProfile.STATUS_FMM_SDR,
+            PictureProfile.STATUS_FMM_HDR10,
+            PictureProfile.STATUS_FMM_HDR10_PLUS,
+            PictureProfile.STATUS_FMM_HLG,
+            PictureProfile.STATUS_FMM_DOLBY,
+            PictureProfile.STATUS_FMM_TCH,
+            PictureProfile.STATUS_FMM_HDR_VIVID
+    ));
+
     /**
      * Convert PictureParameter List to PersistableBundle.
      */
@@ -1389,27 +1409,30 @@ public final class MediaQualityUtils {
         }
 
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
+            dts.limiter = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
+            dts.truSurroundX = params.getBoolean(
+                    SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
+            dts.truVolumeHd = params.getBoolean(
+                    SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
+            dts.dialogClarity = params.getBoolean(
+                    SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
+            dts.definition = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT)) {
-            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
+            dts.height = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
             params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
         }
         soundParams.add(SoundParameter.dtsVirtualX(dts));
@@ -2175,6 +2198,18 @@ public final class MediaQualityUtils {
                 yield QualityLevel.OFF;
             }
         };
+    }
+
+    /**
+     * Check if the provided stream status is valid.
+     * @param streamStatus
+     * @return true is valid and false otherwise.
+     */
+    public static boolean isValidStreamStatus(String streamStatus) {
+        if (streamStatus == null) {
+            return false;
+        }
+        return VALID_STREAM_STATUS.contains(streamStatus);
     }
 
     private MediaQualityUtils() {

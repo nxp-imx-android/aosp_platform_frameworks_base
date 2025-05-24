@@ -18,6 +18,8 @@ package com.android.systemui.ambientcue.ui.viewmodel
 
 import android.content.Context
 import android.content.applicationContext
+import android.graphics.Rect
+import androidx.compose.ui.graphics.toComposeRect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -129,6 +131,50 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             // 15 seconds after calling delayAndDeactivateCueBar() again, isDeactivated should be
             // true.
             assertThat(ambientCueRepository.isDeactivated.value).isTrue()
+        }
+
+    fun pillStyle_gestureNav_isInNavbarMode() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(true)
+            ambientCueRepository.fake.setTaskBarVisible(false)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle).isEqualTo(PillStyleViewModel.NavBarPillStyle)
+        }
+
+    @Test
+    fun pillStyle_gestureNavAndTaskBar_shortPillEndAligned() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(true)
+            ambientCueRepository.fake.setTaskBarVisible(true)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle)
+                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
+        }
+
+    @Test
+    fun pillStyle_3ButtonNav_shortPill() =
+        kosmos.runTest {
+            val recentsButtonPosition = Rect(10, 20, 30, 40)
+            ambientCueRepository.fake.setIsGestureNav(false)
+            ambientCueRepository.fake.setTaskBarVisible(true)
+            ambientCueRepository.fake.setRecentsButtonPosition(recentsButtonPosition)
+
+            runCurrent()
+            assertThat((viewModel.pillStyle as PillStyleViewModel.ShortPillStyle).position)
+                .isEqualTo(recentsButtonPosition.toComposeRect())
+        }
+
+    @Test
+    fun pillStyle_3ButtonNavAndTaskBar_shortPill() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setIsGestureNav(false)
+            ambientCueRepository.fake.setTaskBarVisible(false)
+
+            runCurrent()
+            assertThat(viewModel.pillStyle)
+                .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
         }
 
     private fun testActions(applicationContext: Context) =

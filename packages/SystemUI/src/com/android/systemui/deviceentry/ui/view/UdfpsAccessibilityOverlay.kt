@@ -20,6 +20,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.android.systemui.deviceentry.ui.viewmodel.DeviceEntryUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.deviceentry.ui.viewmodel.UdfpsAccessibilityOverlayViewModel
 
 /** Overlay to handle under-fingerprint sensor accessibility events. */
@@ -63,10 +64,25 @@ class UdfpsAccessibilityOverlay(context: Context?, attrs: AttributeSet? = null) 
 
         if (
             event.action == MotionEvent.ACTION_HOVER_ENTER ||
-            event.action == MotionEvent.ACTION_HOVER_MOVE
+                event.action == MotionEvent.ACTION_HOVER_MOVE
         ) {
-            val udfpsHint = udfpsAccessibilityOverlayViewModel
-                .getUdfpsDirectionalFeedbackOnHoverEnterOrMove(event)
+            // Prepend the lockscreen content description for single taps on lock screen
+            val includeLockscreenContentDescription =
+                (event.eventTime - mLastHoverEnterEventTime) < 200
+            val udfpsHint =
+                if (
+                    udfpsAccessibilityOverlayViewModel
+                        is DeviceEntryUdfpsAccessibilityOverlayViewModel
+                ) {
+                    udfpsAccessibilityOverlayViewModel
+                        .getUdfpsDirectionalFeedbackOnHoverEnterOrMove(
+                            event,
+                            includeLockscreenContentDescription,
+                        )
+                } else {
+                    udfpsAccessibilityOverlayViewModel
+                        .getUdfpsDirectionalFeedbackOnHoverEnterOrMove(event)
+                }
 
             udfpsHint?.let {
                 contentDescription = null

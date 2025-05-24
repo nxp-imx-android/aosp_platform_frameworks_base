@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"ଷ୍ଟାଟସ୍‌ ବାର୍‍କୁ ବଡ଼ କିମ୍ବା ଛୋଟ କରିବା ପାଇଁ ଆପ୍‍କୁ ଅନୁମତି ଦେଇଥାଏ।"</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"ଏକ ଲକ୍ ହୋଇଥିବା ଡିଭାଇସରେ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ କାର୍ଯ୍ୟକଳାପ ଭାବେ ଦେଖାନ୍ତୁ"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"ଏକ ଲକ୍ ହୋଇଥିବା ଡିଭାଇସରେ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ କାର୍ଯ୍ୟକଳାପ ଭାବେ ଦେଖାଇବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଏ"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"ଲାଇଭ ଅପଡେଟଗୁଡ଼ିକୁ ଦେଖାନ୍ତୁ"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"ଏହା ଆପକୁ ଷ୍ଟାଟସ ବାର ଏବଂ ଲକ ସ୍କ୍ରିନରେ ଚାଲିଥିବା, ସମୟ-ସମ୍ବେଦନଶୀଳ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଡିସପ୍ଲେ କରିବାକୁ ଅନୁମତି ଦିଏ"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"ସର୍ଟକଟ୍‍ ଇନଷ୍ଟଲ୍‍ କରନ୍ତୁ"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"ୟୁଜର୍‌ଙ୍କ ବିନା ବାଧାରେ ହୋମ୍‍ସ୍କ୍ରୀନ୍‍ ସର୍ଟକଟ୍‍ ଯୋଡ଼ିବାକୁ ଏକ ଆପ୍ଲିକେଶନ୍‍କୁ ଅନୁମତି ଦେଇଥାଏ।"</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"ଶର୍ଟକଟ୍‍ ଅନଇନଷ୍ଟଲ୍‍ କରନ୍ତୁ"</string>
@@ -1182,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"<xliff:g id="COUNT">%d</xliff:g> ଘଣ୍ଟାରେ"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"<xliff:g id="COUNT">%d</xliff:g> ଦିନରେ"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"<xliff:g id="COUNT">%d</xliff:g> ବର୍ଷରେ"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g> ମିନିଟ ପୂର୍ବେ"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g> ଘଣ୍ଟା ପୂର୍ବେ"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g> ଦିନ ପୂର୍ବେ"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g> ବର୍ଷ ପୂର୍ବେ"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g> ମିନିଟ"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g> ଘଣ୍ଟା"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g> ଦିନ"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g> ବର୍ଷ"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g> ମିନିଟରେ"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"<xliff:g id="COUNT">%d</xliff:g> ଘଣ୍ଟାରେ"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"<xliff:g id="COUNT">%d</xliff:g> ଦିନରେ"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"<xliff:g id="COUNT">%d</xliff:g> ବର୍ଷରେ"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g> ମିନିଟ ପୂର୍ବେ"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g> ଘଣ୍ଟା ପୂର୍ବେ"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g> ଦିନ ପୂର୍ବେ"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g> ବର୍ଷ ପୂର୍ବେ"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# ମିନିଟ ପୂର୍ବେ}other{# ମିନିଟ ପୂର୍ବେ}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# ଘଣ୍ଟା ପୂର୍ବେ}other{# ଘଣ୍ଟା ପୂର୍ବେ}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# ଦିନ ପୂର୍ବେ}other{# ଦିନ ପୂର୍ବେ}}"</string>
@@ -1709,6 +1697,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"ଏକ୍ସଟର୍ନଲ ଡିଭାଇସ"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"ହେଡଫୋନ୍‍"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"ଟିଭି ଅଡିଓ"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"ଆନାଲଗ"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"ଡିଜିଟାଲ"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"ସିଷ୍ଟମ"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"ବ୍ଲୁଟୁଥ ଅଡିଓ"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"ୱେୟାର୍‍ଲେସ୍‍ ଡିସ୍‍ପ୍ଲେ"</string>
@@ -1830,8 +1824,7 @@
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g>ଙ୍କୁ ଲଗଆଉଟ୍‍ କରାଯାଉଛି…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ମାଲିକ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ଅତିଥି"</string>
-    <!-- no translation found for headless_system_user_name (1849150903255530049) -->
-    <skip />
+    <string name="headless_system_user_name" msgid="1849150903255530049">"ସିଷ୍ଟମ ୟୁଜର"</string>
     <string name="error_message_title" msgid="4082495589294631966">"ତ୍ରୁଟି"</string>
     <string name="error_message_change_not_allowed" msgid="843159705042381454">"ଏହି ପରିବର୍ତ୍ତନ ପାଇଁ ଆପଣଙ୍କ ଆଡମିନ୍‌ ଅନୁମତି ଦେଇନାହାଁନ୍ତି"</string>
     <string name="app_not_found" msgid="3429506115332341800">"ଏହି କାର୍ଯ୍ୟକୁ ନିୟନ୍ତ୍ରଣ କରିବା ପାଇଁ କୌଣସି ଆପ୍ଲିକେଶନ୍‍ ମିଳିଲା ନାହିଁ"</string>

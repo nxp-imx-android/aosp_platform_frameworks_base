@@ -16,7 +16,9 @@
 
 package com.android.wm.shell.bubbles.util
 
+import android.app.ActivityManager
 import android.app.WindowConfiguration
+import android.graphics.Rect
 import android.os.Binder
 import android.view.WindowInsets
 import android.window.WindowContainerToken
@@ -48,6 +50,7 @@ private fun getBubbleTransaction(
         else
             WindowConfiguration.WINDOWING_MODE_UNDEFINED,
     )
+    wct.setInterceptBackPressedOnTaskRoot(token, toBubble)
     if (!BubbleAnythingFlagHelper.enableRootTaskForBubble()) {
         wct.setAlwaysOnTop(token, toBubble /* alwaysOnTop */)
     }
@@ -65,6 +68,10 @@ private fun getBubbleTransaction(
     }
     if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
         wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
+        if (!toBubble) {
+            // Clear bounds if moving out of Bubble.
+            wct.setBounds(token, Rect())
+        }
     }
     if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithAppCompatFixes()) {
         if (!toBubble && captionInsetsOwner != null) {
@@ -113,5 +120,10 @@ fun getExitBubbleTransaction(
         reparentToTda = false,
         captionInsetsOwner,
     )
+}
+
+/** Returns true if the task is valid for Bubble. */
+fun isValidToBubble(taskInfo: ActivityManager.RunningTaskInfo?): Boolean {
+    return taskInfo != null && taskInfo.supportsMultiWindow
 }
 

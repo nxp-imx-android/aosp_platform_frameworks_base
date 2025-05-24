@@ -550,3 +550,26 @@ flag {
     description: "This flag is used to enable the supervision role"
     bug: "401490610"
 }
+
+flag {
+    name: "purpose_declaration_enabled"
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "This flag is used to enable the enforcement of purpose guarded permissions"
+    bug: "418113890"
+}
+
+flag {
+    name: "app_function_access_ui_enabled"
+    is_exported: true
+    namespace: "permissions"
+    description: "This flag gates the UI for the App Function Access. This includes settings screens, request dialogs and related intents"
+    bug: "413087113"
+}
+
+flag {
+    name: "permission_one_time_session_logging_enabled"
+    namespace: "permissions"
+    description: "Collect stats about permission one time sessions."
+    bug: "417779908"
+}

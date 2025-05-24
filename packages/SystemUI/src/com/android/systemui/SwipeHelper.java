@@ -102,7 +102,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     private float mTranslation = 0;
 
     private boolean mMenuRowIntercepting;
-    private final int mLongPressTimeout;
+    private final long mLongPressTimeout;
     private boolean mLongPressSent;
     private final float[] mDownLocation = new float[2];
     private final Runnable mPerformLongPress = new Runnable() {
@@ -149,10 +149,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         mTouchSlopMultiplier = viewConfiguration.getAmbiguousGestureMultiplier();
 
         // Extra long-press!
-        mLongPressTimeout =
-                (int) ((android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
-                        ? viewConfiguration.getLongPressTimeoutMillis()
-                        : ViewConfiguration.getLongPressTimeout()) * 1.5f);
+        mLongPressTimeout = (long) (ViewConfiguration.getLongPressTimeout() * 1.5f);
 
         updateResourceProperties(resources);
         mFadeDependingOnAmountSwiped = resources.getBoolean(

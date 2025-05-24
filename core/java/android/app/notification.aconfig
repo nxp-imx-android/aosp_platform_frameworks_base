@@ -243,6 +243,15 @@ flag {
   }
 }
 
+flag {
+  name: "nm_summarization_onboarding_ui"
+  namespace: "systemui"
+  description: "Shows summarizatino onboarding UI"
+  bug: "391568054"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
 
 
 # Start: exported flags that cannot be removed

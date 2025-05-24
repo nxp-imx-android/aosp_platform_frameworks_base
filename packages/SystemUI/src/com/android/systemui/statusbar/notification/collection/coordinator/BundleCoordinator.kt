@@ -224,7 +224,7 @@ constructor(
                         else -> error("Unexpected ListEntry type: ${listEntry::class.simpleName}")
                     }
                 }
-            bundleEntry.bundleRepository.appDataList = newAppDataList
+            bundleEntry.bundleRepository.appDataList.value = newAppDataList
         }
     }
 
@@ -260,7 +260,7 @@ constructor(
          * reboot`
          */
         val debugBundleAppName: String? =
-            if (Build.IS_USERDEBUG)
+            if (Build.IS_USERDEBUG || Build.IS_ENG)
                 SystemProperties.get("persist.debug.notification_bundle_ui_debug_app_name")
             else null
 

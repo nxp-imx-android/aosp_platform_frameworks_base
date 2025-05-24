@@ -332,7 +332,7 @@ public class DisplayPolicy {
      */
     private final ArrayList<LetterboxDetails> mLetterboxDetails = new ArrayList<>();
 
-    private String mFocusedApp;
+    private String mFocusedPackageName;
     private int mLastDisableFlags;
     private int mLastAppearance;
     private int mLastBehavior;
@@ -1006,6 +1006,10 @@ public class DisplayPolicy {
                         AccessibilityManager.FLAG_CONTENT_TEXT);
                 // Toasts can't be clickable
                 attrs.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+                // Do not allow untrusted toast to customize animation.
+                if (!win.mSession.mCanAddInternalSystemWindow) {
+                    attrs.windowAnimations = R.style.Animation_Toast;
+                }
                 break;
 
             case TYPE_BASE_APPLICATION:
@@ -1201,11 +1205,11 @@ public class DisplayPolicy {
                 // The index of the provider and corresponding insets types cannot change at
                 // runtime as ensured in WMS. Make use of the index in the provider directly
                 // to access the latest provided size at runtime.
-                final TriFunction<DisplayFrames, WindowContainer, Rect, Integer> frameProvider =
+                final TriFunction<DisplayFrames, WindowState, Rect, Integer> frameProvider =
                         getFrameProvider(win, i, INSETS_OVERRIDE_INDEX_INVALID);
                 final InsetsFrameProvider.InsetsSizeOverride[] overrides =
                         provider.getInsetsSizeOverrides();
-                final SparseArray<TriFunction<DisplayFrames, WindowContainer, Rect, Integer>>
+                final SparseArray<TriFunction<DisplayFrames, WindowState, Rect, Integer>>
                         overrideProviders;
                 if (overrides != null) {
                     overrideProviders = new SparseArray<>();
@@ -1220,15 +1224,16 @@ public class DisplayPolicy {
                         .getInsetsStateController().getOrCreateSourceProvider(provider.getId(),
                                 provider.getType());
                 sourceProvider.getSource().setFlags(provider.getFlags());
-                sourceProvider.setWindowContainer(win, frameProvider, overrideProviders);
+                sourceProvider.setWindow(win, frameProvider, overrideProviders);
                 mInsetsSourceWindowsExceptIme.add(win);
             }
         }
     }
 
-    private static TriFunction<DisplayFrames, WindowContainer, Rect, Integer> getFrameProvider(
+    @NonNull
+    private static TriFunction<DisplayFrames, WindowState, Rect, Integer> getFrameProvider(
             WindowState win, int index, int overrideIndex) {
-        return (displayFrames, windowContainer, inOutFrame) -> {
+        return (displayFrames, windowState, inOutFrame) -> {
             final LayoutParams lp = win.mAttrs.forRotation(displayFrames.mRotation);
             final InsetsFrameProvider ifp = lp.providedInsets[index];
             final Rect displayFrame = displayFrames.mUnrestricted;
@@ -1239,7 +1244,7 @@ public class DisplayPolicy {
                     inOutFrame.set(displayFrame);
                     break;
                 case SOURCE_CONTAINER_BOUNDS:
-                    inOutFrame.set(windowContainer.getBounds());
+                    inOutFrame.set(windowState.getBounds());
                     break;
                 case SOURCE_FRAME:
                     extendByCutout =
@@ -1300,13 +1305,9 @@ public class DisplayPolicy {
         }
     }
 
-    TriFunction<DisplayFrames, WindowContainer, Rect, Integer> getImeSourceFrameProvider() {
-        return (displayFrames, windowContainer, inOutFrame) -> {
-            WindowState windowState = windowContainer.asWindowState();
-            if (windowState == null) {
-                throw new IllegalArgumentException("IME insets must be provided by a window.");
-            }
-
+    @NonNull
+    TriFunction<DisplayFrames, WindowState, Rect, Integer> getImeSourceFrameProvider() {
+        return (displayFrames, windowState, inOutFrame) -> {
             inOutFrame.inset(windowState.mGivenContentInsets);
             return 0;
         };
@@ -1335,9 +1336,7 @@ public class DisplayPolicy {
             final InsetsStateController controller = mDisplayContent.getInsetsStateController();
             for (int index = providers.size() - 1; index >= 0; index--) {
                 final InsetsSourceProvider provider = providers.valueAt(index);
-                provider.setWindowContainer(
-                        null /* windowContainer */,
-                        null /* frameProvider */,
+                provider.setWindow(null /* win */, null /* frameProvider */,
                         null /* overrideFrameProviders */);
                 controller.removeSourceProvider(provider.getSource().getId());
             }
@@ -1945,8 +1944,10 @@ public class DisplayPolicy {
                 mService.mDisplayNotificationController
                         .dispatchDisplayAddSystemDecorations(displayId);
             }
-            final boolean eligibleForDesktopMode =
-                    isSystemDecorationsSupported && (mDisplayContent.isDefaultDisplay
+            final boolean isFreeformSupported =
+                    mDisplayContent.isWindowingModeSupported(WINDOWING_MODE_FREEFORM);
+            final boolean eligibleForDesktopMode = isFreeformSupported
+                    && isSystemDecorationsSupported && (mDisplayContent.isDefaultDisplay
                             || mDisplayContent.allowContentModeSwitch());
             if (eligibleForDesktopMode) {
                 mService.mDisplayNotificationController.dispatchDesktopModeEligibleChanged(
@@ -2619,10 +2620,22 @@ public class DisplayPolicy {
             // Always accept the window not in multi-window mode.
             return true;
         }
-        // Accept the window in multi-window mode only if it fills the display.
+        // Accept the window in multi-window mode only if its task fills the display.
         // e.g., A maximized free-form window.
         final Task task = win.getTask();
         final Rect bounds = task != null ? task.getBounds() : win.getBounds();
+        return bounds.equals(mDisplayContent.getBounds());
+    }
+
+    private boolean fillsDisplayWindowingMode(@NonNull ActivityRecord app) {
+        if (!WindowConfiguration.inMultiWindowMode(app.getWindowingMode())) {
+            // Always accept the app not in multi-window mode.
+            return true;
+        }
+        // Accept the app in multi-window mode only if its task fills the display.
+        // e.g., A maximized free-form window.
+        final Task task = app.getTask();
+        final Rect bounds = task != null ? task.getBounds() : app.getBounds();
         return bounds.equals(mDisplayContent.getBounds());
     }
 
@@ -2633,9 +2646,6 @@ public class DisplayPolicy {
                 mFocusedWindow != null && fillsDisplayWindowingMode(mFocusedWindow)
                         ? mFocusedWindow
                         : mTopFullscreenOpaqueWindowState;
-        if (winCandidate == null && !com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
-            return;
-        }
 
         // Immersive mode confirmation should never affect the system bar visibility, otherwise
         // it will unhide the navigation bar and hide itself.
@@ -2652,8 +2662,15 @@ public class DisplayPolicy {
             } else {
                 winCandidate = mTopFullscreenOpaqueWindowState;
             }
-            if (winCandidate == null
-                    && !com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
+        }
+        if (winCandidate == null) {
+            if (!com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
+                // Before this feature, this method early returns when winCandidate is null.
+                return;
+            }
+            final ActivityRecord focusedApp = mDisplayContent.mFocusedApp;
+            if (focusedApp != null && fillsDisplayWindowingMode(focusedApp)) {
+                // Don't change the system UI controlling window when the new one is not ready.
                 return;
             }
         }
@@ -2682,7 +2699,9 @@ public class DisplayPolicy {
         final int behavior = navBarControlWin != null
                 ? navBarControlWin.mAttrs.insetsFlags.behavior
                 : BEHAVIOR_DEFAULT;
-        final String focusedApp = win != null ? win.mAttrs.packageName : "none";
+        final String focusedPackageName = win != null
+                ? win.mAttrs.packageName
+                : "none";
         final boolean isFullscreen = win != null && (!win.isRequestedVisible(Type.statusBars())
                 || !win.isRequestedVisible(Type.navigationBars()));
         final AppearanceRegion[] statusBarAppearanceRegions =
@@ -2701,7 +2720,7 @@ public class DisplayPolicy {
         if (mLastAppearance == appearance
                 && mLastBehavior == behavior
                 && mLastRequestedVisibleTypes == requestedVisibleTypes
-                && Objects.equals(mFocusedApp, focusedApp)
+                && Objects.equals(mFocusedPackageName, focusedPackageName)
                 && mLastFocusIsFullscreen == isFullscreen
                 && Arrays.equals(mLastStatusBarAppearanceRegions, statusBarAppearanceRegions)
                 && Arrays.equals(mLastLetterboxDetails, letterboxDetails)) {
@@ -2715,13 +2734,13 @@ public class DisplayPolicy {
         mLastAppearance = appearance;
         mLastBehavior = behavior;
         mLastRequestedVisibleTypes = requestedVisibleTypes;
-        mFocusedApp = focusedApp;
+        mFocusedPackageName = focusedPackageName;
         mLastFocusIsFullscreen = isFullscreen;
         mLastStatusBarAppearanceRegions = statusBarAppearanceRegions;
         mLastLetterboxDetails = letterboxDetails;
         callStatusBarSafely(statusBar -> statusBar.onSystemBarAttributesChanged(displayId,
                 appearance, statusBarAppearanceRegions, isNavbarColorManagedByIme, behavior,
-                requestedVisibleTypes, focusedApp, letterboxDetails));
+                requestedVisibleTypes, focusedPackageName, letterboxDetails));
     }
 
     private void callStatusBarSafely(Consumer<StatusBarManagerInternal> consumer) {

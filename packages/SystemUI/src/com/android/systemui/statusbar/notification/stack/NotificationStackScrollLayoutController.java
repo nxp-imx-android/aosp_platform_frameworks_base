@@ -157,7 +157,7 @@ import javax.inject.Provider;
 @SysUISingleton
 public class NotificationStackScrollLayoutController implements Dumpable {
     private static final String TAG = "StackScrollerController";
-    private static final boolean DEBUG = Compile.IS_DEBUG || Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final String HIGH_PRIORITY = "high_priority";
     /** Delay in milli-seconds before shade closes for clear all. */
     private static final int DELAY_BEFORE_SHADE_CLOSE = 200;
@@ -1089,6 +1089,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      */
     public void setOnHeightChangedRunnable(Runnable r) {
         mView.setOnHeightChangedRunnable(r);
+    }
+
+    /**
+     * Invoked when a top-level notification(one with NSSL as parent, not group-child) is removed
+     * from the lockscreen NSSL.
+     */
+    public void setOnKeyguardTopLevelNotificationRemovedRunnable(Runnable r) {
+        mView.setOnKeyguardTopLevelNotificationRemovedRunnable(r);
     }
 
     public void setOverscrollTopChangedListener(

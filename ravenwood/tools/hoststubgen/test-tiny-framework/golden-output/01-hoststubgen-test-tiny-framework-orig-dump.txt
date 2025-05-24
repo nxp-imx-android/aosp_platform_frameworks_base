@@ -2,7 +2,7 @@
   Compiled from "HostSideTestClassLoadHook.java"
 public interface android.hosttest.annotation.HostSideTestClassLoadHook extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestClassLoadHook
   super_class: #x                         // java/lang/Object
@@ -27,7 +27,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestIgnore.java"
 public interface android.hosttest.annotation.HostSideTestIgnore extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestIgnore
   super_class: #x                         // java/lang/Object
@@ -49,7 +49,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestKeep.java"
 public interface android.hosttest.annotation.HostSideTestKeep extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestKeep
   super_class: #x                         // java/lang/Object
@@ -71,7 +71,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestPartiallyAllowlisted.java"
 public interface android.hosttest.annotation.HostSideTestPartiallyAllowlisted extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestPartiallyAllowlisted
   super_class: #x                         // java/lang/Object
@@ -93,7 +93,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestRedirect.java"
 public interface android.hosttest.annotation.HostSideTestRedirect extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestRedirect
   super_class: #x                         // java/lang/Object
@@ -115,7 +115,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestRedirectionClass.java"
 public interface android.hosttest.annotation.HostSideTestRedirectionClass extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestRedirectionClass
   super_class: #x                         // java/lang/Object
@@ -140,7 +140,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestRemove.java"
 public interface android.hosttest.annotation.HostSideTestRemove extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestRemove
   super_class: #x                         // java/lang/Object
@@ -162,7 +162,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestStaticInitializerKeep.java"
 public interface android.hosttest.annotation.HostSideTestStaticInitializerKeep extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestStaticInitializerKeep
   super_class: #x                         // java/lang/Object
@@ -184,7 +184,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestSubstitute.java"
 public interface android.hosttest.annotation.HostSideTestSubstitute extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestSubstitute
   super_class: #x                         // java/lang/Object
@@ -209,7 +209,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestThrow.java"
 public interface android.hosttest.annotation.HostSideTestThrow extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestThrow
   super_class: #x                         // java/lang/Object
@@ -227,11 +227,33 @@ RuntimeVisibleAnnotations:
     java.lang.annotation.Retention(
       value=Ljava/lang/annotation/RetentionPolicy;.CLASS
     )
+## Class: android/hosttest/annotation/HostSideTestThrowButSupported.class
+  Compiled from "HostSideTestThrowButSupported.java"
+public interface android.hosttest.annotation.HostSideTestThrowButSupported extends java.lang.annotation.Annotation
+  minor version: 0
+  major version: 65
+  flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
+  this_class: #x                          // android/hosttest/annotation/HostSideTestThrowButSupported
+  super_class: #x                         // java/lang/Object
+  interfaces: 1, fields: 0, methods: 0, attributes: 2
+Constant pool:
+{
+}
+SourceFile: "HostSideTestThrowButSupported.java"
+RuntimeVisibleAnnotations:
+  x: #x(#x=[e#x.#x,e#x.#x])
+    java.lang.annotation.Target(
+      value=[Ljava/lang/annotation/ElementType;.METHOD,Ljava/lang/annotation/ElementType;.CONSTRUCTOR]
+    )
+  x: #x(#x=e#x.#x)
+    java.lang.annotation.Retention(
+      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+    )
 ## Class: android/hosttest/annotation/HostSideTestWholeClassKeep.class
   Compiled from "HostSideTestWholeClassKeep.java"
 public interface android.hosttest.annotation.HostSideTestWholeClassKeep extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/HostSideTestWholeClassKeep
   super_class: #x                         // java/lang/Object
@@ -253,7 +275,7 @@ RuntimeVisibleAnnotations:
   Compiled from "HostSideTestSuppress.java"
 public interface android.hosttest.annotation.tests.HostSideTestSuppress extends java.lang.annotation.Annotation
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x2601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION
   this_class: #x                          // android/hosttest/annotation/tests/HostSideTestSuppress
   super_class: #x                         // java/lang/Object
@@ -271,7 +293,7 @@ RuntimeVisibleAnnotations:
   Compiled from "IPretendingAidl.java"
 public class com.android.hoststubgen.test.tinyframework.IPretendingAidl$Stub$Proxy
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy
   super_class: #x                         // java/lang/Object
@@ -314,7 +336,7 @@ InnerClasses:
   Compiled from "IPretendingAidl.java"
 public class com.android.hoststubgen.test.tinyframework.IPretendingAidl$Stub
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub
   super_class: #x                         // java/lang/Object
@@ -357,7 +379,7 @@ InnerClasses:
   Compiled from "IPretendingAidl.java"
 public interface com.android.hoststubgen.test.tinyframework.IPretendingAidl
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/IPretendingAidl
   super_class: #x                         // java/lang/Object
@@ -376,7 +398,7 @@ InnerClasses:
   Compiled from "R.java"
 public class com.android.hoststubgen.test.tinyframework.R$Nested
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/R$Nested
   super_class: #x                         // java/lang/Object
@@ -423,7 +445,7 @@ InnerClasses:
   Compiled from "R.java"
 public class com.android.hoststubgen.test.tinyframework.R
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/R
   super_class: #x                         // java/lang/Object
@@ -452,11 +474,11 @@ InnerClasses:
   Compiled from "TinyFrameworkAnnotations.java"
 public final class com.android.hoststubgen.test.tinyframework.TinyFrameworkAnnotations
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 9, attributes: 2
+  interfaces: 0, fields: 2, methods: 10, attributes: 2
 Constant pool:
 {
   public int keep;
@@ -599,6 +621,20 @@ Constant pool:
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 
+  public void throwButSupported();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=0, locals=1, args_size=1
+         x: return
+      LineNumberTable:
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       1     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations;
+    RuntimeInvisibleAnnotations:
+      x: #x()
+        android.hosttest.annotation.HostSideTestThrowButSupported
+
   public int toBeIgnored();
     descriptor: ()I
     flags: (0x0001) ACC_PUBLIC
@@ -629,7 +665,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkClassLoadHook.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook
   super_class: #x                         // java/lang/Object
@@ -693,7 +729,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkClassWideAnnotations.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWideAnnotations
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations
   super_class: #x                         // java/lang/Object
@@ -819,7 +855,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkClassWithInitializerDefault.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWithInitializerDefault
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerDefault
   super_class: #x                         // java/lang/Object
@@ -875,7 +911,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkClassWithInitializerStub.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWithInitializerStub
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerStub
   super_class: #x                         // java/lang/Object
@@ -937,7 +973,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkEnumComplex.java"
 public final class com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumComplex extends java.lang.Enum<com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumComplex>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x4031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER, ACC_ENUM
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex
   super_class: #x                        // java/lang/Enum
@@ -1142,7 +1178,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkEnumSimple.java"
 public final class com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumSimple extends java.lang.Enum<com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumSimple>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x4031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER, ACC_ENUM
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple
   super_class: #x                        // java/lang/Enum
@@ -1265,7 +1301,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkExceptionTester.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkExceptionTester
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester
   super_class: #x                         // java/lang/Object
@@ -1321,7 +1357,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkForTextPolicy.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkForTextPolicy
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy
   super_class: #x                         // java/lang/Object
@@ -1574,7 +1610,7 @@ SourceFile: "TinyFrameworkForTextPolicy.java"
   Compiled from "TinyFrameworkLambdas.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkLambdas$Nested
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested
   super_class: #x                         // java/lang/Object
@@ -1725,12 +1761,12 @@ BootstrapMethods:
       #x ()Ljava/lang/Integer;
 InnerClasses:
   public static #x= #x of #x;          // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
-  public static #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+  public static final #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas.class
   Compiled from "TinyFrameworkLambdas.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkLambdas
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
   super_class: #x                         // java/lang/Object
@@ -1882,12 +1918,12 @@ BootstrapMethods:
       #x ()Ljava/lang/Integer;
 InnerClasses:
   public static #x= #x of #x;          // Nested=class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested of class com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
-  public static #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+  public static final #x= #x of #x;    // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester.class
   Compiled from "TinyFrameworkMethodCallReplace.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ConstructorTester
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester
   super_class: #x                         // java/lang/Object
@@ -1923,7 +1959,7 @@ InnerClasses:
   Compiled from "TinyFrameworkMethodCallReplace.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace$ReplaceTo
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo
   super_class: #x                         // java/lang/Object
@@ -2000,7 +2036,7 @@ InnerClasses:
   Compiled from "TinyFrameworkMethodCallReplace.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
   super_class: #x                         // java/lang/Object
@@ -2125,12 +2161,12 @@ BootstrapMethods:
 InnerClasses:
   public static #x= #x of #x;          // ConstructorTester=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ConstructorTester of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
   public static #x= #x of #x;          // ReplaceTo=class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace$ReplaceTo of class com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
-  public static #x= #x of #x;   // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
+  public static final #x= #x of #x;   // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNative.class
   Compiled from "TinyFrameworkNative.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNative
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNative
   super_class: #x                         // java/lang/Object
@@ -2305,7 +2341,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkNative_host.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNative_host
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host
   super_class: #x                         // java/lang/Object
@@ -2413,33 +2449,26 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkNestedClasses.java"
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$1 extends java.lang.Object implements java.util.function.Supplier<java.lang.Integer>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0020) ACC_SUPER
-  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1
+  this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1
   super_class: #x                         // java/lang/Object
-  interfaces: 1, fields: 1, methods: 3, attributes: 5
+  interfaces: 1, fields: 0, methods: 3, attributes: 5
 Constant pool:
 {
-  final com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses this$0;
-    descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
-    flags: (0x1010) ACC_FINAL, ACC_SYNTHETIC
-
   com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$1(com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses);
     descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;)V
     flags: (0x0000)
     Code:
-      stack=2, locals=2, args_size=2
-         x: aload_0
-         x: aload_1
-         x: putfield      #x                  // Field this$0:Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
+      stack=1, locals=2, args_size=2
          x: aload_0
          x: invokespecial #x                  // Method java/lang/Object."<init>":()V
          x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-            0      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1;
-            0      10     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1;
+            0       5     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     MethodParameters:
       Name                           Flags
       <no name>                      final mandated
@@ -2450,7 +2479,7 @@ Constant pool:
     Code:
       stack=1, locals=1, args_size=1
          x: iconst_1
-         x: invokestatic  #x                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+         x: invokestatic  #x                  // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
          x: areturn
       LineNumberTable:
       LocalVariableTable:
@@ -2475,12 +2504,12 @@ SourceFile: "TinyFrameworkNestedClasses.java"
 EnclosingMethod: #x.#x                 // com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 InnerClasses:
-  #x;                                     // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1
+  #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2.class
   Compiled from "TinyFrameworkNestedClasses.java"
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$2 extends java.lang.Object implements java.util.function.Supplier<java.lang.Integer>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0020) ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$2
   super_class: #x                         // java/lang/Object
@@ -2536,33 +2565,26 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$3 extends java.lang.Object implements java.util.function.Supplier<java.lang.Integer>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0020) ACC_SUPER
-  this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3
+  this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3
   super_class: #x                         // java/lang/Object
-  interfaces: 1, fields: 1, methods: 3, attributes: 5
+  interfaces: 1, fields: 0, methods: 3, attributes: 5
 Constant pool:
 {
-  final com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses this$0;
-    descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
-    flags: (0x1010) ACC_FINAL, ACC_SYNTHETIC
-
   com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$3(com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses);
     descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;)V
     flags: (0x0000)
     Code:
-      stack=2, locals=2, args_size=2
-         x: aload_0
-         x: aload_1
-         x: putfield      #x                  // Field this$0:Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
+      stack=1, locals=2, args_size=2
          x: aload_0
          x: invokespecial #x                  // Method java/lang/Object."<init>":()V
          x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-            0      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3;
-            0      10     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
+            0       5     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3;
+            0       5     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     MethodParameters:
       Name                           Flags
       <no name>                      final mandated
@@ -2573,7 +2595,7 @@ Constant pool:
     Code:
       stack=1, locals=1, args_size=1
          x: iconst_3
-         x: invokestatic  #x                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+         x: invokestatic  #x                  // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
          x: areturn
       LineNumberTable:
       LocalVariableTable:
@@ -2598,12 +2620,12 @@ SourceFile: "TinyFrameworkNestedClasses.java"
 EnclosingMethod: #x.#x                // com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses.getSupplier
 NestHost: class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
 InnerClasses:
-  #x;                                     // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3
+  #x;                                    // class com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$3
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4.class
   Compiled from "TinyFrameworkNestedClasses.java"
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$4 extends java.lang.Object implements java.util.function.Supplier<java.lang.Integer>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0020) ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$4
   super_class: #x                         // java/lang/Object
@@ -2659,7 +2681,7 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$BaseClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass
   super_class: #x                         // java/lang/Object
@@ -2695,20 +2717,16 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$InnerClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 1, attributes: 3
+  interfaces: 0, fields: 1, methods: 1, attributes: 3
 Constant pool:
 {
   public int value;
     descriptor: I
     flags: (0x0001) ACC_PUBLIC
-
-  final com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses this$0;
-    descriptor: Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
-    flags: (0x1010) ACC_FINAL, ACC_SYNTHETIC
 
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$InnerClass(com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses);
     descriptor: (Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;)V
@@ -2716,19 +2734,16 @@ Constant pool:
     Code:
       stack=2, locals=2, args_size=2
          x: aload_0
-         x: aload_1
-         x: putfield      #x                  // Field this$0:Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
-         x: aload_0
          x: invokespecial #x                  // Method java/lang/Object."<init>":()V
          x: aload_0
-        x: iconst_5
-        x: putfield      #x                 // Field value:I
-        x: return
+         x: iconst_5
+         x: putfield      #x                  // Field value:I
+         x: return
       LineNumberTable:
       LocalVariableTable:
         Start  Length  Slot  Name   Signature
-            0      15     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass;
-            0      15     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
+            0      10     0  this   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$InnerClass;
+            0      10     1 this$0   Lcom/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses;
     MethodParameters:
       Name                           Flags
       <no name>                      final mandated
@@ -2741,7 +2756,7 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$StaticNestedClass$1 extends java.lang.Object implements java.util.function.Supplier<java.lang.Integer>
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0020) ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$1
   super_class: #x                         // java/lang/Object
@@ -2798,7 +2813,7 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass$Double$NestedClass
   super_class: #x                         // java/lang/Object
@@ -2834,7 +2849,7 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$StaticNestedClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$StaticNestedClass
   super_class: #x                         // java/lang/Object
@@ -2883,7 +2898,7 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$SubClass extends com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses$BaseClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$SubClass
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$BaseClass
@@ -2914,7 +2929,7 @@ InnerClasses:
   Compiled from "TinyFrameworkNestedClasses.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClasses
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   super_class: #x                         // java/lang/Object
@@ -3020,7 +3035,7 @@ InnerClasses:
   Compiled from "TinyFrameworkPackageRedirect.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPackageRedirect
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkPackageRedirect
   super_class: #x                         // java/lang/Object
@@ -3064,7 +3079,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkPartiallyAllowlisted.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$NoAnnotations
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$NoAnnotations
   super_class: #x                         // java/lang/Object
@@ -3092,7 +3107,7 @@ InnerClasses:
   Compiled from "TinyFrameworkPartiallyAllowlisted.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartialWithWholeClass_bad
   super_class: #x                         // java/lang/Object
@@ -3125,7 +3140,7 @@ InnerClasses:
   Compiled from "TinyFrameworkPartiallyAllowlisted.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted
   super_class: #x                         // java/lang/Object
@@ -3189,7 +3204,7 @@ InnerClasses:
   Compiled from "TinyFrameworkPartiallyAllowlisted.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlistedWithoutAnnot_bad
   super_class: #x                         // java/lang/Object
@@ -3251,7 +3266,7 @@ InnerClasses:
   Compiled from "TinyFrameworkPartiallyAllowlisted.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAllowlisted
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted
   super_class: #x                         // java/lang/Object
@@ -3286,7 +3301,7 @@ InnerClasses:
   Compiled from "TinyFrameworkRenamedClassCaller.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkRenamedClassCaller
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller
   super_class: #x                         // java/lang/Object
@@ -3346,7 +3361,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkToBeRenamed.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkToBeRenamed
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed
   super_class: #x                         // java/lang/Object
@@ -3415,7 +3430,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "TinyFrameworkUnsupportedApiException.java"
 public class com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException extends java.lang.UnsupportedOperationException
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
   super_class: #x                         // java/lang/UnsupportedOperationException
@@ -3444,7 +3459,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.A
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/A
   super_class: #x                         // java/lang/Object
@@ -3469,7 +3484,7 @@ SourceFile: "A.java"
   Compiled from "B.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.B
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/B
   super_class: #x                         // java/lang/Object
@@ -3494,7 +3509,7 @@ SourceFile: "B.java"
   Compiled from "A.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.sub.A
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/sub/A
   super_class: #x                         // java/lang/Object
@@ -3519,7 +3534,7 @@ SourceFile: "A.java"
   Compiled from "B.java"
 public class com.android.hoststubgen.test.tinyframework.packagetest.sub.B
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/packagetest/sub/B
   super_class: #x                         // java/lang/Object
@@ -3544,7 +3559,7 @@ SourceFile: "B.java"
   Compiled from "C1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.C1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/C1
   super_class: #x                         // java/lang/Object
@@ -3569,7 +3584,7 @@ SourceFile: "C1.java"
   Compiled from "C2.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.C2 extends com.android.hoststubgen.test.tinyframework.subclasstest.C1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/C2
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/C1
@@ -3594,7 +3609,7 @@ SourceFile: "C2.java"
   Compiled from "C3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.C3 extends com.android.hoststubgen.test.tinyframework.subclasstest.C2
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/C3
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/C2
@@ -3619,7 +3634,7 @@ SourceFile: "C3.java"
   Compiled from "CA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.CA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/CA
   super_class: #x                         // java/lang/Object
@@ -3644,7 +3659,7 @@ SourceFile: "CA.java"
   Compiled from "CB.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.CB
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/CB
   super_class: #x                         // java/lang/Object
@@ -3669,7 +3684,7 @@ SourceFile: "CB.java"
   Compiled from "Class_C1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_C1 extends com.android.hoststubgen.test.tinyframework.subclasstest.C1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_C1
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/C1
@@ -3694,7 +3709,7 @@ SourceFile: "Class_C1.java"
   Compiled from "Class_C2.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_C2 extends com.android.hoststubgen.test.tinyframework.subclasstest.C2
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_C2
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/C2
@@ -3719,7 +3734,7 @@ SourceFile: "Class_C2.java"
   Compiled from "Class_C3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_C3 extends com.android.hoststubgen.test.tinyframework.subclasstest.C3
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_C3
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/C3
@@ -3744,7 +3759,7 @@ SourceFile: "Class_C3.java"
   Compiled from "Class_CA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_CA extends com.android.hoststubgen.test.tinyframework.subclasstest.CA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_CA
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/CA
@@ -3769,7 +3784,7 @@ SourceFile: "Class_CA.java"
   Compiled from "Class_CB.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_CB extends com.android.hoststubgen.test.tinyframework.subclasstest.CB
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_CB
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/CB
@@ -3794,7 +3809,7 @@ SourceFile: "Class_CB.java"
   Compiled from "Class_CB_IA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_CB_IA extends com.android.hoststubgen.test.tinyframework.subclasstest.CB implements com.android.hoststubgen.test.tinyframework.subclasstest.IA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_CB_IA
   super_class: #x                         // com/android/hoststubgen/test/tinyframework/subclasstest/CB
@@ -3819,7 +3834,7 @@ SourceFile: "Class_CB_IA.java"
   Compiled from "Class_I1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I1 implements com.android.hoststubgen.test.tinyframework.subclasstest.I1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_I1
   super_class: #x                         // java/lang/Object
@@ -3844,7 +3859,7 @@ SourceFile: "Class_I1.java"
   Compiled from "Class_I1_IA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I1_IA implements com.android.hoststubgen.test.tinyframework.subclasstest.I1,com.android.hoststubgen.test.tinyframework.subclasstest.IA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_I1_IA
   super_class: #x                         // java/lang/Object
@@ -3869,7 +3884,7 @@ SourceFile: "Class_I1_IA.java"
   Compiled from "Class_I2.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I2 implements com.android.hoststubgen.test.tinyframework.subclasstest.I2
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_I2
   super_class: #x                         // java/lang/Object
@@ -3894,7 +3909,7 @@ SourceFile: "Class_I2.java"
   Compiled from "Class_I3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I3 implements com.android.hoststubgen.test.tinyframework.subclasstest.I3
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_I3
   super_class: #x                         // java/lang/Object
@@ -3919,7 +3934,7 @@ SourceFile: "Class_I3.java"
   Compiled from "Class_I3_IA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_I3_IA implements com.android.hoststubgen.test.tinyframework.subclasstest.I3,com.android.hoststubgen.test.tinyframework.subclasstest.IA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_I3_IA
   super_class: #x                         // java/lang/Object
@@ -3944,7 +3959,7 @@ SourceFile: "Class_I3_IA.java"
   Compiled from "Class_IA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_IA implements com.android.hoststubgen.test.tinyframework.subclasstest.IA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_IA
   super_class: #x                         // java/lang/Object
@@ -3969,7 +3984,7 @@ SourceFile: "Class_IA.java"
   Compiled from "Class_IA_I1.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_IA_I1 implements com.android.hoststubgen.test.tinyframework.subclasstest.IA,com.android.hoststubgen.test.tinyframework.subclasstest.I1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_IA_I1
   super_class: #x                         // java/lang/Object
@@ -3994,7 +4009,7 @@ SourceFile: "Class_IA_I1.java"
   Compiled from "Class_IA_I3.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_IA_I3 implements com.android.hoststubgen.test.tinyframework.subclasstest.IA,com.android.hoststubgen.test.tinyframework.subclasstest.I3
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_IA_I3
   super_class: #x                         // java/lang/Object
@@ -4019,7 +4034,7 @@ SourceFile: "Class_IA_I3.java"
   Compiled from "Class_IB.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_IB implements com.android.hoststubgen.test.tinyframework.subclasstest.IB
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_IB
   super_class: #x                         // java/lang/Object
@@ -4044,7 +4059,7 @@ SourceFile: "Class_IB.java"
   Compiled from "Class_IB_IA.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_IB_IA implements com.android.hoststubgen.test.tinyframework.subclasstest.IB,com.android.hoststubgen.test.tinyframework.subclasstest.IA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_IB_IA
   super_class: #x                         // java/lang/Object
@@ -4069,7 +4084,7 @@ SourceFile: "Class_IB_IA.java"
   Compiled from "Class_None.java"
 public class com.android.hoststubgen.test.tinyframework.subclasstest.Class_None
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/Class_None
   super_class: #x                         // java/lang/Object
@@ -4094,7 +4109,7 @@ SourceFile: "Class_None.java"
   Compiled from "I1.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.I1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/I1
   super_class: #x                         // java/lang/Object
@@ -4107,7 +4122,7 @@ SourceFile: "I1.java"
   Compiled from "I2.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.I2 extends com.android.hoststubgen.test.tinyframework.subclasstest.I1
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/I2
   super_class: #x                         // java/lang/Object
@@ -4120,7 +4135,7 @@ SourceFile: "I2.java"
   Compiled from "I3.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.I3 extends com.android.hoststubgen.test.tinyframework.subclasstest.I2
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/I3
   super_class: #x                         // java/lang/Object
@@ -4133,7 +4148,7 @@ SourceFile: "I3.java"
   Compiled from "IA.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.IA
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/IA
   super_class: #x                         // java/lang/Object
@@ -4146,7 +4161,7 @@ SourceFile: "IA.java"
   Compiled from "IB.java"
 public interface com.android.hoststubgen.test.tinyframework.subclasstest.IB
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0601) ACC_PUBLIC, ACC_INTERFACE, ACC_ABSTRACT
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/subclasstest/IB
   super_class: #x                         // java/lang/Object
@@ -4159,7 +4174,7 @@ SourceFile: "IB.java"
   Compiled from "UnsupportedClass.java"
 public class com.supported.UnsupportedClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/supported/UnsupportedClass
   super_class: #x                         // java/lang/Object
@@ -4208,7 +4223,7 @@ RuntimeInvisibleAnnotations:
   Compiled from "UnsupportedClass.java"
 public class com.unsupported.UnsupportedClass
   minor version: 0
-  major version: 61
+  major version: 65
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                         // com/unsupported/UnsupportedClass
   super_class: #x                         // java/lang/Object

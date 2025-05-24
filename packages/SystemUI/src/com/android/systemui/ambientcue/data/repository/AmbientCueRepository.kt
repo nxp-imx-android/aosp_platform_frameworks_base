@@ -25,10 +25,12 @@ import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.content.Context
+import android.graphics.Rect
 import android.util.Log
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.annotation.VisibleForTesting
+import androidx.tracing.trace
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.ambientcue.shared.model.ActionModel
@@ -49,6 +51,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -79,6 +82,8 @@ interface AmbientCueRepository {
 
     /** True if in gesture nav mode, false when in 3-button navbar. */
     val isGestureNav: StateFlow<Boolean>
+
+    val recentsButtonPosition: StateFlow<Rect?>
 }
 
 @SysUISingleton
@@ -89,12 +94,26 @@ constructor(
     private val smartSpaceManager: SmartspaceManager?,
     private val autofillManager: AutofillManager?,
     private val activityStarter: ActivityStarter,
-    private val launcherProxyService: LauncherProxyService,
     private val navigationModeController: NavigationModeController,
     @Background executor: Executor,
     @Application applicationContext: Context,
     focusdDisplayRepository: FocusedDisplayRepository,
+    launcherProxyService: LauncherProxyService,
 ) : AmbientCueRepository {
+
+    init {
+        val callback =
+            object : LauncherProxyListener {
+                override fun onTaskbarStatusUpdated(visible: Boolean, stashed: Boolean) {
+                    _isTaskBarVisible.update { visible && !stashed }
+                }
+
+                override fun onRecentsButtonPositionChanged(position: Rect?) {
+                    _recentsButtonPosition.update { position }
+                }
+            }
+        launcherProxyService.addCallback(callback)
+    }
 
     override val actions: StateFlow<List<ActionModel>> =
         conflatedCallbackFlow {
@@ -118,6 +137,7 @@ constructor(
                                 val title = chip.title.toString()
                                 val activityId =
                                     chip.extras?.getParcelable<ActivityId>(EXTRA_ACTIVITY_ID)
+                                val actionType = chip.extras?.getString(EXTRA_ACTION_TYPE)
                                 ActionModel(
                                     icon =
                                         chip.icon?.loadDrawable(applicationContext)
@@ -125,50 +145,53 @@ constructor(
                                                 R.drawable.ic_content_paste_spark
                                             )!!,
                                     label = title,
-                                    attribution = chip.subtitle.toString(),
+                                    attribution = chip.subtitle?.toString(),
                                     onPerformAction = {
-                                        val intent = chip.intent
-                                        val pendingIntent = chip.pendingIntent
-                                        val activityId =
-                                            chip.extras?.getParcelable<ActivityId>(
-                                                EXTRA_ACTIVITY_ID
-                                            )
-                                        val autofillId =
-                                            chip.extras?.getParcelable<AutofillId>(
-                                                EXTRA_AUTOFILL_ID
-                                            )
-                                        val token = activityId?.token
-                                        Log.v(
-                                            TAG,
-                                            "Performing action: $activityId, $autofillId, " +
-                                                "$pendingIntent, $intent",
-                                        )
-                                        if (token != null && autofillId != null) {
-                                            autofillManager?.autofillRemoteApp(
-                                                autofillId,
-                                                title,
-                                                token,
-                                                activityId.taskId,
-                                            )
-                                        } else if (pendingIntent != null) {
-                                            val options = BroadcastOptions.makeBasic()
-                                            options.isInteractive = true
-                                            options.pendingIntentBackgroundActivityStartMode =
-                                                ActivityOptions
-                                                    .MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                            try {
-                                                pendingIntent.send(options.toBundle())
-                                            } catch (e: PendingIntent.CanceledException) {
-                                                Log.e(
-                                                    TAG,
-                                                    "pending intent of $pendingIntent was canceled",
+                                        trace("performAmbientCueAction") {
+                                            val intent = chip.intent
+                                            val pendingIntent = chip.pendingIntent
+                                            val activityId =
+                                                chip.extras?.getParcelable<ActivityId>(
+                                                    EXTRA_ACTIVITY_ID
                                                 )
+                                            val autofillId =
+                                                chip.extras?.getParcelable<AutofillId>(
+                                                    EXTRA_AUTOFILL_ID
+                                                )
+                                            val token = activityId?.token
+                                            Log.v(
+                                                TAG,
+                                                "Performing action: $activityId, $autofillId, " +
+                                                    "$pendingIntent, $intent",
+                                            )
+                                            if (token != null && autofillId != null) {
+                                                autofillManager?.autofillRemoteApp(
+                                                    autofillId,
+                                                    title,
+                                                    token,
+                                                    activityId.taskId,
+                                                )
+                                            } else if (pendingIntent != null) {
+                                                val options = BroadcastOptions.makeBasic()
+                                                options.isInteractive = true
+                                                options.pendingIntentBackgroundActivityStartMode =
+                                                    ActivityOptions
+                                                        .MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                                                try {
+                                                    pendingIntent.send(options.toBundle())
+                                                } catch (e: PendingIntent.CanceledException) {
+                                                    Log.e(
+                                                        TAG,
+                                                        "pending intent of $pendingIntent was canceled",
+                                                    )
+                                                }
+                                            } else if (intent != null) {
+                                                activityStarter.startActivity(intent, false)
                                             }
-                                        } else if (intent != null) {
-                                            activityStarter.startActivity(intent, false)
                                         }
                                     },
                                     taskId = activityId?.taskId ?: INVALID_TASK_ID,
+                                    actionType = actionType,
                                 )
                             }
                     if (DEBUG) {
@@ -198,23 +221,6 @@ constructor(
                 initialValue = emptyList(),
             )
 
-    override val isTaskBarVisible: StateFlow<Boolean> =
-        conflatedCallbackFlow {
-                val callback =
-                    object : LauncherProxyListener {
-                        override fun onTaskbarStatusUpdated(visible: Boolean, stashed: Boolean) {
-                            trySend(visible && !stashed)
-                        }
-                    }
-                launcherProxyService.addCallback(callback)
-                awaitClose { launcherProxyService.removeCallback(callback) }
-            }
-            .stateIn(
-                scope = backgroundScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = false,
-            )
-
     override val isGestureNav: StateFlow<Boolean> =
         conflatedCallbackFlow {
                 val listener =
@@ -226,6 +232,12 @@ constructor(
                 awaitClose { navigationModeController.removeListener(listener) }
             }
             .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), false)
+
+    private val _isTaskBarVisible = MutableStateFlow(false)
+    override val isTaskBarVisible: StateFlow<Boolean> = _isTaskBarVisible.asStateFlow()
+
+    private val _recentsButtonPosition = MutableStateFlow<Rect?>(null)
+    override val recentsButtonPosition: StateFlow<Rect?> = _recentsButtonPosition.asStateFlow()
 
     override val isImeVisible: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -268,6 +280,7 @@ constructor(
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
         @VisibleForTesting const val EXTRA_ACTIVITY_ID = "activityId"
         @VisibleForTesting const val EXTRA_AUTOFILL_ID = "autofillId"
+        private const val EXTRA_ACTION_TYPE = "actionType"
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false

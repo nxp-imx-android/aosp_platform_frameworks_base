@@ -43,9 +43,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.android.settingslib.spa.framework.compose.thenIf
 import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 import com.android.settingslib.spa.widget.preference.Preference
@@ -60,13 +61,13 @@ fun CategoryTitle(title: String) {
         modifier =
             Modifier.padding(
                 start =
-                    if (isSpaExpressiveEnabled) SettingsDimension.paddingSmall
+                    if (isSpaExpressiveEnabled) SettingsSpace.extraSmall4
                     else SettingsDimension.itemPaddingStart,
-                top = 20.dp,
+                top = SettingsSpace.small3,
                 end =
-                    if (isSpaExpressiveEnabled) SettingsDimension.paddingSmall
+                    if (isSpaExpressiveEnabled) SettingsSpace.extraSmall4
                     else SettingsDimension.itemPaddingEnd,
-                bottom = 8.dp,
+                bottom = SettingsSpace.extraSmall4,
             ),
         color = MaterialTheme.colorScheme.primary,
         style =
@@ -90,12 +91,12 @@ fun Category(
     var displayTitle by remember { mutableStateOf(false) }
     Column(
         modifier =
-            if (isSpaExpressiveEnabled && displayTitle)
+            Modifier.thenIf(isSpaExpressiveEnabled && displayTitle) {
                 Modifier.padding(
-                    horizontal = SettingsDimension.paddingLarge,
-                    vertical = SettingsDimension.paddingSmall,
+                    horizontal = SettingsSpace.small1,
+                    vertical = SettingsSpace.extraSmall4,
                 )
-            else Modifier
+            }
     ) {
         if (title != null && displayTitle) CategoryTitle(title = title)
         Column(
@@ -104,15 +105,11 @@ fun Category(
                     .onGloballyPositioned { coordinates ->
                         displayTitle = coordinates.size.height > 0
                     }
-                    .then(
-                        if (isSpaExpressiveEnabled)
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(SettingsShape.CornerMedium2)
-                        else Modifier
-                    ),
+                    .thenIf(isSpaExpressiveEnabled) {
+                        Modifier.fillMaxWidth().clip(SettingsShape.CornerLarge2)
+                    },
             verticalArrangement =
-                if (isSpaExpressiveEnabled) Arrangement.spacedBy(SettingsDimension.paddingTiny)
+                if (isSpaExpressiveEnabled) Arrangement.spacedBy(SettingsSpace.extraSmall1)
                 else Arrangement.Top,
             content = { CompositionLocalProvider(LocalIsInCategory provides true) { content() } },
         )
@@ -145,15 +142,14 @@ fun LazyCategory(
     header: @Composable () -> Unit,
 ) {
     Column(
-        Modifier
-            .padding(
-                PaddingValues(
-                    start = SettingsDimension.paddingLarge,
-                    end = SettingsDimension.paddingLarge,
-                    top = SettingsDimension.paddingSmall,
-                    bottom = bottomPadding,
-                )
+        Modifier.padding(
+            PaddingValues(
+                start = SettingsDimension.paddingLarge,
+                end = SettingsDimension.paddingLarge,
+                top = SettingsDimension.paddingSmall,
+                bottom = bottomPadding,
             )
+        )
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -167,19 +163,25 @@ fun LazyCategory(
                 when (it) {
                     0 -> {
                         if (list.size == 1) {
-                            Column(modifier = Modifier.clip(SettingsShape.CornerMedium2)) {
-                                CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                            Column(modifier = Modifier.clip(SettingsShape.CornerLarge2)) {
+                                CompositionLocalProvider(LocalIsInCategory provides true) {
+                                    entry(it)()
+                                }
                             }
                         } else {
                             Column(modifier = Modifier.clip(SettingsShape.TopCornerMedium2)) {
-                                CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                                CompositionLocalProvider(LocalIsInCategory provides true) {
+                                    entry(it)()
+                                }
                             }
                         }
                     }
 
                     list.size - 1 -> {
                         Column(modifier = Modifier.clip(SettingsShape.BottomCornerMedium2)) {
-                            CompositionLocalProvider(LocalIsInCategory provides true) { entry(it)() }
+                            CompositionLocalProvider(LocalIsInCategory provides true) {
+                                entry(it)()
+                            }
                         }
                     }
 
@@ -235,12 +237,8 @@ private fun LazyCategoryPreview() {
                     )
                 }
             },
-            footer = @Composable {
-                Footer("Footer")
-            },
-            header = @Composable {
-                Text("Header")
-            },
+            footer = @Composable { Footer("Footer") },
+            header = @Composable { Text("Header") },
         )
     }
 }

@@ -20,6 +20,7 @@ import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.Tag
 import android.tools.flicker.assertions.SubjectsParser
+import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.flicker.subject.wm.WindowManagerStateSubject
@@ -28,8 +29,11 @@ import android.tools.io.Reader
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.surfaceflinger.LayerTraceEntry
 import android.tools.traces.wm.WindowManagerState
+import com.android.launcher3.tapl.LauncherInstrumentation.NavigationModel
 import com.android.server.wm.flicker.assertNavBarPosition
 import com.android.server.wm.flicker.assertStatusBarLayerPosition
+import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
+import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import org.junit.Rule
 import org.junit.Test
 
@@ -39,7 +43,7 @@ import org.junit.Test
  * - Launcher visibility tests: checks launcher window/layer is always visible
  * - System Bars tests; checks the visibility of navigation and status bar
  */
-abstract class BubbleFlickerTestBase {
+abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
 
     @get:Rule
     val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
@@ -50,10 +54,18 @@ abstract class BubbleFlickerTestBase {
     abstract val traceDataReader: Reader
 
     /**
+     * The event log subject.
+     */
+    override val eventLogSubject = EventLogSubject(
+        traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
+        traceDataReader
+    )
+
+    /**
      * The WindowManager trace subject, which is equivalent to the data shown in
      * `Window Manager` tab in go/winscope.
      */
-    val wmTraceSubject = WindowManagerTraceSubject(
+    override val wmTraceSubject = WindowManagerTraceSubject(
         traceDataReader.readWmTrace() ?: error("Failed to read WM trace")
     )
 
@@ -61,34 +73,38 @@ abstract class BubbleFlickerTestBase {
      * The Layer trace subject, which is equivalent to the data shown in
      * `Surface Flinger` tab in go/winscope.
      */
-    val layersTraceSubject = LayersTraceSubject(
+    override val layersTraceSubject = LayersTraceSubject(
         traceDataReader.readLayersTrace() ?: error("Failed to read layer trace")
     )
 
     /**
      * The first [WindowManagerState] of the WindowManager trace.
      */
-    val wmStateSubjectAtStart: WindowManagerStateSubject
+    final override val wmStateSubjectAtStart: WindowManagerStateSubject
 
     /**
      * The last [WindowManagerState] of the WindowManager trace.
      */
-    val wmStateSubjectAtEnd: WindowManagerStateSubject
+    final override val wmStateSubjectAtEnd: WindowManagerStateSubject
 
     /**
      * The first [LayerTraceEntry] of the Layers trace.
      */
-    val layerTraceEntrySubjectAtStart: LayerTraceEntrySubject
+    final override val layerTraceEntrySubjectAtStart: LayerTraceEntrySubject
 
     /**
      * The last [LayerTraceEntry] of the Layers trace.
      */
-    val layerTraceEntrySubjectAtEnd: LayerTraceEntrySubject
+    final override val layerTraceEntrySubjectAtEnd: LayerTraceEntrySubject
 
+    // TODO(b/396020056): Verify bubble scenarios in 3-button mode.
     /**
      * Indicates whether the device uses gesture navigation bar or not.
      */
-    abstract val isGesturalNavBar: Boolean
+    override val isGesturalNavBar = tapl.navigationModel == NavigationModel.ZERO_BUTTON
+
+    override val testApp
+        get() = BubbleFlickerTestBase.testApp
 
     /**
      * Initialize subjects inherited from [FlickerSubject].
@@ -131,7 +147,7 @@ abstract class BubbleFlickerTestBase {
 
 // endregion
 
-// Launcher visibility tests
+// region Launcher visibility tests
 
     /**
      * Verifies the launcher window is always visible.
@@ -210,4 +226,6 @@ abstract class BubbleFlickerTestBase {
     }
 
 // endregion
+
+    companion object : FlickerPropertyInitializer()
 }

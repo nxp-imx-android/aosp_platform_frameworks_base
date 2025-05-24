@@ -583,10 +583,34 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
-    fun moveToNextDisplayViaKeyboard(wmHelper: WindowManagerStateHelper) {
+    fun restartFromAppHandleMenu(wmHelper: WindowManagerStateHelper) {
+        val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
+        openMenuButton?.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+
+        val restartHandleMenu = getDesktopAppViewByRes(RESTART_BUTTON)
+        restartHandleMenu?.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+
+        val restartDialogConfirmButton =
+            getDesktopAppViewByRes(RESTART_DIALOG_RESTART_BUTTON)
+        restartDialogConfirmButton?.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
+    fun moveToNextDisplayViaKeyboard(wmHelper: WindowManagerStateHelper, expectedDisplayId: Int) {
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_D, META_META_ON or META_CTRL_ON)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+
+        wmHelper.StateSyncBuilder().apply {
+            add("App is on display #$expectedDisplayId") { dump ->
+                val display = requireNotNull(dump.wmState.getDisplay(expectedDisplayId)) {
+                    "Display $expectedDisplayId not found"
+                }
+                display.containsActivity(innerHelper)
+            }
+        }.waitForAndVerify()
     }
 
     private fun getDesktopAppViewByRes(viewResId: String): UiObject2? =
@@ -678,6 +702,9 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         const val MAXIMIZE_BUTTON_IN_MENU: String = "maximize_menu_size_toggle_button"
         const val MINIMIZE_BUTTON_VIEW: String = "minimize_window"
         const val HEADER_EMPTY_VIEW: String = "caption_handle"
+        const val OPEN_MENU_BUTTON: String = "open_menu_button"
+        const val RESTART_BUTTON: String = "handle_menu_restart_button"
+        const val RESTART_DIALOG_RESTART_BUTTON: String = "letterbox_restart_dialog_restart_button"
         val caption: BySelector
             get() = By.res(SYSTEMUI_PACKAGE, CAPTION)
         // In DesktopMode, window snap can be done with just a single window. In this case, the

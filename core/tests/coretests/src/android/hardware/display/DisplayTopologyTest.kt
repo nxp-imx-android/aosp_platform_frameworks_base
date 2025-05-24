@@ -570,7 +570,7 @@ class DisplayTopologyTest {
     }
 
     @Test
-    fun rearrange_elbowArrangementDoesNotUseCornerAdjacency1() {
+    fun rearrange_elbowArrangement1() {
         val root = rearrangeRects(
             //     2
             //     |
@@ -581,19 +581,19 @@ class DisplayTopologyTest {
             DisplayArrangement(100, 100, 160, 100f, -100f),
         )
 
-        verifyDisplay(root, id = 0, width = 100, height = 100, density = 160, noOfChildren = 1)
+        verifyDisplay(root, id = 0, width = 100, height = 100, density = 160, noOfChildren = 2)
         var node = root.children[0]
         verifyDisplay(
                 node, id = 1, width = 100, height = 100, density = 160, POSITION_RIGHT, offset = 0f,
-                noOfChildren = 1)
-        node = node.children[0]
+                noOfChildren = 0)
+        node = root.children[1]
         verifyDisplay(
-                node, id = 2, width = 100, height = 100, density = 160, POSITION_TOP,
-                offset = 0f, noOfChildren = 0)
+                node, id = 2, width = 100, height = 100, density = 160, POSITION_RIGHT,
+                offset = -100f, noOfChildren = 0)
     }
 
     @Test
-    fun rearrange_elbowArrangementDoesNotUseCornerAdjacency2() {
+    fun rearrange_elbowArrangement2() {
         val root = rearrangeRects(
             //     0
             //     |
@@ -611,19 +611,17 @@ class DisplayTopologyTest {
         var node = root.children[0]
         verifyDisplay(
                 node, id = 1, width = 100, height = 100, density = 160, POSITION_BOTTOM,
-                offset = 0f, noOfChildren = 1)
-        node = node.children[0]
+                offset = 0f, noOfChildren = 2)
         verifyDisplay(
-                node, id = 2, width = 100, height = 100, density = 160, POSITION_BOTTOM,
-                offset = 0f, noOfChildren = 1)
-        node = node.children[0]
+                node.children[0], id = 2, width = 100, height = 100, density = 160, POSITION_BOTTOM,
+                offset = 0f, noOfChildren = 0)
         verifyDisplay(
-                node, id = 3, width = 100, height = 100, density = 160, POSITION_LEFT, offset = 0f,
-                noOfChildren = 0)
+                node.children[1], id = 3, width = 100, height = 100, density = 160, POSITION_LEFT,
+                offset = 100f, noOfChildren = 0)
     }
 
     @Test
-    fun rearrange_useLargerEdge() {
+    fun rearrange_rootHasFourDirectChildren() {
         val root = rearrangeRects(
             // 444111
             // 444111
@@ -641,19 +639,19 @@ class DisplayTopologyTest {
             DisplayArrangement(30, 30, 160, 0f, 0f),
         )
 
-        verifyDisplay(root, id = 0, width = 30, height = 30, density = 160, noOfChildren = 2)
+        verifyDisplay(root, id = 0, width = 30, height = 30, density = 160, noOfChildren = 4)
         verifyDisplay(
                 root.children[0], id = 1, width = 30, height = 30, density = 160, POSITION_TOP,
-                offset = 10f, noOfChildren = 1)
+                offset = 10f, noOfChildren = 0)
         verifyDisplay(
-                root.children[0].children[0], id = 4, width = 30, height = 30, density = 160,
-                POSITION_LEFT, offset = 0f, noOfChildren = 0)
+                root.children[1], id = 2, width = 30, height = 30, density = 160,
+                POSITION_RIGHT, offset = 0f, noOfChildren = 0)
         verifyDisplay(
-                root.children[1], id = 2, width = 30, height = 30, density = 160, POSITION_RIGHT,
-                offset = 0f, noOfChildren = 1)
+                root.children[2], id = 3, width = 30, height = 30, density = 160, POSITION_BOTTOM,
+                offset = 20f, noOfChildren = 0)
         verifyDisplay(
-                root.children[1].children[0], id = 3, width = 30, height = 30, density = 160,
-                POSITION_BOTTOM, offset = -10f, noOfChildren = 0)
+                root.children[3], id = 4, width = 30, height = 30, density = 160,
+                POSITION_TOP, offset = -20f, noOfChildren = 0)
     }
 
     @Test
@@ -682,12 +680,9 @@ class DisplayTopologyTest {
     }
 
     @Test
-    fun rearrange_preferLessShiftInOverlapDimension() {
+    fun rearrange_preferLessShiftInOverlapDimension1() {
         val root = rearrangeRects(
             // '*' represents overlap
-            // Clamping requires moving display 2 and 1 slightly to avoid overlap with 0. We should
-            // shift the minimal amount to avoid overlap - e.g. display 2 shifts left (10 pixels)
-            // rather than up (20 pixels).
             // 222
             // 22*00
             // 22*00
@@ -697,12 +692,55 @@ class DisplayTopologyTest {
             DisplayArrangement(30, 30, 160, 20f, 10f),
             DisplayArrangement(30, 30, 160, 30f, 30f),
             DisplayArrangement(30, 30, 160, 0f, 0f),
+
+            // In the main body of DisplayTopology.rearrange, the parent/child relationship will
+            // be 0 -> 1 -> 2, and the absolute positions will be:
+            // 22*00
+            // 22*00
+            // 22*00
+            //    111
+            //    111
+            //    111
+            // Then normalize() will change this to 0 -> [1, 2] and positioned like this:
+            // 222000
+            // 222000
+            // 222000
+            //     111
+            //     111
+            //     111
         )
 
         verifyDisplay(root, id = 0, width = 30, height = 30, density = 160, noOfChildren = 2)
         verifyDisplay(
                 root.children[0], id = 1, width = 30, height = 30, density = 160, POSITION_BOTTOM,
                 offset = 10f, noOfChildren = 0)
+        verifyDisplay(
+                root.children[1], id = 2, width = 30, height = 30, density = 160, POSITION_LEFT,
+                offset = 0f, noOfChildren = 0)
+    }
+
+    @Test
+    fun rearrange_preferLessShiftInOverlapDimension2() {
+        val root = rearrangeRects(
+            // '*' represents overlap
+            // Clamping requires moving display 2 and 1 slightly to avoid overlap with 0. We should
+            // shift the minimal amount to avoid overlap - e.g. display 2 shifts left (10 pixels)
+            // rather than up (20 pixels).
+            // 222
+            // 22*00000
+            // 22*00000
+            //   0000**1
+            //       111
+            //       111
+            DisplayArrangement(60, 30, 160, 20f, 10f),
+            DisplayArrangement(30, 30, 160, 60f, 30f),
+            DisplayArrangement(30, 30, 160, 0f, 0f),
+        )
+
+        verifyDisplay(root, id = 0, width = 60, height = 30, density = 160, noOfChildren = 2)
+        verifyDisplay(
+                root.children[0], id = 1, width = 30, height = 30, density = 160, POSITION_BOTTOM,
+                offset = 40f, noOfChildren = 0)
         verifyDisplay(
                 root.children[1], id = 2, width = 30, height = 30, density = 160, POSITION_LEFT,
                 offset = -10f, noOfChildren = 0)
@@ -832,6 +870,32 @@ class DisplayTopologyTest {
         assertThat(root.children[0].height).isEqualTo(30f)
         assertThat(root.children[1].width).isEqualTo(20f)
         assertThat(root.children[1].height).isEqualTo(30f)
+    }
+
+    @Test
+    fun rearrange_useCornerAttachment() {
+        // Verify that 0 and 2 do not clamp directly together:
+        // 000   222
+        // 000   222
+        // 000   222
+        //    111
+        //    111
+        //    111
+        // (see b/394355269)
+
+        val root = rearrangeRects(
+            DisplayArrangement(30, 30, 160, 0f, 0f),
+            DisplayArrangement(30, 30, 160, 30f, 30f),
+            DisplayArrangement(30, 30, 160, 60f, 0f),
+        )
+
+        verifyDisplay(root, id = 0, width = 30, height = 30, density = 160, noOfChildren = 1)
+        val dis1 = root.children[0]
+        verifyDisplay(dis1, id = 1, width = 30, height = 30, density = 160,
+                POSITION_RIGHT, offset = 30f, noOfChildren = 1)
+        val dis2 = dis1.children[0]
+        verifyDisplay(dis2, id = 2, width = 30, height = 30, density = 160,
+                POSITION_RIGHT, offset = -30f, noOfChildren = 0)
     }
 
     @Test

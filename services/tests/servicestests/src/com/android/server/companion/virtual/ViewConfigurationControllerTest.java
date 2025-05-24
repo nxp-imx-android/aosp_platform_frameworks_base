@@ -19,8 +19,10 @@ package com.android.server.companion.virtual;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.companion.virtual.ViewConfigurationParams;
@@ -54,7 +56,8 @@ import java.util.List;
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @EnableFlags({Flags.FLAG_VIEWCONFIGURATION_APIS,
-        android.content.res.Flags.FLAG_DIMENSION_FRRO})
+        android.content.res.Flags.FLAG_DIMENSION_FRRO,
+        android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE})
 public class ViewConfigurationControllerTest {
 
     private static final int DEVICE_ID = 5;
@@ -74,12 +77,14 @@ public class ViewConfigurationControllerTest {
         Context context = Mockito.spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(context.getSystemService(OverlayManager.class)).thenReturn(mOverlayManagerMock);
+        when(context.createDeviceContext(anyInt())).thenReturn(context);
         mViewConfigurationController = new ViewConfigurationController(context);
     }
 
     @Test
-    public void applyViewConfigurationParams_enablesOverlay() throws Exception {
-        mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID, createParams());
+    public void applyViewConfigurationParams_enablesResourceOverlay() throws Exception {
+        mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
+                createParamsRequiringResourceOverlay());
 
         verify(mOverlayManagerMock).commit(mTransactionArgumentCaptor.capture());
         OverlayManagerTransaction transaction = mTransactionArgumentCaptor.getValue();
@@ -100,8 +105,9 @@ public class ViewConfigurationControllerTest {
     }
 
     @Test
-    public void close_disablesOverlay() throws Exception {
-        mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID, createParams());
+    public void close_disablesResourceOverlay() throws Exception {
+        mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
+                createParamsRequiringResourceOverlay());
         clearInvocations(mOverlayManagerMock);
 
         mViewConfigurationController.close();
@@ -117,7 +123,14 @@ public class ViewConfigurationControllerTest {
         assertThat(constraints).hasSize(0);
     }
 
-    private static ViewConfigurationParams createParams() {
+    @Test
+    public void applyViewConfigurationParams_doesNotEnableResourceOverlay() throws Exception {
+        mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
+                createParamsRequiringSettingsOverride());
+        verifyNoInteractions(mOverlayManagerMock);
+    }
+
+    private static ViewConfigurationParams createParamsRequiringResourceOverlay() {
         return new ViewConfigurationParams.Builder()
                 .setTapTimeoutDuration(Duration.ofMillis(10L))
                 .setDoubleTapTimeoutDuration(Duration.ofMillis(10L))
@@ -126,6 +139,13 @@ public class ViewConfigurationControllerTest {
                 .setMinimumFlingVelocityDpPerSecond(10f)
                 .setMaximumFlingVelocityDpPerSecond(10f)
                 .setTouchSlopDp(10f)
+                .build();
+    }
+
+    private static ViewConfigurationParams createParamsRequiringSettingsOverride() {
+        return new ViewConfigurationParams.Builder()
+                .setLongPressTimeoutDuration(Duration.ofMillis(10L))
+                .setMultiPressTimeoutDuration(Duration.ofMillis(20L))
                 .build();
     }
 }

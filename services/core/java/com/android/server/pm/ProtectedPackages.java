@@ -192,8 +192,8 @@ public class ProtectedPackages {
     /** Query the packages with supervision related roles. */
     private boolean isSupervisionPackage(@UserIdInt int userId, String packageName) {
         SupervisionManager supervisionManager = mContext.getSystemService(SupervisionManager.class);
-        if (supervisionManager == null || !supervisionManager.isSupervisionEnabled()) {
-            Slog.w(TAG, "Supervision is not enabled.");
+        if (supervisionManager == null) {
+            Slog.w(TAG, "Failed to get SupervisionManager.");
             return false;
         }
         final RoleManager roleManager = mContext.getSystemService(RoleManager.class);
@@ -203,6 +203,9 @@ public class ProtectedPackages {
         }
         return Binder.withCleanCallingIdentity(
                 () -> {
+                    if (!supervisionManager.isSupervisionEnabledForUser(userId)) {
+                        return false;
+                    }
                     List<String> systemSupervisionHolders =
                             roleManager.getRoleHoldersAsUser(
                                     RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId));

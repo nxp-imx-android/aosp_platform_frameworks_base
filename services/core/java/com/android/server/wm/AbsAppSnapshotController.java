@@ -18,6 +18,7 @@ package com.android.server.wm;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
+import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_SCREENSHOT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -54,6 +55,7 @@ import com.android.server.wm.utils.InsetUtils;
 import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -62,7 +64,7 @@ import java.util.function.Supplier;
  * @param <TYPE> The basic type, either Task or ActivityRecord
  * @param <CACHE> The basic cache for either Task or ActivityRecord
  */
-abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
+abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         CACHE extends SnapshotCache<TYPE>> {
     static final String TAG = TAG_WITH_CLASS_NAME ? "SnapshotController" : TAG_WM;
     /**
@@ -267,28 +269,31 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer,
             }
             return null;
         }
-        SurfaceControl[] excludeLayers;
         final WindowState imeWindow = source.getDisplayContent().mInputMethodWindow;
         // Exclude IME window snapshot when IME isn't proper to attach to app.
         final boolean excludeIme = imeWindow != null && imeWindow.getSurfaceControl() != null
                 && !source.getDisplayContent().shouldImeAttachedToApp();
         final WindowState navWindow =
                 source.getDisplayContent().getDisplayPolicy().getNavigationBar();
+        final ArrayList<SurfaceControl> excludeSurfaces = new ArrayList<>();
+        if (excludeIme) {
+            excludeSurfaces.add(imeWindow.getSurfaceControl());
+        }
         // If config_attachNavBarToAppDuringTransition is true, the nav bar will be reparent to the
         // the swiped app when entering recent app, therefore the task will contain the navigation
         // bar and we should exclude it from snapshot.
-        final boolean excludeNavBar = navWindow != null;
-        if (excludeIme && excludeNavBar) {
-            excludeLayers = new SurfaceControl[2];
-            excludeLayers[0] = imeWindow.getSurfaceControl();
-            excludeLayers[1] = navWindow.getSurfaceControl();
-        } else if (excludeIme || excludeNavBar) {
-            excludeLayers = new SurfaceControl[1];
-            excludeLayers[0] =
-                    excludeIme ? imeWindow.getSurfaceControl() : navWindow.getSurfaceControl();
-        } else {
-            excludeLayers = new SurfaceControl[0];
+        if (navWindow != null) {
+            excludeSurfaces.add(navWindow.getSurfaceControl());
         }
+        if (Flags.excludeNonMainWindowFromSnapshot()) {
+            source.forAllWindows(w -> {
+                if (w.mAnimatingExit && !w.mRemoved && w.mAttrs.type != TYPE_BASE_APPLICATION) {
+                    excludeSurfaces.add(w.getSurfaceControl());
+                }
+            }, true /* traverseTopToBottom */);
+        }
+        final SurfaceControl[] excludeLayers =
+                excludeSurfaces.toArray(new SurfaceControl[excludeSurfaces.size()]);
         builder.setHasImeSurface(!excludeIme && imeWindow != null && imeWindow.isVisible());
         final ScreenCapture.ScreenshotHardwareBuffer screenshotBuffer =
                 ScreenCapture.captureLayersExcluding(

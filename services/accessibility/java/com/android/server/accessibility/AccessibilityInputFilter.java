@@ -82,6 +82,16 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     /**
+     * Flag for disabling all InputFilter features.
+     *
+     * <p>
+     * This flag is used to disable all the enabled features, so it should not be used with other
+     * flags.
+     * <p>
+     */
+    private static final int FLAG_FEATURE_NONE = 0x00000000;
+
+    /**
      * Flag for enabling the screen magnification feature.
      *
      * @see #setUserAndEnabledFeatures(int, int)
@@ -199,8 +209,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
     private final SparseArray<TouchExplorer> mTouchExplorer = new SparseArray<>(0);
 
-    private final SparseArray<MagnificationGestureHandler> mMagnificationGestureHandler =
-            new SparseArray<>(0);
+    private final SparseArray<MagnificationGestureHandler> mMagnificationGestureHandler;
 
     @Nullable
     private FullScreenMagnificationPointerMotionEventFilter
@@ -292,16 +301,18 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
     }
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service) {
-        this(context, service, new SparseArray<>(0));
+        this(context, service, new SparseArray<>(0), new SparseArray<>(0));
     }
 
     AccessibilityInputFilter(Context context, AccessibilityManagerService service,
-            SparseArray<EventStreamTransformation> eventHandler) {
+            SparseArray<EventStreamTransformation> eventHandler,
+            SparseArray<MagnificationGestureHandler> magnificationGestureHandler) {
         super(context.getMainLooper());
         mContext = context;
         mAms = service;
         mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mEventHandler = eventHandler;
+        mMagnificationGestureHandler = magnificationGestureHandler;
     }
 
     @Override
@@ -310,7 +321,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             Slog.d(TAG, "Accessibility input filter installed.");
         }
         mInstalled = true;
-        disableFeatures();
+        disableFeatures(/* featuresToBeEnabled= */ FLAG_FEATURE_NONE);
         enableFeatures();
         mAms.onInputFilterInstalled(true);
         super.onInstalled();
@@ -322,7 +333,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             Slog.d(TAG, "Accessibility input filter uninstalled.");
         }
         mInstalled = false;
-        disableFeatures();
+        disableFeatures(/* featuresToBeEnabled= */ FLAG_FEATURE_NONE);
         mAms.onInputFilterInstalled(false);
         super.onUninstalled();
     }
@@ -615,7 +626,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             return;
         }
         if (mInstalled) {
-            disableFeatures();
+            disableFeatures(/* featuresToBeEnabled= */ enabledFeatures);
         }
         mUserId = userId;
         mEnabledFeatures = enabledFeatures;
@@ -731,7 +742,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                     });
         }
 
-        if (isAnyMagnificationEnabled()) {
+        if (isAnyMagnificationEnabled(mEnabledFeatures)) {
             final MagnificationGestureHandler magnificationGestureHandler =
                     createMagnificationGestureHandler(displayId, displayContext);
             addFirstEventHandler(displayId, magnificationGestureHandler);
@@ -763,29 +774,44 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
 
         if ((mEnabledFeatures & FLAG_FEATURE_MOUSE_KEYS) != 0) {
+            TimeSource systemClockTimeSource = new TimeSource() {
+                @Override
+                public long uptimeMillis() {
+                    return SystemClock.uptimeMillis();
+                }
+            };
             mMouseKeysInterceptor = new MouseKeysInterceptor(mAms,
                     Objects.requireNonNull(mContext.getSystemService(InputManager.class)),
                     Looper.myLooper(),
-                    Display.DEFAULT_DISPLAY);
+                    Display.DEFAULT_DISPLAY,
+                    systemClockTimeSource);
             addFirstEventHandler(Display.DEFAULT_DISPLAY, mMouseKeysInterceptor);
         }
 
-        if (Flags.enableMagnificationKeyboardControl() && isAnyMagnificationEnabled()) {
+        if (Flags.enableMagnificationKeyboardControl()
+                && isAnyMagnificationEnabled(mEnabledFeatures)) {
             mMagnificationKeyHandler = new MagnificationKeyHandler(
                     mAms.getMagnificationController());
             addFirstEventHandler(Display.DEFAULT_DISPLAY, mMagnificationKeyHandler);
         }
     }
 
-    private boolean isAnyMagnificationEnabled() {
-        return (mEnabledFeatures & FLAG_FEATURE_CONTROL_SCREEN_MAGNIFIER) != 0
-                || ((mEnabledFeatures & FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP) != 0)
-                || ((mEnabledFeatures & FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP) != 0)
-                || ((mEnabledFeatures & FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER) != 0);
+    /**
+     * Checks if any magnification feature is enabled.
+     *
+     * @param enabledFeatures An integer bitmask representing all enabled accessibility features.
+     * @return {@code true} if at least one magnification feature flag is set,
+     *         {@code false} otherwise.
+     */
+    private boolean isAnyMagnificationEnabled(int enabledFeatures) {
+        return (enabledFeatures & FLAG_FEATURE_CONTROL_SCREEN_MAGNIFIER) != 0
+                || ((enabledFeatures & FLAG_FEATURE_MAGNIFICATION_SINGLE_FINGER_TRIPLE_TAP) != 0)
+                || ((enabledFeatures & FLAG_FEATURE_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP) != 0)
+                || ((enabledFeatures & FLAG_FEATURE_TRIGGERED_SCREEN_MAGNIFIER) != 0);
     }
 
     private boolean isAnyFullScreenMagnificationEnabled() {
-        if (!isAnyMagnificationEnabled()) {
+        if (!isAnyMagnificationEnabled(mEnabledFeatures)) {
             return false;
         }
         for (final Display display : mAms.getValidDisplayList()) {
@@ -815,11 +841,19 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         mEventHandler.put(displayId, eventHandler);
     }
 
-    private void disableFeatures() {
+    /**
+     * Disables accessibility features, potentially with different handling based on
+     * features that will be enabled subsequently.
+     *
+     * @param featuresToBeEnabled Features that are expected to be enabled *after* the disabling
+     *                            operation has finished.
+     *                            See {@link #disableFeaturesForDisplay(int, int)}
+     */
+    private void disableFeatures(int featuresToBeEnabled) {
         final ArrayList<Display> displaysList = mAms.getValidDisplayList();
 
         for (int i = displaysList.size() - 1; i >= 0; i--) {
-            disableFeaturesForDisplay(displaysList.get(i).getDisplayId());
+            disableFeaturesForDisplay(displaysList.get(i).getDisplayId(), featuresToBeEnabled);
         }
         mAms.setMotionEventInjectors(null);
         disableDisplayIndependentFeatures();
@@ -829,7 +863,24 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         registerPointerMotionFilter(/* enabled= */ false);
     }
 
-    private void disableFeaturesForDisplay(int displayId) {
+    /**
+     * Disables accessibility features specifically for a given display.
+     *
+     * <p>
+     * The {@code featuresToBeEnabled} parameter influences the disabling process.
+     * It provides context about which features are expected to be active immediately
+     * after this disabling operation completes. This allows for conditional logic during
+     * disablement; for example, certain states might not be fully reset if the corresponding
+     * feature is intended to remain active or be re-enabled shortly. An example is
+     * not resetting magnification if the magnification feature flag is present in
+     * {@code featuresToBeEnabled}, even when its gesture handler is being destroyed.
+     * </p>
+     *
+     * @param displayId The ID of the display for which features should be disabled.
+     * @param featuresToBeEnabled Features that are expected to be enabled *after* the disabling
+     *                            operation has finished.
+     */
+    private void disableFeaturesForDisplay(int displayId, int featuresToBeEnabled) {
         if (DEBUG) {
             Slog.i(TAG, "disableFeaturesForDisplay() : display Id = " + displayId);
         }
@@ -848,7 +899,16 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
 
         final MagnificationGestureHandler handler = mMagnificationGestureHandler.get(displayId);
         if (handler != null) {
-            handler.onDestroy();
+            if (Flags.onlyResetMagnificationIfNeededWhenDestroyHandler()) {
+                // With the given enabledFeatures parameter if the magnification feature is still
+                // enabled, which means after the disabling there is a recreating coming, so the
+                // magnification reset is not needed.
+                handler.onDestroy(
+                        /* resetMagnification= */ !isAnyMagnificationEnabled(featuresToBeEnabled));
+            } else {
+                // The old behavior is always resetting the magnification when destroying handler
+                handler.onDestroy(/* resetMagnification= */ true);
+            }
             mMagnificationGestureHandler.remove(displayId);
         }
 
@@ -857,15 +917,17 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             mEventHandler.remove(displayId);
         }
     }
+
     void enableFeaturesForDisplayIfInstalled(Display display) {
         if (mInstalled) {
             resetStreamStateForDisplay(display.getDisplayId());
             enableFeaturesForDisplay(display);
         }
     }
+
     void disableFeaturesForDisplayIfInstalled(int displayId) {
         if (mInstalled) {
-            disableFeaturesForDisplay(displayId);
+            disableFeaturesForDisplay(displayId, /* featuresToBeEnabled= */ FLAG_FEATURE_NONE);
             resetStreamStateForDisplay(displayId);
         }
     }

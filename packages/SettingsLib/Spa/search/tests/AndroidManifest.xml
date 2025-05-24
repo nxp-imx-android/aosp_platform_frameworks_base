@@ -19,9 +19,16 @@
     package="com.android.settingslib.spa.search.test">
 
     <application>
-        <uses-library android:name="android.test.runner" />
-
         <activity android:name=".TestSpaSearchLandingActivity" />
+
+        <provider
+            android:name=".TestSpaSearchIndexablesProvider"
+            android:authorities="com.android.settingslib.spa.search.test.provider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.READ_SEARCH_INDEXABLES" />
+
+        <uses-library android:name="android.test.runner" />
     </application>
 
     <instrumentation

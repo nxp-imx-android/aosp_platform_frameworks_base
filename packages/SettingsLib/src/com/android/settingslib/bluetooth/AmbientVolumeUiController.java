@@ -69,6 +69,7 @@ public class AmbientVolumeUiController implements
     private final Set<Integer> mRangeInitializedSliderSides = new ArraySet<>();
     private CachedBluetoothDevice mCachedDevice;
     private boolean mShowUiWhenLocalDataExist = true;
+    private boolean mStarted = false;
 
     public AmbientVolumeUiController(@NonNull Context context,
             @NonNull LocalBluetoothManager bluetoothManager,
@@ -82,7 +83,6 @@ public class AmbientVolumeUiController implements
         mLocalDataManager = new HearingDeviceLocalDataManager(context);
         mLocalDataManager.setOnDeviceLocalDataChangeListener(this,
                 ThreadUtils.getBackgroundExecutor());
-        mLocalDataManager.start();
     }
 
     @VisibleForTesting
@@ -278,6 +278,10 @@ public class AmbientVolumeUiController implements
      * events.
      */
     public void start() {
+        if (mStarted) {
+            return;
+        }
+        mStarted = true;
         mEventManager.registerCallback(this);
         mLocalDataManager.start();
         mCachedDevices.forEach(device -> {
@@ -285,6 +289,7 @@ public class AmbientVolumeUiController implements
             mVolumeController.registerCallback(ThreadUtils.getBackgroundExecutor(),
                     device.getDevice());
         });
+        postOnMainThread(this::refresh);
     }
 
     /**
@@ -292,6 +297,10 @@ public class AmbientVolumeUiController implements
      * events.
      */
     public void stop() {
+        if (!mStarted) {
+            return;
+        }
+        mStarted = false;
         mEventManager.unregisterCallback(this);
         mLocalDataManager.stop();
         mCachedDevices.forEach(device -> {
@@ -337,7 +346,9 @@ public class AmbientVolumeUiController implements
 
         mAmbientLayout.setControlExpandable(mSideToDeviceMap.size() >  1);
         mAmbientLayout.setupSliders(mSideToDeviceMap);
-        refresh();
+        if (mStarted) {
+            refresh();
+        }
     }
 
     /** Refreshes the ambient volume UI. */

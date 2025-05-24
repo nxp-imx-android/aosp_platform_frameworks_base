@@ -64,7 +64,7 @@ class RootTaskDesksOrganizer(
     @VisibleForTesting
     val deskMinimizationRootsByDeskId: MutableMap<Int, DeskMinimizationRoot> = mutableMapOf()
     private val removeDeskRootRequests = mutableSetOf<Int>()
-    private val childLeashes = SparseArray<SurfaceControl>()
+    @VisibleForTesting val childLeashes = SparseArray<SurfaceControl>()
     private var onTaskInfoChangedListener: ((RunningTaskInfo) -> Unit)? = null
 
     init {

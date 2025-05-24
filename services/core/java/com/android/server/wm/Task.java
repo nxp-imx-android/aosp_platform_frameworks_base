@@ -42,6 +42,24 @@ import static android.content.pm.ActivityInfo.RESIZE_MODE_FORCE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE_AND_PIPABLE_DEPRECATED;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.HASH_CODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.TITLE;
+import static android.internal.perfetto.protos.Windowmanagerservice.IdentifierProto.USER_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.AFFINITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.BOUNDS;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.CREATED_BY_ORGANIZER;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.FILLS_PARENT;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.HAS_CHILD_PIP_ACTIVITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.LAST_NON_FULLSCREEN_BOUNDS;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.ORIG_ACTIVITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.REAL_ACTIVITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.RESIZE_MODE;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.RESUMED_ACTIVITY;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.ROOT_TASK_ID;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.SURFACE_HEIGHT;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.SURFACE_WIDTH;
+import static android.internal.perfetto.protos.Windowmanagerservice.TaskProto.TASK_FRAGMENT;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.TASK;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
 import static android.view.Display.DEFAULT_DISPLAY;
@@ -83,31 +101,13 @@ import static com.android.server.wm.ActivityTaskSupervisor.DEFER_RESUME;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
 import static com.android.server.wm.ActivityTaskSupervisor.REMOVE_FROM_RECENTS;
 import static com.android.server.wm.ActivityTaskSupervisor.printThisActivity;
-import static com.android.server.wm.IdentifierProto.HASH_CODE;
-import static com.android.server.wm.IdentifierProto.TITLE;
-import static com.android.server.wm.IdentifierProto.USER_ID;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_ALLOWLISTED;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_DONT_LOCK;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_LAUNCHABLE;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_LAUNCHABLE_PRIV;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_PINNABLE;
-import static com.android.server.wm.TaskProto.AFFINITY;
-import static com.android.server.wm.TaskProto.BOUNDS;
-import static com.android.server.wm.TaskProto.CREATED_BY_ORGANIZER;
-import static com.android.server.wm.TaskProto.FILLS_PARENT;
-import static com.android.server.wm.TaskProto.HAS_CHILD_PIP_ACTIVITY;
-import static com.android.server.wm.TaskProto.LAST_NON_FULLSCREEN_BOUNDS;
-import static com.android.server.wm.TaskProto.ORIG_ACTIVITY;
-import static com.android.server.wm.TaskProto.REAL_ACTIVITY;
-import static com.android.server.wm.TaskProto.RESIZE_MODE;
-import static com.android.server.wm.TaskProto.RESUMED_ACTIVITY;
-import static com.android.server.wm.TaskProto.ROOT_TASK_ID;
-import static com.android.server.wm.TaskProto.SURFACE_HEIGHT;
-import static com.android.server.wm.TaskProto.SURFACE_WIDTH;
-import static com.android.server.wm.TaskProto.TASK_FRAGMENT;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
-import static com.android.server.wm.WindowContainerChildProto.TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_ROOT_TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
@@ -141,6 +141,7 @@ import android.content.res.Configuration;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.internal.perfetto.protos.Windowmanagerservice.TaskProto;
 import android.os.Binder;
 import android.os.Debug;
 import android.os.Handler;
@@ -693,7 +694,9 @@ class Task extends TaskFragment {
         mResizeMode = resizeMode;
         if (info != null) {
             setIntent(_intent, info);
-            setMinDimensions(info);
+            if (!Flags.updateTaskMinDimensionsWithRootActivity()) {
+                setMinDimensions(info);
+            }
         } else {
             intent = _intent;
             mMinWidth = minWidth;
@@ -720,7 +723,9 @@ class Task extends TaskFragment {
         voiceSession = _voiceSession;
         voiceInteractor = _voiceInteractor;
         setIntent(activity, intent, info);
-        setMinDimensions(info);
+        if (!Flags.updateTaskMinDimensionsWithRootActivity()) {
+            setMinDimensions(info);
+        }
         // Before we began to reuse a root task as the leaf task, we used to
         // create a leaf task in this case. Therefore now we won't send out the task created
         // notification when we decide to reuse it here, so we send out the notification below.
@@ -1049,8 +1054,17 @@ class Task extends TaskFragment {
         } else {
             autoRemoveRecents = false;
         }
+        boolean shouldUpdateTaskDescription = false;
         if (mResizeMode != info.resizeMode) {
             mResizeMode = info.resizeMode;
+            shouldUpdateTaskDescription = true;
+        }
+        if (Flags.updateTaskMinDimensionsWithRootActivity()) {
+            if (setMinDimensions(info)) {
+                shouldUpdateTaskDescription = true;
+            }
+        }
+        if (shouldUpdateTaskDescription) {
             updateTaskDescription();
         }
         mSupportsPictureInPicture = info.supportsPictureInPicture();
@@ -1063,15 +1077,33 @@ class Task extends TaskFragment {
         }
     }
 
-    /** Sets the original minimal width and height. */
-    void setMinDimensions(ActivityInfo info) {
+    /** Sets the original minimal width and height. Returns true if changed. */
+    @VisibleForTesting
+    boolean setMinDimensions(ActivityInfo info) {
+        final int minWidth;
+        final int minHeight;
         if (info != null && info.windowLayout != null) {
-            mMinWidth = info.windowLayout.minWidth;
-            mMinHeight = info.windowLayout.minHeight;
+            minWidth = info.windowLayout.minWidth;
+            minHeight = info.windowLayout.minHeight;
         } else {
-            mMinWidth = INVALID_MIN_SIZE;
-            mMinHeight = INVALID_MIN_SIZE;
+            minWidth = INVALID_MIN_SIZE;
+            minHeight = INVALID_MIN_SIZE;
         }
+
+        if (mMinWidth == minWidth && mMinHeight == minHeight) {
+            return false;
+        }
+        mMinWidth = minWidth;
+        mMinHeight = minHeight;
+        if (Flags.updateTaskMinDimensionsWithRootActivity()) {
+            // Only update for pure TaskFragment.
+            forAllTaskFragments(tf -> {
+                if (tf.asTask() == null) {
+                    tf.setMinDimensions(minWidth, minHeight);
+                }
+            });
+        }
+        return true;
     }
 
     /**
@@ -1844,7 +1876,11 @@ class Task extends TaskFragment {
      *         {@link TaskDisplayArea}.
      */
     boolean supportsFreeformInDisplayArea(@Nullable TaskDisplayArea tda) {
-        return mAtmService.mSupportsFreeformWindowManagement
+        return tda != null
+                && tda.isWindowingModeSupported(WINDOWING_MODE_FREEFORM,
+                        mAtmService.mSupportsMultiWindow,
+                        mAtmService.mSupportsFreeformWindowManagement,
+                        mAtmService.mSupportsPictureInPicture)
                 && supportsMultiWindowInDisplayArea(tda);
     }
 
@@ -2584,9 +2620,13 @@ class Task extends TaskFragment {
 
     /** Return the top-most leaf-task under this one, or this task if it is a leaf. */
     public Task getTopLeafTask() {
+        return getTopLeafTask(alwaysTruePredicate());
+    }
+
+    Task getTopLeafTask(Predicate<Task> filter) {
         for (int i = mChildren.size() - 1; i >= 0; --i) {
             final Task child = mChildren.get(i).asTask();
-            if (child == null) continue;
+            if (child == null || !filter.test(child)) continue;
             return child.getTopLeafTask();
         }
         return this;
@@ -4629,6 +4669,10 @@ class Task extends TaskFragment {
      * activity manifest. This flag is set by WM Shell to disable PiP for the current Task status.
      */
     boolean isDisablePip() {
+        final DisplayContent dc = getDisplayContent();
+        if (dc == null || !dc.isWindowingModeSupported(WINDOWING_MODE_PINNED)) {
+            return true;
+        }
         if (!Flags.disallowBubbleToEnterPip()) {
             return false;
         }
@@ -6282,6 +6326,9 @@ class Task extends TaskFragment {
         }
 
         if (canBeLaunchedOnDisplay(newParent.getDisplayId())) {
+            if (!newParent.isWindowingModeSupported(getRequestedOverrideWindowingMode())) {
+                setWindowingMode(WINDOWING_MODE_UNDEFINED);
+            }
             reparent(newParent, onTop ? POSITION_TOP : POSITION_BOTTOM);
             newParent.onTaskMoved(this, onTop, !onTop);
         } else {
@@ -6781,7 +6828,7 @@ class Task extends TaskFragment {
                 }
             }
 
-            if (!TaskDisplayArea.isWindowingModeSupported(mWindowingMode,
+            if (!tda.isWindowingModeSupported(mWindowingMode,
                     mAtmService.mSupportsMultiWindow,
                     mAtmService.mSupportsFreeformWindowManagement,
                     mAtmService.mSupportsPictureInPicture)) {

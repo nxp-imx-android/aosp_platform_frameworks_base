@@ -60,7 +60,6 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         private DeviceStateCache mDeviceStateCache;
 
         public boolean mIsHeadlessSystemUserMode = false;
-        public boolean mIsMainUserPermanentAdmin = false;
 
         public MockInjector(Context context, LockSettingsStorage storage,
                 LockSettingsStrongAuth strongAuth,
@@ -148,11 +147,6 @@ public class LockSettingsServiceTestable extends LockSettingsService {
         @Override
         public boolean isHeadlessSystemUserMode() {
             return mIsHeadlessSystemUserMode;
-        }
-
-        @Override
-        public boolean isMainUserPermanentAdmin() {
-            return mIsMainUserPermanentAdmin;
         }
     }
 

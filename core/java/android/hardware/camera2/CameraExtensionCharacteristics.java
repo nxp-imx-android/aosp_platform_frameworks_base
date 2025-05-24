@@ -52,6 +52,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
+import android.util.SparseArray;
 
 import com.android.internal.camera.flags.Flags;
 
@@ -819,21 +820,24 @@ public final class CameraExtensionCharacteristics {
      */
     public @NonNull List<Integer> getSupportedExtensions() {
         ArrayList<Integer> ret = new ArrayList<>();
-        final IBinder token = new Binder(TAG + "#getSupportedExtensions:" + mCameraId);
-
         IntArray extensionList = new IntArray(EXTENSION_LIST.length);
         extensionList.addAll(EXTENSION_LIST);
+        SparseArray<IBinder> tokens = new SparseArray<>();
 
-        for (int extensionType : extensionList.toArray()) {
-            try {
+        try {
+            for (int extensionType : extensionList.toArray()) {
+                final IBinder token = new Binder(TAG + "#getSupportedExtensions:" + mCameraId);
                 boolean success = registerClient(mContext, token, extensionType, mCameraId,
                         mCharacteristicsMapNative);
                 if (success && isExtensionSupported(mCameraId, extensionType,
                         mCharacteristicsMapNative)) {
                     ret.add(extensionType);
+                    tokens.put(extensionType, token);
                 }
-            } finally {
-                unregisterClient(mContext, token, extensionType);
+            }
+        } finally {
+            for (int i = 0; i < tokens.size(); i++) {
+                unregisterClient(mContext, tokens.valueAt(i), tokens.keyAt(i));
             }
         }
 

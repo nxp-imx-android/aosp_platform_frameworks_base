@@ -257,17 +257,19 @@ class TestPhoneWindowManager {
      * @param context The {@Context} to be used in any Context-related actions.
      * @param supportSettingsUpdate {@code true} if this object should read and listen to provider
      *      settings values.
+     * @param supportFeature The feature will be supported. Empty string if no specific feature to
+     *      be provided.
      */
-    TestPhoneWindowManager(Context context, boolean supportSettingsUpdate) {
+    TestPhoneWindowManager(Context context, boolean supportSettingsUpdate, String supportFeature) {
         MockitoAnnotations.initMocks(this);
         mContext = mockingDetails(context).isSpy() ? context : spy(context);
         mGestureLauncherService = spy(new GestureLauncherService(mContext, mMetricsLogger,
                 mQuickAccessWalletClient, mUiEventLogger));
-        setUp(supportSettingsUpdate);
+        setUp(supportSettingsUpdate, supportFeature);
         mTestLooper.dispatchAll();
     }
 
-    private void setUp(boolean supportSettingsUpdate) {
+    private void setUp(boolean supportSettingsUpdate, String supportFeature) {
         // Use stubOnly() to reduce memory usage if it doesn't need verification.
         final MockSettings spyStubOnly = withSettings().stubOnly()
                 .defaultAnswer(CALLS_REAL_METHODS);
@@ -335,7 +337,10 @@ class TestPhoneWindowManager {
         doReturn(mAccessibilityManager).when(mContext).getSystemService(
                 eq(AccessibilityManager.class));
         doReturn(false).when(mAccessibilityManager).isEnabled();
-        doReturn(false).when(mPackageManager).hasSystemFeature(any());
+        doReturn(true).when(mPackageManager).hasSystemFeature(eq(supportFeature));
+        doReturn(false)
+                .when(mPackageManager)
+                .hasSystemFeature(AdditionalMatchers.not(eq(supportFeature)));
         doReturn(false).when(mTelecomManager).isInCall();
         doReturn(false).when(mTelecomManager).isRinging();
         doReturn(mTelecomManager).when(mPhoneWindowManager).getTelecommService();
@@ -392,7 +397,7 @@ class TestPhoneWindowManager {
         doNothing().when(mContext).startActivityAsUser(any(), any());
         doNothing().when(mContext).startActivityAsUser(any(), any(), any());
 
-        KeyInterceptionInfo interceptionInfo = new KeyInterceptionInfo(0, 0, null, 0);
+        KeyInterceptionInfo interceptionInfo = new KeyInterceptionInfo(0, 0, 0, null, 0);
         doReturn(interceptionInfo)
                 .when(mWindowManagerInternal).getKeyInterceptionInfoFromToken(any());
 
@@ -695,6 +700,11 @@ class TestPhoneWindowManager {
         verify(mDreamManagerInternal).requestDream();
     }
 
+    void assertDreamStopped() {
+        mTestLooper.dispatchAll();
+        verify(mDreamManagerInternal).stopDream(eq(false), anyString());
+    }
+
     void assertPowerSleep() {
         mTestLooper.dispatchAll();
         verify(mPowerManager).goToSleep(anyLong(), anyInt(), anyInt());
@@ -889,6 +899,11 @@ class TestPhoneWindowManager {
     void assertGoToHomescreen() {
         mTestLooper.dispatchAll();
         verify(mPhoneWindowManager).launchHomeFromHotKey(anyInt());
+    }
+
+    void assertNotGoToHomescreen() {
+        mTestLooper.dispatchAll();
+        verify(mPhoneWindowManager, never()).launchHomeFromHotKey(anyInt());
     }
 
     void assertOpenAllAppView() {

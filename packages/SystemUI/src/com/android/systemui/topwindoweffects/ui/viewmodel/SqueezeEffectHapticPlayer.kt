@@ -41,31 +41,47 @@ constructor(
             VibrationEffect.Composition.PRIMITIVE_TICK,
         )
 
-    private fun buildInvocationHaptics(totalDurationMillis: Int) =
-        SqueezeEffectHapticsBuilder.createInvocationHaptics(
+    private fun buildZoomOutHaptics(durationMillis: Int) =
+        SqueezeEffectHapticsBuilder.createZoomOutEffect(
             lowTickDuration = primitiveDurations[0],
             quickRiseDuration = primitiveDurations[1],
             tickDuration = primitiveDurations[2],
-            totalEffectDuration = totalDurationMillis,
+            effectDuration = durationMillis,
         )
+
+    private val lppIndicationEffect = SqueezeEffectHapticsBuilder.createLppIndicatorEffect()
 
     private var vibrationJob: Job? = null
 
-    fun start(totalDurationMillis: Int) {
+    fun startZoomOutEffect(durationMillis: Int) {
         cancel()
-        val invocationHaptics = buildInvocationHaptics(totalDurationMillis)
-        if (invocationHaptics.initialDelay <= 0) {
-            vibrate(invocationHaptics.vibration)
+        val zoomOutHaptics = buildZoomOutHaptics(durationMillis)
+        if (zoomOutHaptics.initialDelay <= 0) {
+            vibrate(zoomOutHaptics)
         } else {
             vibrationJob =
                 applicationScope.launch {
-                    delay(invocationHaptics.initialDelay.toLong())
+                    delay(zoomOutHaptics.initialDelay.toLong())
                     if (isActive) {
-                        vibrate(invocationHaptics.vibration)
+                        vibrate(zoomOutHaptics)
                     }
                     vibrationJob = null
                 }
         }
+    }
+
+    fun playRumble(rumbleDuration: Int) {
+        val effect =
+            SqueezeEffectHapticsBuilder.createRumbleEffect(
+                rumbleDuration = rumbleDuration,
+                lowTickDuration = primitiveDurations[0],
+            )
+        vibrate(effect)
+    }
+
+    fun playLppIndicator() {
+        vibratorHelper.cancel()
+        vibrate(lppIndicationEffect)
     }
 
     fun cancel() {
@@ -74,8 +90,11 @@ constructor(
         vibratorHelper.cancel()
     }
 
-    private fun vibrate(vibrationEffect: VibrationEffect) =
-        vibratorHelper.vibrate(vibrationEffect, SqueezeEffectHapticsBuilder.VIBRATION_ATTRIBUTES)
+    private fun vibrate(effect: SqueezeEffectHapticsBuilder.SqueezeEffectHaptics?) {
+        effect?.let {
+            vibratorHelper.vibrate(it.vibration, SqueezeEffectHapticsBuilder.VIBRATION_ATTRIBUTES)
+        }
+    }
 
     @AssistedFactory
     interface Factory {

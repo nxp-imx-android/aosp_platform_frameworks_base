@@ -45,6 +45,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSIT
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
 import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
@@ -70,6 +71,7 @@ import android.view.InputEventReceiver;
 import android.view.InputMonitor;
 import android.view.InsetsState;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.View;
@@ -146,8 +148,8 @@ import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
-import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
+import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionTracker;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
@@ -810,11 +812,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (decoration == null) {
             return;
         }
-        openInBrowser(intent, decoration.getUser());
+        openInBrowser(intent, decoration.getUser(), decoration.mTaskInfo.displayId);
     }
 
-    private void openInBrowser(@NonNull Intent intent, @NonNull UserHandle userHandle) {
-        mContext.startActivityAsUser(intent, userHandle);
+    private void openInBrowser(
+            @NonNull Intent intent, @NonNull UserHandle userHandle, int displayId) {
+        final ActivityOptions options = ActivityOptions.makeBasic().setLaunchDisplayId(displayId);
+        mContext.startActivityAsUser(intent, options.toBundle(), userHandle);
     }
 
     private void moveToDesktop(int taskId, DesktopModeTransitionSource source) {
@@ -850,7 +854,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mBgExecutor.execute(() -> {
             final ArrayList<Pair<Integer, TaskSnapshot>> snapshotList =
                     getTaskSnapshots(decor.mTaskInfo);
-            mMainExecutor.execute(() -> decor.createManageWindowsMenu(snapshotList));
+            if (!snapshotList.isEmpty()) {
+                mMainExecutor.execute(() -> decor.createManageWindowsMenu(snapshotList));
+            }
         });
     }
 
@@ -915,30 +921,30 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     ActivityManager.RECENT_WITH_EXCLUDED,
                     activityManager.getCurrentUser().id);
         } catch (RemoteException e) {
-            throw new RuntimeException(e);
+            ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                    "%s: Error getting recent tasks: %s", TAG, e);
+            return new ArrayList<>();
         }
         final String callerPackageName = callerTaskInfo.baseActivity.getPackageName();
         for (ActivityManager.RecentTaskInfo info : recentTasks) {
-            if (info.taskId == callerTaskInfo.taskId || info.baseActivity == null) continue;
+            if (info.baseActivity == null) continue;
             final String infoPackageName = info.baseActivity.getPackageName();
             if (!infoPackageName.equals(callerPackageName)) {
                 continue;
             }
-            if (info.baseActivity != null) {
-                if (callerPackageName.equals(infoPackageName)) {
-                    // TODO(b/337903443): Fix this returning null for freeform tasks.
-                    try {
-                        TaskSnapshot screenshot = activityTaskManagerService
-                                .getTaskSnapshot(info.taskId, false);
-                        if (screenshot == null) {
-                            screenshot = activityTaskManagerService
-                                    .takeTaskSnapshot(info.taskId, false);
-                        }
-                        snapshotList.add(new Pair(info.taskId, screenshot));
-                    } catch (RemoteException e) {
-                        throw new RuntimeException(e);
-                    }
+            // TODO(b/337903443): Fix this returning null for freeform tasks.
+            try {
+                TaskSnapshot screenshot = activityTaskManagerService
+                        .getTaskSnapshot(info.taskId, false);
+                if (screenshot == null) {
+                    screenshot = activityTaskManagerService
+                            .takeTaskSnapshot(info.taskId, false);
                 }
+                snapshotList.add(new Pair(info.taskId, screenshot));
+            } catch (RemoteException e) {
+                ProtoLog.e(WM_SHELL_DESKTOP_MODE,
+                        "%s: Error getting task snapshot for task %d: %s", TAG, info.taskId, e);
+                return new ArrayList<>();
             }
         }
         return snapshotList;
@@ -1032,7 +1038,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTilingDecorViewModel.onDeskRemoved(deskId);
     }
 
-    private class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
+    @VisibleForTesting
+    public class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
             implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
             View.OnGenericMotionListener, DragDetector.MotionEventHandler {
         private static final long APP_HANDLE_HOLD_TO_DRAG_DURATION_MS = 100;
@@ -1046,6 +1053,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private final GestureDetector mGestureDetector;
         private final int mDisplayId;
         private final Rect mOnDragStartInitialBounds = new Rect();
+        private final Rect mCurrentBounds = new Rect();
 
         /**
          * Whether to pilfer the next motion event to send cancellations to the windows below.
@@ -1062,6 +1070,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private boolean mLongClickDisabled;
         private int mDragPointerId = -1;
         private MotionEvent mMotionEvent;
+        private int mCurrentPointerIconType = PointerIcon.TYPE_ARROW;
 
         private DesktopModeTouchEventListener(
                 RunningTaskInfo taskInfo,
@@ -1352,6 +1361,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                 e.getRawY(0));
                         updateDragStatus(decoration, e);
                         mOnDragStartInitialBounds.set(initialBounds);
+                        mCurrentBounds.set(initialBounds);
                     }
                     // Do not consume input event if a button is touched, otherwise it would
                     // prevent the button's ripple effect from showing.
@@ -1367,17 +1377,36 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mDragPointerId = e.getPointerId(0);
                     }
                     final int dragPointerIdx = e.findPointerIndex(mDragPointerId);
-                    final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningMove(
-                            e.getDisplayId(),
-                            e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
+
+                    if (DesktopExperienceFlags
+                            .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
+                        final boolean inDesktopModeDisplay = isDisplayInDesktopMode(
+                                e.getDisplayId());
+                        // TODO: b/418651425 - Use a more specific pointer icon when available.
+                        updatePointerIcon(e, dragPointerIdx, v.getViewRootImpl().getInputToken(),
+                                inDesktopModeDisplay ? PointerIcon.TYPE_ARROW
+                                        : PointerIcon.TYPE_NO_DROP);
+                        // Allow bounds update only when cursor is on desktop-mode displays.
+                        // Otherwise, ignore the MOVE event and the window holds its current bounds.
+                        if (inDesktopModeDisplay) {
+                            mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
+                                    e.getDisplayId(),
+                                    e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
+                        }
+                    } else {
+                        mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
+                                e.getDisplayId(),
+                                e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
+                    }
+
                     mDesktopTasksController.onDragPositioningMove(taskInfo,
-                            decoration.mTaskSurface,
+                            decoration.getLeash(),
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx),
                             e.getRawY(dragPointerIdx),
-                            newTaskBounds);
+                            mCurrentBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
-                    if (mIsDragging || !newTaskBounds.equals(mOnDragStartInitialBounds)) {
+                    if (mIsDragging || !mCurrentBounds.equals(mOnDragStartInitialBounds)) {
                         updateDragStatus(decoration, e);
                     }
                     return true;
@@ -1397,11 +1426,23 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningEnd(
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
+
+                    if (DesktopExperienceFlags
+                            .ENABLE_BLOCK_NON_DESKTOP_DISPLAY_WINDOW_DRAG_BUGFIX.isTrue()) {
+                        updatePointerIcon(e, dragPointerIdx, v.getViewRootImpl().getInputToken(),
+                                PointerIcon.TYPE_ARROW);
+                        // If the cursor ends on a non-desktop-mode display, revert the window
+                        // to its initial bounds prior to the drag starting.
+                        if (!isDisplayInDesktopMode(e.getDisplayId())) {
+                            newTaskBounds.set(mOnDragStartInitialBounds);
+                        }
+                    }
+
                     // Tasks bounds haven't actually been updated (only its leash), so pass to
                     // DesktopTasksController to allow secondary transformations (i.e. snap resizing
                     // or transforming to fullscreen) before setting new task bounds.
                     mDesktopTasksController.onDragPositioningEnd(
-                            taskInfo, decoration.mTaskSurface,
+                            taskInfo, decoration.getLeash(),
                             e.getDisplayId(),
                             new PointF(e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)),
                             newTaskBounds, decoration.calculateValidDragArea(),
@@ -1418,6 +1459,21 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 }
             }
             return true;
+        }
+
+        private void updatePointerIcon(MotionEvent e, int dragPointerIdx, IBinder inputToken,
+                int iconType) {
+            if (mCurrentPointerIconType == iconType) {
+                return;
+            }
+            mInputManager.setPointerIcon(PointerIcon.getSystemIcon(mContext, iconType),
+                    e.getDisplayId(), e.getDeviceId(), e.getPointerId(dragPointerIdx), inputToken);
+            mCurrentPointerIconType = iconType;
+        }
+
+        private boolean isDisplayInDesktopMode(int displayId) {
+            return mDesktopState.isDesktopModeSupportedOnDisplay(displayId)
+                    && mDesktopTasksController.getActiveDeskId(displayId) != null;
         }
 
         private void updateDragStatus(DesktopModeWindowDecoration decor, MotionEvent e) {

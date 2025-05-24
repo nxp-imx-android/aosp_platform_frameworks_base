@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.phone.ongoingcall.shared.model
 
-import android.app.Flags
 import android.app.PendingIntent
 import com.android.internal.logging.InstanceId
 import com.android.systemui.activity.data.repository.activityManagerRepository
@@ -28,7 +27,6 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
@@ -48,6 +46,7 @@ fun inCallModel(
     promotedContent: PromotedNotificationContentModels? = null,
     isAppVisible: Boolean = false,
     instanceId: InstanceId? = null,
+    packageName: String = "fake.package.name",
 ) =
     OngoingCallModel.InCall(
         startTimeMs,
@@ -59,6 +58,7 @@ fun inCallModel(
         promotedContent,
         isAppVisible,
         instanceId,
+        packageName,
     )
 
 object OngoingCallTestHelper {
@@ -93,6 +93,7 @@ object OngoingCallTestHelper {
         appName: String = "Fake name",
         isAppVisible: Boolean = false,
         instanceId: InstanceId? = null,
+        packageName: String = "fake.package.name",
     ) {
         val actualPromotedContent =
             when (promotedContent) {
@@ -116,6 +117,7 @@ object OngoingCallTestHelper {
                     uid = uid,
                     appName = appName,
                     instanceId = instanceId,
+                    packageName = packageName,
                 )
             )
         } else {
@@ -130,6 +132,7 @@ object OngoingCallTestHelper {
                     promotedContent = actualPromotedContent,
                     isAppVisible = isAppVisible,
                     instanceId = instanceId,
+                    packageName = packageName,
                 )
             )
         }

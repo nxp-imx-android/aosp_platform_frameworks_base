@@ -46,6 +46,7 @@ import org.mockito.kotlin.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
+@android.platform.test.annotations.EnabledOnRavenwood
 class LowLightClockDreamActionTest : SysuiTestCase() {
     val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

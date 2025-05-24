@@ -35,6 +35,7 @@ import org.mockito.kotlin.verify
 /** Tests for [ExtraDimDialogReceiver]. */
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class ExtraDimDialogReceiverTest : SysuiTestCase() {
     @get:Rule val mockitoRule: MockitoRule = MockitoJUnit.rule()
 

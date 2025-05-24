@@ -257,7 +257,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableSceneContainer
     public void testIntrinsicStackHeight() {
         int stackHeight = 300;
-        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), anyInt(), anyFloat()))
+        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), anyInt(), anyFloat(), any()))
                 .thenReturn((float) stackHeight);
 
         mStackScroller.updateIntrinsicStackHeight();
@@ -382,7 +382,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableSceneContainer
     public void updateStackEndHeightAndStackHeight_maxNotificationsSet_withSceneContainer() {
         float stackHeight = 300f;
-        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), anyInt(), anyFloat()))
+        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), anyInt(), anyFloat(), any()))
                 .thenReturn(stackHeight);
         mStackScroller.setMaxDisplayedNotifications(3); // any non-zero amount
 
@@ -893,7 +893,8 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @DisableSceneContainer // TODO(b/312473478): address disabled test
     public void setFractionToShade_recomputesStackHeight() {
         mStackScroller.setFractionToShade(1f);
-        verify(mStackSizeCalculator).computeHeight(any(), anyInt(), anyFloat());
+        verify(mStackSizeCalculator).computeHeight(
+                any(), anyInt(), anyFloat(), eq("updateContentHeight"));
     }
 
     @Test
@@ -1056,10 +1057,18 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         float stackViewPortHeight = stackCutoff - stackTop;
         mStackScroller.setStackTop(stackTop);
         mStackScroller.setStackCutoff(stackCutoff);
-        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), eq(-1), anyFloat()))
-                .thenReturn((float) fullStackHeight);
-        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), eq(maxNotifs), anyFloat()))
-                .thenReturn((float) limitedStackHeight);
+        when(mStackSizeCalculator.computeHeight(
+                eq(mStackScroller),
+                eq(-1),
+                anyFloat(),
+                any())
+        ).thenReturn((float) fullStackHeight);
+        when(mStackSizeCalculator.computeHeight(
+                eq(mStackScroller),
+                eq(maxNotifs),
+                anyFloat(),
+                any())
+        ).thenReturn((float) limitedStackHeight);
 
         // When we set a limit on max displayed notifications
         mStackScroller.setMaxDisplayedNotifications(maxNotifs);
@@ -1088,8 +1097,12 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // Given we have a limit on max displayed notifications
         int stackHeightBeforeUpdate = 100;
-        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), eq(maxNotifs), anyFloat()))
-                .thenReturn((float) stackHeightBeforeUpdate);
+        when(mStackSizeCalculator.computeHeight(
+                eq(mStackScroller),
+                eq(maxNotifs),
+                anyFloat(),
+                any())
+        ).thenReturn((float) stackHeightBeforeUpdate);
         mStackScroller.setMaxDisplayedNotifications(maxNotifs);
 
         // And the stack heights are set
@@ -1098,8 +1111,12 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
         // When a child changes its height
         int stackHeightAfterUpdate = 300;
-        when(mStackSizeCalculator.computeHeight(eq(mStackScroller), eq(maxNotifs), anyFloat()))
-                .thenReturn((float) stackHeightAfterUpdate);
+        when(mStackSizeCalculator.computeHeight(
+                eq(mStackScroller),
+                eq(maxNotifs),
+                anyFloat(),
+                any())
+        ).thenReturn((float) stackHeightAfterUpdate);
         mStackScroller.onChildHeightChanged(row, /* needsAnimation = */ false);
 
         // Then the stack heights are updated

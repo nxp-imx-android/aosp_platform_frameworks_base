@@ -47,6 +47,7 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import android.view.selectiontoolbar.ISelectionToolbarCallback;
 import android.view.selectiontoolbar.SelectionToolbarManager;
@@ -153,6 +154,14 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             MenuItem.OnMenuItemClickListener menuItemClickListener, Rect contentRect) {
         Objects.requireNonNull(menuItems);
         Objects.requireNonNull(menuItemClickListener);
+
+        ViewRootImpl viewRootImpl = mParent.getViewRootImpl();
+        if (viewRootImpl == null) {
+            Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                    "RemoteFloatingToolbarPopup.show(): viewRootImpl is null.");
+            return;
+        }
+
         if (isShowing() && Objects.equals(menuItems, mMenuItems)
                 && Objects.equals(contentRect, mContentRect)) {
             if (DEBUG) {
@@ -188,7 +197,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         showInfo.contentRect = contentRect;
         showInfo.suggestedWidth = suggestWidth;
         showInfo.viewPortOnScreen = mScreenViewPort;
-        showInfo.hostInputToken = mParent.getViewRootImpl().getInputToken();
+        showInfo.hostInputToken = viewRootImpl.getInputToken();
         showInfo.isLightTheme = mIsLightTheme;
         showInfo.configuration = mContext.getResources().getConfiguration();
         if (DEBUG) {

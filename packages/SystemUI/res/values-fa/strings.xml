@@ -203,6 +203,14 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"راستی‌آزمایی‌شده"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"لغو اصالت‌سنجی"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"گزینه‌های بیشتر"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استفاده از پین"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استفاده از الگو"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"استفاده از گذرواژه"</string>
@@ -270,6 +278,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"در حال شارژ باتری، <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> درصد"</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"شارژ باتری <xliff:g id="PERCENTAGE">%d</xliff:g> درصد است. شارژ شدن برای محافظت از باتری موقتاً متوقف شد."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"شارژ باتری <xliff:g id="PERCENTAGE">%1$d</xliff:g> درصد، <xliff:g id="TIME">%2$s</xliff:g>. شارژ شدن برای محافظت از باتری موقتاً متوقف شد."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"باتری <xliff:g id="NUMBER">%d</xliff:g> درصد شارژ دارد. «بهینه‌سازی باتری» روشن است."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"دیدن همه اعلان‌ها"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"تله‌تایپ فعال شد."</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"زنگ لرزشی."</string>
@@ -280,6 +289,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"تنظیمات سریع."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"تنظیمات فوری و کشوی اعلانات."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"صفحه قفل"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"صفحه قفل کاری"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"بستن"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"سکوت کامل"</string>
@@ -374,6 +385,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# دستگاه}one{# دستگاه}other{# دستگاه}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"چراغ قوه"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"دوربین درحال استفاده"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"داده تلفن همراه"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"مصرف داده"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"داده‌های باقی‌مانده"</string>
@@ -812,6 +827,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"روشن کردن"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"روشن - براساس چهره"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"بی‌صدا و بسته‌ای"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"برای <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"حراج‌ها، ویژگی‌های جدید، و…"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"برترین داستان‌ها، سرمقاله‌ها، و…"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"پسندیدن‌ها، پست‌ها، و…"</string>
@@ -839,10 +855,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> از ویژگی‌های مکالمه پشتیبانی نمی‌کند"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"بازخورد"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"بستن"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"سنجاق‌شده نشان داده نشود"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"خاموش کردن"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"مسدود کردن «به‌روزرسانی‌های زنده» از این برنامه"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"نمایش «به‌روزرسانی‌های زنده»"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"اعلان‌های سنجاق‌شده اطلاعات زنده را از برنامه‌ها نمایش می‌دهند، و همیشه در نوار وضعیت و صفحه قفل نشان داده می‌شوند"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"به‌روزرسانی‌های زنده"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"وقتی این گزینه خاموش باشد، اعلان‌های جاری از این برنامه در صفحه قفل و نوار وضعیت تبلیغ نخواهند شد"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"این اعلان‌ها قابل اصلاح نیستند."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"این اعلان‌ها قابل‌اصلاح نیستند."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"نمی‌توانید این گروه اعلان‌ها را در اینجا پیکربندی کنید"</string>
@@ -869,14 +885,13 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"<xliff:g id="TIME_AMOUNT">%1$s</xliff:g> به تعویق افتاد"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ساعت}=2{# ساعت}one{# ساعت}other{# ساعت}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# دقیقه}one{# دقیقه}other{# دقیقه}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"برای باز کردن منو تنزل"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"بهینه‌سازی باتری"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"دکمه <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ابتدا"</string>
     <string name="keyboard_key_back" msgid="4185420465469481999">"برگشت"</string>
     <string name="keyboard_key_tab" msgid="4592772350906496730">"Tab"</string>
-    <string name="keyboard_key_space" msgid="6980847564173394012">"Space"</string>
+    <string name="keyboard_key_space" msgid="6980847564173394012">"فاصله"</string>
     <string name="keyboard_key_enter" msgid="8633362970109751646">"Enter"</string>
     <string name="keyboard_key_backspace" msgid="4095278312039628074">"Backspace"</string>
     <string name="keyboard_key_media_play_pause" msgid="8389984232732277478">"پخش/مکث"</string>
@@ -1155,8 +1170,7 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"خروج از حالت ویرایش"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"برای تغییر اندازه، گوشه را بکشید"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"اجازه دادن برای پیمایش قطری"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"دنبال کردن تایپ"</string>
     <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"درشت‌نمایی صفحه‌کلید"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"تغییر اندازه"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"تغییر نوع درشت‌نمایی"</string>
@@ -1273,7 +1287,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"گروه"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"۱ دستگاه انتخاب شد"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> دستگاه انتخاب شد"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(اتصال قطع شد)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"متصل"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"عوض نمی‌شود. برای تلاش مجدد تک‌ضرب بزنید."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"متصل کردن دستگاه"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"متصل کردن دستگاه"</string>
@@ -1284,8 +1298,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"بلندگوهای متصل‌شده"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"بلندگوها و نمایشگرها"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"پیشنهادی"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"دستگاه‌های پیشنهادی"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"ورودی"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"برونداد"</string>

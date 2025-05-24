@@ -23,4 +23,11 @@ data class ActionViewModel(
     val label: String,
     val attribution: String? = null,
     val onClick: () -> Unit,
+    val actionType: ActionType,
 )
+
+enum class ActionType {
+    MA,
+    MR,
+    Unknown,
+}

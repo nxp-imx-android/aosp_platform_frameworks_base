@@ -22,7 +22,9 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.systemui.statusbar.notification.row.data.model.AppData
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Holds information about a BundleEntry that is relevant to UI. */
 class BundleRepository(
@@ -34,5 +36,7 @@ class BundleRepository(
 
     var numberOfChildren by mutableStateOf<Int?>(0)
 
-    var appDataList by mutableStateOf(listOf<AppData>())
+    val appDataList = MutableStateFlow<List<AppData>>(emptyList())
+
+    var state by mutableStateOf<MutableSceneTransitionLayoutState?>(null)
 }

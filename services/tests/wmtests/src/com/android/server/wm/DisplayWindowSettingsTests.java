@@ -506,22 +506,20 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
 
     @Test
     public void testShouldShowImeOnDisplayWithinForceDesktopMode() {
-        try {
-            // Presume display enabled force desktop mode from developer options.
-            final SettingsEntry settingsEntry = new SettingsEntry();
-            settingsEntry.mShouldShowSystemDecors = true;
-            final DisplayContent dc = createMockSimulatedDisplay(settingsEntry);
-            mWm.setForceDesktopModeOnExternalDisplays(true);
-            final WindowManagerInternal wmInternal = LocalServices.getService(
-                    WindowManagerInternal.class);
-            // Make sure WindowManagerInter#getDisplayImePolicy is SHOW_IME_ON_DISPLAY is due to
-            // mForceDesktopModeOnExternalDisplays being SHOW_IME_ON_DISPLAY.
-            assertEquals(DISPLAY_IME_POLICY_FALLBACK_DISPLAY,
-                    mWm.mDisplayWindowSettings.getImePolicyLocked(dc));
-            assertEquals(DISPLAY_IME_POLICY_LOCAL, wmInternal.getDisplayImePolicy(dc.getDisplayId()));
-        } finally {
-            mWm.setForceDesktopModeOnExternalDisplays(false);
-        }
+        mWm.mAtmService.mSupportsFreeformWindowManagement = true;
+        mWm.setForceDesktopModeOnExternalDisplays(true);
+
+        // Presume display enabled force desktop mode from developer options.
+        final SettingsEntry settingsEntry = new SettingsEntry();
+        settingsEntry.mShouldShowSystemDecors = true;
+        final DisplayContent dc = createMockSimulatedDisplay(settingsEntry);
+        final WindowManagerInternal wmInternal = LocalServices.getService(
+                WindowManagerInternal.class);
+        // Make sure WindowManagerInter#getDisplayImePolicy is SHOW_IME_ON_DISPLAY is due to
+        // mForceDesktopModeOnExternalDisplays being SHOW_IME_ON_DISPLAY.
+        assertEquals(DISPLAY_IME_POLICY_FALLBACK_DISPLAY,
+                mWm.mDisplayWindowSettings.getImePolicyLocked(dc));
+        assertEquals(DISPLAY_IME_POLICY_LOCAL, wmInternal.getDisplayImePolicy(dc.getDisplayId()));
     }
 
     @Test

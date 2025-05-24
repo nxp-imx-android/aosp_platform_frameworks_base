@@ -87,6 +87,7 @@ constructor(
     @VisibleForTesting
     val isStatusBarRequiredForOngoingCall =
         combine(ongoingCallState, isChipSwipedAway) { callState, chipSwipedAway ->
+            // Don't force-show the status bar if the user has already swiped it away.
             callState.willCallChipBeVisible() && !chipSwipedAway
         }
 
@@ -168,6 +169,7 @@ constructor(
             requestedPromotion = model.requestedPromotion,
             isAppVisible = isVisible,
             notificationInstanceId = model.instanceId,
+            packageName = model.packageName,
         )
     }
 
@@ -179,7 +181,8 @@ constructor(
             statusBarRequired
         )
         statusBarWindowControllerStore.defaultDisplay.setOngoingProcessRequiresStatusBarVisible(
-            statusBarRequired
+            statusBarRequired,
+            source = "OngoingCallInteractor",
         )
     }
 

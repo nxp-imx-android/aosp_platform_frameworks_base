@@ -22,12 +22,20 @@ import static com.android.internal.R.id.pending_intent_tag;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,6 +43,9 @@ import static org.mockito.Mockito.verify;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetHostView;
+import android.appwidget.AppWidgetManager.ServiceCollectionCache;
+import android.appwidget.flags.Flags;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -42,14 +53,19 @@ import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
+import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.AttributeSet;
 import android.util.SizeF;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RemoteViewsAdapterTest.ViewsFactory;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -64,11 +80,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -84,6 +102,9 @@ public class RemoteViewsTest {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public SetFlagsRule setFlagsRule = new SetFlagsRule();
 
     private Context mContext;
     private String mPackage;
@@ -1083,6 +1104,57 @@ public class RemoteViewsTest {
 
         RemoteViews.RemoteResponse rr = RemoteViews.RemoteResponse.fromFillInIntent(null);
         assertNotNull(rr);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOTE_ADAPTER_CONVERSION)
+    public void collectAllIntents_collects_results_from_binder() throws Exception {
+        assumeTrue(remoteAdapterConversion());
+        Intent testIntent = new Intent("action_1")
+                .setComponent(new ComponentName(mPackage, "dummy"));
+        RemoteViews views = new RemoteViews(mPackage, R.layout.remote_views_list);
+        views.setRemoteAdapter(R.id.list, testIntent);
+
+        ServiceCollectionCache cache = mock(ServiceCollectionCache.class);
+        CompletableFuture<Void> result = views.collectAllIntents(10, true, cache);
+
+        ArgumentCaptor<Consumer<IBinder>> taskCaptor = ArgumentCaptor.forClass(Consumer.class);
+        verify(cache).connectAndConsume(eq(testIntent), taskCaptor.capture());
+
+        assertFalse(result.isDone());
+        ViewsFactory factory = spy(new ViewsFactory(0));
+        doReturn(factory).when(factory).queryLocalInterface(any());
+        taskCaptor.getValue().accept(factory);
+
+        verify(factory).getRemoteCollectionItems(anyInt(), eq(10), eq(true));
+        assertTrue(result.isDone());
+        assertFalse(result.isCompletedExceptionally());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOTE_ADAPTER_CONVERSION)
+    public void collectAllIntents_captures_errors_from_binder() throws Exception {
+        assumeTrue(remoteAdapterConversion());
+        Intent testIntent = new Intent("action_1")
+                .setComponent(new ComponentName(mPackage, "dummy"));
+        RemoteViews views = new RemoteViews(mPackage, R.layout.remote_views_list);
+        views.setRemoteAdapter(R.id.list, testIntent);
+
+        ServiceCollectionCache cache = mock(ServiceCollectionCache.class);
+        CompletableFuture<Void> result = views.collectAllIntents(10, true, cache);
+
+        ArgumentCaptor<Consumer<IBinder>> taskCaptor = ArgumentCaptor.forClass(Consumer.class);
+        verify(cache).connectAndConsume(eq(testIntent), taskCaptor.capture());
+
+        assertFalse(result.isDone());
+        ViewsFactory factory = spy(new ViewsFactory(0));
+        doReturn(factory).when(factory).queryLocalInterface(any());
+
+        doThrow(new RemoteException("test_error")).when(factory)
+                .getRemoteCollectionItems(anyInt(), anyInt(), anyBoolean());
+        taskCaptor.getValue().accept(factory);
+        assertTrue(result.isDone());
+        assertTrue(result.isCompletedExceptionally());
     }
 
     private static LayoutInflater.Factory2 createLayoutInflaterFactory(String viewTypeToReplace,

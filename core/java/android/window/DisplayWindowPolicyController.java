@@ -68,7 +68,9 @@ public abstract class DisplayWindowPolicyController {
     public DisplayWindowPolicyController() {
         synchronized (mSupportedWindowingModes) {
             mSupportedWindowingModes.add(WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
-            mSupportedWindowingModes.add(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
+            if (!android.companion.virtualdevice.flags.Flags.gwpcAwareWindowingMode()) {
+                mSupportedWindowingModes.add(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
+            }
         }
     }
 

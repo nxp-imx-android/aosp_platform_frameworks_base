@@ -23,6 +23,8 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.perftests.utils.BenchmarkState;
+import android.perftests.utils.PerfStatusReporter;
 import android.perftests.utils.Stats;
 import android.util.Log;
 
@@ -49,15 +51,21 @@ public class MessageQueuePerfTest {
     private static final int PER_THREAD_MESSAGE_COUNT = 1000;
     private static final int THREAD_COUNT = 8;
     private static final int TOTAL_MESSAGE_COUNT = PER_THREAD_MESSAGE_COUNT * THREAD_COUNT;
+    private static final int DEFAULT_MESSAGE_WHAT = 2;
 
     static Object sLock = new Object();
     private ArrayList<Long> mResults;
 
     @Before
-    public void setUp() { }
+    public void setUp() {
+        mHandlerThread = new HandlerThread("MessageQueuePerfTest");
+        mHandlerThread.start();
+    }
 
     @After
-    public void tearDown() { }
+    public void tearDown() {
+        mHandlerThread.quitSafely();
+    }
 
     class EnqueueThread extends Thread {
         CountDownLatch mStartLatch;
@@ -133,7 +141,7 @@ public class MessageQueuePerfTest {
 
     private void fillMessagesArray(Message[] messages) {
         for (int i = 0; i < messages.length; i++) {
-            messages[i] = mHandlerThread.getThreadHandler().obtainMessage(i);
+            messages[i] = mHandlerThread.getThreadHandler().obtainMessage(DEFAULT_MESSAGE_WHAT);
         }
     }
 
@@ -151,8 +159,6 @@ public class MessageQueuePerfTest {
     public void benchmarkEnqueueAtFrontOfQueue() {
         CountDownLatch threadStartLatch = new CountDownLatch(1);
         CountDownLatch threadEndLatch  = new CountDownLatch(THREAD_COUNT);
-        mHandlerThread = new HandlerThread("MessageQueuePerfTest");
-        mHandlerThread.start();
         Message[] messages = new Message[TOTAL_MESSAGE_COUNT];
         fillMessagesArray(messages);
 
@@ -167,8 +173,6 @@ public class MessageQueuePerfTest {
         }
 
         startTestAndWaitOnThreads(threadStartLatch, threadEndLatch);
-
-        mHandlerThread.quitSafely();
 
         reportPerf("enqueueAtFront", THREAD_COUNT, PER_THREAD_MESSAGE_COUNT);
     }
@@ -189,8 +193,6 @@ public class MessageQueuePerfTest {
     public void benchmarkEnqueueDelayed() {
         CountDownLatch threadStartLatch = new CountDownLatch(1);
         CountDownLatch threadEndLatch  = new CountDownLatch(THREAD_COUNT);
-        mHandlerThread = new HandlerThread("MessageQueuePerfTest");
-        mHandlerThread.start();
         Message[] messages = new Message[TOTAL_MESSAGE_COUNT];
         fillMessagesArray(messages);
 
@@ -206,8 +208,38 @@ public class MessageQueuePerfTest {
 
         startTestAndWaitOnThreads(threadStartLatch, threadEndLatch);
 
-        mHandlerThread.quitSafely();
-
         reportPerf("enqueueDelayed", THREAD_COUNT, PER_THREAD_MESSAGE_COUNT);
+    }
+
+    @Test
+    public void benchmarkSingleThreadedEnqueueAndRemove() throws InterruptedException {
+        final CountDownLatch threadEndLatch  = new CountDownLatch(1);
+        final TestHandler handler = new TestHandler(mHandlerThread.getLooper());
+
+        Runnable runTest = new Runnable() {
+            @Override
+            public void run() {
+                // Can't make this an @Rule otherwise the multi threaded tests that don't use
+                // PerfStatusReporter will throw the error:
+                // "java.lang.IllegalStateException: The benchmark hasn't finished"
+                final PerfStatusReporter perfStatusReporter = new PerfStatusReporter();
+                final BenchmarkState state = perfStatusReporter.getBenchmarkState();
+
+                while (state.keepRunning()) {
+                    Message m = handler.obtainMessage(DEFAULT_MESSAGE_WHAT);
+                    handler.sendMessageDelayed(m, 10_000);
+                    handler.removeMessages(DEFAULT_MESSAGE_WHAT);
+                }
+
+                state.sendFullStatusReport(InstrumentationRegistry.getInstrumentation(),
+                        "singleThreadedEnqueueAndRemove");
+
+                threadEndLatch.countDown();
+            }
+        };
+
+        handler.post(runTest);
+
+        threadEndLatch.await();
     }
 }

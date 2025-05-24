@@ -588,6 +588,26 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
         });
     }
 
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
+    public void testCameraClosed_activityDetachedFromProcess_handlesGracefully() {
+        runTestScenario((robot) -> {
+            robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+            robot.activity().rotateDisplayForTopActivity(ROTATION_270);
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.callOnActivityConfigurationChanging(/* letterboxNew= */ true,
+                    /* lastLetterbox= */ false);
+
+            // This might happen at some point during teardown.
+            robot.detachActivityFromProcess();
+
+            // Make sure no errors are thrown here.
+            robot.onCameraClosed(CAMERA_ID_1);
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -722,6 +742,10 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
         private void waitHandlerIdle() {
             mWindowTestsBase.waitHandlerIdle(activity().displayContent().mWmService.mH);
+        }
+
+        void detachActivityFromProcess() {
+            activity().top().detachFromProcess();
         }
 
         void setInFreeformWindowingMode(boolean inFreeform) {

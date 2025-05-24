@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.content.Context
 import android.view.View
 import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.DialogCuj
@@ -50,21 +51,22 @@ interface OngoingActivityChipViewModel {
     companion object {
         /** Creates a chip click listener that launches a dialog created by [dialogDelegate]. */
         fun createDialogLaunchOnClickListener(
-            dialogDelegate: SystemUIDialog.Delegate,
+            dialogDelegateCreator: (Context) -> SystemUIDialog.Delegate,
             dialogTransitionAnimator: DialogTransitionAnimator,
             cuj: DialogCuj,
             instanceId: InstanceId,
             uiEventLogger: StatusBarChipsUiEventLogger,
             @StatusBarChipsLog logger: LogBuffer,
+            key: String,
             tag: String,
         ): View.OnClickListener {
             return View.OnClickListener { view ->
                 StatusBarChipsModernization.assertInLegacyMode()
 
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
-                uiEventLogger.logChipTapToShow(instanceId)
+                uiEventLogger.logChipTapToShow(key, instanceId)
 
-                val dialog = dialogDelegate.createDialog()
+                val dialog = dialogDelegateCreator(view.context).createDialog()
                 val launchableView =
                     view.requireViewById<ChipBackgroundContainer>(
                         R.id.ongoing_activity_chip_background
@@ -78,9 +80,10 @@ interface OngoingActivityChipViewModel {
          * created by [dialogDelegate].
          */
         fun createDialogLaunchOnClickCallback(
-            dialogDelegate: SystemUIDialog.Delegate,
+            dialogDelegateCreator: (Context) -> SystemUIDialog.Delegate,
             dialogTransitionAnimator: DialogTransitionAnimator,
             cuj: DialogCuj,
+            key: String,
             instanceId: InstanceId,
             uiEventLogger: StatusBarChipsUiEventLogger,
             @StatusBarChipsLog logger: LogBuffer,
@@ -90,12 +93,12 @@ interface OngoingActivityChipViewModel {
                 StatusBarChipsModernization.unsafeAssertInNewMode()
 
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
-                uiEventLogger.logChipTapToShow(instanceId)
-
-                val dialog = dialogDelegate.createDialog()
+                uiEventLogger.logChipTapToShow(key, instanceId)
 
                 val controller = expandable.dialogTransitionController(cuj)
-                if (controller != null) {
+                val viewContext = controller?.viewRoot?.view?.context
+                if (viewContext != null) {
+                    val dialog = dialogDelegateCreator(viewContext).createDialog()
                     dialogTransitionAnimator.show(dialog, controller)
                 }
             }

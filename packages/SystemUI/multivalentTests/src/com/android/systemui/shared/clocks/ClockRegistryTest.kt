@@ -37,7 +37,6 @@ import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.util.ThreadAssert
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.eq
-import java.util.function.BiConsumer
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.fail
 import kotlinx.coroutines.CoroutineDispatcher
@@ -109,8 +108,6 @@ class ClockRegistryTest : SysuiTestCase() {
         override fun getPackage(): String = mComponentName.getPackageName()
 
         override fun getComponentName(): ComponentName = mComponentName
-
-        override fun setLogFunc(func: BiConsumer<String, String>) {}
 
         override fun loadPlugin() {
             if (!mIsLoaded) {

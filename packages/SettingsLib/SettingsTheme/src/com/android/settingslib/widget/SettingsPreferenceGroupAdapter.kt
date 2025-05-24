@@ -146,7 +146,9 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
 
                         // item in the group should have round corner background.
                         cornerStyles[i] = cornerStyles[i] or ROUND_CORNER_CENTER
-                        if (parent === currentParent) {
+                        // We should treat the ExpandButton as a part of the previous group
+                        // despite that it doesn't have a parent.
+                        if (parent === currentParent || parent == null) {
                             // find the first item in the group
                             if (startIndex == -1) {
                                 startIndex = i

@@ -57,3 +57,13 @@ flag {
     bug: "314735374"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "pre_watchdog_throttle_thread_dump"
+    namespace: "stability"
+    description: "Throttles how often a pre-watchdog results in a thread dump"
+    bug: "417424880"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

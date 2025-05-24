@@ -74,6 +74,8 @@
     <string name="forced_resizable_secondary_display">App may not work on a secondary display.</string>
     <!-- Warning message when we try to launch a non-resizeable activity on a secondary display and launch it on the primary instead. -->
     <string name="activity_launch_on_secondary_display_failed_text">App does not support launch on secondary displays.</string>
+    <!-- Warning message when we try to bubble a task in an unsupported environment [CHAR LIMIT=NONE] -->
+    <string name="bubble_not_supported_text">App does not support bubble</string>
 
     <!-- Accessibility label and window tile for the divider that separates the windows in split screen mode [CHAR LIMIT=NONE] -->
     <string name="accessibility_divider">Split screen divider</string>

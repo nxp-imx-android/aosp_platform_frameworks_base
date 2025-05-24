@@ -49,7 +49,7 @@ class TopLevelZoomOutDisplayAreaOrganizer(
     private val mDisplayAreaTokenMap: MutableMap<WindowContainerToken, SurfaceControl> = ArrayMap()
     private val mDisplayLayout = DisplayLayout()
     private var cornerRadius = 1f
-    private var mProgress = 1f
+    private var mProgress = 0f
     private var isCujOnSuccessPath = false
 
     init {
@@ -105,7 +105,7 @@ class TopLevelZoomOutDisplayAreaOrganizer(
     }
 
     private fun reset() {
-        setProgress(1f)
+        setProgress(0f)
     }
 
     private fun updateSurface(

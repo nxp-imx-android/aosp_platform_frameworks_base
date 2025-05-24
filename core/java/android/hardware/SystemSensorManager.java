@@ -256,9 +256,25 @@ public class SystemSensorManager extends SensorManager {
             return false;
         }
         if (mSensorListeners.size() >= MAX_LISTENER_COUNT) {
-            throw new IllegalStateException("register failed, "
-                + "the sensor listeners size has exceeded the maximum limit "
-                + MAX_LISTENER_COUNT);
+            Log.e(TAG, "Too many sensor listeners! Dump:");
+            Map<String, Integer> listenerCounts = new HashMap<>();
+            synchronized (mSensorListeners) {
+                int i = 0;
+                for (SensorEventListener debugListener : mSensorListeners.keySet()) {
+                    String listenerName = debugListener.toString();
+                    Log.e(TAG, "  " + ++i + ": " + listenerName);
+                    int index = listenerName.indexOf('@');
+                    listenerName = index < 0 ? listenerName
+                            : listenerName.substring(0, index);
+                    listenerCounts.put(
+                            listenerName, listenerCounts.getOrDefault(listenerName, 0) + 1);
+                }
+            }
+            Map.Entry<String, Integer> maxEntry = listenerCounts.entrySet().stream()
+                    .max(Map.Entry.comparingByValue()).get();
+            throw new IllegalStateException("Too many sensor listeners (" + MAX_LISTENER_COUNT
+                    + "). Most common: " + maxEntry.getKey() + " (" + maxEntry.getValue()
+                    + ")");
         }
 
         // Invariants to preserve:

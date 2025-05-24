@@ -319,7 +319,7 @@ public class DozeTriggers implements DozeMachine.Part {
 
         if (isWakeOnPresence) {
             onWakeScreen(isWakeDisplayEvent,
-                    mMachine.isExecutingTransition() ? null : mMachine.getState(),
+                    mMachine.getState(),
                     pulseReason);
         } else if (isLongPress) {
             requestPulse(pulseReason, true /* alreadyPerformedProxCheck */,
@@ -572,9 +572,7 @@ public class DozeTriggers implements DozeMachine.Part {
         Assert.isMainThread();
         mDozeHost.extendPulse(reason);
 
-        // we can't determine the dozing state if we're currently transitioning
-        final DozeMachine.State dozeState =
-                mMachine.isExecutingTransition() ? null : mMachine.getState();
+        final DozeMachine.State dozeState = mMachine.getState();
 
         // When already pulsing we're allowed to show the wallpaper directly without
         // requesting a new pulse.
@@ -638,7 +636,10 @@ public class DozeTriggers implements DozeMachine.Part {
                 .ifPresent(uiEventEnum -> mUiEventLogger.log(uiEventEnum, getKeyguardSessionId()));
     }
 
-    private boolean canPulse(DozeMachine.State dozeState, boolean pulsePerformedProximityCheck) {
+    private boolean canPulse(
+            @Nullable DozeMachine.State dozeState,
+            boolean pulsePerformedProximityCheck
+    ) {
         final boolean dozePausedOrPausing = dozeState == State.DOZE_AOD_PAUSED
                 || dozeState == State.DOZE_AOD_PAUSING;
         return dozeState == DozeMachine.State.DOZE

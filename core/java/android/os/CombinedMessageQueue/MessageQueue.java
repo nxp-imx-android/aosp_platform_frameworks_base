@@ -156,18 +156,19 @@ public final class MessageQueue {
             return;
         }
 
-        if (Flags.forceConcurrentMessageQueue()) {
+        if (Flags.useConcurrentMessageQueueInApps()) {
             // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
             // This is a hack to allow Robolectric tests to use the legacy implementation.
             try {
                 Class.forName("org.robolectric.Robolectric");
+                // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
+                sIsProcessAllowedToUseConcurrent = false;
+                return;
             } catch (ClassNotFoundException e) {
                 // This is not a Robolectric test.
                 sIsProcessAllowedToUseConcurrent = true;
                 return;
             }
-            // This is a Robolectric test.
-            // Continue to the following checks.
         }
 
         final String processName = Process.myProcessName();
@@ -248,13 +249,14 @@ public final class MessageQueue {
             msg.mEventId.set(PerfettoTrace.getFlowId());
 
             traceMessageCount();
+            final long messageDelayMs = Math.max(0L, when - SystemClock.uptimeMillis());
             PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
                     .setFlow(msg.mEventId.get())
                     .beginProto()
                     .beginNested(2004 /* message_queue */)
                     .addField(2 /* receiving_thread_name */, mThreadName)
                     .addField(3 /* message_code */, msg.what)
-                    .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
+                    .addField(4 /* message_delay_ms */, messageDelayMs)
                     .endNested()
                     .endProto()
                     .emit();
@@ -277,7 +279,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchDeliverableMessages extends MessageCompare {
+    static final class MatchDeliverableMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -294,23 +296,13 @@ public final class MessageQueue {
             return false;
         }
 
-        MessageNode msgNode = null;
-        MessageNode asyncMsgNode = null;
-
-        if (!mPriorityQueue.isEmpty()) {
-            try {
-                msgNode = mPriorityQueue.first();
-            } catch (NoSuchElementException e) { }
+        final MessageNode msgNode = first(mPriorityQueue);
+        if (msgNode != null && msgNode.getWhen() <= now) {
+            return false;
         }
 
-        if (!mAsyncPriorityQueue.isEmpty()) {
-            try {
-                asyncMsgNode = mAsyncPriorityQueue.first();
-            } catch (NoSuchElementException e) { }
-        }
-
-        if ((msgNode != null && msgNode.getWhen() <= now)
-                || (asyncMsgNode != null && asyncMsgNode.getWhen() <= now)) {
+        final MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
+        if (asyncMsgNode != null && asyncMsgNode.getWhen() <= now) {
             return false;
         }
 
@@ -728,10 +720,8 @@ public final class MessageQueue {
              */
 
             /* Get the first node from each queue */
-            Iterator<MessageNode> queueIter = mPriorityQueue.iterator();
-            MessageNode msgNode = iterateNext(queueIter);
-            Iterator<MessageNode> asyncQueueIter = mAsyncPriorityQueue.iterator();
-            MessageNode asyncMsgNode = iterateNext(asyncQueueIter);
+            MessageNode msgNode = first(mPriorityQueue);
+            MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
 
             if (DEBUG) {
                 if (msgNode != null) {
@@ -1237,7 +1227,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchBarrierToken extends MessageCompare {
+    static final class MatchBarrierToken extends MessageCompare {
         int mBarrierToken;
 
         MatchBarrierToken(int token) {
@@ -1258,16 +1248,10 @@ public final class MessageQueue {
 
     private void removeSyncBarrierConcurrent(int token) {
         boolean removed;
-        MessageNode first;
         final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
 
-        try {
-            /* Retain the first element to see if we are currently stuck on a barrier. */
-            first = mPriorityQueue.first();
-        } catch (NoSuchElementException e) {
-            /* The queue is empty */
-            first = null;
-        }
+        // Retain the first element to see if we are currently stuck on a barrier.
+        final MessageNode first = first(mPriorityQueue);
 
         removed = findOrRemoveMessages(null, 0, null, null, 0, matchBarrierToken, true);
         if (removed && first != null) {
@@ -1533,8 +1517,7 @@ public final class MessageQueue {
             // Call nextMessage to get the stack drained into our priority queues
             nextMessage(true, false);
 
-            Iterator<MessageNode> queueIter = mPriorityQueue.iterator();
-            MessageNode queueNode = iterateNext(queueIter);
+            MessageNode queueNode = first(mPriorityQueue);
 
             return (queueNode != null && queueNode.isBarrier());
         } else {
@@ -1543,7 +1526,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerWhatAndObject extends MessageCompare {
+    static final class MatchHandlerWhatAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1586,7 +1569,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
+    static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1629,7 +1612,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerRunnableAndObject extends MessageCompare {
+    static final class MatchHandlerRunnableAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1673,7 +1656,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandler extends MessageCompare {
+    static final class MatchHandler extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1891,7 +1874,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
+    static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -1966,7 +1949,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerAndObject extends MessageCompare {
+    static final class MatchHandlerAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2039,7 +2022,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchHandlerAndObjectEquals extends MessageCompare {
+    static final class MatchHandlerAndObjectEquals extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2161,7 +2144,7 @@ public final class MessageQueue {
         }
     }
 
-    private static final class MatchAllMessages extends MessageCompare {
+    static final class MatchAllMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2173,7 +2156,7 @@ public final class MessageQueue {
         findOrRemoveMessages(null, -1, null, null, 0, sMatchAllMessages, true);
     }
 
-    private static final class MatchAllFutureMessages extends MessageCompare {
+    static final class MatchAllFutureMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2400,7 +2383,7 @@ public final class MessageQueue {
         @Events int onFileDescriptorEvents(@NonNull FileDescriptor fd, @Events int events);
     }
 
-    private static final class FileDescriptorRecord {
+    static final class FileDescriptorRecord {
         public final FileDescriptor mDescriptor;
         public int mEvents;
         public OnFileDescriptorEventListener mListener;
@@ -2445,15 +2428,12 @@ public final class MessageQueue {
         return nodeA != null ? nodeA : nodeB;
     }
 
-    private MessageNode iterateNext(Iterator<MessageNode> iter) {
-        if (iter.hasNext()) {
-            try {
-                return iter.next();
-            } catch (NoSuchElementException e) {
-                /* The queue is empty - this can happen if we race with remove */
-            }
+    private static MessageNode first(ConcurrentSkipListSet<MessageNode> queue) {
+        try {
+            return queue.first();
+        } catch (NoSuchElementException e) {
+            return null;
         }
-        return null;
     }
 
     /* Move any non-cancelled messages into the priority queue */
@@ -2524,7 +2504,8 @@ public final class MessageQueue {
         STACK_NODE_MESSAGE,
         STACK_NODE_ACTIVE,
         STACK_NODE_PARKED,
-        STACK_NODE_TIMEDPARK})
+        STACK_NODE_TIMEDPARK,
+        STACK_NODE_QUITTING})
     @Retention(RetentionPolicy.SOURCE)
     private @interface StackNodeType {}
 
@@ -2820,7 +2801,7 @@ public final class MessageQueue {
      * On item cancellation, determine whether to wake next() to flush tombstoned messages.
      * We track queued and cancelled counts as two ints packed into a single long.
      */
-    private static final class MessageCounts {
+    static final class MessageCounts {
         private static VarHandle sCounts;
         private volatile long mCountsValue = 0;
         static {
@@ -3022,7 +3003,7 @@ public final class MessageQueue {
     /*
      * This class is used to find matches for hasMessages() and removeMessages()
      */
-    private abstract static class MessageCompare {
+    abstract static class MessageCompare {
         public abstract boolean compareMessage(MessageNode n, Handler h, int what, Object object,
                 Runnable r, long when);
     }
@@ -3044,8 +3025,9 @@ public final class MessageQueue {
 
         if (top.isQuittingNode()) {
             QuittingNode quittingNode = (QuittingNode) top;
-            if (quittingNode.mNext.isMessageNode()) {
-                top = quittingNode.mNext;
+            StackNode next = quittingNode.mNext;
+            if (next.isMessageNode()) {
+                top = next;
             } else {
                 waitForDrainCompleted();
                 return false;

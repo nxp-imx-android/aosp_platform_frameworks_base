@@ -119,6 +119,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textDirection="locale"
+                    android:importantForAccessibility="yes"
                     style="@style/TextAppearance.NotificationImportanceChannelGroup" />
             </LinearLayout>
         </com.android.systemui.statusbar.notification.row.ButtonLinearLayout>

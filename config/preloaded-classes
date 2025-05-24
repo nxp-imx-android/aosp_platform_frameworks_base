@@ -280,7 +280,6 @@ android.app.ActivityThread$5
 android.app.ActivityThread$6
 android.app.ActivityThread$ActivityClientRecord$1
 android.app.ActivityThread$ActivityClientRecord
-android.app.ActivityThread$AndroidOs
 android.app.ActivityThread$AppBindData
 android.app.ActivityThread$ApplicationThread$$ExternalSyntheticLambda2
 android.app.ActivityThread$ApplicationThread$1
@@ -319,6 +318,7 @@ android.app.AlarmManager$OnAlarmListener
 android.app.AlarmManager
 android.app.AlertDialog$Builder
 android.app.AlertDialog
+android.app.AndroidForwardingOs
 android.app.AppCompatCallbacks
 android.app.AppCompatTaskInfo$1
 android.app.AppCompatTaskInfo
@@ -16663,6 +16663,7 @@ java.util.concurrent.ConcurrentMap
 java.util.concurrent.ConcurrentNavigableMap
 java.util.concurrent.ConcurrentSkipListMap$Index
 java.util.concurrent.ConcurrentSkipListMap$Iter
+java.util.concurrent.ConcurrentSkipListMap$KeyIterator
 java.util.concurrent.ConcurrentSkipListMap$KeySet
 java.util.concurrent.ConcurrentSkipListMap$Node
 java.util.concurrent.ConcurrentSkipListMap$ValueIterator

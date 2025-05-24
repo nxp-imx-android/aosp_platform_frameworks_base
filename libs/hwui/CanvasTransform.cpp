@@ -93,7 +93,7 @@ static void applyColorTransform(ColorTransform transform, SkPaint& paint) {
 
     if (paint.getShader()) {
         SkAndroidFrameworkUtils::LinearGradientInfo info;
-        std::array<SkColor, 10> _colorStorage;
+        std::array<SkColor4f, 10> _colorStorage;
         std::array<SkScalar, _colorStorage.size()> _offsetStorage;
         info.fColorCount = _colorStorage.size();
         info.fColors = _colorStorage.data();
@@ -102,10 +102,11 @@ static void applyColorTransform(ColorTransform transform, SkPaint& paint) {
         if (SkAndroidFrameworkUtils::ShaderAsALinearGradient(paint.getShader(), &info) &&
             info.fColorCount <= _colorStorage.size()) {
             for (int i = 0; i < info.fColorCount; i++) {
-                info.fColors[i] = transformColor(transform, info.fColors[i]);
+                SkColor transformedColor = transformColor(transform, info.fColors[i].toSkColor());
+                info.fColors[i] = SkColor4f::FromColor(transformedColor);
             }
             paint.setShader(SkGradientShader::MakeLinear(
-                    info.fPoints, info.fColors, info.fColorOffsets, info.fColorCount,
+                    info.fPoints, info.fColors, nullptr, info.fColorOffsets, info.fColorCount,
                     info.fTileMode, info.fGradientFlags, nullptr));
         }
     }

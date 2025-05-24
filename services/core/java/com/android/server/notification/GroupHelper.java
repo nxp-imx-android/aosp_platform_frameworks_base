@@ -1905,6 +1905,22 @@ public class GroupHelper {
         }
     }
 
+    /**
+     *  Checks if the notification was a summary that was canceled because its children
+     *  were auto-grouped.
+     *
+     * @param record the notification to check
+     * @return true if the notification was a canceled summary
+     */
+    boolean wasSummaryBeforeAutoGrouping(@NonNull final NotificationRecord record) {
+        synchronized (mAggregatedNotifications) {
+            return (findCanceledSummary(record.getSbn().getPackageName(),
+                        record.getSbn().getTag(), record.getSbn().getId(),
+                        record.getSbn().getUserId(),
+                        record.getSbn().getNotification().getGroup()) != null);
+        }
+    }
+
     @GuardedBy("mAggregatedNotifications")
     private void removeCachedSummary(String pkgName, int userId, CachedSummary summary) {
         final FullyQualifiedGroupKey key = new FullyQualifiedGroupKey(userId, pkgName,

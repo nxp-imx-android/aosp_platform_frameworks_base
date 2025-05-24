@@ -32,6 +32,7 @@ import android.os.Looper;
 import android.os.PermissionEnforcer;
 import android.os.ServiceManager;
 import android.os.UserHandle;
+import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 import android.ravenwood.example.BlueManager;
 import android.ravenwood.example.RedManager;
 import android.util.ArrayMap;
@@ -48,6 +49,7 @@ import java.nio.file.Files;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
+@RavenwoodProvidingImplementation(target = Context.class)
 public class RavenwoodContext extends RavenwoodBaseContext {
     private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
 

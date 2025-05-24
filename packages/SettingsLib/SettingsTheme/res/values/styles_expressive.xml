@@ -310,5 +310,6 @@
         <item name="cardCornerRadius">@dimen/settingslib_expressive_radius_extralarge1</item>
         <item name="cardElevation">0dp</item>
         <item name="rippleColor">?android:attr/colorControlHighlight</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 </resources>

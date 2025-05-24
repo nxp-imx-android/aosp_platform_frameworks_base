@@ -94,6 +94,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.classifier.Classifier;
@@ -229,7 +230,7 @@ public final class NotificationPanelViewController implements
         ShadeSurface, Dumpable, BrightnessMirrorShowingInteractor {
 
     public static final String TAG = NotificationPanelView.class.getSimpleName();
-    private static final boolean DEBUG_LOGCAT = Compile.IS_DEBUG || Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG_LOGCAT = Log.isLoggable(TAG, Log.DEBUG);
     private static final boolean DEBUG_DRAWABLE = false;
     /** The parallax amount of the quick settings translation when dragging down the panel. */
     public static final float QS_PARALLAX_AMOUNT = 0.175f;
@@ -745,7 +746,7 @@ public final class NotificationPanelViewController implements
         mWakeUpCoordinator = coordinator;
         mMainDispatcher = mainDispatcher;
         mAccessibilityManager = accessibilityManager;
-        mView.setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
+        mView.getRootView().setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
         setAlpha(255, false /* animate */);
         mCommandQueue = commandQueue;
         mDisplayId = displayId;
@@ -1865,7 +1866,7 @@ public final class NotificationPanelViewController implements
                 || expandedHeight > mHeadsUpStartHeight);
         if (goingBetweenClosedShadeAndExpandedQs && qsShouldExpandWithHeadsUp) {
             float qsExpansionFraction;
-            if (mSplitShadeEnabled) {
+            if (mSplitShadeEnabled && !Flags.bouncerUiRevamp()) {
                 qsExpansionFraction = 1;
             } else if (isKeyguardShowing()) {
                 // On Keyguard, interpolate the QS expansion linearly to the panel expansion
@@ -3385,7 +3386,7 @@ public final class NotificationPanelViewController implements
         }
 
         if (mAccessibilityManager.isEnabled()) {
-            mView.setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
+            mView.getRootView().setAccessibilityPaneTitle(determineAccessibilityPaneTitle());
         }
 
         if (!mFalsingManager.isUnlockingDisabled() && qsFullyExpanded

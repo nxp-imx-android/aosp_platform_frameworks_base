@@ -50,6 +50,7 @@ public class PromptInfo implements Parcelable {
     private List<FallbackOption> mFallbackOptions = new ArrayList<>();
     private boolean mConfirmationRequested = true; // default to true
     private boolean mDeviceCredentialAllowed;
+    private boolean mIdentityCheckActive = false;
     private @BiometricManager.Authenticators.Types int mAuthenticators;
     private boolean mDisallowBiometricsIfPolicyExists;
     private boolean mReceiveSystemEvents;
@@ -83,6 +84,7 @@ public class PromptInfo implements Parcelable {
         mNegativeButtonText = in.readCharSequence();
         mConfirmationRequested = in.readBoolean();
         mDeviceCredentialAllowed = in.readBoolean();
+        mIdentityCheckActive = in.readBoolean();
         mAuthenticators = in.readInt();
         mDisallowBiometricsIfPolicyExists = in.readBoolean();
         mReceiveSystemEvents = in.readBoolean();
@@ -137,6 +139,7 @@ public class PromptInfo implements Parcelable {
         dest.writeCharSequence(mNegativeButtonText);
         dest.writeBoolean(mConfirmationRequested);
         dest.writeBoolean(mDeviceCredentialAllowed);
+        dest.writeBoolean(mIdentityCheckActive);
         dest.writeInt(mAuthenticators);
         dest.writeBoolean(mDisallowBiometricsIfPolicyExists);
         dest.writeBoolean(mReceiveSystemEvents);
@@ -298,6 +301,10 @@ public class PromptInfo implements Parcelable {
         mDeviceCredentialAllowed = deviceCredentialAllowed;
     }
 
+    public void setIdentityCheckActive(boolean identityCheckActive) {
+        mIdentityCheckActive = identityCheckActive;
+    }
+
     public void setAuthenticators(int authenticators) {
         mAuthenticators = authenticators;
     }
@@ -438,6 +445,10 @@ public class PromptInfo implements Parcelable {
     @Deprecated
     public boolean isDeviceCredentialAllowed() {
         return mDeviceCredentialAllowed;
+    }
+
+    public boolean isIdentityCheckActive() {
+        return mIdentityCheckActive;
     }
 
     public int getAuthenticators() {

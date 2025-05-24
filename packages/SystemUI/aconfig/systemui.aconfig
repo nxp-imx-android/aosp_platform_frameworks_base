@@ -77,6 +77,16 @@ flag {
 }
 
 flag {
+   name: "notification_row_is_removed_fix"
+   namespace: "systemui"
+   description: "Fix incorrect isRemoved value in ExpandableNotificationRow"
+   bug: "417457086"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "notification_ambient_suppression_after_inflation"
    namespace: "systemui"
    description: "Move the DND visual effects filter to the finalize stage of the pipeline when it is doze-dependent, but keep it in the pre-group stage when it is doze-independent."
@@ -263,6 +273,16 @@ flag {
     namespace: "systemui"
     description: "Do not notify HeadsUpManager for silent updates."
     bug: "401068530"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "notification_shade_close_waits_for_child_animations"
+    namespace: "systemui"
+    description: "Improve the locked-shade close animation after dismissing a single notification."
+    bug: "388298358"
     metadata {
        purpose: PURPOSE_BUGFIX
     }
@@ -477,6 +497,17 @@ flag {
 }
 
 flag {
+    name: "status_bar_app_handle_tracking"
+    namespace: "systemui"
+    description: "Have status bar track the location of app handles so that tappable status bar "
+        "content doesn't overlap"
+    bug: "397506207"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"
@@ -653,6 +684,16 @@ flag {
     namespace: "systemui"
     description: "Enables the new screen recording UX"
     bug: "410901215"
+}
+
+flag {
+    name: "thin_screen_recording_service"
+    namespace: "systemui"
+    description: "Fix screen recording on hsum enabled devices"
+    bug: "368579013"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -945,6 +986,13 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "qs_edit_mode_tabs"
+    namespace: "systemui"
+    description: "Splits the Quick Settings edit mode in tabs. This feature is for the compose version of Quick Settings."
+    bug: "416236871"
 }
 
 flag {
@@ -1529,6 +1577,16 @@ flag {
 }
 
 flag {
+  name: "shade_qsvisible_logic"
+  namespace: "systemui"
+  description: "Changes the way that QS visibility is calculated"
+  bug: "412476562"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "keyboard_shortcut_helper_shortcut_customizer"
     namespace: "systemui"
     description: "An implementation of shortcut customizations through shortcut helper."
@@ -1646,16 +1704,6 @@ flag {
    namespace: "systemui"
    description: "Add support for magnetic behavior on horizontal notification swipes."
    bug: "390179908"
-}
-
-flag {
-    name: "unfold_latency_tracking_fix"
-    namespace: "systemui"
-    description: "New implementation to track unfold latency that excludes broken cases"
-    bug: "390649568"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {
@@ -1879,7 +1927,7 @@ flag {
     name: "enable_suggested_device_ui"
     namespace: "systemui"
     description: "Enables the UI for the suggested devices feature."
-    bug: "411452237"
+    bug: "392942321"
 }
 
 flag {
@@ -1950,6 +1998,26 @@ flag {
 }
 
 flag {
+   name: "new_dozing_keyguard_states"
+   namespace: "systemui"
+   description: "Adds new dozing keyguard states for more robust animations to/from dozing."
+   bug: "415704030"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
+   name: "bouncer_lifecycle_fix"
+   namespace: "systemui"
+   description: "Don't resume the Bouncer InputView when the view is inflated."
+   bug: "417307529"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "qs_compose_fragment_early_expansion"
    namespace: "systemui"
    description: "Start expansion from QQS into QS early when touching the shade."
@@ -1957,4 +2025,18 @@ flag {
    metadata {
      purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+   name: "enable_desktop_growth"
+   namespace: "systemui"
+   description: "Enables the growth framework for desktop."
+   bug: "383601076"
+}
+
+flag {
+    name: "enable_minmode"
+    namespace: "systemui"
+    description: "Enables MinMode feature"
+    bug: "411746510"
 }

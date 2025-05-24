@@ -23,6 +23,7 @@ import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.NotificationTopLineView
 import android.view.View
@@ -77,6 +78,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.isNullOrEmpty
+import kotlin.math.min
 
 @Composable
 fun AODPromotedNotification(
@@ -120,7 +122,7 @@ fun AODPromotedNotificationView(
 
     val boxModifier = modifier.padding(sidePaddingValues)
 
-    val borderStroke = BorderStroke(1.dp, SecondaryText.brush)
+    val borderStroke = BorderStroke(0.5.dp, SecondaryText.brush.value.copy(alpha = 0.32f))
 
     val borderRadius = dimensionResource(systemuiR.dimen.notification_corner_radius)
     val borderShape = RoundedCornerShape(borderRadius)
@@ -291,7 +293,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private var oldProgressBar: ProgressBar? = null
     private val newProgressBar = root.findViewById<View>(R.id.progress) as? NotificationProgressBar
 
-    private val largeIconSizePx: Int =
+    private val defaultLargeIconSizePx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
 
     private val marginPx: Int =
@@ -302,17 +304,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 systemuiR.dimen.notification_shade_content_margin_horizontal
             )
         }
-
-    private val imageEndMarginPx: Int
-        get() = largeIconSizePx + 2 * marginPx
-
-    private val PromotedNotificationContentModel.imageEndMarginPxIfHasLargeIcon: Int
-        get() =
-            if (!skeletonLargeIcon.isNullOrEmpty()) {
-                imageEndMarginPx
-            } else {
-                marginPx
-            }
 
     private data class SmallIconSavedState(val background: Drawable?, val padding: Rect)
 
@@ -334,15 +325,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.drawable
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
-
-        rightIcon?.setRightIconState(
-            width = largeIconSizePx,
-            height = largeIconSizePx,
-            marginEnd = marginPx,
-        )
-
-        bigText?.setImageEndMargin(largeIconSizePx + marginPx)
-        text?.setImageEndMargin(largeIconSizePx + marginPx)
 
         setTextViewColor(appNameDivider, SecondaryText)
         setTextViewColor(headerTextDivider, SecondaryText)
@@ -389,7 +371,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
         updateText(textView, content)
         updateNotifIcon(icon, content.skeletonNotifIcon, content.iconLevel)
-        updateImageView(rightIcon, content.skeletonLargeIcon)
+        updateRightIconAndSpacing(content.skeletonLargeIcon)
         updateOldProgressBar(content)
     }
 
@@ -463,8 +445,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateProfileBadge(content)
 
         updateHeaderDividers(content, hideTitle = !hasTitle, hideAppName = hideAppName)
-
-        updateTopLine(content)
     }
 
     private fun updateHeaderDividers(
@@ -503,7 +483,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         updateConversationHeaderDividers(content, hideTitle = true, hideAppName = collapsed)
 
-        updateTopLine(content)
         updateConversationIcon(content)
         updateTitle(conversationText, content)
     }
@@ -545,10 +524,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateTitle(titleView: TextView?, content: PromotedNotificationContentModel) {
-        (titleView?.layoutParams as? MarginLayoutParams)?.let {
-            it.marginEnd = content.imageEndMarginPxIfHasLargeIcon
-            titleView.layoutParams = it
-        }
         updateTextView(titleView, content.title, color = PrimaryText)
     }
 
@@ -571,6 +546,48 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         time?.isVisible = (content.time is When.Time)
         chronometer?.isVisible = (content.time is When.Chronometer)
+    }
+
+    private fun updateRightIconAndSpacing(image: ImageModel?) {
+        updateImageView(rightIcon, image)
+
+        val rightIconSizePx = calculateRightIconDimensions(image?.drawable)
+        rightIcon?.setRightIconState(
+            width = rightIconSizePx.width,
+            height = rightIconSizePx.height,
+            marginEnd = marginPx,
+        )
+
+        bigText?.setImageEndMargin(rightIconSizePx.width)
+        text?.setImageEndMargin(rightIconSizePx.width)
+
+        val hasRightIcon = image?.drawable != null
+        val spaceBasedOnRightIcon =
+            if (hasRightIcon) rightIconSizePx.width + 2 * marginPx else marginPx
+        (title?.layoutParams as? MarginLayoutParams)?.let {
+            it.marginEnd = spaceBasedOnRightIcon
+            title.layoutParams = it
+        }
+        topLine?.headerTextMarginEnd = spaceBasedOnRightIcon
+    }
+
+    private fun calculateRightIconDimensions(drawable: Drawable?): Size {
+        var viewWidthPx = defaultLargeIconSizePx
+        val viewHeightPx = defaultLargeIconSizePx
+
+        drawable?.let {
+            val iconWidth = drawable.intrinsicWidth
+            val iconHeight = drawable.intrinsicHeight
+
+            if (iconWidth > 0 && iconHeight > 0) {
+                if (iconWidth > iconHeight) {
+                    val maxViewWidthPx = viewHeightPx * MAX_LARGE_ICON_ASPECT_RATIO
+                    viewWidthPx = (viewHeightPx.toFloat() * iconWidth / iconHeight).toInt()
+                    viewWidthPx = min(viewWidthPx, maxViewWidthPx.toInt())
+                }
+            }
+        }
+        return Size(viewWidthPx, viewHeightPx)
     }
 
     private fun updateProfileBadge(content: PromotedNotificationContentModel) {
@@ -649,10 +666,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         chronometer?.appendFontFeatureSetting("tnum")
     }
 
-    private fun updateTopLine(content: PromotedNotificationContentModel) {
-        topLine?.headerTextMarginEnd = content.imageEndMarginPxIfHasLargeIcon
-    }
-
     private fun inflateOldProgressBar() {
         if (oldProgressBar != null) {
             return
@@ -695,6 +708,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private fun setTextViewColor(view: TextView?, color: AodPromotedNotificationColor) {
         view?.setTextColor(color.colorInt)
+    }
+
+    companion object {
+        /** Maximum aspect ratio of the large icon. 16:9 */
+        private const val MAX_LARGE_ICON_ASPECT_RATIO: Float = 16f / 9f
     }
 }
 

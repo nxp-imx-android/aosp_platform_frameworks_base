@@ -29,7 +29,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.MockitoAnnotations
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 
@@ -52,8 +51,6 @@ class BundleHeaderGutsViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        MockitoAnnotations.openMocks(this)
-
         underTest =
             BundleHeaderGutsViewModel(
                 titleText = TEST_BUNDLE_SPEC.titleText,

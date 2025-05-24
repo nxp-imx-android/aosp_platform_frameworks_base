@@ -35,24 +35,24 @@ using ProtoLogging in Kotlin does not provide the same memory gains as in Java, 
 slightly less performant due to additional string interning at runtime.
 
 ### Enabling ProtoLog command line logging
-Run these commands to enable protologs (in logcat) for WM Core ([list of all core tags](/core/java/com/android/internal/protolog/ProtoLogGroup.java)):
-```shell
-adb shell wm logging enable-text TAG
-adb shell wm logging disable-text TAG
-```
-
-And these commands to enable protologs (in logcat) for WM Shell ([list of all shell tags](/libs/WindowManager/Shell/src/com/android/wm/shell/protolog/ShellProtoLogGroup.java)):
+Run these commands to enable protologs (in logcat) for WM Core ([list of all core groups](/core/java/com/android/internal/protolog/WmProtoLogGroups.java)) or WM Shell ([list of all shell groups](/libs/WindowManager/Shell/src/com/android/wm/shell/protolog/ShellProtoLogGroup.java)):
 ```shell
 # Note: prior to 25Q2, you may need to use:
 #   adb shell dumpsys activity service SystemUIService WMShell protolog enable-text TAG
-adb shell wm shell protolog enable-text TAG
-adb shell wm shell protolog disable-text TAG
+adb shell cmd protolog_configuration logcat enable <group>
+adb shell cmd protolog_configuration logcat disable <group>
+```
+
+Use these commands to print protolog groups and their status:
+```shell
+adb shell cmd protolog_configuration groups list
+adb shell cmd protolog_configuration groups status <group>
 ```
 
 ### R8 optimizations & ProtoLog
 
 If the APK that the Shell library is included into has R8 optimizations enabled, then you may need
-to update the proguard flags to keep the generated protolog classes (ie. AOSP SystemUI's [proguard.flags](base/packages/SystemUI/proguard_common.flags)).
+to update the proguard flags to keep the generated protolog classes (ie. AOSP SystemUI's [proguard.flags](/packages/SystemUI/proguard_common.flags)).
 
 ## Winscope Tracing
 

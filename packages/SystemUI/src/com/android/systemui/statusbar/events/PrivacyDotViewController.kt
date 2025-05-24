@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomLeft
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomRight
 import com.android.systemui.statusbar.events.PrivacyDotCorner.TopLeft
 import com.android.systemui.statusbar.events.PrivacyDotCorner.TopRight
+import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsChangedListener
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -123,6 +124,7 @@ constructor(
     @Assisted private val contentInsetsProvider: StatusBarContentInsetsProvider,
     private val animationScheduler: SystemStatusAnimationScheduler,
     shadeInteractor: ShadeInteractor?,
+    avControlsChipInteractor: AvControlsChipInteractor?,
     @ScreenDecorationsThread val uiExecutor: DelayableExecutor,
     @Assisted private val displayId: Int,
     private val shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>?,
@@ -189,6 +191,14 @@ constructor(
         contentInsetsProvider.addCallback(insetsChangedListener)
         configurationController.addCallback(configurationListener)
         stateController.addCallback(statusBarStateListener)
+        scope.launch {
+            avControlsChipInteractor?.isShowingAvChip?.collect { shouldSuppress ->
+                synchronized(lock) {
+                    nextViewState =
+                        nextViewState.copy(dotDuplicatedByAvControlsChip = shouldSuppress)
+                }
+            }
+        }
         scope.launch {
             if (
                 StatusBarConnectedDisplays.isEnabled &&
@@ -672,6 +682,7 @@ data class ViewState(
     val systemPrivacyEventIsActive: Boolean = false,
     val shadeExpanded: Boolean = false,
     val qsExpanded: Boolean = false,
+    val dotDuplicatedByAvControlsChip: Boolean = false,
     val portraitRect: Rect? = null,
     val landscapeRect: Rect? = null,
     val upsideDownRect: Rect? = null,
@@ -684,7 +695,10 @@ data class ViewState(
     val contentDescription: String? = null,
 ) {
     fun shouldShowDot(): Boolean {
-        return systemPrivacyEventIsActive && !shadeExpanded && !qsExpanded
+        return systemPrivacyEventIsActive &&
+            !shadeExpanded &&
+            !qsExpanded &&
+            !dotDuplicatedByAvControlsChip
     }
 
     fun needsLayout(other: ViewState): Boolean {

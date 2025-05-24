@@ -385,6 +385,7 @@ final class AttributedOp {
         InProgressStartOpEvent event = mPausedInProgressEvents.valueAt(indexOfToken);
         event.mNumUnfinishedStarts--;
         if (event.mNumUnfinishedStarts == 0) {
+            event.finish();
             mPausedInProgressEvents.removeAt(indexOfToken);
             mAppOpsService.mInProgressStartOpEventPool.release(event);
             if (mPausedInProgressEvents.isEmpty()) {

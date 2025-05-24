@@ -54,7 +54,7 @@ sealed class PopupChipModel {
         override val chipId: PopupChipId,
         /** Icons shown on the chip when no specific hover behavior. */
         val icons: List<ChipIcon>,
-        val chipText: String,
+        val chipText: String?,
         /** Determines the colors used for the chip. Defaults to system themed colors. */
         val colors: ColorsModel = ColorsModel.SystemTheme,
         val isPopupShown: Boolean = false,

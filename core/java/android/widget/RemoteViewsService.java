@@ -130,8 +130,6 @@ public abstract class RemoteViewsService extends Service {
          */
         default RemoteViews.RemoteCollectionItems getRemoteCollectionItems(int capSize,
                 int capBitmapSize) {
-            RemoteViews.RemoteCollectionItems items = new RemoteViews.RemoteCollectionItems
-                    .Builder().build();
             Parcel capSizeTestParcel = Parcel.obtain();
             // restore allowSquashing to reduce the noise in error messages
             boolean prevAllowSquashing = capSizeTestParcel.allowSquashing();
@@ -140,7 +138,6 @@ public abstract class RemoteViewsService extends Service {
                 RemoteViews.RemoteCollectionItems.Builder itemsBuilder =
                         new RemoteViews.RemoteCollectionItems.Builder();
                 RemoteViews.BitmapCache testBitmapCache = null;
-                onDataSetChanged();
 
                 itemsBuilder.setHasStableIds(hasStableIds());
                 final int numOfEntries = getCount();
@@ -167,14 +164,12 @@ public abstract class RemoteViewsService extends Service {
 
                     itemsBuilder.addItem(currentItemId, currentView);
                 }
-
-                items = itemsBuilder.build();
+                return itemsBuilder.build();
             } finally {
                 capSizeTestParcel.restoreAllowSquashing(prevAllowSquashing);
                 // Recycle the parcel
                 capSizeTestParcel.recycle();
             }
-            return items;
         }
     }
 
@@ -282,10 +277,14 @@ public abstract class RemoteViewsService extends Service {
 
         @Override
         public RemoteViews.RemoteCollectionItems getRemoteCollectionItems(int capSize,
-                int capBitmapSize) {
+                int capBitmapSize, boolean invalidateData) {
             RemoteViews.RemoteCollectionItems items = new RemoteViews.RemoteCollectionItems
                     .Builder().build();
             try {
+                if (mIsCreated || invalidateData) {
+                    mFactory.onDataSetChanged();
+                    mIsCreated = false;
+                }
                 items = mFactory.getRemoteCollectionItems(capSize, capBitmapSize);
             } catch (Exception ex) {
                 Thread t = Thread.currentThread();

@@ -42,6 +42,7 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
+@android.platform.test.annotations.EnabledOnRavenwood
 public class ProximitySensorImplSingleTest extends SysuiTestCase {
     private ProximitySensor mProximitySensor;
     private FakeExecutor mFakeExecutor = new FakeExecutor(new FakeSystemClock());

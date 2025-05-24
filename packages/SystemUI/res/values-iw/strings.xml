@@ -67,8 +67,7 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"אישור"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"אין הרשאה לניפוי באגים אלחוטי"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"למשתמש המחובר לחשבון במכשיר הזה אין אפשרות להפעיל ניפוי באגים אלחוטי. כדי להשתמש בתכונה הזו, יש לעבור אל משתמש עם הרשאת אדמין."</string>
-    <!-- no translation found for change_connected_wifi_text (6346095920396568246) -->
-    <skip />
+    <string name="change_connected_wifi_text" msgid="6346095920396568246">"אפשר לשנות את ההגדרה הזו אחרי שמתחברים לחשבון"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"‏יציאת ה-USB מושבתת"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"‏כדי להגן על המכשיר שלך מנוזלים או חלקיקים, יציאת ה-USB מושבתת ולא מזהה אביזרים כלל.\n\nתתקבל התראה כשניתן יהיה להשתמש ביציאת ה-USB."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"‏יציאת USB הופעלה לזיהוי מטענים ואביזרים"</string>
@@ -204,6 +203,14 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"מאומת"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ביטול האימות"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"אפשרויות נוספות"</string>
+    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"שימוש בקוד אימות"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"שימוש בקו פתיחת נעילה"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"שימוש בסיסמה"</string>
@@ -271,6 +278,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"הסוללה בטעינה, <xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g>%%."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"רמת הטעינה של הסוללה היא <xliff:g id="PERCENTAGE">%d</xliff:g> אחוזים. הטעינה הושהתה כדי להגן על הסוללה."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"רמת הטעינה של הסוללה היא <xliff:g id="PERCENTAGE">%1$d</xliff:g> אחוזים, <xliff:g id="TIME">%2$s</xliff:g>. הטעינה הושהתה כדי להגן על הסוללה."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"‫<xliff:g id="NUMBER">%d</xliff:g> אחוזים של הסוללה. תכונת החיסכון בסוללה פועלת."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"הצגת כל ההתראות"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"‏TeleTypewriter מופעל"</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"צלצול ורטט."</string>
@@ -281,6 +289,8 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"הגדרות מהירות."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"הגדרות מהירות ולוח ההתראות."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"מסך הנעילה"</string>
+    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
+    <skip />
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"מסך נעילה של עבודה"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"סגירה"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"השתקה מוחלטת"</string>
@@ -375,6 +385,10 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{מכשיר אחד (#)}one{# מכשירים}two{# מכשירים}other{# מכשירים}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"פנס"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"המצלמה בשימוש"</string>
+    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
+    <skip />
+    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"חבילת גלישה"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"שימוש בנתונים"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"מכסת נתונים נותרת"</string>
@@ -813,6 +827,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"הפעלה"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"פועל – מבוסס על זיהוי פנים"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"השתקה וצירוף לחבילה"</string>
+    <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"ליישום <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"מכירות, תכונות חדשות ועוד"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"כתבות מובילות, מאמרי דעה ועוד"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"לייקים, פוסטים ועוד"</string>
@@ -840,10 +855,10 @@
     <string name="no_shortcut" msgid="8257177117568230126">"האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> לא תומכת בתכונות השיחה"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"משוב"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"סגירה"</string>
-    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"לא להצמיד"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"השבתה"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"חסימת העדכונים בזמן אמת מהאפליקציה הזו"</string>
-    <string name="live_notifications_title" msgid="1586553354601345379">"מוצגים עדכונים בזמן אמת"</string>
-    <string name="live_notifications_desc" msgid="7470787001768372152">"בהתראות המוצמדות מוצג מידע בזמן אמת מאפליקציות, והן תמיד מופיעות בשורת הסטטוס ובמסך הנעילה"</string>
+    <string name="live_notifications_title" msgid="5926318111951903878">"עדכונים בזמן אמת"</string>
+    <string name="live_notifications_desc" msgid="2639662830862800119">"כשהאפשרות הזו מושבתת, ההתראות הפעילות של האפליקציה הזו לא יוצגו במסך הנעילה ובשורת הסטטוס"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"אי אפשר לשנות את ההתראות האלה."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"לא ניתן לשנות את התראות השיחה."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"לא ניתן להגדיר כאן את קבוצת ההתראות הזו"</string>
@@ -870,8 +885,7 @@
     <string name="snoozed_for_time" msgid="7586689374860469469">"נדחה לטיפול בעוד <xliff:g id="TIME_AMOUNT">%1$s</xliff:g>"</string>
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{שעה}=2{שעתיים}one{# שעות}other{# שעות}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{דקה}one{# דקות}two{# דקות}other{# דקות}}"</string>
-    <!-- no translation found for notification_promoted_ongoing_long_click (7199288520206554592) -->
-    <skip />
+    <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"כדי לפתוח את תפריט ההורדה בדרגה"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"חיסכון בסוללה"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"כפתור <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"דף הבית"</string>
@@ -1010,8 +1024,7 @@
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"יש צורך ב-<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> אריחים לפחות"</string>
     <string name="qs_edit" msgid="5583565172803472437">"עריכה"</string>
     <string name="qs_edit_tiles" msgid="2105215324060865035">"עריכת הכפתורים"</string>
-    <!-- no translation found for qs_edit_mode_tooltip (4164112885539479781) -->
-    <skip />
+    <string name="qs_edit_mode_tooltip" msgid="4164112885539479781">"שינוי הגודל של כפתורים ב\"הגדרות מהירות\""</string>
     <string name="tuner_time" msgid="2450785840990529997">"שעה"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"הצגת שעות, דקות ושניות"</item>
@@ -1157,10 +1170,8 @@
     <string name="magnification_exit_edit_mode_click_label" msgid="1664818325144887117">"יציאה ממצב עריכה"</string>
     <string name="magnification_drag_corner_to_resize" msgid="1249766311052418130">"צריך לגרור את הפינה כדי לשנות את הגודל"</string>
     <string name="accessibility_allow_diagonal_scrolling" msgid="3258050349191496398">"הפעלת גלילה באלכסון"</string>
-    <!-- no translation found for accessibility_magnify_typing (4450037184548427852) -->
-    <skip />
-    <!-- no translation found for accessibility_magnify_keyboard (3083531635742744841) -->
-    <skip />
+    <string name="accessibility_magnify_typing" msgid="4450037184548427852">"מעקב אחרי הקלדה"</string>
+    <string name="accessibility_magnify_keyboard" msgid="3083531635742744841">"הגדלת המקלדת"</string>
     <string name="accessibility_resize" msgid="5733759136600611551">"שינוי גודל"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"שינוי סוג ההגדלה"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"סיום שינוי הגודל"</string>
@@ -1276,7 +1287,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"קבוצה"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"נבחר מכשיר אחד"</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"נבחרו <xliff:g id="COUNT">%1$d</xliff:g> מכשירים"</string>
-    <string name="media_output_dialog_disconnected" msgid="7090512852817111185">"(מנותק)"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"מחובר"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"לא ניתן להחליף. צריך ללחוץ כדי לנסות שוב."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"חיבור מכשיר"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"חיבור מכשיר"</string>
@@ -1287,8 +1298,7 @@
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%‎‎"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"רמקולים מחוברים"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"רמקולים ומסכים"</string>
-    <!-- no translation found for media_output_group_title_suggested (5097061363820410332) -->
-    <skip />
+    <string name="media_output_group_title_suggested" msgid="5097061363820410332">"הצעות"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"הצעות למכשירים"</string>
     <string name="media_input_group_title" msgid="2057057473860783021">"קלט"</string>
     <string name="media_output_group_title" msgid="6789001895863332576">"פלט"</string>

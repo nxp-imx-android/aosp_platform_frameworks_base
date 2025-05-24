@@ -26,6 +26,7 @@ import android.graphics.Rect
 import android.graphics.Region
 import android.gui.BorderSettings
 import android.gui.BoxShadowSettings
+import android.os.Handler
 import android.view.Display
 import android.view.InsetsSource
 import android.view.InsetsState
@@ -45,6 +46,7 @@ import com.android.wm.shell.common.BoxShadowHelper
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
 import com.android.wm.shell.windowdecor.caption.CaptionController
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
@@ -72,6 +74,7 @@ abstract class WindowDecoration2<T>(
     taskSurface: SurfaceControl,
     surfaceControlSupplier: () -> SurfaceControl,
     private val taskOrganizer: ShellTaskOrganizer,
+    @ShellMainThread private val handler: Handler,
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder =
         { SurfaceControl.Builder() },
     private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction =
@@ -418,7 +421,12 @@ abstract class WindowDecoration2<T>(
     private fun obtainDisplayOrRegisterListener(): Boolean {
         display = displayController.getDisplay(taskInfo.displayId)
         if (display == null) {
-            displayController.addDisplayWindowListener(onDisplaysChangedListener)
+            // Post to the handler to avoid an infinite loop. See b/415631133 for more details.
+            // TODO(b/419398609): Remove this whole work around once the root timing issue is
+            //  resolved.
+            handler.post {
+                displayController.addDisplayWindowListener(onDisplaysChangedListener)
+            }
             return false
         }
         return true

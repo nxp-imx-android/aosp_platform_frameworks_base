@@ -45,6 +45,9 @@ import android.Manifest;
 import android.aconfigd.AconfigdFlagInfo;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeCURRENT;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
 import android.app.backup.BackupManager;
@@ -441,7 +444,7 @@ public class SettingsProvider extends ContentProvider {
 
     @Override
     public Bundle call(String method, String name, Bundle args) {
-        final int requestingUserId = getRequestingUserId(args);
+        final @CanBeCURRENT @UserIdInt int requestingUserId = getRequestingUserId(args);
         final int callingDeviceId = getDeviceId();
         switch (method) {
             case Settings.CALL_METHOD_GET_CONFIG -> {
@@ -1729,7 +1732,8 @@ public class SettingsProvider extends ContentProvider {
         }
     }
 
-    private Setting getSecureSetting(String name, int requestingUserId, int deviceId) {
+    private Setting getSecureSetting(String name,
+            @CanBeCURRENT @UserIdInt int requestingUserId, int deviceId) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "getSecureSetting(" + name + ", " + requestingUserId + ")");
         }
@@ -1852,7 +1856,7 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private boolean insertSecureSetting(String name, String value, String tag,
-            boolean makeDefault, int requestingUserId, boolean forceNotify,
+            boolean makeDefault, @CanBeCURRENT @UserIdInt int requestingUserId, boolean forceNotify,
             boolean overrideableByRestore) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "insertSecureSetting(" + name + ", " + value + ", "
@@ -1863,7 +1867,8 @@ public class SettingsProvider extends ContentProvider {
                 MUTATION_OPERATION_INSERT, forceNotify, 0, overrideableByRestore);
     }
 
-    private boolean deleteSecureSetting(String name, int requestingUserId, boolean forceNotify) {
+    private boolean deleteSecureSetting(String name, @CanBeCURRENT @UserIdInt int requestingUserId,
+            boolean forceNotify) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "deleteSecureSetting(" + name + ", " + requestingUserId
                     + ", " + forceNotify + ")");
@@ -1905,8 +1910,8 @@ public class SettingsProvider extends ContentProvider {
     }
 
     private boolean mutateSecureSetting(String name, String value, String tag,
-            boolean makeDefault, int requestingUserId, int operation, boolean forceNotify,
-            int mode, boolean overrideableByRestore) {
+            boolean makeDefault, @CanBeCURRENT @UserIdInt int requestingUserId, int operation,
+            boolean forceNotify, int mode, boolean overrideableByRestore) {
         // Make sure the caller can change the settings.
         enforceHasAtLeastOnePermission(Manifest.permission.WRITE_SECURE_SETTINGS);
 
@@ -1997,7 +2002,8 @@ public class SettingsProvider extends ContentProvider {
         }
     }
 
-    private Setting getSystemSetting(String name, int requestingUserId, int deviceId) {
+    private Setting getSystemSetting(String name,
+            @CanBeCURRENT @UserIdInt int requestingUserId, int deviceId) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "getSystemSetting(" + name + ", " + requestingUserId + ")");
         }
@@ -2018,8 +2024,8 @@ public class SettingsProvider extends ContentProvider {
         }
     }
 
-    private boolean insertSystemSetting(String name, String value, int requestingUserId,
-            boolean overrideableByRestore) {
+    private boolean insertSystemSetting(String name, String value,
+            @CanBeCURRENT @UserIdInt int requestingUserId, boolean overrideableByRestore) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "insertSystemSetting(" + name + ", " + value + ", "
                     + requestingUserId + ", " + overrideableByRestore + ")");
@@ -2029,7 +2035,8 @@ public class SettingsProvider extends ContentProvider {
                 MUTATION_OPERATION_INSERT, /* mode= */ 0, overrideableByRestore);
     }
 
-    private boolean deleteSystemSetting(String name, int requestingUserId) {
+    private boolean deleteSystemSetting(String name,
+            @CanBeCURRENT @UserIdInt int requestingUserId) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "deleteSystemSetting(" + name + ", " + requestingUserId + ")");
         }
@@ -2046,7 +2053,8 @@ public class SettingsProvider extends ContentProvider {
         return mutateSystemSetting(name, value, requestingUserId, MUTATION_OPERATION_UPDATE);
     }
 
-    private void resetSystemSetting(int requestingUserId, int mode, String tag) {
+    private void resetSystemSetting(@CannotBeSpecialUser @UserIdInt int requestingUserId,
+            int mode, String tag) {
         if (DEBUG) {
             Slog.v(LOG_TAG, "resetSystemSetting(" + requestingUserId + ", "
                     + mode + ", " + tag + ")");
@@ -2063,7 +2071,8 @@ public class SettingsProvider extends ContentProvider {
                 /* mode= */ 0, /* overrideableByRestore */ false);
     }
 
-    private boolean mutateSystemSetting(String name, String value, String tag, int runAsUserId,
+    private boolean mutateSystemSetting(String name, String value, String tag,
+            @CanBeCURRENT @UserIdInt int runAsUserId,
             int operation, int mode, boolean overrideableByRestore) {
         final String callingPackage = getCallingPackage();
         if (!hasWriteSecureSettingsPermission()) {
@@ -2130,7 +2139,7 @@ public class SettingsProvider extends ContentProvider {
                 }
                 case MUTATION_OPERATION_RESET -> {
                     success = mSettingsRegistry.resetSettingsLocked(SETTINGS_TYPE_SYSTEM,
-                            runAsUserId, callingDeviceId, callingPackage, mode, tag);
+                            owningUserId, callingDeviceId, callingPackage, mode, tag);
                 }
                 default -> {
                     success = false;
@@ -2735,7 +2744,8 @@ public class SettingsProvider extends ContentProvider {
         }
     }
 
-    private static int resolveCallingUserIdEnforcingPermissions(int requestingUserId) {
+    private static @CannotBeSpecialUser @UserIdInt int resolveCallingUserIdEnforcingPermissions(
+            @CanBeCURRENT @UserIdInt int requestingUserId) {
         if (requestingUserId == UserHandle.getCallingUserId()) {
             return requestingUserId;
         }
@@ -2870,7 +2880,7 @@ public class SettingsProvider extends ContentProvider {
         }
     }
 
-    private static int getRequestingUserId(Bundle args) {
+    private static @CanBeCURRENT @UserIdInt int getRequestingUserId(Bundle args) {
         final int callingUserId = UserHandle.getCallingUserId();
         return (args != null) ? args.getInt(Settings.CALL_METHOD_USER_KEY, callingUserId)
                 : callingUserId;
@@ -3728,14 +3738,14 @@ public class SettingsProvider extends ContentProvider {
             return Global.SECURE_FRP_MODE.equals(setting.getName());
         }
 
-        public boolean resetSettingsLocked(int type, int userId, int deviceId, String packageName,
-                int mode, String tag) {
+        public boolean resetSettingsLocked(int type, @CannotBeSpecialUser @UserIdInt int userId,
+                int deviceId, String packageName, int mode, String tag) {
             return resetSettingsLocked(type, userId, deviceId, packageName, mode, tag, /*prefix=*/
                     null);
         }
 
-        public boolean resetSettingsLocked(int type, int userId, int deviceId, String packageName,
-                int mode, String tag, @Nullable String prefix) {
+        public boolean resetSettingsLocked(int type, @CannotBeSpecialUser @UserIdInt int userId,
+                int deviceId, String packageName, int mode, String tag, @Nullable String prefix) {
             final long key = makeKey(type, userId, deviceId);
             SettingsState settingsState = getOrCreateSettingsStateLocked(key);
             if (settingsState == null) {
@@ -4244,7 +4254,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 229;
+            private static final int SETTINGS_VERSION = 230;
 
             private final int mUserId;
             private final int mDeviceId;
@@ -6561,6 +6571,18 @@ public class SettingsProvider extends ContentProvider {
                     }
 
                     currentVersion = 229;
+                }
+
+                // Version 229: Migrate WearOS time zone settings for geo detection
+                if (currentVersion == 229) {
+                    if (getContext().getPackageManager()
+                            .hasSystemFeature(PackageManager.FEATURE_WATCH)) {
+                        SettingsState global = getGlobalSettingsLocked();
+                        global.insertSettingLocked(Global.AUTO_TIME_ZONE, "0", null, true,
+                                SettingsState.SYSTEM_PACKAGE_NAME);
+                    }
+
+                    currentVersion = 230;
                 }
 
                 // vXXX: Add new settings above this point.

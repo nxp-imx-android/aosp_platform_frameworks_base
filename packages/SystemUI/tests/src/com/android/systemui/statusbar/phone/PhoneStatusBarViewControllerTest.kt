@@ -63,11 +63,9 @@ import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
-import com.android.systemui.statusbar.data.repository.FakeStatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.data.repository.fakeStatusBarContentInsetsProviderStore
-import com.android.systemui.statusbar.phone.PhoneStatusBarViewController.PhoneStatusBarViewInteractionsGate
 import com.android.systemui.statusbar.policy.Clock
-import com.android.systemui.statusbar.policy.ConfigurationController
+import com.android.systemui.statusbar.policy.mockStatusBarConfigurationController
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.util.ScopedUnfoldTransitionProgressProvider
@@ -76,6 +74,7 @@ import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.view.ViewUtil
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
+import java.util.function.BooleanSupplier
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -101,6 +100,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     private val kosmos = testKosmos()
+    private val mStatusBarConfigurationController = kosmos.mockStatusBarConfigurationController
     private val statusBarContentInsetsProviderStore = kosmos.fakeStatusBarContentInsetsProviderStore
     private val statusBarContentInsetsProvider = statusBarContentInsetsProviderStore.defaultDisplay
     private val statusBarContentInsetsProviderForSecondaryDisplay =
@@ -123,9 +123,6 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     @Mock private lateinit var statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     @Mock private lateinit var shadeDisplayRepository: ShadeDisplaysRepository
     private lateinit var statusBarWindowStateController: StatusBarWindowStateController
-    private val fakeConfigurationControllerStore = FakeStatusBarConfigurationControllerStore()
-    private lateinit var configurationController: ConfigurationController
-
     private lateinit var view: PhoneStatusBarView
     private lateinit var controller: PhoneStatusBarViewController
 
@@ -142,8 +139,6 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         MockitoAnnotations.initMocks(this)
 
         statusBarWindowStateController = StatusBarWindowStateController(DISPLAY_ID, commandQueue)
-        configurationController =
-            fakeConfigurationControllerStore.forDisplay(Display.DEFAULT_DISPLAY)
 
         whenever(statusBarContentInsetsProvider.getStatusBarContentInsetsForCurrentRotation())
             .thenReturn(Insets.NONE)
@@ -187,14 +182,14 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
-    fun onViewAttachedAndDrawn_startListeningConfigurationControllerCallback() {
+    fun onViewAttachedAndDrawn_addStatusBarConfigurationControllerCallback() {
         val view = createViewMock(view)
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             controller = createAndInitController(view)
         }
 
-        verify(configurationController).addCallback(any())
+        verify(mStatusBarConfigurationController).addCallback(any())
     }
 
     @Test
@@ -219,7 +214,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
             controller = createAndInitController(view)
         }
 
-        verify(view, never()).setInteractionGate(any())
+        verify(view, never()).setIsStatusBarInteractiveSupplier(any())
     }
 
     @Test
@@ -231,7 +226,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
             controller = createAndInitController(view)
         }
 
-        verify(view, never()).setInteractionGate(any())
+        verify(view, never()).setIsStatusBarInteractiveSupplier(any())
     }
 
     @Test
@@ -243,7 +238,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
             controller = createAndInitController(viewForSecondaryDisplay)
         }
 
-        verify(viewForSecondaryDisplay).setInteractionGate(any())
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(any())
     }
 
     @Test
@@ -364,9 +359,9 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         whenever(shadeViewController.isViewEnabled).thenReturn(true)
         // Ensure test is set up with an interaction gate that allows interactions.
         whenever(shadeDisplayRepository.currentPolicy).thenReturn(statusBarTouchShadeDisplayPolicy)
-        val argumentCaptor = ArgumentCaptor.forClass(PhoneStatusBarViewInteractionsGate::class.java)
-        verify(viewForSecondaryDisplay).setInteractionGate(argumentCaptor.capture())
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isTrue()
+        val argumentCaptor = ArgumentCaptor.forClass(BooleanSupplier::class.java)
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
+        assertThat(argumentCaptor.value.asBoolean).isTrue()
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         viewForSecondaryDisplay.dispatchTouchEvent(event)
@@ -389,9 +384,9 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         whenever(shadeViewController.isViewEnabled).thenReturn(true)
         // Ensure test is set up with an interaction gate that does not allow interactions.
         whenever(shadeDisplayRepository.currentPolicy).thenReturn(kosmos.defaultShadeDisplayPolicy)
-        val argumentCaptor = ArgumentCaptor.forClass(PhoneStatusBarViewInteractionsGate::class.java)
-        verify(viewForSecondaryDisplay).setInteractionGate(argumentCaptor.capture())
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isFalse()
+        val argumentCaptor = ArgumentCaptor.forClass(BooleanSupplier::class.java)
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
+        assertThat(argumentCaptor.value.asBoolean).isFalse()
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
         viewForSecondaryDisplay.dispatchTouchEvent(event)
@@ -558,10 +553,10 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             controller = createAndInitController(viewForSecondaryDisplay)
         }
-        val argumentCaptor = ArgumentCaptor.forClass(PhoneStatusBarViewInteractionsGate::class.java)
-        verify(viewForSecondaryDisplay).setInteractionGate(argumentCaptor.capture())
+        val argumentCaptor = ArgumentCaptor.forClass(BooleanSupplier::class.java)
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
 
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isFalse()
+        assertThat(argumentCaptor.value.asBoolean).isFalse()
     }
 
     @Test
@@ -571,11 +566,11 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             controller = createAndInitController(viewForSecondaryDisplay)
         }
-        val argumentCaptor = ArgumentCaptor.forClass(PhoneStatusBarViewInteractionsGate::class.java)
-        verify(viewForSecondaryDisplay).setInteractionGate(argumentCaptor.capture())
+        val argumentCaptor = ArgumentCaptor.forClass(BooleanSupplier::class.java)
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
 
         whenever(shadeDisplayRepository.currentPolicy).thenReturn(kosmos.defaultShadeDisplayPolicy)
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isFalse()
+        assertThat(argumentCaptor.value.asBoolean).isFalse()
     }
 
     @Test
@@ -585,11 +580,11 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             controller = createAndInitController(viewForSecondaryDisplay)
         }
-        val argumentCaptor = ArgumentCaptor.forClass(PhoneStatusBarViewInteractionsGate::class.java)
-        verify(viewForSecondaryDisplay).setInteractionGate(argumentCaptor.capture())
+        val argumentCaptor = ArgumentCaptor.forClass(BooleanSupplier::class.java)
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
 
         whenever(shadeDisplayRepository.currentPolicy).thenReturn(statusBarTouchShadeDisplayPolicy)
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isTrue()
+        assertThat(argumentCaptor.value.asBoolean).isTrue()
     }
 
     @Test
@@ -599,14 +594,14 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             controller = createAndInitController(viewForSecondaryDisplay)
         }
-        val argumentCaptor = ArgumentCaptor.forClass(PhoneStatusBarViewInteractionsGate::class.java)
-        verify(viewForSecondaryDisplay).setInteractionGate(argumentCaptor.capture())
+        val argumentCaptor = ArgumentCaptor.forClass(BooleanSupplier::class.java)
+        verify(viewForSecondaryDisplay).setIsStatusBarInteractiveSupplier(argumentCaptor.capture())
 
         whenever(shadeDisplayRepository.currentPolicy).thenReturn(kosmos.defaultShadeDisplayPolicy)
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isFalse()
+        assertThat(argumentCaptor.value.asBoolean).isFalse()
 
         whenever(shadeDisplayRepository.currentPolicy).thenReturn(statusBarTouchShadeDisplayPolicy)
-        assertThat(argumentCaptor.value.shouldAllowInteractions()).isTrue()
+        assertThat(argumentCaptor.value.asBoolean).isTrue()
     }
 
     @Test
@@ -716,8 +711,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
                 { windowRootView },
                 shadeLogger,
                 viewUtil,
-                fakeConfigurationControllerStore,
-                configurationController,
+                mStatusBarConfigurationController,
                 mStatusOverlayHoverListenerFactory,
                 fakeDarkIconDispatcher,
                 statusBarContentInsetsProviderStore,

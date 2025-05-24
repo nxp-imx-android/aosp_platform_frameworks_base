@@ -17,7 +17,30 @@
 package com.android.systemui.statusbar.featurepods.vc.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.shade.data.repository.privacyChipRepository
+import com.android.systemui.statusbar.data.repository.statusBarModeRepository
+import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChipModel
+import com.android.systemui.statusbar.featurepods.vc.shared.model.SensorActivityModel
+import kotlinx.coroutines.flow.MutableStateFlow
 
-val Kosmos.avControlsChipInteractor: AvControlsChipInteractor by
-    Kosmos.Fixture { AvControlsChipInteractor(privacyChipRepository = privacyChipRepository) }
+val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractor by
+    Kosmos.Fixture {
+        AvControlsChipInteractorImpl(
+            backgroundScope = backgroundScope,
+            privacyChipRepository = privacyChipRepository,
+            statusBarModeRepositoryStore = statusBarModeRepository,
+        )
+    }
+
+val Kosmos.fakeAvControlsChipInteractor: FakeAvControlsChipInteractor by
+    Kosmos.Fixture { FakeAvControlsChipInteractor() }
+
+class FakeAvControlsChipInteractor : AvControlsChipInteractor {
+    override val isEnabled: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    override val model: MutableStateFlow<AvControlsChipModel> =
+        MutableStateFlow(AvControlsChipModel(sensorActivityModel = SensorActivityModel.Inactive))
+    override val isShowingAvChip: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    override fun initialize() {}
+}

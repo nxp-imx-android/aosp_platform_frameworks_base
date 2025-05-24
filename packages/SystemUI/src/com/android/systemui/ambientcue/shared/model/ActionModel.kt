@@ -25,4 +25,5 @@ data class ActionModel(
     val attribution: String?,
     val onPerformAction: () -> Unit,
     val taskId: Int = INVALID_TASK_ID,
+    val actionType: String? = null,
 )

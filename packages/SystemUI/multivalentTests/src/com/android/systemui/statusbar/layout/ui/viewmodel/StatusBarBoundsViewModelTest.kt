@@ -1,0 +1,274 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.systemui.statusbar.layout.ui.viewmodel
+
+import android.content.testableContext
+import android.graphics.Rect
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.view.View
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SmallTest
+import com.android.systemui.SysuiTestCase
+import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.statusbar.layout.StatusBarAppHandleTracking
+import com.android.systemui.statusbar.policy.Clock
+import com.android.systemui.testKosmos
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_BUBBLE
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_FULLSCREEN
+import com.android.wm.shell.windowdecor.viewholder.AppHandleIdentifier.AppHandleWindowingMode.APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN
+import com.google.common.truth.Truth.assertThat
+import java.util.Optional
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+
+@SmallTest
+@RunWith(AndroidJUnit4::class)
+class StatusBarBoundsViewModelTest : SysuiTestCase() {
+    private var clockBounds = Rect()
+    private var startContainerBounds = Rect()
+
+    private val kosmos =
+        testKosmos().useUnconfinedTestDispatcher().apply {
+            mockStatusBarClockView =
+                mock<Clock> {
+                    on { getBoundsOnScreen(any()) } doAnswer
+                        {
+                            val boundsOutput = it.arguments[0] as Rect
+                            boundsOutput.set(clockBounds)
+                            return@doAnswer
+                        }
+                }
+            mockStatusBarStartSideContainerView =
+                mock<View> {
+                    on { getBoundsOnScreen(any()) } doAnswer
+                        {
+                            val boundsOutput = it.arguments[0] as Rect
+                            boundsOutput.set(startContainerBounds)
+                            return@doAnswer
+                        }
+                }
+        }
+
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.statusBarBoundsViewModel }
+
+    private val clockLayoutChangeListener: View.OnLayoutChangeListener
+        get() {
+            val captor = argumentCaptor<View.OnLayoutChangeListener>()
+            verify(kosmos.mockStatusBarClockView).addOnLayoutChangeListener(captor.capture())
+            return captor.firstValue
+        }
+
+    private val startContainerLayoutChangeListener: View.OnLayoutChangeListener
+        get() {
+            val captor = argumentCaptor<View.OnLayoutChangeListener>()
+            verify(kosmos.mockStatusBarStartSideContainerView)
+                .addOnLayoutChangeListener(captor.capture())
+            return captor.firstValue
+        }
+
+    @Before
+    fun setUp() {
+        kosmos.underTest.activateIn(kosmos.testScope)
+    }
+
+    @Test
+    fun startSideContainerBounds_getsUpdatedBounds() =
+        kosmos.runTest {
+            val firstRect = Rect(1, 2, 3, 4)
+            startContainerBounds = firstRect
+            startContainerLayoutChangeListener.onLayoutChange(
+                mockStatusBarStartSideContainerView,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            )
+
+            assertThat(underTest.startSideContainerBounds).isEqualTo(firstRect)
+
+            val newRect = Rect(5, 6, 7, 8)
+            startContainerBounds = newRect
+            startContainerLayoutChangeListener.onLayoutChange(
+                mockStatusBarStartSideContainerView,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            )
+
+            assertThat(underTest.startSideContainerBounds).isEqualTo(newRect)
+        }
+
+    @Test
+    fun clockBounds_getsUpdatedBounds() =
+        kosmos.runTest {
+            val firstRect = Rect(1, 2, 3, 4)
+            clockBounds = firstRect
+            clockLayoutChangeListener.onLayoutChange(mockStatusBarClockView, 0, 0, 0, 0, 0, 0, 0, 0)
+
+            assertThat(underTest.clockBounds).isEqualTo(firstRect)
+
+            val newRect = Rect(5, 6, 7, 8)
+            clockBounds = newRect
+            clockLayoutChangeListener.onLayoutChange(mockStatusBarClockView, 0, 0, 0, 0, 0, 0, 0, 0)
+
+            assertThat(underTest.clockBounds).isEqualTo(newRect)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun appHandleBounds_noAppHandlesProvided_empty() =
+        kosmos.runTest {
+            val viewModelWithNoAppHandles =
+                StatusBarBoundsViewModel(
+                    backgroundScope = backgroundScope,
+                    sysuiMainExecutor = fakeExecutor,
+                    appHandles = Optional.empty(),
+                    thisDisplayId = testableContext.displayId,
+                    startSideContainerView = mockStatusBarStartSideContainerView,
+                    clockView = mockStatusBarClockView,
+                )
+
+            assertThat(viewModelWithNoAppHandles.appHandleBounds).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun appHandleBounds_empty() =
+        kosmos.runTest {
+            fakeAppHandles.setAppHandles(emptyMap())
+
+            assertThat(underTest.appHandleBounds).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun appHandleBounds_notForThisDisplay_empty() =
+        kosmos.runTest {
+            val taskId = 10
+            val rect = Rect(1, 2, 3, 4)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId to
+                        AppHandleIdentifier(
+                            rect = rect,
+                            displayId = testableContext.displayId + 2,
+                            taskId = taskId,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+                        )
+                )
+            )
+
+            assertThat(underTest.appHandleBounds).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun appHandleBounds_forThisDisplay_hasBounds() =
+        kosmos.runTest {
+            val taskId = 10
+            val rect = Rect(1, 2, 3, 4)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId to
+                        AppHandleIdentifier(
+                            rect = rect,
+                            displayId = testableContext.displayId,
+                            taskId = taskId,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+                        )
+                )
+            )
+
+            assertThat(underTest.appHandleBounds).containsExactly(rect)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun appHandleBounds_multipleForThisDisplay_hasAll() =
+        kosmos.runTest {
+            val taskId1 = 10
+            val rect1 = Rect(1, 2, 3, 4)
+
+            val taskId2 = 20
+            val rect2 = Rect(10, 20, 30, 40)
+
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId1 to
+                        AppHandleIdentifier(
+                            rect = rect1,
+                            displayId = testableContext.displayId,
+                            taskId = taskId1,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_BUBBLE,
+                        ),
+                    taskId2 to
+                        AppHandleIdentifier(
+                            rect = rect2,
+                            displayId = testableContext.displayId,
+                            taskId = taskId2,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_SPLIT_SCREEN,
+                        ),
+                )
+            )
+
+            assertThat(underTest.appHandleBounds).containsExactly(rect1, rect2)
+        }
+
+    @Test
+    @DisableFlags(StatusBarAppHandleTracking.FLAG_NAME)
+    fun appHandleBounds_emptyIfFlagDisabled() =
+        kosmos.runTest {
+            val taskId = 10
+            val rect = Rect(1, 2, 3, 4)
+            fakeAppHandles.setAppHandles(
+                mapOf(
+                    taskId to
+                        AppHandleIdentifier(
+                            rect = rect,
+                            displayId = testableContext.displayId,
+                            taskId = taskId,
+                            windowingMode = APP_HANDLE_WINDOWING_MODE_FULLSCREEN,
+                        )
+                )
+            )
+
+            assertThat(underTest.appHandleBounds).isEmpty()
+        }
+}

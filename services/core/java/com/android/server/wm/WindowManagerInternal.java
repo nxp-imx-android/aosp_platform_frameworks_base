@@ -209,6 +209,13 @@ public abstract class WindowManagerInternal {
         void onMagnificationRegionChanged(Region magnificationRegion);
 
         /**
+         * Called when the region used by TYPE_INPUT_METHOD windows changes.
+         *
+         * @param imeRegion the current region taken by TYPE_INPUT_METHOD window(s).
+         */
+        void onImeRegionChanged(Region imeRegion);
+
+        /**
          * Called when an application requests a rectangle on the screen to allow
          * the client to apply the appropriate pan and scale.
          *

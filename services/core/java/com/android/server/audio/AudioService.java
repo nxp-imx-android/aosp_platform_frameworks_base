@@ -92,6 +92,7 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CannotBeSpecialUser;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
@@ -538,6 +539,8 @@ public class AudioService extends IAudioService.Stub
      **/
     private SparseArray<VolumeStreamState> mStreamStates;
 
+    private final AtomicBoolean mStreamStatesCreated = new AtomicBoolean(false);
+
     /**
      * @see InputDeviceVolumeHelper
      */
@@ -564,6 +567,10 @@ public class AudioService extends IAudioService.Stub
      */
     @Nullable
     /*package*/ VolumeStreamState getVssForStream(int stream) {
+        if (!mStreamStatesCreated.get()) {
+            Slog.e(TAG, "VSS not created!");
+            return null;
+        }
         return mStreamStates.get(stream);
     }
 
@@ -2302,6 +2309,14 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void onReinitVolumes(@NonNull String caller) {
+        if (!mSystemReady || !mStreamStatesCreated.get()) {
+            Slog.e(TAG, "Stream states not ready, retry onReinitVolumes()");
+            sLifecycleLogger.enqueue(new EventLogger.StringEvent("onReinitVolumes() retry"));
+            sendMsg(mAudioHandler, MSG_REINIT_VOLUMES, SENDMSG_REPLACE, 0, 0,
+                    null, 500);
+            return;
+        }
+
         final int numStreamTypes = AudioSystem.getNumStreamTypes();
         // keep track of any error during stream volume initialization
         int status = AudioSystem.AUDIO_STATUS_OK;
@@ -2695,6 +2710,7 @@ public class AudioService extends IAudioService.Stub
                         new VolumeStreamState(System.VOLUME_SETTINGS_INT[streamAlias], i));
             }
         }
+        mStreamStatesCreated.set(true);
 
         checkAllFixedVolumeDevices();
         checkAllAliasStreamVolumes();
@@ -5161,20 +5177,22 @@ public class AudioService extends IAudioService.Stub
             if (updateAudioMode) {
                 postUpdateAudioMode(existingMsgPolicy, AudioSystem.MODE_CURRENT,
                         android.os.Process.myPid(), mContext.getPackageName(),
-                        false /*signal*/, delay);
+                        false /*signal*/, delay, false /* force */);
             }
         }
     }
 
     static class UpdateAudioModeInfo {
-        UpdateAudioModeInfo(int mode, int pid, String packageName) {
+        UpdateAudioModeInfo(int mode, int pid, String packageName, boolean force) {
             mMode = mode;
             mPid = pid;
             mPackageName = packageName;
+            mForce = force;
         }
         private final int mMode;
         private final int mPid;
         private final String mPackageName;
+        private final boolean mForce;
 
         int getMode() {
             return mMode;
@@ -5185,16 +5203,19 @@ public class AudioService extends IAudioService.Stub
         String getPackageName() {
             return mPackageName;
         }
+        boolean getForce() {
+            return mForce;
+        }
     }
 
     void postUpdateAudioMode(int msgPolicy, int mode, int pid, String packageName,
-            boolean signal, int delay) {
+            boolean signal, int delay, boolean force) {
         synchronized (mAudioModeResetLock) {
             if (signal) {
                 mAudioModeResetCount++;
             }
             sendMsg(mAudioHandler, signal ? MSG_UPDATE_AUDIO_MODE_SIGNAL : MSG_UPDATE_AUDIO_MODE,
-                    msgPolicy, 0, 0, new UpdateAudioModeInfo(mode, pid, packageName), delay);
+                    msgPolicy, 0, 0, new UpdateAudioModeInfo(mode, pid, packageName, force), delay);
         }
     }
 
@@ -6666,7 +6687,7 @@ public class AudioService extends IAudioService.Stub
                     mSetModeDeathHandlers.remove(index);
                     postUpdateAudioMode(SENDMSG_QUEUE, AudioSystem.MODE_CURRENT,
                             android.os.Process.myPid(), mContext.getPackageName(),
-                            false /*signal*/, 0);
+                            false /*signal*/, 0, false /* force */);
                 }
             }
         }
@@ -6855,6 +6876,8 @@ public class AudioService extends IAudioService.Stub
                 }
             }
 
+            int previousModeOwnerUid = getModeOwnerUid();
+
             if (mode == AudioSystem.MODE_NORMAL) {
                 if (currentModeHandler != null) {
                     if (!currentModeHandler.isPrivileged()
@@ -6911,9 +6934,9 @@ public class AudioService extends IAudioService.Stub
                     }
                 }
             }
-
             postUpdateAudioMode(SENDMSG_REPLACE, mode, pid, callingPackage,
-                    hasModifyPhoneStatePermission && mode == AudioSystem.MODE_NORMAL, 0);
+                    hasModifyPhoneStatePermission && mode == AudioSystem.MODE_NORMAL, 0,
+                    previousModeOwnerUid != getModeOwnerUid() /* force */);
         }
     }
 
@@ -8857,6 +8880,14 @@ public class AudioService extends IAudioService.Stub
     @VisibleForTesting
     public void setMusicMute(boolean mute) {
         getVssForStreamOrDefault(AudioSystem.STREAM_MUSIC).muteInternally(mute);
+    }
+
+    /** Mute or unmute call audio */
+    /*package*/ void setCallMute(boolean mute) {
+        getVssForStreamOrDefault(AudioSystem.STREAM_VOICE_CALL).muteInternally(mute);
+        if (!replaceStreamBtSco()) {
+            getVssForStreamOrDefault(AudioSystem.STREAM_BLUETOOTH_SCO).muteInternally(mute);
+        }
     }
 
     private static final Set<Integer> DEVICE_MEDIA_UNMUTED_ON_PLUG_SET;
@@ -10916,7 +10947,7 @@ public class AudioService extends IAudioService.Stub
                     synchronized (mDeviceBroker.mSetModeLock) {
                         UpdateAudioModeInfo info = (UpdateAudioModeInfo) msg.obj;
                         onUpdateAudioMode(info.getMode(), info.getPid(), info.getPackageName(),
-                                false /*force*/, msg.what == MSG_UPDATE_AUDIO_MODE_SIGNAL);
+                                info.getForce(), msg.what == MSG_UPDATE_AUDIO_MODE_SIGNAL);
                     }
                     break;
 
@@ -13717,6 +13748,18 @@ public class AudioService extends IAudioService.Stub
                 }
             }
         }
+
+        @Override
+        public boolean isUserPlayingAudio(@CannotBeSpecialUser @UserIdInt int userId) {
+            final List<AudioPlaybackConfiguration> configs = getActivePlaybackConfigurations();
+            for (AudioPlaybackConfiguration cfg : configs) {
+                if (UserHandle.getUserId(cfg.getClientUid()) == userId &&
+                        cfg.getPlayerState() == AudioPlaybackConfiguration.PLAYER_STATE_STARTED) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     private void onUpdateAccessibilityServiceUids() {
@@ -13762,7 +13805,8 @@ public class AudioService extends IAudioService.Stub
                 // logging after registration so we have the registration id
                 mDynPolicyLogger.enqueue((new EventLogger.StringEvent("registerAudioPolicy for "
                         + pcb.asBinder() + " u/pid:" + Binder.getCallingUid() + "/"
-                        + Binder.getCallingPid() + " with config:" + app.toCompactLogString()))
+                        + Binder.getCallingPid() + " with config:" + app.toCompactLogString()
+                        + " for virtual deviceId: " + attributionSource.getDeviceId()))
                         .printLog(TAG));
 
                 regId = app.getRegistrationId();

@@ -18,6 +18,7 @@ package android.app.appfunctions;
 
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
+import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -25,6 +26,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
+import android.annotation.SdkConstant;
 import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
@@ -89,6 +91,54 @@ import java.util.concurrent.Executor;
 @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
 @SystemService(Context.APP_FUNCTION_SERVICE)
 public final class AppFunctionManager {
+
+    /**
+     * Activity action: Launch UI to manage App Function access.
+     * <p>
+     * Input: Nothing.
+     * </p>
+     * <p>
+     * Output: Nothing.
+     * </p>
+     */
+    @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
+    @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_MANAGE_APP_FUNCTION_ACCESS =
+            "android.app.appfunctions.action.MANAGE_APP_FUNCTION_ACCESS";
+
+    /**
+     * Activity action: Launch UI to manage App Function access for a specific agent app.
+     * <p>
+     * Input: {@link android.content.Intent#EXTRA_PACKAGE_NAME} specifies the package whose access
+     * will be managed by the launched UI.
+     * </p>
+     * <p>
+     * Output: Nothing.
+     * </p>
+     *
+     * @see android.content.Intent#EXTRA_PACKAGE_NAME
+     */
+    @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
+    @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_MANAGE_AGENT_APP_FUNCTION_ACCESS =
+            "android.app.appfunctions.action.MANAGE_AGENT_APP_FUNCTION_ACCESS";
+
+    /**
+     * Activity action: Launch UI to manage App Function access for a specific target app.
+     * <p>
+     * Input: {@link android.content.Intent#EXTRA_PACKAGE_NAME} specifies the package whose access
+     * will be managed by the launched UI.
+     * </p>
+     * <p>
+     * Output: Nothing.
+     * </p>
+     *
+     * @see android.content.Intent#EXTRA_PACKAGE_NAME
+     */
+    @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
+    @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_MANAGE_TARGET_APP_FUNCTION_ACCESS =
+            "android.app.appfunctions.action.MANAGE_TARGET_APP_FUNCTION_ACCESS";
 
     /**
      * The default state of the app function. Call {@link #setAppFunctionEnabled} with this to reset

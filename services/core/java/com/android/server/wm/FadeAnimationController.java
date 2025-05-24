@@ -16,8 +16,8 @@
 
 package com.android.server.wm;
 
-import static com.android.server.wm.AnimationSpecProto.WINDOW;
-import static com.android.server.wm.WindowAnimationSpecProto.ANIMATION;
+import static android.internal.perfetto.protos.Animationadapter.AnimationSpecProto.WINDOW;
+import static android.internal.perfetto.protos.Animationadapter.WindowAnimationSpecProto.ANIMATION;
 
 import android.annotation.NonNull;
 import android.util.proto.ProtoOutputStream;

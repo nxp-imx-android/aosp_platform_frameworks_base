@@ -6532,8 +6532,8 @@ package android.app {
     method public long getTimeoutAfter();
     method public boolean hasImage();
     method @FlaggedApi("android.app.api_rich_ongoing") public boolean hasPromotableCharacteristics();
-    method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean hasRequestedPromotedOngoing();
     method @FlaggedApi("android.app.nm_summarization") public boolean hasSummarizedContent();
+    method @FlaggedApi("android.app.opt_in_rich_ongoing") public boolean isRequestPromotedOngoing();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final android.media.AudioAttributes AUDIO_ATTRIBUTES_DEFAULT;
     field public static final int BADGE_ICON_LARGE = 2; // 0x2
@@ -8954,6 +8954,9 @@ package android.app.appfunctions {
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
+    field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_AGENT_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_AGENT_APP_FUNCTION_ACCESS";
+    field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_APP_FUNCTION_ACCESS";
+    field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_TARGET_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_TARGET_APP_FUNCTION_ACCESS";
     field public static final int APP_FUNCTION_STATE_DEFAULT = 0; // 0x0
     field public static final int APP_FUNCTION_STATE_DISABLED = 2; // 0x2
     field public static final int APP_FUNCTION_STATE_ENABLED = 1; // 0x1
@@ -10108,7 +10111,7 @@ package android.companion {
     method public int describeContents();
     method @Nullable public android.companion.AssociatedDevice getAssociatedDevice();
     method @FlaggedApi("android.companion.association_device_icon") @Nullable public android.graphics.drawable.Icon getDeviceIcon();
-    method @FlaggedApi("android.companion.association_tag") @Nullable public android.companion.DeviceId getDeviceId();
+    method @Nullable public android.companion.DeviceId getDeviceId();
     method @Nullable public android.net.MacAddress getDeviceMacAddress();
     method @Nullable public String getDeviceProfile();
     method @Nullable public CharSequence getDisplayName();
@@ -10187,6 +10190,7 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void attachSystemDataTransport(int, @NonNull java.io.InputStream, @NonNull java.io.OutputStream) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public android.content.IntentSender buildAssociationCancellationIntent();
     method @Nullable public android.content.IntentSender buildPermissionTransferUserConsentIntent(int) throws android.companion.DeviceNotAssociatedException;
+    method @FlaggedApi("android.companion.association_verification") @Nullable public android.companion.DeviceId createAndSetDeviceId(int, @Nullable android.companion.DeviceId);
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method public void disableSystemDataSyncForTypes(int, int);
     method @Deprecated public void disassociate(@NonNull String);
@@ -10198,7 +10202,7 @@ package android.companion {
     method @FlaggedApi("android.companion.perm_sync_user_consent") public boolean isPermissionTransferUserConsented(int);
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
-    method @FlaggedApi("android.companion.association_tag") public void setDeviceId(int, @Nullable android.companion.DeviceId);
+    method @Deprecated @FlaggedApi("android.companion.association_verification") public void setDeviceId(int, @Nullable android.companion.DeviceId);
     method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
     method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     method public void startSystemDataTransfer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.companion.CompanionException>) throws android.companion.DeviceNotAssociatedException;
@@ -10243,7 +10247,7 @@ package android.companion {
   public interface DeviceFilter<D extends android.os.Parcelable> extends android.os.Parcelable {
   }
 
-  @FlaggedApi("android.companion.association_tag") public final class DeviceId implements android.os.Parcelable {
+  public final class DeviceId implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public String getCustomId();
     method @Nullable public android.net.MacAddress getMacAddress();
@@ -20710,6 +20714,8 @@ package android.hardware.camera2.params {
     method @NonNull public static java.util.List<android.hardware.camera2.params.OutputConfiguration> createInstancesForMultiResolutionOutput(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int);
     method public int describeContents();
     method public void enableSurfaceSharing();
+    method @FlaggedApi("com.android.internal.camera.flags.output_configuration_getter") public int getConfiguredFormat();
+    method @FlaggedApi("com.android.internal.camera.flags.output_configuration_getter") @NonNull public android.util.Size getConfiguredSize();
     method public long getDynamicRangeProfile();
     method public int getMaxSharedSurfaceCount();
     method public int getMirrorMode();
@@ -42744,7 +42750,13 @@ package android.service.quicksettings {
     method public final void unlockAndRun(Runnable);
     field public static final String ACTION_QS_TILE = "android.service.quicksettings.action.QS_TILE";
     field public static final String ACTION_QS_TILE_PREFERENCES = "android.service.quicksettings.action.QS_TILE_PREFERENCES";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_ACCESSIBILITY = "android.service.quicksettings.CATEGORY_ACCESSIBILITY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_CONNECTIVITY = "android.service.quicksettings.CATEGORY_CONNECTIVITY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_DISPLAY = "android.service.quicksettings.CATEGORY_DISPLAY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_PRIVACY = "android.service.quicksettings.CATEGORY_PRIVACY";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String CATEGORY_UTILITIES = "android.service.quicksettings.CATEGORY_UTILITIES";
     field public static final String META_DATA_ACTIVE_TILE = "android.service.quicksettings.ACTIVE_TILE";
+    field @FlaggedApi("android.service.quicksettings.quicksettings_tile_categories") public static final String META_DATA_TILE_CATEGORY = "android.service.quicksettings.TILE_CATEGORY";
     field public static final String META_DATA_TOGGLEABLE_TILE = "android.service.quicksettings.TOGGLEABLE_TILE";
   }
 
@@ -56329,6 +56341,7 @@ package android.view.accessibility {
     field public static final int CONTENT_CHANGE_TYPE_PANE_APPEARED = 16; // 0x10
     field public static final int CONTENT_CHANGE_TYPE_PANE_DISAPPEARED = 32; // 0x20
     field public static final int CONTENT_CHANGE_TYPE_PANE_TITLE = 8; // 0x8
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int CONTENT_CHANGE_TYPE_SORT_DIRECTION = 65536; // 0x10000
     field public static final int CONTENT_CHANGE_TYPE_STATE_DESCRIPTION = 64; // 0x40
     field public static final int CONTENT_CHANGE_TYPE_SUBTREE = 1; // 0x1
     field @FlaggedApi("android.view.accessibility.supplemental_description") public static final int CONTENT_CHANGE_TYPE_SUPPLEMENTAL_DESCRIPTION = 32768; // 0x8000
@@ -56397,6 +56410,7 @@ package android.view.accessibility {
     method @FlaggedApi("com.android.graphics.hwui.flags.high_contrast_text_small_text_rect") public void addHighContrastTextStateChangeListener(@NonNull java.util.concurrent.Executor, @NonNull android.view.accessibility.AccessibilityManager.HighContrastTextStateChangeListener);
     method public boolean addTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener);
     method public void addTouchExplorationStateChangeListener(@NonNull android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener, @Nullable android.os.Handler);
+    method @FlaggedApi("android.view.accessibility.enable_trusted_accessibility_service_api") public boolean enableTrustedAccessibilityService(@NonNull android.content.ComponentName);
     method @ColorInt public int getAccessibilityFocusColor();
     method public int getAccessibilityFocusStrokeWidth();
     method @Deprecated public java.util.List<android.content.pm.ServiceInfo> getAccessibilityServiceList();
@@ -56780,10 +56794,15 @@ package android.view.accessibility {
     method public int getRowIndex();
     method public int getRowSpan();
     method @Nullable public String getRowTitle();
+    method @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public int getSortDirection();
     method @Deprecated public boolean isHeading();
     method public boolean isSelected();
     method @Deprecated public static android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo obtain(int, int, int, int, boolean);
     method @Deprecated public static android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo obtain(int, int, int, int, boolean, boolean);
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_ASCENDING = 1; // 0x1
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_DESCENDING = 2; // 0x2
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_NONE = 0; // 0x0
+    field @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") public static final int SORT_DIRECTION_OTHER = 3; // 0x3
   }
 
   public static final class AccessibilityNodeInfo.CollectionItemInfo.Builder {
@@ -56797,6 +56816,7 @@ package android.view.accessibility {
     method @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setRowSpan(int);
     method @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setRowTitle(@Nullable String);
     method @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setSelected(boolean);
+    method @FlaggedApi("android.view.accessibility.a11y_sort_direction_api") @NonNull public android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo.Builder setSortDirection(int);
   }
 
   public static final class AccessibilityNodeInfo.ExtraRenderingInfo {

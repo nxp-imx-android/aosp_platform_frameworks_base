@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
@@ -50,12 +49,11 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(24.dp))
                 .background(backgroundColor)
                 .clickable { action.onClick() }
-                .padding(horizontal = 8.dp, vertical = 8.dp),
+                .padding(horizontal = 8.dp, vertical = 12.dp),
     ) {
         val painter = rememberDrawablePainter(action.icon)
         Image(
             painter = painter,
-            colorFilter = if (action.attribution != null) ColorFilter.tint(outlineColor) else null,
             contentDescription = action.label,
             modifier = Modifier.size(24.dp).clip(CircleShape),
         )

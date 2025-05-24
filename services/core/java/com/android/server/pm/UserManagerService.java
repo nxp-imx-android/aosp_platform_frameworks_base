@@ -156,6 +156,7 @@ import android.util.Xml;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.SetScreenLockDialogActivity;
 import com.android.internal.logging.MetricsLogger;
@@ -537,7 +538,7 @@ public class UserManagerService extends IUserManager.Stub {
     /**
      * User restrictions set by {@link com.android.server.devicepolicy.DevicePolicyManagerService}
      * for each user. Restrictions that apply to all users (global) are represented by
-     * {@link com.android.os.UserHandle.USER_ALL}.
+     * {@link UserHandle#USER_ALL}.
      * The key is the user id of the user whom the restrictions are targeting.
      */
     @GuardedBy("mRestrictionsLock")
@@ -2442,8 +2443,7 @@ public class UserManagerService extends IUserManager.Stub {
      * with a {@code null} name.
      */
     @VisibleForTesting
-    @Nullable
-    UserInfo userWithName(@Nullable UserInfo orig) {
+    @Nullable UserInfo userWithName(@Nullable UserInfo orig) {
         if (orig != null && orig.name == null) {
             String name = getName(orig, /* logUser0Allocations= */ true);
             if (name != null) {
@@ -2455,13 +2455,11 @@ public class UserManagerService extends IUserManager.Stub {
         return orig;
     }
 
-    @Nullable
-    String getName(UserInfo user) {
+    @Nullable String getName(UserInfo user) {
         return getName(user, /* logUser0Allocations= */ false);
     }
 
-    @Nullable
-    private String getName(UserInfo user, boolean logUser0Allocations) {
+    private @Nullable String getName(UserInfo user, boolean logUser0Allocations) {
         if (user.name != null) {
             return user.name;
         }
@@ -2774,8 +2772,7 @@ public class UserManagerService extends IUserManager.Stub {
      * {@link UserHandle#USER_NULL}.
      */
     @VisibleForTesting
-    @NonNull
-    Pair<Integer, Integer> getCurrentAndTargetUserIds() {
+    @NonNull Pair<Integer, Integer> getCurrentAndTargetUserIds() {
         ActivityManagerInternal activityManagerInternal = getActivityManagerInternal();
         if (activityManagerInternal == null) {
             Slog.w(LOG_TAG, "getCurrentAndTargetUserId() called too early, "
@@ -6067,8 +6064,9 @@ public class UserManagerService extends IUserManager.Stub {
 
     private @NonNull UserInfo createUserInternalUncheckedNoTracing(
             @Nullable String name, @NonNull String userType, @UserInfoFlag int flags,
-            @UserIdInt int parentId, boolean preCreate, @Nullable String[] disallowedPackages,
-            @NonNull TimingsTraceAndSlog t, @Nullable Object token)
+            @CanBeNULL @UserIdInt int parentId, boolean preCreate,
+            @Nullable String[] disallowedPackages, @NonNull TimingsTraceAndSlog t,
+            @Nullable Object token)
             throws UserManager.CheckedUserOperationException {
         String truncatedName = truncateString(name, UserManager.MAX_USER_NAME_LENGTH);
         final UserTypeDetails userTypeDetails = mUserTypes.get(userType);
@@ -7694,8 +7692,7 @@ public class UserManagerService extends IUserManager.Stub {
         return RESTRICTIONS_FILE_PREFIX + packageName + XML_SUFFIX;
     }
 
-    @Nullable
-    private static String getRedacted(@Nullable String string) {
+    private static @Nullable String getRedacted(@Nullable String string) {
         return string == null ? null : string.length() + "_chars";
     }
 
@@ -7948,6 +7945,9 @@ public class UserManagerService extends IUserManager.Stub {
             pw.println("  Can switch to headless system user: " + getSystemResources()
                     .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
         }
+
+        pw.println("  Is main user permanent admin: " + isMainUserPermanentAdmin());
+
         pw.println("  User version: " + mUserVersion);
         pw.println("  Owner name: " + getOwnerName());
         pw.println("  Guest name: " + getGuestName());
@@ -8621,6 +8621,11 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
+        public boolean isMainUserPermanentAdmin() {
+            return UserManagerService.this.isMainUserPermanentAdmin();
+        }
+
+        @Override
         public @UserIdInt int getBootUser(boolean waitUntilSet)
                 throws UserManager.CheckedUserOperationException {
             return UserManagerService.this.getBootUser(waitUntilSet);
@@ -8811,13 +8816,12 @@ public class UserManagerService extends IUserManager.Stub {
         return userInfo.isMain() && isMainUserPermanentAdmin();
     }
 
-    /**
-     * Returns true if {@link com.android.internal.R.bool#config_isMainUserPermanentAdmin} is true.
-     * If the main user is a permanent admin user it can't be deleted
-     * or downgraded to non-admin status.
-     */
+    /** Must be public otherwise can't be mocked. */
+    @VisibleForTesting(visibility = Visibility.PACKAGE)
     public boolean isMainUserPermanentAdmin() {
-        return getSystemResources().getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        boolean defaultValue = getSystemResources()
+                .getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        return defaultValue;
     }
 
     /**

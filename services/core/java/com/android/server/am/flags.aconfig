@@ -238,3 +238,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "cache_content_capture_service"
+    namespace: "system_performance"
+    description: "Seed ContentCaptureManager into the bound application's initial service cache"
+    bug: "414380203"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

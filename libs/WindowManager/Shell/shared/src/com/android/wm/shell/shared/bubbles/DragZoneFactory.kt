@@ -693,10 +693,10 @@ class DragZoneFactory(
 
     /** Bubble bar properties for generating a drop target. */
     interface BubbleBarPropertiesProvider {
-        fun getHeight(): Int
+        fun getHeight(): Int = 0
 
-        fun getWidth(): Int
+        fun getWidth(): Int = 0
 
-        fun getBottomPadding(): Int
+        fun getBottomPadding(): Int = 0
     }
 }

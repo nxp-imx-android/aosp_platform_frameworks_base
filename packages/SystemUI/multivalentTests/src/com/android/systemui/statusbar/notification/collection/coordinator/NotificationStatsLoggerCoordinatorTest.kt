@@ -38,6 +38,7 @@ import org.mockito.Mockito.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
+@android.platform.test.annotations.EnabledOnRavenwood
 class NotificationStatsLoggerCoordinatorTest : SysuiTestCase() {
 
     private lateinit var collectionListener: NotifCollectionListener

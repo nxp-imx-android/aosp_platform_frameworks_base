@@ -44,6 +44,7 @@ import org.mockito.MockitoAnnotations
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class PrimaryBouncerInteractorWithCoroutinesTest : SysuiTestCase() {
     private lateinit var repository: FakeKeyguardBouncerRepository
     @Mock private lateinit var bouncerView: BouncerView

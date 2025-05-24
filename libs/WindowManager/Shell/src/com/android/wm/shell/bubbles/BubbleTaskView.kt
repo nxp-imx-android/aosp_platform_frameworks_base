@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import androidx.annotation.VisibleForTesting
@@ -86,6 +87,10 @@ class BubbleTaskView(val taskView: TaskView, executor: Executor) {
 
         override fun onTaskRemovalStarted(taskId: Int) {
             delegateListener?.onTaskRemovalStarted(taskId)
+        }
+
+        override fun onTaskInfoChanged(taskInfo: RunningTaskInfo?) {
+            delegateListener?.onTaskInfoChanged(taskInfo)
         }
 
         override fun onBackPressedOnTaskRoot(taskId: Int) {

@@ -382,6 +382,8 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"ಸ್ಥಿತಿ ಪಟ್ಟಿಯನ್ನು ವಿಸ್ತರಿಸಲು ಅಥವಾ ಸಂಕುಚಿಸಲು ಅಪ್ಲಿಕೇಶನ್‌‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"ಲಾಕ್ ಮಾಡಲಾದ ಸಾಧನದಲ್ಲಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ಪೂರ್ಣ-ಸ್ಕ್ರೀನ್ ಚಟುವಟಿಕೆ ರೀತಿಯಲ್ಲಿ ಡಿಸ್‌ಪ್ಲೇ ಮಾಡಿ"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"ಲಾಕ್ ಮಾಡಲಾದ ಸಾಧನದಲ್ಲಿ ಅಧಿಸೂಚನೆಗಳನ್ನು ಪೂರ್ಣ-ಸ್ಕ್ರೀನ್ ಚಟುವಟಿಕೆ ರೀತಿಯಲ್ಲಿ ಡಿಸ್‌ಪ್ಲೇ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸಿ"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ತೋರಿಸಿ"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"ಜರುಗುತ್ತಿರುವ, ಸಮಯ-ಸೂಕ್ಷ್ಮ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಸ್ಥಿತಿ ಪಟ್ಟಿ ಮತ್ತು ಲಾಕ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಪ್ರದರ್ಶಿಸಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಸ್ಥಾಪಿಸಿ"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"ಬಳಕೆದಾರರ ಮಧ್ಯಸ್ಥಿಕೆ ಇಲ್ಲದೆಯೇ ಹೋಮ್‌ಸ್ಕ್ರೀನ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಸೇರಿಸಲು ಅಪ್ಲಿಕೇಶನ್‌ಗೆ ಅವಕಾಶ ಮಾಡಿಕೊಡುತ್ತದೆ."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ"</string>
@@ -1182,22 +1184,8 @@
     <string name="duration_hours_shortest_future" msgid="2979276794547981674">"<xliff:g id="COUNT">%d</xliff:g>ಗಂ ಯಲ್ಲಿ"</string>
     <string name="duration_days_shortest_future" msgid="3392722163935571543">"<xliff:g id="COUNT">%d</xliff:g>ದಿ ದಲ್ಲಿ"</string>
     <string name="duration_years_shortest_future" msgid="5537464088352970388">"<xliff:g id="COUNT">%d</xliff:g>ವ ದಲ್ಲಿ"</string>
-    <string name="duration_minutes_shortest_past" msgid="1740022450020492407">"<xliff:g id="COUNT">%d</xliff:g>ನಿಮಿಷದ ಹಿಂದೆ"</string>
-    <string name="duration_hours_shortest_past" msgid="2098397414186628489">"<xliff:g id="COUNT">%d</xliff:g>ಗಂಟೆ ಹಿಂದೆ"</string>
-    <string name="duration_days_shortest_past" msgid="1832006037955897625">"<xliff:g id="COUNT">%d</xliff:g>ದಿನಗಳ ಹಿಂದೆ"</string>
-    <string name="duration_years_shortest_past" msgid="6168256514200469291">"<xliff:g id="COUNT">%d</xliff:g>ವರ್ಷದ ಹಿಂದೆ"</string>
     <string name="duration_minutes_medium" msgid="5891933490342643944">"<xliff:g id="COUNT">%d</xliff:g>ನಿಮಿಷ"</string>
     <string name="duration_hours_medium" msgid="1465359726485910115">"<xliff:g id="COUNT">%d</xliff:g>ಗಂಟೆ"</string>
-    <string name="duration_days_medium" msgid="5994225628248661388">"<xliff:g id="COUNT">%d</xliff:g>ದಿನ"</string>
-    <string name="duration_years_medium" msgid="734023884353592526">"<xliff:g id="COUNT">%d</xliff:g>ವರ್ಷ"</string>
-    <string name="duration_minutes_medium_future" msgid="2750894988731934402">"<xliff:g id="COUNT">%d</xliff:g>ನಿಮಿಷದಲ್ಲಿ"</string>
-    <string name="duration_hours_medium_future" msgid="6050833881463849764">"<xliff:g id="COUNT">%d</xliff:g>ಗಂಟೆಯಲ್ಲಿ"</string>
-    <string name="duration_days_medium_future" msgid="1700821545602729963">"<xliff:g id="COUNT">%d</xliff:g>ದಿನದಲ್ಲಿ"</string>
-    <string name="duration_years_medium_future" msgid="3281018940397120166">"<xliff:g id="COUNT">%d</xliff:g>ವರ್ಷದಲ್ಲಿ"</string>
-    <string name="duration_minutes_medium_past" msgid="7400424340181947714">"<xliff:g id="COUNT">%d</xliff:g>ನಿಮಿಷದ ಹಿಂದೆ"</string>
-    <string name="duration_hours_medium_past" msgid="6709441336035202617">"<xliff:g id="COUNT">%d</xliff:g>ಗಂಟೆ ಹಿಂದೆ"</string>
-    <string name="duration_days_medium_past" msgid="5748156261134344532">"<xliff:g id="COUNT">%d</xliff:g>ದಿನಗಳ ಹಿಂದೆ"</string>
-    <string name="duration_years_medium_past" msgid="893797065424596243">"<xliff:g id="COUNT">%d</xliff:g>ವರ್ಷದ ಹಿಂದೆ"</string>
     <string name="duration_minutes_relative" msgid="8620337701051015593">"{count,plural, =1{# ನಿಮಿಷದ ಹಿಂದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ}}"</string>
     <string name="duration_hours_relative" msgid="4836449961693180253">"{count,plural, =1{# ಗಂಟೆಯ ಹಿಂದೆ}one{# ಗಂಟೆಗಳ ಹಿಂದೆ}other{# ಗಂಟೆಗಳ ಹಿಂದೆ}}"</string>
     <string name="duration_days_relative" msgid="621965767567258302">"{count,plural, =1{# ದಿನದ ಹಿಂದೆ}one{# ದಿನಗಳ ಹಿಂದೆ}other{# ದಿನಗಳ ಹಿಂದೆ}}"</string>
@@ -1709,6 +1697,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"ಬಾಹ್ಯ ಸಾಧನ"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"ಹೆಡ್‌ಫೋನ್‌ಗಳು"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"ಟಿವಿ ಆಡಿಯೊ"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"ಅನಲಾಗ್"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"ಡಿಜಿಟಲ್"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"ಸಿಸ್ಟಂ"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"ಬ್ಲೂಟೂತ್‌ ಆಡಿಯೋ"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"ವಯರ್‌ಲೆಸ್ ಪ್ರದರ್ಶನ"</string>

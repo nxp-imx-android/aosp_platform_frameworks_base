@@ -40,19 +40,23 @@ constructor(
 ) : CoreStartable {
 
     override fun start() {
-        applicationCoroutineScope.launch { deleteObsoleteGamingMode() }
+        applicationCoroutineScope.launch { deleteObsoleteGamingModes() }
     }
 
-    private suspend fun deleteObsoleteGamingMode() {
+    private suspend fun deleteObsoleteGamingModes() {
         withContext(bgContext) {
             val allRules = notificationManager.automaticZenRules
-            val gamingModeEntry =
-                allRules.entries.firstOrNull { entry ->
-                    entry.value.packageName == "com.android.systemui" &&
-                        entry.value.conditionId?.toString() ==
-                            "android-app://com.android.systemui/game-mode-dnd-controller"
+            val gamingModeEntries =
+                allRules.entries.filter { entry ->
+                    (entry.value.packageName == "com.android.systemui" ||
+                        entry.value.configurationActivity?.packageName == "com.android.systemui") &&
+                        entry.value.conditionId?.toString() in
+                            setOf(
+                                "android-app://com.android.systemui/game-mode-dnd-controller",
+                                "android-app://com.android.settings/game-mode-dnd-controller",
+                            )
                 }
-            if (gamingModeEntry != null) {
+            for (gamingModeEntry in gamingModeEntries) {
                 notificationManager.removeAutomaticZenRule(gamingModeEntry.key)
             }
         }

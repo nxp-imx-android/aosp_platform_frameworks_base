@@ -7,6 +7,7 @@ package android {
     field public static final String ACCESS_BROADCAST_RADIO = "android.permission.ACCESS_BROADCAST_RADIO";
     field public static final String ACCESS_BROADCAST_RESPONSE_STATS = "android.permission.ACCESS_BROADCAST_RESPONSE_STATS";
     field public static final String ACCESS_CACHE_FILESYSTEM = "android.permission.ACCESS_CACHE_FILESYSTEM";
+    field @FlaggedApi("android.companion.association_verification") public static final String ACCESS_COMPANION_INFO = "android.permission.ACCESS_COMPANION_INFO";
     field public static final String ACCESS_CONTEXTUAL_SEARCH = "android.permission.ACCESS_CONTEXTUAL_SEARCH";
     field public static final String ACCESS_CONTEXT_HUB = "android.permission.ACCESS_CONTEXT_HUB";
     field public static final String ACCESS_DRM_CERTIFICATES = "android.permission.ACCESS_DRM_CERTIFICATES";
@@ -3405,6 +3406,7 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES) public void associate(@NonNull String, @NonNull android.net.MacAddress, @NonNull byte[]);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public boolean canPairWithoutPrompt(@NonNull String, @NonNull String, @NonNull android.os.UserHandle);
     method @NonNull @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public java.util.List<android.companion.AssociationInfo> getAllAssociations();
+    method @FlaggedApi("android.companion.association_verification") @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_INFO) public android.companion.AssociationInfo getAssociationByDeviceId(@NonNull android.companion.DeviceId);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public boolean isDeviceAssociatedForWifiConnection(@NonNull String, @NonNull android.net.MacAddress, @NonNull android.os.UserHandle);
     method @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceAppeared(int);
     method @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceDisappeared(int);
@@ -3413,6 +3415,14 @@ package android.companion {
 
   public static interface CompanionDeviceManager.OnAssociationsChangedListener {
     method public void onAssociationsChanged(@NonNull java.util.List<android.companion.AssociationInfo>);
+  }
+
+  @FlaggedApi("android.companion.device_presence") public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
+    method @FlaggedApi("android.companion.association_verification") @Nullable public android.companion.DeviceId getDeviceId();
+  }
+
+  public static final class ObservingDevicePresenceRequest.Builder {
+    method @FlaggedApi("android.companion.association_verification") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_INFO) public android.companion.ObservingDevicePresenceRequest.Builder setDeviceId(@NonNull android.companion.DeviceId);
   }
 
 }
@@ -3440,8 +3450,10 @@ package android.companion.virtual {
     method public int describeContents();
     method @NonNull public java.time.Duration getDoubleTapMinTimeDuration();
     method @NonNull public java.time.Duration getDoubleTapTimeoutDuration();
+    method @NonNull public java.time.Duration getLongPressTimeoutDuration();
     method @FloatRange(from=0) public float getMaximumFlingVelocityDpPerSecond();
     method @FloatRange(from=0) public float getMinimumFlingVelocityDpPerSecond();
+    method @NonNull public java.time.Duration getMultiPressTimeoutDuration();
     method @FloatRange(from=0) public float getScrollFriction();
     method @NonNull public java.time.Duration getTapTimeoutDuration();
     method @FloatRange(from=0) public float getTouchSlopDp();
@@ -3454,8 +3466,10 @@ package android.companion.virtual {
     method @NonNull public android.companion.virtual.ViewConfigurationParams build();
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapMinTimeDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapTimeoutDuration(@NonNull java.time.Duration);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setLongPressTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMaximumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMinimumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMultiPressTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setScrollFriction(@FloatRange(from=0) float);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTapTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTouchSlopDp(@FloatRange(from=0) float);
@@ -3658,10 +3672,12 @@ package android.companion.virtual.camera {
 
   public final class VirtualCameraConfig implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") @Nullable public android.hardware.camera2.CameraCharacteristics getCameraCharacteristics();
     method public int getLensFacing();
     method @NonNull public String getName();
     method public int getSensorOrientation();
     method @NonNull public java.util.Set<android.companion.virtual.camera.VirtualCameraStreamConfig> getStreamConfigs();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public boolean isPerFrameCameraMetadataEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.camera.VirtualCameraConfig> CREATOR;
     field public static final int SENSOR_ORIENTATION_0 = 0; // 0x0
@@ -3674,7 +3690,9 @@ package android.companion.virtual.camera {
     ctor public VirtualCameraConfig.Builder(@NonNull String);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder addStreamConfig(@IntRange(from=1) int, @IntRange(from=1) int, int, @IntRange(from=1) int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig build();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setCameraCharacteristics(@Nullable android.hardware.camera2.CameraCharacteristics);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setLensFacing(int);
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setPerFrameCameraMetadataEnabled(boolean);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setSensorOrientation(int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setVirtualCameraCallback(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.camera.VirtualCameraCallback);
   }
@@ -10984,6 +11002,8 @@ package android.nfc.cardemulation {
     method @FlaggedApi("android.nfc.enable_nfc_mainline") public void setCategoryOtherServiceEnabled(boolean);
     method @FlaggedApi("android.nfc.enable_nfc_mainline") public void setDynamicAidGroup(@NonNull android.nfc.cardemulation.AidGroup);
     method @FlaggedApi("android.nfc.enable_nfc_mainline") public void setOffHostSecureElement(@NonNull String);
+    method @FlaggedApi("android.nfc.screen_state_attribute_toggle") public void setRequiresScreenOn(boolean);
+    method @FlaggedApi("android.nfc.screen_state_attribute_toggle") public void setRequiresUnlock(boolean);
     method public void setShouldDefaultToObserveMode(boolean);
     method public boolean shouldDefaultToObserveMode();
     method @FlaggedApi("android.nfc.nfc_associated_role_services") public boolean wantsRoleHolderPriority();
@@ -12717,18 +12737,29 @@ package android.security.authenticationpolicy {
   @FlaggedApi("android.security.secure_lockdown") public final class AuthenticationPolicyManager {
     method @FlaggedApi("android.security.secure_lockdown") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int disableSecureLockDevice(@NonNull android.security.authenticationpolicy.DisableSecureLockDeviceParams);
     method @FlaggedApi("android.security.secure_lockdown") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int enableSecureLockDevice(@NonNull android.security.authenticationpolicy.EnableSecureLockDeviceParams);
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public int isSecureLockDeviceAvailable();
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public boolean isSecureLockDeviceEnabled();
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public void registerSecureLockDeviceStatusListener(@NonNull java.util.concurrent.Executor, @NonNull android.security.authenticationpolicy.AuthenticationPolicyManager.SecureLockDeviceStatusListener);
+    method @FlaggedApi("android.security.secure_lock_device") @RequiresPermission(android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE) public void unregisterSecureLockDeviceStatusListener(@NonNull android.security.authenticationpolicy.AuthenticationPolicyManager.SecureLockDeviceStatusListener);
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_ALREADY_ENABLED = 6; // 0x6
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_INSUFFICIENT_BIOMETRICS = 5; // 0x5
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_INVALID_PARAMS = 3; // 0x3
+    field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_NOT_AUTHORIZED = 7; // 0x7
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_NO_BIOMETRICS_ENROLLED = 4; // 0x4
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNKNOWN = 1; // 0x1
     field @FlaggedApi("android.security.secure_lockdown") public static final int ERROR_UNSUPPORTED = 2; // 0x2
     field @FlaggedApi("android.security.secure_lockdown") public static final int SUCCESS = 0; // 0x0
   }
 
+  @FlaggedApi("android.security.secure_lock_device") public static interface AuthenticationPolicyManager.SecureLockDeviceStatusListener {
+    method public void onSecureLockDeviceAvailableStatusChanged(int);
+    method public void onSecureLockDeviceEnabledStatusChanged(boolean);
+  }
+
   @FlaggedApi("android.security.secure_lockdown") public final class DisableSecureLockDeviceParams implements android.os.Parcelable {
     ctor public DisableSecureLockDeviceParams(@NonNull CharSequence);
     method public int describeContents();
+    method @NonNull public CharSequence getMessage();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.security.authenticationpolicy.DisableSecureLockDeviceParams> CREATOR;
   }
@@ -12736,6 +12767,7 @@ package android.security.authenticationpolicy {
   @FlaggedApi("android.security.secure_lockdown") public final class EnableSecureLockDeviceParams implements android.os.Parcelable {
     ctor public EnableSecureLockDeviceParams(@NonNull CharSequence);
     method public int describeContents();
+    method @NonNull public CharSequence getMessage();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.security.authenticationpolicy.EnableSecureLockDeviceParams> CREATOR;
   }
@@ -16658,6 +16690,8 @@ package android.telephony.data {
     method public final void notifyApnUnthrottled(@NonNull String);
     method public final void notifyDataCallListChanged(java.util.List<android.telephony.data.DataCallResponse>);
     method public final void notifyDataProfileUnthrottled(@NonNull android.telephony.data.DataProfile);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_user_data_toggle_notify") public void notifyUserDataEnabled(boolean, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_user_data_toggle_notify") public void notifyUserDataRoamingEnabled(boolean, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method public void requestDataCallList(@NonNull android.telephony.data.DataServiceCallback);
     method public void requestNetworkValidation(int, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method public void setDataProfile(@NonNull java.util.List<android.telephony.data.DataProfile>, boolean, @NonNull android.telephony.data.DataServiceCallback);

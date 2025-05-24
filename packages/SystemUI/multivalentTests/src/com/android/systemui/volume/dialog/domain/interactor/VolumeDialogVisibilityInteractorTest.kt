@@ -43,6 +43,7 @@ private val dialogTimeoutDuration = 3.seconds
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class VolumeDialogVisibilityInteractorTest : SysuiTestCase() {
 
     private val kosmos: Kosmos =

@@ -34,7 +34,7 @@ class EndGenericShareToAppDialogDelegate(
     private val stopAction: () -> Unit,
 ) : SystemUIDialog.Delegate {
     override fun createDialog(): SystemUIDialog {
-        return endMediaProjectionDialogHelper.createDialog(this)
+        return endMediaProjectionDialogHelper.createDialog(context, this)
     }
 
     override fun beforeCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {

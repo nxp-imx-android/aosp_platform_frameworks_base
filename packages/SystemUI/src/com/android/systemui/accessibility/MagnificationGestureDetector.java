@@ -18,7 +18,6 @@ package com.android.systemui.accessibility;
 
 import android.annotation.DisplayContext;
 import android.annotation.NonNull;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.graphics.PointF;
 import android.os.Handler;
@@ -84,7 +83,6 @@ class MagnificationGestureDetector {
     private final Handler mHandler;
     private final Runnable mCancelTapGestureRunnable;
     private final OnGestureListener mOnGestureListener;
-    private final int mLongPressTimeoutMillis;
     private int mTouchSlopSquare;
     // Assume the gesture default is a single-tap. Set it to false if the gesture couldn't be a
     // single-tap anymore.
@@ -103,9 +101,6 @@ class MagnificationGestureDetector {
         mHandler = handler;
         mOnGestureListener = listener;
         mCancelTapGestureRunnable = () -> mDetectSingleTap = false;
-        mLongPressTimeoutMillis = Flags.viewconfigurationApis()
-                ? ViewConfiguration.get(context).getLongPressTimeoutMillis()
-                : ViewConfiguration.getLongPressTimeout();
     }
 
     /**
@@ -123,7 +118,7 @@ class MagnificationGestureDetector {
             case MotionEvent.ACTION_DOWN:
                 mPointerDown.set(rawX, rawY);
                 mHandler.postAtTime(mCancelTapGestureRunnable,
-                        event.getDownTime() + mLongPressTimeoutMillis);
+                        event.getDownTime() + ViewConfiguration.getLongPressTimeout());
                 handled |= mOnGestureListener.onStart(rawX, rawY);
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:

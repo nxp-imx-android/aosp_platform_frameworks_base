@@ -29,6 +29,7 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -39,6 +40,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
+import com.android.internal.policy.SystemBarUtils;
 
 public class AutoclickTypePanel {
 
@@ -68,6 +70,7 @@ public class AutoclickTypePanel {
     // Initial panel position in screen coordinates.
     private int mPanelStartX, mPanelStartY;
     private boolean mIsDragging = false;
+    private PointerIcon mCurrentCursor;
 
     // Types of click the AutoclickTypePanel supports.
     @IntDef({
@@ -132,6 +135,8 @@ public class AutoclickTypePanel {
     // Whether autoclick is paused.
     private boolean mPaused = false;
 
+    private int mStatusBarHeight = 0;
+
     // The current corner position of the panel, default to bottom right.
     private @Corner int mCurrentCorner = CORNER_BOTTOM_RIGHT;
 
@@ -145,6 +150,7 @@ public class AutoclickTypePanel {
     private final LinearLayout mLongPressButton;
 
     private LinearLayout mSelectedButton;
+    private int mSelectedClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
     private final Drawable mPauseButtonDrawable;
     private final Drawable mResumeButtonDrawable;
@@ -194,11 +200,26 @@ public class AutoclickTypePanel {
         mLongPressButton =
                 mContentView.findViewById(R.id.accessibility_autoclick_long_press_layout);
 
+        // Get status bar height.
+        mStatusBarHeight = SystemBarUtils.getStatusBarHeight(context);
+        // Initialize the cursor icons.
+        mCurrentCursor = PointerIcon.getSystemIcon(context, PointerIcon.TYPE_ARROW);
+
         initializeButtonState();
 
         // Set up touch event handling for the panel to allow the user to drag and reposition the
         // panel by touching and moving it.
         mContentView.setOnTouchListener(this::onPanelTouch);
+
+        // Set hover behavior for the panel, show grab when hovering.
+        mContentView.setOnHoverListener((v, event) -> {
+            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
+            v.setPointerIcon(mCurrentCursor);
+            return false;
+        });
+
+        // Show default cursor when hovering over buttons.
+        setDefaultCursorForButtons();
     }
 
     /**
@@ -222,6 +243,13 @@ public class AutoclickTypePanel {
                 v.getLocationOnScreen(location);
                 mPanelStartX = location[0];
                 mPanelStartY = location[1];
+                // Show grabbing cursor when dragging starts.
+                boolean isSynthetic =
+                        (event.getFlags() & MotionEvent.FLAG_IS_GENERATED_GESTURE) != 0;
+                if (!isSynthetic) {
+                    mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
+                    v.setPointerIcon(mCurrentCursor);
+                }
                 return true;
             case MotionEvent.ACTION_MOVE:
                 mIsDragging = true;
@@ -236,7 +264,12 @@ public class AutoclickTypePanel {
 
                     // Update panel position, based on Top-Left absolute positioning.
                     mParams.x = mPanelStartX + (int) deltaX;
-                    mParams.y = mPanelStartY + (int) deltaY;
+
+                    // Adjust Y by status bar height:
+                    // Note: mParams.y is relative to the content area (below the status bar),
+                    // but mPanelStartY uses absolute screen coordinates. Subtract status bar
+                    // height to align coordinates properly.
+                    mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
                     mWindowManager.updateViewLayout(mContentView, mParams);
                 }
                 return true;
@@ -247,6 +280,14 @@ public class AutoclickTypePanel {
                     snapToNearestEdge(mParams);
                 }
                 mIsDragging = false;
+                // Show grab cursor when dragging ends.
+                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
+                v.setPointerIcon(mCurrentCursor);
+                return true;
+            case MotionEvent.ACTION_OUTSIDE:
+                if (mExpanded) {
+                    collapsePanelWithClickType(mSelectedClickType);
+                }
                 return true;
         }
         return false;
@@ -306,17 +347,25 @@ public class AutoclickTypePanel {
         // The pause button calls `togglePause()` directly so it does not need extra logic.
         mPauseButton.setOnClickListener(v -> togglePause());
 
-        resetSelectedClickType();
+        collapsePanelWithClickType(AUTOCLICK_TYPE_LEFT_CLICK);
 
         // Remove spacing between buttons when initialized.
         adjustPanelSpacing(/* isExpanded= */ false);
     }
 
-    /** Reset panel as collapsed state and only displays the left click button. */
-    public void resetSelectedClickType() {
+    /** Reset panel as collapsed state and only displays selelcted button. */
+    public void collapsePanelWithClickType(@AutoclickType int clickType) {
         hideAllClickTypeButtons();
-        mLeftClickButton.setVisibility(View.VISIBLE);
-        setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
+        final LinearLayout selectedButton = getButtonFromClickType(clickType);
+        selectedButton.setVisibility(View.VISIBLE);
+
+        // Sets the newly selected button.
+        setSelectedClickType(clickType);
+
+        // Remove spacing between buttons when collapsed.
+        adjustPanelSpacing(/* isExpanded= */ false);
+
+        mExpanded = false;
     }
 
     /** Sets the selected button and updates the newly and previously selected button styling. */
@@ -329,6 +378,7 @@ public class AutoclickTypePanel {
         }
 
         mSelectedButton = selectedButton;
+        mSelectedClickType = clickType;
         mClickPanelController.handleAutoclickTypeChange(clickType);
 
         // Updates the newly selected button styling.
@@ -389,29 +439,20 @@ public class AutoclickTypePanel {
 
     /** Toggles the panel expanded or collapsed state. */
     private void togglePanelExpansion(@AutoclickType int clickType) {
-        final LinearLayout button = getButtonFromClickType(clickType);
-
         if (mExpanded) {
             // If the panel is already in expanded state, we should collapse it by hiding all
             // buttons except the one user selected.
-            hideAllClickTypeButtons();
-            button.setVisibility(View.VISIBLE);
-
-            // Sets the newly selected button.
-            setSelectedClickType(clickType);
-
-            // Remove spacing between buttons when collapsed.
-            adjustPanelSpacing(/* isExpanded= */ false);
+            collapsePanelWithClickType(clickType);
         } else {
             // If the panel is already collapsed, we just need to expand it.
             showAllClickTypeButtons();
 
             // Add spacing when panel is expanded.
             adjustPanelSpacing(/* isExpanded= */ true);
-        }
 
-        // Toggle the state.
-        mExpanded = !mExpanded;
+            // Toggle the state.
+            mExpanded = true;
+        }
     }
 
     private void togglePause() {
@@ -672,6 +713,22 @@ public class AutoclickTypePanel {
         }
     }
 
+    private void setDefaultCursorForButtons() {
+        View[] buttons = {
+                mLeftClickButton, mRightClickButton, mDoubleClickButton,
+                mScrollButton, mDragButton, mLongPressButton,
+                mPauseButton, mPositionButton
+        };
+
+        for (View button : buttons) {
+            button.setOnHoverListener((v, event) -> {
+                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_ARROW);
+                v.setPointerIcon(mCurrentCursor);
+                return false;
+            });
+        }
+    }
+
     @VisibleForTesting
     boolean getExpansionStateForTesting() {
         return mExpanded;
@@ -699,6 +756,15 @@ public class AutoclickTypePanel {
         return mIsDragging;
     }
 
+    @VisibleForTesting
+    int getStatusBarHeightForTesting() {
+        return mStatusBarHeight;
+    }
+
+    PointerIcon getCurrentCursorForTesting() {
+        return mCurrentCursor;
+    }
+
     /**
      * Retrieves the layout params for AutoclickIndicatorView, used when it's added to the Window
      * Manager.
@@ -707,7 +773,8 @@ public class AutoclickTypePanel {
     private WindowManager.LayoutParams getDefaultLayoutParams() {
         final WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
         layoutParams.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;
         layoutParams.setFitInsetsTypes(WindowInsets.Type.statusBars());
         layoutParams.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;

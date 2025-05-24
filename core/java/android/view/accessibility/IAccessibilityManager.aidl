@@ -201,4 +201,10 @@ interface IAccessibilityManager {
 
     @RequiresNoPermission
     void unregisterUserInitializationCompleteCallback(IUserInitializationCompleteCallback callback);
+
+    @RequiresNoPermission
+    boolean enableTrustedAccessibilityService(in ComponentName trustedAccessibilityService, int userId);
+
+    @EnforcePermission("MANAGE_ACCESSIBILITY")
+    void setTrustedAccessibilityServiceForTesting(in ComponentName trustedAccessibilityService);
 }

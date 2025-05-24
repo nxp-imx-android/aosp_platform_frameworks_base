@@ -76,6 +76,7 @@ import org.mockito.kotlin.mock
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(FLAG_QS_NEW_TILES)
+@android.platform.test.annotations.EnabledOnRavenwood
 class CurrentTilesInteractorImplTest : SysuiTestCase() {
 
     private val kosmos =

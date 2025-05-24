@@ -18,7 +18,6 @@ package com.android.systemui.shade.domain.interactor
 
 import android.content.mockedContext
 import android.window.WindowContext
-import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
@@ -27,7 +26,6 @@ import com.android.systemui.shade.ShadeWindowLayoutParams
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.shadeExpansionIntent
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
-import com.android.systemui.statusbar.notification.row.notificationRebindingTracker
 import com.android.systemui.statusbar.notification.stack.notificationStackRebindingHider
 import com.android.systemui.statusbar.phone.systemUIDialogManager
 import com.android.systemui.statusbar.policy.configurationController
@@ -52,17 +50,16 @@ val Kosmos.shadeDisplaysInteractor by
         ShadeDisplaysInteractorImpl(
             fakeShadeDisplaysRepository,
             mockedWindowContext,
-            configurationRepository,
             testScope.backgroundScope,
             testScope.backgroundScope.coroutineContext,
             mockedShadeDisplayChangeLatencyTracker,
             shadeExpandedStateInteractor,
             shadeExpansionIntent,
             activeNotificationsInteractor,
-            notificationRebindingTracker,
             notificationStackRebindingHider,
             configurationController,
             logcatLogBuffer("ShadeDisplaysInteractor"),
+            shadeDisplaysWaitInteractor,
         )
     }
 

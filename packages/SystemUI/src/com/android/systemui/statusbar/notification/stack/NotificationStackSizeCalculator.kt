@@ -109,6 +109,7 @@ constructor(
             log { "\tallowedByPolicy = false" }
             false
         } else {
+            log { "\tallowedByPolicy = true" }
             true
         }
 
@@ -293,9 +294,10 @@ constructor(
         stack: NotificationStackScrollLayout,
         maxNotifs: Int,
         shelfHeight: Float,
+        reason: String? = null,
     ): Float {
         log { "\n" }
-        log { "computeHeight ---" }
+        log { "computeHeight --- reason: $reason" }
 
         val stackHeightSequence = computeHeightPerNotificationLimit(stack, shelfHeight)
 
@@ -407,23 +409,32 @@ constructor(
                     spaceBeforeShelf + shelfHeight
                 }
 
+            var bucket: Int? = null
             if (counter != null) {
-                if (NotificationBundleUi.isEnabled) {
-                    val entryAdapter =
-                        (currentNotification as? ExpandableNotificationRow)?.entryAdapter
-                    counter.incrementForBucket(entryAdapter?.sectionBucket)
-                } else {
-                    val entry = (currentNotification as? ExpandableNotificationRow)?.entryLegacy
-                    counter.incrementForBucket(entry?.bucket)
-                }
+                bucket =
+                    if (NotificationBundleUi.isEnabled) {
+                        val entryAdapter =
+                            (currentNotification as? ExpandableNotificationRow)?.entryAdapter
+                        entryAdapter?.sectionBucket
+                    } else {
+                        val entry = (currentNotification as? ExpandableNotificationRow)?.entryLegacy
+                        entry?.bucket
+                    }
+                counter.incrementForBucket(bucket)
             }
+
+            val forceIntoShelf = counter?.shouldForceIntoShelf() ?: false
+            val row = currentNotification as? ExpandableNotificationRow
 
             log {
                 "\tcomputeHeightPerNotificationLimit i=$i notifs=$notifications " +
                     "notifsHeightSavingSpace=$notifsWithCollapsedHun" +
                     " shelfWithSpaceBefore=$shelfWithSpaceBefore" +
                     " isOnLockScreen=$onLockscreen" +
-                    " limitLockScreenToOneImportant: $limitLockScreenToOneImportant"
+                    " limitLockScreenToOneImportant: $limitLockScreenToOneImportant" +
+                    " forceIntoShelf: $forceIntoShelf" +
+                    " child: ${row?.key}" +
+                    " bucket: $bucket"
             }
             yield(
                 StackHeight(

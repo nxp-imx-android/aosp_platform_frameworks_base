@@ -2443,6 +2443,27 @@
              of Android higher than the number given here, the permission will not
              be created.  -->
         <attr name="maxSdkVersion" />
+        <!-- Optional: specify if valid purpose is required for this permission. True indicates
+             it is required, false or not specifying the element indicates optional.
+
+             <p>If set to true, use {@link #AndroidManifestValidPurpose valid-purpose} tag to
+             specify the valid set of purpose(s). As a result of doing that, to prevent automatic
+             revocation at install time, all permission requests made using the
+             {@link #AndroidManifestUsesPermission uses-permission} tag will need to specify at
+             least one of these configured valid purposes. This enforcement of purpose validation
+             is currently only supported for normal permissions defined within the platform
+             manifest. -->
+        <attr name="requiresPurpose" format="boolean" />
+    </declare-styleable>
+
+    <!-- The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
+         If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
+
+         <p>This appears as a child tag of the
+         {@link #AndroidManifestPermission permission} tag. -->
+    <declare-styleable name="AndroidManifestValidPurpose" parent="AndroidManifestPermission">
+        <!-- Specify the name of the valid purpose. -->
+        <attr name="name" />
     </declare-styleable>
 
     <!-- The <code>permission-group</code> tag declares a logical grouping of
@@ -2548,7 +2569,10 @@
         request it at all. -->
         <attr name="requiredNotFeature" format="string" />
         <!-- Optional: set of flags that should apply to this permission request. Note that
-             these flags start at 0x4 to match PackageInfo.requestedPermissionsFlags. -->
+             these flags start at 0x4 to match PackageInfo.requestedPermissionsFlags.
+
+             <p>Please refrain from using this for purpose related flags; use
+             {@link #AndroidManifestPurpose purpose} child tag instead. -->
         <attr name="usesPermissionFlags">
             <!-- Strong assertion by a developer that they will never use this
                  permission to derive the physical location of the device, even
@@ -2556,6 +2580,28 @@
                  ACCESS_COARSE_LOCATION permissions. -->
             <flag name="neverForLocation" value="0x00010000" />
         </attr>
+    </declare-styleable>
+
+    <!-- Use <code>purpose</code> tag to specify purpose(s) for requesting a permission.
+         Purpose(s) will need to be provided if the requested
+         {@link #AndroidManifestPermission permission} tag's <code>requiresPurpose</code> attribute
+         is set to true. Only valid purposes from the permission's
+         {@link #AndroidManifestValidPurpose valid-purpose} tags can be specified. If there are
+         multiple purposes for requesting the permission, use multiple <code>purpose</code> tags.
+
+         <p>This appears as a child tag of the
+         {@link #AndroidManifestUsesPermission uses-permission} tag. -->
+    <declare-styleable name="AndroidManifestPurpose" parent="AndroidManifestUsesPermission">
+        <!-- Specify the name of the purpose. -->
+        <attr name="name" />
+        <!-- Optional: specify the min SDK version for which the permission is requested with the
+             declared purpose. Not specifying this element implies there’s no lower bound on the
+             SDK version for which the purpose is declared. -->
+        <attr name="minSdkVersion" format="integer|string" />
+        <!-- Optional: specify the max SDK version for which the permission is requested with the
+             declared purpose. Not specifying this element implies there’s no upper bound on the SDK
+             version for which the purpose is declared. -->
+        <attr name="maxSdkVersion" format="integer" />
     </declare-styleable>
 
     <!-- <code>required-feature</code> and <code>required-not-feature</code> elements inside
