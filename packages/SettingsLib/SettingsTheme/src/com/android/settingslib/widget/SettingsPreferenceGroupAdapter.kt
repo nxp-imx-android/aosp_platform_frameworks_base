@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
+import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -182,7 +183,12 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         if (SettingsThemeHelper.isExpressiveTheme(context)) {
             val drawableStateLayout = holder.itemView as? DrawableStateLayout
             if (drawableStateLayout != null) {
-                drawableStateLayout.extraDrawableState = stateSetOf(mItemPositionStates[position])
+                val iconFrame =
+                    holder.findViewById(androidx.preference.R.id.icon_frame)
+                        ?: holder.findViewById(android.R.id.icon_frame)
+                val hasIconSpace = iconFrame != null && iconFrame.visibility != View.GONE
+                drawableStateLayout.extraDrawableState =
+                    stateSetOf(mItemPositionStates[position], hasIconSpace)
             } else {
                 val backgroundRes = getRoundCornerDrawableRes(position, isSelected = false)
                 val (paddingStart, paddingEnd) = getStartEndPadding(position)
@@ -271,16 +277,28 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         private val STATE_SET_FIRST = intArrayOf(android.R.attr.state_first)
         private val STATE_SET_MIDDLE = intArrayOf(android.R.attr.state_middle)
         private val STATE_SET_LAST = intArrayOf(android.R.attr.state_last)
+        private val STATE_SET_SINGLE_HAS_ICON_SPACE =
+            intArrayOf(android.R.attr.state_single, R.attr.state_has_icon_space)
+        private val STATE_SET_FIRST_HAS_ICON_SPACE =
+            intArrayOf(android.R.attr.state_first, R.attr.state_has_icon_space)
+        private val STATE_SET_MIDDLE_HAS_ICON_SPACE =
+            intArrayOf(android.R.attr.state_middle, R.attr.state_has_icon_space)
+        private val STATE_SET_LAST_HAS_ICON_SPACE =
+            intArrayOf(android.R.attr.state_last, R.attr.state_has_icon_space)
 
         private fun stateSetOf(
-            positionState: Int
+            positionState: Int,
+            hasIconSpace: Boolean
         ): IntArray =
             when {
-                positionState == 0 -> STATE_SET_NONE
-                positionState == android.R.attr.state_single -> STATE_SET_SINGLE
-                positionState == android.R.attr.state_first -> STATE_SET_FIRST
-                positionState == android.R.attr.state_middle -> STATE_SET_MIDDLE
-                positionState == android.R.attr.state_last -> STATE_SET_LAST
+                positionState == android.R.attr.state_single ->
+                    if (hasIconSpace) STATE_SET_SINGLE_HAS_ICON_SPACE else STATE_SET_SINGLE
+                positionState == android.R.attr.state_first ->
+                    if (hasIconSpace) STATE_SET_FIRST_HAS_ICON_SPACE else STATE_SET_FIRST
+                positionState == android.R.attr.state_middle ->
+                    if (hasIconSpace) STATE_SET_MIDDLE_HAS_ICON_SPACE else STATE_SET_MIDDLE
+                positionState == android.R.attr.state_last ->
+                    if (hasIconSpace) STATE_SET_LAST_HAS_ICON_SPACE else STATE_SET_LAST
                 else -> error(positionState)
             }
     }
