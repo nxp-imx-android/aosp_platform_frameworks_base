@@ -313,7 +313,6 @@ public class LocaleStore {
             if (!networkIso.isEmpty()) {
                 result.add(networkIso);
             }
-            Log.d(TAG, "sim country:" + simIso + " network country:" + networkIso);
         }
 
         return result;
@@ -323,8 +322,7 @@ public class LocaleStore {
      * @return whether SIM country or network country code is available during locale initialization
      */
     public static boolean isSimOrNwCountryAvailable() {
-        Log.d(TAG,
-                "SimCountries:" + sSimCountries + "location available:" + !sSimCountries.isEmpty());
+        Log.d(TAG, "country available:" + !sSimCountries.isEmpty());
         return !sSimCountries.isEmpty();
     }
 
@@ -345,11 +343,9 @@ public class LocaleStore {
     public static void updateSimCountries(Context context) {
         Set<String> simCountries = getSimCountries(context);
         if (sSimCountries.equals(simCountries)) {
-            Log.d(TAG, "updateSimCountries N/A");
             return;
         } else {
             sSimCountries = simCountries;
-            Log.d(TAG, "updateSimCountries to " + simCountries);
         }
 
         for (LocaleInfo li : sLocaleCache.values()) {
@@ -553,7 +549,6 @@ public class LocaleStore {
             li.setTranslated(localizedLocales.contains(li.getLangScriptKey()));
         }
 
-        Log.d(TAG, "Locale.getDefault():" + Locale.getDefault());
         addSuggestedLocalesForRegion(Locale.getDefault());
 
         sFullyInitialized = true;
