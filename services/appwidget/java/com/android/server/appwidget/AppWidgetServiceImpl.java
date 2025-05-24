@@ -16,6 +16,7 @@
 
 package com.android.server.appwidget;
 
+import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -55,6 +56,7 @@ import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal.OnCrossProfileWidgetProvidersChangeListener;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManagerInternal;
+import android.appwidget.AppWidgetConfigActivityProxy;
 import android.appwidget.AppWidgetEvent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetManagerInternal;
@@ -1520,6 +1522,15 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             intent.setComponent(provider.getInfoLocked(mContext).configure);
             intent.setFlags(secureFlags);
 
+            Intent proxyIntent;
+            if (remoteAdapterConversion()) {
+                proxyIntent = new Intent(mContext, AppWidgetConfigActivityProxy.class);
+                proxyIntent.putExtra(Intent.EXTRA_INTENT, intent);
+                proxyIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            } else {
+                proxyIntent = intent;
+            }
+
             final ActivityOptions options =
                     ActivityOptions.makeBasic().setPendingIntentCreatorBackgroundActivityStartMode(
                             ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_DENIED);
@@ -1528,7 +1539,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             final long identity = Binder.clearCallingIdentity();
             try {
                 return PendingIntent.getActivityAsUser(
-                        mContext, 0, intent, PendingIntent.FLAG_ONE_SHOT
+                        mContext, 0, proxyIntent, PendingIntent.FLAG_ONE_SHOT
                                 | PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT,
                                 options.toBundle(), new UserHandle(provider.getUserId()))
                         .getIntentSender();
@@ -1631,6 +1642,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
             widget.provider = provider;
             widget.options = (options != null) ? cloneIfLocalBinder(options) : new Bundle();
+            widget.isFirstConfigActivityPending = provider.info != null
+                    && provider.info.configure != null
+                    && (provider.info.widgetFeatures & WIDGET_FEATURE_CONFIGURATION_OPTIONAL) == 0;
 
             // We need to provide a default value for the widget category if it is not specified
             if (!widget.options.containsKey(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY)) {
@@ -2025,6 +2039,51 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
             return null;
         }
+    }
+
+    @Override
+    public boolean isFirstConfigActivityPending(String callingPackage, int appWidgetId) {
+        final int userId = UserHandle.getCallingUserId();
+
+        if (DEBUG) {
+            Slog.i(TAG, "isFirstConfigActivityPending() " + userId);
+        }
+
+        // Make sure the package runs under the caller uid.
+        mSecurityPolicy.enforceCallFromPackage(callingPackage);
+
+        synchronized (mLock) {
+            ensureGroupStateLoadedLocked(userId);
+
+            // NOTE: The lookup is enforcing security across users by making
+            // sure the caller can only access widgets it hosts or provides.
+            Widget widget = lookupWidgetLocked(appWidgetId,
+                    Binder.getCallingUid(), callingPackage);
+            return widget != null && widget.isFirstConfigActivityPending;
+        }
+    }
+
+    @Override
+    public void setConfigActivityComplete(int appWidgetId) {
+        final int userId = UserHandle.getCallingUserId();
+        if (DEBUG) {
+            Slog.i(TAG, "setConfigActivityComplete() " + userId);
+        }
+        mSecurityPolicy.enforceCallerIsSystem();
+        synchronized (mLock) {
+            final int n = mWidgets.size();
+            for (int i = 0; i < n; i++) {
+                Widget widget = mWidgets.get(i);
+                if (widget.appWidgetId == appWidgetId) {
+                    if (widget.isFirstConfigActivityPending) {
+                        widget.isFirstConfigActivityPending = false;
+                        sendUpdateIntentLocked(widget.provider, new int[]{appWidgetId}, true);
+                        return;
+                    }
+                }
+            }
+        }
+        Log.d(TAG, "No active widgetId:" + appWidgetId + " with pending config activity");
     }
 
     /**
@@ -5770,6 +5829,14 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             return false;
         }
 
+        private void enforceCallerIsSystem() {
+            final int callingUid = Binder.getCallingUid();
+            if (!UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
+                    && !UserHandle.isSameApp(callingUid, Process.myUid())) {
+                throw new SecurityException("Only system caller allowed");
+            }
+        }
+
         public void enforceCallFromPackage(String packageName) {
             mAppOpsManager.checkPackage(Binder.getCallingUid(), packageName);
         }
@@ -6390,6 +6457,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         // Map of request type to updateSequenceNo.
         SparseLongArray updateSequenceNos = new SparseLongArray(2);
         boolean trackingUpdate = false;
+        boolean isFirstConfigActivityPending = false;
         final AppWidgetEvent.Builder event = new AppWidgetEvent.Builder();
 
         @Override
