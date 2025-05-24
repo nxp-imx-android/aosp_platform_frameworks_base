@@ -20714,6 +20714,8 @@ package android.hardware.camera2.params {
     method @NonNull public static java.util.List<android.hardware.camera2.params.OutputConfiguration> createInstancesForMultiResolutionOutput(@NonNull java.util.Collection<android.hardware.camera2.params.MultiResolutionStreamInfo>, int);
     method public int describeContents();
     method public void enableSurfaceSharing();
+    method @FlaggedApi("com.android.internal.camera.flags.output_configuration_getter") public int getConfiguredFormat();
+    method @FlaggedApi("com.android.internal.camera.flags.output_configuration_getter") @NonNull public android.util.Size getConfiguredSize();
     method public long getDynamicRangeProfile();
     method public int getMaxSharedSurfaceCount();
     method public int getMirrorMode();
