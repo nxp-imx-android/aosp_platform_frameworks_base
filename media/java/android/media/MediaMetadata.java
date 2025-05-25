@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -982,6 +983,7 @@ public final class MediaMetadata implements Parcelable {
             float scale = Math.min(widthScale, heightScale);
             int height = (int) (bmp.getHeight() * scale);
             int width = (int) (bmp.getWidth() * scale);
+            StrictMode.noteSlowCall("Downscaling oversized MediaMetadata Bitmap");
             return Bitmap.createScaledBitmap(bmp, width, height, true);
         }
     }
