@@ -25,7 +25,6 @@ import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.inputmethod.InputMethodSubtype;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -36,7 +35,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IllformedLocaleException;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -393,30 +391,6 @@ public class LocaleStore {
             Log.d(TAG, "IllegalArgumentException ", e);
         }
         return null;
-    }
-
-    /**
-     * Transform IME's language tag to LocaleInfo.
-     *
-     * @param list A list which includes IME's subtype.
-     * @return A LocaleInfo set which includes IME's language tags.
-     */
-    public static Set<LocaleInfo> transformImeLanguageTagToLocaleInfo(
-            List<InputMethodSubtype> list) {
-        Set<LocaleInfo> imeLocales = new HashSet<>();
-        Set<String> languageTagSet = new HashSet<>();
-        for (InputMethodSubtype subtype : list) {
-            String languageTag = subtype.getLanguageTag();
-            if (!languageTagSet.contains(languageTag)) {
-                languageTagSet.add(languageTag);
-                Locale locale = Locale.forLanguageTag(languageTag);
-                LocaleInfo cacheInfo = getLocaleInfo(locale, sLocaleCache);
-                LocaleInfo localeInfo = new LocaleInfo(cacheInfo);
-                localeInfo.mSuggestionFlags |= LocaleInfo.SUGGESTION_TYPE_IME_LANGUAGE;
-                imeLocales.add(localeInfo);
-            }
-        }
-        return imeLocales;
     }
 
     /**
