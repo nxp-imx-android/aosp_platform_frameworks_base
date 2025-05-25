@@ -113,7 +113,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
@@ -247,7 +247,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private MultiInstanceHelper mMockMultiInstanceHelper;
     @Mock
-    private WindowDecorCaptionHandleRepository mMockCaptionHandleRepository;
+    private WindowDecorCaptionRepository mMockCaptionHandleRepository;
     @Mock
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock

@@ -23,16 +23,16 @@ import android.content.res.Resources
 import android.graphics.Point
 import android.os.SystemProperties
 import android.view.View.LAYOUT_DIRECTION_RTL
+import android.window.DesktopExperienceFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopMode
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationTooltipController
@@ -61,7 +61,7 @@ class AppHandleEducationController(
     private val context: Context,
     private val appHandleEducationFilter: AppHandleEducationFilter,
     private val appHandleEducationDatastoreRepository: AppHandleEducationDatastoreRepository,
-    private val windowDecorCaptionHandleRepository: WindowDecorCaptionHandleRepository,
+    private val windowDecorCaptionRepository: WindowDecorCaptionRepository,
     private val windowingEducationViewController: DesktopWindowingEducationTooltipController,
     @ShellMainThread private val applicationCoroutineScope: CoroutineScope,
     @ShellBackgroundThread private val backgroundDispatcher: MainCoroutineDispatcher,
@@ -81,11 +81,12 @@ class AppHandleEducationController(
             // encourage users to open the app handle menu.
             applicationCoroutineScope.launch {
                 if (isAppHandleHintViewed()) return@launch
-                windowDecorCaptionHandleRepository.captionStateFlow
+                windowDecorCaptionRepository.captionStateFlow
                     .debounce(APP_HANDLE_EDUCATION_DELAY_MILLIS)
                     .filter { captionState ->
                         captionState is CaptionState.AppHandle &&
                             !captionState.isHandleMenuExpanded &&
+                            isCaptionFocused(captionState) &&
                             !isAppHandleHintViewed() &&
                             appHandleEducationFilter.shouldShowDesktopModeEducation(captionState)
                     }
@@ -104,11 +105,12 @@ class AppHandleEducationController(
             // encourage users to enter desktop mode.
             applicationCoroutineScope.launch {
                 if (isEnterDesktopModeHintViewed()) return@launch
-                windowDecorCaptionHandleRepository.captionStateFlow
+                windowDecorCaptionRepository.captionStateFlow
                     .debounce(ENTER_DESKTOP_MODE_EDUCATION_DELAY_MILLIS)
                     .filter { captionState ->
                         captionState is CaptionState.AppHandle &&
                             captionState.isHandleMenuExpanded &&
+                            isCaptionFocused(captionState) &&
                             !isEnterDesktopModeHintViewed() &&
                             appHandleEducationFilter.shouldShowDesktopModeEducation(captionState)
                     }
@@ -127,11 +129,12 @@ class AppHandleEducationController(
             // to let users know how to exit desktop mode.
             applicationCoroutineScope.launch {
                 if (isExitDesktopModeHintViewed()) return@launch
-                windowDecorCaptionHandleRepository.captionStateFlow
+                windowDecorCaptionRepository.captionStateFlow
                     .debounce(APP_HANDLE_EDUCATION_DELAY_MILLIS)
                     .filter { captionState ->
                         captionState is CaptionState.AppHeader &&
                             !captionState.isHeaderMenuExpanded &&
+                            isCaptionFocused(captionState) &&
                             !isExitDesktopModeHintViewed() &&
                             appHandleEducationFilter.shouldShowDesktopModeEducation(captionState)
                     }
@@ -156,9 +159,9 @@ class AppHandleEducationController(
                         isExitDesktopModeHintViewed()
                 )
                     return@launch
-                windowDecorCaptionHandleRepository.captionStateFlow
+                windowDecorCaptionRepository.captionStateFlow
                     .filter { captionState ->
-                        captionState is CaptionState.NoCaption &&
+                        !isCaptionFocused(captionState) &&
                             !isAppHandleHintViewed() &&
                             !isEnterDesktopModeHintViewed() &&
                             !isExitDesktopModeHintViewed()
@@ -173,6 +176,13 @@ class AppHandleEducationController(
         if (desktopState.canEnterDesktopMode && Flags.enableDesktopWindowingAppHandleEducation())
             block()
     }
+
+    private fun isCaptionFocused(captionState: CaptionState) =
+        if (!DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue) {
+            captionState !is CaptionState.NoCaption
+        } else {
+            captionState.isFocused
+        }
 
     private fun showEducation(captionState: CaptionState) {
         val appHandleBounds = (captionState as CaptionState.AppHandle).globalAppHandleBounds
