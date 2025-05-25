@@ -370,6 +370,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                             : mPagingTouchSlop;
                     if (Math.abs(delta) > pagingTouchSlop
                             && Math.abs(delta) > Math.abs(deltaPerpendicular)) {
+                        if (NotificationBundleUi.isEnabled()
+                                && mTouchedView instanceof ExpandableNotificationRow row) {
+                            mTouchedView = mCallback.getSwipeTarget(row);
+                        }
                         if (mCallback.canChildBeDragged(mTouchedView)) {
                             mIsSwiping = true;
                             mCallback.setMagneticAndRoundableTargets(mTouchedView);
@@ -688,10 +692,11 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (!mIsSwiping && !mMenuRowIntercepting && !mLongPressSent) {
-            if (mCallback.getChildAtPosition(ev) != null) {
+            View childAtPosition = mCallback.getChildAtPosition(ev);
+            if (childAtPosition != null) {
                 // We are dragging directly over a card, make sure that we also catch the gesture
                 // even if nobody else wants the touch event.
-                mTouchedView = mCallback.getChildAtPosition(ev);
+                mTouchedView = childAtPosition;
                 onInterceptTouchEvent(ev);
                 return true;
             } else {
@@ -1027,6 +1032,13 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * @param v the view that was long pressed.
          */
         void onLongPressSent(View v);
+
+        /**
+         * Get the swipe target based on the currently touched row. The swipe target may be the
+         * parent of the touched row.
+         * @return the ENR that should actually handle the swipe event
+         */
+        ExpandableNotificationRow getSwipeTarget(ExpandableNotificationRow row);
 
         /**
          * The snap back animation on a view overshoots for the first time.

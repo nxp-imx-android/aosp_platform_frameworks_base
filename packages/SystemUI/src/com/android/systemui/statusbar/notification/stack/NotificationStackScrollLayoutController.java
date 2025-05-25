@@ -649,7 +649,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                                 && (parent.areGutsExposed()
                                 || mSwipeHelper.getExposedMenuView() == parent
                                 || (parent.getAttachedChildren().size() == 1
-                                && mDismissibilityProvider.isDismissable(parent.getKey())))) {
+                                && mDismissibilityProvider.isDismissable(parent.getKey())
+                                && !NotificationBundleUi.isEnabled()))) {
                             // In this case the group is expanded and showing the menu for the
                             // group, further interaction should apply to the group, not any
                             // child notifications so we use the parent of the child. We also do the
@@ -658,6 +659,31 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                         }
                     }
                     return child;
+                }
+
+                /**
+                 * While {@code getChildAtPosition} already contains logic to change the touch
+                 * interaction target to the parent based on some conditions, this method
+                 * does the same but narrowed down to swipe interactions. This provides the
+                 * opportunity to control the target based on the specific touch event.
+                 * <p>
+                 * For example: A long press may target the directly touched view but a swipe may
+                 * target the containing group or bundle when it is dismissable and only has one
+                 * child.
+                 *
+                 * @param row the ENR that has been touched
+                 * @return the ENR that should actually handle the swipe event
+                 */
+                public ExpandableNotificationRow getSwipeTarget(ExpandableNotificationRow row) {
+                    ExpandableNotificationRow parent = row.getNotificationParent();
+                    if (parent != null && parent.areChildrenExpanded()
+                            && parent.getAttachedChildren().size() == 1
+                            && mDismissibilityProvider.isDismissable(parent.getKey())) {
+                        // We run this recursively to get the parents parent for the case where
+                        // you swipe a lonely child in a lonely group within a bundle
+                        return getSwipeTarget(parent);
+                    }
+                    return row;
                 }
 
                 @Override
