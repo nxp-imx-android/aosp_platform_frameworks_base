@@ -119,7 +119,7 @@ fun NavBarPill(
                         .widthIn(min = navBarWidth, max = maxPillWidth)
                         .background(backgroundColor)
                         .animatedActionBorder(
-                            strokeWidth = 2.dp,
+                            strokeWidth = 1.dp,
                             strokeColor = outlineColor,
                             cornerRadius = 16.dp,
                             visible = visible,
@@ -156,16 +156,6 @@ fun NavBarPill(
                                 color = outlineColor,
                                 modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
                             )
-                            if (hasAttribution) {
-                                Text(
-                                    text = action.attribution!!,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = outlineColor,
-                                    modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
-                                )
-                            }
                         }
                     }
                 }
