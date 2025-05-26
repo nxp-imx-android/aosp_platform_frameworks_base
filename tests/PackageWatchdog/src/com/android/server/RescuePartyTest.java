@@ -23,6 +23,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyLong;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.PackageWatchdog.MITIGATION_RESULT_SKIPPED;
 import static com.android.server.PackageWatchdog.MITIGATION_RESULT_SUCCESS;
@@ -32,6 +33,8 @@ import static com.android.server.RescueParty.LEVEL_FACTORY_RESET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.spy;
 
@@ -42,33 +45,51 @@ import android.content.pm.PackageManager;
 import android.content.pm.VersionedPackage;
 import android.os.RecoverySystem;
 import android.os.SystemProperties;
+import android.platform.test.flag.junit.FlagsParameterization;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
-import android.provider.Settings;
 
+import com.android.crashrecovery.flags.Flags;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import com.android.server.PackageWatchdog.PackageHealthObserverImpact;
 import com.android.server.RescueParty.RescuePartyObserver;
-import com.android.server.am.SettingsToPropertiesMapper;
+import com.android.server.crashrecovery.CrashRecoveryUtils;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * Test RescueParty.
  */
+@RunWith(ParameterizedAndroidJunit4.class)
 public class RescuePartyTest {
+
+    @Rule public final SetFlagsRule mSetFlagsRule;
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(Flags.FLAG_FLAG_RESET_DISABLED,
+                Flags.FLAG_FLAG_RESET_ENABLED);
+    }
+
     private static final long CURRENT_NETWORK_TIME_MILLIS = 0L;
 
     private static VersionedPackage sFailingPackage = new VersionedPackage("com.package.name", 1);
@@ -79,6 +100,8 @@ public class RescuePartyTest {
             "persist.device_config.configuration.disable_rescue_party";
     private static final String PROP_DISABLE_FACTORY_RESET_FLAG =
             "persist.device_config.configuration.disable_rescue_party_factory_reset";
+    private static final String NAMESPACE_TO_RESET1 = "foo_ns";
+    private static final String NAMESPACE_TO_RESET2 = "bar_ns";
 
     private MockitoSession mSession;
     private HashMap<String, String> mSystemSettingsMap;
@@ -95,6 +118,10 @@ public class RescuePartyTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private PackageManager mPackageManager;
 
+    public RescuePartyTest(FlagsParameterization flags) {
+        mSetFlagsRule = new SetFlagsRule(flags);
+    }
+
     // Mock only sysprop apis
     private PackageWatchdog.BootThreshold mSpyBootThreshold;
 
@@ -106,12 +133,10 @@ public class RescuePartyTest {
                         .strictness(Strictness.LENIENT)
                         .spyStatic(DeviceConfig.class)
                         .spyStatic(SystemProperties.class)
-                        .spyStatic(Settings.Global.class)
-                        .spyStatic(Settings.Secure.class)
-                        .spyStatic(SettingsToPropertiesMapper.class)
                         .spyStatic(RecoverySystem.class)
                         .spyStatic(RescueParty.class)
                         .spyStatic(PackageWatchdog.class)
+                        .spyStatic(CrashRecoveryUtils.class)
                         .startMocking();
         mSystemSettingsMap = new HashMap<>();
         mNamespacesWiped = new HashSet<>();
@@ -190,6 +215,11 @@ public class RescuePartyTest {
                 .when(() -> PackageWatchdog.getInstance(mMockContext));
         mockCrashRecoveryProperties(mMockPackageWatchdog);
 
+        // Mock CrashRecoveryUtils
+        doAnswer((Answer<Set<String>>) invocationOnMock ->
+                Set.of(NAMESPACE_TO_RESET1, NAMESPACE_TO_RESET2))
+                .when(CrashRecoveryUtils::getFlagNamespacesInModules);
+
         doReturn(CURRENT_NETWORK_TIME_MILLIS).when(() -> RescueParty.getElapsedRealtime());
 
         setCrashRecoveryPropRescueBootCount(0);
@@ -203,8 +233,24 @@ public class RescuePartyTest {
     }
 
     @Test
-    public void testBootLoopNoFlags() {
-        // this is old test where the flag needs to be disabled
+    public void testBootLoopExecution_flagResetEnabled() {
+        assumeTrue(RescueParty.isFlagResetEnabled());
+        noteBoot(1);
+        verify(() -> DeviceConfig.resetToDefaults(anyInt(), eq(NAMESPACE_TO_RESET1)));
+        verify(() -> DeviceConfig.resetToDefaults(anyInt(), eq(NAMESPACE_TO_RESET2)));
+        assertFalse(RescueParty.isRecoveryTriggeredReboot());
+
+        noteBoot(2);
+        assertTrue(RescueParty.isRebootPropertySet());
+
+        setCrashRecoveryPropAttemptingReboot(false);
+        noteBoot(3);
+        assertTrue(RescueParty.isFactoryResetPropertySet());
+    }
+
+    @Test
+    public void testBootLoopExecution_flagResetDisabled() {
+        assumeFalse(RescueParty.isFlagResetEnabled());
         noteBoot(1);
         assertTrue(RescueParty.isRebootPropertySet());
 
@@ -368,13 +414,25 @@ public class RescuePartyTest {
     }
 
     @Test
-    public void testBootLoopLevelsNoFlags() {
+    public void testBootLoopLevels_flagResetEnabled() {
+        assumeTrue(RescueParty.isFlagResetEnabled());
         RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
 
-        assertEquals(observer.onBootLoop(1), PackageHealthObserverImpact.USER_IMPACT_LEVEL_50);
-        assertEquals(observer.onBootLoop(2), PackageHealthObserverImpact.USER_IMPACT_LEVEL_100);
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_40, observer.onBootLoop(1));
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_50, observer.onBootLoop(2));
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_100, observer.onBootLoop(3));
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_100, observer.onBootLoop(4));
     }
 
+    @Test
+    public void testBootLoopLevels_flagResetDisabled() {
+        assumeFalse(RescueParty.isFlagResetEnabled());
+        RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
+
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_50, observer.onBootLoop(1));
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_100, observer.onBootLoop(2));
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_100, observer.onBootLoop(3));
+    }
 
     private void noteBoot(int mitigationCount) {
         RescuePartyObserver.getInstance(mMockContext).onExecuteBootLoopMitigation(mitigationCount);
