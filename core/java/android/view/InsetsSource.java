@@ -16,6 +16,7 @@
 
 package android.view;
 
+import static android.view.InsetsSourceProto.ATTACHED_INSETS;
 import static android.view.InsetsSourceProto.FRAME;
 import static android.view.InsetsSourceProto.TYPE;
 import static android.view.InsetsSourceProto.TYPE_NUMBER;
@@ -699,6 +700,9 @@ public class InsetsSource implements Parcelable {
         }
         proto.write(VISIBLE, mVisible);
         proto.write(TYPE_NUMBER, mType);
+        if (mAttachedInsets != null) {
+            mAttachedInsets.dumpDebug(proto, ATTACHED_INSETS);
+        }
         proto.end(token);
     }
 
