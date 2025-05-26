@@ -46,6 +46,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -157,8 +158,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     /**
-     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
-     * launch the activity to verify supervision credentials.
+     * Creates an {@link Intent} that can be used with
+     * {@link Context#startActivityForResult(String, Intent, int, Bundle)} to launch the activity to
+     * verify supervision credentials.
      *
      * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this
      * method is called, the launched activity still need to perform validity checks as the
