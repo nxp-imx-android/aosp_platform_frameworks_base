@@ -4590,6 +4590,7 @@ final class ActivityRecord extends WindowToken {
                 if (fromActivity.isVisible()) {
                     setVisible(true);
                     setVisibleRequested(true);
+                    mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
                     mVisibleSetFromTransferredStartingWindow = true;
                 }
                 setClientVisible(fromActivity.isClientVisible());
@@ -7094,6 +7095,7 @@ final class ActivityRecord extends WindowToken {
             // window. We now reset it back to false since the starting window was the last
             // window in the token.
             setVisible(false);
+            mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
         }
     }
 
