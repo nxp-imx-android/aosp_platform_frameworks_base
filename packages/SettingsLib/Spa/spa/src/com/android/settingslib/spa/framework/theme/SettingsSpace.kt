@@ -31,4 +31,6 @@ object SettingsSpace {
     val small2 = 18.dp
     val small3 = 20.dp
     val small4 = 24.dp
+
+    val medium5 = 48.dp
 }
