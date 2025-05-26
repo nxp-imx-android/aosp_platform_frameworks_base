@@ -141,7 +141,14 @@ interface PreferenceMetadata {
      */
     fun isEnabled(context: Context): Boolean = true
 
-    /** Returns the keys of depended preferences. */
+    /**
+     * Returns the keys of depended preferences.
+     *
+     * Keep in mind that the dependency is effective only on the same screen. For cross screen
+     * dependency, especially for preference screen entry point, add observer (e.g. on the depended
+     * preference's data store) explicitly to update the preference with
+     * [PreferenceLifecycleProvider].
+     */
     fun dependencies(context: Context): Array<String> = arrayOf()
 
     /** Returns if the preference is persistent in datastore. */
