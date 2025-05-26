@@ -5283,7 +5283,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     @Override
     public InsetsControlTarget getImeControlTarget() {
-        return getDisplayContent().getImeHostOrFallback(this);
+        return getDisplayContent().getImeHost(this);
     }
 
     @Override

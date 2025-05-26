@@ -1225,21 +1225,19 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
     @Override
     public void setExcludeImeInsets(boolean exclude) {
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            final WindowContainerTransaction wct = new WindowContainerTransaction();
-            // TODO: b/393217881 - replace DEFAULT DISPLAY with the current display id
-            ActivityManager.RunningTaskInfo rootTaskInfo =
-                    mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
-            if (rootTaskInfo == null) {
-                ProtoLog.e(WM_SHELL_SPLIT_SCREEN, "setExcludeImeInsets: rootTaskInfo is null");
-                return;
-            }
-            ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
-                    "setExcludeImeInsets: root taskId=%s exclude=%s",
-                    rootTaskInfo.taskId, exclude);
-            wct.setExcludeImeInsets(rootTaskInfo.token, exclude);
-            mTaskOrganizer.applyTransaction(wct);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        // TODO: b/393217881 - replace DEFAULT DISPLAY with the current display id
+        ActivityManager.RunningTaskInfo rootTaskInfo =
+                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY);
+        if (rootTaskInfo == null) {
+            ProtoLog.e(WM_SHELL_SPLIT_SCREEN, "setExcludeImeInsets: rootTaskInfo is null");
+            return;
         }
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
+                "setExcludeImeInsets: root taskId=%s exclude=%s",
+                rootTaskInfo.taskId, exclude);
+        wct.setExcludeImeInsets(rootTaskInfo.token, exclude);
+        mTaskOrganizer.applyTransaction(wct);
     }
 
     /**

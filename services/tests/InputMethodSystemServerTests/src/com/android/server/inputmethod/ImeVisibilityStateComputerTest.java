@@ -310,19 +310,15 @@ public class ImeVisibilityStateComputerTest extends InputMethodManagerServiceTes
             mComputer.setHasVisibleImeLayeringOverlay(true /* visibleAndNotRemoved */);
             mComputer.onImeInputTargetVisibilityChanged(testImeInputTarget,
                     false /* visibleAndNotRemoved */);
-            final ArgumentCaptor<IBinder> targetCaptor = ArgumentCaptor.forClass(IBinder.class);
             final ArgumentCaptor<ImeVisibilityResult> resultCaptor = ArgumentCaptor.forClass(
                     ImeVisibilityResult.class);
             final ArgumentCaptor<Integer> userIdCaptor = ArgumentCaptor.forClass(Integer.class);
             verify(mInputMethodManagerService).onApplyImeVisibilityFromComputerLocked(
-                    targetCaptor.capture(), notNull() /* statsToken */, resultCaptor.capture(),
-                    userIdCaptor.capture());
-            final IBinder imeInputTarget = targetCaptor.getValue();
+                    notNull() /* statsToken */, resultCaptor.capture(), userIdCaptor.capture());
             final ImeVisibilityResult result = resultCaptor.getValue();
             final int userId = userIdCaptor.getValue();
 
             // Verify the computer will callback hiding IME state to IMMS.
-            assertThat(imeInputTarget).isEqualTo(testImeInputTarget);
             assertThat(result.getState()).isEqualTo(STATE_HIDE_IME_EXPLICIT);
             assertThat(result.getReason()).isEqualTo(HIDE_WHEN_INPUT_TARGET_INVISIBLE);
             assertThat(userId).isEqualTo(mUserId);

@@ -1534,7 +1534,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             final int imeLayeringTargetPosition = getImeLayeringTargetPosition();
             mHasImeFocus = imeLayeringTargetPosition != SPLIT_POSITION_UNDEFINED;
             if (!mHasImeFocus) {
-                if (!android.view.inputmethod.Flags.refactorInsetsController() || showing) {
+                if (showing) {
                     return 0;
                 }
             }
@@ -1574,10 +1574,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             setDividerInteractive(!mImeShown || !mHasImeFocus || isFloating, true,
                     "onImeStartPositioning");
 
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                if (mImeShown) {
-                    mSplitLayoutHandler.setExcludeImeInsets(false);
-                }
+            if (mImeShown) {
+                mSplitLayoutHandler.setExcludeImeInsets(false);
             }
 
             return mTargetYOffset != mLastYOffset ? IME_ANIMATION_NO_ALPHA : 0;
@@ -1586,7 +1584,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         @Override
         public void onImePositionChanged(int displayId, int imeTop, SurfaceControl.Transaction t) {
             if (displayId != mDisplayId || !mHasImeFocus) {
-                if (!android.view.inputmethod.Flags.refactorInsetsController() || mImeShown) {
+                if (mImeShown) {
                     return;
                 }
             }
@@ -1599,7 +1597,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 SurfaceControl.Transaction t) {
             if (displayId != mDisplayId || cancel) return;
             if (!mHasImeFocus) {
-                if (!android.view.inputmethod.Flags.refactorInsetsController() || mImeShown) {
+                if (mImeShown) {
                     return;
                 }
             }
@@ -1607,15 +1605,13 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                     "Split IME animation ending, canceled=%b", cancel);
             onProgress(1.0f);
             mSplitLayoutHandler.onLayoutPositionChanging(SplitLayout.this);
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                if (!mImeShown) {
-                    // The IME hide animation is started immediately and at that point, the IME
-                    // insets are not yet set to hidden. Therefore only resetting the
-                    // excludedTypes at the end of the animation. Note: InsetsPolicy will only
-                    // set the IME height to zero, when it is visible. When it becomes invisible,
-                    // we dispatch the insets (the height there is zero as well)
-                    mSplitLayoutHandler.setExcludeImeInsets(false);
-                }
+            if (!mImeShown) {
+                // The IME hide animation is started immediately and at that point, the IME
+                // insets are not yet set to hidden. Therefore only resetting the
+                // excludedTypes at the end of the animation. Note: InsetsPolicy will only
+                // set the IME height to zero, when it is visible. When it becomes invisible,
+                // we dispatch the insets (the height there is zero as well)
+                mSplitLayoutHandler.setExcludeImeInsets(false);
             }
         }
 

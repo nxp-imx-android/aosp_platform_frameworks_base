@@ -32,8 +32,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR;
 import static android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL;
 
-import static com.android.server.wm.WindowTestsBase.makeWindowVisible;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -50,7 +48,6 @@ import android.os.Binder;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
@@ -864,7 +861,6 @@ public class InsetsPolicyTest extends WindowTestsBase {
      * This test verifies that after setting {@link WindowContainer#mExcludeInsetsTypes}, the IME
      * insets have a height of zero (applied in {@link InsetsPolicy#adjustVisibilityForIme}).
      */
-    @RequiresFlagsEnabled(android.view.inputmethod.Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     @SetupWindows(addWindows = W_INPUT_METHOD)
     @Test
     public void testExcludeImeInsets() {

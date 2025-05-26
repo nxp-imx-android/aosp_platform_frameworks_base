@@ -237,7 +237,7 @@ public final class ImeVisibilityStateComputer {
             final int reason = SoftInputShowHideReason.HIDE_WHEN_INPUT_TARGET_INVISIBLE;
             final var statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
                     ImeTracker.ORIGIN_SERVER, reason, false /* fromUser */);
-            mService.onApplyImeVisibilityFromComputerLocked(imeInputTarget, statsToken,
+            mService.onApplyImeVisibilityFromComputerLocked(statsToken,
                     new ImeVisibilityResult(STATE_HIDE_IME_EXPLICIT, reason), mUserId);
         }
         mCurVisibleImeInputTarget = null;
@@ -398,9 +398,7 @@ public final class ImeVisibilityStateComputer {
     @GuardedBy("ImfLock.class")
     void setWindowState(@NonNull IBinder windowToken, @NonNull ImeTargetWindowState newState) {
         final ImeTargetWindowState state = mRequestWindowStateMap.get(windowToken);
-        if (state != null && newState.hasEditorFocused() && (
-                newState.getToolType() != MotionEvent.TOOL_TYPE_STYLUS
-                        || Flags.refactorInsetsController())) {
+        if (state != null && newState.hasEditorFocused()) {
             // Inherit the last requested IME visible state when the target window is still
             // focused with an editor.
             newState.setRequestedImeVisible(state.isRequestedImeVisible());
@@ -485,8 +483,7 @@ public final class ImeVisibilityStateComputer {
 
         switch (softInputVisibility) {
             case WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED:
-                if (state.hasImeFocusChanged() && (!state.hasEditorFocused() || (!doAutoShow
-                        && !Flags.refactorInsetsController()))) {
+                if (state.hasImeFocusChanged() && (!state.hasEditorFocused())) {
                     if (WindowManager.LayoutParams.mayUseInputMethod(state.getWindowFlags())) {
                         // There is no focus view, and this window will
                         // be behind any soft input window, so hide the
@@ -517,27 +514,12 @@ public final class ImeVisibilityStateComputer {
                 }
                 break;
             case WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN:
-                if (Flags.refactorInsetsController()) {
-                    // In this case, we don't have to manipulate the requested visible types of
-                    // the WindowState, as they're already in the correct state
-                    break;
-                } else if (isForwardNavigation) {
-                    ProtoLog.v(IME_VIS_STATE_COMPUTER_DEBUG,
-                            "Window asks to hide input going forward");
-                    return new ImeVisibilityResult(STATE_HIDE_IME_EXPLICIT,
-                            SoftInputShowHideReason.HIDE_STATE_HIDDEN_FORWARD_NAV);
-                }
+                // In this case, we don't have to manipulate the requested visible types of
+                // the WindowState, as they're already in the correct state
                 break;
             case WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN:
-                if (Flags.refactorInsetsController()) {
-                    // In this case, we don't have to manipulate the requested visible types of
-                    // the WindowState, as they're already in the correct state
-                    break;
-                } else if (state.hasImeFocusChanged()) {
-                    ProtoLog.v(IME_VIS_STATE_COMPUTER_DEBUG, "Window asks to hide input");
-                    return new ImeVisibilityResult(STATE_HIDE_IME_EXPLICIT,
-                            SoftInputShowHideReason.HIDE_ALWAYS_HIDDEN_STATE);
-                }
+                // In this case, we don't have to manipulate the requested visible types of
+                // the WindowState, as they're already in the correct state
                 break;
             case WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE:
                 if (isForwardNavigation) {
@@ -582,8 +564,8 @@ public final class ImeVisibilityStateComputer {
                         SoftInputShowHideReason.HIDE_SAME_WINDOW_FOCUSED_WITHOUT_EDITOR);
             }
         }
-        if (!state.hasEditorFocused() && (mInputShown || (Flags.refactorInsetsController()
-                && imeRequestedVisible)) && state.isStartInputByWindowGainFocus()
+        if (!state.hasEditorFocused() && (mInputShown || imeRequestedVisible)
+                && state.isStartInputByWindowGainFocus()
                 && mService.mInputMethodDeviceConfigs.shouldHideImeWhenNoEditorFocus()) {
             // Hide the soft-keyboard when the system do nothing for softInputModeState
             // of the window being gained focus without an editor. This behavior benefits
@@ -593,9 +575,7 @@ public final class ImeVisibilityStateComputer {
             // 2) SOFT_INPUT_STATE_VISIBLE state without an editor
             // 3) SOFT_INPUT_STATE_ALWAYS_VISIBLE state without an editor
             ProtoLog.v(IME_VIS_STATE_COMPUTER_DEBUG, "Window without editor will hide input");
-            if (Flags.refactorInsetsController()) {
-                state.setRequestedImeVisible(false);
-            }
+            state.setRequestedImeVisible(false);
             return new ImeVisibilityResult(STATE_HIDE_IME_EXPLICIT,
                     SoftInputShowHideReason.HIDE_WINDOW_GAINED_FOCUS_WITHOUT_EDITOR);
         }

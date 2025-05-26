@@ -241,7 +241,7 @@ class InsetsStateController {
                         // Fake control target cannot change the client visibility, but it should
                         // change the insets with its newly requested visibility.
                         || (caller == provider.getFakeControlTarget());
-            } else if (isImeProvider && android.view.inputmethod.Flags.refactorInsetsController()) {
+            } else if (isImeProvider) {
                 ImeTracker.forLogging().onCancelled(statsToken,
                         ImeTracker.PHASE_WM_SET_REMOTE_TARGET_IME_VISIBILITY);
             }
@@ -469,11 +469,6 @@ class InsetsStateController {
                         WindowInsets.Type.all(), null /* statsToken */);
             }
             newControlTargets.clear();
-            if (!android.view.inputmethod.Flags.refactorInsetsController()) {
-                // Check for and try to run the scheduled show IME request (if it exists), as we
-                // now applied the surface transaction and notified the target of the new control.
-                getImeSourceProvider().checkAndStartShowImePostLayout();
-            }
         });
     }
 

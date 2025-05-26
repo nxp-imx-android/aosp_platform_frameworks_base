@@ -87,7 +87,6 @@ import android.database.ContentObserver;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -650,26 +649,6 @@ public class InputMethodService extends AbstractInputMethodService {
     private CharSequence mHandwritingDelegationText;
 
     /**
-     * An opaque {@link Binder} token of window requesting {@link InputMethodImpl#showSoftInput}
-     * The original app window token is passed from client app window.
-     * {@link com.android.server.inputmethod.InputMethodManagerService} creates a unique
-     * placeholder token to identify this window.
-     * This placeholder token is only valid for a single call to
-     * {@link InputMethodImpl#showSoftInput}, after which it is set null until next call.
-     */
-    private IBinder mCurShowInputToken;
-
-    /**
-     * An opaque {@link Binder} token of window requesting {@link InputMethodImpl#hideSoftInput}
-     * The original app window token is passed from client app window.
-     * {@link com.android.server.inputmethod.InputMethodManagerService} creates a unique
-     * placeholder token to identify this window.
-     * This placeholder token is only valid for a single call to
-     * {@link InputMethodImpl#hideSoftInput}, after which it is set {@code null} until next call.
-     */
-    private IBinder mCurHideInputToken;
-
-    /**
      * The token tracking the current IME request.
      *
      * <p> This exists as a workaround to changing the signatures of public methods. It will get
@@ -881,14 +860,12 @@ public class InputMethodService extends AbstractInputMethodService {
         @MainThread
         @Override
         public void hideSoftInputWithToken(int flags, ResultReceiver resultReceiver,
-                IBinder hideInputToken, @NonNull ImeTracker.Token statsToken) {
+                @NonNull ImeTracker.Token statsToken) {
             mSystemCallingHideSoftInput = true;
-            mCurHideInputToken = hideInputToken;
             mCurStatsToken = statsToken;
             try {
                 hideSoftInput(flags, resultReceiver);
             } finally {
-                mCurHideInputToken = null;
                 mSystemCallingHideSoftInput = false;
             }
         }
@@ -936,13 +913,11 @@ public class InputMethodService extends AbstractInputMethodService {
                                 : InputMethodManager.RESULT_UNCHANGED_HIDDEN), null);
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // After the IME window was hidden, we can remove its surface
-                scheduleImeSurfaceRemoval();
-                // The hide request first finishes the animation and then proceeds to the server
-                // side, finally reaching here, marking this the end state.
-                ImeTracker.forLogging().onHidden(statsToken);
-            }
+            // After the IME window was hidden, we can remove its surface
+            scheduleImeSurfaceRemoval();
+            // The hide request first finishes the animation and then proceeds to the server
+            // side, finally reaching here, marking this the end state.
+            ImeTracker.forLogging().onHidden(statsToken);
         }
 
         /**
@@ -952,15 +927,12 @@ public class InputMethodService extends AbstractInputMethodService {
         @MainThread
         @Override
         public void showSoftInputWithToken(@InputMethod.ShowFlags int flags,
-                ResultReceiver resultReceiver, IBinder showInputToken,
-                @NonNull ImeTracker.Token statsToken) {
+                ResultReceiver resultReceiver, @NonNull ImeTracker.Token statsToken) {
             mSystemCallingShowSoftInput = true;
-            mCurShowInputToken = showInputToken;
             mCurStatsToken = statsToken;
             try {
                 showSoftInput(flags, resultReceiver);
             } finally {
-                mCurShowInputToken = null;
                 mSystemCallingShowSoftInput = false;
             }
         }
@@ -3108,12 +3080,10 @@ public class InputMethodService extends AbstractInputMethodService {
 
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_IME_SHOW_WINDOW);
 
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            // The ImeInsetsSourceProvider need the statsToken when dispatching the control
-            // (whenever the IME has drawn and its window is visible). Therefore, sending the
-            // statsToken here first.
-            notifyPreImeWindowVisibilityChanged(true /* visible */, statsToken);
-        }
+        // The ImeInsetsSourceProvider need the statsToken when dispatching the control
+        // (whenever the IME has drawn and its window is visible). Therefore, sending the
+        // statsToken here first.
+        notifyPreImeWindowVisibilityChanged(true /* visible */, statsToken);
 
         ImeTracing.getInstance().triggerServiceDump("InputMethodService#showWindow", mDumper,
                 null /* icProto */);
@@ -3132,9 +3102,6 @@ public class InputMethodService extends AbstractInputMethodService {
         if (DEBUG) Log.v(TAG, "showWindow: draw decorView!");
         mWindow.show();
         mDecorViewWasVisible = true;
-        if (!android.view.inputmethod.Flags.refactorInsetsController()) {
-            applyVisibilityInInsetsConsumerIfNecessary(true /* setVisible */, statsToken);
-        }
         cancelImeSurfaceRemoval();
         mInShowWindow = false;
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -3267,21 +3234,6 @@ public class InputMethodService extends AbstractInputMethodService {
     }
 
     /**
-     * Applies the IME visibility in {@link android.view.ImeInsetsSourceConsumer}.
-     *
-     * @param setVisible {@code true} to make it visible, false to hide it.
-     * @param statsToken the token tracking the current IME request.
-     */
-    private void applyVisibilityInInsetsConsumerIfNecessary(boolean setVisible,
-            @NonNull ImeTracker.Token statsToken) {
-        ImeTracing.getInstance().triggerServiceDump(
-                "InputMethodService#applyVisibilityInInsetsConsumerIfNecessary", mDumper,
-                null /* icProto */);
-        mPrivOps.applyImeVisibilityAsync(setVisible
-                ? mCurShowInputToken : mCurHideInputToken, setVisible, statsToken);
-    }
-
-    /**
      * Notifies the ImeInsetsSourceProvider before the IME visibility changes.
      *
      * @param visible {@code true} if it became visible, {@code false} otherwise.
@@ -3336,13 +3288,9 @@ public class InputMethodService extends AbstractInputMethodService {
         ImeTracing.getInstance().triggerServiceDump("InputMethodService#hideWindow", mDumper,
                 null /* icProto */);
         setImeWindowVisibility(0 /* vis */);
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            // The ImeInsetsSourceProvider need the statsToken when dispatching the control. We
-            // send the token here, so that another request in the provider can be cancelled.
-            notifyPreImeWindowVisibilityChanged(false /* visible */, statsToken);
-        } else {
-            applyVisibilityInInsetsConsumerIfNecessary(false /* setVisible */, statsToken);
-        }
+        // The ImeInsetsSourceProvider need the statsToken when dispatching the control. We
+        // send the token here, so that another request in the provider can be cancelled.
+        notifyPreImeWindowVisibilityChanged(false /* visible */, statsToken);
         mWindowVisible = false;
         finishViews(false /* finishingInput */);
         if (mDecorViewVisible) {

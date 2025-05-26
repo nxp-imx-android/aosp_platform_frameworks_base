@@ -907,25 +907,6 @@ public abstract class WindowManagerInternal {
     public abstract @DisplayImePolicy int getDisplayImePolicy(int displayId);
 
     /**
-     * Show IME on imeTargetWindow once IME has finished layout.
-     *
-     * @param imeTargetWindowToken token of the (IME target) window which IME should be shown.
-     * @param statsToken the token tracking the current IME request.
-     */
-    public abstract void showImePostLayout(IBinder imeTargetWindowToken,
-            @NonNull ImeTracker.Token statsToken);
-
-    /**
-     * Hide IME using imeTargetWindow when requested.
-     *
-     * @param imeTargetWindowToken token of the (IME target) window which requests hiding IME.
-     * @param displayId the id of the display the IME is on.
-     * @param statsToken the token tracking the current IME request.
-     */
-    public abstract void hideIme(IBinder imeTargetWindowToken, int displayId,
-            @NonNull ImeTracker.Token statsToken);
-
-    /**
      * Tell window manager about a package that should be running with a restricted range of
      * refresh rate setting until removeRefreshRateRangeForPackage is called for the same package.
      *

@@ -29,7 +29,6 @@ import static android.view.InsetsSourceConsumerProto.TYPE_NUMBER;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 
-import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.graphics.Insets;
 import android.graphics.Matrix;
@@ -40,14 +39,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.WindowInsets.Type.InsetsType;
-import android.view.inputmethod.Flags;
-import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.ImeTracing;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
@@ -55,29 +50,6 @@ import java.util.Objects;
  * @hide
  */
 public class InsetsSourceConsumer {
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = {
-            ShowResult.SHOW_IMMEDIATELY,
-            ShowResult.IME_SHOW_DELAYED,
-            ShowResult.IME_SHOW_FAILED
-    })
-    @interface ShowResult {
-        /**
-         * Window type is ready to be shown, will be shown immediately.
-         */
-        int SHOW_IMMEDIATELY = 0;
-        /**
-         * Result will be delayed. Window needs to be prepared or request is not from controller.
-         * Request will be delegated to controller and may or may not be shown.
-         */
-        int IME_SHOW_DELAYED = 1;
-        /**
-         * Window will not be shown because one of the conditions couldn't be met.
-         * (e.g. in IME's case, when no editor is focused.)
-         */
-        int IME_SHOW_FAILED = 2;
-    }
 
     protected static final int ANIMATION_STATE_NONE = 0;
     protected static final int ANIMATION_STATE_SHOW = 1;
@@ -266,15 +238,8 @@ public class InsetsSourceConsumer {
         }
 
         final boolean showRequested = isShowRequested();
-        final boolean cancelledForNewAnimation;
-        if (Flags.refactorInsetsController()) {
-            cancelledForNewAnimation =
-                    (mController.getCancelledForNewAnimationTypes() & mType) != 0;
-        } else {
-            cancelledForNewAnimation = (!running && showRequested)
-                    ? mAnimationState == ANIMATION_STATE_HIDE
-                    : mAnimationState == ANIMATION_STATE_SHOW;
-        }
+        final boolean cancelledForNewAnimation =
+                (mController.getCancelledForNewAnimationTypes() & mType) != 0;
 
         mAnimationState = running
                 ? (showRequested ? ANIMATION_STATE_SHOW : ANIMATION_STATE_HIDE)
@@ -317,12 +282,10 @@ public class InsetsSourceConsumer {
 
     @VisibleForTesting(visibility = PACKAGE)
     public boolean applyLocalVisibilityOverride() {
-        if (Flags.refactorInsetsController()) {
-            if (mType == WindowInsets.Type.ime()) {
-                ImeTracing.getInstance().triggerClientDump(
-                        "ImeInsetsSourceConsumer#applyLocalVisibilityOverride",
-                        mController.getHost().getInputMethodManager(), null /* icProto */);
-            }
+        if (mType == WindowInsets.Type.ime()) {
+            ImeTracing.getInstance().triggerClientDump(
+                    "ImeInsetsSourceConsumer#applyLocalVisibilityOverride",
+                    mController.getHost().getInputMethodManager(), null /* icProto */);
         }
         final InsetsSource source = mState.peekSource(mId);
         if (source == null || source.hasFlags(InsetsSource.FLAG_INVALID)) {
@@ -342,23 +305,21 @@ public class InsetsSourceConsumer {
             }
             return false;
         }
-        if (Flags.refactorInsetsController()) {
-            // TODO(b/323136120) add a flag to the control, to define whether a leash is
-            //  needed and make it generic for all types
-            if (mId == InsetsSource.ID_IME && mSourceControl.getLeash() == null) {
-                if (DEBUG) {
-                    Log.d(TAG, TextUtils.formatSimple(
-                            "applyLocalVisibilityOverride: Set the source visibility to false, as"
-                                    + " there is no leash yet for type %s in %s",
-                            WindowInsets.Type.toString(mType),
-                            mController.getHost().getRootViewTitle()));
-                }
-                boolean wasVisible = source.isVisible();
-                source.setVisible(false);
-                // only if it was visible before and is now hidden, we want to notify about the
-                // changed state
-                return wasVisible;
+        // TODO(b/323136120) add a flag to the control, to define whether a leash is
+        //  needed and make it generic for all types
+        if (mId == InsetsSource.ID_IME && mSourceControl.getLeash() == null) {
+            if (DEBUG) {
+                Log.d(TAG, TextUtils.formatSimple(
+                        "applyLocalVisibilityOverride: Set the source visibility to false, as"
+                                + " there is no leash yet for type %s in %s",
+                        WindowInsets.Type.toString(mType),
+                        mController.getHost().getRootViewTitle()));
             }
+            boolean wasVisible = source.isVisible();
+            source.setVisible(false);
+            // only if it was visible before and is now hidden, we want to notify about the
+            // changed state
+            return wasVisible;
         }
         if (source.isVisible() == requestedVisible) {
             return false;
@@ -370,42 +331,17 @@ public class InsetsSourceConsumer {
     }
 
     /**
-     * Request to show current window type.
-     *
-     * @param fromController {@code true} if request is coming from controller.
-     *                       (e.g. in IME case, controller is
-     *                       {@link android.inputmethodservice.InputMethodService}).
-     * @param statsToken the token tracking the current IME request or {@code null} otherwise.
-     *
-     * @implNote The {@code statsToken} is ignored here, and only handled in
-     * {@link ImeInsetsSourceConsumer} for IME animations only.
-     *
-     * @return @see {@link ShowResult}.
-     */
-    @VisibleForTesting(visibility = PACKAGE)
-    @ShowResult
-    public int requestShow(boolean fromController, @Nullable ImeTracker.Token statsToken) {
-        return ShowResult.SHOW_IMMEDIATELY;
-    }
-
-    void requestHide(boolean fromController, @Nullable ImeTracker.Token statsToken) {
-        // no-op for types that always return ShowResult#SHOW_IMMEDIATELY.
-    }
-
-    /**
      * Reports that this source's perceptibility has changed
      *
      * @param perceptible true if the source is perceptible, false otherwise.
      * @see InsetsAnimationControlCallbacks#reportPerceptible
      */
     public void onPerceptible(boolean perceptible) {
-        if (Flags.refactorInsetsController()) {
-            if (mType == WindowInsets.Type.ime()) {
-                final IBinder window = mController.getHost().getWindowToken();
-                if (window != null) {
-                    mController.getHost().getInputMethodManager().reportPerceptible(window,
-                            perceptible);
-                }
+        if (mType == WindowInsets.Type.ime()) {
+            final IBinder window = mController.getHost().getWindowToken();
+            if (window != null) {
+                mController.getHost().getInputMethodManager().reportPerceptible(window,
+                        perceptible);
             }
         }
     }
@@ -414,13 +350,10 @@ public class InsetsSourceConsumer {
      * Remove surface on which this consumer type is drawn.
      */
     public void removeSurface() {
-        // no-op for types that always return ShowResult#SHOW_IMMEDIATELY.
-        if (Flags.refactorInsetsController()) {
-            if (mType == WindowInsets.Type.ime()) {
-                final IBinder window = mController.getHost().getWindowToken();
-                if (window != null) {
-                    mController.getHost().getInputMethodManager().removeImeSurface(window);
-                }
+        if (mType == WindowInsets.Type.ime()) {
+            final IBinder window = mController.getHost().getWindowToken();
+            if (window != null) {
+                mController.getHost().getInputMethodManager().removeImeSurface(window);
             }
         }
     }

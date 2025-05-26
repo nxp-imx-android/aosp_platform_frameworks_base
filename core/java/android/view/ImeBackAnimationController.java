@@ -38,7 +38,6 @@ import android.util.Log;
 import android.view.animation.BackGestureInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 import android.window.BackEvent;
 import android.window.OnBackAnimationCallback;
@@ -151,12 +150,10 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
         } else {
             startPostCommitAnim(/*hideIme*/ true);
         }
-        if (Flags.refactorInsetsController()) {
-            // Unregister all IME back callbacks so that back events are sent to the next callback
-            // even while the hide animation is playing
-            mInsetsController.getHost().getInputMethodManager().getImeOnBackInvokedDispatcher()
-                    .preliminaryClear();
-        }
+        // Unregister all IME back callbacks so that back events are sent to the next callback
+        // even while the hide animation is playing
+        mInsetsController.getHost().getInputMethodManager().getImeOnBackInvokedDispatcher()
+                .preliminaryClear();
     }
 
     private void setPreCommitProgress(float progress) {

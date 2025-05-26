@@ -79,7 +79,6 @@ import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArraySet;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
@@ -1706,7 +1705,6 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.view.inputmethod.Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testSetExcludeInsetsTypes_appliedAfterReparenting() {
         final SurfaceControl mockSurfaceControl = mock(SurfaceControl.class);
         final DisplayContent mockDisplayContent = mock(DisplayContent.class);
@@ -1742,7 +1740,6 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(android.view.inputmethod.Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testSetExcludeInsetsTypes_notifyInsetsAfterChange() {
         final var mockDisplayContent = mock(DisplayContent.class);
         final var mockInsetsStateController = mock(InsetsStateController.class);

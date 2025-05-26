@@ -16,12 +16,7 @@
 
 package android.view;
 
-import android.annotation.NonNull;
-import android.view.inputmethod.Flags;
-
 import com.android.internal.protolog.ProtoLogGroup;
-
-import java.util.UUID;
 
 /**
  * Defines logging groups for ProtoLog.
@@ -33,10 +28,10 @@ import java.util.UUID;
  */
 final class ViewProtoLogGroups {
     final static ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
-        "IME_INSETS_CONTROLLER", "InsetsController", Flags.refactorInsetsController());
+            "IME_INSETS_CONTROLLER", "InsetsController", true /* enabled */);
 
     final static ProtoLogGroup[] ALL_GROUPS = {
-        IME_INSETS_CONTROLLER
+            IME_INSETS_CONTROLLER,
     };
 }
 
