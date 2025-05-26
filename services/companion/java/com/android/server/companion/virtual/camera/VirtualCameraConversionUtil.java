@@ -24,14 +24,20 @@ import android.companion.virtualcamera.Format;
 import android.companion.virtualcamera.IVirtualCameraService;
 import android.companion.virtualcamera.SupportedStreamConfiguration;
 import android.companion.virtualcamera.VirtualCameraConfiguration;
+import android.companion.virtualcamera.VirtualCameraMetadata;
 import android.companion.virtualdevice.flags.Flags;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
+import android.hardware.camera2.CameraCharacteristics;
+import android.os.Parcel;
 import android.os.RemoteException;
+import android.util.Slog;
 import android.view.Surface;
 
 /** Utilities to convert the client side classes to the virtual camera service ones. */
 public final class VirtualCameraConversionUtil {
+
+    private static final String TAG = "VirtualCameraConversionUtil";
 
     /**
      * Fetches the configuration of the provided virtual cameraConfig that was provided by its owner
@@ -44,8 +50,7 @@ public final class VirtualCameraConversionUtil {
      */
     @NonNull
     public static android.companion.virtualcamera.VirtualCameraConfiguration
-            getServiceCameraConfiguration(@NonNull VirtualCameraConfig cameraConfig)
-                    throws RemoteException {
+            getServiceCameraConfiguration(@NonNull VirtualCameraConfig cameraConfig) {
         VirtualCameraConfiguration serviceConfiguration = new VirtualCameraConfiguration();
         serviceConfiguration.supportedStreamConfigs =
                 cameraConfig.getStreamConfigs().stream()
@@ -54,6 +59,12 @@ public final class VirtualCameraConversionUtil {
         serviceConfiguration.sensorOrientation = cameraConfig.getSensorOrientation();
         serviceConfiguration.lensFacing = cameraConfig.getLensFacing();
         serviceConfiguration.virtualCameraCallback = convertCallback(cameraConfig.getCallback());
+        if (Flags.virtualCameraMetadata()) {
+            serviceConfiguration.perFrameCameraMetadataEnabled =
+                    cameraConfig.isPerFrameCameraMetadataEnabled();
+            serviceConfiguration.cameraCharacteristics = convertToVirtualCameraMetadata(
+                    cameraConfig.getCameraCharacteristics());
+        }
         return serviceConfiguration;
     }
 
@@ -114,6 +125,24 @@ public final class VirtualCameraConversionUtil {
         };
     }
 
-    private VirtualCameraConversionUtil() {
+    private static VirtualCameraMetadata convertToVirtualCameraMetadata(
+            CameraCharacteristics cameraCharacteristics) {
+        if (cameraCharacteristics == null) {
+            return null;
+        }
+
+        VirtualCameraMetadata virtualCameraMetadata = new VirtualCameraMetadata();
+        Parcel parcel = Parcel.obtain();
+        try {
+            cameraCharacteristics.getNativeMetadata().writeToParcel(parcel, 0);
+            parcel.setDataPosition(0);
+            virtualCameraMetadata.metadata = parcel.readBlob();
+        } catch (Exception e) {
+            Slog.w(TAG, "Failed to convert CameraCharacteristics to VirtualCameraMetadata.");
+            return null;
+        } finally {
+            parcel.recycle();
+        }
+        return virtualCameraMetadata;
     }
 }

@@ -3658,6 +3658,13 @@ package android.companion.virtual.audio {
 
 package android.companion.virtual.camera {
 
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public final class CameraCharacteristicsBuilder {
+    ctor public CameraCharacteristicsBuilder();
+    ctor public CameraCharacteristicsBuilder(@NonNull android.hardware.camera2.CameraCharacteristics);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics build();
+    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder set(@NonNull android.hardware.camera2.CameraCharacteristics.Key<T>, T);
+  }
+
   public final class VirtualCamera implements java.io.Closeable {
     method public void close();
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig getConfig();
