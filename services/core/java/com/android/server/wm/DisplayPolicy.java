@@ -2669,7 +2669,7 @@ public class DisplayPolicy {
                 return;
             }
             final ActivityRecord focusedApp = mDisplayContent.mFocusedApp;
-            if (focusedApp != null && fillsDisplayWindowingMode(focusedApp)) {
+            if (focusedApp == null || fillsDisplayWindowingMode(focusedApp)) {
                 // Don't change the system UI controlling window when the new one is not ready.
                 return;
             }
