@@ -89,6 +89,7 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
                     bottom = SettingsSpace.small1,
                 ),
             verticalArrangement = Arrangement.spacedBy(SettingsSpace.extraSmall2),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (text.isNotEmpty()) {
                 Text(
@@ -107,18 +108,6 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
                 )
             }
         }
-    }
-}
-
-@Preview
-@Composable
-private fun ZeroStatePreferencePreview() {
-    SettingsTheme {
-        ZeroStatePreference(
-            Icons.Filled.History,
-            "No recent search history No recent search history",
-            "Description Description Description Description Description",
-        )
     }
 }
 
@@ -143,5 +132,29 @@ private class RoundedPolygonShape(
 
         path.transform(matrix)
         return Outline.Generic(path)
+    }
+}
+
+@Preview
+@Composable
+private fun ZeroStatePreferencePreview() {
+    SettingsTheme {
+        ZeroStatePreference(
+            icon = Icons.Filled.History,
+            text = "No recent search history",
+            description = "Description",
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ZeroStatePreferenceMultiLinesPreview() {
+    SettingsTheme {
+        ZeroStatePreference(
+            icon = Icons.Filled.History,
+            text = "No recent search history No recent search history",
+            description = "Description Description Description Description Description",
+        )
     }
 }
