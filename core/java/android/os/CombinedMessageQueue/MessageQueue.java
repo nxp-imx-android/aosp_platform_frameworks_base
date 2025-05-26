@@ -263,7 +263,6 @@ public final class MessageQueue {
         }
     }
 
-    /** @hide */
     private void traceMessageCount() {
         PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
                 .usingThreadCounterTrack(mTid, mThreadName)
