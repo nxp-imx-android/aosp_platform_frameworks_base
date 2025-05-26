@@ -31,14 +31,12 @@ import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_FULLSCR
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_MULTI_WINDOW;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_PIP;
 import static com.android.wm.shell.ShellTaskOrganizer.isHomeTaskOnDefaultDisplay;
-import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
@@ -171,19 +169,6 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     @Test
     public void testInit_sendRegisterTaskOrganizer() throws RemoteException {
         verify(mTaskOrganizerController).registerTaskOrganizer(any(ITaskOrganizer.class));
-    }
-
-    @Test
-    public void testTaskLeashReleasedAfterVanished() throws RemoteException {
-        assumeFalse(ENABLE_SHELL_TRANSITIONS);
-        RunningTaskInfo taskInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
-        SurfaceControl taskLeash = new SurfaceControl.Builder()
-                .setName("task").build();
-        mOrganizer.registerOrganizer();
-        mOrganizer.onTaskAppeared(taskInfo, taskLeash);
-        assertTrue(taskLeash.isValid());
-        mOrganizer.onTaskVanished(taskInfo);
-        assertTrue(!taskLeash.isValid());
     }
 
     @Test

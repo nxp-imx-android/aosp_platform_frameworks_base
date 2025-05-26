@@ -164,20 +164,6 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     @Override
-    public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
-        if (mTaskViewController.isUsingShellTransitions()) {
-            // No need for additional work as it is already taken care of during
-            // prepareOpenAnimation().
-            return;
-        }
-        onLocationChanged();
-        if (taskInfo.taskDescription != null) {
-            final int bgColor = taskInfo.taskDescription.getBackgroundColor();
-            runOnViewThread(() -> setResizeBackgroundColor(bgColor));
-        }
-    }
-
-    @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         if (taskInfo.taskDescription != null) {
             final int bgColor = taskInfo.taskDescription.getBackgroundColor();

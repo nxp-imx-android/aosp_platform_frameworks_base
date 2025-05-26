@@ -35,7 +35,6 @@ import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -140,9 +139,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) {
-            doReturn(true).when(mTransitions).isRegistered();
-        }
         when(mToken.asBinder()).thenReturn(mTokenBinder);
         when(mUnregisteredToken.asBinder()).thenReturn(mUnregisteredTokenBinder);
         mTaskInfo = new ActivityManager.RunningTaskInfo();
@@ -223,7 +219,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
      */
     @Test
     public void taskView_dispatchStateFindsIncompatible_animationMode() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         assumeTrue(enableHandlersDebuggingMode());
         assumeTrue(taskViewTransitionsRefactor()); // To avoid running twice
 
@@ -263,7 +258,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void taskView_dispatchStateFindsCompatible_dataCollectionMode() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         assumeTrue(enableHandlersDebuggingMode());
         assumeTrue(taskViewTransitionsRefactor()); // To avoid running twice
 
@@ -302,7 +296,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
      */
     @Test
     public void hideTaskViewHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(false /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
@@ -319,7 +312,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void removeTaskViewHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(false /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
@@ -335,7 +327,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void openTaskViewHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(true /* visible*/, true /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
@@ -355,7 +346,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void showTaskViewHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(true /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
@@ -375,7 +365,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void taskToTaskViewHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
 
         TaskViewTransitions.PendingTransition pending =
@@ -397,8 +386,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void changingTaskViewHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
-
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(true /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)
@@ -418,7 +405,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void closingTaskHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(false /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
@@ -437,7 +423,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
      */
     @Test
     public void hidingTaskNotHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(false /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_BACK)
@@ -458,7 +443,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void showingTaskNotHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(true /* visible*/, false /* opening */);
         final TransitionInfo info =
@@ -480,7 +464,6 @@ public class TaskViewTransitionStartAnimationTest extends ShellTestCase {
 
     @Test
     public void changingTaskNotHandled() {
-        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
         TaskViewTransitions.PendingTransition pending =
                 setPendingTransaction(true /* visible*/, false /* opening */);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_TO_FRONT)

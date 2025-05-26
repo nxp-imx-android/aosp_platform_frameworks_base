@@ -139,7 +139,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
         final ShellExecutor syncExecutor = new TestSyncExecutor();
 
         when(mTransitions.getMainExecutor()).thenReturn(syncExecutor);
-        when(mTransitions.isRegistered()).thenReturn(true);
         mTaskViewTransitions = new TaskViewTransitions(mTransitions, mRepository, mTaskOrganizer,
                 mSyncQueue);
         mBubbleTransitions = new BubbleTransitions(mContext, mTransitions, mTaskOrganizer,

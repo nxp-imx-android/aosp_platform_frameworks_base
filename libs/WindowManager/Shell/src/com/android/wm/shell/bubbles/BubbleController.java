@@ -3582,10 +3582,5 @@ public class BubbleController implements ConfigurationChangeListener,
         public void setTaskBounds(TaskViewTaskController taskView, Rect boundsOnScreen) {
             mBaseTransitions.setTaskBounds(taskView, boundsOnScreen);
         }
-
-        @Override
-        public boolean isUsingShellTransitions() {
-            return mBaseTransitions.isUsingShellTransitions();
-        }
     }
 }
