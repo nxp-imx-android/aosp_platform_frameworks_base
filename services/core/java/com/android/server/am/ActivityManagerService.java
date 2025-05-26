@@ -653,7 +653,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * The maximum number of bytes that {@link #setProcessStateSummary} accepts.
      *
-     * @see {@link android.app.ActivityManager#setProcessStateSummary(byte[])}
+     * @see android.app.ActivityManager#setProcessStateSummary(byte[])
      */
     static final int MAX_STATE_DATA_SIZE = 128;
 
@@ -748,7 +748,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     private final ArraySet<Integer> mProfileOwnerUids = new ArraySet<>();
 
     final UserController mUserController;
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public final PendingIntentController mPendingIntentController;
 
     final AppErrors mAppErrors;
@@ -1474,12 +1474,12 @@ public class ActivityManagerService extends IActivityManager.Stub
     @VisibleForTesting
     public WindowManagerService mWindowManager;
     WindowManagerInternal mWmInternal;
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public ActivityTaskManagerService mActivityTaskManager;
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public ActivityTaskManagerInternal mAtmInternal;
     UriGrantsManagerInternal mUgmInternal;
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public final ActivityManagerInternal mInternal;
     final ActivityThread mSystemThread;
 
@@ -2025,7 +2025,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         });
     }
 
-    public void setWindowManager(WindowManagerService wm) {
+    public void setWindowManager(@NonNull WindowManagerService wm) {
         synchronized (this) {
             mWindowManager = wm;
             mWmInternal = LocalServices.getService(WindowManagerInternal.class);
@@ -2286,8 +2286,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         /**
          * Sampling rate for hidden API access event logs with libmetricslogger, as an integer in
          * the range 0 to 0x10000 inclusive.
-         *
-         * @hide
          */
         public static final String HIDDEN_API_ACCESS_LOG_SAMPLING_RATE =
                 "hidden_api_access_log_sampling_rate";
@@ -2295,8 +2293,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         /**
          * Sampling rate for hidden API access event logging with statslog, as an integer in the
          * range 0 to 0x10000 inclusive.
-         *
-         * @hide
          */
         public static final String HIDDEN_API_ACCESS_STATSLOG_SAMPLING_RATE =
                 "hidden_api_access_statslog_sampling_rate";
@@ -4887,7 +4883,6 @@ public class ActivityManagerService extends IActivityManager.Stub
             app.killLocked("error during bind", ApplicationExitInfo.REASON_INITIALIZATION_FAILURE,
                     true);
             handleAppDiedLocked(app, pid, false, true, false /* fromBinderDied */);
-            return;
         }
     }
 
@@ -5437,7 +5432,6 @@ public class ActivityManagerService extends IActivityManager.Stub
      * palette is ready.
      *
      * @param userId The ID of the user where ThemeOverlayController is ready.
-     * @hide
      */
     @Override
     public void setThemeOverlayReady(@CannotBeSpecialUser @UserIdInt int userId) {
@@ -5466,8 +5460,6 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * Returns current state of ThemeOverlayController color
      * palette readiness.
-     *
-     * @hide
      */
     public boolean isThemeOverlayReady(int userId) {
         synchronized (mThemeOverlayReadyUsers) {
@@ -8232,8 +8224,6 @@ public class ActivityManagerService extends IActivityManager.Stub
      *               if the UID is frozen. If the UID is not frozen or not found,
      *               {@link UidFrozenStateChangedCallback#UID_FROZEN_STATE_UNFROZEN}
      *               will be set.
-     *
-     * @hide
      */
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
     @Override
@@ -8261,8 +8251,6 @@ public class ActivityManagerService extends IActivityManager.Stub
      *
      * @param uids The Uid(s) in question
      * @param frozenStates Frozen state for each UID index
-     *
-     * @hide
      */
     public void reportUidFrozenStateChanged(@NonNull int[] uids,
             @UidFrozenState int[] frozenStates) {
@@ -12957,7 +12945,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 //
                 // 3. Allocated for storing compressed memory (ZRAM) on Android kernels.
                 //    This is accounted for by calculating the amount of memory ZRAM
-                //    consumes and including it in the lostRAM calculuation.
+                //    consumes and including it in the lostRAM calculation.
                 //
                 // 4. Allocated by a kernel driver, in which case, it is currently not
                 //    attributed to any term that has been derived thus far. Since the
@@ -14647,7 +14635,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             ActiveInstrumentation activeInstr = new ActiveInstrumentation(this);
             activeInstr.mClass = className;
-            String defProcess = ai.processName;;
+            String defProcess = ai.processName;
             if (ii.targetProcesses == null) {
                 activeInstr.mTargetProcesses = new String[]{ai.processName};
             } else if (ii.targetProcesses.equals("*")) {
@@ -16376,7 +16364,8 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * Stops the given user.
      *
-     * Usually, callers can just use @link{#stopUserWithCallback(int, IStopUserCallback)} instead.
+     * <p>Usually, callers can just use {@link #stopUserWithCallback(int, IStopUserCallback)}
+     * instead.
      *
      * @param stopProfileRegardlessOfParent whether to stop the profile regardless of who its
      *                                      parent is, e.g. even if the parent is the current user;
@@ -16533,7 +16522,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 try {
                     thread.startBinderTracking();
                 } catch (RemoteException e) {
-                    Log.v(TAG, "Process disappared");
+                    Log.v(TAG, "Process disappeared");
                 }
             });
         }
@@ -18971,7 +18960,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     /**
-     * Attach an agent to the specified process (proces name or PID)
+     * Attach an agent to the specified process (process name or PID)
      */
     public void attachAgent(String process, String path) {
         try {
@@ -19472,8 +19461,6 @@ public class ActivityManagerService extends IActivityManager.Stub
      * A binder token used to keep track of which app created the intent. This token can be used to
      * defend against intent redirect attacks. It stores uid of the intent creator and key fields of
      * the intent to make it impossible for attacker to fake uid with a malicious intent.
-     *
-     * @hide
      */
     @VisibleForTesting
     public static final class IntentCreatorToken extends Binder {
@@ -19591,7 +19578,6 @@ public class ActivityManagerService extends IActivityManager.Stub
      * Add a creator token for all embedded intents (stored as extra) of the given intent.
      *
      * @param intent The given intent
-     * @hide
      */
     public void addCreatorToken(@Nullable Intent intent, String creatorPackage) {
         if (!preventIntentRedirect()) return;
@@ -19654,9 +19640,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         return createOrGetIntentCreatorToken(intent, key);
     }
 
-    /**
-     * @hide
-     */
     @EnforcePermission(INTERACT_ACROSS_USERS_FULL)
     public IBinder refreshIntentCreatorToken(Intent intent) {
         refreshIntentCreatorToken_enforcePermission();

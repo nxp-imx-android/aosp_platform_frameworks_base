@@ -165,6 +165,7 @@ import android.app.PictureInPictureParams;
 import android.app.PictureInPictureUiState;
 import android.app.ProfilerInfo;
 import android.app.WaitResult;
+import android.app.WindowConfiguration;
 import android.app.admin.DevicePolicyCache;
 import android.app.admin.DeviceStateCache;
 import android.app.assist.ActivityId;
@@ -318,8 +319,6 @@ import java.util.function.Supplier;
 
 /**
  * System service for managing activities and their containers (task, displays,... ).
- *
- * {@hide}
  */
 public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "ActivityTaskManagerService" : TAG_ATM;
@@ -441,7 +440,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     static final int DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE = 1 << 1;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
+    @IntDef(flag = true, value = {
             DEMOTE_TOP_REASON_DURING_UNLOCKING,
             DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE,
     })
@@ -711,7 +710,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private static final long POWER_MODE_UNKNOWN_VISIBILITY_TIMEOUT_MS = 1000;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({
+    @IntDef(flag = true, value = {
             POWER_MODE_REASON_START_ACTIVITY,
             POWER_MODE_REASON_CHANGE_DISPLAY,
             POWER_MODE_REASON_UNKNOWN_VISIBILITY,
@@ -1054,7 +1053,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return new AppWarnings(this, uiContext, handler, uiHandler, systemDir);
     }
 
-    public void setWindowManager(WindowManagerService wm) {
+    public void setWindowManager(@NonNull WindowManagerService wm) {
         synchronized (mGlobalLock) {
             mWindowManager = wm;
             mRootWindowContainer = wm.mRoot;
@@ -2534,7 +2533,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      * ACTIVITY_TYPE_STANDARD or ACTIVITY_TYPE_UNDEFINED
      */
     @Override
-    public void removeRootTasksInWindowingModes(int[] windowingModes) {
+    public void removeRootTasksInWindowingModes(
+            @NonNull @WindowConfiguration.WindowingMode int[] windowingModes) {
         enforceTaskPermission("removeRootTasksInWindowingModes()");
 
         synchronized (mGlobalLock) {
@@ -2548,7 +2548,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     @Override
-    public void removeRootTasksWithActivityTypes(int[] activityTypes) {
+    public void removeRootTasksWithActivityTypes(
+            @NonNull @WindowConfiguration.ActivityType int[] activityTypes) {
         enforceTaskPermission("removeRootTasksWithActivityTypes()");
 
         synchronized (mGlobalLock) {
@@ -3778,7 +3779,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
      *
      * @param taskId Id of task to handle the material to reconstruct the view.
      * @param parcelable Used to reconstruct the view, null means the surface is un-copyable.
-     * @hide
      */
     @Override
     public void onSplashScreenViewCopyFinished(int taskId,
