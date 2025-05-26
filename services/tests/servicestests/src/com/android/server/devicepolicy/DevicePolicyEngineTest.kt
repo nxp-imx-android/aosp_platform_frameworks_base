@@ -18,8 +18,8 @@ package com.android.server.devicepolicy
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.IntegerPolicyValue
-import com.android.server.devicepolicy.PolicyPathProvider
 import android.app.admin.PolicyUpdateResult
+import android.app.admin.PolicyValue
 import android.content.ComponentName
 import android.os.UserHandle
 import android.os.UserManager
@@ -30,10 +30,15 @@ import com.android.role.RoleManagerLocal
 import com.android.server.LocalManagerRegistry
 import com.android.server.LocalServices
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Before
+import org.junit.BeforeClass
+import org.junit.ClassRule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class DevicePolicyEngineTest {
@@ -42,57 +47,75 @@ class DevicePolicyEngineTest {
 
     private val deviceAdminServiceController = mock<DeviceAdminServiceController>()
     private val userManager = mock<UserManager>()
-    private val policyPathProvider = object : PolicyPathProvider {}
+    private val policyPathProvider = mock<PolicyPathProvider>()
 
     private val lock = Any()
     private lateinit var devicePolicyEngine: DevicePolicyEngine
 
     @Before
     fun setUp() {
+        resetPolicyFolder()
         LocalServices.removeServiceForTest(UserManager::class.java)
         LocalServices.addService(UserManager::class.java, userManager)
-        devicePolicyEngine = DevicePolicyEngine(context, deviceAdminServiceController, lock,
-            policyPathProvider)
+        resetDevicePolicyEngine()
+    }
 
-        if (LocalManagerRegistry.getManager(RoleManagerLocal::class.java) == null) {
-            LocalManagerRegistry.addManager(RoleManagerLocal::class.java, mock<RoleManagerLocal>())
-        }
+    @After
+    fun tearDown() {
+        LocalServices.removeServiceForTest(UserManager::class.java)
+    }
+
+    private fun resetPolicyFolder() {
+        whenever(policyPathProvider.getDataSystemDirectory()).thenReturn(tmpDir.newFolder())
+    }
+
+    private fun resetDevicePolicyEngine() {
+        devicePolicyEngine =
+            DevicePolicyEngine(context, deviceAdminServiceController, lock, policyPathProvider)
+        devicePolicyEngine.load()
+    }
+
+    // Helper functions for test setup. Only DO needed for now, but we will want to exptend this to
+    // other admin types in the future.
+
+    private fun <T> ensurePolicyIsSetLocally(
+        policyDefinition: PolicyDefinition<T>,
+        value: PolicyValue<T>,
+    ) {
+        val result =
+            devicePolicyEngine.setLocalPolicy(
+                policyDefinition,
+                DEVICE_OWNER_ADMIN,
+                value,
+                DEVICE_OWNER_USER_ID,
+            )
+        assertThat(result.get()).isEqualTo(POLICY_SET)
+    }
+
+    private fun <T> ensurePolicyIsRemovedLocally(policyDefinition: PolicyDefinition<T>) {
+        val result =
+            devicePolicyEngine.removeLocalPolicy(
+                policyDefinition,
+                DEVICE_OWNER_ADMIN,
+                DEVICE_OWNER_USER_ID,
+            )
+        assertThat(result.get()).isEqualTo(POLICY_CLEARED)
     }
 
     @Test
     fun setAndGetLocalPolicy_returnsCorrectPolicy() {
-        val result =
-            devicePolicyEngine.setLocalPolicy(
-                PASSWORD_COMPLEXITY_POLICY,
-                DEVICE_OWNER_ADMIN,
-                IntegerPolicyValue(HIGH_PASSWORD_COMPLEXITY),
-                DEVICE_OWNER_USER_ID,
-            )
-        assertThat(result.get()).isEqualTo(POLICY_SET)
+        ensurePolicyIsSetLocally(PASSWORD_COMPLEXITY_POLICY, HIGH_PASSWORD_COMPLEXITY)
 
         val resolvedPolicy =
             devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, DEVICE_OWNER_USER_ID)
 
-        assertThat(resolvedPolicy).isEqualTo(HIGH_PASSWORD_COMPLEXITY)
+        assertThat(resolvedPolicy).isEqualTo(HIGH_PASSWORD_COMPLEXITY.value)
     }
 
     @Test
     fun removeLocalPolicy_removesPolicyAndResolvesToNull() {
-        val result =
-            devicePolicyEngine.setLocalPolicy(
-                PASSWORD_COMPLEXITY_POLICY,
-                DEVICE_OWNER_ADMIN,
-                IntegerPolicyValue(HIGH_PASSWORD_COMPLEXITY),
-                DEVICE_OWNER_USER_ID,
-            )
-        assertThat(result.get()).isEqualTo(POLICY_SET)
-        val removeResult =
-            devicePolicyEngine.removeLocalPolicy(
-                PASSWORD_COMPLEXITY_POLICY,
-                DEVICE_OWNER_ADMIN,
-                DEVICE_OWNER_USER_ID,
-            )
-        assertThat(removeResult.get()).isEqualTo(POLICY_CLEARED)
+        ensurePolicyIsSetLocally(PASSWORD_COMPLEXITY_POLICY, HIGH_PASSWORD_COMPLEXITY)
+        ensurePolicyIsRemovedLocally(PASSWORD_COMPLEXITY_POLICY)
 
         val resolvedPolicy =
             devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, DEVICE_OWNER_USER_ID)
@@ -100,20 +123,56 @@ class DevicePolicyEngineTest {
         assertThat(resolvedPolicy).isNull()
     }
 
-    private companion object {
-        const val POLICY_SET = PolicyUpdateResult.RESULT_POLICY_SET
-        const val POLICY_CLEARED = PolicyUpdateResult.RESULT_POLICY_CLEARED
+    @Test
+    fun setLocalPolicy_restartDevicePolicyEngine_policyIsStillSet() {
+        ensurePolicyIsSetLocally(PASSWORD_COMPLEXITY_POLICY, HIGH_PASSWORD_COMPLEXITY)
+        resetDevicePolicyEngine()
 
-        const val HIGH_PASSWORD_COMPLEXITY = DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, DEVICE_OWNER_USER_ID)
 
-        const val DEVICE_OWNER_USER_ID = UserHandle.USER_SYSTEM
+        assertThat(resolvedPolicy).isEqualTo(HIGH_PASSWORD_COMPLEXITY.value)
+    }
 
-        val PASSWORD_COMPLEXITY_POLICY = PolicyDefinition.PASSWORD_COMPLEXITY
+    @Test
+    fun setLocalPolicy_restartDevicePolicyEngine_andRemovePolicyData_policyIsRemoved() {
+        ensurePolicyIsSetLocally(PASSWORD_COMPLEXITY_POLICY, HIGH_PASSWORD_COMPLEXITY)
+        resetPolicyFolder()
+        resetDevicePolicyEngine()
 
-        val DEVICE_OWNER_ADMIN =
+        val resolvedPolicy =
+            devicePolicyEngine.getResolvedPolicy(PASSWORD_COMPLEXITY_POLICY, DEVICE_OWNER_USER_ID)
+
+        assertThat(resolvedPolicy).isNull()
+    }
+
+    companion object {
+        private const val POLICY_SET = PolicyUpdateResult.RESULT_POLICY_SET
+        private const val POLICY_CLEARED = PolicyUpdateResult.RESULT_POLICY_CLEARED
+
+        private val PASSWORD_COMPLEXITY_POLICY = PolicyDefinition.PASSWORD_COMPLEXITY
+        private val HIGH_PASSWORD_COMPLEXITY =
+            IntegerPolicyValue(DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH)
+
+        private const val DEVICE_OWNER_USER_ID = UserHandle.USER_SYSTEM
+        private val DEVICE_OWNER_ADMIN =
             EnforcingAdmin.createEnterpriseEnforcingAdmin(
                 ComponentName("packagename", "classname"),
                 DEVICE_OWNER_USER_ID,
             )
+
+        @ClassRule @JvmField val tmpDir = TemporaryFolder()
+
+        @BeforeClass
+        @JvmStatic
+        fun setUpClass() {
+            // TODO(b/420373209): Remove this once we have a better way to mock RoleManagerLocal.
+            if (LocalManagerRegistry.getManager(RoleManagerLocal::class.java) == null) {
+                LocalManagerRegistry.addManager(
+                    RoleManagerLocal::class.java,
+                    mock<RoleManagerLocal>(),
+                )
+            }
+        }
     }
 }
