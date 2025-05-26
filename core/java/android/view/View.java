@@ -21120,7 +21120,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      *        should start; when the delay is 0, the animation starts
      *        immediately
      *
-     * @param invalidate Whether this method should call invalidate
+     * @param invalidate Whether this method should call invalidate if an animation
+     *        is scheduled
      *
      * @return true if the animation is played, false otherwise
      *
@@ -21146,11 +21147,6 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         if (isHorizontalScrollBarEnabled() || isVerticalScrollBarEnabled()) {
 
-            if (invalidate) {
-                // Invalidate to show the scrollbars
-                postInvalidateOnAnimation();
-            }
-
             if (scrollCache.state == ScrollabilityCache.OFF) {
                 // FIXME: this is copied from WindowManagerService.
                 // We should get this value from the system when it
@@ -21165,10 +21161,18 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             scrollCache.fadeStartTime = fadeStartTime;
             scrollCache.state = ScrollabilityCache.ON;
 
-            // Schedule our fader to run, unscheduling any old ones first
-            if (mAttachInfo != null) {
-                mAttachInfo.mHandler.removeCallbacks(scrollCache);
-                mAttachInfo.mHandler.postAtTime(scrollCache, fadeStartTime);
+            // Schedule our fader to run if it's not already scheduled
+            if (!scrollCache.fadeScrollBarsScheduled) {
+                if (invalidate) {
+                    // Invalidate to show the scrollbars
+                    postInvalidateOnAnimation();
+                }
+                if (mAttachInfo != null) {
+                    final Handler handler = mAttachInfo.mHandler;
+                    scrollCache.handler = handler;
+                    scrollCache.fadeScrollBarsScheduled = true;
+                    handler.postAtTime(scrollCache, fadeStartTime);
+                }
             }
 
             return true;
@@ -32849,6 +32853,7 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         public static final int FADING = 2;
 
         public boolean fadeScrollBars;
+        public boolean fadeScrollBarsScheduled;
 
         public int fadingEdgeLength;
         public int scrollBarDefaultDelayBeforeFade;
@@ -32877,6 +32882,10 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
          */
         public long fadeStartTime;
 
+        /**
+         * Handler used for scheduling fade animations.
+         */
+        Handler handler;
 
         /**
          * The current state of the scrollbars: ON, OFF, or FADING
@@ -32935,6 +32944,8 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         public void run() {
             long now = AnimationUtils.currentAnimationTimeMillis();
             if (now >= fadeStartTime) {
+                fadeScrollBarsScheduled = false;
+                handler = null;
 
                 // the animation fades the scrollbars out by changing
                 // the opacity (alpha) from fully opaque to fully
@@ -32955,6 +32966,9 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
                 // Kick off the fade animation
                 host.invalidate(true);
+            } else if (handler != null) {
+                // Reschedule the fade animation
+                handler.postAtTime(this, fadeStartTime);
             }
         }
     }
