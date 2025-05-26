@@ -303,6 +303,7 @@ public class VpnTest extends VpnTestBase {
     @Mock private SubscriptionManager mSubscriptionManager;
     @Mock private IpSecService mIpSecService;
     @Mock private VpnProfileStore mVpnProfileStore;
+    @Mock private VpnConnectivityMetrics mVpnConnectivityMetrics;
     private final TestExecutor mExecutor;
     @Mock DeviceIdleInternal mDeviceIdleInternal;
     private final VpnProfile mVpnProfile;
@@ -3274,6 +3275,11 @@ public class VpnTest extends VpnTestBase {
             if (!mIgnoreCallingUidChecks) {
                 super.verifyCallingUidAndPackage(context, packageName, userId);
             }
+        }
+
+        @Override
+        public VpnConnectivityMetrics makeVpnConnectivityMetrics(int userId) {
+            return mVpnConnectivityMetrics;
         }
     }
 
