@@ -61,12 +61,11 @@ fun Parcelable.marshallParcel(): ByteArray = useParcel { parcel ->
 fun ByteArray.unmarshallBundle(): Bundle = unmarshallParcel(Bundle.CREATOR)
 
 /** Unmarshall a byte array to [Parcelable]. */
-inline fun <reified T> ByteArray.unmarshallParcel(creator: Parcelable.Creator<T>): T =
-    useParcel { parcel ->
-        parcel.unmarshall(this, 0, size)
-        parcel.setDataPosition(0)
-        return@useParcel creator.createFromParcel(parcel)
-    }
+fun <T> ByteArray.unmarshallParcel(creator: Parcelable.Creator<T>): T = useParcel { parcel ->
+    parcel.unmarshall(this, 0, size)
+    parcel.setDataPosition(0)
+    return@useParcel creator.createFromParcel(parcel)
+}
 
 /** Unmarshall a byte array to [Parcelable] with given class loader. */
 inline fun <reified T> ByteArray.unmarshallParcel(
