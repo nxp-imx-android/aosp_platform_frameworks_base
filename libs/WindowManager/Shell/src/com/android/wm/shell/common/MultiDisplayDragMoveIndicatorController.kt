@@ -59,6 +59,7 @@ class MultiDisplayDragMoveIndicatorController(
         desktopExecutor.execute {
             val startDisplayDpi =
                 displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return@execute
+            val transaction = transactionSupplier()
             for (displayId in displayIds) {
                 if (
                     displayId == startDisplayId ||
@@ -100,14 +101,12 @@ class MultiDisplayDragMoveIndicatorController(
                 val dragIndicatorsForTask =
                     dragIndicators.getOrPut(taskInfo.taskId) { mutableMapOf() }
                 dragIndicatorsForTask[displayId]?.also { existingIndicator ->
-                    val transaction = transactionSupplier()
                     existingIndicator.relayout(boundsPx, transaction, visibility)
-                    transaction.apply()
                 }
                     ?: run {
                         val newIndicator = indicatorSurfaceFactory.create(displayContext, taskLeash)
                         newIndicator.show(
-                            transactionSupplier(),
+                            transaction,
                             taskInfo,
                             rootTaskDisplayAreaOrganizer,
                             displayId,
@@ -118,6 +117,7 @@ class MultiDisplayDragMoveIndicatorController(
                         dragIndicatorsForTask[displayId] = newIndicator
                     }
             }
+            transaction.apply()
         }
     }
 
