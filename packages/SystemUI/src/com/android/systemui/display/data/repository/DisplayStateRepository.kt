@@ -20,16 +20,19 @@ import android.content.Context
 import android.util.DisplayMetrics
 import android.util.Size
 import android.view.DisplayInfo
+import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.REAR_DISPLAY
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.display.shared.model.toDisplayRotation
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -74,6 +77,7 @@ class DisplayStateRepositoryImpl
 constructor(
     @DisplayAware bgDisplayScope: CoroutineScope,
     @DisplayAware val context: Context,
+    @DisplayAware val configurationRepository: ConfigurationRepository,
     deviceStateRepository: DeviceStateRepository,
     displayRepository: DisplayRepository,
 ) : DisplayStateRepository {
@@ -86,7 +90,11 @@ constructor(
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private val currentDisplayInfo: StateFlow<DisplayInfo> =
-        displayRepository.displayChangeEvent
+        if (ShadeWindowGoesAround.isEnabled) {
+                displayRepository.displayChangeEvent.filter { it == context.displayId }
+            } else {
+                displayRepository.displayChangeEvent
+            }
             .map { getDisplayInfo() }
             .stateIn(
                 bgDisplayScope,
@@ -116,20 +124,28 @@ constructor(
                     ),
             )
 
-    // TODO: b/417956803 - This should use the configuration instead
     override val isLargeScreen: StateFlow<Boolean> =
-        currentDisplayInfo
-            .map {
-                // copied from systemui/shared/...Utilities.java
-                val smallestWidth = min(it.logicalWidth, it.logicalHeight).toDpi()
-                smallestWidth >= LARGE_SCREEN_MIN_DPS
+        if (ShadeWindowGoesAround.isEnabled) {
+                configurationRepository.configurationValues.map {
+                    it.smallestScreenWidthDp >= LARGE_SCREEN_MIN_DPS
+                }
+            } else {
+                currentDisplayInfo.map {
+                    // copied from systemui/shared/...Utilities.java
+                    val smallestWidth = min(it.logicalWidth, it.logicalHeight).toDpi()
+                    smallestWidth >= LARGE_SCREEN_MIN_DPS
+                }
             }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
-    // TODO: b/417956803 - This should use the configuration instead
     override val isWideScreen: StateFlow<Boolean> =
-        currentDisplayInfo
-            .map { it.logicalWidth.toDpi() >= LARGE_SCREEN_MIN_DPS }
+        if (ShadeWindowGoesAround.isEnabled) {
+                configurationRepository.configurationValues.map {
+                    it.screenWidthDp >= LARGE_SCREEN_MIN_DPS
+                }
+            } else {
+                currentDisplayInfo.map { it.logicalWidth.toDpi() >= LARGE_SCREEN_MIN_DPS }
+            }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
     private fun getDisplayInfo(): DisplayInfo {

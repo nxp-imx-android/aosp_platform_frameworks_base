@@ -38,7 +38,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
 /** Module providing common dependencies for per-display singletons. */
-@Module(includes = [StatusBarPerDisplayModule::class])
+@Module(includes = [StatusBarPerDisplayModule::class, PerDisplayConfigurationModule::class])
 interface PerDisplayCommonModule {
 
     @Multibinds
