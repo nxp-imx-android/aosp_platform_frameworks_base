@@ -26,6 +26,7 @@ HSPLandroid/graphics/Color;->luminance()F
 # to include all hot MessageQueue methods, and the inner classes are profiled
 # as well.
 HSPLandroid/os/MessageQueue;->*
+HSPLandroid/os/MessageQueue$EnqueueOrder;->*
 HSPLandroid/os/MessageQueue$FileDescriptorRecord;->*
 HSPLandroid/os/MessageQueue$IdleHandler;->*
 HSPLandroid/os/MessageQueue$MessageCompare;->*
