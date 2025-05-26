@@ -148,7 +148,12 @@ public class KeyguardDisplayManager {
         if (ShadeWindowGoesAround.isEnabled()) {
             int shadeDisplayId = mShadePositionRepositoryProvider.get().getDisplayId().getValue();
             if (display.getDisplayId() == shadeDisplayId) {
-                Log.i(TAG, "Do not show KeyguardPresentation on the shade window display");
+                Log.i(
+                    TAG,
+                    "Secondary Keyguard presentation not shown on display "
+                            + display.getDisplayId()
+                            + " because shade window is on it (with the primary keyguard)");
+
                 return false;
             }
         } else {
