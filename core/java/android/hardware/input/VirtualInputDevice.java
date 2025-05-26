@@ -16,8 +16,6 @@
 
 package android.hardware.input;
 
-import android.companion.virtual.IVirtualDevice;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -34,24 +32,14 @@ abstract class VirtualInputDevice implements Closeable {
 
     protected static final String TAG = "VirtualInputDevice";
 
-    /**
-     * The virtual device to which this VirtualInputDevice belongs to.
-     */
-    protected final IVirtualDevice mVirtualDevice;
-
-    /**
-     * The token used to uniquely identify the virtual input device.
-     */
-    protected final IBinder mToken;
+    protected final IVirtualInputDevice mVirtualInputDevice;
 
     protected final VirtualInputDeviceConfig mConfig;
 
     /** @hide */
-    VirtualInputDevice(VirtualInputDeviceConfig config,
-            IVirtualDevice virtualDevice, IBinder token) {
+    VirtualInputDevice(VirtualInputDeviceConfig config, IVirtualInputDevice virtualDevice) {
         mConfig = config;
-        mVirtualDevice = virtualDevice;
-        mToken = token;
+        mVirtualInputDevice = virtualDevice;
     }
 
     /**
@@ -60,7 +48,7 @@ abstract class VirtualInputDevice implements Closeable {
      */
     public int getInputDeviceId() {
         try {
-            return mVirtualDevice.getInputDeviceId(mToken);
+            return mVirtualInputDevice.getInputDeviceId();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -70,7 +58,7 @@ abstract class VirtualInputDevice implements Closeable {
     public void close() {
         Log.d(TAG, "Closing virtual input device " + mConfig.getInputDeviceName());
         try {
-            mVirtualDevice.unregisterInputDevice(mToken);
+            mVirtualInputDevice.close();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
