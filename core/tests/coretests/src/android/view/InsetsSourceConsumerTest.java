@@ -290,12 +290,10 @@ public class InsetsSourceConsumerTest {
             final boolean imeVisible = hasWindowFocus && hasViewFocus;
             final var statsToken = ImeTracker.Token.empty();
             if (imeVisible) {
-                mController.show(WindowInsets.Type.ime(), true /* fromIme */, statsToken);
+                mController.show(WindowInsets.Type.ime(), statsToken);
                 // Called once through the show flow.
-                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()),
-                        eq(true) /* show */, eq(true) /* fromIme */,
-                        eq(false) /* skipsAnim */, eq(false) /* skipsCallbacks */,
-                        eq(statsToken));
+                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()), eq(true) /* show */,
+                        eq(false) /* skipsAnim */, eq(false) /* skipsCallbacks */, eq(statsToken));
             }
 
             // set control and verify visibility is applied.
@@ -311,8 +309,7 @@ public class InsetsSourceConsumerTest {
                 verify(control).getAndClearSkipAnimationOnce();
                 // This ends up creating a new request when we gain control,
                 // so the statsToken won't match.
-                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()),
-                        eq(true) /* show */, eq(false) /* fromIme */,
+                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()), eq(true) /* show */,
                         eq(expectSkipAnim) /* skipsAnim */, eq(false) /* skipsCallbacks */,
                         and(not(eq(statsToken)), notNull()));
             }
@@ -321,18 +318,16 @@ public class InsetsSourceConsumerTest {
             // time will not skip animation.
             if (!hasViewFocus) {
                 final var statsTokenNext = ImeTracker.Token.empty();
-                mController.show(WindowInsets.Type.ime(), true /* fromIme */, statsTokenNext);
+                mController.show(WindowInsets.Type.ime(), statsTokenNext);
                 // Called once through the show flow.
-                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()),
-                        eq(true) /* show */, eq(true) /* fromIme */,
+                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()), eq(true) /* show */,
                         eq(false) /* skipsAnim */, eq(false) /* skipsCallbacks */,
                         eq(statsTokenNext));
                 mController.onControlsChanged(new InsetsSourceControl[]{ control });
                 // Verify IME show animation should be triggered when control becomes available and
                 // the animation will be skipped by getAndClearSkipAnimationOnce invoked.
                 verify(control).getAndClearSkipAnimationOnce();
-                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()),
-                        eq(true) /* show */, eq(false) /* fromIme */,
+                verify(mController).applyAnimation(eq(WindowInsets.Type.ime()), eq(true) /* show */,
                         eq(true) /* skipsAnim */, eq(false) /* skipsCallbacks */,
                         and(not(eq(statsToken)), notNull()));
             }

@@ -382,8 +382,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         }
 
         @Override
-        public void showInsets(@InsetsType int types, boolean fromIme,
-                @Nullable ImeTracker.Token statsToken) {
+        public void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
             if ((types & WindowInsets.Type.ime()) == 0) {
                 return;
             }
@@ -393,8 +392,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
         }
 
         @Override
-        public void hideInsets(@InsetsType int types, boolean fromIme,
-                @Nullable ImeTracker.Token statsToken) {
+        public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
             if ((types & WindowInsets.Type.ime()) == 0) {
                 return;
             }

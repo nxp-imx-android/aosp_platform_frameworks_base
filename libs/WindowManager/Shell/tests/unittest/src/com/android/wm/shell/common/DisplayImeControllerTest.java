@@ -116,13 +116,13 @@ public class DisplayImeControllerTest extends ShellTestCase {
 
     @Test
     public void showInsets_schedulesNoWorkOnExecutor() {
-        mPerDisplay.showInsets(ime(), true /* fromIme */, ImeTracker.Token.empty());
+        mPerDisplay.showInsets(ime(), ImeTracker.Token.empty());
         verifyNoMoreInteractions(mExecutor);
     }
 
     @Test
     public void hideInsets_schedulesNoWorkOnExecutor() {
-        mPerDisplay.hideInsets(ime(), true /* fromIme */, ImeTracker.Token.empty());
+        mPerDisplay.hideInsets(ime(), ImeTracker.Token.empty());
         verifyNoMoreInteractions(mExecutor);
     }
 

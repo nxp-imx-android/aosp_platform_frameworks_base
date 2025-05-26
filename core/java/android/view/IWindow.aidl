@@ -75,19 +75,17 @@ oneway interface IWindow {
      * Called when a set of insets source window should be shown by policy.
      *
      * @param types internal insets types (WindowInsets.Type.InsetsType) to show
-     * @param fromIme true if this request originated from IME (InputMethodService).
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    void showInsets(int types, boolean fromIme, in @nullable ImeTracker.Token statsToken);
+    void showInsets(int types, in @nullable ImeTracker.Token statsToken);
 
     /**
      * Called when a set of insets source window should be hidden by policy.
      *
      * @param types internal insets types (WindowInsets.Type.InsetsType) to hide
-     * @param fromIme true if this request originated from IME (InputMethodService).
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    void hideInsets(int types, boolean fromIme, in @nullable ImeTracker.Token statsToken);
+    void hideInsets(int types, in @nullable ImeTracker.Token statsToken);
 
     void moved(int newX, int newY);
     void dispatchAppVisibility(boolean visible);

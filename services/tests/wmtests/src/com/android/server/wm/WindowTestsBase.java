@@ -905,12 +905,12 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             }
 
             @Override
-            public void showInsets(int i, boolean b, @Nullable ImeTracker.Token t)
+            public void showInsets(int i, @Nullable ImeTracker.Token t)
                     throws RemoteException {
             }
 
             @Override
-            public void hideInsets(int i, boolean b, @Nullable ImeTracker.Token t)
+            public void hideInsets(int i, @Nullable ImeTracker.Token t)
                     throws RemoteException {
             }
 

@@ -355,10 +355,10 @@ public class SystemWindows {
                 InsetsSourceControl.Array activeControls) {}
 
         @Override
-        public void showInsets(int types, boolean fromIme, @Nullable ImeTracker.Token statsToken) {}
+        public void showInsets(int types, @Nullable ImeTracker.Token statsToken) {}
 
         @Override
-        public void hideInsets(int types, boolean fromIme, @Nullable ImeTracker.Token statsToken) {}
+        public void hideInsets(int types, @Nullable ImeTracker.Token statsToken) {}
 
         @Override
         public void moved(int newX, int newY) {}
