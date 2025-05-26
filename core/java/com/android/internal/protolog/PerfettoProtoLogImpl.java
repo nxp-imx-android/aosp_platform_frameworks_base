@@ -74,6 +74,7 @@ import com.android.internal.protolog.common.LogLevel;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -414,9 +415,34 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             }
             mBackgroundServiceLock.lock();
             try {
-                mBackgroundLoggingService.execute(() ->
+                mBackgroundLoggingService.execute(() -> {
+                    try {
                         logToProto(logLevel, group, message, args, tsNanos,
-                                stacktrace));
+                                stacktrace);
+                    } catch (RuntimeException e) {
+                        // An error occurred during the logging process itself.
+                        // Log this error along with information about the original log call.
+                        final var sb = new StringBuilder();
+                        sb.append("Failed to log to ProtoLog for ");
+
+                        if (message.mMessageString != null) {
+                            sb.append("message: \"").append(message.mMessageString).append("\"");
+                        } else if (message.mMessageHash != null) {
+                            sb.append("message with hash: ").append(message.mMessageHash);
+                        } else {
+                            sb.append("message: (info unavailable)");
+                        }
+
+                        if (stacktrace != null && !stacktrace.isEmpty()) {
+                            sb.append("\nOriginal Call Site Stack Trace:\n");
+                            for (String line : stacktrace.split("\n")) {
+                                sb.append("    ").append(line).append("\n");
+                            }
+                        }
+
+                        throw new RuntimeException(sb.toString(), e);
+                    }
+                });
             } finally {
                 mBackgroundServiceLock.unlock();
             }
