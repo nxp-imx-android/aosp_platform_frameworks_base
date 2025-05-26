@@ -86,6 +86,7 @@ import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.Job;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 /**
@@ -697,13 +698,6 @@ public class InternetDialogDelegateLegacy implements
                 mInternetDetailsContentController.getInternetWifiDrawable(mConnectedWifiEntry));
         mWifiSettingsIcon.setColorFilter(
                 mDialog.getContext().getColor(R.color.connected_network_primary_color));
-        if (mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
-                mConnectedWifiEntry) != null) {
-            mShareWifiButton.setVisibility(View.VISIBLE);
-        } else {
-            mShareWifiButton.setVisibility(View.GONE);
-        }
-
         if (mSecondaryMobileNetworkLayout != null) {
             mSecondaryMobileNetworkLayout.setVisibility(View.GONE);
         }
@@ -956,11 +950,19 @@ public class InternetDialogDelegateLegacy implements
         // Should update the carrier network layout when it is connected under airplane mode ON.
         boolean shouldUpdateCarrierNetwork = mMobileNetworkLayout.getVisibility() == View.VISIBLE
                 && mInternetDetailsContentController.isAirplaneModeEnabled();
+        boolean hasConnectedEntryChanged = !Objects.equals(connectedEntry, mConnectedWifiEntry);
+        // Determine if a share Wi-Fi intent is available for the newly connected entry.
+        boolean canShareWifi = hasConnectedEntryChanged && connectedEntry != null
+                && mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
+                        connectedEntry) != null;
         mHandler.post(() -> {
             mConnectedWifiEntry = connectedEntry;
             mWifiEntriesCount = wifiEntries == null ? 0 : wifiEntries.size();
             mHasMoreWifiEntries = hasMoreWifiEntries;
             updateDialog(shouldUpdateCarrierNetwork /* shouldUpdateMobileNetwork */);
+            if (hasConnectedEntryChanged) {
+                mShareWifiButton.setVisibility(canShareWifi ? View.VISIBLE : View.GONE);
+            }
             mAdapter.setWifiEntries(wifiEntries, mWifiEntriesCount);
             mAdapter.notifyDataSetChanged();
         });
