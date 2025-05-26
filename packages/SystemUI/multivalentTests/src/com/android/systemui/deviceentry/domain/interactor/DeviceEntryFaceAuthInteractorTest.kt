@@ -65,6 +65,7 @@ import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
@@ -519,7 +520,7 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun faceAuthIsRequestedWhenShadeExpansionIsStarted() =
+    fun faceAuthIsRequestedWhenSingleShadeExpansionIsStarted() =
         kosmos.runTest {
             enableSingleShade()
             runCurrent()
@@ -583,6 +584,82 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
                         fromScene = Scenes.Lockscreen,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.Lockscreen),
+                        progress = flowOf(0.5f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+            )
+
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun faceAuthIsRequestedWhenDualShadeExpansionIsStarted() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            underTest.start()
+            faceAuthRepository.canRunFaceAuth.value = true
+            sceneInteractor.snapToScene(toScene = Scenes.Lockscreen, "for-test")
+            runCurrent()
+
+            sceneInteractor.showOverlay(Overlays.NotificationsShade, loggingReason = "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Transition.showOverlay(
+                        overlay = Overlays.NotificationsShade,
+                        fromScene = Scenes.Lockscreen,
+                        currentOverlays = flowOf(emptySet()),
+                        progress = flowOf(0.2f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+            )
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(Pair(FaceAuthUiEvent.FACE_AUTH_TRIGGERED_QS_EXPANDED, false))
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun faceAuthIsRequestedOnlyOnceWhenDualShadeExpansionStarts() =
+        kosmos.runTest {
+            enableDualShade()
+            underTest.start()
+            faceAuthRepository.canRunFaceAuth.value = true
+            sceneInteractor.snapToScene(toScene = Scenes.Lockscreen, "for-test")
+            runCurrent()
+
+            sceneInteractor.showOverlay(Overlays.NotificationsShade, loggingReason = "for-test")
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Transition.showOverlay(
+                        overlay = Overlays.NotificationsShade,
+                        fromScene = Scenes.Lockscreen,
+                        currentOverlays = flowOf(emptySet()),
+                        progress = flowOf(0.2f),
+                        isInitiatedByUserInput = true,
+                        isUserInputOngoing = flowOf(false),
+                    )
+                )
+            )
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(Pair(FaceAuthUiEvent.FACE_AUTH_TRIGGERED_QS_EXPANDED, false))
+            faceAuthRepository.runningAuthRequest.value = null
+
+            // expansion progress shouldn't trigger face auth again
+            sceneInteractor.setTransitionState(
+                flowOf(
+                    ObservableTransitionState.Transition.showOverlay(
+                        overlay = Overlays.NotificationsShade,
+                        fromScene = Scenes.Lockscreen,
+                        currentOverlays = flowOf(emptySet()),
                         progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(false),
