@@ -4695,6 +4695,10 @@ final class ActivityRecord extends WindowToken {
     }
 
     boolean containsDismissKeyguardWindow() {
+        if (inPinnedWindowingMode()) {
+            return false;
+        }
+
         // Window state is transient during relaunch. We are not guaranteed to be frozen during the
         // entirety of the relaunch.
         if (isRelaunching()) {
