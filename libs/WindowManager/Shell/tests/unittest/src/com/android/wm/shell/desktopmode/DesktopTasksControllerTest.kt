@@ -161,7 +161,6 @@ import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.OneShotRemoteHandler
 import com.android.wm.shell.transition.TestRemoteTransition
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
@@ -432,8 +431,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
         controller.setSnapEventHandler(snapEventHandler)
-
-        assumeTrue(ENABLE_SHELL_TRANSITIONS)
 
         taskRepository = userRepositories.current
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)

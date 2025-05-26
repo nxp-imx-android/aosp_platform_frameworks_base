@@ -127,7 +127,4 @@ public interface TaskViewController {
      * @param boundsOnScreen the on screen bounds of the surface view.
      */
     void setTaskBounds(TaskViewTaskController taskView, Rect boundsOnScreen);
-
-    /** Whether shell-transitions are currently enabled. */
-    boolean isUsingShellTransitions();
 }

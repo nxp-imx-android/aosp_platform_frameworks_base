@@ -48,7 +48,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -393,10 +392,6 @@ public class BubblesTest extends SysuiTestCase {
 
         MockitoAnnotations.initMocks(this);
         PhysicsAnimatorTestUtils.prepareForTest();
-
-        if (Transitions.ENABLE_SHELL_TRANSITIONS) {
-            doReturn(true).when(mTransitions).isRegistered();
-        }
 
         mTestableLooper = TestableLooper.get(this);
 

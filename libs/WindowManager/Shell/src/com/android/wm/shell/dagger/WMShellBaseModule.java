@@ -797,10 +797,6 @@ public abstract class WMShellBaseModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             HomeTransitionObserver homeTransitionObserver,
             FocusTransitionObserver focusTransitionObserver) {
-        if (!context.getResources().getBoolean(R.bool.config_registerShellTransitionsOnInit)) {
-            // TODO(b/238217847): Force override shell init if registration is disabled
-            shellInit = new ShellInit(mainExecutor);
-        }
         return new Transitions(context, shellInit, shellCommandHandler, shellController, organizer,
                 pool, displayController, displayInsetsController, mainExecutor, mainHandler,
                 animExecutor, rootTaskDisplayAreaOrganizer, homeTransitionObserver,

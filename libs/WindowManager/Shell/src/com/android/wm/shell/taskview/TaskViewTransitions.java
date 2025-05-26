@@ -41,7 +41,6 @@ import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.LauncherApps;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -193,11 +192,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             mTaskViews.remove(tv);
         }
         // Note: Don't unregister handler since this is a singleton with lifetime bound to Shell
-    }
-
-    @Override
-    public boolean isUsingShellTransitions() {
-        return mTransitions.isRegistered();
     }
 
     /**
@@ -376,20 +370,11 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                         + "shortcut=%s bounds=%s", destination.hashCode(), shortcut, launchBounds);
         prepareActivityOptions(options, launchBounds, destination);
         final Context context = destination.getContext();
-        if (isUsingShellTransitions()) {
-            mShellExecutor.execute(() -> {
-                final WindowContainerTransaction wct = new WindowContainerTransaction();
-                wct.startShortcut(context.getPackageName(), shortcut, options.toBundle());
-                startTaskView(wct, destination, options.getLaunchCookie());
-            });
-            return;
-        }
-        try {
-            LauncherApps service = context.getSystemService(LauncherApps.class);
-            service.startShortcut(shortcut, null /* sourceBounds */, options.toBundle());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mShellExecutor.execute(() -> {
+            final WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.startShortcut(context.getPackageName(), shortcut, options.toBundle());
+            startTaskView(wct, destination, options.getLaunchCookie());
+        });
     }
 
     @Override
@@ -399,21 +384,11 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.startActivity(): taskView=%d intent=%s",
                 destination.hashCode(), pendingIntent.getIntent());
         prepareActivityOptions(options, launchBounds, destination);
-        if (isUsingShellTransitions()) {
-            mShellExecutor.execute(() -> {
-                WindowContainerTransaction wct = new WindowContainerTransaction();
-                wct.sendPendingIntent(pendingIntent, fillInIntent, options.toBundle());
-                startTaskView(wct, destination, options.getLaunchCookie());
-            });
-            return;
-        }
-        try {
-            pendingIntent.send(destination.getContext(), 0 /* code */, fillInIntent,
-                    null /* onFinished */, null /* handler */, null /* requiredPermission */,
-                    options.toBundle());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mShellExecutor.execute(() -> {
+            WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.sendPendingIntent(pendingIntent, fillInIntent, options.toBundle());
+            startTaskView(wct, destination, options.getLaunchCookie());
+        });
     }
 
     @Override
@@ -605,17 +580,10 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             return;
         }
 
-        if (isUsingShellTransitions()) {
-            mShellExecutor.execute(() -> {
-                // Sync Transactions can't operate simultaneously with shell transition collection.
-                setTaskBoundsInTransition(taskView, boundsOnScreen);
-            });
-            return;
-        }
-
-        WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setBounds(taskView.getTaskToken(), boundsOnScreen);
-        mSyncQueue.queue(wct);
+        mShellExecutor.execute(() -> {
+            // Sync Transactions can't operate simultaneously with shell transition collection.
+            setTaskBoundsInTransition(taskView, boundsOnScreen);
+        });
     }
 
     private void setTaskBoundsInTransition(TaskViewTaskController taskView, Rect boundsOnScreen) {
