@@ -417,6 +417,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
         whenever(userProfileContexts.getOrCreate(anyInt())).thenReturn(context)
         whenever(freeformTaskTransitionStarter.startPipTransition(any())).thenReturn(Binder())
+        whenever(rootTaskDisplayAreaOrganizer.displayIds).thenReturn(intArrayOf(DEFAULT_DISPLAY))
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
@@ -3193,6 +3194,115 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
         wct.assertLaunchTaskOnDisplay(SECOND_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun moveTaskToFront_backgroundTask_notInDesk_launchesInAssociatedDisplay() {
+        val deskId = 2
+        val taskId = 1
+        val task = createRecentTaskInfo(taskId, displayId = SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(taskId)).thenReturn(null)
+        whenever(recentTasksController.findTaskInBackground(taskId)).thenReturn(task)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = true
+
+        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        wct.assertLaunchTaskOnDisplay(SECOND_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun moveTaskToFront_backgroundTask_notInDesk_unsupportedAssociatedDisplay_launchesInFocused() {
+        val focusedDisplayId = 10
+        val deskId = 2
+        val taskId = 1
+        val task = createRecentTaskInfo(taskId, displayId = SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        taskRepository.addDesk(displayId = focusedDisplayId, deskId = focusedDisplayId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(taskId)).thenReturn(null)
+        whenever(recentTasksController.findTaskInBackground(taskId)).thenReturn(task)
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(focusedDisplayId)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[focusedDisplayId] = true
+
+        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        wct.assertLaunchTaskOnDisplay(focusedDisplayId)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun moveTaskToFront_backgroundTask_notInDesk_unsupportedAssociatedAndFocusedDisplay_launchesInSupported() {
+        val supportedDisplayId = 11
+        val focusedDisplayId = 10
+        val deskId = 2
+        val taskId = 1
+        val task = createRecentTaskInfo(taskId, displayId = SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        taskRepository.addDesk(displayId = focusedDisplayId, deskId = focusedDisplayId)
+        taskRepository.addDesk(displayId = supportedDisplayId, deskId = supportedDisplayId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(taskId)).thenReturn(null)
+        whenever(recentTasksController.findTaskInBackground(taskId)).thenReturn(task)
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(focusedDisplayId)
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(SECOND_DISPLAY, focusedDisplayId, supportedDisplayId))
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[focusedDisplayId] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[supportedDisplayId] = true
+
+        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        wct.assertLaunchTaskOnDisplay(supportedDisplayId)
     }
 
     @Test
