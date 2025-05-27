@@ -6266,9 +6266,14 @@ public class Notification implements Parcelable
                 result = new TemplateBindResult();
             }
             bindLargeIcon(contentView, p, result);
-            if (!p.mHeaderless) {
-                // views in states with a header (big states)
-                result.mHeadingExtraMarginSet.applyToView(contentView, R.id.notification_header);
+            if (!p.mHeaderless) { // views in states with a header (expanded states)
+                if (mN.isPromotedOngoing()) {
+                    // When promoted, the expander is hidden but we need to include the notif margin
+                    result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_header);
+                } else {
+                    result.mHeadingExtraMarginSet.applyToView(contentView,
+                            R.id.notification_header);
+                }
                 result.mTitleMarginSet.applyToView(contentView, R.id.title);
                 // If there is no title, the text (or big_text) needs to wrap around the image
                 result.mTitleMarginSet.applyToView(contentView, p.mTextViewId);
@@ -6310,7 +6315,8 @@ public class Notification implements Parcelable
             final float contentMarginDp = resources.getDimension(
                     R.dimen.notification_content_margin_end) / density;
             float spaceForExpanderDp;
-            if (mN.isPromotedOngoing()) {
+            if (Flags.uiRichOngoing() && mN.isPromotedOngoing() && !mParams.mHeaderless) {
+                // No expander is shown in promoted notifications
                 spaceForExpanderDp = 0;
             } else {
                 final int expanderSizeRes;
@@ -6339,16 +6345,11 @@ public class Notification implements Parcelable
                     }
                 }
             }
+            result.setRightIconState(rightIcon != null /* visible */, viewWidthDp, viewHeightDp);
             // Margin needed for the header to accommodate the icon when shown
             final float extraMarginEndDpIfVisible = viewWidthDp + iconMarginDp;
-            result.setRightIconState(rightIcon != null /* visible */, viewWidthDp, viewHeightDp,
-                    extraMarginEndDpIfVisible, spaceForExpanderDp, notificationMarginDp);
-
-            if (mN.isPromotedOngoing() && !mParams.mHeaderless) {
-                result.mHeadingExtraMarginSet.setValues(
-                        /* valueIfGone = */ contentMarginDp,
-                        /* valueIfVisible = */ extraMarginEndDpIfVisible + contentMarginDp);
-            }
+            result.calculateMargins(extraMarginEndDpIfVisible, spaceForExpanderDp,
+                    notificationMarginDp);
         }
 
         /**
@@ -6391,20 +6392,9 @@ public class Notification implements Parcelable
                 contentView.setImageViewIcon(R.id.right_icon, rightIcon);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon,
                         isPromotedPicture ? 1 : 0);
-                if (Flags.uiRichOngoing() && !p.mHeaderless) {
-                    final int largeIconMarginEnd;
-                    if (mN.isPromotedOngoing()) {
-                        largeIconMarginEnd = R.dimen.notification_content_margin;
-                    } else {
-                        if (notificationsRedesignTemplates()) {
-                            largeIconMarginEnd =
-                                    R.dimen.notification_2025_right_icon_expanded_margin_end;
-                        } else {
-                            largeIconMarginEnd = R.dimen.notification_header_expand_icon_size;
-                        }
-                    }
-                    contentView.setViewLayoutMarginDimen(
-                            R.id.right_icon, RemoteViews.MARGIN_END, largeIconMarginEnd);
+                if ((notificationsRedesignTemplates() || Flags.uiRichOngoing()) && !p.mHeaderless) {
+                    contentView.setViewLayoutMargin(R.id.right_icon,
+                            RemoteViews.MARGIN_END, getLargeIconMarginEnd(p), COMPLEX_UNIT_PX);
                 }
 
                 processLargeLegacyIcon(rightIcon, contentView, p);
@@ -6414,6 +6404,26 @@ public class Notification implements Parcelable
                 // visibility) is used by NotificationGroupingUtil to set the visibility.
                 contentView.setImageViewIcon(R.id.right_icon, null);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon, 0);
+            }
+        }
+
+        int getLargeIconMarginEnd(@NonNull StandardTemplateParams p) {
+            Resources res = mContext.getResources();
+
+            if (Flags.uiRichOngoing() && mN.isPromotedOngoing() && !p.mHeaderless) {
+                // Promoted notifications don't need space for the expand button
+                if (notificationsRedesignTemplates()) {
+                    return res.getDimensionPixelSize(R.dimen.notification_2025_margin);
+                } else {
+                    return res.getDimensionPixelSize(R.dimen.notification_content_margin);
+                }
+            }
+
+            if (notificationsRedesignTemplates()) {
+                return res.getDimensionPixelSize(
+                        R.dimen.notification_2025_right_icon_expanded_margin_end);
+            } else {
+                return res.getDimensionPixelSize(R.dimen.notification_header_expand_icon_size);
             }
         }
 
@@ -14945,7 +14955,7 @@ public class Notification implements Parcelable
         /**
          * The margin end that needs to be added to the heading so that it won't overlap
          * with the large icon. This value includes the space required to accommodate the large
-         * icon as well as the expander. This DOES include the 16dp content margin.
+         * icon as well as the expander (when present). This DOES include the 16dp content margin.
          */
         public final MarginSet mHeadingFullMarginSet = new MarginSet();
 
@@ -14956,11 +14966,14 @@ public class Notification implements Parcelable
          */
         public final MarginSet mTitleMarginSet = new MarginSet();
 
-        public void setRightIconState(boolean visible, float widthDp, float heightDp,
-                float marginEndDpIfVisible, float spaceForExpanderDp, float notificationMarginDp) {
+        public void setRightIconState(boolean visible, float widthDp, float heightDp) {
             mRightIconVisible = visible;
             mRightIconWidthDp = widthDp;
             mRightIconHeightDp = heightDp;
+        }
+
+        public void calculateMargins(float marginEndDpIfVisible, float spaceForExpanderDp,
+                float notificationMarginDp) {
             mHeadingExtraMarginSet.setValues(
                     /* valueIfGone = */ 0,
                     /* valueIfVisible = */ marginEndDpIfVisible);
