@@ -43,6 +43,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
+import android.hardware.input.InputManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -56,6 +57,7 @@ import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -248,6 +250,42 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     @Nullable
     private final MirrorWindowControl mMirrorWindowControl;
 
+    private final InputManager mInputManager;
+    private boolean mIsMouseOrKeyboardConnected = false;
+    private final InputManager.InputDeviceListener mInputDeviceListener =
+            new InputManager.InputDeviceListener() {
+                @Override
+                public void onInputDeviceAdded(int deviceId) {
+                    onInputDeviceChanged(deviceId);
+                }
+
+                @Override
+                public void onInputDeviceRemoved(int deviceId) {
+                    onInputDeviceChanged(deviceId);
+                }
+
+                @Override
+                public void onInputDeviceChanged(int deviceId) {
+                    final boolean wasConnected = mIsMouseOrKeyboardConnected;
+                    mIsMouseOrKeyboardConnected = false;
+                    for (final int id : mInputManager.getInputDeviceIds()) {
+                        final InputDevice device = mInputManager.getInputDevice(id);
+                        if (device == null || !device.isEnabled() || device.isVirtual()) {
+                            continue;
+                        }
+                        if (device.supportsSource(InputDevice.SOURCE_MOUSE)
+                                || device.isFullKeyboard()) {
+                            mIsMouseOrKeyboardConnected = true;
+                            break;
+                        }
+                    }
+                    if (wasConnected != mIsMouseOrKeyboardConnected) {
+                        // mIsMouseOrKeyboardConnected affects how to handle insets.
+                        onWindowInsetChanged();
+                    }
+                }
+            };
+
     WindowMagnificationController(
             @UiContext Context context,
             @NonNull Handler handler,
@@ -258,7 +296,8 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             SysUiState sysUiState,
             SecureSettings secureSettings,
             Supplier<SurfaceControlViewHost> scvhSupplier,
-            WindowManager windowManager) {
+            WindowManager windowManager,
+            InputManager inputManager) {
         mContext = context;
         mHandler = handler;
         mAnimationController = animationController;
@@ -269,6 +308,7 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         mScvhSupplier = scvhSupplier;
         mConfiguration = new Configuration(context.getResources().getConfiguration());
         mWindowMagnificationFrameSizePrefs = new WindowMagnificationFrameSizePrefs(mContext);
+        mInputManager = inputManager;
 
         final Display display = mContext.getDisplay();
         mDisplayId = mContext.getDisplayId();
@@ -387,10 +427,10 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         final WindowMetrics windowMetrics = mWm.getCurrentWindowMetrics();
         final Insets insets = windowMetrics.getWindowInsets().getInsets(systemGestures());
         final int gestureTop;
-        if (Flags.updateWindowMagnifierBottomBoundary()) {
-            gestureTop = windowMetrics.getBounds().bottom - insets.bottom;
-        } else {
+        if (canOverlapWithBottomGestureInsets()) {
             gestureTop = insets.bottom != 0 ? windowMetrics.getBounds().bottom - insets.bottom : -1;
+        } else {
+            gestureTop = windowMetrics.getBounds().bottom - insets.bottom;
         }
         if (gestureTop != mSystemGestureTop) {
             mSystemGestureTop = gestureTop;
@@ -470,6 +510,10 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             return;
         }
 
+        if (Flags.updateWindowMagnifierBottomBoundaryWithMouse()) {
+            mInputManager.unregisterInputDeviceListener(mInputDeviceListener);
+        }
+
         if (mMirrorSurface != null) {
             mTransaction.remove(mMirrorSurface).apply();
             mMirrorSurface = null;
@@ -534,9 +578,7 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         if (configDiff == 0) {
             return;
         }
-        if (Flags.updateWindowMagnifierBottomBoundary()) {
-            updateSystemGestureInsetsTop();
-        }
+        updateSystemGestureInsetsTop();
         if ((configDiff & ActivityInfo.CONFIG_ORIENTATION) != 0) {
             onRotate();
         }
@@ -714,12 +756,8 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     }
 
     private void onWindowInsetChanged() {
-        if (Flags.updateWindowMagnifierBottomBoundary()) {
-            updateSystemGestureInsetsTop();
-        } else {
-            if (updateSystemGestureInsetsTop()) {
-                updateSystemUIStateIfNeeded();
-            }
+        if (updateSystemGestureInsetsTop()) {
+            updateSystemUIStateIfNeeded();
         }
     }
 
@@ -985,9 +1023,9 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         final int x = MathUtils.clamp(mMagnificationFrame.left - mMirrorSurfaceMargin, minX, maxX);
 
         final int minY = -mOuterBorderSize;
-        final int maxY = Flags.updateWindowMagnifierBottomBoundary()
-                ? mSystemGestureTop - height + mOuterBorderSize
-                : mWindowBounds.bottom - height + mOuterBorderSize;
+        final int maxY = canOverlapWithBottomGestureInsets()
+                ? mWindowBounds.bottom - height + mOuterBorderSize
+                : mSystemGestureTop - height + mOuterBorderSize;
         final int y = MathUtils.clamp(mMagnificationFrame.top - mMirrorSurfaceMargin, minY, maxY);
         if (computeWindowSize) {
             LayoutParams params = (LayoutParams) mMirrorView.getLayoutParams();
@@ -1143,11 +1181,8 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
     }
 
     private void updateSysUIState(boolean force) {
-        if (Flags.updateWindowMagnifierBottomBoundary()) {
-            return;
-        }
-
-        final boolean overlap = isActivated() && mSystemGestureTop > 0
+        final boolean overlap = isActivated() && canOverlapWithBottomGestureInsets()
+                && mSystemGestureTop > 0
                 && mMirrorViewBounds.bottom > mSystemGestureTop;
         if (force || overlap != mOverlapWithGestureInsets) {
             mOverlapWithGestureInsets = overlap;
@@ -1274,6 +1309,11 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
             createWindowlessMirrorWindow();
             showControls();
             applyResourcesValues();
+
+            if (Flags.updateWindowMagnifierBottomBoundaryWithMouse()) {
+                mInputManager.registerInputDeviceListener(mInputDeviceListener, mHandler);
+                mInputDeviceListener.onInputDeviceChanged(-1);
+            }
         } else {
             modifyWindowMagnification(false);
         }
@@ -1634,9 +1674,17 @@ class WindowMagnificationController implements View.OnTouchListener, SurfaceHold
         scaleAnimator.start();
     }
 
+    private boolean canOverlapWithBottomGestureInsets() {
+        return !Flags.updateWindowMagnifierBottomBoundary()
+                || (Flags.updateWindowMagnifierBottomBoundaryWithMouse()
+                && mIsMouseOrKeyboardConnected);
+    }
+
     public void dump(PrintWriter pw) {
         pw.println("WindowMagnificationController (displayId=" + mDisplayId + "):");
         pw.println("      mOverlapWithGestureInsets:" + mOverlapWithGestureInsets);
+        pw.println("      canOverlapWithBottomGestureInsets:"
+                + canOverlapWithBottomGestureInsets());
         pw.println("      mScale:" + mScale);
         pw.println("      mWindowBounds:" + mWindowBounds);
         pw.println("      mMirrorViewBounds:" + (isActivated() ? mMirrorViewBounds : "empty"));
