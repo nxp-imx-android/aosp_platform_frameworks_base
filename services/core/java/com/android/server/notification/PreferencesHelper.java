@@ -877,8 +877,8 @@ public class PreferencesHelper implements RankingConfig {
 
     @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
     public boolean canBePromoted(String packageName, int uid) {
-        if (android.app.Flags.apiRichOngoingPermission()) {
-            Log.e(TAG, "Should not be checking here if apiRichOngoingPermission flag enabled");
+        if (android.app.Flags.uiRichOngoing()) {
+            Log.e(TAG, "Should not be checking here if uiRichOngoingPermission flag enabled");
             return false;
         }
 
@@ -891,8 +891,8 @@ public class PreferencesHelper implements RankingConfig {
     public boolean setCanBePromoted(String packageName, int uid, boolean promote,
             boolean fromUser) {
 
-        if (android.app.Flags.apiRichOngoingPermission()) {
-            Log.e(TAG, "Should not be writing here if apiRichOngoingPermission flag enabled");
+        if (android.app.Flags.uiRichOngoing()) {
+            Log.e(TAG, "Should not be writing here if uiRichOngoingPermission flag enabled");
             return false;
         }
 

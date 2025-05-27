@@ -4741,7 +4741,7 @@ public class NotificationManagerService extends SystemService {
 
             final boolean changed;
 
-            if (android.app.Flags.apiRichOngoingPermission()) {
+            if (android.app.Flags.uiRichOngoing()) {
                 // Use permission backend for allowing promotion per app
 
                 if (!fromUser) {
@@ -4750,8 +4750,7 @@ public class NotificationManagerService extends SystemService {
                     return;
                 }
 
-                boolean wasPromoted = checkPostPromotedNotificationPermission(
-                        pkg, uid);
+                boolean wasPromoted = checkPostPromotedNotificationPermission(pkg, uid);
 
                 int mode = promote ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED;
                 mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
@@ -9017,7 +9016,7 @@ public class NotificationManagerService extends SystemService {
                 // Check permission last - after we make sure this is actually an attempted usage
                 // of promotion - since AppOps tracks usage attempts.
                 boolean canPostPromoted;
-                if (android.app.Flags.apiRichOngoingPermission()) {
+                if (android.app.Flags.uiRichOngoing()) {
                     final AttributionSource attributionSource =
                             new AttributionSource.Builder(notificationUid)
                                     .setPackageName(pkg).build();
@@ -9099,7 +9098,7 @@ public class NotificationManagerService extends SystemService {
 
     private boolean checkPostPromotedNotificationPermission(
             String pkg, int uid) {
-        if (!android.app.Flags.apiRichOngoingPermission()) {
+        if (!android.app.Flags.uiRichOngoing()) {
             return mPreferencesHelper.canBePromoted(pkg, uid);
         } else {
             final AttributionSource attributionSource =
