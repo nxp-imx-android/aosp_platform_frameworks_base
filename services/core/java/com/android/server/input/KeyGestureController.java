@@ -16,6 +16,9 @@
 
 package com.android.server.input;
 
+import static android.Manifest.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW;
+import static android.content.PermissionChecker.PERMISSION_GRANTED;
+import static android.content.PermissionChecker.PID_UNKNOWN;
 import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.os.UserManager.isVisibleBackgroundUsersEnabled;
@@ -25,9 +28,11 @@ import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER;
 import static android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE;
 
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
+import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.SCREENSHOT_KEYCHORD_DELAY;
 
 import android.annotation.BinderThread;
+import android.annotation.LongDef;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -35,6 +40,7 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -74,16 +80,20 @@ import com.android.internal.accessibility.AccessibilityShortcutController;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.IShortcutService;
+import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.internal.util.ScreenshotHelper;
 import com.android.internal.util.ScreenshotRequest;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.WindowManagerInternal;
 
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -134,6 +144,19 @@ final class KeyGestureController {
     // Screenshot trigger states
     // Increase the chord delay when taking a screenshot from the keyguard
     private static final float KEYGUARD_SCREENSHOT_CHORD_DELAY_MULTIPLIER = 2.5f;
+
+    @LongDef(prefix = {"KEY_INTERCEPT_RESULT_"}, value = {
+            KEY_INTERCEPT_RESULT_NOT_CONSUMED_GO_FALLBACK,
+            KEY_INTERCEPT_RESULT_CONSUMED,
+            KEY_INTERCEPT_RESULT_NOT_CONSUMED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface KeyInterceptResult {
+    }
+
+    private static final long KEY_INTERCEPT_RESULT_NOT_CONSUMED_GO_FALLBACK = -2;
+    static final long KEY_INTERCEPT_RESULT_CONSUMED = -1;
+    static final long KEY_INTERCEPT_RESULT_NOT_CONSUMED = 0;
 
     private final Context mContext;
     private InputManagerService.WindowManagerCallbacks mWindowManagerCallbacks;
@@ -193,6 +216,7 @@ final class KeyGestureController {
     private final SparseArray<Set<Integer>> mConsumedKeysForDevice = new SparseArray<>();
 
     private final UserManagerInternal mUserManagerInternal;
+    private WindowManagerInternal mWindowManagerInternal;
 
     private final boolean mVisibleBackgroundUsersEnabled = isVisibleBackgroundUsersEnabled();
 
@@ -450,6 +474,7 @@ final class KeyGestureController {
     }
 
     public void systemRunning() {
+        mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
         mSettingsObserver.observe();
         mAppLaunchShortcutManager.init();
         mInputGestureManager.init(mAppLaunchShortcutManager.getBookmarks());
@@ -504,8 +529,47 @@ final class KeyGestureController {
         return false;
     }
 
-    public long interceptKeyBeforeDispatching(IBinder focusedToken, KeyEvent event,
-            int policyFlags) {
+    public long interceptKeyBeforeDispatching(IBinder focus, KeyEvent event, int policyFlags) {
+        // TODO(b/358569822) Remove below once we have nicer API for listening to shortcuts
+        if ((event.isMetaPressed() || KeyEvent.isMetaKey(event.getKeyCode()))
+                && shouldInterceptShortcuts(focus)) {
+            return KEY_INTERCEPT_RESULT_NOT_CONSUMED;
+        }
+        final long interceptResult = interceptKeyBeforeDispatchingInternal(focus, event);
+        if (interceptResult != KEY_INTERCEPT_RESULT_NOT_CONSUMED) {
+            // Result is either delay or consumed
+            return interceptResult;
+        }
+        if (mWindowManagerCallbacks.interceptKeyBeforeDispatching(focus, event)) {
+            return KEY_INTERCEPT_RESULT_CONSUMED;
+        }
+        if (event.isMetaPressed()) {
+            if (fixSearchModifierFallbacks() ) {
+                // If the key has not been consumed and includes the meta key, do not send the event
+                // to the app and attempt to generate a fallback.
+                final KeyCharacterMap kcm = event.getKeyCharacterMap();
+                final KeyCharacterMap.FallbackAction fallbackAction =
+                        kcm.getFallbackAction(event.getKeyCode(), event.getMetaState());
+                if (fallbackAction != null) {
+                    return KEY_INTERCEPT_RESULT_NOT_CONSUMED_GO_FALLBACK;
+                }
+            }
+            return KEY_INTERCEPT_RESULT_CONSUMED;
+        }
+        return KEY_INTERCEPT_RESULT_NOT_CONSUMED;
+    }
+
+    private boolean shouldInterceptShortcuts(IBinder focusedToken) {
+        KeyInterceptionInfo info =
+                mWindowManagerInternal.getKeyInterceptionInfoFromToken(focusedToken);
+        boolean hasInterceptWindowFlag = info != null && (info.layoutParamsPrivateFlags
+                & WindowManager.LayoutParams.PRIVATE_FLAG_ALLOW_ACTION_KEY_EVENTS) != 0;
+        return hasInterceptWindowFlag && PermissionChecker.checkPermissionForDataDelivery(mContext,
+                OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW, PID_UNKNOWN, info.windowOwnerUid,
+                null, null, null) == PERMISSION_GRANTED;
+    }
+
+    private long interceptKeyBeforeDispatchingInternal(IBinder focusedToken, KeyEvent event) {
         // TODO(b/358569822): Handle shortcuts trigger logic here and pass it to appropriate
         //  KeyGestureHandler (PWM is one of the handlers)
         final int keyCode = event.getKeyCode();

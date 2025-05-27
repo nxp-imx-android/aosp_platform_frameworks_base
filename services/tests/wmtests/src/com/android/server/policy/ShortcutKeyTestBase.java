@@ -298,7 +298,7 @@ class ShortcutKeyTestBase {
     private void interceptKey(KeyEvent keyEvent) {
         int actions = mPhoneWindowManager.interceptKeyBeforeQueueing(keyEvent);
         if ((actions & ACTION_PASS_TO_USER) != 0) {
-            if (0 == mPhoneWindowManager.interceptKeyBeforeDispatching(keyEvent)) {
+            if (!mPhoneWindowManager.interceptKeyBeforeDispatching(keyEvent)) {
                 if (!mDispatchedKeyHandler.onKeyDispatched(keyEvent)) {
                     mPhoneWindowManager.interceptUnhandledKey(keyEvent);
                 }
