@@ -1770,6 +1770,7 @@ public final class MessageQueue {
                     mAsyncMessageCount--;
                 }
                 p.recycleUnchecked();
+                decAndTraceMessageCount();
                 p = n;
             }
 
