@@ -2820,6 +2820,7 @@ public class UserBackupManagerService {
         }
     }
 
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
     private boolean startConfirmationUi(int token, String action) {
         try {
             Intent confIntent = new Intent(action);
@@ -2828,7 +2829,8 @@ public class UserBackupManagerService {
                     "com.android.backupconfirm.BackupRestoreConfirmation");
             confIntent.putExtra(FullBackup.CONF_TOKEN_INTENT_EXTRA, token);
             confIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            mContext.startActivityAsUser(confIntent, UserHandle.SYSTEM);
+            mContext.startActivityAsUser(confIntent, UserHandle.of(mUserId));
+            Slog.i(TAG, mLogIdMsg + "Starting confirmation UI");
         } catch (ActivityNotFoundException e) {
             return false;
         }
