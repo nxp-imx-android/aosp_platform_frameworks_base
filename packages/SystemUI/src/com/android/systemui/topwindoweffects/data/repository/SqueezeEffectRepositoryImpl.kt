@@ -60,7 +60,7 @@ constructor(
     @Background coroutineContext: CoroutineContext,
     @Background executor: Executor,
     private val preferences: InvocationEffectPreferences,
-) : SqueezeEffectRepository, InvocationEffectSetUiHintsHandler {
+) : SqueezeEffectRepository, InvocationEffectSetUiHintsHandler, InvocationEffectEnabler {
 
     override val isSqueezeEffectHapticEnabled = Flags.enableLppAssistInvocationHapticEffect()
 
@@ -155,6 +155,10 @@ constructor(
             }
             else -> false
         }
+    }
+
+    override fun setEnabled(enabled: Boolean) {
+        setInvocationEffectPreferences(isEnabled = enabled)
     }
 
     private val _isPowerButtonLongPressed = MutableStateFlow(false)

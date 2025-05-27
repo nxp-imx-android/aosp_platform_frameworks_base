@@ -43004,6 +43004,7 @@ package android.service.voice {
     method public void onShowSessionFailed(@NonNull android.os.Bundle);
     method public void onShutdown();
     method public void setDisabledShowContext(int);
+    method @FlaggedApi("android.service.voice.flags.set_invocation_effect_enabled_api") public final void setInvocationEffectEnabled(boolean);
     method public final void setUiHints(@NonNull android.os.Bundle);
     method public void showSession(android.os.Bundle, int);
     field public static final String SERVICE_INTERFACE = "android.service.voice.VoiceInteractionService";

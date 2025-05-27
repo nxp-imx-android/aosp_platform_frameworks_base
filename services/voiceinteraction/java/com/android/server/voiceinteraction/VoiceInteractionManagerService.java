@@ -2355,6 +2355,25 @@ public class VoiceInteractionManagerService extends SystemService {
             }
         }
 
+        @Override
+        public void setInvocationEffectEnabled(boolean enabled) {
+            synchronized (this) {
+                enforceIsCurrentVoiceInteractionService();
+
+                final int size = mVoiceInteractionSessionListeners.beginBroadcast();
+                for (int i = 0; i < size; ++i) {
+                    final IVoiceInteractionSessionListener listener =
+                            mVoiceInteractionSessionListeners.getBroadcastItem(i);
+                    try {
+                        listener.onSetInvocationEffectEnabled(enabled);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Error delivering set invocation effect enabled.", e);
+                    }
+                }
+                mVoiceInteractionSessionListeners.finishBroadcast();
+            }
+        }
+
         private boolean isCallerHoldingPermission(String permission) {
             return mContext.checkCallingOrSelfPermission(permission)
                     == PackageManager.PERMISSION_GRANTED;
@@ -2834,6 +2853,9 @@ public class VoiceInteractionManagerService extends SystemService {
 
                 @Override
                 public void onSetUiHints(Bundle args) throws RemoteException {}
+
+                @Override
+                public void onSetInvocationEffectEnabled(boolean enabled) throws RemoteException {}
 
                 @Override
                 public IBinder asBinder() {
