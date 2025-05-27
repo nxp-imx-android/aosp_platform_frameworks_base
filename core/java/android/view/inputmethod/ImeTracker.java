@@ -18,6 +18,7 @@ package android.view.inputmethod;
 
 import static android.view.InsetsController.ANIMATION_TYPE_HIDE;
 import static android.view.InsetsController.ANIMATION_TYPE_SHOW;
+import static android.view.ViewProtoLogGroups.IME_TRACKER;
 
 import static com.android.internal.inputmethod.InputMethodDebug.softInputDisplayReasonToString;
 import static com.android.internal.jank.Cuj.CUJ_IME_INSETS_HIDE_ANIMATION;
@@ -35,6 +36,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.SystemProperties;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.InsetsController.AnimationType;
 import android.view.SurfaceControl;
@@ -46,6 +48,7 @@ import com.android.internal.inputmethod.InputMethodDebug;
 import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.jank.InteractionJankMonitor.Configuration;
+import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.LatencyTracker;
 
 import java.lang.annotation.Retention;
@@ -604,6 +607,10 @@ public interface ImeTracker {
             reloadSystemProperties();
             // Update when system properties change.
             SystemProperties.addChangeCallback(this::reloadSystemProperties);
+
+            if (android.tracing.Flags.imetrackerProtolog()) {
+                // TODO(b/410517697): Register ProtoLog groups
+            }
         }
 
         /** Whether {@link #onProgress} calls should be logged. */
@@ -620,11 +627,11 @@ public interface ImeTracker {
             final var token = IInputMethodManagerGlobalInvoker.onStart(tag, uid, type,
                     origin, reason, fromUser);
 
-            Log.i(TAG, token.mTag + ": " + getOnStartPrefix(type)
-                    + " at " + Debug.originToString(origin)
-                    + " reason " + InputMethodDebug.softInputDisplayReasonToString(reason)
-                    + " fromUser " + fromUser,
-                    mLogStackTrace ? new Throwable() : null);
+            log("%s: %s at %s reason %s fromUser %s%s", token.mTag,
+                    getOnStartPrefix(type), Debug.originToString(origin),
+                    InputMethodDebug.softInputDisplayReasonToString(reason), fromUser,
+                    mLogStackTrace ? " Stack trace=" + Log.getStackTraceString(new Throwable()) : ""
+            );
             return token;
         }
 
@@ -634,7 +641,7 @@ public interface ImeTracker {
             IInputMethodManagerGlobalInvoker.onProgress(token.mBinder, phase);
 
             if (mLogProgress) {
-                Log.i(TAG, token.mTag + ": onProgress at " + Debug.phaseToString(phase));
+                log("%s: onProgress at %s", token.mTag, Debug.phaseToString(phase));
             }
         }
 
@@ -643,13 +650,13 @@ public interface ImeTracker {
             if (token == null) return;
             IInputMethodManagerGlobalInvoker.onFailed(token, phase);
 
-            Log.i(TAG, token.mTag + ": onFailed at " + Debug.phaseToString(phase));
+            log("%s: onFailed at %s", token.mTag, Debug.phaseToString(phase));
         }
 
         @Override
         public void onTodo(@Nullable Token token, @Phase int phase) {
             if (token == null) return;
-            Log.i(TAG, token.mTag + ": onTodo at " + Debug.phaseToString(phase));
+            log("%s: onTodo at %s", token.mTag, Debug.phaseToString(phase));
         }
 
         @Override
@@ -657,7 +664,7 @@ public interface ImeTracker {
             if (token == null) return;
             IInputMethodManagerGlobalInvoker.onCancelled(token, phase);
 
-            Log.i(TAG, token.mTag + ": onCancelled at " + Debug.phaseToString(phase));
+            log("%s: onCancelled at %s", token.mTag, Debug.phaseToString(phase));
         }
 
         @Override
@@ -665,7 +672,7 @@ public interface ImeTracker {
             if (token == null) return;
             IInputMethodManagerGlobalInvoker.onShown(token);
 
-            Log.i(TAG, token.mTag + ": onShown");
+            log("%s: onShown", token.mTag);
         }
 
         @Override
@@ -673,7 +680,7 @@ public interface ImeTracker {
             if (token == null) return;
             IInputMethodManagerGlobalInvoker.onHidden(token);
 
-            Log.i(TAG, token.mTag + ": onHidden");
+            log("%s: onHidden", token.mTag);
         }
 
         @Override
@@ -681,7 +688,7 @@ public interface ImeTracker {
             if (token == null) return;
             IInputMethodManagerGlobalInvoker.onDispatched(token);
 
-            Log.i(TAG, token.mTag + ": onDispatched");
+            log("%s: onDispatched", token.mTag);
         }
 
         @Override
@@ -689,7 +696,7 @@ public interface ImeTracker {
             if (token == null) return;
             // This is already sent to ImeTrackerService to mark it finished during onDispatched.
 
-            Log.i(TAG, token.mTag + ": onUserFinished " + (shown ? "shown" : "hidden"));
+            log("%s: onUserFinished %s", token.mTag, shown ? "shown" : "hidden");
         }
 
         /**
@@ -910,6 +917,16 @@ public interface ImeTracker {
          * @return a context associated with current application
          */
         Context getAppContext();
+    }
+
+    private static void log(@NonNull String messageString, @NonNull Object... args) {
+        if (android.tracing.Flags.imetrackerProtolog()) {
+            ProtoLog.i(IME_TRACKER, messageString, args);
+        } else {
+            // Log only to logcat
+            final var message = TextUtils.formatSimple(messageString, args);
+            Log.i(TAG, message);
+        }
     }
 
     /**
