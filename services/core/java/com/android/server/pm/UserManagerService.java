@@ -3034,17 +3034,10 @@ public class UserManagerService extends IUserManager.Stub {
      */
     @Override
     public @UserManager.UserSwitchabilityResult int getUserSwitchability(@UserIdInt int userId) {
-        if (Flags.getUserSwitchabilityPermission()) {
-            if (!hasManageUsersOrPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)) {
-                throw new SecurityException(
-                        "You need MANAGE_USERS or INTERACT_ACROSS_USERS permission to "
-                                + "getUserSwitchability");
-            }
-        } else {
-            checkManageOrInteractPermissionIfCallerInOtherProfileGroup(userId,
-                    "getUserSwitchability");
+        if (!hasManageUsersOrPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)) {
+            throw new SecurityException("You need MANAGE_USERS or INTERACT_ACROSS_USERS permission "
+                    + "to getUserSwitchability");
         }
-
         final TimingsTraceAndSlog t = new TimingsTraceAndSlog();
         t.traceBegin("getUserSwitchability-" + userId);
 
