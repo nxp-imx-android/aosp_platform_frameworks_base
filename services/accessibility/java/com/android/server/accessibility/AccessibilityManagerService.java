@@ -4729,13 +4729,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return false;
         }
         synchronized (mLock) {
-            if (userId != mCurrentUserId) {
+            final int resolvedUserId = mSecurityPolicy
+                    .resolveCallingUserIdEnforcingPermissionsLocked(userId);
+            if (resolvedUserId != mCurrentUserId) {
                 return false;
             }
             final AccessibilityServiceInfo info = getCurrentUserStateLocked()
                     .getInstalledServiceInfoLocked(trustedAccessibilityService);
             if (info != null && isAccessibilityServicePreinstalledAndTrusted(info)) {
-                enableAccessibilityServiceLocked(trustedAccessibilityService, userId);
+                enableAccessibilityServiceLocked(trustedAccessibilityService, resolvedUserId);
                 return true;
             }
             return false;
