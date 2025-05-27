@@ -21,8 +21,8 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
 
-import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getEnterBubbleTransaction;
-import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getExitBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.getEnterBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 
 import android.app.ActivityManager;

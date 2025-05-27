@@ -21,7 +21,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
-import static com.android.wm.shell.bubbles.util.BubbleTestUtilsKt.verifyEnterBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 

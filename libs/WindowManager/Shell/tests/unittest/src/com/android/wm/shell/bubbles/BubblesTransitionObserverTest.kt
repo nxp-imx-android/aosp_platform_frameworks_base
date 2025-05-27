@@ -36,7 +36,7 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.bubbles.util.verifyExitBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController

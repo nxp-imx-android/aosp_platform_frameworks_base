@@ -18,6 +18,7 @@ package com.android.wm.shell.bubbles;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 
+import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import android.app.ActivityManager;
@@ -32,7 +33,6 @@ import androidx.annotation.NonNull;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.bubbles.util.BubbleUtilsKt;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -170,7 +170,7 @@ public class BubblesTransitionObserver implements Transitions.TransitionObserver
                     + "removing bubble for task launching into split taskId=%d", taskInfo.taskId);
             TaskViewTaskController taskViewTaskController = bubble.getTaskView().getController();
             ShellTaskOrganizer taskOrganizer = taskViewTaskController.getTaskOrganizer();
-            WindowContainerTransaction wct = BubbleUtilsKt.getExitBubbleTransaction(taskInfo.token,
+            WindowContainerTransaction wct = getExitBubbleTransaction(taskInfo.token,
                     bubble.getTaskView().getCaptionInsetsOwner());
 
             // Notify the task removal, but block all TaskViewTransitions during removal so we can

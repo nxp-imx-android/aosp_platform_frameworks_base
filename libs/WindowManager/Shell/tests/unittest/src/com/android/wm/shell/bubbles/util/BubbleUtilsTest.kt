@@ -25,6 +25,10 @@ import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleUtils.getEnterBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import org.junit.Test
