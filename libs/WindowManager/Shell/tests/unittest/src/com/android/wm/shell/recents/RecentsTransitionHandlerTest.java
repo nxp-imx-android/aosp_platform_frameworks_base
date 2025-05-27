@@ -21,14 +21,17 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
+import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -321,7 +324,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
                 .build();
         final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
-        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         mRecentsTransitionHandler.startAnimation(
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
@@ -477,6 +479,43 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
 
         verify(finishT).setCornerRadius(leash, FREEFORM_TASK_CORNER_RADIUS_ON_CD);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION)
+    public void testMerge_cancelToHome_onTransitSleep() throws Exception {
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_SLEEP)
+                .build();
+        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION, FLAG_ENABLE_PIP2})
+    public void testMerge_cancelToHome_onTransitRemovePip() throws Exception {
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_REMOVE_PIP)
+                .build();
+        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
+    }
+
+    private void startTransitionAndMergeThenVerifyCanceled(TransitionInfo mergeTransition)
+            throws Exception {
+        final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransition,
+                new StubTransaction(),
+                new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+        mMainExecutor.flushAll();
+
+        // Verify that the runner was notified and that the cancel immediately took effect (and the
+        // transition is finished)
+        verify(animationRunner).onAnimationCanceled(any(), any());
+        assertThat(mRecentsTransitionHandler.findController(transition)).isNull();
     }
 
     private IBinder startRecentsTransition(boolean synthetic) {

@@ -996,7 +996,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: transit_remove_pip", mInstanceId);
                 // Cancel the merge if transition is removing PiP; PiP is on top of everything else.
-                cancel(mWillFinishToHome /* toHome */, mWillFinishToHome /* withScreenshots */,
+                cancel(true /* toHome */, mWillFinishToHome /* withScreenshots */,
                         "transit_remove_pip");
                 return;
             }
@@ -1005,7 +1005,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: keyguard is locked", mInstanceId);
                 // We will not accept new changes if we are swiping over the keyguard.
-                cancel(true /* toHome */, false /* withScreenshots */, "keyguard_locked");
+                cancel("keyguard_locked");
                 return;
             }
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1035,8 +1035,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         && taskInfo != null && taskInfo.lastParentTaskIdBeforePip > 0) {
                     // Pinned task is closing as a side effect of the removal of its original Task,
                     // such transition should be handled by PiP. So cancel the merge here.
-                    cancel(false /* toHome */, false /* withScreenshots */,
-                            "task #" + taskInfo.taskId + " is removed with its original parent");
+                    cancel("task #" + taskInfo.taskId + " is removed with its original parent");
                     return;
                 }
                 final boolean isRootTask = taskInfo != null
@@ -1077,7 +1076,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             && info.getType() == TRANSIT_CHANGE) {
                         // This call to cancel will use the screenshots taken preemptively in
                         // handleMidTransitionRequest() prior to the display changing
-                        cancel(mWillFinishToHome, true /* withScreenshots */, "display change");
+                        cancel(true /* toHome */, true /* withScreenshots */, "display change");
                         return;
                     }
                     // Don't consider order-only & non-leaf changes as changing apps.
@@ -1269,7 +1268,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         + foundRecentsClosing + " recentsTaskId=" + mRecentsTaskId);
                 if (foundRecentsClosing || mRecentsTaskId < 0) {
                     mWillFinishToHome = false;
-                    cancel(false /* toHome */, false /* withScreenshots */, "didn't merge");
+                    cancel("didn't merge");
                 }
                 return;
             }
