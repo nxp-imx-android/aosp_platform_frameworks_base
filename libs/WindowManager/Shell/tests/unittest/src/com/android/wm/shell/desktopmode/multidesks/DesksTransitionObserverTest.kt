@@ -15,6 +15,10 @@
  */
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
+import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -26,24 +30,37 @@ import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
+import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -55,6 +72,7 @@ import org.mockito.kotlin.whenever
  *
  * Build/Install/Run: atest WMShellUnitTests:DesksTransitionObserverTest
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
 class DesksTransitionObserverTest : ShellTestCase() {
@@ -62,6 +80,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
     @JvmField @Rule val setFlagsRule = SetFlagsRule()
 
     private val mockDesksOrganizer = mock<DesksOrganizer>()
+    private val mockTransitions = mock<Transitions>()
+    private val mockShellController = mock<ShellController>()
+    private val mockDesktopWallpaperActivityTokenProvider =
+        mock<DesktopWallpaperActivityTokenProvider>()
     val testScope = TestScope()
 
     private lateinit var desktopUserRepositories: DesktopUserRepositories
@@ -87,7 +109,39 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 desktopState,
                 desktopConfig,
             )
-        observer = DesksTransitionObserver(desktopUserRepositories, mockDesksOrganizer, mock())
+        observer =
+            DesksTransitionObserver(
+                desktopUserRepositories = desktopUserRepositories,
+                desksOrganizer = mockDesksOrganizer,
+                transitions = mockTransitions,
+                shellController = mockShellController,
+                desktopWallpaperActivityTokenProvider = mockDesktopWallpaperActivityTokenProvider,
+                mainScope = testScope.backgroundScope,
+            )
+        whenever(mockShellController.currentUserId).thenReturn(USER_ID_1)
+        whenever(mockDesksOrganizer.activateDesk(wct = any(), deskId = any(), skipReorder = any()))
+            .thenAnswer { invocationOnMock ->
+                (invocationOnMock.arguments[0] as WindowContainerTransaction).setLaunchRoot(
+                    mock(),
+                    intArrayOf(WINDOWING_MODE_FREEFORM, WINDOWING_MODE_UNDEFINED),
+                    intArrayOf(ACTIVITY_TYPE_UNDEFINED, ACTIVITY_TYPE_STANDARD),
+                )
+            }
+        whenever(
+                mockDesksOrganizer.deactivateDesk(wct = any(), deskId = any(), skipReorder = any())
+            )
+            .thenAnswer { invocationOnMock ->
+                (invocationOnMock.arguments[0] as WindowContainerTransaction).setLaunchRoot(
+                    mock(),
+                    null,
+                    null,
+                )
+            }
+    }
+
+    @After
+    fun tearDown() {
+        testScope.cancel()
     }
 
     @Test
@@ -541,50 +595,419 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onTransitionReady_independentDeskActivation_activatesSkippingReorder() {
-        val deskId = 5
+    fun independentDeskTransition_deskToFront_activatesSkippingReorder() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
 
-        observer.onTransitionReady(
-            transition = Binder(),
-            info =
-                TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply {
-                    addChange(
-                        Change(mock(), mock())
-                            .apply { mode = TRANSIT_TO_FRONT }
-                            .also {
-                                whenever(mockDesksOrganizer.isDeskChange(it)).thenReturn(true)
-                                whenever(mockDesksOrganizer.getDeskIdFromChange(it))
-                                    .thenReturn(deskId)
-                            }
-                    )
-                },
-        )
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
 
-        verify(mockDesksOrganizer).activateDesk(any(), deskId = eq(5), skipReorder = eq(true))
-    }
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .activateDesk(wct = wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            assertThat(repository.getActiveDeskId(displayId)).isEqualTo(deskId)
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+        }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun onTransitionReady_independentDeskDeactivation_activates() {
-        val deskId = 5
+    fun independentDeskTransition_deskToTop_modeIsChangeWithTopFlag_activatesSkippingReorder() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
 
-        observer.onTransitionReady(
-            transition = Binder(),
-            info =
-                TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply {
-                    addChange(
-                        Change(mock(), mock())
-                            .apply { mode = TRANSIT_TO_BACK }
-                            .also {
-                                whenever(mockDesksOrganizer.isDeskChange(it)).thenReturn(true)
-                                whenever(mockDesksOrganizer.getDeskIdFromChange(it))
-                                    .thenReturn(deskId)
-                            }
-                    )
-                },
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_CHANGE,
+                            flags = TransitionInfo.FLAG_MOVED_TO_TOP,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .activateDesk(wct = wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            assertThat(repository.getActiveDeskId(displayId)).isEqualTo(deskId)
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_deskToBack_deactivatesSkippingReorder() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_BACK,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            assertThat(repository.getActiveDeskId(displayId)).isNull()
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_deskToBack_userSwitch_deactivatesKeepingRepoActive() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val oldUserRepository = desktopUserRepositories.getProfile(USER_ID_1)
+            val newUserRepository = desktopUserRepositories.getProfile(USER_ID_2)
+            oldUserRepository.addDesk(displayId, deskId)
+            oldUserRepository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_BACK,
+                            // Change's user id is already updated to new user
+                            userId = newUserRepository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            // The desk root must be deactivated to prevent future launches into it while the user
+            // is inactive.
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+            // However, it should remain active (in the old user's repo) to allow restoring to it
+            // when switching back.
+            assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_emptyDeskToBackHomeToFront_userSwitch_deactivatesKeepingRepoActive() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val oldUserRepository = desktopUserRepositories.getProfile(USER_ID_1)
+            val newUserRepository = desktopUserRepositories.getProfile(USER_ID_2)
+            oldUserRepository.addDesk(displayId, deskId)
+            oldUserRepository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        // New user is landing in its Home.
+                        .addHomeChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = newUserRepository.userId,
+                            displayId = displayId,
+                        )
+                        // Desktop of old user is hiding, but because it uses |showForAllUsers| the
+                        // user id will be of the new user.
+                        .addDesktopWallpaperChange(
+                            mode = TRANSIT_TO_BACK,
+                            userId = newUserRepository.userId,
+                            displayId = displayId,
+                        ),
+                // Empty desks won't be seen in a transition when being sent to back
+                // because they're already invisible.
+
+            )
+            runCurrent()
+
+            // The desk root must be deactivated to prevent future launches into it while the user
+            // is inactive.
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+            // However, it should remain active (in the old user's repo) to allow restoring to it
+            // when switching back.
+            assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_wallpaperOverActiveDesk_reactivatesDeskWithOrder() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDesktopWallpaperChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            // The desk root must be reactivated (with order) to move it back in front of the
+            // wallpaper.
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .activateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(false))
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_wallpaperOverInactiveDesk_dismissesDesktopWallpaper() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setDeskInactive(deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDesktopWallpaperChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            // Can't keep the wallpaper active if there is no active desk, moving it back.
+            verify(mockTransitions)
+                .startTransition(
+                    eq(TRANSIT_CHANGE),
+                    argThat { wct ->
+                        wct.hierarchyOps.any { hop ->
+                            hop.type == HIERARCHY_OP_TYPE_REORDER && !hop.toTop
+                        }
+                    },
+                    /* handler= */ eq(null),
+                )
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_wallpaperToBackWithoutDesk_deactivatesDeskWithoutOrder() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDesktopWallpaperChange(
+                            mode = TRANSIT_TO_BACK,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+                // No desk change, as seen when the desk is empty.
+            )
+            runCurrent()
+
+            // The desk root must be deactivated (without order) to clear the launch root.
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+            // Also mark it inactive in the repository
+            assertThat(repository.getActiveDeskId(displayId)).isNull()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun independentDeskTransition_wallpaperToBackWithoutDesk_userSwitch_deactivatesDeskWithoutOrderAndKeepsRepoActive() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val oldUserRepository = desktopUserRepositories.getProfile(USER_ID_1)
+            val newUserRepository = desktopUserRepositories.getProfile(USER_ID_2)
+            oldUserRepository.addDesk(displayId, deskId)
+            oldUserRepository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDesktopWallpaperChange(
+                            mode = TRANSIT_TO_BACK,
+                            // User id will have changed to the new user because of
+                            // |showForAllUsers|
+                            userId = newUserRepository.userId,
+                            displayId = displayId,
+                        ),
+                // No desk change, as seen when the desk is empty.
+            )
+            runCurrent()
+
+            // The desk root must be deactivated (without order) to clear the launch root.
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(true))
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+            // Remains active to restore to when switching back to the old user.
+            assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE,
+    )
+    fun independentDeskTransition_closingLastDeskTask_deactivatesDeskWithoutOrderAndKeepsRepoActive() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        // Closing last desk task moves the next focusable task to front, the
+                        // desktop wallpaper.
+                        .addDesktopWallpaperChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        )
+                        // And the desk is moved to back.
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_BACK,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            // The desk root must be activated (with order) to be in front of the wallpaper.
+            val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+            verify(mockDesksOrganizer)
+                .activateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = eq(false))
+            // To-back of desk should not be interpreted as wanting to deactivate the desk.
+            verify(mockDesksOrganizer, never())
+                .deactivateDesk(wctCaptor.capture(), deskId = eq(5), skipReorder = any())
+            verify(mockTransitions)
+                .startTransition(TRANSIT_CHANGE, wctCaptor.firstValue, /* handler= */ null)
+            // Desk remains active (now empty).
+            assertThat(repository.getActiveDeskId(displayId)).isEqualTo(deskId)
+        }
+
+    private fun buildTransitionInfo() = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0)
+
+    private fun TransitionInfo.addDeskChange(
+        deskId: Int,
+        @TransitionInfo.TransitionMode mode: Int,
+        @TransitionInfo.ChangeFlags flags: Int = TransitionInfo.FLAG_NONE,
+        userId: Int = USER_ID_1,
+        displayId: Int = DEFAULT_DISPLAY,
+    ): TransitionInfo {
+        addChange(
+            Change(mock(), mock())
+                .apply {
+                    this.mode = mode
+                    this.flags = flags
+                    this.taskInfo = createFreeformTask(displayId).apply { this.userId = userId }
+                    setDisplayId(displayId, displayId)
+                }
+                .also {
+                    whenever(mockDesksOrganizer.isDeskChange(it)).thenReturn(true)
+                    whenever(mockDesksOrganizer.getDeskIdFromChange(it)).thenReturn(deskId)
+                }
         )
+        return this
+    }
 
-        verify(mockDesksOrganizer).deactivateDesk(any(), deskId = eq(5), skipReorder = eq(true))
+    private fun TransitionInfo.addHomeChange(
+        @TransitionInfo.TransitionMode mode: Int,
+        userId: Int = USER_ID_1,
+        displayId: Int = DEFAULT_DISPLAY,
+    ): TransitionInfo {
+        addChange(
+            Change(mock(), mock()).apply {
+                this.mode = mode
+                this.taskInfo = createHomeTask(displayId, userId)
+                setDisplayId(displayId, displayId)
+            }
+        )
+        return this
+    }
+
+    private fun TransitionInfo.addDesktopWallpaperChange(
+        @TransitionInfo.TransitionMode mode: Int,
+        userId: Int = USER_ID_1,
+        displayId: Int = DEFAULT_DISPLAY,
+    ): TransitionInfo {
+        addChange(
+            Change(mock(), mock())
+                .apply {
+                    this.mode = mode
+                    this.taskInfo = createFullscreenTask(displayId).apply { this.userId = userId }
+                    setDisplayId(displayId, displayId)
+                }
+                .also { c ->
+                    whenever(mockDesktopWallpaperActivityTokenProvider.getToken(displayId))
+                        .thenReturn(c.container)
+                }
+        )
+        return this
     }
 
     companion object {
