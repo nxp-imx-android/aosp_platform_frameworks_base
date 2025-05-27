@@ -37,7 +37,7 @@ import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPre
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_KEY
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.SET_INVOCATION_EFFECT_PARAMETERS_ACTION
 import com.android.systemui.util.settings.FakeGlobalSettings
 import com.google.common.truth.Truth.assertThat
@@ -282,6 +282,42 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                 .isTrue()
         }
 
+    @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
+    @Test
+    fun testSetUiHints_whenSuppliedWrongConfigType_setsDefault() =
+        kosmos.runTest {
+            fakeInvocationEffectPreferences.activeUserId = 1
+            fakeInvocationEffectPreferences.activeAssistant = "A"
+
+            assertThat(fakeInvocationEffectPreferences.isCurrentUserAndAssistantPersisted())
+                .isFalse()
+
+            underTest.tryHandleSetUiHints(
+                createAssistantSettingBundle(
+                    enableAssistantSetting =
+                        !DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+                    inwardsPaddingDuration = 501L,
+                    outwardsAnimationDuration = 502L,
+                )
+            )
+
+            underTest.tryHandleSetUiHints(
+                Bundle().apply {
+                    putString(AssistManager.ACTION_KEY, SET_INVOCATION_EFFECT_PARAMETERS_ACTION)
+                    putInt(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT, 123)
+                    putInt(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, 456)
+                    putInt(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS, 789)
+                }
+            )
+
+            assertThat(fakeInvocationEffectPreferences.isInvocationEffectEnabledInPreferences())
+                .isEqualTo(DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)
+            assertThat(fakeInvocationEffectPreferences.getInwardAnimationPaddingDurationMillis())
+                .isEqualTo(DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS)
+            assertThat(fakeInvocationEffectPreferences.getOutwardAnimationDurationMillis())
+                .isEqualTo(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
+        }
+
     private fun createAssistantSettingBundle(
         enableAssistantSetting: Boolean? = null,
         inwardsPaddingDuration: Long? = null,
@@ -289,7 +325,9 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
     ) =
         Bundle().apply {
             putString(AssistManager.ACTION_KEY, SET_INVOCATION_EFFECT_PARAMETERS_ACTION)
-            enableAssistantSetting?.let { putBoolean(IS_INVOCATION_EFFECT_ENABLED_KEY, it) }
+            enableAssistantSetting?.let {
+                putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT, it)
+            }
             inwardsPaddingDuration?.let {
                 putLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS, it)
             }

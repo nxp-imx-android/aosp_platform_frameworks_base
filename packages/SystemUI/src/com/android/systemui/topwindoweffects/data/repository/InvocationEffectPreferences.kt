@@ -134,7 +134,7 @@ constructor(
                 conflatedCallbackFlow {
                         val listener =
                             SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                                if (key == IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE) {
+                                if (key == IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT) {
                                     trySendWithFailureLogging(
                                         isInvocationEffectEnabledByAssistant(),
                                         TAG,
@@ -191,7 +191,7 @@ constructor(
 
     override fun isInvocationEffectEnabledInPreferences(): Boolean =
         getOrDefault<Boolean>(
-            key = IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+            key = IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT,
             default = DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
             checkUserAndAssistant = true,
         )
@@ -208,10 +208,7 @@ constructor(
                 }
 
                 if (config.isEnabled != isInvocationEffectEnabledInPreferences()) {
-                    putBoolean(
-                        IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
-                        config.isEnabled,
-                    )
+                    putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT, config.isEnabled)
                 }
 
                 if (
@@ -305,8 +302,7 @@ constructor(
         private const val SHARED_PREFERENCES_FILE_NAME = "assistant_invocation_effect_preferences"
         @VisibleForTesting const val PERSISTED_FOR_ASSISTANT_PREFERENCE = "persisted_for_assistant"
         @VisibleForTesting const val PERSISTED_FOR_USER_PREFERENCE = "persisted_for_user"
-        const val IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE =
-            "is_invocation_effect_enabled"
+        const val IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT = "is_invocation_effect_enabled"
         const val INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS =
             "invocation_effect_animation_in_duration_padding_ms"
         const val INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS =
