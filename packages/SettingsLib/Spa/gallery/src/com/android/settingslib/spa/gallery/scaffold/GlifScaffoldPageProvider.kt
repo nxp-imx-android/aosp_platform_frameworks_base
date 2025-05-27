@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,22 +37,24 @@ import com.android.settingslib.spa.widget.illustration.ResourceType
 import com.android.settingslib.spa.widget.preference.Preference
 import com.android.settingslib.spa.widget.preference.PreferenceModel
 import com.android.settingslib.spa.widget.scaffold.BottomAppBarButton
-import com.android.settingslib.spa.widget.scaffold.SuwScaffold
+import com.android.settingslib.spa.widget.scaffold.GlifScaffold
 import com.android.settingslib.spa.widget.ui.SettingsBody
 import com.android.settingslib.spa.widget.ui.Spinner
 import com.android.settingslib.spa.widget.ui.SpinnerOption
 
-private const val TITLE = "Sample SuwScaffold"
+private const val TITLE = "Sample GlifScaffold"
 
-object SuwScaffoldPageProvider : SettingsPageProvider {
-    override val name = "SuwScaffold"
+object GlifScaffoldPageProvider : SettingsPageProvider {
+    override val name = "GlifScaffold"
 
     @Composable
     fun Entry() {
-        Preference(object : PreferenceModel {
-            override val title = TITLE
-            override val onClick = navigator(name)
-        })
+        Preference(
+            object : PreferenceModel {
+                override val title = TITLE
+                override val onClick = navigator(name)
+            }
+        )
     }
 
     @Composable
@@ -63,9 +65,10 @@ object SuwScaffoldPageProvider : SettingsPageProvider {
 
 @Composable
 private fun Page() {
-    SuwScaffold(
+    GlifScaffold(
         imageVector = Icons.Outlined.SignalCellularAlt,
         title = "Connect to mobile network",
+        description = "Select a mobile network to connect to",
         actionButton = BottomAppBarButton("Next") {},
         dismissButton = BottomAppBarButton("Cancel") {},
     ) {
@@ -78,9 +81,11 @@ private fun Page() {
         Column(Modifier.padding(SettingsDimension.itemPadding)) {
             SettingsBody("To add another SIM, download a new eSIM.")
         }
-        Illustration(object : IllustrationModel {
-            override val resId = R.drawable.accessibility_captioning_banner
-            override val resourceType = ResourceType.IMAGE
-        })
+        Illustration(
+            object : IllustrationModel {
+                override val resId = R.drawable.accessibility_captioning_banner
+                override val resourceType = ResourceType.IMAGE
+            }
+        )
     }
 }
