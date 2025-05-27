@@ -32,6 +32,7 @@ import com.android.systemui.shade.data.repository.FakeShadeRepository
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -227,12 +228,13 @@ class ShadeTestUtilSceneImpl(
         get() = if (shadeModeInteractor.isDualShade) Overlays.NotificationsShade else Scenes.Shade
 
     private val quickSettingsShade: ContentKey
-        get() =
-            if (shadeModeInteractor.isDualShade) {
-                Overlays.QuickSettingsShade
-            } else {
-                Scenes.QuickSettings
+        get() {
+            return when (shadeModeInteractor.shadeMode.value) {
+                is ShadeMode.Dual -> Overlays.QuickSettingsShade
+                is ShadeMode.Single -> Scenes.QuickSettings
+                is ShadeMode.Split -> Scenes.Shade
             }
+        }
 
     override fun setShadeAndQsExpansion(shadeExpansion: Float, qsExpansion: Float) {
         shadeRepository.setLegacyIsQsExpanded(qsExpansion > 0f)
