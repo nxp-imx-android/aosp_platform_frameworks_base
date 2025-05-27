@@ -113,14 +113,15 @@ public final class MessageQueue {
     /**
      * Select between two implementations of message queue. The legacy implementation is used
      * by default as it provides maximum compatibility with applications and tests that
-     * reach into MessageQueue via the mMessages field. The concurrent implemmentation is used for
+     * reach into MessageQueue via the mMessages field. The concurrent implementation is used for
      * system processes and provides a higher level of concurrency and higher enqueue throughput
      * than the legacy implementation.
      */
-    private final boolean mUseConcurrent;
+    private static boolean sUseConcurrentInitialized = false;
+    private static boolean sUseConcurrent;
 
     /**
-     * Caches process-level checks that determine `mUseConcurrent`.
+     * Caches process-level checks that determine `sUseConcurrent`.
      * This is to avoid redoing checks that shouldn't change during the process's lifetime.
      */
     private static Boolean sIsProcessAllowedToUseConcurrent = null;
@@ -141,8 +142,7 @@ public final class MessageQueue {
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
 
     MessageQueue(boolean quitAllowed) {
-        initIsProcessAllowedToUseConcurrent();
-        mUseConcurrent = sIsProcessAllowedToUseConcurrent;
+        initUseConcurrent();
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
         mLooperThread = Thread.currentThread();
@@ -150,10 +150,11 @@ public final class MessageQueue {
         mTid = Process.myTid();
     }
 
-    private static void initIsProcessAllowedToUseConcurrent() {
-        if (sIsProcessAllowedToUseConcurrent != null) {
+    private static void initUseConcurrent() {
+        if (sUseConcurrentInitialized) {
             return;
         }
+        sUseConcurrentInitialized = true;
 
         if (Flags.useConcurrentMessageQueueInApps()) {
             // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
@@ -161,11 +162,11 @@ public final class MessageQueue {
             try {
                 Class.forName("org.robolectric.Robolectric");
                 // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
-                sIsProcessAllowedToUseConcurrent = false;
+                sUseConcurrent = false;
                 return;
             } catch (ClassNotFoundException e) {
                 // This is not a Robolectric test.
-                sIsProcessAllowedToUseConcurrent = true;
+                sUseConcurrent = true;
                 return;
             }
         }
@@ -173,31 +174,34 @@ public final class MessageQueue {
         final String processName = Process.myProcessName();
         if (processName == null) {
             // Assume that this is a host-side test and avoid concurrent mode for now.
-            sIsProcessAllowedToUseConcurrent = false;
+            sUseConcurrent = false;
             return;
         }
 
         // Concurrent mode modifies behavior that is observable via reflection and is commonly
         // used by tests.
         // For now, we limit it to system processes to avoid breaking apps and their tests.
-        sIsProcessAllowedToUseConcurrent = UserHandle.isCore(Process.myUid());
-
-        if (sIsProcessAllowedToUseConcurrent) {
+        if (UserHandle.isCore(Process.myUid())) {
             // Some platform tests run in core UIDs.
             // Use this awful heuristic to detect them.
             if (processName.contains("test") || processName.contains("Test")) {
-                sIsProcessAllowedToUseConcurrent = false;
+                sUseConcurrent = false;
+            } else {
+                sUseConcurrent = true;
             }
-        } else {
-            // Also explicitly allow SystemUI processes.
-            // SystemUI doesn't run in a core UID, but we want to give it the performance boost,
-            // and we know that it's safe to use the concurrent implementation in SystemUI.
-            sIsProcessAllowedToUseConcurrent =
-                    processName.equals("com.android.systemui")
-                            || processName.startsWith("com.android.systemui:");
-            // On Android distributions where SystemUI has a different process name,
-            // the above condition may need to be adjusted accordingly.
+            return;
         }
+
+        // Also explicitly allow SystemUI processes.
+        // SystemUI doesn't run in a core UID, but we want to give it the performance boost,
+        // and we know that it's safe to use the concurrent implementation in SystemUI.
+        if (processName.equals("com.android.systemui")
+                || processName.startsWith("com.android.systemui:")) {
+            sUseConcurrent = true;
+            return;
+        }
+        // On Android distributions where SystemUI has a different process name,
+        // the above condition may need to be adjusted accordingly.
 
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
@@ -322,7 +326,7 @@ public final class MessageQueue {
      * @return True if the looper is idle.
      */
     public boolean isIdle() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return isIdleConcurrent();
         } else {
             return isIdleLegacy();
@@ -355,7 +359,7 @@ public final class MessageQueue {
         if (handler == null) {
             throw new NullPointerException("Can't add a null IdleHandler");
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             addIdleHandlerConcurrent(handler);
         } else {
             addIdleHandlerLegacy(handler);
@@ -382,7 +386,7 @@ public final class MessageQueue {
      * @param handler The IdleHandler to be removed.
      */
     public void removeIdleHandler(@NonNull IdleHandler handler) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeIdleHandlerConcurrent(handler);
         } else {
             removeIdleHandlerLegacy(handler);
@@ -419,7 +423,7 @@ public final class MessageQueue {
      * @hide
      */
     public boolean isPolling() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return isPollingConcurrent();
         } else {
             return isPollingLegacy();
@@ -481,7 +485,7 @@ public final class MessageQueue {
             throw new IllegalArgumentException("listener must not be null");
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             addOnFileDescriptorEventListenerConcurrent(fd, events, listener);
         } else {
             addOnFileDescriptorEventListenerLegacy(fd, events, listener);
@@ -517,7 +521,7 @@ public final class MessageQueue {
         if (fd == null) {
             throw new IllegalArgumentException("fd must not be null");
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeOnFileDescriptorEventListenerConcurrent(fd);
         } else {
             removeOnFileDescriptorEventListenerLegacy(fd);
@@ -571,7 +575,7 @@ public final class MessageQueue {
         final int oldWatchedEvents;
         final OnFileDescriptorEventListener listener;
         final int seq;
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             synchronized (mFileDescriptorRecordsLock) {
                 record = mFileDescriptorRecords.get(fd);
                 if (record == null) {
@@ -614,7 +618,7 @@ public final class MessageQueue {
         // Update the file descriptor record if the listener changed the set of
         // events to watch and the listener itself hasn't been updated since.
         if (newWatchedEvents != oldWatchedEvents) {
-            if (mUseConcurrent) {
+            if (sUseConcurrent) {
                 synchronized (mFileDescriptorRecordsLock) {
                     int index = mFileDescriptorRecords.indexOfKey(fd);
                     if (index >= 0 && mFileDescriptorRecords.valueAt(index) == record
@@ -1068,7 +1072,7 @@ public final class MessageQueue {
                     "To manipulate the queue in Instrumentation tests, use {@link"
                         + " android.os.TestLooperManager}")
     Message next() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return nextConcurrent();
         } else {
             return nextLegacy();
@@ -1080,7 +1084,7 @@ public final class MessageQueue {
             throw new IllegalStateException("Main thread not allowed to quit.");
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             QuittingNode quittingNode = new QuittingNode(safe);
             while (true) {
                 StackNode old = (StackNode) sState.getVolatile(this);
@@ -1159,7 +1163,7 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     @TestApi
     public int postSyncBarrier() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return postSyncBarrierConcurrent();
         } else {
             return postSyncBarrierLegacy();
@@ -1169,7 +1173,7 @@ public final class MessageQueue {
     private int postSyncBarrier(long when) {
         // Enqueue a new sync barrier token.
         // We don't need to wake the queue because the purpose of a barrier is to stall it.
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             final int token = mNextBarrierTokenAtomic.getAndIncrement();
 
             // b/376573804: apps and tests may expect to be able to use reflection
@@ -1321,7 +1325,7 @@ public final class MessageQueue {
     public void removeSyncBarrier(int token) {
         // Remove a sync barrier token from the queue.
         // If the queue is no longer stalled by a barrier then wake it.
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeSyncBarrierConcurrent(token);
         } else {
             removeSyncBarrierLegacy(token);
@@ -1418,7 +1422,7 @@ public final class MessageQueue {
             throw new IllegalArgumentException("Message must have a target.");
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return enqueueMessageConcurrent(msg, when);
         } else {
             return enqueueMessageLegacy(msg, when);
@@ -1479,7 +1483,7 @@ public final class MessageQueue {
     Long peekWhenForTest() {
         throwIfNotTest();
         Message ret;
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             ret = nextMessage(true, true);
         } else {
             ret = legacyPeekOrPoll(true);
@@ -1497,7 +1501,7 @@ public final class MessageQueue {
     @Nullable
     Message pollForTest() {
         throwIfNotTest();
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return nextMessage(false, true);
         } else {
             return legacyPeekOrPoll(false);
@@ -1513,7 +1517,7 @@ public final class MessageQueue {
      */
     boolean isBlockedOnSyncBarrier() {
         throwIfNotTest();
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             // Call nextMessage to get the stack drained into our priority queues
             nextMessage(true, false);
 
@@ -1562,7 +1566,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasMessagesConcurrent(h, what, object);
         } else {
             return hasMessagesLegacy(h, what, object);
@@ -1605,7 +1609,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasEqualMessagesConcurrent(h, what, object);
         } else {
             return hasEqualMessagesLegacy(h, what, object);
@@ -1649,7 +1653,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasMessagesConcurrent(h, r, object);
         } else {
             return hasMessagesLegacy(h, r, object);
@@ -1686,7 +1690,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasMessagesConcurrent(h);
         } else {
             return hasMessagesLegacy(h);
@@ -1746,7 +1750,7 @@ public final class MessageQueue {
         if (h == null) {
             return;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeMessagesConcurrent(h, what, object);
         } else {
             removeMessagesLegacy(h, what, object);
@@ -1807,7 +1811,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeEqualMessagesConcurrent(h, what, object);
         } else {
             removeEqualMessagesLegacy(h, what, object);
@@ -1868,7 +1872,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeMessagesConcurrent(h, r, object);
         } else {
             removeMessagesLegacy(h, r, object);
@@ -1943,7 +1947,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeEqualMessagesConcurrent(h, r, object);
         } else {
             removeEqualMessagesLegacy(h, r, object);
@@ -2016,7 +2020,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeCallbacksAndMessagesConcurrent(h, object);
         } else {
             removeCallbacksAndMessagesLegacy(h, object);
@@ -2090,7 +2094,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeCallbacksAndEqualMessagesConcurrent(h, object);
         } else {
             removeCallbacksAndEqualMessagesLegacy(h, object);
@@ -2205,7 +2209,7 @@ public final class MessageQueue {
 
     @NeverCompile
     void dump(Printer pw, String prefix, Handler h) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             long now = SystemClock.uptimeMillis();
             int n = 0;
 
@@ -2266,7 +2270,7 @@ public final class MessageQueue {
 
     @NeverCompile
     void dumpDebug(ProtoOutputStream proto, long fieldId) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             final long messageQueueToken = proto.start(fieldId);
 
             StackNode node = (StackNode) sState.getVolatile(this);
@@ -2758,7 +2762,7 @@ public final class MessageQueue {
     }
 
     private void setFileDescriptorEvents(int fdNum, int events) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             if (incrementMptrRefs()) {
                 try {
                     nativeSetFileDescriptorEvents(mPtr, fdNum, events);
