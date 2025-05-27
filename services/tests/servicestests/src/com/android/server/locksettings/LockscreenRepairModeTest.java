@@ -95,7 +95,8 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
         assertSame(PersistentData.NONE, mStorage.readRepairModePersistentData());
 
         setRepairModeActive(true);
-        assertEquals(VerifyCredentialResponse.RESPONSE_ERROR,
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
                 mService.verifyCredential(
                                 newPin("1234"), PRIMARY_USER_ID, VERIFY_FLAG_WRITE_REPAIR_MODE_PW)
                         .getResponseCode());
@@ -179,7 +180,8 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
 
         assertEquals(LockPatternUtils.CREDENTIAL_TYPE_PIN,
                 mService.getCredentialType(USER_REPAIR_MODE));
-        assertEquals(VerifyCredentialResponse.RESPONSE_ERROR,
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
                 mService.verifyCredential(newPin("1234"), USER_REPAIR_MODE, 0 /* flags */)
                         .getResponseCode());
     }
@@ -196,7 +198,8 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
 
         assertEquals(LockPatternUtils.CREDENTIAL_TYPE_PIN,
                 mService.getCredentialType(USER_REPAIR_MODE));
-        assertEquals(VerifyCredentialResponse.RESPONSE_ERROR,
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
                 mService.verifyCredential(newPin("5678"), USER_REPAIR_MODE, 0 /* flags */)
                         .getResponseCode());
     }

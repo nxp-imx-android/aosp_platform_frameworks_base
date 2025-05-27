@@ -534,7 +534,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LockSettingsStateListener listener = mock(LockSettingsStateListener.class);
         mLocalService.registerLockSettingsStateListener(listener);
 
-        assertEquals(VerifyCredentialResponse.RESPONSE_ERROR,
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
                 mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
                         .getResponseCode());
 
@@ -555,7 +556,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         verify(listener).onAuthenticationSucceeded(PRIMARY_USER_ID);
 
         mLocalService.unregisterLockSettingsStateListener(listener);
-        assertEquals(VerifyCredentialResponse.RESPONSE_ERROR,
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
                 mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
                         .getResponseCode());
         verify(listener, never()).onAuthenticationFailed(PRIMARY_USER_ID);
@@ -760,7 +762,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             badCredential = LockscreenCredential.createPin("0");
         }
         assertEquals(
-                VerifyCredentialResponse.RESPONSE_ERROR,
+                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
                 mService.verifyCredential(badCredential, userId, 0 /* flags */).getResponseCode());
     }
 

@@ -2389,7 +2389,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         synchronized (mSpManager) {
             if (gatekeeperPassword == null) {
                 Slog.d(TAG, "No gatekeeper password for handle");
-                response = VerifyCredentialResponse.ERROR;
+                response = VerifyCredentialResponse.OTHER_ERROR;
             } else {
                 response = mSpManager.verifyChallengeInternal(getGateKeeperService(),
                         gatekeeperPassword, challenge, userId);
@@ -2423,11 +2423,11 @@ public class LockSettingsService extends ILockSettings.Stub {
         if (userId == USER_FRP && Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.DEVICE_PROVISIONED, 0) != 0) {
             Slog.e(TAG, "FRP credential can only be verified prior to provisioning.");
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
         if (userId == USER_REPAIR_MODE && !LockPatternUtils.isRepairModeActive(mContext)) {
             Slog.e(TAG, "Repair mode is not active on the device.");
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
         Slogf.i(TAG, "Verifying lockscreen credential for user %d", userId);
 
@@ -2470,7 +2470,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 if ((flags & VERIFY_FLAG_WRITE_REPAIR_MODE_PW) != 0) {
                     if (!mSpManager.writeRepairModeCredentialLocked(protectorId, userId)) {
                         Slog.e(TAG, "Failed to write repair mode credential");
-                        return VerifyCredentialResponse.ERROR;
+                        return VerifyCredentialResponse.OTHER_ERROR;
                     }
                 }
                 // credential has matched
