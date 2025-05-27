@@ -94,25 +94,44 @@ fun AODPromotedNotification(
     val content = viewModel.content ?: return
     val audiblyAlertedIconVisible = viewModel.audiblyAlertedIconVisible
 
-    val layoutResource = content.layoutResource
-    if (layoutResource == null) {
-        Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
-        return
-    }
-
-    key(content.identity) {
-        AODPromotedNotificationView(
-            layoutResource = layoutResource,
-            content = content,
-            audiblyAlertedIconVisible = audiblyAlertedIconVisible,
-            modifier = modifier,
-        )
+    if (com.android.systemui.Flags.uiRichOngoingAodSkeletonBgInflation()) {
+        val notificationView = content.notificationView
+        if (notificationView == null) {
+            Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
+            return
+        }
+        key(content.identity) {
+            AODPromotedNotificationView(
+                notificationViewFactory = { notificationView },
+                content = content,
+                audiblyAlertedIconVisible = audiblyAlertedIconVisible,
+                modifier = modifier,
+            )
+        }
+    } else {
+        val layoutResource = content.layoutResource
+        if (layoutResource == null) {
+            Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
+            return
+        }
+        key(content.identity) {
+            AODPromotedNotificationView(
+                notificationViewFactory = { context ->
+                    traceSection("$TAG.inflate") {
+                        LayoutInflater.from(context).inflate(layoutResource, /* root= */ null)
+                    }
+                },
+                content = content,
+                audiblyAlertedIconVisible = audiblyAlertedIconVisible,
+                modifier = modifier,
+            )
+        }
     }
 }
 
 @Composable
 fun AODPromotedNotificationView(
-    layoutResource: Int,
+    notificationViewFactory: (Context) -> View,
     content: PromotedNotificationContentModel,
     audiblyAlertedIconVisible: Boolean,
     modifier: Modifier = Modifier,
@@ -139,15 +158,14 @@ fun AODPromotedNotificationView(
     Box(modifier = boxModifier) {
         AndroidView(
             factory = { context ->
-                val notif =
-                    traceSection("$TAG.inflate") {
-                        LayoutInflater.from(context).inflate(layoutResource, /* root= */ null)
-                    }
+                val notificationView = notificationViewFactory(context)
                 val updater =
-                    traceSection("$TAG.findViews") { AODPromotedNotificationViewUpdater(notif) }
+                    traceSection("$TAG.findViews") {
+                        AODPromotedNotificationViewUpdater(notificationView)
+                    }
 
                 val frame = FrameLayoutWithMaxHeight(maxHeight, context)
-                frame.addView(notif)
+                frame.addView(notificationView)
                 frame.setTag(viewUpdaterTagId, updater)
 
                 frame

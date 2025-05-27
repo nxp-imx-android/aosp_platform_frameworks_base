@@ -20,6 +20,7 @@ import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.view.View
 import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
@@ -89,6 +90,7 @@ data class PromotedNotificationContentModel(
 
     // for ProgressStyle:
     val newProgress: NotificationProgressModel?,
+    val notificationView: View?,
 ) {
     class Builder(val key: String) {
         var wasPromotedAutomatically: Boolean = false
@@ -114,6 +116,8 @@ data class PromotedNotificationContentModel(
         // for ProgressStyle:
         var newProgress: NotificationProgressModel? = null
 
+        var notificationView: View? = null
+
         fun build() =
             PromotedNotificationContentModel(
                 identity = Identity(key, style),
@@ -135,6 +139,7 @@ data class PromotedNotificationContentModel(
                 verificationIcon = verificationIcon,
                 verificationText = verificationText,
                 newProgress = newProgress,
+                notificationView = notificationView,
             )
     }
 
