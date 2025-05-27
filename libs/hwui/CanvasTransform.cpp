@@ -33,35 +33,35 @@
 
 namespace android::uirenderer {
 
-SkColor makeLight(SkColor color) {
+SkColor4f makeLight(SkColor4f color) {
     Lab lab = sRGBToLab(color);
     float invertedL = std::min(110 - lab.L, 100.0f);
     if (invertedL > lab.L) {
         lab.L = invertedL;
-        return LabToSRGB(lab, SkColorGetA(color));
+        return LabToSRGB(lab, color.fA);
     } else {
         return color;
     }
 }
 
-SkColor makeDark(SkColor color) {
+SkColor4f makeDark(SkColor4f color) {
     Lab lab = sRGBToLab(color);
     float invertedL = std::min(110 - lab.L, 100.0f);
     if (invertedL < lab.L) {
         lab.L = invertedL;
-        return LabToSRGB(lab, SkColorGetA(color));
+        return LabToSRGB(lab, color.fA);
     } else {
         return color;
     }
 }
 
-SkColor invert(SkColor color) {
+SkColor4f invert(SkColor4f color) {
     Lab lab = sRGBToLab(color);
     lab.L = 100 - lab.L;
-    return LabToSRGB(lab, SkColorGetA(color));
+    return LabToSRGB(lab, color.fA);
 }
 
-SkColor transformColor(ColorTransform transform, SkColor color) {
+SkColor4f transformColor(ColorTransform transform, SkColor4f color) {
     switch (transform) {
         case ColorTransform::Light:
             return makeLight(color);
@@ -74,7 +74,7 @@ SkColor transformColor(ColorTransform transform, SkColor color) {
     }
 }
 
-SkColor transformColorInverse(ColorTransform transform, SkColor color) {
+SkColor4f transformColorInverse(ColorTransform transform, SkColor4f color) {
     switch (transform) {
         case ColorTransform::Dark:
             return makeLight(color);
@@ -88,7 +88,7 @@ SkColor transformColorInverse(ColorTransform transform, SkColor color) {
 static void applyColorTransform(ColorTransform transform, SkPaint& paint) {
     if (transform == ColorTransform::None) return;
 
-    SkColor newColor = transformColor(transform, paint.getColor());
+    SkColor4f newColor = transformColor(transform, paint.getColor4f());
     paint.setColor(newColor);
 
     if (paint.getShader()) {
@@ -102,8 +102,7 @@ static void applyColorTransform(ColorTransform transform, SkPaint& paint) {
         if (SkAndroidFrameworkUtils::ShaderAsALinearGradient(paint.getShader(), &info) &&
             info.fColorCount <= _colorStorage.size()) {
             for (int i = 0; i < info.fColorCount; i++) {
-                SkColor transformedColor = transformColor(transform, info.fColors[i].toSkColor());
-                info.fColors[i] = SkColor4f::FromColor(transformedColor);
+                info.fColors[i] = transformColor(transform, info.fColors[i]);
             }
             paint.setShader(SkGradientShader::MakeLinear(
                     info.fPoints, info.fColors, nullptr, info.fColorOffsets, info.fColorCount,
@@ -116,8 +115,8 @@ static void applyColorTransform(ColorTransform transform, SkPaint& paint) {
         SkColor color;
         // TODO: LRU this or something to avoid spamming new color mode filters
         if (paint.getColorFilter()->asAColorMode(&color, &mode)) {
-            color = transformColor(transform, color);
-            paint.setColorFilter(SkColorFilters::Blend(color, mode));
+            SkColor4f transformedColor = transformColor(transform, SkColor4f::FromColor(color));
+            paint.setColorFilter(SkColorFilters::Blend(transformedColor, nullptr, mode));
         }
     }
 }

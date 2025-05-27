@@ -45,8 +45,8 @@ bool transformPaint(ColorTransform transform, SkPaint* paint);
 
 bool transformPaint(ColorTransform transform, SkPaint* paint, BitmapPalette palette);
 
-SkColor transformColor(ColorTransform transform, SkColor color);
-SkColor transformColorInverse(ColorTransform transform, SkColor color);
+SkColor4f transformColor(ColorTransform transform, SkColor4f color);
+SkColor4f transformColorInverse(ColorTransform transform, SkColor4f color);
 
 /** Returns a palette corrected in case it is tinted by the given paint's filter */
 BitmapPalette filterPalette(const SkPaint* paint, BitmapPalette palette);
