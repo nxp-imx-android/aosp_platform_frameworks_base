@@ -549,7 +549,7 @@ public class KeyguardService extends Service {
         }
 
         @Override // Binder interface
-        public void onScreenTurningOn(IKeyguardDrawnCallback callback) {
+        public void onScreenTurningOn(int reason, IKeyguardDrawnCallback callback) {
             trace("onScreenTurningOn");
             Trace.beginSection("KeyguardService.mBinder#onScreenTurningOn");
             checkPermission();
@@ -563,7 +563,7 @@ public class KeyguardService extends Service {
             Trace.beginAsyncSection(onDrawWaitingTraceTag, traceCookie);
 
             // Ensure the drawn callback is only ever called once
-            mScreenOnCoordinator.onScreenTurningOn(new Runnable() {
+            mScreenOnCoordinator.onScreenTurningOn(reason, new Runnable() {
                 boolean mInvoked;
                 @Override
                 public void run() {

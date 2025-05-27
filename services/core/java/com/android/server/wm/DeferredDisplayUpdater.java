@@ -348,6 +348,15 @@ class DeferredDisplayUpdater {
         mShouldWaitForTransitionWhenScreenOn = switching;
     }
 
+    /**
+     * Returns 'true' if the physical display is currently in the process of switching, for example
+     * on foldable devices when folding or unfolding. The value becomes 'false' when the switching
+     * has been finished (the new display is fully turned on).
+     */
+    boolean isDisplaySwitching() {
+        return mShouldWaitForTransitionWhenScreenOn;
+    }
+
     /** Returns {@code true} if the transition will control when to turn on the screen. */
     boolean waitForTransition(@NonNull Message screenUnblocker) {
         if (!mShouldWaitForTransitionWhenScreenOn) {

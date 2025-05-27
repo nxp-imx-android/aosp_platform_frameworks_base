@@ -23,6 +23,8 @@ import static android.view.Display.DEFAULT_DISPLAY_GROUP;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManagerGlobal.ADD_OKAY;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
+import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -81,8 +83,10 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.server.SystemServiceManager;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.policy.WindowManagerPolicy.ScreenOnListener;
 import com.android.server.policy.keyguard.KeyguardServiceDelegate;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.testutils.OffsettableClock;
@@ -156,6 +160,8 @@ public class PhoneWindowManagerTests {
     @Mock
     private WindowWakeUpPolicy mWindowWakeUpPolicy;
     @Mock
+    private SystemServiceManager mSystemServiceManager;
+    @Mock
     private PackageManager mPackageManager;
 
     private static final int INTERCEPT_SYSTEM_KEY_NOT_CONSUMED_DELAY = 0;
@@ -186,6 +192,9 @@ public class PhoneWindowManagerTests {
                 mUserManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(WindowManagerInternal.class,
                 mock(WindowManagerInternal.class));
+        mLocalServiceKeeperRule.overrideLocalService(SystemServiceManager.class,
+                mSystemServiceManager);
+        when(mSystemServiceManager.isBootCompleted()).thenReturn(true);
 
         mPhoneWindowManager.mKeyguardDelegate = mKeyguardServiceDelegate;
         doNothing().when(mInputManager).registerKeyGestureEventHandler(anyList(), any());
@@ -652,6 +661,32 @@ public class PhoneWindowManagerTests {
 
         verify(mPowerManager, times(1)).goToSleep(powerButtonPressEventTimeMillis,
                 PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
+    }
+
+    @Test
+    public void testScreenTurningOn_defaultDisplaySwitching_passesDisplaySwitchReasonToKeyguard() {
+        initPhoneWindowManager();
+        when(mKeyguardServiceDelegate.hasKeyguard()).thenReturn(true);
+        when(mDisplayPolicy.isDisplaySwitching()).thenReturn(true);
+
+        mPhoneWindowManager.screenTurningOn(DEFAULT_DISPLAY, mock(ScreenOnListener.class));
+
+        verify(mKeyguardServiceDelegate).onScreenTurningOn(
+                /* reason= */ eq(SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH),
+                /* drawnListener= */ any());
+    }
+
+    @Test
+    public void testScreenTurningOn_defaultDisplayNotSwitching_passesUnknownReasonToKeyguard() {
+        initPhoneWindowManager();
+        when(mKeyguardServiceDelegate.hasKeyguard()).thenReturn(true);
+        when(mDisplayPolicy.isDisplaySwitching()).thenReturn(false);
+
+        mPhoneWindowManager.screenTurningOn(DEFAULT_DISPLAY, mock(ScreenOnListener.class));
+
+        verify(mKeyguardServiceDelegate).onScreenTurningOn(
+                /* reason= */ eq(SCREEN_TURNING_ON_REASON_UNKNOWN),
+                /* drawnListener= */ any());
     }
 
     private void initNonSpyPhoneWindowManager() {
