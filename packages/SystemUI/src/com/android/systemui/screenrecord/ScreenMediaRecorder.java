@@ -56,7 +56,6 @@ import android.view.Surface;
 
 import com.android.internal.R;
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget;
-import com.android.systemui.recordissue.ScreenRecordingStartTimeStore;
 
 import java.io.Closeable;
 import java.io.File;
@@ -81,7 +80,6 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     private static final long MAX_FILESIZE_BYTES = 5000000000L;
     private static final String TAG = "ScreenMediaRecorder";
 
-
     private File mTempVideoFile;
     private File mTempAudioFile;
     private MediaProjection mMediaProjection;
@@ -89,11 +87,9 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     private VirtualDisplay mVirtualDisplay;
     private MediaRecorder mMediaRecorder;
     private int mUid;
-    private ScreenRecordingMuxer mMuxer;
     private ScreenInternalAudioRecorder mAudio;
     private ScreenRecordingAudioSource mAudioSource;
     private final MediaProjectionCaptureTarget mCaptureRegion;
-    private final ScreenRecordingStartTimeStore mScreenRecordingStartTimeStore;
     private final Handler mHandler;
     private final int mDisplayId;
 
@@ -107,8 +103,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
             ScreenRecordingAudioSource audioSource,
             MediaProjectionCaptureTarget captureRegion,
             int displayId,
-            ScreenMediaRecorderListener listener,
-            ScreenRecordingStartTimeStore screenRecordingStartTimeStore) {
+            ScreenMediaRecorderListener listener) {
         mContext = context;
         mHandler = handler;
         mUid = uid;
@@ -116,7 +111,6 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         mListener = listener;
         mAudioSource = audioSource;
         mDisplayId = displayId;
-        mScreenRecordingStartTimeStore = screenRecordingStartTimeStore;
     }
 
     private void prepare() throws IOException, RemoteException, RuntimeException {
@@ -290,18 +284,18 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     /**
     * Start screen recording
     */
-    void start() throws IOException, RemoteException, RuntimeException {
+    public void start() throws IOException, RemoteException, RuntimeException {
         Log.d(TAG, "start recording");
         prepare();
         mMediaRecorder.start();
-        mScreenRecordingStartTimeStore.markStartTime();
+        mListener.onStarted();
         recordInternalAudio();
     }
 
     /**
      * End screen recording, throws an exception if stopping recording failed
      */
-    void end(@StopReason int stopReason) throws IOException {
+    public void end(@StopReason int stopReason) throws IOException {
         Closer closer = new Closer();
 
         // MediaRecorder might throw RuntimeException if stopped immediately after starting
@@ -353,7 +347,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     /**
      * Store recorded video
      */
-    protected SavedRecording save() throws IOException, IllegalStateException {
+    public SavedRecording save() throws IOException, IllegalStateException {
         String fileName = new SimpleDateFormat("'screen-'yyyyMMdd-HHmmss'.mp4'")
                 .format(new Date());
 
@@ -374,11 +368,12 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
                 Log.d(TAG, "muxing recording");
                 File file = File.createTempFile("temp", ".mp4",
                         mContext.getCacheDir());
-                mMuxer = new ScreenRecordingMuxer(MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4,
+                ScreenRecordingMuxer muxer = new ScreenRecordingMuxer(
+                        MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4,
                         file.getAbsolutePath(),
                         mTempVideoFile.getAbsolutePath(),
                         mTempAudioFile.getAbsolutePath());
-                mMuxer.mux();
+                muxer.mux();
                 mTempVideoFile.delete();
                 mTempVideoFile = file;
             } catch (IOException e) {
@@ -415,7 +410,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     /**
      * Release the resources without saving the data
      */
-    protected void release() {
+    public void release() {
         if (mTempVideoFile != null) {
             mTempVideoFile.delete();
         }
@@ -432,7 +427,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         private Uri mUri;
         private Icon mThumbnailIcon;
 
-        protected SavedRecording(Uri uri, File file, Size thumbnailSize) {
+        public SavedRecording(Uri uri, File file, Size thumbnailSize) {
             mUri = uri;
             try {
                 Bitmap thumbnailBitmap = ThumbnailUtils.createVideoThumbnail(
@@ -452,7 +447,13 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         }
     }
 
-    interface ScreenMediaRecorderListener {
+    public interface ScreenMediaRecorderListener {
+
+        /**
+         * Called when the recording actually starts
+         */
+        void onStarted();
+
         /**
          * Called to indicate an info or a warning during recording.
          * See {@link MediaRecorder.OnInfoListener} for the full description.

@@ -16,11 +16,17 @@
 
 package com.android.systemui.screenrecord.service;
 
-import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback;
+import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget;
 
-/** Interface implemented by ScreenRecordingService */
+/** Interface implemented by ScreenshotCrossProfileService */
 interface IScreenRecordingService {
 
-    void setCallback(IScreenRecordingServiceCallback callback);
+    void setCallback(com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback callback);
     void stopRecording(int reason);
+    void startRecording(
+        in MediaProjectionCaptureTarget captureTarget,
+        int audioSource,
+        int displayId,
+        boolean shouldShowTaps
+    );
 }
