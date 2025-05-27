@@ -468,6 +468,9 @@ public final class Looper {
      * at the beginning and ending of each message dispatch, identifying the
      * target Handler and message contents.
      *
+     * Message logging introduces a performance penalty, and is disabled by
+     * default.
+     *
      * @param printer A Printer object that will receive log messages, or
      * null to disable message logging.
      */
