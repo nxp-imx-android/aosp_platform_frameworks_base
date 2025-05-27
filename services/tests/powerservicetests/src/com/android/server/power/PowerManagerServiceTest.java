@@ -56,6 +56,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -64,7 +65,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.annotation.NonNull;
 import android.app.ActivityManagerInternal;
 import android.attention.AttentionManagerInternal;
 import android.compat.testing.PlatformCompatChangeRule;
@@ -96,6 +96,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.PowerSaveState;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.WorkSource;
 import android.os.test.TestLooper;
@@ -3197,34 +3198,47 @@ public class PowerManagerServiceTest {
 
     @Test
     @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
-    public void testDisableWakelocks_whenFrozen() {
+    public void testDisableWakelocks_whenFrozen() throws RemoteException {
         createService();
         startSystem();
 
-        class RemoteBinder extends Binder {
-            @Override
-            public void addFrozenStateChangeCallback(@NonNull FrozenStateChangeCallback callback) {
+        IBinder mockBinder = mock(IBinder.class);
+        doNothing().when(mockBinder).addFrozenStateChangeCallback(any());
+        when(mockBinder.removeFrozenStateChangeCallback(any())).thenReturn(true);
 
-            }
-        }
-        RemoteBinder token = new RemoteBinder();
         WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
-                PowerManager.PARTIAL_WAKE_LOCK, token, Display.INVALID_DISPLAY);
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
         assertThat(wakeLock.mDisabled).isFalse();
         assertThat(wakeLock.isFrozenLocked()).isFalse();
         advanceTime(1000);
 
         // The process gets frozen, which disables the wakelock
-        wakeLock.onFrozenStateChanged(token, 0);
+        wakeLock.onFrozenStateChanged(mockBinder, 0);
         advanceTime(1000);
         assertThat(wakeLock.mDisabled).isTrue();
         assertThat(wakeLock.isFrozenLocked()).isTrue();
 
         // The process gets unfrozen, which enables the wakelock
-        wakeLock.onFrozenStateChanged(token, 1);
+        wakeLock.onFrozenStateChanged(mockBinder, 1);
         advanceTime(1000);
         assertThat(wakeLock.mDisabled).isFalse();
         assertThat(wakeLock.isFrozenLocked()).isFalse();
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
+    public void testDisableWakelocks_whenBinderDies() {
+        createService();
+        startSystem();
+
+        IBinder mockBinder = mock(IBinder.class);
+        when(mockBinder.removeFrozenStateChangeCallback(any())).thenReturn(true);
+
+        WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
+
+        wakeLock.binderDied();
+        verify(mockBinder).removeFrozenStateChangeCallback(wakeLock);
     }
 
     @Test

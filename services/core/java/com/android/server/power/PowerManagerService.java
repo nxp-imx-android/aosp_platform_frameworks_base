@@ -1864,8 +1864,20 @@ public final class PowerManagerService extends SystemService
             if (index < 0) {
                 return;
             }
-
             removeWakeLockDeathLocked(wakeLock, index);
+        }
+    }
+
+    private void removeWakelockFrozenStateReferences(WakeLock wakelock) {
+        if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
+            try {
+                wakelock.mLock.removeFrozenStateChangeCallback(wakelock);
+            } catch (UnsupportedOperationException e) {
+                if (DEBUG_SPEW) {
+                    Slog.v(TAG, "FrozenStateChangeCallback not supported for this wakelock "
+                            + wakelock.mTag + " " + e.getLocalizedMessage());
+                }
+            }
         }
     }
 
@@ -1898,6 +1910,7 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private void removeWakeLockDeathLocked(WakeLock wakeLock, int index) {
+        removeWakelockFrozenStateReferences(wakeLock);
         removeWakeLockNoUpdateLocked(wakeLock, index, RELEASE_REASON_WAKE_LOCK_DEATH);
         updatePowerStateLocked();
     }
