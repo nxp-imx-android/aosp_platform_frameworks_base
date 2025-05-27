@@ -316,7 +316,7 @@ public class MediaQualityService extends SystemService {
                             value, pp, callingUid, callingPid);
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
-                                pp.getPackageName(), pp.getHandle().getId());
+                                pp.getPackageName(), id);
                     }
                 }
             });
