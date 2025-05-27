@@ -18,7 +18,7 @@ package com.android.server.companion.virtual;
 
 import android.annotation.NonNull;
 import android.content.AttributionSource;
-import android.graphics.PointF;
+import android.content.Context;
 import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
@@ -28,11 +28,9 @@ import android.hardware.input.VirtualNavigationTouchpadConfig;
 import android.hardware.input.VirtualRotaryEncoderConfig;
 import android.hardware.input.VirtualStylusConfig;
 import android.hardware.input.VirtualTouchscreenConfig;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.ArrayMap;
-import android.util.Slog;
 import android.view.WindowManager;
 
 import com.android.internal.annotations.GuardedBy;
@@ -46,9 +44,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /** Controls virtual input devices, including device lifecycle and event dispatch. */
-class VirtualInputController {
-
-    private static final String TAG = "InputController";
+class InputController {
 
     private final Object mLock = new Object();
 
@@ -60,17 +56,20 @@ class VirtualInputController {
     private final InputManager mInputManager;
     private final WindowManager mWindowManager;
     private final AttributionSource mAttributionSource;
+    private final InputDeviceListener mInputDeviceListener = new InputDeviceListener();
 
     @VisibleForTesting
-    VirtualInputController(@NonNull InputManager inputManager, @NonNull WindowManager windowManager,
-            AttributionSource attributionSource) {
+    InputController(@NonNull Context context, AttributionSource attributionSource) {
         mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
-        mInputManager = inputManager;
-        mWindowManager = windowManager;
+        mInputManager = context.getSystemService(InputManager.class);
+        mWindowManager = context.getSystemService(WindowManager.class);
         mAttributionSource = attributionSource;
+        mInputManager.registerInputDeviceListener(
+                mInputDeviceListener, context.getMainThreadHandler());
     }
 
     void close() {
+        mInputManager.unregisterInputDeviceListener(mInputDeviceListener);
         synchronized (mLock) {
             final Iterator<Map.Entry<IBinder, IVirtualInputDevice>> iterator =
                     mInputDevices.entrySet().iterator();
@@ -146,36 +145,6 @@ class VirtualInputController {
         return device;
     }
 
-    void unregisterInputDevice(@NonNull IBinder token) {
-        synchronized (mLock) {
-            final IVirtualInputDevice inputDeviceDescriptor = mInputDevices.remove(token);
-            if (inputDeviceDescriptor == null) {
-                Slog.w(TAG, "Could not unregister input device for given token.");
-            } else {
-                Binder.withCleanCallingIdentity(() ->
-                        mInputManagerInternal.closeVirtualInputDevice(token));
-            }
-        }
-    }
-
-    /**
-     * @return the device id for a given token (identifiying a device)
-     */
-    int getInputDeviceId(IBinder token) {
-        synchronized (mLock) {
-            final IVirtualInputDevice inputDeviceDescriptor = mInputDevices.get(token);
-            if (inputDeviceDescriptor == null) {
-                throw new IllegalArgumentException("Could not get device id for given token");
-            }
-            try {
-                return inputDeviceDescriptor.getInputDeviceId();
-            } catch (RemoteException e) {
-                e.rethrowFromSystemServer();
-            }
-        }
-        return -1;
-    }
-
     void setShowPointerIcon(boolean visible, int displayId) {
         mInputManagerInternal.setPointerIconVisible(visible, displayId);
     }
@@ -190,25 +159,6 @@ class VirtualInputController {
 
     void setDisplayImePolicy(int displayId, @WindowManager.DisplayImePolicy int policy) {
         mWindowManager.setDisplayImePolicy(displayId, policy);
-    }
-
-    public PointF getCursorPosition(@NonNull IBinder token) {
-        synchronized (mLock) {
-            final IVirtualInputDevice inputDeviceDescriptor = mInputDevices.get(token);
-            if (inputDeviceDescriptor == null) {
-                throw new IllegalArgumentException(
-                        "Could not get cursor position for input device for given token");
-            }
-            return Binder.withCleanCallingIdentity(() -> {
-                try {
-                    return mInputManager.getCursorPosition(
-                            inputDeviceDescriptor.getAssociatedDisplayId());
-                } catch (RemoteException e) {
-                    e.rethrowFromSystemServer();
-                    return null;
-                }
-            });
-        }
     }
 
     public void dump(@NonNull PrintWriter fout) {
@@ -232,19 +182,50 @@ class VirtualInputController {
         }
     }
 
+    @VisibleForTesting
+    void removeDeviceForTesting(IBinder token) {
+        synchronized (mLock) {
+            mInputDevices.remove(token);
+        }
+    }
+
     boolean isInputDevicePresent(int inputDeviceId) {
         synchronized (mLock) {
-            try {
-                for (int i = 0; i < mInputDevices.size(); ++i) {
-                    IVirtualInputDevice device = mInputDevices.valueAt(i);
-                    if (device.getInputDeviceId() == inputDeviceId) {
-                        return true;
-                    }
+            return getTokenForInputDeviceIdLocked(inputDeviceId) != null;
+        }
+    }
+
+    @GuardedBy("mLock")
+    private IBinder getTokenForInputDeviceIdLocked(int inputDeviceId) {
+        try {
+            for (int i = 0; i < mInputDevices.size(); ++i) {
+                IVirtualInputDevice device = mInputDevices.valueAt(i);
+                if (device.getInputDeviceId() == inputDeviceId) {
+                    return mInputDevices.keyAt(i);
                 }
-            } catch (RemoteException e) {
-                e.rethrowFromSystemServer();
+            }
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+        return null;
+    }
+
+    private class InputDeviceListener implements InputManager.InputDeviceListener {
+
+        @Override
+        public void onInputDeviceAdded(int deviceId) {}
+
+        @Override
+        public void onInputDeviceChanged(int deviceId) {}
+
+        @Override
+        public void onInputDeviceRemoved(int deviceId) {
+            synchronized (mLock) {
+                IBinder token = getTokenForInputDeviceIdLocked(deviceId);
+                if (token != null) {
+                    mInputDevices.remove(token);
+                }
             }
         }
-        return false;
     }
 }

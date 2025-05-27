@@ -77,7 +77,6 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IVirtualInputDevice;
-import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
@@ -195,7 +194,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     private final int mDeviceId;
     @Nullable
     private final String mPersistentDeviceId;
-    private final VirtualInputController mInputController;
+    private final InputController mInputController;
     private final SensorController mSensorController;
     private final CameraAccessController mCameraAccessController;
     @Nullable private final ViewConfigurationController mViewConfigurationController;
@@ -425,7 +424,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             IBinder token,
             AttributionSource attributionSource,
             int deviceId,
-            VirtualInputController inputController,
+            InputController inputController,
             CameraAccessController cameraAccessController,
             PendingTrampolineCallback pendingTrampolineCallback,
             IVirtualDeviceActivityListener activityListener,
@@ -479,9 +478,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         mBaseVirtualDisplayFlags = flags;
 
         if (inputController == null) {
-            mInputController = new VirtualInputController(
-                    context.getSystemService(InputManager.class),
-                    context.getSystemService(WindowManager.class), mAttributionSource);
+            mInputController = new InputController(mContext, mAttributionSource);
         } else {
             mInputController = inputController;
         }
