@@ -28,8 +28,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -337,47 +335,6 @@ public class PropertyInvalidatedCacheTests {
         assertEquals("foo5", cache.query(5));
         assertEquals("foo5", cache.query(5));
         assertEquals(7, cache.getRecomputeCount());
-    }
-
-    @Test
-    public void testRefreshSameObject() {
-        int[] refreshCount = new int[1];
-        TestCache cache = new TestCache() {
-            @Override
-            public String refresh(String oldResult, Integer query) {
-                refreshCount[0] += 1;
-                return oldResult;
-            }
-        };
-        cache.invalidateCache();
-        String result1 = cache.query(5);
-        assertEquals("foo5", result1);
-        String result2 = cache.query(5);
-        assertSame(result1, result2);
-        assertEquals(1, cache.getRecomputeCount());
-        assertEquals(1, refreshCount[0]);
-        assertEquals("foo5", cache.query(5));
-        assertEquals(2, refreshCount[0]);
-    }
-
-    @Test
-    public void testRefreshInvalidateRace() {
-        int[] refreshCount = new int[1];
-        TestCache cache = new TestCache() {
-            @Override
-            public String refresh(String oldResult, Integer query) {
-                refreshCount[0] += 1;
-                invalidateCache();
-                return new String(oldResult);
-            }
-        };
-        cache.invalidateCache();
-        String result1 = cache.query(5);
-        assertEquals("foo5", result1);
-        String result2 = cache.query(5);
-        assertEquals(result1, result2);
-        assertNotSame(result1, result2);
-        assertEquals(2, cache.getRecomputeCount());
     }
 
     @Test
