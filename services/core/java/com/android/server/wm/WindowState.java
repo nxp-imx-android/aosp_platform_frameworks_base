@@ -91,6 +91,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON;
 import static android.view.WindowManager.LayoutParams.LAST_SUB_WINDOW;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.MATCH_PARENT;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NOT_MAGNIFIABLE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPT_OUT_EDGE_TO_EDGE;
@@ -4949,7 +4950,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mAttrs.type == TYPE_NAVIGATION_BAR_PANEL) {
             return false;
         }
-        if (mAttrs.type == TYPE_INPUT_METHOD
+        if ((mAttrs.privateFlags & PRIVATE_FLAG_INPUT_METHOD_WINDOW) != 0
+                || mAttrs.type == TYPE_INPUT_METHOD
                 || mAttrs.type == TYPE_INPUT_METHOD_DIALOG) {
             return mWmService.isMagnifyImeEnabled();
         }
