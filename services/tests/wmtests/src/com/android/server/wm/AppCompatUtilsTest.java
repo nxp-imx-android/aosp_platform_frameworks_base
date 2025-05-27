@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import android.annotation.Nullable;
 import android.app.CameraCompatTaskInfo.FreeformCameraCompatMode;
 import android.app.TaskInfo;
 import android.graphics.Rect;
@@ -35,6 +36,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import android.window.AppCompatTransitionInfo;
 
 import androidx.annotation.NonNull;
 
@@ -264,6 +266,37 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         });
     }
 
+    @Test
+    public void testCreateAppCompatTransitionInfo_whenNotLetterboxed_returnsNull() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponent();
+                a.setIgnoreOrientationRequest(true);
+                a.setTopActivityHasLetterboxedBounds(/* letterboxed */ false);
+            });
+
+            robot.createAppCompatTransitionInfo();
+
+            robot.checkAppCompatTransitionInfoIsCreated(/* expected */ false);
+        });
+    }
+
+    @Test
+    public void createAppCompatTransitionInfo_whenLetterboxed_containsLetterboxBounds() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponent();
+                a.setTopActivityHasLetterboxedBounds(/* letterboxed */ true);
+                a.configureTopActivityBounds(new Rect(20, 30, 520, 630));
+            });
+
+            robot.createAppCompatTransitionInfo();
+
+            robot.checkAppCompatTransitionInfoIsCreated(/* expected */ true);
+            robot.checkAppCompatTransitionInfoLetterboxBounds(new Rect(20, 30, 520, 630));
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -277,6 +310,9 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         private final WindowState mWindowState;
         @NonNull
         private final AppCompatTransparentActivityRobot mTransparentActivityRobot;
+
+        @Nullable
+        private AppCompatTransitionInfo mAppCompatTransitionInfo;
 
         AppCompatUtilsRobotTest(@NonNull WindowManagerService wm,
                 @NonNull ActivityTaskManagerService atm,
@@ -337,6 +373,23 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         void checkTopActivityLetterboxReason(@NonNull String expected) {
             Assert.assertEquals(expected,
                     AppCompatUtils.getLetterboxReasonString(activity().top(), mWindowState));
+        }
+
+        void createAppCompatTransitionInfo() {
+            mAppCompatTransitionInfo = AppCompatUtils.createAppCompatTransitionInfo(
+                    activity().top());
+        }
+
+        void checkAppCompatTransitionInfoIsCreated(boolean expected) {
+            if (expected) {
+                Assert.assertNotNull(mAppCompatTransitionInfo);
+            } else {
+                Assert.assertNull(mAppCompatTransitionInfo);
+            }
+        }
+
+        void checkAppCompatTransitionInfoLetterboxBounds(@NonNull Rect expectedBounds) {
+            Assert.assertEquals(expectedBounds, mAppCompatTransitionInfo.getLetterboxBounds());
         }
 
         @NonNull
