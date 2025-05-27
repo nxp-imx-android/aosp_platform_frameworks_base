@@ -3955,6 +3955,9 @@ public class MockingOomAdjusterTests {
             final ProcessReceiverRecord receivers = app.mReceivers;
             final ProcessProfileRecord profile = app.mProfile;
             final ProcessProviderRecord providers = app.mProviders;
+            doReturn(Long.MIN_VALUE)
+                    .when(app.getWindowProcessController())
+                    .getPerceptibleTaskStoppedTimeMillis();
             app.makeActive(mock(ApplicationThreadDeferred.class), mService.mProcessStats);
             app.setLastActivityTime(mLastActivityTime);
             app.setKilledByAm(mKilledByAm);
