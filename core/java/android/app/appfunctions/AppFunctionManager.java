@@ -27,6 +27,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
+import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.UserHandleAware;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
@@ -139,6 +140,26 @@ public final class AppFunctionManager {
     @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_MANAGE_TARGET_APP_FUNCTION_ACCESS =
             "android.app.appfunctions.action.MANAGE_TARGET_APP_FUNCTION_ACCESS";
+
+    /**
+     * Activity action: Launch UI to request App Function access of a specified app.
+     * <p>
+     * Input: {@link android.content.Intent#EXTRA_PACKAGE_NAME} specifies the package for which the
+     * calling agent is requesting access of.
+     * </p>
+     * <p>
+     * Output: Nothing.
+     * </p>
+     *
+     * @see android.content.Intent#EXTRA_PACKAGE_NAME
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_APP_FUNCTION_ACCESS_UI_ENABLED)
+    @SystemApi
+    @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_REQUEST_APP_FUNCTION_ACCESS =
+            "android.app.appfunctions.action.REQUEST_APP_FUNCTION_ACCESS";
 
     /**
      * The default state of the app function. Call {@link #setAppFunctionEnabled} with this to reset
