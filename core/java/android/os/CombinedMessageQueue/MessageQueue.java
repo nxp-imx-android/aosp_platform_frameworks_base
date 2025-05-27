@@ -65,7 +65,6 @@ public final class MessageQueue {
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
-    private static final boolean TRACE = false;
 
     // True if the message queue can be quit.
     @UnsupportedAppUsage
@@ -851,9 +850,6 @@ public final class MessageQueue {
                         continue;
                     }
 
-                    if (TRACE) {
-                        Trace.setCounter("MQ.Delivered", mMessagesDelivered.incrementAndGet());
-                    }
                     return found.mMessage;
                 }
                 return null;
@@ -994,9 +990,6 @@ public final class MessageQueue {
                             mAsyncMessageCount--;
                         }
                         decAndTraceMessageCount();
-                        if (TRACE) {
-                            Trace.setCounter("MQ.Delivered", mMessagesDelivered.incrementAndGet());
-                        }
                         return msg;
                     }
                 } else {
@@ -1459,9 +1452,6 @@ public final class MessageQueue {
                     mAsyncMessageCount--;
                 }
                 decAndTraceMessageCount();
-                if (TRACE) {
-                    Trace.setCounter("MQ.Delivered", mMessagesDelivered.incrementAndGet());
-                }
                 return msg;
             }
         }
