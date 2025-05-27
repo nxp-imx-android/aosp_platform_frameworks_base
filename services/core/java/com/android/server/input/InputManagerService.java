@@ -799,19 +799,23 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     /**
-     * Creates an input channel that will receive all input from the input dispatcher.
+     * Creates an input channel that will receive all non-pointer input going to focused windows
+     * from the input dispatcher.
+     *
+     * This API is intended to be used only for creating debugging tools to visualize focus input.
+     *
      * @param inputChannelName The input channel name.
      * @param displayId Target display id.
      * @return The input channel.
      */
-    public InputChannel monitorInput(@NonNull String inputChannelName, int displayId) {
+    public InputChannel monitorFocusInput(@NonNull String inputChannelName, int displayId) {
         Objects.requireNonNull(inputChannelName, "inputChannelName not be null");
 
         if (displayId < Display.DEFAULT_DISPLAY) {
             throw new IllegalArgumentException("displayId must >= 0.");
         }
 
-        return mNative.createInputMonitor(displayId, inputChannelName, Binder.getCallingPid());
+        return mNative.createFocusInputMonitor(displayId, inputChannelName, Binder.getCallingPid());
     }
 
     @NonNull
