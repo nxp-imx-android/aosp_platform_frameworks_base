@@ -32,7 +32,9 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.NotificationShelf
+import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
+import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView
@@ -44,13 +46,17 @@ import com.android.systemui.statusbar.notification.footer.ui.viewbinder.FooterVi
 import com.android.systemui.statusbar.notification.footer.ui.viewmodel.FooterViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerShelfViewBinder
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.shelf.ui.viewbinder.NotificationShelfViewBinder
 import com.android.systemui.statusbar.notification.stack.DisplaySwitchNotificationsHiderTracker
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
+import com.android.systemui.statusbar.notification.stack.OnboardingAffordanceView
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationStatsLogger
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.HideNotificationsBinder.bindHideList
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.BundleOnboardingViewModel
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationListViewModel
 import com.android.systemui.statusbar.notification.ui.viewbinder.HeadsUpNotificationViewBinder
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
@@ -59,6 +65,7 @@ import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Provider
@@ -68,6 +75,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 
@@ -88,6 +96,8 @@ constructor(
     @SilentHeader private val silentHeaderController: SectionHeaderController,
     private val viewModel: NotificationListViewModel,
     private val systemClock: SystemClock,
+    private val bundleOnboardingBinder: Provider<BundleOnboardingViewBinder>,
+    @Bundles private val bundleOnboardingMgr: OnboardingAffordanceManager,
 ) {
 
     fun bindWhileAttached(
@@ -133,6 +143,14 @@ constructor(
                             viewController.updateVisibleStatusBarChips(chips)
                         }
                     }
+                }
+
+                if (NotificationBundleUi.isEnabled) {
+                    launch { bindBundleOnboarding(view) }
+                }
+
+                if (NotificationSummarizationOnboardingUi.isEnabled) {
+                    launch { bindSummarizationOnboarding(view) }
                 }
 
                 launch { bindLogger(view) }
@@ -309,5 +327,35 @@ constructor(
                 }
             }
         }
+    }
+
+    private suspend fun bindBundleOnboarding(parentView: NotificationStackScrollLayout) {
+        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return
+        val onboardingViewModel: BundleOnboardingViewModel = viewModel.bundleOnboarding
+        onboardingViewModel.showAffordance
+            .flatMapLatestConflated { show ->
+                if (show) {
+                    configuration
+                        .inflateLayout<OnboardingAffordanceView>(
+                            R.layout.onboarding_bundles_affordance,
+                            parentView,
+                            attachToRoot = false,
+                        )
+                        .flowOn(inflationDispatcher)
+                } else {
+                    flowOf(null)
+                }
+            }
+            .collectLatest { onboardingView ->
+                bundleOnboardingMgr.view.value = onboardingView
+                onboardingView?.let {
+                    bundleOnboardingBinder.get().bind(onboardingViewModel, onboardingView)
+                }
+            }
+    }
+
+    private suspend fun bindSummarizationOnboarding(parentView: NotificationStackScrollLayout) {
+        if (NotificationSummarizationOnboardingUi.isUnexpectedlyInLegacyMode()) return
+        // TODO(b/391568054): not yet implemented
     }
 }

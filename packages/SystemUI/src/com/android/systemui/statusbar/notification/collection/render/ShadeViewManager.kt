@@ -20,12 +20,15 @@ import android.content.Context
 import android.view.View
 import com.android.app.tracing.traceSection
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.NotificationSectionsFeatureManager
+import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
+import com.android.systemui.statusbar.notification.Summarization
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.provider.SectionHeaderVisibilityProvider
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import dagger.assisted.Assisted
@@ -48,6 +51,8 @@ constructor(
     shadeViewDifferLogger: ShadeViewDifferLogger,
     private val viewBarn: NotifViewBarn,
     private val bundleBarn: BundleBarn,
+    @Bundles bundleOnboardingAffordanceManager: OnboardingAffordanceManager,
+    @Summarization summaryOnboardingAffordanceManager: OnboardingAffordanceManager,
 ) : PipelineDumpable {
     // We pass a shim view here because the listContainer may not actually have a view associated
     // with it and the differ never actually cares about the root node's view.
@@ -60,6 +65,8 @@ constructor(
             viewBarn,
             bundleBarn,
             nodeSpecBuilderLogger,
+            bundleOnboardingAffordanceManager,
+            summaryOnboardingAffordanceManager,
         )
     private val viewDiffer = ShadeViewDiffer(rootController, shadeViewDifferLogger)
 

@@ -33,11 +33,13 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.currentValue
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.InternalNotificationsApi
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.provider.SectionHeaderVisibilityProvider
 import com.android.systemui.statusbar.notification.collection.render.BundleBarn
 import com.android.systemui.statusbar.notification.collection.render.NodeController
 import com.android.systemui.statusbar.notification.row.data.model.AppData
@@ -47,6 +49,9 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.util.time.SystemClock
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertEquals
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -55,7 +60,11 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, InternalNotificationsApi::class)
+@OptIn(
+    ExperimentalMaterial3ExpressiveApi::class,
+    InternalNotificationsApi::class,
+    ExperimentalCoroutinesApi::class,
+)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
@@ -66,6 +75,11 @@ class BundleCoordinatorTest : SysuiTestCase() {
     @Mock private lateinit var promoController: NodeController
     @Mock private lateinit var bundleBarn: BundleBarn
     @Mock private lateinit var systemClock: SystemClock
+    @Mock private lateinit var sectionHeaderVisProvider: SectionHeaderVisibilityProvider
+
+    private val onboardingMgr by lazy {
+        OnboardingAffordanceManager("test bundle onboarding", sectionHeaderVisProvider)
+    }
 
     private lateinit var coordinator: BundleCoordinator
 
@@ -86,6 +100,8 @@ class BundleCoordinatorTest : SysuiTestCase() {
                 promoController,
                 bundleBarn,
                 systemClock,
+                TestScope(UnconfinedTestDispatcher()),
+                onboardingMgr,
             )
     }
 
