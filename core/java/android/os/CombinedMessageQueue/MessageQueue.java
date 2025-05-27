@@ -2919,6 +2919,7 @@ public final class MessageQueue {
                         msg.target + " sending message to a Handler on a dead thread");
                 Log.w(TAG_C, e.getMessage(), e);
                 msg.recycleUnchecked();
+                decAndTraceMessageCount();
                 return false;
             }
 
