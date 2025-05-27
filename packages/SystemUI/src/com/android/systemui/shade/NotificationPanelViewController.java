@@ -196,7 +196,6 @@ import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
-import com.android.systemui.util.Compile;
 import com.android.systemui.util.Utils;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperFocalAreaViewModel;
@@ -4100,8 +4099,7 @@ public final class NotificationPanelViewController implements
             }
 
             final boolean isTrackpadThreeFingerSwipe = isTrackpadThreeFingerSwipe(event);
-            if (com.android.systemui.Flags.disableShadeTrackpadTwoFingerSwipe()
-                    && !isTrackpadThreeFingerSwipe && isTwoFingerSwipeTrackpadEvent(event)
+            if (!isTrackpadThreeFingerSwipe && isTwoFingerSwipeTrackpadEvent(event)
                     && !isPanelExpanded()) {
                 if (isDown) {
                     mShadeLog.d("ignoring down event for two finger trackpad swipe");

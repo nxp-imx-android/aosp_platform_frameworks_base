@@ -1683,16 +1683,6 @@ flag {
 }
 
 flag {
-  name: "disable_shade_trackpad_two_finger_swipe"
-  namespace: "systemui"
-  description: "Disables expansion of the shade via two finger swipe on a trackpad"
-  bug: "356804470"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
    name: "notification_animated_actions_treatment"
    namespace: "systemui"
    description: "Special UI treatment for animated actions and replys"
