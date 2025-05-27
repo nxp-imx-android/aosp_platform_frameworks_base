@@ -55,9 +55,6 @@ cc_library_shared_for_libandroid_runtime {
     ],
 
     cppflags: ["-Wno-conversion-null"],
-    header_libs: [
-        "libhwui_internal_headers",
-    ],
 
     product_variables: {
         eng: {
