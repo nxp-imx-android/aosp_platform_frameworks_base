@@ -1733,8 +1733,19 @@ public final class Settings {
      * <p>
      * Output: Nothing.
      *
-     * @hide
+     * <p>To prevent interception by third-party applications, system settings apps should implement
+     * the system update functionality that must set a priority higher than default value (0).
+     * Example:
+     *
+     * <pre>{@code
+     * <Activity android:name=".MySystemUpdate">
+     *     <intent-filter android:priority="1">
+     *         <action android:name="android.settings.SYSTEM_UPDATE_SETTINGS" />
+     *     </intent-filter>
+     * </Activity>
+     * }</pre>
      */
+    @FlaggedApi(Flags.FLAG_EXPOSE_SYSTEM_UPDATE_SETTINGS)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_SYSTEM_UPDATE_SETTINGS =
             "android.settings.SYSTEM_UPDATE_SETTINGS";
