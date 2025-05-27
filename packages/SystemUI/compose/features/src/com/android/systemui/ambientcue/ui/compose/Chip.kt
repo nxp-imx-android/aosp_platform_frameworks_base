@@ -18,7 +18,7 @@ package com.android.systemui.ambientcue.ui.compose
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -48,7 +48,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             modifier
                 .clip(RoundedCornerShape(24.dp))
                 .background(backgroundColor)
-                .clickable { action.onClick() }
+                .combinedClickable(onClick = action.onClick, onLongClick = action.onLongClick)
                 .padding(horizontal = 8.dp, vertical = 12.dp),
     ) {
         val painter = rememberDrawablePainter(action.icon)

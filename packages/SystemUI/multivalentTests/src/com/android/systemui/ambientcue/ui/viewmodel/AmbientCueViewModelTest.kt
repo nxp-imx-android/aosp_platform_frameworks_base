@@ -188,6 +188,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
                 label = "Sunday Morning",
                 attribution = null,
                 onPerformAction = {},
+                onPerformLongClick = {},
             )
         )
 

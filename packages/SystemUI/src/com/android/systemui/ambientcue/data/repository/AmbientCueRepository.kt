@@ -172,21 +172,22 @@ constructor(
                                                     activityId.taskId,
                                                 )
                                             } else if (pendingIntent != null) {
-                                                val options = BroadcastOptions.makeBasic()
-                                                options.isInteractive = true
-                                                options.pendingIntentBackgroundActivityStartMode =
-                                                    ActivityOptions
-                                                        .MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                                try {
-                                                    pendingIntent.send(options.toBundle())
-                                                } catch (e: PendingIntent.CanceledException) {
-                                                    Log.e(
-                                                        TAG,
-                                                        "pending intent of $pendingIntent was canceled",
-                                                    )
-                                                }
+                                                launchPendingIntent(pendingIntent)
                                             } else if (intent != null) {
                                                 activityStarter.startActivity(intent, false)
+                                            }
+                                        }
+                                    },
+                                    onPerformLongClick = {
+                                        Log.v(TAG, "AmbientCueRepositoryImpl: onPerformLongClick")
+                                        trace("performAmbientCueLongClick") {
+                                            val pendingIntent =
+                                                chip.extras?.getParcelable<PendingIntent>(
+                                                    EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT
+                                                )
+                                            if (pendingIntent != null) {
+                                                Log.v(TAG, "Performing long click: $pendingIntent")
+                                                launchPendingIntent(pendingIntent)
                                             }
                                         }
                                     },
@@ -220,6 +221,18 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = emptyList(),
             )
+
+    private fun launchPendingIntent(pendingIntent: PendingIntent) {
+        val options = BroadcastOptions.makeBasic()
+        options.isInteractive = true
+        options.pendingIntentBackgroundActivityStartMode =
+            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+        try {
+            pendingIntent.send(options.toBundle())
+        } catch (e: PendingIntent.CanceledException) {
+            Log.e(TAG, "pending intent of $pendingIntent was canceled")
+        }
+    }
 
     override val isGestureNav: StateFlow<Boolean> =
         conflatedCallbackFlow {
@@ -278,9 +291,13 @@ constructor(
     companion object {
         // Surface that PCC wants to push cards into
         @VisibleForTesting const val AMBIENT_CUE_SURFACE = "ambientcue"
+        // In-coming intent extras from the intelligent service.
         @VisibleForTesting const val EXTRA_ACTIVITY_ID = "activityId"
         @VisibleForTesting const val EXTRA_AUTOFILL_ID = "autofillId"
+        @VisibleForTesting
+        const val EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT = "attributionDialogPendingIntent"
         private const val EXTRA_ACTION_TYPE = "actionType"
+
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false

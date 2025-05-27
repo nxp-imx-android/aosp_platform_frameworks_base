@@ -67,6 +67,7 @@ class AmbientCueInteractorTest : SysuiTestCase() {
                         label = "Sunday Morning",
                         attribution = null,
                         onPerformAction = {},
+                        onPerformLongClick = {},
                     )
                 )
             ambientCueRepository.fake.setActions(testActions)
