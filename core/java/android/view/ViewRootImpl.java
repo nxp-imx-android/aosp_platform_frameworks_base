@@ -22,6 +22,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.pm.ActivityInfo.OVERRIDE_SANDBOX_VIEW_BOUNDS_APIS;
 import static android.graphics.HardwareRenderer.SYNC_CONTEXT_IS_STOPPED;
 import static android.graphics.HardwareRenderer.SYNC_LOST_SURFACE_REWARD_IF_FOUND;
+import static android.os.IInputConstants.INVALID_INPUT_EVENT_ID;
 import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.util.SequenceUtils.getInitSeq;
 import static android.util.SequenceUtils.isIncomingSeqStale;
@@ -367,6 +368,13 @@ public final class ViewRootImpl implements ViewParent,
      * this, WindowCallbacks will not fire.
      */
     private static final boolean MT_RENDERER_AVAILABLE = true;
+
+    /**
+     * Whether or not to report end-to-end input latency. Can be disabled temporarily as a
+     * risk mitigation against potential jank caused by acquiring a weak reference
+     * per frame.
+     */
+    private static final boolean ENABLE_INPUT_LATENCY_TRACKING = true;
 
     /**
      * Whether the client (system UI) is handling the transient gesture and the corresponding
@@ -1735,8 +1743,14 @@ public final class ViewRootImpl implements ViewParent,
                         mInputQueueCallback.onInputQueueCreated(mInputQueue);
                     }
                     mInputEventReceiver = new WindowInputEventReceiver(inputChannel,
-                            Looper.myLooper(), mAttachInfo.mThreadedRenderer);
+                            Looper.myLooper());
 
+                    if (ENABLE_INPUT_LATENCY_TRACKING && mAttachInfo.mThreadedRenderer != null) {
+                        InputMetricsListener listener = new InputMetricsListener();
+                        mHardwareRendererObserver = new HardwareRendererObserver(
+                                listener, listener.data, mHandler, true /*waitForPresentTime*/);
+                        mAttachInfo.mThreadedRenderer.addObserver(mHardwareRendererObserver);
+                    }
                     // Update unbuffered request when set the root view.
                     mUnbufferedInputSource = mView.mUnbufferedInputSource;
                 }
@@ -10695,14 +10709,8 @@ public final class ViewRootImpl implements ViewParent,
     final TraversalRunnable mTraversalRunnable = new TraversalRunnable();
 
     final class WindowInputEventReceiver extends InputEventReceiver {
-        private final HardwareRenderer mRenderer;
-        WindowInputEventReceiver(InputChannel inputChannel, Looper looper,
-                HardwareRenderer renderer) {
+        public WindowInputEventReceiver(InputChannel inputChannel, Looper looper) {
             super(inputChannel, looper);
-            mRenderer = renderer;
-            if (mRenderer != null) {
-                mRenderer.addObserver(getNativeFrameMetricsObserver());
-            }
         }
 
         @Override
@@ -10754,14 +10762,43 @@ public final class ViewRootImpl implements ViewParent,
         @Override
         public void dispose() {
             unscheduleConsumeBatchedInput();
-            if (mRenderer != null) {
-                mRenderer.removeObserver(getNativeFrameMetricsObserver());
-            }
             super.dispose();
         }
     }
     private WindowInputEventReceiver mInputEventReceiver;
 
+    final class InputMetricsListener
+            implements HardwareRendererObserver.OnFrameMetricsAvailableListener {
+        public long[] data = new long[FrameMetrics.Index.FRAME_STATS_COUNT];
+
+        @Override
+        public void onFrameMetricsAvailable(int dropCountSinceLastInvocation) {
+            final int inputEventId = (int) data[FrameMetrics.Index.INPUT_EVENT_ID];
+            if (inputEventId == INVALID_INPUT_EVENT_ID) {
+                return;
+            }
+            final long presentTime = data[FrameMetrics.Index.DISPLAY_PRESENT_TIME];
+            if (presentTime <= 0) {
+                // Present time is not available for this frame. If the present time is not
+                // available, we cannot compute end-to-end input latency metrics.
+                return;
+            }
+            final long gpuCompletedTime = data[FrameMetrics.Index.GPU_COMPLETED];
+            if (mInputEventReceiver == null) {
+                return;
+            }
+            if (gpuCompletedTime >= presentTime) {
+                final double discrepancyMs = (gpuCompletedTime - presentTime) * 1E-6;
+                final long vsyncId = data[FrameMetrics.Index.FRAME_TIMELINE_VSYNC_ID];
+                Log.w(TAG, "Not reporting timeline because gpuCompletedTime is " + discrepancyMs
+                        + "ms ahead of presentTime. FRAME_TIMELINE_VSYNC_ID=" + vsyncId
+                        + ", INPUT_EVENT_ID=" + inputEventId);
+                // TODO(b/186664409): figure out why this sometimes happens
+                return;
+            }
+            mInputEventReceiver.reportTimeline(inputEventId, gpuCompletedTime, presentTime);
+        }
+    }
     HardwareRendererObserver mHardwareRendererObserver;
 
     final class ConsumeBatchedInputRunnable implements Runnable {

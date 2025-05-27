@@ -37,7 +37,6 @@ android_test {
         "flag-junit",
         "frameworks-base-testutils",
         "hamcrest-library",
-        "inputtests_aidl-java",
         "junit-params",
         "kotlin-test",
         "mockito-kotlin-nodeps",
@@ -50,9 +49,6 @@ android_test {
         "testng",
         "truth",
         "ui-trace-collector",
-    ],
-    jni_libs: [
-        "libinputtests_jni",
     ],
     libs: [
         "android.test.mock.stubs.system",
