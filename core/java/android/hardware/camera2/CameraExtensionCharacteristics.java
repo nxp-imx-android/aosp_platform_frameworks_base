@@ -829,10 +829,11 @@ public final class CameraExtensionCharacteristics {
                 final IBinder token = new Binder(TAG + "#getSupportedExtensions:" + mCameraId);
                 boolean success = registerClient(mContext, token, extensionType, mCameraId,
                         mCharacteristicsMapNative);
-                if (success && isExtensionSupported(mCameraId, extensionType,
-                        mCharacteristicsMapNative)) {
-                    ret.add(extensionType);
+                if (success) {
                     tokens.put(extensionType, token);
+                    if (isExtensionSupported(mCameraId, extensionType, mCharacteristicsMapNative)) {
+                        ret.add(extensionType);
+                    }
                 }
             }
         } finally {
