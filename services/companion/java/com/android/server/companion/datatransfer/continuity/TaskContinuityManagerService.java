@@ -18,9 +18,11 @@ package com.android.server.companion.datatransfer.continuity;
 
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.content.Context;
+import android.util.Slog;
+
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 
 import com.android.server.SystemService;
-
 
 /**
  * Service to handle task continuity features
@@ -30,25 +32,34 @@ import com.android.server.SystemService;
  */
 public final class TaskContinuityManagerService extends SystemService {
 
+    private static final String TAG = "TaskContinuityManagerService";
+
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskBroadcaster mTaskBroadcaster;
-    private TaskReceiver mTaskReceiver;
+    private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
         mTaskBroadcaster = new TaskBroadcaster(context);
-        mTaskReceiver = new TaskReceiver(context);
+        mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
     }
 
     @Override
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
         mTaskBroadcaster.startBroadcasting();
-        mTaskReceiver.startListening();
+        mTaskContinuityMessageReceiver.startListening(this::onTaskContinuityMessageReceived);
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
 
+    }
+
+    private void onTaskContinuityMessageReceived(
+        int associationId,
+        TaskContinuityMessage taskContinuityMessage) {
+
+        Slog.v(TAG, "Received message from association id: " + associationId);
     }
 }

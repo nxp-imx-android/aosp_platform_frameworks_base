@@ -38,6 +38,10 @@ import android.testing.TestableLooper;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,11 +50,13 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import java.util.ArrayList;
+import java.util.List;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class TaskReceiverTest {
+public class TaskContinuityMessageReceiverTest {
 
     private Context mMockContext;
 
@@ -59,7 +65,9 @@ public class TaskReceiverTest {
 
     private CompanionDeviceManager mCompanionDeviceManager;
 
-    private TaskReceiver mTaskReceiver;
+    private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
+
+    private List<TaskContinuityMessage> receivedMessages;
 
     @Before
     public void setUp() {
@@ -79,26 +87,28 @@ public class TaskReceiverTest {
         when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
             .thenReturn(mCompanionDeviceManager);
 
-        // Create TaskReceiver.
-        mTaskReceiver = new TaskReceiver(mMockContext);
+        receivedMessages = new ArrayList<>();
+
+        // Create TaskContinuityMessageReceiver.
+        mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(mMockContext);
     }
 
     @Test
     public void testStopListening_doesNothingIfNotListening()
         throws Exception {
 
-        mTaskReceiver.stopListening();
+        mTaskContinuityMessageReceiver.stopListening();
         Mockito.verifyNoInteractions(mMockCompanionDeviceManagerService);
     }
 
     @Test
-    public void testStartAndStopListening_registersMessageListener()
+    public void testStartAndStopListening_registersListenersAndFlowsMessages()
         throws Exception {
 
         // Start listening, verifying a message listener is added.
         ArgumentCaptor<IOnMessageReceivedListener> listenerCaptor
             = ArgumentCaptor.forClass(IOnMessageReceivedListener.class);
-        mTaskReceiver.startListening();
+        assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived)).isTrue();
         verify(mMockCompanionDeviceManagerService, times(1))
             .addOnMessageReceivedListener(
                 eq(MESSAGE_TASK_CONTINUITY),
@@ -106,11 +116,47 @@ public class TaskReceiverTest {
         IOnMessageReceivedListener listener = listenerCaptor.getValue();
         assertThat(listener).isNotNull();
 
+        // Send a message to the listener.
+        int expectedAssociationId = 1;
+        int expectedForegroundTaskId = 1;
+        TaskContinuityMessage expectedMessage = new TaskContinuityMessage.Builder()
+            .setData(
+                new ContinuityDeviceConnected(
+                    expectedForegroundTaskId,
+                    new ArrayList<RemoteTaskInfo>()))
+            .build();
+
+        listener.onMessageReceived(expectedAssociationId, expectedMessage.toBytes());
+        TestableLooper.get(this).processAllMessages();
+        assertThat(receivedMessages).hasSize(1);
+        TaskContinuityMessage receivedMessage = receivedMessages.get(0);
+        assertThat(receivedMessage.getData()).isInstanceOf(ContinuityDeviceConnected.class);
+        ContinuityDeviceConnected actualData
+            = (ContinuityDeviceConnected) receivedMessage.getData();
+
+        assertThat(actualData.getCurrentForegroundTaskId())
+            .isEqualTo(expectedForegroundTaskId);
+
         // Stop listening, verifying the message listener is removed.
-        mTaskReceiver.stopListening();
+        mTaskContinuityMessageReceiver.stopListening();
         verify(mMockCompanionDeviceManagerService, times(1))
             .removeOnMessageReceivedListener(
                 eq(MESSAGE_TASK_CONTINUITY),
                 eq(listener));
+    }
+
+    @Test
+    public void testStartListening_returnsFalseIfAlreadyListening()
+        throws Exception {
+
+        assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived))
+            .isTrue();
+
+        assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived))
+            .isFalse();
+    }
+
+    private void onMessageReceived(int associationId, TaskContinuityMessage message) {
+        receivedMessages.add(message);
     }
 }
