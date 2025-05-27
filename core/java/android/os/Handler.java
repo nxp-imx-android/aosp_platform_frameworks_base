@@ -620,6 +620,11 @@ public class Handler {
 
     /**
      * Remove any pending posts of Runnable r that are in the message queue.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to cancel a pending
+     * operation. For instance, maintain a flag to indicate whether the operation should be
+     * performed differently or not at all once it is dispatched.
      */
     public final void removeCallbacks(@NonNull Runnable r) {
         mQueue.removeMessages(this, r, null);
@@ -629,6 +634,11 @@ public class Handler {
      * Remove any pending posts of Runnable <var>r</var> with Object
      * <var>token</var> that are in the message queue.  If <var>token</var> is null,
      * all callbacks will be removed.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to cancel a pending
+     * operation. For instance, maintain a flag to indicate whether the operation should be
+     * performed differently or not at all once it is dispatched.
      */
     public final void removeCallbacks(@NonNull Runnable r, @Nullable Object token) {
         mQueue.removeMessages(this, r, token);
@@ -807,6 +817,11 @@ public class Handler {
      * the `Runnable` is internally wrapped with a `Message` whose `what` is 0.
      * Calling `removeMessages(0)` will remove all messages without a `what`,
      * including posted `Runnable`s.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to cancel a pending
+     * operation. For instance, maintain a flag to indicate whether the operation should be
+     * performed differently or not at all once it is dispatched.
      */
     public final void removeMessages(int what) {
         mQueue.removeMessages(this, what, null);
@@ -816,6 +831,11 @@ public class Handler {
      * Remove any pending posts of messages with code 'what' and whose obj is
      * 'object' that are in the message queue.  If <var>object</var> is null,
      * all messages will be removed.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to cancel a pending
+     * operation. For instance, maintain a flag to indicate whether the operation should be
+     * performed differently or not at all once it is dispatched.
      */
     public final void removeMessages(int what, @Nullable Object object) {
         mQueue.removeMessages(this, what, disallowNullArgumentIfShared(object));
@@ -882,6 +902,11 @@ public class Handler {
     /**
      * Check if there are any pending posts of messages with code 'what' in
      * the message queue.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to track if messages were
+     * enqueued and dispatched. For instance, maintain a counter, incrementing it when enqueuing a
+     * message and decrementing it when handling a message.
      */
     public final boolean hasMessages(int what) {
         return mQueue.hasMessages(this, what, null);
@@ -889,6 +914,12 @@ public class Handler {
 
     /**
      * Return whether there are any messages or callbacks currently scheduled on this handler.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to track if messages were
+     * enqueued and dispatched. For instance, maintain a counter, incrementing it when enqueuing a
+     * message and decrementing it when handling a message.
+     *
      * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
@@ -901,6 +932,11 @@ public class Handler {
     /**
      * Check if there are any pending posts of messages with code 'what' and
      * whose obj is 'object' in the message queue.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to track if messages were
+     * enqueued and dispatched. For instance, maintain a counter, incrementing it when enqueuing a
+     * message and decrementing it when handling a message.
      */
     public final boolean hasMessages(int what, @Nullable Object object) {
         return mQueue.hasMessages(this, what, object);
@@ -909,6 +945,11 @@ public class Handler {
     /**
      * Check if there are any pending posts of messages with code 'what' and
      * whose obj is 'object' in the message queue.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to track if messages were
+     * enqueued and dispatched. For instance, maintain a counter, incrementing it when enqueuing a
+     * message and decrementing it when handling a message.
      *
      *@hide
      */
@@ -919,6 +960,11 @@ public class Handler {
     /**
      * Check if there are any pending posts of messages with callback r in
      * the message queue.
+     *
+     * <p>This operation is worst case O(n) in the number of messages in the queue, and should be
+     * avoided. Instead consider another mechanism outside of the queue to track if messages were
+     * enqueued and dispatched. For instance, maintain a counter, incrementing it when enqueuing a
+     * message and decrementing it when handling a message.
      */
     public final boolean hasCallbacks(@NonNull Runnable r) {
         return mQueue.hasMessages(this, r, null);
