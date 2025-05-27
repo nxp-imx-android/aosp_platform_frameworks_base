@@ -60,14 +60,17 @@ interface PreferenceIconProvider {
     fun getIcon(context: Context): Int
 }
 
-/**
- * Interface to provide the state of preference availability.
- *
- * UI framework normally does not show the preference widget if it is unavailable.
- */
+/** Interface to provide the state of preference availability. */
 interface PreferenceAvailabilityProvider {
 
-    /** Returns if the preference is available. */
+    /**
+     * Returns if the preference is available.
+     *
+     * When unavailable (i.e. `false` returned),
+     * - UI framework normally does not show the preference widget.
+     * - If it is a preference screen, all children may be disabled (depends on UI framework
+     *   implementation).
+     */
     fun isAvailable(context: Context): Boolean
 }
 
