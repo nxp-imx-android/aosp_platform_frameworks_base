@@ -101,6 +101,7 @@ import com.android.systemui.util.Assert.runWithCurrentThreadAsMainThread
 import com.android.systemui.util.DeviceConfigProxyFake
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.util.time.fakeSystemClock
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -331,7 +332,11 @@ class ExpandableNotificationRowBuilder(
             { Mockito.mock(NotificationViewFlipperFactory::class.java) },
             NotificationRowIconViewInflaterFactory(
                 kosmos.mockAppIconProvider,
-                NotificationIconStyleProviderImpl(mUserManager, kosmos.dumpManager),
+                NotificationIconStyleProviderImpl(
+                    mUserManager,
+                    kosmos.dumpManager,
+                    kosmos.fakeSystemClock,
+                ),
             ),
         )
     }
