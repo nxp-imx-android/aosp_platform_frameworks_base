@@ -155,7 +155,7 @@
                         android:textSize="16sp"
                         android:textColor="@androidprv:color/materialColorOnSecondaryContainer"
                         android:lineSpacingExtra="4sp"
-                        android:text="@string/notification_guts_bundle_title"/>
+                        android:text="@string/notification_guts_single_bundle_notif_title"/>
                     <TextView
                         android:id="@+id/feature_summary"
                         android:layout_width="wrap_content"
