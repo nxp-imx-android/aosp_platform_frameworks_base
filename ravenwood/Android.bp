@@ -348,26 +348,23 @@ java_library {
     visibility: ["//visibility:private"],
 }
 
-java_library {
+// On Ravenwood, we now use Mockito 5 throughout.
+// Mockito 5 doesn't have an "inline-*" module, which only contained a "marker" file
+// which would signal Mockito 4 used inline-mockito.
+// Mockito 5 uses the "inline" storategy by default, so we no longer need an "inline"
+// module.
+// However, because we can't delete an existing jar in the runtime directory
+// for b/418236847, we still keep "inline-mockito-ravenwood-prebuilt" as an empty jar.
+java_import {
     name: "mockito-ravenwood-prebuilt",
-    installable: false,
-    static_libs: [
-        "mockito-robolectric-prebuilt",
-    ],
-    // TODO(b/412720779) Change this and all dependencies' sdk_version to "core_current",
-    // after making sure none of them use Android APIs.
-    sdk_version: "current",
+    jars: [":mockito5-hostside-prebuilt"],
+    sdk_version: "core_current",
 }
 
 java_library {
     name: "inline-mockito-ravenwood-prebuilt",
     installable: false,
-    static_libs: [
-        "inline-mockito-robolectric-prebuilt",
-    ],
-    // TODO(b/412720779) Change this and all dependencies' sdk_version to "core_current",
-    // after making sure none of them use Android APIs.
-    sdk_version: "current",
+    sdk_version: "core_current",
 }
 
 // We define our own version of platform_compat_config's here, because:
