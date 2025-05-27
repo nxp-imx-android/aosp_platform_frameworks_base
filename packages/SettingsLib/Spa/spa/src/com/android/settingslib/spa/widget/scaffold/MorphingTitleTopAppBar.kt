@@ -33,7 +33,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -48,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
@@ -62,10 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp as lerpDp
 import androidx.compose.ui.util.lerp
-import com.android.settingslib.spa.framework.theme.SettingsDimension
-import com.android.settingslib.spa.framework.theme.SettingsSize
 import com.android.settingslib.spa.framework.theme.SettingsSpace
 import kotlin.math.roundToInt
 
@@ -194,11 +191,8 @@ private fun TwoRowsTopAppBar(
     // Interpolated properties for the single title
     val interpolatedTextStyle =
         lerpTextStyle(expandedTextStyle, collapsedTextStyle, collapsedFraction)
-    val expandedTitlePaddingStart = SettingsSpace.small4 // Left padding
-    val collapsedTitlePaddingStart =
-        expandedTitlePaddingStart + SettingsSize.medium3 + SettingsSpace.small3 // Icon + padding
-    val interpolatedPaddingStart =
-        lerpDp(expandedTitlePaddingStart, collapsedTitlePaddingStart, collapsedFraction)
+    val navigationIconPaddingStart = SettingsSpace.small3
+    val expandedTitlePaddingStart = SettingsSpace.small4
     val currentMaxLines =
         if (collapsedFraction < 0.5f) expandedTitleMaxLines else collapsedTitleMaxLines
 
@@ -212,7 +206,7 @@ private fun TwoRowsTopAppBar(
     ) {
         Layout(
             content = {
-                Box(Modifier.layoutId("navigationIcon").padding(start = SettingsSpace.small3)) {
+                Box(Modifier.layoutId("navigationIcon")) {
                     CompositionLocalProvider(
                         LocalContentColor provides colors.navigationIconContentColor,
                         content = navigationIcon,
@@ -220,21 +214,12 @@ private fun TwoRowsTopAppBar(
                 }
 
                 Box(Modifier.layoutId("title")) {
-                    ProvideTextStyle(value = interpolatedTextStyle) {
-                        CompositionLocalProvider(
-                            LocalContentColor provides colors.titleContentColor,
-                            localDensityDisableFontScale(),
-                        ) {
-                            Text(
-                                text = titleText,
-                                modifier =
-                                    Modifier.padding(end = SettingsDimension.itemPaddingEnd)
-                                        .semantics { heading() },
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = currentMaxLines,
-                            )
-                        }
-                    }
+                    Title(
+                        text = titleText,
+                        color = colors.titleContentColor,
+                        maxLines = currentMaxLines,
+                        textStyle = interpolatedTextStyle,
+                    )
                 }
 
                 Box(Modifier.layoutId("actionIcons").padding(end = TopAppBarHorizontalPadding)) {
@@ -255,10 +240,22 @@ private fun TwoRowsTopAppBar(
                     .first { it.layoutId == "actionIcons" }
                     .measure(constraints.copy(minWidth = 0))
 
-            val titleHorizontalPaddingPx =
+            val collapsedTitlePaddingStartPx =
                 density.run {
-                    interpolatedPaddingStart.toPx() + SettingsDimension.itemPaddingEnd.toPx()
+                    val navigationIconWidth = navigationIconPlaceable.width
+                    if (navigationIconWidth > 0) {
+                        navigationIconWidth + SettingsSpace.small3.toPx() // Icon + padding
+                    } else {
+                        0f
+                    }
                 }
+            val interpolatedPaddingStartPx =
+                density.run {
+                    expandedTitlePaddingStart.toPx() +
+                        collapsedTitlePaddingStartPx * collapsedFraction
+                }
+            val titleHorizontalPaddingPx =
+                density.run { interpolatedPaddingStartPx + SettingsSpace.small1.toPx() }
             val titleMaxWidth =
                 (constraints.maxWidth -
                         collapsedFraction * actionIconsPlaceable.width -
@@ -276,7 +273,7 @@ private fun TwoRowsTopAppBar(
 
             layout(layoutWidth, layoutHeight) {
                 navigationIconPlaceable.placeRelative(
-                    x = 0,
+                    x = navigationIconPaddingStart.toPx().roundToInt(),
                     y = ((pinnedHeightPx - navigationIconPlaceable.height) / 2f).roundToInt(),
                 )
 
@@ -296,16 +293,26 @@ private fun TwoRowsTopAppBar(
 
                 val interpolatedTitleY = lerp(titleYExpanded, titleYCollapsed, collapsedFraction)
 
-                // Calculate X position for the title
-                // Similar to TopAppBarLayout: place after nav icon, respecting TopAppBarTitleInset
-                val titleX = density.run { interpolatedPaddingStart.toPx() }
-
                 titlePlaceable.placeRelative(
-                    x = titleX.roundToInt(),
+                    x = interpolatedPaddingStartPx.roundToInt(),
                     y = interpolatedTitleY.roundToInt(),
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun Title(text: String, color: Color, maxLines: Int, textStyle: TextStyle) {
+    CompositionLocalProvider(localDensityDisableFontScale()) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(end = SettingsSpace.small1).semantics { heading() },
+            color = color,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = maxLines,
+            style = textStyle,
+        )
     }
 }
 
