@@ -45,12 +45,9 @@ import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.service.gatekeeper.GateKeeperResponse;
 import android.text.TextUtils;
 
 import androidx.test.filters.SmallTest;
@@ -744,7 +741,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         VerifyCredentialResponse response = mService.verifyCredential(credential, userId,
                 0 /* flags */);
 
-        assertEquals(GateKeeperResponse.RESPONSE_OK, response.getResponseCode());
+        assertEquals(VerifyCredentialResponse.RESPONSE_OK, response.getResponseCode());
         if (credential.isPassword()) {
             assertEquals(CREDENTIAL_TYPE_PASSWORD, mService.getCredentialType(userId));
         } else if (credential.isPin()) {
@@ -762,8 +759,9 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         } else {
             badCredential = LockscreenCredential.createPin("0");
         }
-        assertEquals(GateKeeperResponse.RESPONSE_ERROR, mService.verifyCredential(
-                badCredential, userId, 0 /* flags */).getResponseCode());
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_ERROR,
+                mService.verifyCredential(badCredential, userId, 0 /* flags */).getResponseCode());
     }
 
     private void setAndVerifyCredential(int userId, LockscreenCredential newCredential)
