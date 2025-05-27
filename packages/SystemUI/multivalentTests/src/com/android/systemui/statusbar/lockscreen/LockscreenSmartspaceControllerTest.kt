@@ -273,7 +273,7 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
         // THEN the session is created
         verify(smartspaceManager).createSmartspaceSession(any())
         // THEN an event notifier is registered
-        verify(plugin).registerSmartspaceEventNotifier(any())
+        verify(plugin).setEventDispatcher(any())
     }
 
     @Test
@@ -320,10 +320,10 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
         // THEN the listener receives an empty list of targets and unregisters the notifier
         verify(plugin).onTargetsAvailable(emptyList())
-        verify(plugin).registerSmartspaceEventNotifier(null)
+        verify(plugin).setEventDispatcher(null)
         verify(weatherPlugin).onTargetsAvailable(emptyList())
-        verify(weatherPlugin).registerSmartspaceEventNotifier(null)
-        verify(datePlugin).registerSmartspaceEventNotifier(null)
+        verify(weatherPlugin).setEventDispatcher(null)
+        verify(datePlugin).setEventDispatcher(null)
     }
 
     @Test
@@ -977,10 +977,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
                 override fun setDozeAmount(amount: Float) {}
 
-                override fun setIntentStarter(
-                    intentStarter: BcSmartspaceDataPlugin.IntentStarter?
-                ) {}
-
                 override fun setFalsingManager(falsingManager: FalsingManager?) {}
 
                 override fun setDnd(image: Drawable?, description: String?) {}
@@ -1008,10 +1004,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
 
                 override fun setDozeAmount(amount: Float) {}
 
-                override fun setIntentStarter(
-                    intentStarter: BcSmartspaceDataPlugin.IntentStarter?
-                ) {}
-
                 override fun setFalsingManager(falsingManager: FalsingManager?) {}
             }
         )
@@ -1037,10 +1029,6 @@ class LockscreenSmartspaceControllerTest : SysuiTestCase() {
                 override fun setDozeAmount(amount: Float) {}
 
                 override fun setKeyguardBypassEnabled(enabled: Boolean) {}
-
-                override fun setIntentStarter(
-                    intentStarter: BcSmartspaceDataPlugin.IntentStarter?
-                ) {}
 
                 override fun setFalsingManager(falsingManager: FalsingManager?) {}
 

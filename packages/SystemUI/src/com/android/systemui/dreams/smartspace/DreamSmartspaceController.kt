@@ -218,8 +218,8 @@ constructor(
         newSession?.addOnTargetsAvailableListener(uiExecutor, sessionListener)
         this.session = newSession
 
-        weatherPlugin?.registerSmartspaceEventNotifier { e -> session?.notifySmartspaceEvent(e) }
-        plugin?.registerSmartspaceEventNotifier { e -> session?.notifySmartspaceEvent(e) }
+        weatherPlugin?.setEventDispatcher { e -> session?.notifySmartspaceEvent(e) }
+        plugin?.setEventDispatcher { e -> session?.notifySmartspaceEvent(e) }
 
         reloadSmartspace()
     }
@@ -241,10 +241,10 @@ constructor(
 
         session = null
 
-        weatherPlugin?.registerSmartspaceEventNotifier(null)
+        weatherPlugin?.setEventDispatcher(null)
         weatherPlugin?.onTargetsAvailable(emptyList())
 
-        plugin?.registerSmartspaceEventNotifier(null)
+        plugin?.setEventDispatcher(null)
         plugin?.onTargetsAvailable(emptyList())
         Log.d(TAG, "Ending smartspace session for dream")
     }
