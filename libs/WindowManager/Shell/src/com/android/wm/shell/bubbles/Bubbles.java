@@ -313,6 +313,33 @@ public interface Bubbles {
     boolean canShowBubbleNotification();
 
     /**
+     * Returns the string representation of the given dismiss reason.
+     */
+    public static String dismissReasonToString(@DismissReason int dismissReason) {
+        switch (dismissReason) {
+            case DISMISS_USER_GESTURE: return "USER_GESTURE";
+            case DISMISS_AGED: return "AGED";
+            case DISMISS_TASK_FINISHED: return "TASK_FINISHED";
+            case DISMISS_BLOCKED: return "BLOCKED";
+            case DISMISS_NOTIF_CANCEL: return "NOTIF_CANCEL";
+            case DISMISS_ACCESSIBILITY_ACTION: return "ACCESSIBILITY_ACTION";
+            case DISMISS_NO_LONGER_BUBBLE: return "NO_LONGER_BUBBLE";
+            case DISMISS_USER_CHANGED: return "USER_CHANGED";
+            case DISMISS_GROUP_CANCELLED: return "GROUP_CANCELLED";
+            case DISMISS_INVALID_INTENT: return "INVALID_INTENT";
+            case DISMISS_OVERFLOW_MAX_REACHED: return "OVERFLOW_MAX_REACHED";
+            case DISMISS_SHORTCUT_REMOVED: return "SHORTCUT_REMOVED";
+            case DISMISS_PACKAGE_REMOVED: return "PACKAGE_REMOVED";
+            case DISMISS_NO_BUBBLE_UP: return "NO_BUBBLE_UP";
+            case DISMISS_RELOAD_FROM_DISK: return "RELOAD_FROM_DISK";
+            case DISMISS_USER_ACCOUNT_REMOVED: return "USER_ACCOUNT_REMOVED";
+            case DISMISS_SWITCH_TO_STACK: return "SWITCH_TO_STACK";
+            case DISMISS_USER_GESTURE_FROM_LAUNCHER: return "USER_GESTURE_FROM_LAUNCHER";
+            default: return "UNKNOWN";
+        }
+    }
+
+    /**
      * A listener to be notified of bubble state changes, used by launcher to render bubbles in
      * its process.
      */
