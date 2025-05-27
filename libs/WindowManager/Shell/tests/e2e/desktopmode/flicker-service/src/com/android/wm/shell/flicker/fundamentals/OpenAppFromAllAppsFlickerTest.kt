@@ -39,10 +39,12 @@ import com.android.wm.shell.scenarios.OpenAppFromAllApps
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class OpenAppFromAllAppsFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
+    inner class OpenAppFromAllAppsScenario : OpenAppFromAllApps(flicker.scenario.startRotation)
+
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
-    val scenario = OpenAppFromAllApps()
+    val scenario = OpenAppFromAllAppsScenario()
     private val openedApp = scenario.calculatorApp
 
     override val transition: FlickerBuilder.() -> Unit

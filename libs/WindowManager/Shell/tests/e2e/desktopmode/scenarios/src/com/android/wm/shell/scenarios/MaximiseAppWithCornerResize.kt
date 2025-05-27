@@ -29,7 +29,6 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper.AppProperty
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
@@ -50,7 +49,7 @@ abstract class MaximiseAppWithCornerResize(
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val maxResizeChange = 3000
-    private val testApp =
+    val testApp =
         DesktopModeAppHelper(
             when (appProperty) {
                 AppProperty.STANDARD -> SimpleAppHelper(instrumentation)
