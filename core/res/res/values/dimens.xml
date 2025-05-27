@@ -408,10 +408,12 @@
     <dimen name="notification_header_expand_icon_size">56dp</dimen>
 
     <!-- Margin to allow space for the expand button when showing the right icon in expanded -->
-    <!-- notifications. This is equal to notification_2025_expand_button_pill_width -->
-    <!-- + notification_2025_margin (end padding for expand button) -->
-    <!-- + notification_2025_expand_button_right_icon_spacing (space between pill and icon) -->
-    <dimen name="notification_2025_right_icon_expanded_margin_end">52dp</dimen>
+    <!-- notifications. The notification_2025_extra_space_for_expander should be used in -->
+    <!-- addition to this to ensure the spacing adjusts with the font size accordingly -->
+    <dimen name="notification_2025_right_icon_expanded_margin_end">42dp</dimen>
+
+    <!-- sp-based additional spacing for the expand button, to scale with the font size -->
+    <dimen name="notification_2025_extra_space_for_expander">10sp</dimen>
 
     <!-- The large icon has a smaller vertical margin than most other notification content, to -->
     <!-- allow it to grow up to 48dp. -->

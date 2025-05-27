@@ -6319,14 +6319,14 @@ public class Notification implements Parcelable
                 // No expander is shown in promoted notifications
                 spaceForExpanderDp = 0;
             } else {
-                final int expanderSizeRes;
                 if (notificationsRedesignTemplates()) {
-                    expanderSizeRes = R.dimen.notification_2025_right_icon_expanded_margin_end;
+                    spaceForExpanderDp = getLargeIconMarginEnd(mParams) / density
+                            - notificationMarginDp;
                 } else {
-                    expanderSizeRes =  R.dimen.notification_header_expand_icon_size;
+                    spaceForExpanderDp = resources.getDimension(
+                            R.dimen.notification_header_expand_icon_size) / density
+                            - contentMarginDp;
                 }
-                spaceForExpanderDp = resources.getDimension(
-                        expanderSizeRes) / density - contentMarginDp;
             }
 
             final float viewHeightDp = resources.getDimension(
@@ -6420,8 +6420,11 @@ public class Notification implements Parcelable
             }
 
             if (notificationsRedesignTemplates()) {
-                return res.getDimensionPixelSize(
+                int rightIconMarginPx = res.getDimensionPixelSize(
                         R.dimen.notification_2025_right_icon_expanded_margin_end);
+                int extraSpaceForExpanderPx = res.getDimensionPixelSize(
+                        R.dimen.notification_2025_extra_space_for_expander);
+                return rightIconMarginPx + extraSpaceForExpanderPx;
             } else {
                 return res.getDimensionPixelSize(R.dimen.notification_header_expand_icon_size);
             }
