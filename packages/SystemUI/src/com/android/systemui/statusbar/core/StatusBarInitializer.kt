@@ -78,6 +78,8 @@ interface StatusBarInitializer : CoreStartable {
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
             statusBarConfigurationController: StatusBarConfigurationController,
             darkIconDispatcher: DarkIconDispatcher,
+            collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
+            componentFactory: HomeStatusBarComponent.Factory,
         ): StatusBarInitializer
     }
 }
@@ -89,9 +91,9 @@ constructor(
     @Assisted private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
     @Assisted private val statusBarConfigurationController: StatusBarConfigurationController,
     @Assisted private val darkIconDispatcher: DarkIconDispatcher,
-    private val collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
+    @Assisted private val collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
     private val statusBarRootFactory: StatusBarRootFactory,
-    private val componentFactory: HomeStatusBarComponent.Factory,
+    @Assisted private val componentFactory: HomeStatusBarComponent.Factory,
     private val creationListeners: Set<@JvmSuppressWildcards OnStatusBarViewInitializedListener>,
 ) : StatusBarInitializer {
     private var component: HomeStatusBarComponent? = null
@@ -213,6 +215,8 @@ constructor(
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
             statusBarConfigurationController: StatusBarConfigurationController,
             darkIconDispatcher: DarkIconDispatcher,
+            collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
+            componentFactory: HomeStatusBarComponent.Factory,
         ): StatusBarInitializerImpl
     }
 }
