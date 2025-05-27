@@ -53,6 +53,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.Preconditions;
 import com.android.internal.widget.ICheckCredentialProgressCallback;
 import com.android.internal.widget.IWeakEscrowTokenRemovedListener;
@@ -2172,5 +2173,23 @@ class SyntheticPasswordManager {
         buffer.putInt(hashInt(count));
         saveState(WRONG_GUESS_COUNTER_NAME, buffer.array(), id.protectorId, id.userId);
         syncState(id.userId);
+    }
+
+    /** Retrieves the type of hardware rate-limiter used by a particular LSKF. */
+    public int getHardwareRateLimiter(LskfIdentifier id) {
+        if (id.isSpecialCredential()) {
+            return switch (getSpecialUserPersistentData(id.userId).type) {
+                case PersistentData.TYPE_SP_GATEKEEPER -> FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__GATEKEEPER;
+                case PersistentData.TYPE_SP_WEAVER -> FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
+                default -> FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__UNSPECIFIED_RATELIMITER;
+            };
+        }
+        if (hasState(WEAVER_SLOT_NAME, id.protectorId, id.userId)) {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
+        }
+        return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__GATEKEEPER;
     }
 }
