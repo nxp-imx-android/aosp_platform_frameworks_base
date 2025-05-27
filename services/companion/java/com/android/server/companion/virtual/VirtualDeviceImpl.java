@@ -16,6 +16,7 @@
 
 package com.android.server.companion.virtual;
 
+import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
@@ -1256,15 +1257,25 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
 
     @Override
     public boolean canCreateMirrorDisplays() {
-        if (android.companion.virtualdevice.flags.Flags.enableLimitedVdmRole()
-                && CompatChanges.isChangeEnabled(CHECK_ADD_MIRROR_DISPLAY_PERMISSION,
-                    mOwnerPackageName,  UserHandle.getUserHandleForUid(mOwnerUid))) {
-          return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
-              == PackageManager.PERMISSION_GRANTED;
+        if (Flags.computerControlAccess()
+                && (mContext.checkCallingOrSelfPermission(ACCESS_COMPUTER_CONTROL)
+                        == PackageManager.PERMISSION_GRANTED)) {
+            return true;
         }
 
-      // If the VDM owner app targets B or earlier, we rely on the role instead of the permission.
-      return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(getDeviceProfile());
+        if (Flags.enableLimitedVdmRole()
+                && CompatChanges.isChangeEnabled(CHECK_ADD_MIRROR_DISPLAY_PERMISSION,
+                    mOwnerPackageName, UserHandle.getUserHandleForUid(mOwnerUid))) {
+            return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
+                    == PackageManager.PERMISSION_GRANTED;
+        }
+
+        // If the VDM owner app targets B or earlier, we rely on the role instead of the permission.
+        String deviceProfile = getDeviceProfile();
+        if (deviceProfile == null) {
+            return false;
+        }
+        return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(deviceProfile);
     }
 
     private boolean hasCustomAudioInputSupportInternal() {
