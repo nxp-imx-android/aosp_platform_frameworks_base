@@ -584,21 +584,25 @@ public class AudioDeviceInventory {
 
     final List<AudioProductStrategy> mStrategies;
 
-    /*package*/ AudioDeviceInventory(@NonNull AudioDeviceBroker broker) {
-        this(broker, AudioSystemAdapter.getDefaultAdapter());
+    /*package*/ AudioDeviceInventory(@NonNull AudioDeviceBroker broker,
+            List<AudioProductStrategy> strategies) {
+        this(broker, AudioSystemAdapter.getDefaultAdapter(), strategies);
     }
 
     //-----------------------------------------------------------
     /** for mocking only, allows to inject AudioSystem adapter */
-    /*package*/ AudioDeviceInventory(@NonNull AudioSystemAdapter audioSystem) {
-        this(null, audioSystem);
+    /*package*/ AudioDeviceInventory(@NonNull AudioSystemAdapter audioSystem,
+            List<AudioProductStrategy> strategies) {
+        this(null, audioSystem, strategies);
     }
 
     private AudioDeviceInventory(@Nullable AudioDeviceBroker broker,
-                       @Nullable AudioSystemAdapter audioSystem) {
+            @Nullable AudioSystemAdapter audioSystem,
+            List<AudioProductStrategy> strategies) {
         mDeviceBroker = broker;
         mAudioSystem = audioSystem;
-        mStrategies = AudioProductStrategy.getAudioProductStrategies();
+        mStrategies = Objects.requireNonNull(strategies,
+                "Audio product strategies must not be null");
         mBluetoothDualModeEnabled = SystemProperties.getBoolean(
                 "persist.bluetooth.enable_dual_mode_audio", false);
     }

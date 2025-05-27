@@ -57,7 +57,7 @@ public class AudioProductStrategyTest {
     @Test
     public void testGetProductStrategies() {
         List<AudioProductStrategy> audioProductStrategies =
-                AudioProductStrategy.getAudioProductStrategies();
+                AudioManager.getAudioProductStrategies();
 
         assertNotNull(audioProductStrategies);
         assertTrue(audioProductStrategies.size() > 0);
@@ -89,7 +89,7 @@ public class AudioProductStrategyTest {
     @Test
     public void testAudioAttributesFromStreamTypes() throws Exception {
         List<AudioProductStrategy> audioProductStrategies =
-                AudioProductStrategy.getAudioProductStrategies();
+                AudioManager.getAudioProductStrategies();
 
         assertNotNull(audioProductStrategies);
         assertTrue(audioProductStrategies.size() > 0);
@@ -164,7 +164,7 @@ public class AudioProductStrategyTest {
     @Test
     public void testAudioAttributesToStreamTypes() {
         List<AudioProductStrategy> audioProductStrategies =
-                AudioProductStrategy.getAudioProductStrategies();
+                AudioManager.getAudioProductStrategies();
 
         assertNotNull(audioProductStrategies);
         assertTrue(audioProductStrategies.size() > 0);
@@ -239,7 +239,7 @@ public class AudioProductStrategyTest {
     public void testEquals() {
         final EqualsTester equalsTester = new EqualsTester();
 
-        AudioProductStrategy.getAudioProductStrategies().forEach(
+        AudioManager.getAudioProductStrategies().forEach(
                 strategy -> equalsTester.addEqualityGroup(strategy,
                         writeToAndFromParcel(strategy)));
 

@@ -19,19 +19,24 @@ package android.media.audiopolicy;
 import static android.media.audiopolicy.AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
 import static android.media.audiopolicy.Flags.multiZoneAudio;
 
+import android.Manifest;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioSystem;
+import android.media.IAudioService;
+import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.text.TextUtils;
 import android.util.Log;
-
-import com.android.internal.annotations.GuardedBy;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -111,30 +116,15 @@ public final class AudioProductStrategy implements Parcelable {
      */
     private int mZoneId = DEFAULT_ZONE_ID;
 
-    private static final Object sLock = new Object();
+    private static IAudioService sService;
 
-    @GuardedBy("sLock")
-    private static volatile List<AudioProductStrategy> sAudioProductStrategies;
-
-    /**
-     * @hide
-     * @return an immutable list of AudioProductStrategy discovered from platform configuration
-     * file. or an empty list on error (if audioserver is unavailable).
-     */
-    @NonNull
-    public static List<AudioProductStrategy> getAudioProductStrategies() {
-        if (sAudioProductStrategies == null) {
-            synchronized (sLock) {
-                if (sAudioProductStrategies == null) {
-                    sAudioProductStrategies = initializeAudioProductStrategies();
-                }
-            }
+    private static IAudioService getService() {
+        if (sService != null) {
+            return sService;
         }
-        if (sAudioProductStrategies == null) {
-            return Collections.emptyList();
-        } else {
-            return sAudioProductStrategies;
-        }
+        IBinder b = ServiceManager.getService(Context.AUDIO_SERVICE);
+        sService = IAudioService.Stub.asInterface(b);
+        return sService;
     }
 
     /**
@@ -164,10 +154,17 @@ public final class AudioProductStrategy implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public static int getZoneIdForAudioVolumeGroupId(int groupId) {
-        for (AudioProductStrategy strategy : getAudioProductStrategies()) {
+        List<AudioProductStrategy> strategies =
+                getAudioProductStrategiesFromService(/* filterInternal= */ true);
+        for (AudioProductStrategy strategy : strategies) {
             for (AudioAttributesGroup aag : strategy.mAudioAttributesGroups) {
                 if (aag.mVolumeGroupId == groupId) {
                     return strategy.getZoneId();
@@ -189,8 +186,13 @@ public final class AudioProductStrategy implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     @Nullable
     public static AudioProductStrategy getAudioProductStrategyForAudioAttributes(
             @NonNull AudioAttributes attributes, int zoneId, boolean fallbackOnDefault) {
@@ -207,7 +209,9 @@ public final class AudioProductStrategy implements Parcelable {
      *     exists.
      */
     public static @Nullable AudioProductStrategy getAudioProductStrategyWithId(int id) {
-        for (AudioProductStrategy strategy : getAudioProductStrategies()) {
+        List<AudioProductStrategy> strategies =
+                getAudioProductStrategiesFromService(/* filterInternal= */ true);
+        for (AudioProductStrategy strategy : strategies) {
             if (strategy.getId() == id) {
                 return strategy;
             }
@@ -224,10 +228,17 @@ public final class AudioProductStrategy implements Parcelable {
      * @hide
      */
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public static @NonNull AudioProductStrategy createInvalidAudioProductStrategy(int id) {
-        ArrayList<AudioProductStrategy> apsList = new ArrayList<>();
-        native_list_audio_product_strategies(apsList);
-        return new AudioProductStrategy("invalid strategy", apsList.size() + 1,
+        // Must keep all audio product strategies to prevent collisions with internal
+        List<AudioProductStrategy> strategies =
+                getAudioProductStrategiesFromService(/* filterInternal= */ false);
+        return new AudioProductStrategy("invalid strategy", strategies.size() + 1,
                 DEFAULT_ZONE_ID, new AudioAttributesGroup[0]);
     }
 
@@ -241,43 +252,25 @@ public final class AudioProductStrategy implements Parcelable {
     @NonNull
     public static AudioAttributes getAudioAttributesForStrategyWithLegacyStreamType(
             int streamType) {
-        for (AudioProductStrategy productStrategy : getAudioProductStrategies()) {
-            AudioAttributes aa = productStrategy.getAudioAttributesForLegacyStreamType(streamType);
-            if (aa != null) {
-                return aa;
-            }
-        }
-        return DEFAULT_ATTRIBUTES;
+        AudioAttributes.Builder builder = new AudioAttributes.Builder();
+        native_get_audio_attributes_for_legacy_stream(streamType, builder);
+        return builder.build();
     }
 
     /**
      * @param audioAttributes to identify {@link AudioProductStrategy} with
      * @return legacy stream type associated with matched {@link AudioProductStrategy}. If no
      *              strategy found or found {@link AudioProductStrategy} does not have associated
-     *              legacy stream (i.e. associated with {@link AudioSystem#STREAM_DEFAULT}) defaults
-     *              to {@link AudioSystem#STREAM_MUSIC}
+     *              legacy stream defaults to {@link AudioSystem#STREAM_MUSIC}
      *
      * @hide
      */
     public static int getLegacyStreamTypeForStrategyWithAudioAttributes(
             @NonNull AudioAttributes audioAttributes) {
         Objects.requireNonNull(audioAttributes, "AudioAttributes must not be null");
-        boolean fallbackOnDefault = true;
-
-        AudioAttributesGroup aag = getAudioAttributesGroupForAttributes(audioAttributes,
-                DEFAULT_ZONE_ID, fallbackOnDefault);
-
-        if (aag != null) {
-            int streamType = aag.getStreamType();
-            if (streamType == AudioSystem.STREAM_DEFAULT) {
-                Log.w(TAG, "Attributes " + audioAttributes + " supported by strategy "
-                        + aag.getStrategyId() + " have no associated stream type, "
-                        + "therefore falling back to STREAM_MUSIC");
-                return AudioSystem.STREAM_MUSIC;
-            }
-            if (streamType < AudioSystem.getNumStreamTypes()) {
-                return streamType;
-            }
+        int streamType = native_get_legacy_stream_for_audio_attributes(audioAttributes);
+        if (streamType < AudioSystem.getNumStreamTypes()) {
+            return streamType;
         }
         return AudioSystem.STREAM_MUSIC;
     }
@@ -317,13 +310,31 @@ public final class AudioProductStrategy implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public static int getVolumeGroupIdForAudioAttributes(
             @NonNull AudioAttributes attributes, int zoneId, boolean fallbackOnDefault) {
         AudioAttributesGroup aag = getAudioAttributesGroupForAttributes(attributes, zoneId,
                 fallbackOnDefault);
         return aag != null ? aag.getVolumeGroupId() : DEFAULT_VOLUME_GROUP;
+    }
+
+    /**
+     * Filters internal product strategies.
+     * @param strategies input list of product strategies that will be filtered
+     * @return non-modifiable list of product strategies without internal strategies
+     *
+     * @hide
+     */
+    public static List<AudioProductStrategy> filterNonInternalStrategies(
+            List<AudioProductStrategy> strategies) {
+        strategies.removeIf(AudioProductStrategy::isInternalStrategy);
+        return Collections.unmodifiableList(strategies);
     }
 
     private static boolean isDefaultMatchScore(int matchScore) {
@@ -346,7 +357,9 @@ public final class AudioProductStrategy implements Parcelable {
         Objects.requireNonNull(attributes, "attributes must not be null");
         int matchScore = NO_MATCH;
         AudioAttributesGroup bestAudioAttributesGroupOrDefault = null;
-        for (AudioProductStrategy productStrategy : getAudioProductStrategies()) {
+        List<AudioProductStrategy> strategies =
+                getAudioProductStrategiesFromService(/* filterInternal= */ true);
+        for (AudioProductStrategy productStrategy : strategies) {
             ScoredAudioAttributesGroup scoredAag =
                     productStrategy.getScoredAttributeGroupForAttribute(attributes, zoneId);
             int score = scoredAag.getScore();
@@ -368,7 +381,9 @@ public final class AudioProductStrategy implements Parcelable {
         Objects.requireNonNull(attributes, "attributes must not be null");
         int matchScore = NO_MATCH;
         AudioAttributesGroup bestAudioAttributesGroupOrDefault = null;
-        for (AudioProductStrategy productStrategy : getAudioProductStrategies()) {
+        List<AudioProductStrategy> strategies =
+                getAudioProductStrategiesFromService(/* filterInternal= */ true);
+        for (AudioProductStrategy productStrategy : strategies) {
             ScoredAudioAttributesGroup scoredAag =
                     productStrategy.getScoredAttributeGroupForAttribute(attributes);
             int score = scoredAag.getScore();
@@ -385,19 +400,33 @@ public final class AudioProductStrategy implements Parcelable {
                 ? bestAudioAttributesGroupOrDefault : null;
     }
 
-    private static List<AudioProductStrategy> initializeAudioProductStrategies() {
-        ArrayList<AudioProductStrategy> apsList = new ArrayList<>();
-        int status = native_list_audio_product_strategies(apsList);
-        if (status != AudioSystem.SUCCESS) {
-            Log.e(TAG, ": initializeAudioProductStrategies failed: " + status);
-            return null;
+    private static List<AudioProductStrategy> getAudioProductStrategiesFromService(
+            boolean filterInternal) {
+        IAudioService service = getService();
+        try {
+            return service.getAudioProductStrategies(filterInternal);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error getting audio product strategies", e);
+            return Collections.emptyList();
         }
-        apsList.removeIf(AudioProductStrategy::isInternalStrategy);
-        return Collections.unmodifiableList(apsList);
     }
 
-    private static native int native_list_audio_product_strategies(
+    /**
+     * List audio products strategies
+     *
+     * @return an immutable list of AudioProductStrategy discovered from platform configuration
+     * file. or an empty list on error (if audioserver is unavailable).
+     *
+     * @hide
+     */
+    public static native int native_list_audio_product_strategies(
             ArrayList<AudioProductStrategy> strategies);
+
+    private static native int native_get_audio_attributes_for_legacy_stream(int legacyStreamType,
+            AudioAttributes.Builder attributes);
+
+    private static native int native_get_legacy_stream_for_audio_attributes(
+            AudioAttributes attributes);
 
     @Override
     public boolean equals(@Nullable Object o) {
@@ -445,6 +474,12 @@ public final class AudioProductStrategy implements Parcelable {
      *         routing_strategy linked to {@link AudioAttributes#getUsage()}).
      */
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public int getId() {
         return mId;
     }
@@ -454,8 +489,13 @@ public final class AudioProductStrategy implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public int getZoneId() {
         return mZoneId;
     }
@@ -466,6 +506,12 @@ public final class AudioProductStrategy implements Parcelable {
      *         routing_strategy linked to {@link AudioAttributes#getUsage()}).
      */
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     @NonNull public String getName() {
         return mName;
     }
@@ -475,6 +521,12 @@ public final class AudioProductStrategy implements Parcelable {
      * @return first {@link AudioAttributes} associated to this product strategy.
      */
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public @NonNull AudioAttributes getAudioAttributes() {
         // We need a choice, so take the first one
         return mAudioAttributesGroups.length == 0 ? DEFAULT_ATTRIBUTES
@@ -525,6 +577,12 @@ public final class AudioProductStrategy implements Parcelable {
      * @hide
      */
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public boolean supportsAudioAttributes(@NonNull AudioAttributes aa) {
         if (multiZoneAudio()) {
             return supportsAudioAttributes(aa, mZoneId);
@@ -543,8 +601,13 @@ public final class AudioProductStrategy implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public boolean supportsAudioAttributes(@NonNull AudioAttributes aa, int zoneId) {
         int score = getAudioAttributesSupportScore(aa, zoneId);
         return score > MATCH_ON_DEFAULT_SCORE && score != MATCH_ON_ZONE_ID_SCORE;
@@ -650,8 +713,13 @@ public final class AudioProductStrategy implements Parcelable {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
     @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public int getVolumeGroupIdForAudioAttributes(@NonNull AudioAttributes attributes, int zoneId) {
         ScoredAudioAttributesGroup scoredAag = getScoredAttributeGroupForAttribute(attributes,
                 zoneId);
@@ -1041,7 +1109,7 @@ public final class AudioProductStrategy implements Parcelable {
      */
     public static void dump(@NonNull PrintWriter pw) {
         pw.println("- AUDIO PRODUCT STRATEGIES:");
-        getAudioProductStrategies().forEach(aps -> {
+        getAudioProductStrategiesFromService(/* filterInternal= */ true).forEach(aps -> {
             pw.printf("%s%s\n", INDENT, aps.toString(INDENT + INDENT));
         });
         pw.println();

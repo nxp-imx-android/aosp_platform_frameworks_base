@@ -8776,11 +8776,15 @@ public class AudioManager {
      */
     @SystemApi
     @NonNull
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public static List<AudioProductStrategy> getAudioProductStrategies() {
         final IAudioService service = getService();
         try {
-            return service.getAudioProductStrategies();
+            return service.getAudioProductStrategies(/* filterInternal= */ true);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
