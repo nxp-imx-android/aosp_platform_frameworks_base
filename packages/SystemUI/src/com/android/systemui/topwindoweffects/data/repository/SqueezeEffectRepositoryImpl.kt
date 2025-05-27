@@ -29,9 +29,12 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.Flags
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
-import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.io.PrintWriter
@@ -113,22 +116,31 @@ constructor(
             SET_INVOCATION_EFFECT_PARAMETERS_ACTION -> {
 
                 val isEnabled: Boolean? =
-                    if (hints.containsKey(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)) {
-                        hints.getBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE)
+                    if (hints.containsKey(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT)) {
+                        hints.getBoolean(
+                            IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT,
+                            DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+                        )
                     } else {
                         null
                     }
 
                 val inwardsEffectDurationPadding: Long? =
                     if (hints.containsKey(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS)) {
-                        hints.getLong(INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS)
+                        hints.getLong(
+                            INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS,
+                            DEFAULT_INWARD_EFFECT_PADDING_DURATION_MS,
+                        )
                     } else {
                         null
                     }
 
                 val outwardsEffectDuration: Long? =
                     if (hints.containsKey(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS)) {
-                        hints.getLong(INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS)
+                        hints.getLong(
+                            INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS,
+                            DEFAULT_OUTWARD_EFFECT_DURATION_MS,
+                        )
                     } else {
                         null
                     }
@@ -228,10 +240,6 @@ constructor(
 
         @VisibleForTesting
         const val SET_INVOCATION_EFFECT_PARAMETERS_ACTION = "set_invocation_effect_parameters"
-        @VisibleForTesting
-        const val IS_INVOCATION_EFFECT_ENABLED_KEY = "is_invocation_effect_enabled"
-
-        @VisibleForTesting const val IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_DEFAULT_VALUE = true
     }
 }
 

@@ -24,7 +24,7 @@ import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPre
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.INVOCATION_EFFECT_ANIMATION_OUT_DURATION_MS
-import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.PERSISTED_FOR_ASSISTANT_PREFERENCE
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.PERSISTED_FOR_USER_PREFERENCE
 import java.io.PrintWriter
@@ -46,7 +46,7 @@ class FakeInvocationEffectPreferences : InvocationEffectPreferences {
 
     override fun isInvocationEffectEnabledInPreferences(): Boolean {
         return fakeSharedPreferences.getBoolean(
-            IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
+            IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT,
             DEFAULT_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE,
         )
     }
@@ -97,7 +97,7 @@ class FakeInvocationEffectPreferences : InvocationEffectPreferences {
                 INVOCATION_EFFECT_ANIMATION_IN_DURATION_PADDING_MS,
                 config.inwardsEffectDurationPadding,
             )
-            putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT_PREFERENCE, config.isEnabled)
+            putBoolean(IS_INVOCATION_EFFECT_ENABLED_BY_ASSISTANT, config.isEnabled)
         }
     }
 
