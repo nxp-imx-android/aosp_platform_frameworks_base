@@ -221,6 +221,8 @@ public class MockingOomAdjusterTests {
         ProcessList pr = spy(new ProcessList());
         pr.mService = mService;
         AppProfiler profiler = mock(AppProfiler.class);
+        setFieldValue(ActivityManagerService.class, mService, "mOomAdjObserverLock",
+                new Object());
         setFieldValue(ActivityManagerService.class, mService, "mProcessList",
                 pr);
         setFieldValue(ActivityManagerService.class, mService, "mHandler",
