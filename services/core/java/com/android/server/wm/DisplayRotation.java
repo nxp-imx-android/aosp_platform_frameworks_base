@@ -1724,12 +1724,15 @@ public class DisplayRotation {
         }
 
         if (Flags.enableDeviceStateAutoRotateSettingRefactor()) {
+            final PostureDeviceStateConverter postureDeviceStateController =
+                    new PostureDeviceStateConverter(context, new DeviceStateManager());
             final DeviceStateAutoRotateSettingManager deviceStateAutoRotateSettingManager =
                     new DeviceStateAutoRotateSettingManagerImpl(
                             context, BackgroundThread.getExecutor(), secureSettings, wmService.mH,
-                            new PostureDeviceStateConverter(context, new DeviceStateManager()));
+                            postureDeviceStateController);
             deviceStateAutoRotateSettingController = new DeviceStateAutoRotateSettingController(
-                    deviceStateController, deviceStateAutoRotateSettingManager, wmService);
+                    deviceStateController, deviceStateAutoRotateSettingManager, wmService,
+                    postureDeviceStateController);
         }
 
         return deviceStateAutoRotateSettingController;
