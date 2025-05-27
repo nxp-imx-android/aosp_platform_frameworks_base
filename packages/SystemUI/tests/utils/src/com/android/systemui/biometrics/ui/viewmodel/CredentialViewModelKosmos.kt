@@ -20,7 +20,8 @@ import android.content.applicationContext
 import com.android.systemui.biometrics.domain.interactor.promptCredentialInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 
 val Kosmos.credentialViewModel by Fixture {
-    CredentialViewModel(applicationContext, promptCredentialInteractor)
+    CredentialViewModel(applicationContext, promptCredentialInteractor, shadeInteractor)
 }

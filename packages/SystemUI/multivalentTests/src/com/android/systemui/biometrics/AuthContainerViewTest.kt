@@ -138,13 +138,26 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
-    fun testDimissOnLock() {
+    fun testDismissOnLock() {
         val container = initializeFingerprintContainer(addToView = true)
         assertThat(container.parent).isNotNull()
         val root = container.rootView
 
         // Simulate sleep/lock invocation
         container.onStartedGoingToSleep()
+        waitForIdleSync()
+
+        assertThat(container.parent).isNull()
+        assertThat(root.isAttachedToWindow).isFalse()
+    }
+
+    @Test
+    fun testDismissOnShadeDown() {
+        val container = initializeFingerprintContainer(addToView = true)
+        assertThat(container.parent).isNotNull()
+        val root = container.rootView
+
+        container.mBiometricCallback.onUserCanceled()
         waitForIdleSync()
 
         assertThat(container.parent).isNull()

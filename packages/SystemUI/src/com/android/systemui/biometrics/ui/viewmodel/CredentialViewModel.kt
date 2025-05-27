@@ -12,6 +12,7 @@ import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import javax.inject.Inject
 import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.Flow
@@ -29,8 +30,8 @@ class CredentialViewModel
 constructor(
     @Application private val applicationContext: Context,
     private val credentialInteractor: PromptCredentialInteractor,
+    private val shadeInteractor: ShadeInteractor,
 ) {
-
     /** Top level information about the prompt. */
     val header: Flow<CredentialHeaderViewModel> =
         combine(
@@ -48,6 +49,9 @@ constructor(
                 showEmergencyCallButton = request.showEmergencyCallButton,
             )
         }
+
+    /** Whether the shade is expanded */
+    val isShadeExpanded = shadeInteractor.isShadeAnyExpanded
 
     /** Input flags for text based credential views */
     val inputFlags: Flow<Int?> =
