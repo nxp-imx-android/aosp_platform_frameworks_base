@@ -2038,10 +2038,8 @@ class ActivityStarter {
             }
         }
 
-        if (com.android.window.flags.Flags.earlyLaunchHint()) {
-            mRootWindowContainer.startPowerModeLaunchIfNeeded(
-                    false /* forceSend */, mStartActivity);
-        }
+        mRootWindowContainer.startPowerModeLaunchIfNeeded(
+                false /* forceSend */, mStartActivity);
 
         if (mTargetRootTask == null) {
             mTargetRootTask = getOrCreateRootTask(mStartActivity, mLaunchFlags, targetTask,
@@ -2119,11 +2117,6 @@ class ActivityStarter {
         mStartActivity.logStartActivity(EventLogTags.WM_CREATE_ACTIVITY, startedTask);
 
         mStartActivity.getTaskFragment().clearLastPausedActivity();
-
-        if (!com.android.window.flags.Flags.earlyLaunchHint()) {
-            mRootWindowContainer.startPowerModeLaunchIfNeeded(
-                    false /* forceSend */, mStartActivity);
-        }
 
         final boolean isTaskSwitch = startedTask != prevTopTask;
         mTargetRootTask.startActivityLocked(mStartActivity, topRootTask, newTask, isTaskSwitch,
