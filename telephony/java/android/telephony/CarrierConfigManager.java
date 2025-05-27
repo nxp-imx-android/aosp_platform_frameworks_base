@@ -2071,6 +2071,22 @@ public class CarrierConfigManager {
             "nr_advanced_threshold_bandwidth_khz_int";
 
     /**
+     * Configures whether "NR Advanced" (e.g., for "5G+" branding) requires
+     * at least a single component carrier (CC) to meet the bandwidth threshold defined by
+     * {@link #KEY_NR_ADVANCED_THRESHOLD_BANDWIDTH_KHZ_INT} to qualify for "NR Advanced" status.
+     *
+     * <p> Otherwise, carrier aggregation (CA) is used for NR determination.
+     *
+     * <p>The default value is {@code false}.
+     *
+     * @see #KEY_NR_ADVANCED_THRESHOLD_BANDWIDTH_KHZ_INT
+     *
+     * @hide
+     */
+    public static final String KEY_NR_ADVANCED_REQUIRES_SINGLE_CC_ABOVE_BANDWIDTH_THRESHOLD_BOOL =
+            "nr_advanced_requires_single_cc_above_bandwidth_threshold";
+
+    /**
      * Indicating whether to include LTE cell bandwidths when determining whether the aggregated
      * cell bandwidth meets the required threshold for NR advanced.
      *
@@ -11129,6 +11145,8 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_SHOW_5G_SLICE_ICON_BOOL, true);
         sDefaults.putInt(KEY_LTE_PLUS_THRESHOLD_BANDWIDTH_KHZ_INT, 20000);
         sDefaults.putInt(KEY_NR_ADVANCED_THRESHOLD_BANDWIDTH_KHZ_INT, 0);
+        sDefaults.putBoolean(
+                KEY_NR_ADVANCED_REQUIRES_SINGLE_CC_ABOVE_BANDWIDTH_THRESHOLD_BOOL, false);
         sDefaults.putBoolean(KEY_INCLUDE_LTE_FOR_NR_ADVANCED_THRESHOLD_BANDWIDTH_BOOL, false);
         sDefaults.putBoolean(KEY_RATCHET_NR_ADVANCED_BANDWIDTH_IF_RRC_IDLE_BOOL, false);
         sDefaults.putIntArray(KEY_CARRIER_NR_AVAILABILITIES_INT_ARRAY,
