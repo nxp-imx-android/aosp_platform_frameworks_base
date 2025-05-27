@@ -5301,6 +5301,7 @@ package android.app {
     method public default void onActivityPreSaveInstanceState(@NonNull android.app.Activity, @NonNull android.os.Bundle);
     method public default void onActivityPreStarted(@NonNull android.app.Activity);
     method public default void onActivityPreStopped(@NonNull android.app.Activity);
+    method @FlaggedApi("android.app.on_restart_activity_lifecycle_callback") public default void onActivityRestarted(@NonNull android.app.Activity);
     method public void onActivityResumed(@NonNull android.app.Activity);
     method public void onActivitySaveInstanceState(@NonNull android.app.Activity, @NonNull android.os.Bundle);
     method public void onActivityStarted(@NonNull android.app.Activity);

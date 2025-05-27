@@ -1806,6 +1806,19 @@ public class Activity extends ContextThemeWrapper
         }
     }
 
+    private void dispatchActivityRestarted() {
+        if (android.app.Flags.onRestartActivityLifecycleCallback()) {
+            getApplication().dispatchActivityRestarted(this);
+            Object[] callbacks = collectActivityLifecycleCallbacks();
+            if (callbacks != null) {
+                for (int i = callbacks.length - 1; i >= 0; i--) {
+                    ((Application.ActivityLifecycleCallbacks) callbacks[i])
+                            .onActivityRestarted(this);
+                }
+            }
+        }
+    }
+
     private Object[] collectActivityLifecycleCallbacks() {
         Object[] callbacks = null;
         synchronized (mActivityLifecycleCallbacks) {
@@ -2183,6 +2196,8 @@ public class Activity extends ContextThemeWrapper
     @CallSuper
     protected void onRestart() {
         mCalled = true;
+
+        dispatchActivityRestarted();
     }
 
     /**
