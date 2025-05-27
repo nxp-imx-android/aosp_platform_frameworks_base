@@ -1049,6 +1049,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             squishiness = 1;
         } else if (mTransitioningToFullShadeProgress > 0.0f) {
             squishiness = mLockscreenShadeTransitionController.getQsSquishTransitionFraction();
+        } else if (getFullyExpanded() || mPanelViewControllerLazy.get().isFullyExpanded()) {
+            squishiness = 1;
         } else {
             squishiness = mNotificationStackScrollLayoutController
                     .getNotificationSquishinessFraction();
