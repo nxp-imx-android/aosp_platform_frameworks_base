@@ -609,6 +609,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             }
             // Fall through to clean up
             case MotionEvent.ACTION_CANCEL: {
+                if (mPipDesktopState.isDraggingPipAcrossDisplaysEnabled()) {
+                    mPipDisplayTransferHandler.removeMirrors();
+                }
                 shouldDeliverToMenu = !mTouchState.startedDragging() && !mTouchState.isDragging();
                 mTouchState.reset();
                 break;
