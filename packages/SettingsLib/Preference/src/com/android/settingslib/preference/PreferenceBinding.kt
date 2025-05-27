@@ -97,9 +97,15 @@ interface PreferenceBinding {
             if (!isPreferenceScreen) {
                 preference.summary = getPreferenceSummary(context)
             }
-            preference.isEnabled = isEnabled(context)
             preference.isVisible =
                 (this as? PreferenceAvailabilityProvider)?.isAvailable(context) != false
+            // PreferenceScreen.isVisible=false has no effect on UI, while isEnable=false will
+            // apply recursively. As a workaround, disable all children when screen is unavailable.
+            preference.isEnabled =
+                when {
+                    isPreferenceScreen && !preference.isVisible -> false
+                    else -> isEnabled(context)
+                }
             preference.isPersistent = isPersistent(context)
             // PreferenceScreenBindingHelper will notify dependency change, so we do not need to set
             // dependency here. This simplifies dependency management and avoid the
