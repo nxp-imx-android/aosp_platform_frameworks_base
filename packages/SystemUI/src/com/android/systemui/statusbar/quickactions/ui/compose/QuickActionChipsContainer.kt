@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPopupViewModel
 import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
@@ -39,6 +40,7 @@ fun QuickActionChipsContainer(
     mediaViewModelFactory: MediaViewModel.Factory,
     mediaHost: MediaHost,
     onMediaControlPopupVisibilityChanged: (Boolean) -> Unit,
+    avControlsPopupViewModelFactory: AvControlsPopupViewModel.Factory,
     modifier: Modifier = Modifier,
 ) {
     if (!SceneContainerFlag.isEnabled) {
@@ -73,6 +75,7 @@ fun QuickActionChipsContainer(
                         viewModel = chip,
                         mediaViewModelFactory = mediaViewModelFactory,
                         mediaHost = mediaHost,
+                        avControlsPopupViewModelFactory = avControlsPopupViewModelFactory,
                     )
                 }
             }

@@ -24,6 +24,7 @@ import android.permission.PermissionManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.plugins.activityStarter
 import com.android.systemui.shade.data.repository.privacyChipRepository
 import com.android.systemui.statusbar.data.repository.statusBarModeRepository
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
@@ -73,6 +74,7 @@ fun Kosmos.createAvControlsChipInteractorImplForDisplay(
         appIconProvider = appIconProvider,
         appOpsManager = appOpsManagerMock,
         activityManager = activityManagerInterface,
+        activityStarter = activityStarter,
     )
 
 val Kosmos.noOpAvControlsChipInteractor: NoOpAvControlsChipInteractor by
@@ -101,4 +103,8 @@ class FakeAvControlsChipInteractor : AvControlsChipInteractor {
     }
 
     override fun closeApp(packageName: String) {}
+
+    override fun manageApp(packageName: String) {}
+
+    override fun openPrivacyDashboard() {}
 }

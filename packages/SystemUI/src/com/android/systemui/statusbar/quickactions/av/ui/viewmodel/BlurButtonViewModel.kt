@@ -29,7 +29,7 @@ class BlurButtonViewModel
 @AssistedInject
 constructor(
     desktopEffectInteractor: DesktopEffectInteractor,
-    @Assisted private val setCurrentScreen: (Screen) -> Unit,
+    @Assisted private val setCurrentPage: (PageType) -> Unit,
 ) : ButtonViewModel, HydratedActivatable() {
     override val state by
         desktopEffectInteractor.model
@@ -45,7 +45,7 @@ constructor(
             .hydratedStateOf(initialValue = ButtonUiState())
 
     override suspend fun onClick() {
-        setCurrentScreen(Screen.BLUR)
+        setCurrentPage(PageType.BLUR)
     }
 
     private fun icon(blurLevel: BlurLevel): Int =
@@ -58,6 +58,6 @@ constructor(
     /** A factory to be used to create view model instances. */
     @AssistedFactory
     interface Factory {
-        fun create(setCurrentScreen: (Screen) -> Unit): BlurButtonViewModel
+        fun create(setCurrentPage: (PageType) -> Unit): BlurButtonViewModel
     }
 }

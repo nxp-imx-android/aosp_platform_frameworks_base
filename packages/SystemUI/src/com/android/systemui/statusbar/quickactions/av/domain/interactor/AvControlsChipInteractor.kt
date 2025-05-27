@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.quickactions.av.domain.interactor
 import android.Manifest
 import android.app.AppOpsManager
 import android.app.IActivityManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.hardware.SensorPrivacyManager
@@ -26,6 +27,7 @@ import android.os.UserHandle
 import android.permission.PermissionManager
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
@@ -82,7 +84,14 @@ interface AvControlsChipInteractor {
 
     abstract fun setMicrophoneBlocked(value: Boolean)
 
+    /** Closes the app identified by the package name. */
     abstract fun closeApp(packageName: String)
+
+    /** Opens permission settings for the app identified by the package name. */
+    abstract fun manageApp(packageName: String)
+
+    /** Opens the privacy dashboard settings page. */
+    abstract fun openPrivacyDashboard()
 }
 
 /**
@@ -100,6 +109,10 @@ class NoOpAvControlsChipInteractor @Inject constructor() : AvControlsChipInterac
     override fun setMicrophoneBlocked(value: Boolean) {}
 
     override fun closeApp(packageName: String) {}
+
+    override fun manageApp(packageName: String) {}
+
+    override fun openPrivacyDashboard() {}
 }
 
 class AvControlsChipInteractorImpl
@@ -117,6 +130,7 @@ constructor(
     private val appIconProvider: AppIconProvider,
     private val appOpsManager: AppOpsManager,
     private val activityManager: IActivityManager,
+    private val activityStarter: ActivityStarter,
 ) : AvControlsChipInteractor {
 
     @AssistedFactory
@@ -345,6 +359,21 @@ constructor(
     override fun closeApp(packageName: String) {
         backgroundScope.launch {
             activityManager.stopAppForUser(packageName, selectedUserInteractor.getSelectedUserId())
+        }
+    }
+
+    override fun manageApp(packageName: String) {
+        val userId = selectedUserInteractor.getSelectedUserId()
+        val navigationIntent = Intent(android.provider.Settings.ACTION_APP_PERMISSIONS_SETTINGS)
+        navigationIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+        navigationIntent.putExtra(Intent.EXTRA_USER, UserHandle.of(userId))
+        backgroundScope.launch { activityStarter.startActivity(navigationIntent, true) }
+    }
+
+    override fun openPrivacyDashboard() {
+        backgroundScope.launch {
+            val navigationIntent = Intent(Intent.ACTION_REVIEW_PERMISSION_USAGE)
+            activityStarter.startActivity(navigationIntent, true)
         }
     }
 }

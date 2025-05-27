@@ -40,10 +40,26 @@ enum class BlurLevel(val code: Int) {
  * @property faceRetouch True if face retouch effect is enabled, false otherwise.
  * @property studioMic True if studio mic effect is enabled, false otherwise.
  * @property blurLevel The current blur level applied, represented by a [BlurLevel] enum.
+ * @property cameraFraming True if automatic camera framing is active.
+ * @property liveCaptions True if live captions are active.
+ * @property portraitRelightSupported True if supported by the device
+ * @property faceRetouchSupported True if supported by the device
+ * @property studioMicSupported True if supported by the device
+ * @property blurSupported True if supported by the device
+ * @property cameraFramingSupported True if supported by the device
+ * @property liveCaptionsSupported True if supported by the device
  */
 data class DesktopEffectModel(
     val portraitRelight: Boolean = false,
+    val portraitRelightSupported: Boolean = true,
     val faceRetouch: Boolean = false,
+    val faceRetouchSupported: Boolean = true,
     val studioMic: Boolean = false,
+    val studioMicSupported: Boolean = true,
     val blurLevel: BlurLevel = BlurLevel.OFF,
+    val blurSupported: Boolean = true,
+    val cameraFraming: Boolean = false,
+    val cameraFramingSupported: Boolean = true,
+    val liveCaptions: Boolean = false,
+    val liveCaptionsSupported: Boolean = true,
 )

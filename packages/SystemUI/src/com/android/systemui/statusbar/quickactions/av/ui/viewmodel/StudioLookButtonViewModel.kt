@@ -28,7 +28,7 @@ class StudioLookButtonViewModel
 @AssistedInject
 constructor(
     desktopEffectInteractor: DesktopEffectInteractor,
-    @Assisted private val setCurrentScreen: (Screen) -> Unit,
+    @Assisted private val setCurrentPage: (PageType) -> Unit,
 ) : ButtonViewModel, HydratedActivatable() {
     override val state by
         desktopEffectInteractor.model
@@ -46,12 +46,12 @@ constructor(
             .hydratedStateOf(initialValue = ButtonUiState())
 
     override suspend fun onClick() {
-        setCurrentScreen(Screen.STUDIO_LOOK)
+        setCurrentPage(PageType.STUDIO_LOOK)
     }
 
     /** A factory to be used to create view model instances. */
     @AssistedFactory
     interface Factory {
-        fun create(setCurrentScreen: (Screen) -> Unit): StudioLookButtonViewModel
+        fun create(setCurrentPage: (PageType) -> Unit): StudioLookButtonViewModel
     }
 }
