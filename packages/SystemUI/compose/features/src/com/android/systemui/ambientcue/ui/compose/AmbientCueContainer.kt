@@ -118,10 +118,12 @@ private fun TaskBarAnd3ButtonAmbientCue(
 ) {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val actionsPaddingPx = with(density) { SHORT_PILL_ACTIONS_PADDING.dp.toPx() }
+    val actionsVerticalPaddingPx = with(density) { SHORT_PILL_ACTIONS_VERTICAL_PADDING.dp.toPx() }
+    val actionsHorizontalPaddingPx = with(density) { ACTIONS_HORIZONTAL_PADDING.dp.toPx() }
     val portrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     var pillCenter by remember { mutableStateOf(Offset.Zero) }
     val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+    val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
     var touchableRegion by remember { mutableStateOf<Rect?>(null) }
     LaunchedEffect(expanded, touchableRegion) {
         onShouldInterceptTouches(true, if (expanded) null else touchableRegion)
@@ -177,8 +179,8 @@ private fun TaskBarAnd3ButtonAmbientCue(
         horizontalAlignment = Alignment.End,
         modifier =
             modifier.graphicsLayer {
-                translationX = pillCenter.x - size.width - actionsPaddingPx
-                translationY = pillCenter.y - size.height - actionsPaddingPx
+                translationX = screenWidthPx - size.width - actionsHorizontalPaddingPx
+                translationY = pillCenter.y - size.height - actionsVerticalPaddingPx
             },
     )
 }
@@ -212,7 +214,12 @@ private fun NavBarAmbientCue(
     ActionList(
         actions = actions,
         visible = visible && expanded,
-        modifier = modifier.padding(bottom = NAV_BAR_ACTIONS_PADDING.dp),
+        modifier =
+            modifier.padding(
+                bottom = NAV_BAR_ACTIONS_PADDING.dp,
+                start = ACTIONS_HORIZONTAL_PADDING.dp,
+                end = ACTIONS_HORIZONTAL_PADDING.dp,
+            ),
     )
 }
 
@@ -220,5 +227,6 @@ private const val NAV_BAR_WIDTH_DP = 108 // R.dimen.taskbar_stashed_small_screen
 private const val NAV_BAR_LARGE_WIDTH_DP = 220 // R.dimen.taskbar_stashed_handle_width from Launcher
 
 private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from Launcher
-private const val SHORT_PILL_ACTIONS_PADDING = 38
+private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
 private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 22
+private const val ACTIONS_HORIZONTAL_PADDING = 32
