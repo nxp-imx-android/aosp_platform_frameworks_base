@@ -49,6 +49,7 @@ import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_T
 import static android.telephony.CarrierConfigManager.KEY_PREFERRED_IKE_PROTOCOL_INT;
 
 import static com.android.net.module.util.NetworkStackConstants.IPV6_MIN_MTU;
+import static com.android.server.connectivity.Flags.FLAG_COLLECT_VPN_METRICS;
 import static com.android.server.connectivity.Vpn.AUTOMATIC_KEEPALIVE_DELAY_SECONDS;
 import static com.android.server.connectivity.Vpn.DEFAULT_LONG_LIVED_TCP_CONNS_EXPENSIVE_TIMEOUT_SEC;
 import static com.android.server.connectivity.Vpn.DEFAULT_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
@@ -157,6 +158,8 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.security.Credentials;
 import android.telephony.CarrierConfigManager;
@@ -182,6 +185,7 @@ import com.android.server.IpSecService;
 import com.android.server.VpnTestBase;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.AdditionalAnswers;
@@ -222,8 +226,12 @@ import java.util.regex.Pattern;
  */
 @RunWith(AndroidJUnit4.class)
 @SmallTest
+@EnableFlags(FLAG_COLLECT_VPN_METRICS)
 public class VpnTest extends VpnTestBase {
     private static final String TAG = "VpnTest";
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     static final Network EGRESS_NETWORK = new Network(101);
     static final String EGRESS_IFACE = "wlan0";
@@ -2054,6 +2062,13 @@ public class VpnTest extends VpnTestBase {
     private Vpn startLegacyVpn(final Vpn vpn, final VpnProfile vpnProfile) throws Exception {
         setMockedUsers(PRIMARY_USER);
         vpn.startLegacyVpn(vpnProfile);
+        if (vpnProfile.type == VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS
+                || vpnProfile.type == VpnProfile.TYPE_IKEV2_IPSEC_PSK) {
+            verify(mVpnConnectivityMetrics).setAllowedAlgorithms(
+                    Ikev2VpnProfile.DEFAULT_ALGORITHMS);
+        }
+        verify(mVpnConnectivityMetrics).setVpnType(VpnManager.TYPE_VPN_PLATFORM);
+        verify(mVpnConnectivityMetrics).setVpnProfileType(vpnProfile.type);
         return vpn;
     }
 
