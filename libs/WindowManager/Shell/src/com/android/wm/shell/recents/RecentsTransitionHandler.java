@@ -1028,8 +1028,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         && taskInfo.configuration.windowConfiguration.isAlwaysOnTop()) {
                     // Tasks that are always on top (e.g. bubbles), will handle their own transition
                     // as they are on top of everything else. So cancel the merge here.
-                    cancel(false /* toHome */, false /* withScreenshots */,
-                            "task #" + taskInfo.taskId + " is always_on_top");
+                    cancel("task #" + taskInfo.taskId + " is always_on_top");
                     return;
                 }
                 if (TransitionUtil.isClosingType(change.getMode())
