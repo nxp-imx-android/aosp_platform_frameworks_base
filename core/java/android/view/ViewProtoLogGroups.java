@@ -16,6 +16,8 @@
 
 package android.view;
 
+import android.view.inputmethod.ImeTracker;
+
 import com.android.internal.protolog.ProtoLogGroup;
 
 /**
@@ -26,12 +28,15 @@ import com.android.internal.protolog.ProtoLogGroup;
  *
  * @hide
  */
-final class ViewProtoLogGroups {
-    final static ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
+public final class ViewProtoLogGroups {
+    static final ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
             "IME_INSETS_CONTROLLER", "InsetsController", true /* enabled */);
+    public static final ProtoLogGroup IME_TRACKER = new ProtoLogGroup(
+            "IME_TRACKER", ImeTracker.TAG, true);
 
-    final static ProtoLogGroup[] ALL_GROUPS = {
+    static final ProtoLogGroup[] ALL_GROUPS = {
             IME_INSETS_CONTROLLER,
+            IME_TRACKER,
     };
 }
 
