@@ -107,10 +107,9 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         assertThat(mixedHandler.requestHasBubbleEnter(request)).isFalse()
     }
 
-    // TODO(b/408453889): To be removed once we handle transitions with stack view
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnter_notShowingAsBubbleBar_notHandled() {
+    fun test_requestHasBubbleEnter_notShowingAsBubbleBar() {
         val runningTask = createRunningTask()
         val request = createTransitionRequestInfo(runningTask)
 
@@ -119,7 +118,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
             on { isShowingAsBubbleBar } doReturn false
         }
 
-        assertThat(mixedHandler.requestHasBubbleEnter(request)).isFalse()
+        assertThat(mixedHandler.requestHasBubbleEnter(request)).isTrue()
     }
 
     @Test
@@ -172,10 +171,9 @@ class DefaultMixedHandlerTest : ShellTestCase() {
             .isFalse()
     }
 
-    // TODO(b/408453889): To be removed once we handle transitions with stack view
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnterFromAppBubbleOrExistingBubble_notShowingAsBubbleBar_notHandled() {
+    fun test_requestHasBubbleEnterFromAppBubbleOrExistingBubble_notShowingAsBubbleBar() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
@@ -185,7 +183,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         }
 
         assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
-            .isFalse()
+            .isTrue()
     }
 
     @Test

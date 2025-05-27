@@ -25,6 +25,7 @@ import static com.android.wm.shell.bubbles.BubblePositioner.NUM_VISIBLE_WHEN_RES
 import static com.android.wm.shell.bubbles.BubblePositioner.StackPinnedEdge.LEFT;
 import static com.android.wm.shell.bubbles.BubblePositioner.StackPinnedEdge.RIGHT;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
 import static com.android.wm.shell.shared.bubbles.BubbleConstants.BUBBLE_EXPANDED_SCRIM_ALPHA;
@@ -52,6 +53,7 @@ import android.util.Log;
 import android.view.Choreographer;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -114,7 +116,8 @@ import java.util.stream.Collectors;
  * Renders bubbles in a stack and handles animating expanded and collapsed states.
  */
 public class BubbleStackView extends FrameLayout
-        implements ViewTreeObserver.OnComputeInternalInsetsListener {
+        implements ViewTreeObserver.OnComputeInternalInsetsListener,
+        BubbleExpandedViewTransitionAnimator {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "BubbleStackView" : TAG_BUBBLES;
 
     /** How far the flyout needs to be dragged before it's dismissed regardless of velocity. */
@@ -180,6 +183,12 @@ public class BubbleStackView extends FrameLayout
      */
     private final ShellExecutor mMainExecutor;
     private Runnable mDelayedAnimation;
+    /**
+     * Runnable set after a bubble is created via a transition; should run after expand or switch
+     * animation is complete.
+     */
+    @Nullable
+    private Runnable mAfterTransitionRunnable = null;
 
     /**
      * Interface to synchronize {@link View} state and the screen.
@@ -1181,6 +1190,58 @@ public class BubbleStackView extends FrameLayout
         });
     }
 
+    @Override
+    public boolean canExpandView(BubbleViewProvider b) {
+        if (mExpandedBubble != null && mIsExpanded && b.getKey().equals(mExpandedBubble.getKey())) {
+            // Already showing this bubble so can't expand it.
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "BubbleStackView.canExpandView - false %s already expanded", b.getKey());
+            return false;
+        }
+        if (b instanceof Bubble) {
+            BubbleTransitions.BubbleTransition transition = ((Bubble) b).getPreparingTransition();
+            if (transition != null) {
+                // StackView doesn't need to wait for launcher to expand, if we're able to expand,
+                // mark it as ready now.
+                transition.continueExpand();
+            }
+        }
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.canExpandView - true");
+        return true;
+    }
+
+    @Override
+    public BubbleViewProvider prepareConvertedView(BubbleViewProvider b) {
+        // TODO b/419347947 - if we support converting visible tasks to bubbles in the future
+        //  this might have to do some stuff.
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.prepareConvertedView - doing nothing");
+        return b;
+    }
+
+    @Override
+    public void animateConvert(@NonNull SurfaceControl.Transaction startT,
+            @NonNull Rect startBounds, float startScale, @NonNull SurfaceControl snapshot,
+            SurfaceControl taskLeash, Runnable animFinish) {
+        // TODO b/419347947 - if we support converting visible tasks to bubbles in the future
+        //  this will have to do some stuff.
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateConvert - doing nothing");
+    }
+
+    @Override
+    public void animateExpand(@Nullable BubbleViewProvider previousBubble,
+            @Nullable Runnable animFinish) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateExpand -- caching runnable");
+        mAfterTransitionRunnable = animFinish;
+    }
+
+    @Override
+    public void removeViewFromTransition(View view) {
+        // TODO b/419347947 - if we support converting visible tasks to bubbles in the future
+        //  this will have to do some stuff.
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                "BubbleStackView.removeViewFromTransition - doing nothing");
+    }
+
     /**
      * Reset state related to dragging.
      */
@@ -1967,6 +2028,7 @@ public class BubbleStackView extends FrameLayout
     /**
      * Whether the stack of bubbles is expanded or not.
      */
+    @Override
     public boolean isExpanded() {
         return mIsExpanded;
     }
@@ -2688,6 +2750,10 @@ public class BubbleStackView extends FrameLayout
                         if (expView != null) {
                             expView.setSurfaceZOrderedOnTop(false);
                         }
+                        if (mAfterTransitionRunnable != null) {
+                            mAfterTransitionRunnable.run();
+                            mAfterTransitionRunnable = null;
+                        }
                     })
                     .start();
         };
@@ -2899,6 +2965,10 @@ public class BubbleStackView extends FrameLayout
                         if (expandedView != null) {
                             expandedView.setSurfaceZOrderedOnTop(false);
                             expandedView.setAnimating(false);
+                        }
+                        if (mAfterTransitionRunnable != null) {
+                            mAfterTransitionRunnable.run();
+                            mAfterTransitionRunnable = null;
                         }
                     })
                     .start();
