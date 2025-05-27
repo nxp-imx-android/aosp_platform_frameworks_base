@@ -28,24 +28,32 @@ import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA512;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CBC;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CTR;
 
-import android.annotation.NonNull;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.VpnManager;
 import android.util.Log;
 import android.util.SparseArray;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Class to record the VpnConnectionReported into statsd.
+ * Class to record the VpnConnectionReported into statsd, facilitating the logging of independent
+ * VPN connection details per user.
  */
 public class VpnConnectivityMetrics {
     private static final String TAG = VpnConnectivityMetrics.class.getSimpleName();
     public static final int VPN_TYPE_UNKNOWN = 0;
     public static final int VPN_PROFILE_TYPE_UNKNOWN = 0;
+    private static final int UNKNOWN_UNDERLYING_NETWORK_TYPE = -1;
     private static final SparseArray<String> sAlgorithms = new SparseArray<>();
     private final int mUserId;
+    @NonNull
+    private final ConnectivityManager mConnectivityManager;
     private int mVpnType = VPN_TYPE_UNKNOWN;
     private int mVpnProfileType = VPN_PROFILE_TYPE_UNKNOWN;
     private int mMtu = 0;
@@ -56,6 +64,17 @@ public class VpnConnectivityMetrics {
      * index in {@code sAlgorithms} is considered allowed.
      */
     private int mAllowedAlgorithms = 0;
+    /**
+     * An array representing the transport types of the underlying networks for the VPN.
+     * Each element in this array corresponds to a specific underlying network.
+     * The value of each element is the primary transport type of the network
+     * (e.g., {@link NetworkCapabilities#TRANSPORT_WIFI},
+     * {@link NetworkCapabilities#TRANSPORT_CELLULAR}).
+     * If the transport type of a network cannot be determined, the value will be
+     * {@code UNKNOWN_UNDERLYING_NETWORK_TYPE}.
+     */
+    @NonNull
+    private int[] mUnderlyingNetworkTypes;
 
     // Static initializer block to populate the sAlgorithms mapping. It associates integer keys
     // (which also serve as bit positions for the mAllowedAlgorithms bitmask) with their
@@ -74,8 +93,9 @@ public class VpnConnectivityMetrics {
         sAlgorithms.put(10, CRYPT_AES_CTR);
     }
 
-    public VpnConnectivityMetrics(int userId) {
+    public VpnConnectivityMetrics(int userId, ConnectivityManager connectivityManager) {
         mUserId = userId;
+        mConnectivityManager = connectivityManager;
     }
 
     /**
@@ -145,5 +165,36 @@ public class VpnConnectivityMetrics {
             bitmask |= 1 << index;
         }
         return bitmask;
+    }
+
+    /**
+     * Sets the transport types of the underlying networks for the VPN.
+     * <p>
+     * This method processes an array of {@link android.net.Network} objects. For each network,
+     * it attempts to retrieve its {@link android.net.NetworkCapabilities} and extracts the
+     * primary transport type (e.g., Wi-Fi, cellular). If capabilities cannot be retrieved
+     * for a specific network, a predefined {@code UNKNOWN_UNDERLYING_NETWORK_TYPE} is
+     * used for that entry.
+     *
+     * @param networks An array of {@link android.net.Network} objects representing the underlying
+     *                 networks currently in use.
+     */
+    public void setUnderlyingNetwork(@NonNull Network[] networks) {
+        if (networks.length != 0) {
+            int[] types = new int[networks.length];
+            for (int i = 0; i < networks.length; i++) {
+                final NetworkCapabilities capabilities =
+                        mConnectivityManager.getNetworkCapabilities(networks[i]);
+                if (capabilities != null) {
+                    // Get the primary transport type of the network.
+                    types[i] = capabilities.getTransportTypes()[0];
+                } else {
+                    types[i] = UNKNOWN_UNDERLYING_NETWORK_TYPE;
+                }
+            }
+            mUnderlyingNetworkTypes = Arrays.copyOf(types, types.length);
+        } else {
+            mUnderlyingNetworkTypes = new int[0];
+        }
     }
 }
