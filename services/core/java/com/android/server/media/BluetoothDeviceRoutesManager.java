@@ -32,6 +32,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaRoute2Info;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -88,13 +89,14 @@ import java.util.stream.Collectors;
     BluetoothDeviceRoutesManager(
             @NonNull Context context,
             @NonNull Handler handler,
+            @NonNull Looper looper,
             @NonNull BluetoothAdapter bluetoothAdapter,
             @NonNull BluetoothRouteController.BluetoothRoutesUpdatedListener listener) {
         this(
                 context,
                 handler,
                 bluetoothAdapter,
-                new BluetoothProfileMonitor(context, bluetoothAdapter),
+                new BluetoothProfileMonitor(context, looper, bluetoothAdapter),
                 listener);
     }
 

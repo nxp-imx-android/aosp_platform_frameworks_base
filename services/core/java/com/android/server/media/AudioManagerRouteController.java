@@ -181,7 +181,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
         mBluetoothRouteController =
                 new BluetoothDeviceRoutesManager(
-                        mContext, mHandler, btAdapter, this::rebuildAvailableRoutesAndNotify);
+                        mContext,
+                        mHandler,
+                        looper,
+                        btAdapter,
+                        this::rebuildAvailableRoutesAndNotify);
         // Just build routes but don't notify. The caller may not expect the listener to be invoked
         // before this constructor has finished executing.
         rebuildAvailableRoutes();
