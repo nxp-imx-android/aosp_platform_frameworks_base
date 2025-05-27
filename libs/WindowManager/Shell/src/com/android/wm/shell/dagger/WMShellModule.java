@@ -1747,11 +1747,9 @@ public abstract class WMShellModule {
             DisplayController displayController,
             DisplayLayout displayLayout,
             @ShellMainThread ShellExecutor mainExecutor,
-            @ShellMainThread Handler mainHandler,
             InteractionJankMonitor interactionJankMonitor) {
         return AppZoomOutController.create(context, shellInit, shellTaskOrganizer,
-                displayController, displayLayout, mainExecutor, mainHandler,
-                interactionJankMonitor);
+                displayController, displayLayout, mainExecutor, interactionJankMonitor);
     }
 
     //

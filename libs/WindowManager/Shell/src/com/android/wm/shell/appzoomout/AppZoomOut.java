@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.appzoomout;
 
+import android.os.Handler;
+
 import com.android.wm.shell.shared.annotations.ExternalThread;
 
 /**
@@ -45,7 +47,9 @@ public interface AppZoomOut {
      * </ul>
      *
      * @param progress The progress to set the squeeze zoom effect to.
+     * @param vsyncId The vsync id to align the frame to.
+     * @param sysuiMainHandler The main handler from SystemUI (required for CUJ tracking)
      */
-    void setTopLevelProgress(float progress);
+    void setTopLevelProgress(float progress, long vsyncId, Handler sysuiMainHandler);
 
 }
