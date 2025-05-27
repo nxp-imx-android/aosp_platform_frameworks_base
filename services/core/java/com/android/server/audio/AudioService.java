@@ -9148,12 +9148,7 @@ public class AudioService extends IAudioService.Stub
                 Log.i(TAG, String.format("onAccessoryPlugMediaUnmute unmuting device=%d [%s]",
                         newDevice, AudioSystem.getOutputDeviceName(newDevice)));
             }
-            // Locking mSettingsLock to avoid inversion when calling vss.mute -> vss.doMute ->
-            // vss.updateVolumeGroupIndex
-            synchronized (mSettingsLock) {
-                getVssForStreamOrDefault(AudioSystem.STREAM_MUSIC).mute(false,
-                        "onAccessoryPlugMediaUnmute");
-            }
+            muteAliasStreams(AudioSystem.STREAM_MUSIC, false);
         }
     }
 
