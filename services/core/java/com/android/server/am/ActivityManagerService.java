@@ -17172,7 +17172,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     // immediately and where we delay the kill, as the user has already requested
                     // the kill and the longer we wait the lower the chance the events of interest
                     // will still be in the buffer.
-                    if (android.os.profiling.Flags.profiling25q4()
+                    if (android.os.profiling.Flags.profilingTriggerKillRecents()
                             && pr.info != null
                             && pr.info.packageName != null) {
                         sendProfilingTrigger(
