@@ -22,10 +22,25 @@ import android.annotation.Nullable;
 import java.util.concurrent.Executor;
 
 /**
- * A {@link Thread} that has a {@link Looper}.
- * The {@link Looper} can then be used to create {@link Handler}s.
- * <p>
- * Note that just like with a regular {@link Thread}, {@link #start()} must still be called.
+ * A {@link Thread} that has a {@link Looper}. The {@link Looper} can then be used to create {@link
+ * Handler}s.
+ *
+ * <p>Note that just like with a regular {@link Thread}, {@link #start()} must still be called.
+ *
+ * <p>Use this class if you must work with the {@link Handler} API and need a {@link Thread} to do
+ * the handling on. Otherwise, consider using a {@link java.util.concurrent.Executor} or {@link
+ * java.util.concurrent.ExecutorService} instead. <br>
+ * Executors offer more flexibility with regards to threading. Work submitted to an Executor can be
+ * set to run on another thread, on one of several threads from a static or dynamic pool, or on the
+ * caller's thread, depending on your needs. <br>
+ * {link @link java.util.concurrent.Executor} offers a simpler API that is easier to use.
+ * {link @link java.util.concurrent.ExecutorService} offers the richer {@link
+ * java.util.concurrent.Future} API, which you can use to monitor task status, cancel tasks,
+ * propagate exceptions, and chain multiple pending tasks. <br>
+ * {link @link java.util.concurrent.Executors} is a convenient factory class that makes it easy to
+ * create {@link java.util.concurrent.Executor}s to meet different needs. It creates {@link
+ * java.util.concurrent.Executor}s with concurrent work queues that ensure that multiple threads may
+ * enqueue and perform work at the same time without encountering lock contention.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class HandlerThread extends Thread {
