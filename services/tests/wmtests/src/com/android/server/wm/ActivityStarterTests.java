@@ -97,7 +97,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.provider.DeviceConfig;
 import android.service.voice.IVoiceInteractionSession;
 import android.util.Pair;
@@ -1530,8 +1529,7 @@ public class ActivityStarterTests extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsDisabled(com.android.wm.shell.Flags.FLAG_ENABLE_PIP2)
-    public void testStartLaunchIntoPipActivity_setLaunchIntoPipHostActivity() {
+    public void testStartLaunchIntoPipActivity() {
         final ActivityStarter starter = prepareStarter(0, false);
 
         // Create an activity from ActivityOptions#makeLaunchIntoPip

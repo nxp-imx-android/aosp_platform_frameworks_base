@@ -1340,7 +1340,6 @@ public class ActivityOptions extends ComponentOptions {
         final ActivityOptions opts = new ActivityOptions();
         opts.mLaunchIntoPipParams = new PictureInPictureParams.Builder(pictureInPictureParams)
                 .setIsLaunchIntoPip(true)
-                .setAutoEnterEnabled(true)
                 .build();
         return opts;
     }
