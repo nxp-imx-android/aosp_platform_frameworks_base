@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.bubbles
 
+import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.LauncherApps
@@ -77,9 +79,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.isA
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -99,6 +103,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     @get:Rule
     val setFlagsRule = SetFlagsRule(flags)
 
+    private val bubbleTransitions = mock<BubbleTransitions>()
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val uiEventLoggerFake = UiEventLoggerFake()
     private val displayImeController = mock<DisplayImeController>()
@@ -389,6 +394,78 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleController.hasStableBubbleForTask(777)).isFalse()
     }
 
+    @Test
+    fun expandStackAndSelectBubbleForExistingTransition_reusesExistingBubble() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+
+        val bubble = createBubble("key", taskId = 123)
+        getInstrumentation().runOnMainSync {
+            bubbleData.notificationEntryUpdated(
+                bubble,
+                true /* suppressFlyout */,
+                true /* showInShade= */,
+            )
+        }
+        val taskInfo = ActivityManager.RunningTaskInfo().apply { taskId = 123 }
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.expandStackAndSelectBubbleForExistingTransition(
+                taskInfo,
+                mock(), /* transition */
+            ) {}
+        }
+
+        verify(bubbleTransitions).startLaunchNewTaskBubbleForExistingTransition(
+            eq(bubble), /* bubble */
+            any(), /* expandedViewManager */
+            any(), /* factory */
+            any(), /* positioner */
+            any(), /* stackView */
+            anyOrNull(), /* layerView */
+            any(), /* iconFactory */
+            any(), /* inflateSync */
+            any(), /* transition */
+            any(), /* onInflatedCallback */
+        )
+        assertThat(bubbleData.selectedBubble).isEqualTo(bubble)
+        assertThat(bubbleController.isStackExpanded).isTrue()
+    }
+
+    @Test
+    fun expandStackAndSelectBubbleForExistingTransition_newBubble() {
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
+
+        val taskInfo = ActivityManager.RunningTaskInfo().apply {
+            baseActivity = COMPONENT
+            taskId = 123
+        }
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.expandStackAndSelectBubbleForExistingTransition(
+                taskInfo,
+                mock(), /* transition */
+            ) {}
+        }
+
+        val bubble = argumentCaptor<Bubble>().let { bubbleCaptor ->
+            verify(bubbleTransitions).startLaunchNewTaskBubbleForExistingTransition(
+                bubbleCaptor.capture(), /* bubble */
+                any(), /* expandedViewManager */
+                any(), /* factory */
+                any(), /* positioner */
+                any(), /* stackView */
+                anyOrNull(), /* layerView */
+                any(), /* iconFactory */
+                any(), /* inflateSync */
+                any(), /* transition */
+                any(), /* onInflatedCallback */
+            )
+            bubbleCaptor.lastValue
+        }
+        assertThat(bubble.taskId).isEqualTo(123)
+        assertThat(bubble.key).isEqualTo("key_app_bubble:123")
+    }
+
     private fun createBubble(key: String, taskId: Int = 0): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()
@@ -459,7 +536,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 surfaceSynchronizer,
                 FloatingContentCoordinator(),
                 bubbleDataRepository,
-                mock<BubbleTransitions>(),
+                bubbleTransitions,
                 mock<IStatusBarService>(),
                 windowManager,
                 displayInsetsController,
@@ -500,6 +577,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     }
 
     companion object {
+        private val COMPONENT = ComponentName("com.example.app", "com.example.app.MainActivity")
+
         private fun createFakeInsetsState(imeVisible: Boolean): InsetsState {
             val insetsState = InsetsState()
             if (imeVisible) {

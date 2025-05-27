@@ -56,7 +56,9 @@ import org.mockito.kotlin.verify
 class DefaultMixedHandlerTest : ShellTestCase() {
 
     private val transitions = mock<Transitions>()
-    private val splitScreenController = mock<SplitScreenController>()
+    private val splitScreenController = mock<SplitScreenController> {
+        on { transitionHandler } doReturn mock<StageCoordinator>()
+    }
     private val pipTransitionController = mock<PipTransitionController>()
     private val recentsTransitionHandler = mock<RecentsTransitionHandler>()
     private val keyguardTransitionHandler = mock<KeyguardTransitionHandler>()
@@ -81,9 +83,6 @@ class DefaultMixedHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        splitScreenController.stub {
-            on { transitionHandler } doReturn mock<StageCoordinator>()
-        }
         shellInit.init()
     }
 
@@ -150,86 +149,75 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         }
 
         mixedHandler.handleRequest(Binder(), request)
-        verify(remoteTransition).onTransitionConsumed(any(), eq(false));
+        verify(remoteTransition).onTransitionConsumed(any(), eq(false))
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnterFromAppBubble_noTriggerTask_notHandled() {
+    fun test_requestHasBubbleEnterFromAppBubbleOrExistingBubble_noTriggerTask_notHandled() {
         val noTriggerTaskRequest = createTransitionRequestInfo()
 
-        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubble(noTriggerTaskRequest)).isFalse()
+        assertThat(
+            mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(noTriggerTaskRequest)
+        ).isFalse()
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnterFromAppBubble_notAppBubble_notHandled() {
+    fun test_requestHasBubbleEnterFromAppBubbleOrExistingBubble_notAppBubble_notHandled() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
-        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubble(request)).isFalse()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnterFromAppBubble_hasExistingBubbleTask_notHandled() {
-        val runningTask = createRunningTask(100)
-        val request = createTransitionRequestInfo(runningTask)
-
-        bubbleTransitions.stub {
-            on { hasBubbleWithTaskId(100) } doReturn true
-            on { shouldBeAppBubble(runningTask) } doReturn true
-        }
-
-        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubble(request)).isFalse()
+        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
+            .isFalse()
     }
 
     // TODO(b/408453889): To be removed once we handle transitions with stack view
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnterFromAppBubble_notShowingAsBubbleBar_notHandled() {
+    fun test_requestHasBubbleEnterFromAppBubbleOrExistingBubble_notShowingAsBubbleBar_notHandled() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
         bubbleTransitions.stub {
-            on { hasBubbleWithTaskId(100) } doReturn false
             on { isShowingAsBubbleBar } doReturn false
             on { shouldBeAppBubble(runningTask) } doReturn true
         }
 
-        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubble(request)).isFalse()
+        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
+            .isFalse()
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestHasBubbleEnterFromAppBubble() {
+    fun test_requestHasBubbleEnterFromAppBubbleOrExistingBubble() {
         val runningTask = createRunningTask(100)
         val request = createTransitionRequestInfo(runningTask)
 
         bubbleTransitions.stub {
-            on { hasBubbleWithTaskId(100) } doReturn false
             on { isShowingAsBubbleBar } doReturn true
             on { shouldBeAppBubble(runningTask) } doReturn true
         }
 
-        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubble(request)).isTrue()
+        assertThat(mixedHandler.requestHasBubbleEnterFromAppBubbleOrExistingBubble(request))
+            .isTrue()
     }
 
     @Test
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
-    fun test_requestBubbleEnterFromAppBubbleConsumesRemote() {
+    fun test_handleRequest_bubbleEnterFromAppBubble_consumesRemote() {
         val runningTask = createRunningTask(100)
         val remoteTransition = mock<IRemoteTransition>()
         val request = createTransitionRequestInfo(runningTask, RemoteTransition(remoteTransition))
 
         bubbleTransitions.stub {
-            on { hasBubbleWithTaskId(100) } doReturn false
             on { isShowingAsBubbleBar } doReturn true
             on { shouldBeAppBubble(runningTask) } doReturn true
         }
 
         mixedHandler.handleRequest(Binder(), request)
-        verify(remoteTransition).onTransitionConsumed(any(), eq(false));
+
+        verify(remoteTransition).onTransitionConsumed(any(), eq(false))
     }
 
     private fun createTransitionRequestInfo(

@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
+import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.Binder
 import android.os.IBinder
@@ -46,6 +47,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -112,6 +114,26 @@ class BubbleTaskStackListenerTest {
         )
 
         verify(bubbleData).setSelectedBubbleAndExpandStack(bubble)
+    }
+
+    @Test
+    fun onActivityRestartAttempt_inStackAppBubbleMovingToFront_doesNothing() {
+        task.configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+        bubbleController.stub {
+            on { shouldBeAppBubble(task) } doReturn true
+        }
+        bubbleData.stub {
+            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
+        }
+
+        bubbleTaskStackListener.onActivityRestartAttempt(
+            task,
+            homeTaskVisible = false,
+            clearedTask = false,
+            wasVisible = false,
+        )
+
+        verify(bubbleData, never()).setSelectedBubbleAndExpandStack(bubble)
     }
 
     @Test
