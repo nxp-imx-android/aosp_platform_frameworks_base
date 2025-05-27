@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
@@ -27,12 +26,16 @@ import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
-import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.data.repository.fakeRemoteInputRepository
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
@@ -45,35 +48,21 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.value
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
+
     private val kosmos =
         testKosmos().apply {
             fakeFeatureFlagsClassic.apply { set(Flags.FULL_SCREEN_USER_SWITCHER, false) }
         }
-    private val testScope = kosmos.testScope
-
-    private val activeNotificationListRepository = kosmos.activeNotificationListRepository
-    private val fakeKeyguardRepository = kosmos.fakeKeyguardRepository
-    private val fakePowerRepository = kosmos.fakePowerRepository
-    private val fakeRemoteInputRepository = kosmos.fakeRemoteInputRepository
-    private val fakeUserSetupRepository = kosmos.fakeUserSetupRepository
-    private val headsUpRepository = kosmos.headsUpNotificationRepository
-
-    private val shadeTestUtil by lazy { kosmos.shadeTestUtil }
 
     private lateinit var underTest: NotificationListViewModel
 
@@ -99,23 +88,23 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun isImportantForAccessibility_falseWhenNoNotifs() =
-        testScope.runTest {
-            val important by collectLastValue(underTest.isImportantForAccessibility)
+        kosmos.runTest {
+            val isImportant by collectLastValue(underTest.isImportantForAccessibility)
 
             // WHEN on lockscreen
             fakeKeyguardRepository.setStatusBarState(StatusBarState.KEYGUARD)
             // AND has no notifs
             activeNotificationListRepository.setActiveNotifs(count = 0)
-            testScope.runCurrent()
+            runCurrent()
 
             // THEN not important
-            assertThat(important).isFalse()
+            assertThat(isImportant).isFalse()
         }
 
     @Test
     fun isImportantForAccessibility_trueWhenNotifs() =
-        testScope.runTest {
-            val important by collectLastValue(underTest.isImportantForAccessibility)
+        kosmos.runTest {
+            val isImportant by collectLastValue(underTest.isImportantForAccessibility)
 
             // WHEN on lockscreen
             fakeKeyguardRepository.setStatusBarState(StatusBarState.KEYGUARD)
@@ -124,13 +113,13 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             runCurrent()
 
             // THEN is important
-            assertThat(important).isTrue()
+            assertThat(isImportant).isTrue()
         }
 
     @Test
     fun isImportantForAccessibility_trueWhenNotKeyguard() =
-        testScope.runTest {
-            val important by collectLastValue(underTest.isImportantForAccessibility)
+        kosmos.runTest {
+            val isImportant by collectLastValue(underTest.isImportantForAccessibility)
 
             // WHEN not on lockscreen
             fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
@@ -139,14 +128,14 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             runCurrent()
 
             // THEN is still important
-            assertThat(important).isTrue()
+            assertThat(isImportant).isTrue()
         }
 
     // NOTE: The empty shade view and the footer view should be mutually exclusive.
 
     @Test
     fun shouldShowEmptyShadeView_trueWhenNoNotifs() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
@@ -162,7 +151,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_falseWhenNotifs() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
@@ -176,7 +165,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_falseWhenQsExpandedDefault() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
@@ -191,7 +180,9 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_trueWhenQsExpandedInSplitShade() =
-        testScope.runTest {
+        kosmos.runTest {
+            enableSplitShade()
+            runCurrent()
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
@@ -202,7 +193,6 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             shadeTestUtil.setQsExpansion(1f)
             // AND split shade is enabled
             shadeTestUtil.setShadeExpansion(1f)
-            shadeTestUtil.setSplitShade(true)
             runCurrent()
 
             // THEN empty shade is visible
@@ -212,7 +202,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_notAnimatingWhenQsExpandedOnKeyguard() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView)
 
             // WHEN has no notifs
@@ -230,7 +220,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_trueWhenLockedShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
             val shouldIncludeFooterView by collectFooterViewVisibility()
@@ -248,7 +238,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_falseWhenKeyguard() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
@@ -263,7 +253,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldShowEmptyShadeView_falseWhenStartingToSleep() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
 
             // WHEN has no notifs
@@ -280,7 +270,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_trueWhenShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
@@ -299,7 +289,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_trueWhenLockedShade() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldIncludeFooterView by collectFooterViewVisibility()
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
@@ -318,7 +308,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_falseWhenKeyguard() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -333,7 +323,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_falseWhenUserNotSetUp() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -351,7 +341,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_falseWhenStartingToSleep() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -369,7 +359,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_falseWhenQsExpandedDefault() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -388,7 +378,9 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_trueWhenQsExpandedSplitShade() =
-        testScope.runTest {
+        kosmos.runTest {
+            enableSplitShade()
+            runCurrent()
             val shouldIncludeFooterView by collectFooterViewVisibility()
             val shouldShowEmptyShadeView by
                 collectLastValue(underTest.shouldShowEmptyShadeView.map { it.value })
@@ -400,8 +392,6 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             // AND shade is open
             fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
             shadeTestUtil.setShadeExpansion(1f)
-            // AND split shade is enabled
-            shadeTestUtil.setSplitShade(true)
             runCurrent()
 
             // THEN footer is visible
@@ -411,7 +401,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_falseWhenRemoteInputActive() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -429,7 +419,9 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     fun shouldIncludeFooterView_animatesWhenShade() =
-        testScope.runTest {
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -444,8 +436,48 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         }
 
     @Test
+    @EnableSceneContainer
+    fun shouldShowFooterView_dualShadeWithNotifs_animatesWhenShade() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val shouldShow by collectLastValue(underTest.shouldShowFooterView)
+
+            // WHEN has notifs
+            activeNotificationListRepository.setActiveNotifs(count = 2)
+            // AND shade is open and fully expanded
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            shadeTestUtil.setShadeExpansion(1f)
+            runCurrent()
+
+            // THEN footer visibility animates in
+            assertThat(shouldShow?.isAnimating).isTrue()
+            assertThat(shouldShow?.value).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun shouldShowFooterView_dualShadeWithoutNotifs_animatesWhenShade() =
+        kosmos.runTest {
+            enableDualShade()
+            runCurrent()
+            val shouldShow by collectLastValue(underTest.shouldShowFooterView)
+
+            // WHEN has no notifs
+            activeNotificationListRepository.setActiveNotifs(count = 0)
+            // AND shade is open and fully expanded
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            shadeTestUtil.setShadeExpansion(1f)
+            runCurrent()
+
+            // THEN footer visibility animates in
+            assertThat(shouldShow?.isAnimating).isTrue()
+            assertThat(shouldShow?.value).isTrue()
+        }
+
+    @Test
     fun shouldIncludeFooterView_notAnimatingOnKeyguard() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldInclude by collectFooterViewVisibility()
 
             // WHEN has notifs
@@ -462,7 +494,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun shouldShowFooterView_falseWhenShadeIsClosed() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldShow by collectLastValue(underTest.shouldShowFooterView)
 
             // WHEN shade is closed
@@ -477,8 +509,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun shouldShowFooterView_dualShade_trueWhenShadeIsExpanded() =
-        testScope.runTest {
-            kosmos.enableDualShade()
+        kosmos.runTest {
+            enableDualShade()
             runCurrent()
 
             val shouldShow by collectLastValue(underTest.shouldShowFooterView)
@@ -495,8 +527,10 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun shouldShowFooterView_singleShade_falseWhenNoNotifs() =
-        testScope.runTest {
-            kosmos.enableSingleShade()
+        kosmos.runTest {
+            enableSingleShade()
+            runCurrent()
+
             val shouldShow by collectLastValue(underTest.shouldShowFooterView)
 
             // WHEN shade is open, has no notifs
@@ -512,8 +546,8 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun shouldShowFooterView_dualShade_trueWhenNoNotifs() =
-        testScope.runTest {
-            kosmos.enableDualShade()
+        kosmos.runTest {
+            enableDualShade()
             runCurrent()
 
             val shouldShow by collectLastValue(underTest.shouldShowFooterView)
@@ -531,7 +565,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @DisableSceneContainer
     fun shouldHideFooterView_trueWhenShadeIsClosed() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldHide by collectLastValue(underTest.shouldHideFooterView)
 
             // WHEN shade is closed
@@ -546,7 +580,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @DisableSceneContainer
     fun shouldHideFooterView_falseWhenShadeIsOpen() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldHide by collectLastValue(underTest.shouldHideFooterView)
 
             // WHEN shade is open
@@ -561,7 +595,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @DisableSceneContainer
     fun shouldHideFooterView_falseWhenQSPartiallyOpen() =
-        testScope.runTest {
+        kosmos.runTest {
             val shouldHide by collectLastValue(underTest.shouldHideFooterView)
 
             // WHEN QS partially open
@@ -577,7 +611,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun pinnedHeadsUpRows_filtersForPinnedItems() =
-        testScope.runTest {
+        kosmos.runTest {
             val pinnedHeadsUpRows by collectLastValue(underTest.pinnedHeadsUpRowKeys)
 
             // WHEN there are no pinned rows
@@ -587,7 +621,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
                     FakeHeadsUpRowRepository(key = "1"),
                     FakeHeadsUpRowRepository(key = "2"),
                 )
-            headsUpRepository.setNotifications(rows)
+            headsUpNotificationRepository.setNotifications(rows)
             runCurrent()
 
             // THEN the list is empty
@@ -618,10 +652,10 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun hasPinnedHeadsUpRows_true() =
-        testScope.runTest {
+        kosmos.runTest {
             val hasPinnedHeadsUpRow by collectLastValue(underTest.hasPinnedHeadsUpRow)
 
-            headsUpRepository.setNotifications(
+            headsUpNotificationRepository.setNotifications(
                 FakeHeadsUpRowRepository(key = "0", isPinned = true),
                 FakeHeadsUpRowRepository(key = "1"),
             )
@@ -633,10 +667,10 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun hasPinnedHeadsUpRows_false() =
-        testScope.runTest {
+        kosmos.runTest {
             val hasPinnedHeadsUpRow by collectLastValue(underTest.hasPinnedHeadsUpRow)
 
-            headsUpRepository.setNotifications(
+            headsUpNotificationRepository.setNotifications(
                 FakeHeadsUpRowRepository(key = "0"),
                 FakeHeadsUpRowRepository(key = "1"),
             )
@@ -648,10 +682,10 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun topHeadsUpRow_emptyList_null() =
-        testScope.runTest {
+        kosmos.runTest {
             val topHeadsUpRow by collectLastValue(underTest.topHeadsUpRow)
 
-            headsUpRepository.setNotifications(emptyList())
+            headsUpNotificationRepository.setNotifications(emptyList())
             runCurrent()
 
             assertThat(topHeadsUpRow).isNull()
@@ -660,7 +694,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun headsUpAnimationsEnabled_true() =
-        testScope.runTest {
+        kosmos.runTest {
             val animationsEnabled by collectLastValue(underTest.headsUpAnimationsEnabled)
 
             shadeTestUtil.setQsExpansion(0.0f)
@@ -673,7 +707,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     @EnableSceneContainer
     fun headsUpAnimationsEnabled_keyguardShowing_true() =
-        testScope.runTest {
+        kosmos.runTest {
             val animationsEnabled by collectLastValue(underTest.headsUpAnimationsEnabled)
 
             shadeTestUtil.setQsExpansion(0.0f)
@@ -683,7 +717,7 @@ class NotificationListViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             assertThat(animationsEnabled).isTrue()
         }
 
-    private fun TestScope.collectFooterViewVisibility() =
+    private fun Kosmos.collectFooterViewVisibility() =
         collectLastValue(
             if (SceneContainerFlag.isEnabled) underTest.shouldShowFooterView
             else underTest.shouldIncludeFooterView
