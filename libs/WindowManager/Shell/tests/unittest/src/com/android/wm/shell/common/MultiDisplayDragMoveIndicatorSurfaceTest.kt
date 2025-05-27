@@ -26,7 +26,6 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.shared.R
-import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -49,7 +48,6 @@ import org.mockito.quality.Strictness
 class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
     private lateinit var display: Display
     private val taskInfo = TestRunningTaskInfoBuilder().build()
-    private val windowDecoration = mock<DesktopModeWindowDecoration>()
     private val mockSurface = mock<SurfaceControl>()
     private val mockTransaction = mock<SurfaceControl.Transaction>()
     private val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
