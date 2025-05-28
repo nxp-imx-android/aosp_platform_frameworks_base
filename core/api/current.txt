@@ -47111,7 +47111,7 @@ package android.telephony {
     field public static final int RESULT_RIL_SUBSCRIPTION_NOT_AVAILABLE = 128; // 0x80
     field public static final int RESULT_RIL_SYSTEM_ERR = 108; // 0x6c
     field public static final int RESULT_SMS_BLOCKED_DURING_EMERGENCY = 29; // 0x1d
-    field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final int RESULT_SMS_SEND_FAIL_AFTER_MAX_RETRY = 138; // 0x8a
+    field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final int RESULT_SMS_SEND_FAILED_AFTER_MAX_RETRY = 138; // 0x8a
     field public static final int RESULT_SMS_SEND_RETRY_FAILED = 30; // 0x1e
     field public static final int RESULT_SYSTEM_ERROR = 15; // 0xf
     field public static final int RESULT_UNEXPECTED_EVENT_STOP_SENDING = 28; // 0x1c
