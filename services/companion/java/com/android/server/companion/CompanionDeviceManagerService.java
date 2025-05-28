@@ -137,6 +137,8 @@ public class CompanionDeviceManagerService extends SystemService {
     private final DisassociationProcessor mDisassociationProcessor;
     private final CrossDeviceSyncController mCrossDeviceSyncController;
 
+    private final Object mPackageLock = new Object();
+
     public CompanionDeviceManagerService(Context context) {
         super(context);
 
@@ -784,22 +786,30 @@ public class CompanionDeviceManagerService extends SystemService {
     private final PackageMonitor mPackageMonitor = new PackageMonitor() {
         @Override
         public void onPackageRemoved(String packageName, int uid) {
-            onPackageRemoveOrDataClearedInternal(getChangingUserId(), packageName);
+            synchronized (mPackageLock) {
+                onPackageRemoveOrDataClearedInternal(getChangingUserId(), packageName);
+            }
         }
 
         @Override
         public void onPackageDataCleared(String packageName, int uid) {
-            onPackageRemoveOrDataClearedInternal(getChangingUserId(), packageName);
+            synchronized (mPackageLock) {
+                onPackageRemoveOrDataClearedInternal(getChangingUserId(), packageName);
+            }
         }
 
         @Override
         public void onPackageModified(@NonNull String packageName) {
-            onPackageModifiedInternal(getChangingUserId(), packageName);
+            synchronized (mPackageLock) {
+                onPackageModifiedInternal(getChangingUserId(), packageName);
+            }
         }
 
         @Override
         public void onPackageAdded(String packageName, int uid) {
-            onPackageAddedInternal(getChangingUserId(), packageName);
+            synchronized (mPackageLock) {
+                onPackageAddedInternal(getChangingUserId(), packageName);
+            }
         }
     };
 
