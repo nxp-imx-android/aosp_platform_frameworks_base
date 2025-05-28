@@ -123,8 +123,9 @@ public class BubbleTaskViewListener implements TaskView.Listener {
         // Post to keep the lifecycle normal
         // TODO - currently based on type, really it's what the "launch item" is.
         mParentView.post(() -> {
-            ProtoLog.d(WM_SHELL_BUBBLES, "onInitialized: calling startActivity, bubble=%s",
-                    getBubbleKey());
+            ProtoLog.d(WM_SHELL_BUBBLES,
+                    "onInitialized: calling startActivity, bubble=%s hasPreparingTransition=%b",
+                    getBubbleKey(), mBubble.getPreparingTransition() != null);
             try {
                 options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
                 options.setPendingIntentBackgroundActivityStartMode(

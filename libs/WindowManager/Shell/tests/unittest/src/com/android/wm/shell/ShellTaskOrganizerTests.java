@@ -297,6 +297,34 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testAddPendingListenerForTaskId() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        TrackingTaskListener listener = new TrackingTaskListener();
+
+        // Add the listener first, then report the task to the organizer
+        mOrganizer.addListenerForTaskId(listener, 1);
+        assertFalse(mOrganizer.hasTaskListener(1));
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        // Verify that the listener got notified anyways
+        assertTrue(listener.appeared.contains(task1));
+    }
+
+    @Test
+    public void testRemovePendingListenerForTaskId() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        TrackingTaskListener listener = new TrackingTaskListener();
+
+        // Add the listener, remove the listener, then report the task to the organizer
+        mOrganizer.addListenerForTaskId(listener, 1);
+        mOrganizer.removeListener(listener);
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        // Verify that the pending listener does not get notified
+        assertFalse(listener.appeared.contains(task1));
+    }
+
+    @Test
     public void testAddListenerForTaskId_afterTypeListener() {
         RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
         TrackingTaskListener mwListener = new TrackingTaskListener();
