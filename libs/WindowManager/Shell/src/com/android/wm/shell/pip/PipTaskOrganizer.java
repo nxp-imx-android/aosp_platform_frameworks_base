@@ -133,8 +133,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
             SystemProperties.getInt(
                     "persist.wm.debug.extra_content_overlay_fade_out_delay_ms", 400);
 
-    private static final int CRASH_RECOVERY_CHECK_DELAY_MS = 3000;
-
     private final Context mContext;
     private final SyncTransactionQueue mSyncTransactionQueue;
     private final PipBoundsState mPipBoundsState;
@@ -372,13 +370,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     @Nullable
     private Rect mSwipeSourceRectHint;
 
-    /**
-     * Tracks whether we've actually started an enter transition after receiving an onTaskAppeared.
-     *
-     * Used for cleaning up state from crash recovery.
-     */
-    private boolean mHasTriggeredEnterPipTransition;
-
     public PipTaskOrganizer(Context context,
             @NonNull ShellInit shellInit,
             @NonNull SyncTransactionQueue syncTransactionQueue,
@@ -430,13 +421,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
         if (!PipFlags.isPip2ExperimentEnabled()) {
             shellInit.addInitCallback(this::onInit, this);
         }
-
-        mPipTransitionState.addOnPipTransitionStateChangedListener(
-                (oldState, newState) -> {
-                    if (mPipTransitionState.isEnteringPip()) {
-                        mHasTriggeredEnterPipTransition = true;
-                    }
-                });
     }
 
     @VisibleForTesting
@@ -832,15 +816,6 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
                     mPictureInPictureParams.getSubtitle());
             logRemoteActions(mPictureInPictureParams);
         }
-
-        // set delayed check that we are entering pip, otherwise this indicates
-        // a systemui crash and we should clean up pip state
-        mHasTriggeredEnterPipTransition = false;
-        mMainExecutor.executeDelayed(() -> {
-            if (!mHasTriggeredEnterPipTransition) {
-                removePipImmediately();
-            }
-        }, CRASH_RECOVERY_CHECK_DELAY_MS);
 
         mPipUiEventLoggerLogger.setTaskInfo(mTaskInfo);
 
