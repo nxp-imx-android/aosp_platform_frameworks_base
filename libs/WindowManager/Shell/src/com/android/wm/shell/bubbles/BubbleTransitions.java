@@ -546,6 +546,7 @@ public class BubbleTransitions {
 
         @Override
         public void skip() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.skip()");
             mBubble.setPreparingTransition(null);
             cleanup();
         }
@@ -582,6 +583,7 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction startTransaction,
                 @NonNull SurfaceControl.Transaction finishTransaction,
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.startAnimation()");
 
             // Identify the task that we are converting or launching. Note, we iterate back to front
             // so that we can adjust alpha for revealed surfaces as needed.
@@ -648,13 +650,13 @@ public class BubbleTransitions {
         }
 
         private void startExpandAnim() {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.startExpandAnim(): "
-                    + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
             if (mExpandedViewAnimator.canExpandView(mBubble)) {
                 mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
             } else if (mExpandedViewAnimator.isExpanded()) {
                 mTransitionProgress.setReadyToExpand();
             }
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.startExpandAnim(): "
+                    + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
             if (mTransitionProgress.isReadyToAnimate()) {
                 playAnimation();
             }
@@ -669,8 +671,9 @@ public class BubbleTransitions {
         public void surfaceCreated() {
             mTransitionProgress.setSurfaceReady();
             mMainExecutor.execute(() -> {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.surfaceCreated(): "
-                        + "mTaskLeash=%s", mTaskLeash);
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                        "LaunchNewTaskBubble.surfaceCreated(): mTaskLeash=%s readyToAnimate=%b",
+                        mTaskLeash, mTransitionProgress.isReadyToAnimate());
                 final TaskViewTaskController tvc = mBubble.getTaskView().getController();
                 final TaskViewRepository.TaskViewState state = mRepository.byTaskView(tvc);
                 if (state == null) return;
@@ -682,7 +685,8 @@ public class BubbleTransitions {
         }
 
         private void playAnimation() {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.playAnimation(): playConvert=%b",
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "LaunchNewTaskBubble.playAnimation(): playConvert=%b",
                     mPlayConvertTaskAnimation);
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
             final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
@@ -715,6 +719,7 @@ public class BubbleTransitions {
         }
 
         private void cleanup() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.cleanup()");
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
         }
@@ -868,6 +873,7 @@ public class BubbleTransitions {
 
         @Override
         public void skip() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvert.skip()");
             mBubble.setPreparingTransition(null);
             cleanup();
         }
@@ -910,6 +916,7 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction startTransaction,
                 @NonNull SurfaceControl.Transaction finishTransaction,
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvert.startAnimation()");
             mPlayingTransition = transition;
 
             // Identify the task that we are converting or launching. Note, we iterate back to front
@@ -976,12 +983,12 @@ public class BubbleTransitions {
         }
 
         private void startExpandAnim() {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.startExpandAnim(): "
-                    + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
             final boolean animate = mExpandedViewAnimator.canExpandView(mBubble);
             if (animate) {
                 mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
             }
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvert.startExpandAnim(): "
+                    + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
             if (mPriorBubble != null) {
                 // TODO: an animation. For now though, just remove it.
                 final BubbleBarExpandedView priorView = mPriorBubble.getBubbleBarExpandedView();
@@ -1002,8 +1009,9 @@ public class BubbleTransitions {
         public void surfaceCreated() {
             mTransitionProgress.setSurfaceReady();
             mMainExecutor.execute(() -> {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.surfaceCreated(): "
-                        + "mTaskLeash=%s", mTaskLeash);
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                        "LaunchOrConvert.surfaceCreated(): mTaskLeash=%s readyToAnimate=%b",
+                        mTaskLeash, mTransitionProgress.isReadyToAnimate());
                 final TaskViewTaskController tvc = mBubble.getTaskView().getController();
                 final TaskViewRepository.TaskViewState state = mRepository.byTaskView(tvc);
                 if (state == null) return;
@@ -1015,8 +1023,9 @@ public class BubbleTransitions {
         }
 
         private void playAnimation(boolean animate) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleTransitions.playAnimation(): animate=%b",
-                    animate);
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "LaunchOrConvert.playAnimation(): playConvert=%b",
+                    mPlayConvertTaskAnimation);
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
             final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
             // Set task position to 0,0 as it will be placed inside the TaskView
@@ -1053,10 +1062,10 @@ public class BubbleTransitions {
         }
 
         private void cleanup() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.cleanup(): removeCookie=%s",
+                    mLaunchCookie.binder);
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Removing pending transition on cleanup for "
-                            + "cookie=%s", mLaunchCookie.binder);
             mPendingEnterTransitions.remove(mLaunchCookie.binder);
             mEnterTransitions.remove(mPlayingTransition);
         }
@@ -1135,6 +1144,7 @@ public class BubbleTransitions {
 
         @VisibleForTesting
         void onInflated(Bubble b) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble.onInflated()");
             if (b != mBubble) {
                 throw new IllegalArgumentException("inflate callback doesn't match bubble");
             }
@@ -1167,6 +1177,7 @@ public class BubbleTransitions {
 
         @Override
         public void skip() {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble.skip()");
             mBubble.setPreparingTransition(null);
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
@@ -1201,6 +1212,7 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction finishTransaction,
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
             if (mTransition != transition) return false;
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble.startAnimation()");
             boolean found = false;
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change chg = info.getChanges().get(i);
@@ -1260,6 +1272,8 @@ public class BubbleTransitions {
             if (animate) {
                 mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
             }
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble.startExpandAnim(): "
+                    + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
             if (mPriorBubble != null) {
                 // TODO: an animation. For now though, just remove it.
                 final BubbleBarExpandedView priorView = mPriorBubble.getBubbleBarExpandedView();
@@ -1280,6 +1294,9 @@ public class BubbleTransitions {
         public void surfaceCreated() {
             mTransitionProgress.setSurfaceReady();
             mMainExecutor.execute(() -> {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                        "ConvertToBubble.surfaceCreated(): mTaskLeash=%s readyToAnimate=%b",
+                        mTaskLeash, mTransitionProgress.isReadyToAnimate());
                 final TaskViewTaskController tvc = mBubble.getTaskView().getController();
                 final TaskViewRepository.TaskViewState state = mRepository.byTaskView(tvc);
                 if (state == null) return;
@@ -1291,6 +1308,7 @@ public class BubbleTransitions {
         }
 
         private void playAnimation(boolean animate) {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "ConvertToBubble.playAnimation()");
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
             final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
             // Set task position to 0,0 as it will be placed inside the TaskView
@@ -1298,7 +1316,7 @@ public class BubbleTransitions {
             mTaskViewTransitions.prepareOpenAnimation(tv, true /* new */, startT, mFinishT,
                     (ActivityManager.RunningTaskInfo) mTaskInfo, mTaskLeash, mFinishWct);
             // Add the task view task listener manually since we aren't going through
-            // TaskViewTransitions (which normally sets up the listener via a pending launch cookie
+            // TaskViewTransitions (which normally sets up the listener via a pending launch cookie)
             mTaskOrganizer.addListenerForTaskId(tv, mTaskInfo.taskId);
 
             if (mFinishWct.isEmpty()) {
