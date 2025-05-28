@@ -2720,18 +2720,13 @@ class UserController implements Handler.Callback {
             Slogf.i(TAG, "User %d is scheduled for bg stopping later, so wait until then", userId);
             return;
         }
-        if (avoidStoppingUserDueToUpcomingAlarm(userId)) {
-            // We want this user running soon for alarm-purposes, so don't stop it now. Reschedule.
-            Slogf.d(TAG, "User %d will fire an alarm soon, so reschedule bg stopping", userId);
+        if (avoidStoppingUserRightNow(userId)) {
+            Slogf.d(TAG, "Rescheduling bg stopping of user %d because it (or its profile) should "
+                    + "not be stopped right now ", userId);
             rescheduleStopOfBackgroundUser(userId);
             return;
         }
-        if (mInjector.getAudioManagerInternal().isUserPlayingAudio(userId)) {
-            // User is audible (even if invisibly, e.g. via an alarm), so don't stop it. Reschedule.
-            Slogf.d(TAG, "User %d is playing audio, so reschedule bg stopping", userId);
-            rescheduleStopOfBackgroundUser(userId);
-            return;
-        }
+
         synchronized (mLock) {
             if (getCurrentOrTargetUserIdLU() == userId) {
                 // User is (somehow) already in the foreground, or we're currently switching to it.
@@ -2752,6 +2747,35 @@ class UserController implements Handler.Callback {
             Slogf.i(TAG, "Stopping background user %d due to inactivity", userId);
             stopUsersLU(userId, /* allowDelayedLocking= */ true, null, null);
         }
+    }
+
+    /**
+     * Returns whether to avoid stopping the given user because, even though it may only be in the
+     * background, it (or {@link #getUsersToStopLU(int) a user that would stop if it stopped}) is
+     * still currently useful (e.g. playing audio, or has an upcoming alarm).
+     *
+     * Makes requests of other services, so don't call while holding a lock.
+     */
+    private boolean avoidStoppingUserRightNow(@UserIdInt int userId) {
+        final int[] usersThatWouldStop;
+        synchronized (mLock) {
+            usersThatWouldStop = getUsersToStopLU(userId);
+        }
+        for (int relatedUserId : usersThatWouldStop) {
+            if (avoidStoppingUserDueToUpcomingAlarm(relatedUserId)) {
+                // We want this user running soon for alarm-purposes, so don't stop it now.
+                Slogf.d(TAG, "Avoid stopping user %d because user %d will fire an alarm soon",
+                        userId, relatedUserId);
+                return true;
+            }
+            if (mInjector.getAudioManagerInternal().isUserPlayingAudio(relatedUserId)) {
+                // User is audible (even if invisibly, e.g. via an alarm), so don't stop it.
+                Slogf.d(TAG, "Avoid stopping user %d because user %d is playing audio",
+                        userId, relatedUserId);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
