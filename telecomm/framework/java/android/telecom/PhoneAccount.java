@@ -157,7 +157,10 @@ public final class PhoneAccount implements Parcelable {
      * <p>
      * Note: Only calls where the {@link Call.Details#getHandle()} {@link Uri#getScheme()} is
      * {@link #SCHEME_SIP} or {@link #SCHEME_TEL} will be logged at the current time.
+     * @deprecated Register {@link TelecomManager#ACTION_CALL_BACK} instead.
      */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_INTEGRATED_CALL_LOGS)
+    @Deprecated
     public static final String EXTRA_LOG_SELF_MANAGED_CALLS =
             "android.telecom.extra.LOG_SELF_MANAGED_CALLS";
 
