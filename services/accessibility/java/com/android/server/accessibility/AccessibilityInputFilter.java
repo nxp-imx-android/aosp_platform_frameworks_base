@@ -766,7 +766,7 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             // mKeyboardInterceptor does not forward KeyEvents to other EventStreamTransformations,
             // so it must be the last EventStreamTransformation for key events in the list.
             mKeyboardInterceptor = new KeyboardInterceptor(mAms,
-                    LocalServices.getService(WindowManagerPolicy.class));
+                    LocalServices.getService(InputManagerInternal.class));
             // Since the display id of KeyEvent always would be -1 and it would be dispatched to
             // the display with input focus directly, we only need one KeyboardInterceptor for
             // default display.
