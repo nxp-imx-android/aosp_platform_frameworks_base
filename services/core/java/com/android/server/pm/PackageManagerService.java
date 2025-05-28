@@ -8329,14 +8329,19 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     public Set<String> getAllPlatformRestrictedPermissions() {
         if (sRestrictedPermissions == null) {
             sRestrictedPermissions = new HashSet<>();
-            PackageInfo pi = snapshotComputer().getPackageInfo(
-                    PLATFORM_PACKAGE_NAME, GET_PERMISSIONS, UserHandle.USER_SYSTEM);
-            if (pi.permissions != null) {
-                for (int i = 0; i < pi.permissions.length; i++) {
-                    if (pi.permissions[i].isRestricted()) {
-                        sRestrictedPermissions.add(pi.permissions[i].name);
+            final long token = Binder.clearCallingIdentity();
+            try {
+                PackageInfo pi = snapshotComputer().getPackageInfo(
+                        PLATFORM_PACKAGE_NAME, GET_PERMISSIONS, UserHandle.USER_SYSTEM);
+                if (pi.permissions != null) {
+                    for (int i = 0; i < pi.permissions.length; i++) {
+                        if (pi.permissions[i].isRestricted()) {
+                            sRestrictedPermissions.add(pi.permissions[i].name);
+                        }
                     }
                 }
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
         }
         return sRestrictedPermissions;
