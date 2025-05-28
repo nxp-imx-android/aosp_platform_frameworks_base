@@ -22,15 +22,17 @@ import android.content.Context;
 import android.companion.CompanionDeviceManager;
 import android.util.Slog;
 
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+
 import java.util.function.BiConsumer;
 
 /**
  * Responsible for receiving task continuity messages from the user's other
  * devices.
  */
-class TaskReceiver {
+class TaskContinuityMessageReceiver {
 
-    private static final String TAG = "TaskReceiver";
+    private static final String TAG = "TaskContinuityMessageReceiver";
 
     private final Context mContext;
     private final CompanionDeviceManager mCompanionDeviceManager;
@@ -38,9 +40,11 @@ class TaskReceiver {
     private final BiConsumer<Integer, byte[]> mOnMessageReceivedListener
         = this::onMessageReceived;
 
+    private BiConsumer<Integer, TaskContinuityMessage> mOnTaskContinuityMessageReceivedListener;
+
     private boolean mIsListening = false;
 
-    TaskReceiver(Context context) {
+    TaskContinuityMessageReceiver(Context context) {
         mContext = context;
         mCompanionDeviceManager = context
             .getSystemService(CompanionDeviceManager.class);
@@ -48,13 +52,17 @@ class TaskReceiver {
 
     /**
      * Starts listening for task continuity messages.
+     *
+     * @return true if listening was started successfully, false otherwise.
      */
-    void startListening() {
+    boolean startListening(
+        BiConsumer<Integer, TaskContinuityMessage> onTaskContinuityMessageReceivedListener) {
         if (mIsListening) {
-            Slog.v(TAG, "TaskReceiver is already listening");
-            return;
+            Slog.v(TAG, "TaskContinuityMessageReceiver is already listening");
+            return false;
         }
 
+        mOnTaskContinuityMessageReceivedListener = onTaskContinuityMessageReceivedListener;
         mCompanionDeviceManager.addOnMessageReceivedListener(
             mContext.getMainExecutor(),
             MESSAGE_TASK_CONTINUITY,
@@ -62,6 +70,7 @@ class TaskReceiver {
         );
 
         mIsListening = true;
+        return true;
     }
 
     /**
@@ -69,9 +78,11 @@ class TaskReceiver {
      */
     void stopListening() {
         if (!mIsListening) {
-            Slog.v(TAG, "TaskReceiver is not listening");
+            Slog.v(TAG, "TaskContinuityMessageReceiver is not listening");
             return;
         }
+
+        mOnTaskContinuityMessageReceivedListener = null;
 
         mCompanionDeviceManager.removeOnMessageReceivedListener(
             MESSAGE_TASK_CONTINUITY,
@@ -82,5 +93,15 @@ class TaskReceiver {
 
     private void onMessageReceived(int associationId, byte[] data) {
         Slog.v(TAG, "Received message from association id: " + associationId);
+      try {
+            TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(data);
+            if (mOnTaskContinuityMessageReceivedListener != null) {
+                mOnTaskContinuityMessageReceivedListener.accept(
+                    associationId,
+                    taskContinuityMessage);
+            }
+      } catch (Exception e) {
+        Slog.e(TAG, "Failed to parse task continuity message", e);
+      }
     }
 }
