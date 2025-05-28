@@ -28,6 +28,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.statusbar.notification.collection.NotifCollectionCache
 import com.android.systemui.util.asIndenting
+import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.withIncreasedIndent
 import dagger.Module
 import dagger.Provides
@@ -64,13 +65,16 @@ interface NotificationIconStyleProvider {
 @SysUISingleton
 class NotificationIconStyleProviderImpl
 @Inject
-constructor(private val userManager: UserManager, dumpManager: DumpManager) :
-    NotificationIconStyleProvider, Dumpable {
+constructor(
+    private val userManager: UserManager,
+    dumpManager: DumpManager,
+    systemClock: SystemClock,
+) : NotificationIconStyleProvider, Dumpable {
     init {
         dumpManager.registerNormalDumpable(TAG, this)
     }
 
-    private val cache = NotifCollectionCache<Boolean>()
+    private val cache = NotifCollectionCache<Boolean>(systemClock = systemClock)
 
     override fun shouldShowAppIcon(notification: StatusBarNotification, context: Context): Boolean {
         return cache.getOrFetch(notification.packageName) {

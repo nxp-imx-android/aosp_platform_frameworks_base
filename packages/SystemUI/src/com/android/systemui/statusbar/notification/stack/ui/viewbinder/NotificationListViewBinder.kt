@@ -55,6 +55,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import com.android.systemui.statusbar.notification.ui.viewbinder.HeadsUpNotificationViewBinder
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
 import com.android.systemui.util.kotlin.getOrNull
+import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
@@ -86,6 +87,7 @@ constructor(
     private val notificationActivityStarter: Provider<NotificationActivityStarter>,
     @SilentHeader private val silentHeaderController: SectionHeaderController,
     private val viewModel: NotificationListViewModel,
+    private val systemClock: SystemClock,
 ) {
 
     fun bindWhileAttached(
@@ -303,7 +305,7 @@ constructor(
         if (NotificationsLiveDataStoreRefactor.isEnabled) {
             viewModel.logger.getOrNull()?.let { viewModel ->
                 loggerOptional.getOrNull()?.let { logger ->
-                    NotificationStatsLoggerBinder.bindLogger(view, logger, viewModel)
+                    NotificationStatsLoggerBinder.bindLogger(view, logger, viewModel, systemClock)
                 }
             }
         }

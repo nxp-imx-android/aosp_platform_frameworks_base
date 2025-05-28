@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.notification.stack.displaySwitchNotificati
 import com.android.systemui.statusbar.notification.stack.ui.view.notificationStatsLogger
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationListViewModel
 import com.android.systemui.statusbar.notification.ui.viewbinder.headsUpNotificationViewBinder
+import com.android.systemui.util.time.fakeSystemClock
 import java.util.Optional
 
 val Kosmos.notificationListViewBinder by Fixture {
@@ -44,5 +45,6 @@ val Kosmos.notificationListViewBinder by Fixture {
         notificationActivityStarter = { notificationActivityStarter },
         silentHeaderController = silentHeaderController,
         viewModel = notificationListViewModel,
+        systemClock = fakeSystemClock,
     )
 }

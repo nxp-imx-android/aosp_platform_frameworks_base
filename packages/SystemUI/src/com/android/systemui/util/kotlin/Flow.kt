@@ -18,7 +18,6 @@ package com.android.systemui.util.kotlin
 
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.util.time.SystemClock
-import com.android.systemui.util.time.SystemClockImpl
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
 import kotlin.time.Duration
@@ -217,37 +216,36 @@ fun <A> Flow<*>.sample(other: Flow<A>): Flow<A> = sample(other) { _, a -> a }
  * 1 (t=0ms), 3 (t=1000ms), 4 (t=2000ms), 5 (t=3000ms)
  * ```
  */
-fun <T> Flow<T>.throttle(periodMs: Long, clock: SystemClock = SystemClockImpl()): Flow<T> =
-    channelFlow {
-        coroutineScope {
-            var previousEmitTimeMs = 0L
-            var delayJob: Job? = null
-            var sendJob: Job? = null
-            val outerScope = this
+fun <T> Flow<T>.throttle(periodMs: Long, clock: SystemClock): Flow<T> = channelFlow {
+    coroutineScope {
+        var previousEmitTimeMs = 0L
+        var delayJob: Job? = null
+        var sendJob: Job? = null
+        val outerScope = this
 
-            collect {
-                delayJob?.cancel()
-                sendJob?.join()
-                val currentTimeMs = clock.elapsedRealtime()
-                val timeSinceLastEmit = currentTimeMs - previousEmitTimeMs
-                val timeUntilNextEmit = max(0L, periodMs - timeSinceLastEmit)
-                if (timeUntilNextEmit > 0L) {
-                    // We create delayJob to allow cancellation during the delay period
-                    delayJob = launch {
-                        delay(timeUntilNextEmit)
-                        sendJob =
-                            outerScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                                send(it)
-                                previousEmitTimeMs = clock.elapsedRealtime()
-                            }
-                    }
-                } else {
-                    send(it)
-                    previousEmitTimeMs = currentTimeMs
+        collect {
+            delayJob?.cancel()
+            sendJob?.join()
+            val currentTimeMs = clock.elapsedRealtime()
+            val timeSinceLastEmit = currentTimeMs - previousEmitTimeMs
+            val timeUntilNextEmit = max(0L, periodMs - timeSinceLastEmit)
+            if (timeUntilNextEmit > 0L) {
+                // We create delayJob to allow cancellation during the delay period
+                delayJob = launch {
+                    delay(timeUntilNextEmit)
+                    sendJob =
+                        outerScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                            send(it)
+                            previousEmitTimeMs = clock.elapsedRealtime()
+                        }
                 }
+            } else {
+                send(it)
+                previousEmitTimeMs = currentTimeMs
             }
         }
     }
+}
 
 inline fun <T1, T2, T3, T4, T5, T6, R> combine(
     flow: Flow<T1>,
@@ -384,80 +382,78 @@ inline fun Flow<Unit>.emitOnStart(): Flow<Unit> = onStart { emit(Unit) }
  * @param windowDuration The duration of the sliding window.
  * @return A Flow that emits Lists of elements within the current sliding window.
  */
-fun <T> Flow<T>.slidingWindow(
-    windowDuration: Duration,
-    clock: SystemClock = SystemClockImpl(),
-): Flow<List<T>> = channelFlow {
-    require(windowDuration.isPositive()) { "Window duration must be positive" }
+fun <T> Flow<T>.slidingWindow(windowDuration: Duration, clock: SystemClock): Flow<List<T>> =
+    channelFlow {
+        require(windowDuration.isPositive()) { "Window duration must be positive" }
 
-    // Use a Mutex to protect access to the buffer in case this flow is collected on a
-    // multi-threaded dispatcher.
-    val bufferMutex = Mutex()
-    val buffer = ArrayDeque<Pair<Duration, T>>()
+        // Use a Mutex to protect access to the buffer in case this flow is collected on a
+        // multi-threaded dispatcher.
+        val bufferMutex = Mutex()
+        val buffer = ArrayDeque<Pair<Duration, T>>()
 
-    coroutineScope {
-        var windowAdvancementJob: Job? = null
+        coroutineScope {
+            var windowAdvancementJob: Job? = null
 
-        collect { value ->
-            windowAdvancementJob?.cancel()
-            val now = clock.currentTimeMillis().milliseconds
+            collect { value ->
+                windowAdvancementJob?.cancel()
+                val now = clock.currentTimeMillis().milliseconds
 
-            bufferMutex.withLock {
-                buffer.addLast(now to value)
+                bufferMutex.withLock {
+                    buffer.addLast(now to value)
 
-                while (buffer.isNotEmpty() && buffer.first().first + windowDuration <= now) {
-                    buffer.removeFirst()
+                    while (buffer.isNotEmpty() && buffer.first().first + windowDuration <= now) {
+                        buffer.removeFirst()
+                    }
+                    send(buffer.map { it.second })
                 }
-                send(buffer.map { it.second })
-            }
 
-            // Keep the window advancing through time even if the source flow isn't emitting
-            // anymore. We stop advancing the window as soon as there are no items left in the
-            // buffer.
-            windowAdvancementJob = launch {
-                while (true) {
-                    // Acquire lock to check buffer state and calculate delay
-                    val timeUntilNextOldest: Duration? =
-                        bufferMutex.withLock {
-                            // If buffer is empty, the job is done
-                            if (buffer.isEmpty()) {
-                                return@withLock null
+                // Keep the window advancing through time even if the source flow isn't emitting
+                // anymore. We stop advancing the window as soon as there are no items left in the
+                // buffer.
+                windowAdvancementJob = launch {
+                    while (true) {
+                        // Acquire lock to check buffer state and calculate delay
+                        val timeUntilNextOldest: Duration? =
+                            bufferMutex.withLock {
+                                // If buffer is empty, the job is done
+                                if (buffer.isEmpty()) {
+                                    return@withLock null
+                                }
+
+                                // Calculate how long until the oldest element expires
+                                val nowMillis = clock.currentTimeMillis().milliseconds
+                                val oldestElementTime = buffer.first().first
+                                val windowStartTime = nowMillis - windowDuration
+
+                                // Time until the oldest element falls out of the window
+                                (oldestElementTime - windowStartTime).coerceAtLeast(Duration.ZERO)
                             }
 
-                            // Calculate how long until the oldest element expires
+                        if (timeUntilNextOldest == null) {
+                            break
+                        }
+
+                        // Delay until the oldest item is *supposed* to expire
+                        delay(timeUntilNextOldest)
+
+                        // Acquire lock again to remove the expired item (if it's still the oldest)
+                        // and send the updated buffer state
+                        bufferMutex.withLock {
                             val nowMillis = clock.currentTimeMillis().milliseconds
-                            val oldestElementTime = buffer.first().first
-                            val windowStartTime = nowMillis - windowDuration
-
-                            // Time until the oldest element falls out of the window
-                            (oldestElementTime - windowStartTime).coerceAtLeast(Duration.ZERO)
-                        }
-
-                    if (timeUntilNextOldest == null) {
-                        break
-                    }
-
-                    // Delay until the oldest item is *supposed* to expire
-                    delay(timeUntilNextOldest)
-
-                    // Acquire lock again to remove the expired item (if it's still the oldest)
-                    // and send the updated buffer state
-                    bufferMutex.withLock {
-                        val nowMillis = clock.currentTimeMillis().milliseconds
-                        var removed = false
-                        while (
-                            buffer.isNotEmpty() &&
-                                buffer.first().first + windowDuration <= nowMillis
-                        ) {
-                            buffer.removeFirst()
-                            removed = true
-                        }
-                        if (removed) {
-                            send(buffer.map { it.second })
+                            var removed = false
+                            while (
+                                buffer.isNotEmpty() &&
+                                    buffer.first().first + windowDuration <= nowMillis
+                            ) {
+                                buffer.removeFirst()
+                                removed = true
+                            }
+                            if (removed) {
+                                send(buffer.map { it.second })
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
