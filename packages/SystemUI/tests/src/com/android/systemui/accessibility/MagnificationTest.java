@@ -252,6 +252,44 @@ public class MagnificationTest extends SysuiTestCase {
     }
 
     @Test
+    public void onSetMagnifyKeyboard_delegateToMagnifier() {
+        mMagnification.mMagnificationSettingsControllerCallback.onSetMagnifyKeyboard(
+                TEST_DISPLAY, /* enable= */ true);
+        waitForIdleSync();
+
+        verify(mWindowMagnificationController).setMagnifyKeyboard(eq(true));
+        verify(mA11yLogger).log(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_PANEL_MAGNIFY_IME_ENABLED));
+
+        mMagnification.mMagnificationSettingsControllerCallback.onSetMagnifyKeyboard(
+                TEST_DISPLAY, /* enable= */ false);
+        waitForIdleSync();
+        verify(mA11yLogger).log(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_PANEL_MAGNIFY_IME_ENABLED));
+        verify(mA11yLogger).log(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_PANEL_MAGNIFY_IME_DISABLED));
+    }
+
+    @Test
+    public void onSetMagnifyTyping_delegateToMagnifier() {
+        mMagnification.mMagnificationSettingsControllerCallback.onSetMagnifyTyping(
+                TEST_DISPLAY, /* enable= */ true);
+        waitForIdleSync();
+
+        verify(mWindowMagnificationController).setMagnifyTyping(eq(true));
+        verify(mA11yLogger).log(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_PANEL_FOLLOW_TYPING_ENABLED));
+
+        mMagnification.mMagnificationSettingsControllerCallback.onSetMagnifyTyping(
+                TEST_DISPLAY, /* enable= */ false);
+        waitForIdleSync();
+        verify(mA11yLogger).log(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_PANEL_FOLLOW_TYPING_ENABLED));
+        verify(mA11yLogger).log(
+                eq(MagnificationSettingsEvent.MAGNIFICATION_SETTINGS_PANEL_FOLLOW_TYPING_DISABLED));
+    }
+
+    @Test
     public void onEditMagnifierSizeMode_windowActivated_delegateToMagnifier() {
         when(mWindowMagnificationController.isActivated()).thenReturn(true);
         mMagnification.mMagnificationSettingsControllerCallback.onEditMagnifierSizeMode(

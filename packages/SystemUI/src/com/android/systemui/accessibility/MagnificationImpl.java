@@ -534,11 +534,21 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                 @Override
                 public void onSetMagnifyTyping(int displayId, boolean enable) {
                     mHandler.post(() -> onSetMagnifyTypingInternal(displayId, enable));
+                    mA11yLogger.log(enable
+                            ? MagnificationSettingsEvent
+                                    .MAGNIFICATION_SETTINGS_PANEL_FOLLOW_TYPING_ENABLED
+                            : MagnificationSettingsEvent
+                                    .MAGNIFICATION_SETTINGS_PANEL_FOLLOW_TYPING_DISABLED);
                 }
 
                 @Override
                 public void onSetMagnifyKeyboard(int displayId, boolean enable) {
                     mHandler.post(() -> onSetMagnifyKeyboardInternal(displayId, enable));
+                    mA11yLogger.log(enable
+                            ? MagnificationSettingsEvent
+                                    .MAGNIFICATION_SETTINGS_PANEL_MAGNIFY_IME_ENABLED
+                            : MagnificationSettingsEvent
+                                    .MAGNIFICATION_SETTINGS_PANEL_MAGNIFY_IME_DISABLED);
                 }
 
                 @Override
