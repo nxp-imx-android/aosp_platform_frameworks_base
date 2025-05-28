@@ -4194,7 +4194,6 @@
   <java-symbol type="integer" name="config_jumpTapTimeoutMillis" />
   <java-symbol type="integer" name="config_doubleTapTimeoutMillis" />
   <java-symbol type="integer" name="config_doubleTapMinTimeMillis" />
-  <java-symbol type="integer" name="config_hoverTapTimeoutMillis" />
   <java-symbol type="integer" name="config_zoomControlsTimeoutMillis" />
   <java-symbol type="integer" name="config_defaultActionModeHideDurationMillis" />
   <java-symbol type="dimen" name="config_hoverTapSlop" />

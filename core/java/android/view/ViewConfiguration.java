@@ -841,16 +841,6 @@ public class ViewConfiguration {
     }
 
     /**
-     * @return the maximum duration in milliseconds between a touch pad
-     * touch and release for a given touch to be considered a tap (click) as
-     * opposed to a hover movement gesture.
-     * @hide
-     */
-    public static int getHoverTapTimeout() {
-        return sResourceCache.getHoverTapTimeout();
-    }
-
-    /**
      * @return the maximum distance in pixels that a touch pad touch can move
      * before being released for it to be considered a tap (click) as opposed
      * to a hover movement gesture.
@@ -1616,16 +1606,6 @@ public class ViewConfiguration {
                         : DOUBLE_TAP_MIN_TIME;
             }
             return mDoubleTapMinTime;
-        }
-
-        public int getHoverTapTimeout() {
-            if (mHoverTapTimeout < 0) {
-                Resources resources = getCurrentResources();
-                mHoverTapTimeout = resources != null
-                        ? resources.getInteger(R.integer.config_hoverTapTimeoutMillis)
-                        : HOVER_TAP_TIMEOUT;
-            }
-            return mHoverTapTimeout;
         }
 
         public int getHoverTapSlop() {
