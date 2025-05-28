@@ -769,6 +769,10 @@ public class AudioService extends IAudioService.Stub
         public void onError(int error) {
             switch (error) {
                 case AudioSystem.AUDIO_STATUS_SERVER_DIED:
+                    // do not handle device connections right now, tell AudioDeviceBroker
+                    // to just make note of connections, and wait for the device restoration
+                    // to complete after audioserver is back online
+                    mDeviceBroker.setWaitingForDeviceRestore(true);
                     // check for null in case error callback is called during instance creation
                     if (mRecordMonitor != null) {
                         mRecordMonitor.onAudioServerDied();
@@ -2077,10 +2081,25 @@ public class AudioService extends IAudioService.Stub
                 INDICATE_SYSTEM_READY_RETRY_DELAY_MS);
     }
 
+    /**
+     * Returns whether there are pending audioserver death messages
+     * @return true if
+     */
+    protected boolean isHandlingAudioServerDeath() {
+        if (mAudioHandler.hasMessages(MSG_AUDIO_SERVER_DIED)) {
+            return true;
+        }
+        if (AudioSystem.checkAudioFlinger() != AudioSystem.AUDIO_STATUS_OK) {
+            return true;
+        }
+        return false;
+    }
+
     public void onAudioServerDied() {
         if (!mSystemReady ||
                 (AudioSystem.checkAudioFlinger() != AudioSystem.AUDIO_STATUS_OK)) {
-            Log.e(TAG, "Audioserver died.");
+            sDeviceLogger.enqueueAndSlog("AudioService.onAudioServerDied",
+                    EventLogger.Event.ALOGE, TAG);
             sLifecycleLogger.enqueue(new EventLogger.StringEvent(
                     "onAudioServerDied() audioserver died"));
             sendMsg(mAudioHandler, MSG_AUDIO_SERVER_DIED, SENDMSG_NOOP, 0, 0,
