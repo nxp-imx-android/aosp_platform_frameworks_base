@@ -37,12 +37,16 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import android.os.Message;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
+import android.window.ITransitionPlayer;
 
 import androidx.test.filters.SmallTest;
 
 import com.android.server.LocalServices;
+import com.android.server.wm.RemoteDisplayChangeController.ContinueRemoteDisplayChangeCallback;
 import com.android.server.wm.TransitionController.OnStartCollect;
 
 import org.junit.Before;
@@ -69,6 +73,8 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
 
     private DisplayContent mSecondaryDisplayContent;
 
+    private final BLASTSyncEngine mSyncEngine = mock(BLASTSyncEngine.class);
+
     private final Message mScreenUnblocker = mock(Message.class);
     private final Message mSecondaryScreenUnblocker = mock(Message.class);
 
@@ -81,7 +87,7 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
 
         mockTransitionsController();
 
-        mockRemoteDisplayChangeController(mDisplayContent);
+        mockRemoteDisplayChangeController(mDisplayContent, /* finishImmediately= */ true);
         performInitialDisplayUpdate(mDisplayContent);
 
         mWmInternal = LocalServices.getService(WindowManagerInternal.class);
@@ -182,6 +188,129 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         captureStartTransitionCollection(); // do not continue by not starting the collection
         verify(onUpdated, never()).run();
         assertThat(mDisplayContent.getDisplayInfo().uniqueId).isEqualTo("old");
+    }
+
+    @Test
+    public void testDisplaySwitching_remoteDisplayChangePending_transitionIsNotReady() {
+        performPhysicalDisplaySwitch();
+        startCollectingTheLastTransition();
+
+        // Transition should not be ready as there is a pending remote display change
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isFalse();
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_wallpaperFlagDisabled_remoteDisplayChangeFinished_transitionIsReady() {
+        performPhysicalDisplaySwitch();
+        startCollectingTheLastTransition();
+
+        finishRemoteDisplayChange(mDisplayContent);
+
+        // Transition should be ready as remote display change is completed
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_remoteDisplayChangeFinished_transitionIsNotReady() {
+        performPhysicalDisplaySwitch();
+        startCollectingTheLastTransition();
+
+        finishRemoteDisplayChange(mDisplayContent);
+
+        // Transition should not be ready as keyguard is not drawn yet
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_keyguardDrawn_transitionIsNotReady() {
+        performPhysicalDisplaySwitch();
+        startCollectingTheLastTransition();
+
+        signalKeyguardIsDrawn();
+
+        // Transition should not be ready as remote display change is not finished
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_remoteDisplayChangeFinishedThenKeyguardDrawn_transitionIsReady() {
+        performPhysicalDisplaySwitch();
+        startCollectingTheLastTransition();
+
+        finishRemoteDisplayChange(mDisplayContent);
+        signalKeyguardIsDrawn();
+
+        // Transition should be ready as both remote display change
+        // and keyguard drawing are completed
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_keyguardDrawnThenRemoteDisplayChangeFinished_transitionIsReady() {
+        performPhysicalDisplaySwitch();
+        startCollectingTheLastTransition();
+
+        signalKeyguardIsDrawn();
+        finishRemoteDisplayChange(mDisplayContent);
+
+        // Transition should be ready as both remote display change
+        // and keyguard drawing are completed
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_keyguardDrawnBeforeTransitionThenRemoteDisplayChangeFinished_transitionIsReady() {
+        performPhysicalDisplaySwitch();
+
+        signalKeyguardIsDrawn();
+
+        startCollectingTheLastTransition();
+        finishRemoteDisplayChange(mDisplayContent);
+
+        // Transition should be ready as both remote display change
+        // and keyguard drawing are completed
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    public void testDisplaySwitching_keyguardWasNotDrawn_secondSwitchingIsNormal_transitionIsReady() {
+        performPhysicalDisplaySwitch();
+
+        startCollectingTheLastTransition();
+        finishRemoteDisplayChange(mDisplayContent);
+        mDisplayContent.mDisplayUpdater.onDisplaySwitching(/* switching= */ false);
+        // Here we finished remote display change & display switching, but keyguard drawn callback
+        // was not invoked. Let's verify that we still handle the next display change correctly.
+
+        clearInvocations(mDisplayContent.mRemoteDisplayChangeController);
+        mockRemoteDisplayChangeController(mDisplayContent, /* finishImmediately= */ false);
+        mDisplayContent.mDisplayUpdater.onDisplaySwitching(/* switching= */ true);
+        mUniqueId = "new2";
+        mDisplayContent.requestDisplayUpdate(mock(Runnable.class));
+
+        startCollectingTheLastTransition();
+
+        signalKeyguardIsDrawn();
+        finishRemoteDisplayChange(mDisplayContent);
+
+        // Transition should be ready as both remote display change
+        // and keyguard drawing are completed
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.allReady()).isTrue();
     }
 
     @Test
@@ -319,24 +448,42 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         mSecondaryDisplayContent = createNewDisplay();
         when(mSecondaryScreenUnblocker.getTarget()).thenReturn(mWm.mH);
         doReturn(true).when(mSecondaryDisplayContent).getLastHasContent();
-        mockRemoteDisplayChangeController(mSecondaryDisplayContent);
+        mockRemoteDisplayChangeController(mSecondaryDisplayContent, /* finishImmediately= */ true);
         performInitialDisplayUpdate(mSecondaryDisplayContent);
     }
 
     private void mockTransitionsController() {
         spyOn(mDisplayContent.mTransitionController);
+        mDisplayContent.mTransitionController.setSyncEngine(mSyncEngine);
         when(mDisplayContent.mTransitionController.isShellTransitionsEnabled())
                 .thenReturn(true);
-        doReturn(mock(Transition.class)).when(mDisplayContent.mTransitionController)
-                .createTransition(anyInt(), anyInt());
+        final ITransitionPlayer player = new ITransitionPlayer.Default();
+        mDisplayContent.mTransitionController.registerTransitionPlayer(player,
+                /* playerProc= */ null);
         doReturn(true).when(mDisplayContent.mTransitionController)
                 .startCollectOrQueue(any(), any());
     }
 
-    private void mockRemoteDisplayChangeController(DisplayContent displayContent) {
+    private void mockRemoteDisplayChangeController(DisplayContent displayContent,
+            boolean finishImmediately) {
         spyOn(displayContent.mRemoteDisplayChangeController);
-        doReturn(true).when(displayContent.mRemoteDisplayChangeController)
+        doAnswer(invocation -> {
+            if (finishImmediately) {
+                final ContinueRemoteDisplayChangeCallback callback =
+                        invocation.getArgument(invocation.getArguments().length - 1);
+                callback.onContinueRemoteDisplayChange(null);
+            }
+            return true;
+        }).when(displayContent.mRemoteDisplayChangeController)
                 .performRemoteDisplayChange(anyInt(), anyInt(), any(), any());
+    }
+
+    private void finishRemoteDisplayChange(DisplayContent displayContent) {
+        ArgumentCaptor<ContinueRemoteDisplayChangeCallback> callbackCaptor =
+                ArgumentCaptor.forClass(ContinueRemoteDisplayChangeCallback.class);
+        verify(displayContent.mRemoteDisplayChangeController)
+                .performRemoteDisplayChange(anyInt(), anyInt(), any(), callbackCaptor.capture());
+        callbackCaptor.getValue().onContinueRemoteDisplayChange(null);
     }
 
     private ArgumentCaptor<OnStartCollect> captureStartTransitionCollection() {
@@ -362,6 +509,29 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
                 listener.run();
             }
         }
+    }
+
+    private void performPhysicalDisplaySwitch() {
+        mockRemoteDisplayChangeController(mDisplayContent, /* finishImmediately= */ false);
+        mDisplayContent.mDisplayUpdater.onDisplaySwitching(/* switching= */ true);
+        mUniqueId = "new";
+        mDisplayContent.requestDisplayUpdate(mock(Runnable.class));
+    }
+
+    private void signalKeyguardIsDrawn() {
+        // waitForTransition call signals that keyguard is drawn
+        mDisplayContent.mDisplayUpdater.waitForTransition(mScreenUnblocker);
+    }
+
+    private void startCollectingTheLastTransition() {
+        ArgumentCaptor<OnStartCollect> callbackCaptor =
+                ArgumentCaptor.forClass(OnStartCollect.class);
+        ArgumentCaptor<Transition> transitionCaptor =
+                ArgumentCaptor.forClass(Transition.class);
+        verify(mDisplayContent.mTransitionController, atLeast(1))
+                .startCollectOrQueue(transitionCaptor.capture(), callbackCaptor.capture());
+        transitionCaptor.getValue().startCollecting(/* timeoutMs= */ 0);
+        captureStartTransitionCollection().getValue().onCollectStarted(/* deferred= */ true);
     }
 
     private void performInitialDisplayUpdate(DisplayContent displayContent) {
