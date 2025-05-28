@@ -2439,6 +2439,13 @@ public final class MessageQueue {
     }
 
     private static Message first(ConcurrentSkipListSet<Message> queue) {
+        // If the queue is empty, avoid calling queue.first() which will allocate
+        // an exception that we'll immediately ignore.
+        // We might race with another thread that's removing from the queue and
+        // end up with the exception anyway, but at least we tried.
+        if (queue.isEmpty()) {
+            return null;
+        }
         try {
             return queue.first();
         } catch (NoSuchElementException e) {
