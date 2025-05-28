@@ -1889,8 +1889,11 @@ public class LockSettingsService extends ILockSettings.Stub {
                 // Verify the parent credential again, to make sure we have a fresh enough
                 // auth token such that getDecryptedPasswordForTiedProfile() inside
                 // setLockCredentialInternal() can function correctly.
-                verifyCredential(savedCredential, mUserManager.getProfileParent(userId).id,
-                        0 /* flags */);
+                doVerifyCredential(
+                        savedCredential,
+                        mUserManager.getProfileParent(userId).id,
+                        /* progressCallback= */ null,
+                        /* flags= */ 0);
                 savedCredential.zeroize();
                 savedCredential = LockscreenCredential.createNone();
             }
