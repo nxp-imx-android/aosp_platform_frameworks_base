@@ -103,10 +103,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     /**
      * Callbacks for when the tasks change in the system.
      */
-    public interface TaskListener {
-        default void onTaskAppeared(RunningTaskInfo taskInfo, SurfaceControl leash) {}
-        default void onTaskInfoChanged(RunningTaskInfo taskInfo) {}
-        default void onTaskVanished(RunningTaskInfo taskInfo) {}
+    public interface TaskListener extends TaskVanishedListener, TaskAppearedListener,
+            TaskInfoChangedListener {
+
         default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {
@@ -133,7 +132,42 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * that is necessary.
      */
     public interface TaskVanishedListener {
+        /**
+         * Invoked when a Task is removed from Shell.
+         *
+         * @param taskInfo The RunningTaskInfo for the Task.
+         */
         default void onTaskVanished(RunningTaskInfo taskInfo) {}
+    }
+
+    /**
+     * Limited scope callback to notify when a task is added from the system. This signal is
+     * not synchronized with anything (or any transition), and should not be used in cases where
+     * that is necessary.
+     */
+    public interface TaskAppearedListener {
+        /**
+         * Invoked when a Task appears on Shell. Because the leash can be shared between different
+         * implementations, it's important to not apply changes in the related callback.
+         *
+         * @param taskInfo The RunningTaskInfo for the Task.
+         * @param leash    The leash for the Task which should not be changed through this callback.
+         */
+        default void onTaskAppeared(RunningTaskInfo taskInfo, SurfaceControl leash) {}
+    }
+
+    /**
+     * Limited scope callback to notify when a task has updated. This signal is
+     * not synchronized with anything (or any transition), and should not be used in cases where
+     * that is necessary.
+     */
+    public interface TaskInfoChangedListener {
+        /**
+         * Invoked when a Task is updated on Shell.
+         *
+         * @param taskInfo The RunningTaskInfo for the Task.
+         */
+        default void onTaskInfoChanged(RunningTaskInfo taskInfo) {}
     }
 
     /**
@@ -185,8 +219,16 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     private final CopyOnWriteArrayList<FocusListener> mFocusListeners =
             new CopyOnWriteArrayList<>();
 
-    // Listeners that should be notified when a task is removed
+    // Listeners that should be notified when a task is vanished.
     private final CopyOnWriteArrayList<TaskVanishedListener> mTaskVanishedListeners =
+            new CopyOnWriteArrayList<>();
+
+    // Listeners that should be notified when a task has appeared.
+    private final CopyOnWriteArrayList<TaskAppearedListener> mTaskAppearedListeners =
+            new CopyOnWriteArrayList<>();
+
+    // Listeners that should be notified when a task is updated
+    private final CopyOnWriteArrayList<TaskInfoChangedListener> mTaskInfoChangedListeners =
             new CopyOnWriteArrayList<>();
 
     private final Object mLock = new Object();
@@ -544,6 +586,42 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Adds a listener to be notified when a task is appears.
+     */
+    public void addTaskAppearedListener(TaskAppearedListener listener) {
+        synchronized (mLock) {
+            mTaskAppearedListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a task-appeared listener.
+     */
+    public void removeTaskAppearedListener(TaskAppearedListener listener) {
+        synchronized (mLock) {
+            mTaskAppearedListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Adds a listener to be notified when a task is updated.
+     */
+    public void addTaskInfoChangedListener(TaskInfoChangedListener listener) {
+        synchronized (mLock) {
+            mTaskInfoChangedListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a taskInfo-update listener.
+     */
+    public void removeTaskInfoChangedListener(TaskInfoChangedListener listener) {
+        synchronized (mLock) {
+            mTaskInfoChangedListeners.remove(listener);
+        }
+    }
+
+    /**
      * Returns a surface which can be used to attach overlays to the home root task
      */
     @NonNull
@@ -635,6 +713,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         notifyLocusVisibilityIfNeeded(info.getTaskInfo());
         notifyCompatUI(info.getTaskInfo(), listener);
         mRecentTasks.ifPresent(recentTasks -> recentTasks.onTaskAdded(info.getTaskInfo()));
+        for (TaskAppearedListener l : mTaskAppearedListeners) {
+            l.onTaskAppeared(info.getTaskInfo(), info.getLeash());
+        }
     }
 
     @Override
@@ -681,6 +762,9 @@ public class ShellTaskOrganizer extends TaskOrganizer {
                     focusListener.onFocusTaskChanged(taskInfo);
                 }
                 mLastFocusedTaskInfo = taskInfo;
+            }
+            for (TaskInfoChangedListener l : mTaskInfoChangedListeners) {
+                l.onTaskInfoChanged(taskInfo);
             }
         }
     }
