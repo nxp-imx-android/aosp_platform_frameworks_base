@@ -319,13 +319,13 @@ public final class MessageQueue {
             return n.mMessage.when <= when;
         }
     }
-    private final MatchDeliverableMessages mMatchDeliverableMessages =
+    private static final MatchDeliverableMessages sMatchDeliverableMessages =
             new MatchDeliverableMessages();
 
     private boolean isIdleConcurrent() {
         final long now = SystemClock.uptimeMillis();
 
-        if (stackHasMessages(null, 0, null, null, now, mMatchDeliverableMessages, false)) {
+        if (stackHasMessages(null, 0, null, null, now, sMatchDeliverableMessages, false)) {
             return false;
         }
 
@@ -1572,11 +1572,11 @@ public final class MessageQueue {
             return false;
         }
     }
-    private final MatchHandlerWhatAndObject mMatchHandlerWhatAndObject =
+    private static final MatchHandlerWhatAndObject sMatchHandlerWhatAndObject =
             new MatchHandlerWhatAndObject();
 
     private boolean hasMessagesConcurrent(Handler h, int what, Object object) {
-        return findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObject,
+        return findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObject,
                 false);
     }
 
@@ -1615,11 +1615,11 @@ public final class MessageQueue {
             return false;
         }
     }
-    private final MatchHandlerWhatAndObjectEquals mMatchHandlerWhatAndObjectEquals =
+    private static final MatchHandlerWhatAndObjectEquals sMatchHandlerWhatAndObjectEquals =
             new MatchHandlerWhatAndObjectEquals();
 
     private boolean hasEqualMessagesConcurrent(Handler h, int what, Object object) {
-        return findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObjectEquals,
+        return findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObjectEquals,
                 false);
     }
 
@@ -1658,11 +1658,11 @@ public final class MessageQueue {
             return false;
         }
     }
-    private final MatchHandlerRunnableAndObject mMatchHandlerRunnableAndObject =
+    private static final MatchHandlerRunnableAndObject sMatchHandlerRunnableAndObject =
             new MatchHandlerRunnableAndObject();
 
     private boolean hasMessagesConcurrent(Handler h, Runnable r, Object object) {
-        return findOrRemoveMessages(h, -1, object, r, 0, mMatchHandlerRunnableAndObject,
+        return findOrRemoveMessages(h, -1, object, r, 0, sMatchHandlerRunnableAndObject,
                 false);
     }
 
@@ -1698,10 +1698,10 @@ public final class MessageQueue {
             return n.mMessage.target == h;
         }
     }
-    private final MatchHandler mMatchHandler = new MatchHandler();
+    private static final MatchHandler sMatchHandler = new MatchHandler();
 
     private boolean hasMessagesConcurrent(Handler h) {
-        return findOrRemoveMessages(h, -1, null, null, 0, mMatchHandler, false);
+        return findOrRemoveMessages(h, -1, null, null, 0, sMatchHandler, false);
     }
 
     private boolean hasMessagesLegacy(Handler h) {
@@ -1729,7 +1729,7 @@ public final class MessageQueue {
     }
 
     private void removeMessagesConcurrent(Handler h, int what, Object object) {
-        findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObject, true);
+        findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObject, true);
     }
 
     private void removeMessagesLegacy(Handler h, int what, Object object) {
@@ -1789,7 +1789,7 @@ public final class MessageQueue {
     }
 
     private void removeEqualMessagesConcurrent(Handler h, int what, Object object) {
-            findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObjectEquals, true);
+            findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObjectEquals, true);
     }
 
     private void removeEqualMessagesLegacy(Handler h, int what, Object object) {
@@ -1850,7 +1850,7 @@ public final class MessageQueue {
     }
 
     private void removeMessagesConcurrent(Handler h, Runnable r, Object object) {
-        findOrRemoveMessages(h, -1, object, r, 0, mMatchHandlerRunnableAndObject, true);
+        findOrRemoveMessages(h, -1, object, r, 0, sMatchHandlerRunnableAndObject, true);
     }
 
     private void removeMessagesLegacy(Handler h, Runnable r, Object object) {
@@ -1921,11 +1921,11 @@ public final class MessageQueue {
             return false;
         }
     }
-    private final MatchHandlerRunnableAndObjectEquals mMatchHandlerRunnableAndObjectEquals =
+    private static final MatchHandlerRunnableAndObjectEquals sMatchHandlerRunnableAndObjectEquals =
             new MatchHandlerRunnableAndObjectEquals();
 
     private void removeEqualMessagesConcurrent(Handler h, Runnable r, Object object) {
-        findOrRemoveMessages(h, -1, object, r, 0, mMatchHandlerRunnableAndObjectEquals, true);
+        findOrRemoveMessages(h, -1, object, r, 0, sMatchHandlerRunnableAndObjectEquals, true);
     }
 
     private void removeEqualMessagesLegacy(Handler h, Runnable r, Object object) {
@@ -1996,10 +1996,10 @@ public final class MessageQueue {
             return false;
         }
     }
-    private final MatchHandlerAndObject mMatchHandlerAndObject = new MatchHandlerAndObject();
+    private static final MatchHandlerAndObject sMatchHandlerAndObject = new MatchHandlerAndObject();
 
     private void removeCallbacksAndMessagesConcurrent(Handler h, Object object) {
-            findOrRemoveMessages(h, -1, object, null, 0, mMatchHandlerAndObject, true);
+            findOrRemoveMessages(h, -1, object, null, 0, sMatchHandlerAndObject, true);
     }
 
     private void removeCallbacksAndMessagesLegacy(Handler h, Object object) {
@@ -2069,11 +2069,11 @@ public final class MessageQueue {
             return false;
         }
     }
-    private final MatchHandlerAndObjectEquals mMatchHandlerAndObjectEquals =
+    private static final MatchHandlerAndObjectEquals sMatchHandlerAndObjectEquals =
             new MatchHandlerAndObjectEquals();
 
     void removeCallbacksAndEqualMessagesConcurrent(Handler h, Object object) {
-        findOrRemoveMessages(h, -1, object, null, 0, mMatchHandlerAndObjectEquals, true);
+        findOrRemoveMessages(h, -1, object, null, 0, sMatchHandlerAndObjectEquals, true);
     }
 
     void removeCallbacksAndEqualMessagesLegacy(Handler h, Object object) {
