@@ -59,13 +59,10 @@ class MultiDisplayDragMoveIndicatorController(
         desktopExecutor.execute {
             val startDisplayDpi =
                 displayController.getDisplayLayout(startDisplayId)?.densityDpi() ?: return@execute
+            val transaction = transactionSupplier()
             for (displayId in displayIds) {
-                if (
-                    displayId == startDisplayId ||
-                        !desktopState.isDesktopModeSupportedOnDisplay(displayId)
-                ) {
-                    // No need to render indicators on the original display where the drag started,
-                    // or on displays that do not support desktop mode.
+                if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+                    // No need to render indicators on displays that do not support desktop mode.
                     continue
                 }
                 val displayLayout = displayController.getDisplayLayout(displayId) ?: continue
@@ -100,14 +97,12 @@ class MultiDisplayDragMoveIndicatorController(
                 val dragIndicatorsForTask =
                     dragIndicators.getOrPut(taskInfo.taskId) { mutableMapOf() }
                 dragIndicatorsForTask[displayId]?.also { existingIndicator ->
-                    val transaction = transactionSupplier()
                     existingIndicator.relayout(boundsPx, transaction, visibility)
-                    transaction.apply()
                 }
                     ?: run {
                         val newIndicator = indicatorSurfaceFactory.create(displayContext, taskLeash)
                         newIndicator.show(
-                            transactionSupplier(),
+                            transaction,
                             taskInfo,
                             rootTaskDisplayAreaOrganizer,
                             displayId,
@@ -118,6 +113,7 @@ class MultiDisplayDragMoveIndicatorController(
                         dragIndicatorsForTask[displayId] = newIndicator
                     }
             }
+            transaction.apply()
         }
     }
 

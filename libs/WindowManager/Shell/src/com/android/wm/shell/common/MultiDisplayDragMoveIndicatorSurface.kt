@@ -94,7 +94,6 @@ class MultiDisplayDragMoveIndicatorSurface(context: Context, taskSurface: Surfac
         rootTaskDisplayAreaOrganizer.reparentToDisplayArea(displayId, sc, transaction)
         relayout(bounds, transaction, visibility)
         transaction.show(sc).setLayer(sc, MOVE_INDICATOR_LAYER).setScale(sc, scale, scale)
-        transaction.apply()
     }
 
     /**

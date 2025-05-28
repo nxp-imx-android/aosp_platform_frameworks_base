@@ -211,19 +211,15 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     transactionSupplier,
                 )
 
+                // Put the task window outside of the display to make it invisible from user.
+                // This is needed because mirroring surfaces cannot have a bigger alpha value than
+                // the original surface.
+                // Only DragMoveIndicator is visible for users while multi-display aware drag move.
                 t.setPosition(
                     desktopWindowDecoration.leash,
-                    repositionTaskBounds.left.toFloat(),
-                    repositionTaskBounds.top.toFloat(),
+                    startDisplayLayout.width().toFloat(),
+                    startDisplayLayout.height().toFloat(),
                 )
-                // Make the window translucent in the case when the cursor moves to another display.
-                val alpha =
-                    if (startDisplayId == displayId) {
-                        ALPHA_FOR_WINDOW_ON_DISPLAY_WITH_CURSOR
-                    } else {
-                        ALPHA_FOR_WINDOW_ON_NON_CURSOR_DISPLAY
-                    }
-                t.setAlpha(desktopWindowDecoration.leash, alpha)
             }
             t.setFrameTimeline(Choreographer.getInstance().vsyncId)
             t.apply()

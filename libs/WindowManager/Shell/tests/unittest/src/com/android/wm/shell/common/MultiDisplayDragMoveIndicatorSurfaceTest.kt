@@ -128,7 +128,6 @@ class MultiDisplayDragMoveIndicatorSurfaceTest : ShellTestCase() {
             .setPosition(eq(mockSurface), eq(BOUNDS.left.toFloat()), eq(BOUNDS.top.toFloat()))
         verify(mockTransaction).show(eq(mockSurface))
         verify(mockTransaction).setScale(eq(mockSurface), eq(SCALE), eq(SCALE))
-        verify(mockTransaction).apply()
     }
 
     @Test
