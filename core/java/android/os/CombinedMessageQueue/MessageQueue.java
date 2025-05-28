@@ -143,7 +143,7 @@ public final class MessageQueue {
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
 
     MessageQueue(boolean quitAllowed) {
-        initUseConcurrent();
+        getUseConcurrent();
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
         mLooperThread = Thread.currentThread();
@@ -151,32 +151,36 @@ public final class MessageQueue {
         mTid = Process.myTid();
     }
 
-    private static void initUseConcurrent() {
-        if (sUseConcurrentInitialized) {
-            return;
+    static boolean getUseConcurrent() {
+        if (!sUseConcurrentInitialized) {
+            // We may race and compute the underlying value more than once.
+            // This is fine because computeUseConcurrent is idempotent.
+            final boolean useConcurrent = computeUseConcurrent();
+            sUseConcurrent = useConcurrent;
+            sUseConcurrentInitialized = true;
+            return useConcurrent;
         }
-        sUseConcurrentInitialized = true;
+        return sUseConcurrent;
+    }
 
+    private static boolean computeUseConcurrent() {
         if (Flags.useConcurrentMessageQueueInApps()) {
             // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
             // This is a hack to allow Robolectric tests to use the legacy implementation.
             try {
                 Class.forName("org.robolectric.Robolectric");
                 // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
-                sUseConcurrent = false;
-                return;
+                return false;
             } catch (ClassNotFoundException e) {
                 // This is not a Robolectric test.
-                sUseConcurrent = true;
-                return;
+                return true;
             }
         }
 
         final String processName = Process.myProcessName();
         if (processName == null) {
             // Assume that this is a host-side test and avoid concurrent mode for now.
-            sUseConcurrent = false;
-            return;
+            return false;
         }
 
         // Concurrent mode modifies behavior that is observable via reflection and is commonly
@@ -186,11 +190,10 @@ public final class MessageQueue {
             // Some platform tests run in core UIDs.
             // Use this awful heuristic to detect them.
             if (processName.contains("test") || processName.contains("Test")) {
-                sUseConcurrent = false;
+                return false;
             } else {
-                sUseConcurrent = true;
+                return true;
             }
-            return;
         }
 
         // Also explicitly allow SystemUI processes.
@@ -198,14 +201,14 @@ public final class MessageQueue {
         // and we know that it's safe to use the concurrent implementation in SystemUI.
         if (processName.equals("com.android.systemui")
                 || processName.startsWith("com.android.systemui:")) {
-            sUseConcurrent = true;
-            return;
+            return true;
         }
         // On Android distributions where SystemUI has a different process name,
         // the above condition may need to be adjusted accordingly.
 
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
+        return false;
     }
 
     @RavenwoodReplace
