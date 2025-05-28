@@ -46,7 +46,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun Modifier.animatedActionBorder(
     strokeWidth: Dp,
-    strokeColor: Color,
     cornerRadius: Dp,
     visible: Boolean = true,
 ): Modifier {
@@ -122,23 +121,16 @@ fun Modifier.animatedActionBorder(
                 tileMode = TileMode.Clamp,
             )
 
-        drawRoundRect(
-            brush = gradientBrush,
-            topLeft = topLeft,
-            size = Size(size.width - strokeWidthPx, size.height - strokeWidthPx),
-            cornerRadius = CornerRadius(cornerRadiusPx),
-            alpha = gradientOutlineFadeOut,
-            style = strokeStyle,
-        )
-
-        drawRoundRect(
-            color = strokeColor,
-            topLeft = topLeft,
-            size = Size(size.width - strokeWidthPx, size.height - strokeWidthPx),
-            cornerRadius = CornerRadius(cornerRadiusPx),
-            alpha = solidOutlineFadeIn,
-            style = strokeStyle,
-        )
+        if (gradientOutlineFadeOut > 0) {
+            drawRoundRect(
+                brush = gradientBrush,
+                topLeft = topLeft,
+                size = Size(size.width - strokeWidthPx, size.height - strokeWidthPx),
+                cornerRadius = CornerRadius(cornerRadiusPx),
+                alpha = gradientOutlineFadeOut,
+                style = strokeStyle,
+            )
+        }
 
         drawContent()
     }
