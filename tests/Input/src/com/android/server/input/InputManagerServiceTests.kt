@@ -19,8 +19,6 @@ package com.android.server.input
 import android.Manifest
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.PermissionChecker
-import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
 import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayViewport
@@ -45,19 +43,15 @@ import android.view.KeyEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View.OnKeyListener
-import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.dx.mockito.inline.extended.ExtendedMockito
-import com.android.internal.policy.KeyInterceptionInfo
 import com.android.internal.util.test.FakeSettingsProvider
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
-import com.android.server.wm.WindowManagerInternal
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -107,7 +101,6 @@ class InputManagerServiceTests {
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this)
             .mockStatic(LocalServices::class.java)
-            .mockStatic(PermissionChecker::class.java)
             .mockStatic(KeyCharacterMap::class.java)
             .mockStatic(InputSettings::class.java)
             .build()!!
@@ -119,8 +112,6 @@ class InputManagerServiceTests {
     @Mock private lateinit var native: NativeInputManagerService
 
     @Mock private lateinit var wmCallbacks: InputManagerService.WindowManagerCallbacks
-
-    @Mock private lateinit var windowManagerInternal: WindowManagerInternal
 
     @Mock private lateinit var packageManagerInternal: PackageManagerInternal
 
@@ -187,9 +178,6 @@ class InputManagerServiceTests {
         whenever(context.getSystemService(Context.INPUT_SERVICE)).thenReturn(inputManager)
         fakePermissionEnforcer.grant(Manifest.permission.MANAGE_KEY_GESTURES)
 
-        ExtendedMockito.doReturn(windowManagerInternal).`when` {
-            LocalServices.getService(eq(WindowManagerInternal::class.java))
-        }
         ExtendedMockito.doReturn(packageManagerInternal).`when` {
             LocalServices.getService(eq(PackageManagerInternal::class.java))
         }
@@ -285,48 +273,6 @@ class InputManagerServiceTests {
     }
 
     @Test
-    fun testActionKeyEventsForwardedToFocusedWindow_whenCorrectlyRequested() {
-        service.systemRunning()
-        overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */ true,
-            /* hasPrivateFlag = */ true,
-        )
-        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
-
-        for (event in ACTION_KEY_EVENTS) {
-            assertEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
-        }
-    }
-
-    @Test
-    fun testActionKeyEventsNotForwardedToFocusedWindow_whenNoPermissions() {
-        service.systemRunning()
-        overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */ false,
-            /* hasPrivateFlag = */ true,
-        )
-        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
-
-        for (event in ACTION_KEY_EVENTS) {
-            assertNotEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
-        }
-    }
-
-    @Test
-    fun testActionKeyEventsNotForwardedToFocusedWindow_whenNoPrivateFlag() {
-        service.systemRunning()
-        overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */ true,
-            /* hasPrivateFlag = */ false,
-        )
-        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
-
-        for (event in ACTION_KEY_EVENTS) {
-            assertNotEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
-        }
-    }
-
-    @Test
     @EnableFlags(com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION)
     fun testKeyActivenessNotifyEventsLifecycle() {
         service.systemRunning()
@@ -354,71 +300,6 @@ class InputManagerServiceTests {
 
         /* verify onKeyEventActivity callback not called */
         verifyNoMoreInteractions(listener)
-    }
-
-    @Test
-    fun testKeyEventsForwardedToFocusedWindow_whenWmAllows() {
-        service.systemRunning()
-        overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */ false,
-            /* hasPrivateFlag = */ false,
-        )
-        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(0)
-
-        val event =
-            KeyEvent(
-                /* downTime= */ 0,
-                /* eventTime= */ 0,
-                KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_SPACE,
-                /* repeat= */ 0,
-                KeyEvent.META_CTRL_ON,
-            )
-        assertEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
-    }
-
-    @Test
-    @EnableFlags(com.android.hardware.input.Flags.FLAG_FIX_SEARCH_MODIFIER_FALLBACKS)
-    fun testInterceptKeyBeforeDispatchingWithFallthroughEvent() {
-        service.systemRunning()
-        overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */false,
-            /* hasPrivateFlag = */false
-        )
-        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(0)
-
-        // Create a fallback for a key event with a meta modifier. Should result in -2,
-        // which represents the fallback event, which indicates that original key event will
-        // be ignored (not sent to app) and instead the fallback will be created and sent to the
-        // app.
-        val fallbackAction: KeyCharacterMap.FallbackAction = KeyCharacterMap.FallbackAction.obtain()
-        fallbackAction.keyCode = KeyEvent.KEYCODE_SEARCH
-        whenever(kcm.getFallbackAction(anyInt(), anyInt())).thenReturn(fallbackAction)
-
-        val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
-            KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_META_ON)
-        assertEquals(-2, service.interceptKeyBeforeDispatching(null, event, 0))
-    }
-
-    @Test
-    fun testKeyEventsNotForwardedToFocusedWindow_whenWmConsumes() {
-        service.systemRunning()
-        overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */ false,
-            /* hasPrivateFlag = */ false,
-        )
-        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
-
-        val event =
-            KeyEvent(
-                /* downTime= */ 0,
-                /* eventTime= */ 0,
-                KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_SPACE,
-                /* repeat= */ 0,
-                KeyEvent.META_CTRL_ON,
-            )
-        assertEquals(-1, service.interceptKeyBeforeDispatching(null, event, 0))
     }
 
     private class AutoClosingVirtualDisplays(val displays: List<VirtualDisplay>) : AutoCloseable {
@@ -688,43 +569,6 @@ class InputManagerServiceTests {
         service.handleKeyGestureEvent(toggleCapsLockEvent)
 
         verify(native).toggleCapsLock(anyInt())
-    }
-
-    fun overrideSendActionKeyEventsToFocusedWindow(
-        hasPermission: Boolean,
-        hasPrivateFlag: Boolean,
-    ) {
-        ExtendedMockito.doReturn(
-                if (hasPermission) {
-                    PermissionChecker.PERMISSION_GRANTED
-                } else {
-                    PermissionChecker.PERMISSION_HARD_DENIED
-                }
-            )
-            .`when` {
-                PermissionChecker.checkPermissionForDataDelivery(
-                    any(),
-                    eq(Manifest.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW),
-                    anyInt(),
-                    anyInt(),
-                    any(),
-                    any(),
-                    any(),
-                )
-            }
-
-        val info = KeyInterceptionInfo(
-            /* type = */0,
-            if (hasPrivateFlag) {
-                WindowManager.LayoutParams.PRIVATE_FLAG_ALLOW_ACTION_KEY_EVENTS
-            } else {
-                0
-            },
-            /* inputFeatures = */0,
-            "title",
-            /* uid = */0
-        )
-        whenever(windowManagerInternal.getKeyInterceptionInfoFromToken(any())).thenReturn(info)
     }
 }
 
