@@ -4471,6 +4471,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onPipTaskMinimize_multiActivity_reordersParentToBack() {
         val task = setUpPipTask(autoEnterEnabled = true).apply { numActivities = 2 }
         // Add a second task so that entering PiP does not trigger Desktop cleanup
@@ -4482,6 +4483,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
         assertThat(arg.lastValue.hierarchyOps.size).isEqualTo(1)
         arg.lastValue.assertReorderAt(index = 0, task, toTop = false)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onPipTaskMinimize_multiActivity_minimizeParent() {
+        val task = setUpPipTask(autoEnterEnabled = true).apply { numActivities = 2 }
+        // Add a second task so that entering PiP does not trigger Desktop cleanup
+        setUpFreeformTask(deskId = DEFAULT_DISPLAY)
+
+        minimizePipTask(task)
+
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
+        verify(desksOrganizer)
+            .minimizeTask(wct = arg.lastValue, deskId = DEFAULT_DISPLAY, task = task)
     }
 
     @Test

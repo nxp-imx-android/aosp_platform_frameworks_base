@@ -67,15 +67,15 @@ class DesktopPipTransitionController(
             parentTask.lastNonFullscreenBounds?.takeUnless { it.isEmpty }
                 ?: calculateDefaultDesktopTaskBounds(pipDesktopState.getCurrentDisplayLayout())
 
-        val newResolvedWinMode =
+        val resolvedWinMode =
             if (pipDesktopState.isPipInDesktopMode()) WINDOWING_MODE_FREEFORM
             else WINDOWING_MODE_FULLSCREEN
 
-        if (newResolvedWinMode != parentTask.windowingMode) {
-            wct.setWindowingMode(parentTask.token, newResolvedWinMode)
+        if (resolvedWinMode != parentTask.windowingMode) {
+            wct.setWindowingMode(parentTask.token, resolvedWinMode)
             wct.setBounds(
                 parentTask.token,
-                if (newResolvedWinMode == WINDOWING_MODE_FREEFORM) defaultFreeformBounds else Rect()
+                if (resolvedWinMode == WINDOWING_MODE_FREEFORM) defaultFreeformBounds else Rect(),
             )
         }
     }
@@ -113,6 +113,17 @@ class DesktopPipTransitionController(
 
         val deskId = getDeskId(desktopRepository, displayId)
         if (deskId == INVALID_DESK_ID) return
+
+        val parentTaskId = runningTaskInfo.lastParentTaskIdBeforePip
+        if (parentTaskId != ActivityTaskManager.INVALID_TASK_ID) {
+            logD(
+                "maybeReparentTaskToDesk: Multi-activity PiP, unminimize parent task in Desk" +
+                    " instead of moving PiP task to Desk"
+            )
+            unminimizeParentInDesk(wct, parentTaskId, deskId)
+            return
+        }
+
         if (!desktopRepository.isDeskActive(deskId)) {
             logD(
                 "maybeReparentTaskToDesk: addDeskActivationChanges, taskId=%d deskId=%d, " +
@@ -138,6 +149,28 @@ class DesktopPipTransitionController(
             wct = wct,
             task = runningTaskInfo,
             deskId = deskId,
+        )
+    }
+
+    private fun unminimizeParentInDesk(
+        wct: WindowContainerTransaction,
+        parentTaskId: Int,
+        deskId: Int,
+    ) {
+        val parentTask = shellTaskOrganizer.getRunningTaskInfo(parentTaskId)
+        if (parentTask == null) {
+            logW(
+                "unminimizeParentInDesk: Failed to find RunningTaskInfo for parentTaskId %d",
+                parentTaskId,
+            )
+            return
+        }
+
+        logD("unminimizeParentInDesk: parentTaskId=%d deskId=%d", parentTask.taskId, deskId)
+        desktopTasksController.addMoveTaskToFrontChanges(
+            wct = wct,
+            deskId = deskId,
+            taskInfo = parentTask,
         )
     }
 
