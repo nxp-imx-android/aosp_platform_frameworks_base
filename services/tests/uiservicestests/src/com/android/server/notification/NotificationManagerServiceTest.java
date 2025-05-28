@@ -252,6 +252,7 @@ import android.content.pm.ModuleInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutServiceInternal;
 import android.content.pm.UserInfo;
@@ -11454,6 +11455,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.setZenHelper(zenModeHelper);
         when(mConditionProviders.isPackageOrComponentAllowed(anyString(), anyInt()))
                 .thenReturn(true);
+        when(zenModeHelper.getActivityInfo(any())).thenReturn(new ActivityInfo());
+        when(zenModeHelper.getServiceInfo(any())).thenReturn(new ServiceInfo());
         return zenModeHelper;
     }
 
@@ -17208,7 +17211,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // We also validate the exception message because NPE could be thrown by all sorts of test
         // issues (e.g. misconfigured mocks).
         rule.mRule.setEnabled(false);
-        NullPointerException e = assertThrows(NullPointerException.class,
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
                 () -> mBinderService.updateAutomaticZenRule(rule.mId, rule.mRule, false));
         assertThat(e.getMessage()).isEqualTo(
                 "Rule must have a ConditionProviderService and/or configuration activity");

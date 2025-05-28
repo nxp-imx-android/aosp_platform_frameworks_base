@@ -261,6 +261,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.LauncherApps;
 import android.content.pm.ModuleInfo;
+import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManagerInternal;
@@ -6377,8 +6378,8 @@ public class NotificationManagerService extends SystemService {
             enforceUserOriginOnlyFromSystem(fromUser, "addAutomaticZenRule");
             UserHandle zenUser = getCallingZenUser();
 
-            // If the calling app is the system (from any user), take the package name from the
-            // rule's owner rather than from the caller's package.
+            // Allow the system (and crucially, Settings) to choose an arbitrary package as owner;
+            // otherwise forcibly use the calling package.
             String rulePkg = pkg;
             if (isCallingAppIdSystem()) {
                 if (automaticZenRule.getOwner() != null) {
@@ -6426,11 +6427,34 @@ public class NotificationManagerService extends SystemService {
             if (!isImplicitRuleUpdateFromSystem
                     && rule.getOwner() == null
                     && rule.getConfigurationActivity() == null) {
-                throw new NullPointerException(
+                throw new IllegalArgumentException(
                         "Rule must have a ConditionProviderService and/or configuration "
                                 + "activity");
             }
             Objects.requireNonNull(rule.getConditionId(), "ConditionId is null");
+
+            // If supplied, both CPS and ConfigurationActivity must be accessible to the calling
+            // package. Skip check when the caller is the system: for additions we trust ourselves,
+            // and for updates we don't want to block updating a rule in Settings even if the owner
+            // package has changed its manifest so that some component is gone.
+            if (Flags.strictZenRuleComponentValidation() && !isCallerSystemOrSystemUi()) {
+                if (rule.getOwner() != null) {
+                    PackageItemInfo ownerInfo = mZenModeHelper.getServiceInfo(rule.getOwner());
+                    if (ownerInfo == null) {
+                        throw new IllegalArgumentException(
+                                "Lacking enabled ConditionProviderService " + rule.getOwner());
+                    }
+                }
+                if (rule.getConfigurationActivity() != null) {
+                    PackageItemInfo activityInfo = mZenModeHelper.getActivityInfo(
+                            rule.getConfigurationActivity());
+                    if (activityInfo == null) {
+                        throw new IllegalArgumentException(
+                                "Lacking enabled ConfigurationActivity "
+                                        + rule.getConfigurationActivity());
+                    }
+                }
+            }
 
             if (isCallerSystemOrSystemUi()) {
                 return; // System callers can use any type.

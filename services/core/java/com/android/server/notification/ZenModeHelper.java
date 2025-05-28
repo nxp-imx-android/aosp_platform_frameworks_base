@@ -1095,7 +1095,7 @@ public class ZenModeHelper {
         }
     }
 
-    private ServiceInfo getServiceInfo(ComponentName owner) {
+    ServiceInfo getServiceInfo(ComponentName owner) {
         Intent queryIntent = new Intent();
         queryIntent.setComponent(owner);
         List<ResolveInfo> installedServices = mPm.queryIntentServicesAsUser(
@@ -1114,7 +1114,7 @@ public class ZenModeHelper {
         return null;
     }
 
-    private ActivityInfo getActivityInfo(ComponentName configActivity) {
+    ActivityInfo getActivityInfo(ComponentName configActivity) {
         Intent queryIntent = new Intent();
         queryIntent.setComponent(configActivity);
         List<ResolveInfo> installedComponents = mPm.queryIntentActivitiesAsUser(

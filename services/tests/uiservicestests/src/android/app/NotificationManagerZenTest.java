@@ -24,12 +24,16 @@ import static android.service.notification.Condition.STATE_TRUE;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.service.notification.Condition;
+import android.service.notification.ZenModeConfig;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -44,6 +48,14 @@ import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 public class NotificationManagerZenTest {
+
+    private static final Uri CONDITION_ID = Uri.parse("test://NotificationManagerZenTest");
+    private static final ComponentName CONDITION_PROVIDER_SERVICE = new ComponentName(
+            "com.android.frameworks.tests.uiservices",
+            "android.app.ExampleConditionProviderService");
+    private static final ComponentName CONFIGURATION_ACTIVITY = new ComponentName(
+            "com.android.frameworks.tests.uiservices",
+            "android.app.ExampleActivity");
 
     private Context mContext;
     private NotificationManager mNotificationManager;
@@ -76,6 +88,155 @@ public class NotificationManagerZenTest {
                 mNotificationManager.removeAutomaticZenRule(ruleId);
             }
         });
+    }
+
+    @Test
+    public void addAutomaticZenRule_validCpsAndConfigActivity_accepted() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("CPS & Activity", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(azr);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
+    }
+
+    @Test
+    public void addAutomaticZenRule_validCpsAndNoConfigActivity_accepted() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Valid CPS", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(null)
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(azr);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
+    }
+
+    @Test
+    public void addAutomaticZenRule_noCpsAndValidConfigActivity_accepted() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Valid Activity", CONDITION_ID)
+                .setOwner(null)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(azr);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
+    }
+
+    @Test
+    public void addAutomaticZenRule_noCpsNorConfigActivity_rejected() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("None", CONDITION_ID)
+                .setOwner(null)
+                .setConfigurationActivity(null)
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.addAutomaticZenRule(azr));
+    }
+
+    @Test
+    public void addAutomaticZenRule_invalidCps_rejected() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Invalid CPS", CONDITION_ID)
+                .setOwner(new ComponentName(mContext, "android.app.NonExistentCps"))
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.addAutomaticZenRule(azr));
+    }
+
+    @Test
+    public void addAutomaticZenRule_invalidConfigActivity_rejected() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Invalid CPS", CONDITION_ID)
+                .setConfigurationActivity(
+                        new ComponentName(mContext, "android.app.NonExistentActivity"))
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.addAutomaticZenRule(azr));
+    }
+
+    @Test
+    public void addAutomaticZenRule_cpsInDifferentPackage_rejected() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("System CPS !!", CONDITION_ID)
+                .setOwner(ZenModeConfig.getScheduleConditionProvider())
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.addAutomaticZenRule(azr));
+    }
+
+    @Test
+    public void addAutomaticZenRule_configActivityInDifferentPackage_rejected() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Other Activity !!", CONDITION_ID)
+                .setConfigurationActivity(
+                        new ComponentName("com.android.settings", "Settings$ModesSettingsActivity"))
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.addAutomaticZenRule(azr));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+            com.android.server.notification.Flags.FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void updateAutomaticZenRule_switchToInvalidCps_rejected() {
+        AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(original);
+
+        AutomaticZenRule sneaky = new AutomaticZenRule.Builder(original)
+                .setOwner(ZenModeConfig.getScheduleConditionProvider())
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.updateAutomaticZenRule(ruleId, sneaky));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+            com.android.server.notification.Flags.FLAG_STRICT_ZEN_RULE_COMPONENT_VALIDATION)
+    public void updateAutomaticZenRule_switchToInvalidConfigActivity_rejected() {
+        AutomaticZenRule original = new AutomaticZenRule.Builder("OK so far", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(original);
+
+        AutomaticZenRule sneaky = new AutomaticZenRule.Builder(original)
+                .setConfigurationActivity(
+                        new ComponentName("com.android.settings", "Settings$ModesSettingsActivity"))
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> mNotificationManager.updateAutomaticZenRule(ruleId, sneaky));
+    }
+
+    @Test
+    public void addAutomaticZenRule_fromPackage_forcesOwnerPackage() {
+        AutomaticZenRule azr = new AutomaticZenRule.Builder("Set wrong package", CONDITION_ID)
+                .setOwner(CONDITION_PROVIDER_SERVICE)
+                .setConfigurationActivity(CONFIGURATION_ACTIVITY)
+                .setPackage("com.something.something")
+                .build();
+
+        String ruleId = mNotificationManager.addAutomaticZenRule(azr);
+
+        AutomaticZenRule savedAzr = mNotificationManager.getAutomaticZenRule(ruleId);
+        assertThat(savedAzr).isNotNull();
+        assertThat(savedAzr.getPackageName()).isEqualTo(mContext.getPackageName());
     }
 
     @Test
