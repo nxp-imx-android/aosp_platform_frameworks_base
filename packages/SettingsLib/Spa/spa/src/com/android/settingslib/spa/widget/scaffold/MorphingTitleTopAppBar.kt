@@ -191,8 +191,9 @@ private fun TwoRowsTopAppBar(
     // Interpolated properties for the single title
     val interpolatedTextStyle =
         lerpTextStyle(expandedTextStyle, collapsedTextStyle, collapsedFraction)
-    val navigationIconPaddingStart = SettingsSpace.small3
-    val expandedTitlePaddingStart = SettingsSpace.small4
+    val navigationIconPaddingStartPx = density.run { SettingsSpace.small3.toPx() }
+    val navigationIconPaddingEndPx = density.run { SettingsSpace.small1.toPx() }
+    val expandedTitlePaddingStartPx = density.run { SettingsSpace.small4.toPx() }
     val currentMaxLines =
         if (collapsedFraction < 0.5f) expandedTitleMaxLines else collapsedTitleMaxLines
 
@@ -240,19 +241,20 @@ private fun TwoRowsTopAppBar(
                     .first { it.layoutId == "actionIcons" }
                     .measure(constraints.copy(minWidth = 0))
 
+            val navigationIconWidth = navigationIconPlaceable.width
             val collapsedTitlePaddingStartPx =
-                density.run {
-                    val navigationIconWidth = navigationIconPlaceable.width
-                    if (navigationIconWidth > 0) {
-                        navigationIconWidth + SettingsSpace.small3.toPx() // Icon + padding
-                    } else {
-                        0f
-                    }
+                if (navigationIconWidth > 0) {
+                    navigationIconPaddingStartPx + navigationIconWidth + navigationIconPaddingEndPx
+                } else {
+                    expandedTitlePaddingStartPx
                 }
             val interpolatedPaddingStartPx =
                 density.run {
-                    expandedTitlePaddingStart.toPx() +
-                        collapsedTitlePaddingStartPx * collapsedFraction
+                    lerp(
+                        start = expandedTitlePaddingStartPx,
+                        stop = collapsedTitlePaddingStartPx,
+                        fraction = collapsedFraction,
+                    )
                 }
             val titleHorizontalPaddingPx =
                 density.run { interpolatedPaddingStartPx + SettingsSpace.small1.toPx() }
@@ -273,7 +275,7 @@ private fun TwoRowsTopAppBar(
 
             layout(layoutWidth, layoutHeight) {
                 navigationIconPlaceable.placeRelative(
-                    x = navigationIconPaddingStart.toPx().roundToInt(),
+                    x = navigationIconPaddingStartPx.roundToInt(),
                     y = ((pinnedHeightPx - navigationIconPlaceable.height) / 2f).roundToInt(),
                 )
 
