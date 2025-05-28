@@ -213,7 +213,7 @@ public enum DesktopExperienceFlags {
     FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, true,
             Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH),
     PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH(
-            Flags::preserveRecentsTaskConfigurationOnRelaunch, false,
+            Flags::preserveRecentsTaskConfigurationOnRelaunch, true,
             Flags.FLAG_PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH),
     REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true,
             Flags.FLAG_REPARENT_WINDOW_TOKEN_API),
