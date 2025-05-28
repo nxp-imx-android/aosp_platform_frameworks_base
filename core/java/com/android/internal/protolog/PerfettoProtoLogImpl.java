@@ -135,13 +135,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     protected PerfettoProtoLogImpl(
             @NonNull ProtoLogDataSource dataSource,
             @NonNull ProtoLogCacheUpdater cacheUpdater,
-            @NonNull IProtoLogGroup[] groups) throws ServiceManager.ServiceNotFoundException {
-        this(dataSource, cacheUpdater, groups,
-                android.tracing.Flags.clientSideProtoLogging() ?
-                    IProtoLogConfigurationService.Stub.asInterface(
-                        ServiceManager.getServiceOrThrow(PROTOLOG_CONFIGURATION_SERVICE)
-                    ) : null
-        );
+            @NonNull IProtoLogGroup[] groups) {
+        this(dataSource, cacheUpdater, groups, getConfigurationService());
     }
 
     protected PerfettoProtoLogImpl(
@@ -167,8 +162,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     public void enable() {
         Producer.init(InitArguments.DEFAULTS);
 
-        if (android.tracing.Flags.clientSideProtoLogging()) {
-            connectToConfigurationService();
+        if (android.tracing.Flags.clientSideProtoLogging() && mConfigurationService != null) {
+            connectToConfigurationServiceAsync();
         }
 
         mDataSource.registerOnStartCallback(this);
@@ -187,7 +182,29 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
     }
 
-    private void connectToConfigurationService() {
+    @Nullable
+    private static IProtoLogConfigurationService getConfigurationService() {
+        if (android.tracing.Flags.clientSideProtoLogging()) {
+            var service = ServiceManager.getService(PROTOLOG_CONFIGURATION_SERVICE);
+
+            if (service != null) {
+                return IProtoLogConfigurationService.Stub.asInterface(service);
+            } else {
+                Log.e(LOG_TAG, "Failed to get the ProtoLog Configuration Service! "
+                        + "Protologging client will not be synced properly and will not be "
+                        + "available for running configuration of which groups to log to logcat. "
+                        + "We might also be missing viewer configs in the trace for decoding the "
+                        + "messages.");
+            }
+        }
+
+        // Will be null either because we are calling this before the service is ready and
+        // registered with the service manager or because we are calling this from a service
+        // that does not have access to the configuration service.
+        return null;
+    }
+
+    private void connectToConfigurationServiceAsync() {
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
 
@@ -243,17 +260,24 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mDataSource.unregisterOnFlushCallback(this);
         mDataSource.unregisterOnStopCallback(this);
 
-        if (android.tracing.Flags.clientSideProtoLogging()) {
-            mBackgroundHandler.post(() -> {
-                try {
-                    mConfigurationService.unregisterClient(this);
-                } catch (RemoteException e) {
-                    throw new RuntimeException("Failed to unregister ProtoLog client", e);
-                }
-            });
+        if (android.tracing.Flags.clientSideProtoLogging() && mConfigurationService != null) {
+            disconnectFromConfigurationServiceAsync();
         }
 
         mBackgroundThread.quitSafely();
+    }
+
+    private void disconnectFromConfigurationServiceAsync() {
+        Objects.requireNonNull(mConfigurationService,
+                "A null ProtoLog Configuration Service was provided!");
+
+        mBackgroundHandler.post(() -> {
+            try {
+                mConfigurationService.unregisterClient(this);
+            } catch (RemoteException e) {
+                throw new RuntimeException("Failed to unregister ProtoLog client", e);
+            }
+        });
     }
 
     @NonNull
@@ -973,7 +997,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     /**
-     * This is only used by unit tests to wait until {@link #connectToConfigurationService} is
+     * This is only used by unit tests to wait until {@link #connectToConfigurationServiceAsync} is
      * done. Because unit tests are sensitive to concurrent accesses.
      */
     @VisibleForTesting
