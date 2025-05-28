@@ -54,6 +54,7 @@ public class ChronometerTest extends ActivityInstrumentationTestCase2<Chronomete
         final CountDownLatch latch = new CountDownLatch(6);
         ArrayList<String> ticks = new ArrayList<>();
         runOnUiThread(() -> {
+            mChronometer.setBase(SystemClock.elapsedRealtime());
             mChronometer.setOnChronometerTickListener((chronometer) -> {
                 ticks.add(chronometer.getText().toString());
                 latch.countDown();
@@ -74,25 +75,32 @@ public class ChronometerTest extends ActivityInstrumentationTestCase2<Chronomete
     }
 
     public void testChronometerCountDown() throws Throwable {
-        final CountDownLatch latch = new CountDownLatch(5);
+        final CountDownLatch latch = new CountDownLatch(12);
         ArrayList<String> ticks = new ArrayList<>();
         runOnUiThread(() -> {
             mChronometer.setBase(SystemClock.elapsedRealtime() + 3_000);
             mChronometer.setCountDown(true);
-            mChronometer.post(() -> {
-                mChronometer.setOnChronometerTickListener((chronometer) -> {
-                    ticks.add(chronometer.getText().toString());
-                    latch.countDown();
-                });
-                mChronometer.start();
+            mChronometer.setOnChronometerTickListener((chronometer) -> {
+                ticks.add(chronometer.getText().toString());
+                latch.countDown();
             });
+
+            // start in the next frame so that it is more than 1 ms below 3 seconds
+            mChronometer.post(() -> mChronometer.start());
         });
-        assertTrue(latch.await(4500, TimeUnit.MILLISECONDS));
+        assertTrue(latch.await(12500, TimeUnit.MILLISECONDS));
         assertEquals("00:02", ticks.get(0));
         assertEquals("00:01", ticks.get(1));
         assertEquals("00:00", ticks.get(2));
         assertEquals("−00:01", ticks.get(3));
         assertEquals("−00:02", ticks.get(4));
+        assertEquals("−00:03", ticks.get(5));
+        assertEquals("−00:04", ticks.get(6));
+        assertEquals("−00:05", ticks.get(7));
+        assertEquals("−00:06", ticks.get(8));
+        assertEquals("−00:07", ticks.get(9));
+        assertEquals("−00:08", ticks.get(10));
+        assertEquals("−00:09", ticks.get(11));
     }
 
     private void runOnUiThread(Runnable runnable) throws InterruptedException {

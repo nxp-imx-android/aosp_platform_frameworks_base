@@ -357,8 +357,8 @@ public class Chronometer extends TextView {
         } else {
             delayMillis = 1000 - (Math.abs(nowMillis - mBase) % 1000);
         }
-        // Aim for 1 millisecond into the next second so we don't update exactly on the second
-        delayMillis++;
+        // Aim for 3 milliseconds into the next second so we don't update exactly on the second
+        delayMillis += 3;
         postDelayed(mTickRunnable, delayMillis);
     }
 
