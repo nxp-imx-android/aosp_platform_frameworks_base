@@ -767,6 +767,7 @@
 
     <!-- Permission required for CTS test - Notification test suite -->
     <uses-permission android:name="android.permission.REVOKE_POST_NOTIFICATIONS_WITHOUT_KILL" />
+    <uses-permission android:name="android.permission.HIDE_STATUS_BAR_NOTIFICATION" />
 
     <!-- Permission required for test - CellBroadcastComplianceTest -->
     <uses-permission android:name="com.android.cellbroadcastservice.FULL_ACCESS_CELL_BROADCAST_HISTORY" />

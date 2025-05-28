@@ -18,6 +18,7 @@ package android.app;
 
 import static android.annotation.Dimension.DP;
 import static android.app.Flags.FLAG_NM_SUMMARIZATION;
+import static android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION;
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.admin.DevicePolicyResources.Drawables.Source.NOTIFICATION;
 import static android.app.admin.DevicePolicyResources.Drawables.Style.SOLID_COLORED;
@@ -1795,6 +1796,17 @@ public class Notification implements Parcelable
      * @hide
      */
     public static final String EXTRA_FOREGROUND_APPS = "android.foregroundApps";
+
+    /**
+     * Extra provided to indicate that the notification icon shouldn't be shown in the status bar.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission("android.Manifest.permission.HIDE_STATUS_BAR_NOTIFICATION")
+    @FlaggedApi(FLAG_HIDE_STATUS_BAR_NOTIFICATION)
+    public static final String EXTRA_HIDE_STATUS_BAR_NOTIFICATION =
+            "android.hideStatusBarNotification";
 
     /**
      * @hide

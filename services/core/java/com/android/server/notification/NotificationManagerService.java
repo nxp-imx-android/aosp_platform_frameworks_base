@@ -9000,6 +9000,22 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
+        if (android.app.Flags.hideStatusBarNotification()) {
+            // Ensure only allowed packages can hide status bar notification icon
+            if (notification.extras.containsKey(
+                    Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION)) {
+                int hasPermission = getContext().checkPermission(
+                        permission.HIDE_STATUS_BAR_NOTIFICATION, -1, notificationUid);
+                if (hasPermission != PERMISSION_GRANTED) {
+                    notification.extras.remove(Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION);
+                    Slog.w(TAG, "warning: pkg " + pkg + " attempting to hide status bar"
+                            + " notification without holding permission "
+                            + "permission.HIDE_STATUS_BAR_NOTIFICATION");
+                }
+            }
+        } else {
+            notification.extras.remove(Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION);
+        }
     }
 
 

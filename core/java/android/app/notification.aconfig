@@ -338,6 +338,14 @@ flag {
   bug: "367705002"
 }
 
+flag {
+  name: "hide_status_bar_notification"
+  namespace: "systemui"
+  description: "Allows an application running a foreground service to hide the notification icon from the status bar"
+  bug: "416192314"
+  is_exported: true
+}
+
 # End: exported flags that cannot be removed
 
 
