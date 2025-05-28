@@ -563,6 +563,7 @@ class WindowToken extends WindowContainer<WindowState> {
             chain.collect(this);
             transition.collectVisibleChange(this);
             transition.setReady(mDisplayContent, true);
+            mWmService.mAtmService.mChainTracker.endPartial();
         }
         final int originalRotation = getWindowConfiguration().getRotation();
         onConfigurationChanged(parent.getConfiguration());
