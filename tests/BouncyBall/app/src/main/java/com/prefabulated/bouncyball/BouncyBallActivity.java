@@ -33,11 +33,19 @@ public class BouncyBallActivity extends AppCompatActivity {
     // Since logging (to logcat) takes system resources, we chose not to log
     // data every frame by default.
     private static final boolean LOG_EVERY_FRAME = false;
+
     // To help with debugging and verifying behavior when frames are dropped,
     // this will drop one in every 64 frames.
     private static final boolean FORCE_DROPPED_FRAMES = false;
 
+    // If the app fails an assumption we have for it (primarily that it is
+    // the only foreground app), then its results cannot be trusted.  By
+    // default, we choose to immediately exit in this situation.  Note that
+    // dropping a frame is not considered an assumption failure.
+    private static final boolean ASSUMPTION_FAILURE_FORCES_EXIT = true;
+
     private static final String LOG_TAG = "BouncyBall";
+
     private static final float DESIRED_FRAME_RATE = 60.0f;
 
     // Our focus isn't smoothness on startup; it's smoothness once we're
@@ -45,6 +53,8 @@ public class BouncyBallActivity extends AppCompatActivity {
     private static final int INITIAL_FRAMES_TO_IGNORE = 6;
 
     private int mDisplayId = -1;
+    private boolean mHasFocus = false;
+    private boolean mWarmedUp = false;
     private float mFrameRate;
     private long mFrameMaxDurationNanos;
     private int mNumFramesDropped = 0;
@@ -77,14 +87,23 @@ public class BouncyBallActivity extends AppCompatActivity {
 
                 @Override
                 public void doFrame(long frameTimeNanos) {
-                    if (mFrameCount >= INITIAL_FRAMES_TO_IGNORE) {
+                    if (mFrameCount == INITIAL_FRAMES_TO_IGNORE) {
+                        mWarmedUp = true;
+                        if (!mHasFocus) {
+                            String msg = "App does not have focus after "
+                                    + mFrameCount + " frames";
+                            reportAssumptionFailure(msg);
+                        }
+                    }
+                    if (mWarmedUp) {
                         long elapsedNanos = frameTimeNanos - mLastFrameTimeNanos;
                         if (elapsedNanos > mFrameMaxDurationNanos) {
                             mNumFramesDropped++;
                             Log.e(LOG_TAG, "FRAME DROPPED (total " + mNumFramesDropped
                                     + "): Took " + nanosToMillis(elapsedNanos) + "ms");
                         } else if (LOG_EVERY_FRAME) {
-                            Log.d(LOG_TAG, "Frame took " + nanosToMillis(elapsedNanos) + "ms");
+                            Log.d(LOG_TAG, "Frame " + mFrameCount + " took "
+                                    + nanosToMillis(elapsedNanos) + "ms");
                         }
                     }
                     mLastFrameTimeNanos = frameTimeNanos;
@@ -123,6 +142,18 @@ public class BouncyBallActivity extends AppCompatActivity {
         mChoreographer = Choreographer.getInstance();
         mChoreographer.postFrameCallback(mFrameCallback);
         Trace.endSection();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (mWarmedUp) {
+            // After our initial frames, this app should always be in focus.
+            String state = hasFocus ? "gain" : "loss";
+            reportAssumptionFailure("Unexpected " + state + " of focus");
+        }
+        mHasFocus = hasFocus;
     }
 
     // If available at our current resolution, use 60Hz.  If not, use the
@@ -194,5 +225,13 @@ public class BouncyBallActivity extends AppCompatActivity {
 
     private float nanosToMillis(long nanos) {
         return nanos / (1_000_000.0f);
+    }
+
+    private void reportAssumptionFailure(String msg) {
+        Log.e(LOG_TAG, "ASSUMPTION FAILURE.  " + msg);
+        if (ASSUMPTION_FAILURE_FORCES_EXIT) {
+            Log.e(LOG_TAG, "Exiting app due to assumption failure.");
+            System.exit(1);
+        }
     }
 }
