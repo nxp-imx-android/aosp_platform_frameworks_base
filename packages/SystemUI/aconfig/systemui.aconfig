@@ -36,16 +36,6 @@ flag {
  }
 
 flag {
-   name: "fingerprint_cancel_race_mitigation"
-   namespace: "systemui"
-   description: "Mitigate the race condition between KeyguardUpdateMonitor cancelling a fingerprint listening state and FingerprintManager sending the cancellation."
-   bug: "398973663"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
    name: "user_encrypted_source"
    namespace: "systemui"
    description: "Get rid of the local cache and rely on UserManager.isUserUnlocked directly to determine whether user CE storage is encrypted."

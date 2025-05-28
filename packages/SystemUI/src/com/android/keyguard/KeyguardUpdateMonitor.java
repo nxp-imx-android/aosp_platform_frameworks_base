@@ -44,7 +44,6 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_LOCKOUT;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
-import static com.android.systemui.Flags.fingerprintCancelRaceMitigation;
 import static com.android.systemui.Flags.glanceableHubV2;
 import static com.android.systemui.Flags.simPinBouncerReset;
 import static com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED;
@@ -2240,10 +2239,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         mBiometricManager = biometricManager;
         mConfigFaceAuthSupportedPosture = mContext.getResources().getInteger(
                 R.integer.config_face_auth_supported_posture);
-        mDefaultCancelSignalTimeout = 3000;
-        if (fingerprintCancelRaceMitigation()) {
-            mDefaultCancelSignalTimeout = 5000;
-        }
+        mDefaultCancelSignalTimeout = 5000;
         mFaceWakeUpTriggersConfig = faceWakeUpTriggersConfig;
         mAllowFingerprintOnOccludingActivitiesFromPackage = Arrays.stream(
                 mContext.getResources().getStringArray(
