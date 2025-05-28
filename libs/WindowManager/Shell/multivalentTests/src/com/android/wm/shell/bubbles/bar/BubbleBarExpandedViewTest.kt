@@ -271,20 +271,11 @@ class BubbleBarExpandedViewTest {
             regionSamplingProvider,
         )
 
-        // the task view should be removed from its parent
-        assertThat(taskView.taskView.parent).isNull()
+        // the task view should be added to the expanded view
+        assertThat(taskView.taskView.parent).isEqualTo(expandedView)
 
         var animated = false
         expandedView.animateExpansionWhenTaskViewVisible { animated = true }
-        assertThat(animated).isFalse()
-
-        // send an invisible signal to simulate the surface getting destroyed
-        expandedView.onContentVisibilityChanged(false)
-
-        // send a visible signal to simulate a new surface getting created
-        expandedView.onContentVisibilityChanged(true)
-
-        assertThat(taskView.taskView.parent).isEqualTo(expandedView)
         assertThat(animated).isTrue()
     }
 

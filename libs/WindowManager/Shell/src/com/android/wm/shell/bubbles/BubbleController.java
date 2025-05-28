@@ -38,6 +38,7 @@ import static com.android.wm.shell.bubbles.Bubbles.DISMISS_SHORTCUT_REMOVED;
 import static com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_CHANGED;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
@@ -1195,10 +1196,28 @@ public class BubbleController implements ConfigurationChangeListener,
                     || SYSTEM_DIALOG_REASON_GESTURE_NAV.equals(reason);
             if ((Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action) && validReasonToCollapse)
                     || Intent.ACTION_SCREEN_OFF.equals(action)) {
-                mMainExecutor.execute(() -> collapseStack());
+                // if we're converting the bubble to a different mode, don't collapse since we want
+                // the bubble to stay expanded.
+                if (!isSelectedBubbleConvertingMode()) {
+                    mMainExecutor.execute(() -> collapseStack());
+                }
             }
         }
     };
+
+    /** Returns the broadcast receiver registered for bubbles. */
+    @VisibleForTesting
+    BroadcastReceiver getBroadcastReceiver() {
+        return mBroadcastReceiver;
+    }
+
+    private boolean isSelectedBubbleConvertingMode() {
+        if (mBubbleData.getSelectedBubble() instanceof Bubble) {
+            Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
+            return bubble.isConvertingToBar();
+        }
+        return false;
+    }
 
     private void registerShortcutBroadcastReceiver() {
         IntentFilter shortcutFilter = new IntentFilter();
@@ -1930,6 +1949,18 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     void setUpBubbleViewsForMode() {
+        if (mBubbleData.isExpanded() && !mBubbleData.isShowingOverflow()
+                && isShowingAsBubbleBar()) {
+            Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
+            if (bubble != null) {
+                mBubbleTransitions.startFloatingToBarConversion(bubble, mBubblePositioner);
+                TaskView taskView = bubble.getTaskView();
+                taskView.setIsMovingWindows(true);
+                ViewGroup parent = (ViewGroup) taskView.getParent();
+                parent.removeView(taskView);
+            }
+        }
+
         mBubbleViewCallback = isShowingAsBubbleBar()
                 ? mBubbleBarViewCallback
                 : mBubbleStackViewCallback;
@@ -1995,6 +2026,16 @@ public class BubbleController implements ConfigurationChangeListener,
                     mBubbleIconFactory,
                     mAppInfoProvider,
                     false /* skipInflation */);
+        }
+        if (mBubbleData.isShowingOverflow()) {
+            BubbleOverflow bubbleOverflow = mBubbleData.getOverflow();
+            if (isShowingAsBubbleBar()) {
+                bubbleOverflow.initializeForBubbleBar(mExpandedViewManager, mBubblePositioner);
+                mLayerView.showExpandedView(bubbleOverflow);
+            } else {
+                bubbleOverflow.initialize(mExpandedViewManager, mStackView, mBubblePositioner);
+            }
+
         }
     }
 
@@ -2266,6 +2307,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
     @Override
     public boolean mergeTaskWithUnfold(@NonNull ActivityManager.RunningTaskInfo taskInfo,
+            @NonNull TransitionInfo info,
             @NonNull TransitionInfo.Change change,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull SurfaceControl.Transaction finishT) {
@@ -2274,8 +2316,16 @@ public class BubbleController implements ConfigurationChangeListener,
             return false;
         }
         if (isShowingAsBubbleBar()) {
-            // if bubble bar is enabled, the task view will switch to a new surface on unfold, so we
-            // should not merge the transition.
+            if (info.getType() != TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR) {
+                return false;
+            }
+            if (mBubbleData.getSelectedBubble() instanceof Bubble) {
+                Bubble bubble = (Bubble) mBubbleData.getSelectedBubble();
+                if (bubble.getPreparingTransition() != null) {
+                    bubble.getPreparingTransition().mergeWithUnfold(change.getLeash(), finishT);
+                }
+                return true;
+            }
             return false;
         }
 
@@ -3130,6 +3180,13 @@ public class BubbleController implements ConfigurationChangeListener,
                     "updateBubbleBarTopToScreenBottom",
                     (controller) -> {
                         mBubblePositioner.updateBubbleBarTopOnScreen(bubbleBarTopToScreenBottom);
+                        if (isSelectedBubbleConvertingMode()) {
+                            // if we're in the process of converting the selected bubble to bar mode
+                            // we just received an updated bubble bar relative position so we can
+                            // now continue converting the bubble
+                            ((Bubble) mBubbleData.getSelectedBubble()).getPreparingTransition()
+                                    .continueConvert(mLayerView);
+                        }
                         if (mLayerView != null) mLayerView.updateExpandedView();
                     });
         }
