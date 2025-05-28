@@ -20,7 +20,9 @@ import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.content.Context;
 import android.util.Slog;
 
+import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
 import com.android.server.SystemService;
 
@@ -37,11 +39,13 @@ public final class TaskContinuityManagerService extends SystemService {
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskBroadcaster mTaskBroadcaster;
     private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
+    private RemoteTaskStore mRemoteTaskStore;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
         mTaskBroadcaster = new TaskBroadcaster(context);
         mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
+        mRemoteTaskStore = new RemoteTaskStore();
     }
 
     @Override
@@ -61,5 +65,18 @@ public final class TaskContinuityManagerService extends SystemService {
         TaskContinuityMessage taskContinuityMessage) {
 
         Slog.v(TAG, "Received message from association id: " + associationId);
+
+        switch (taskContinuityMessage.getData()) {
+            case ContinuityDeviceConnected continuityDeviceConnected:
+                // TODO: joeantonetti - Extract a readable device name and pass it to the store.
+                mRemoteTaskStore.registerDevice(
+                    associationId,
+                    String.format("device-%d", associationId),
+                    continuityDeviceConnected.getRemoteTasks());
+                break;
+            default:
+                Slog.w(TAG, "Received unknown message from device: " + associationId);
+                break;
+        }
     }
 }
