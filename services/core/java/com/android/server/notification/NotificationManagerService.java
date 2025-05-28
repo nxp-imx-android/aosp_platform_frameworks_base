@@ -7496,15 +7496,19 @@ public class NotificationManagerService extends SystemService {
         if (users != null) {
             for (UserInfo user : users) {
                 int userId = user.id;
+                ComponentName allowedAssistant = CollectionUtils.firstOrNull(
+                        mAssistants.getAllowedComponents(userId));
                 if (assistant == null) {
-                    ComponentName allowedAssistant = CollectionUtils.firstOrNull(
-                            mAssistants.getAllowedComponents(userId));
                     if (allowedAssistant != null) {
                         setNotificationAssistantAccessGrantedForUserInternal(
                                 allowedAssistant, userId, false, userSet);
                     }
                     continue;
                 }
+                if (granted && assistant.equals(allowedAssistant)) {
+                    continue;
+                }
+
                 if (!granted || mAllowedManagedServicePackages.test(assistant.getPackageName(),
                         userId, mAssistants.getRequiredPermission())) {
                     mConditionProviders.setPackageOrComponentEnabled(assistant.flattenToString(),
@@ -13048,7 +13052,7 @@ public class NotificationManagerService extends SystemService {
             return mNasUnsupported.getOrDefault(userId, new HashSet<>());
         }
 
-        private void setNasUnsupportedDefaults(@UserIdInt int userId) {
+        void setNasUnsupportedDefaults(@UserIdInt int userId) {
             if (mNasUnsupported != null) {
                 mNasUnsupported.put(userId, new HashSet(List.of(mDefaultUnsupportedAdjustments)));
                 handleSavePolicyFile();
