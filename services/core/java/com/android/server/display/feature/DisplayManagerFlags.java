@@ -63,6 +63,10 @@ public class DisplayManagerFlags {
             Flags.FLAG_DISPLAY_TOPOLOGY,
             DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
 
+    private final FlagState mDisplayTopologyApi = new FlagState(
+            Flags.FLAG_DISPLAY_TOPOLOGY_API,
+            Flags::displayTopologyApi);
+
     private final FlagState mConnectedDisplayErrorHandlingFlagState = new FlagState(
             Flags.FLAG_ENABLE_CONNECTED_DISPLAY_ERROR_HANDLING,
             Flags::enableConnectedDisplayErrorHandling);
@@ -647,6 +651,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mExternalDisplayLimitModeState);
         pw.println(" " + mDisplayTopology);
+        pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
         pw.println(" " + mEvenDimmerFlagState);
         pw.println(" " + mSmallAreaDetectionFlagState);

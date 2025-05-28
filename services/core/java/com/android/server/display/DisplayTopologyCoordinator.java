@@ -18,6 +18,7 @@ package com.android.server.display;
 
 import android.hardware.display.DisplayTopology;
 import android.hardware.display.DisplayTopologyGraph;
+import android.util.IndentingPrintWriter;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -239,8 +240,15 @@ class DisplayTopologyCoordinator {
      * @param pw The stream to dump information to.
      */
     void dump(PrintWriter pw) {
+        pw.println("Display Topology Coordinator:");
+        pw.println("----------------------------------------");
+        IndentingPrintWriter idpw = new IndentingPrintWriter(pw);
+        idpw.increaseIndent();
         synchronized (mSyncRoot) {
-            mTopology.dump(pw);
+            idpw.println("isExtendedDisplayAllowed=" + mIsExtendedDisplayAllowed.getAsBoolean());
+            idpw.println("shouldIncludeDefaultDisplayInTopology="
+                    + mShouldIncludeDefaultDisplayInTopology.getAsBoolean());
+            mTopology.dump(idpw);
         }
     }
 
