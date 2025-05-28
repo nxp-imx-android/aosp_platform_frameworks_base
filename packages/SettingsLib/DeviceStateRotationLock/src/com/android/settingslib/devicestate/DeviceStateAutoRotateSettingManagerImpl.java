@@ -18,6 +18,8 @@ package com.android.settingslib.devicestate;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_IGNORED;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED;
+import static android.provider.Settings.Secure.DeviceStateRotationLockKey;
+import static android.provider.Settings.Secure.DeviceStateRotationLockSetting;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -105,7 +107,7 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
     }
 
     @Override
-    @Settings.Secure.DeviceStateRotationLockSetting
+    @DeviceStateRotationLockSetting
     public Integer getRotationLockSetting(int deviceState) {
         final int devicePosture = mPostureDeviceStateConverter.deviceStateToPosture(deviceState);
         final SparseIntArray deviceStateAutoRotateSetting = getRotationLockSetting();
@@ -457,7 +459,7 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
      */
     @Nullable
     private Integer extractSettingForDevicePosture(
-            int devicePosture,
+            @DeviceStateRotationLockKey int devicePosture,
             SparseIntArray deviceStateAutoRotateSetting
     ) {
         if (deviceStateAutoRotateSetting == null) return null;
