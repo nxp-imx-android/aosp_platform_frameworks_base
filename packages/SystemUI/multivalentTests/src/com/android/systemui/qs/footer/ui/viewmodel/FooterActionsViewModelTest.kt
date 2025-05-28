@@ -514,7 +514,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         assertThat(textFeedback)
             .isEqualTo(
                 TextFeedbackViewModel.LoadedTextFeedback(
-                    label = context.getString(config.uiConfig.labelRes),
+                    text = context.getString(config.uiConfig.labelRes),
                     icon =
                         Icon.Loaded(
                             drawable = context.getDrawable(config.uiConfig.iconRes)!!,
