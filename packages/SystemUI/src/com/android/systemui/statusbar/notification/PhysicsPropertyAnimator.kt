@@ -66,6 +66,12 @@ data class PropertyData(
     var offset: Float = 0f,
     var animator: SpringAnimation? = null,
     var delayRunnable: Runnable? = null,
+
+    /**
+     * A runnable that should be executed if the animation is skipped to end / cancelled before
+     * the animation actually starts running.
+     */
+    var endedBeforeStartingCleanupHandler: ((Boolean) -> Unit)? = null,
     var startOffset: Float = 0f,
     var doubleOvershootAvoidingListener: DynamicAnimation.OnAnimationUpdateListener? = null
 )
@@ -208,6 +214,22 @@ private fun startAnimation(
         // conditions and will never actually end them only calling start explicitly does that,
         // so let's start them again!
         animator.start()
+        propertyData.endedBeforeStartingCleanupHandler = null;
+    }
+    propertyData.endedBeforeStartingCleanupHandler = { cancelled ->
+        val listener = properties?.getAnimationEndListener(animatableProperty.property)
+        listener?.onAnimationEnd(propertyData.animator,
+            cancelled,
+            0f /* value */,
+            0f /* velocity */
+        )
+        propertyData.animator = null
+        propertyData.doubleOvershootAvoidingListener = null
+        propertyData.offset = 0f
+        // We always reset the offset as we never want to get stuck with old values. This is
+        // consistent with the end listener above.
+        property.set(view, propertyData.finalValue)
+        propertyData.endedBeforeStartingCleanupHandler = null;
     }
     if (properties != null && properties.delay > 0 && !animator.isRunning) {
         propertyData.delayRunnable = startRunnable
