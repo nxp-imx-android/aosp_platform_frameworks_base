@@ -480,7 +480,7 @@ package android {
     field public static final int allowBackup = 16843392; // 0x1010280
     field public static final int allowClearUserData = 16842757; // 0x1010005
     field public static final int allowClickWhenDisabled = 16844312; // 0x1010618
-    field @FlaggedApi("android.security.asm_restrictions_enabled") public static final int allowCrossUidActivitySwitchFromBelow = 16844449; // 0x10106a1
+    field public static final int allowCrossUidActivitySwitchFromBelow = 16844449; // 0x10106a1
     field public static final int allowEmbedded = 16843765; // 0x10103f5
     field public static final int allowGameAngleDriver = 16844376; // 0x1010658
     field public static final int allowGameDownscaling = 16844377; // 0x1010659
@@ -4684,7 +4684,7 @@ package android.app {
     method @NonNull public final <T extends android.view.View> T requireViewById(@IdRes int);
     method public final void runOnUiThread(Runnable);
     method public void setActionBar(@Nullable android.widget.Toolbar);
-    method @FlaggedApi("android.security.asm_restrictions_enabled") public void setAllowCrossUidActivitySwitchFromBelow(boolean);
+    method public void setAllowCrossUidActivitySwitchFromBelow(boolean);
     method public void setContentTransitionManager(android.transition.TransitionManager);
     method public void setContentView(@LayoutRes int);
     method public void setContentView(android.view.View);

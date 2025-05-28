@@ -3801,7 +3801,6 @@
     <public name="supportsConnectionlessStylusHandwriting" />
     <!-- @FlaggedApi("android.nfc.nfc_observe_mode") -->
     <public name="shouldDefaultToObserveMode"/>
-    <!-- @FlaggedApi("android.security.asm_restrictions_enabled") -->
     <public name="allowCrossUidActivitySwitchFromBelow"/>
     <!-- @FlaggedApi("com.android.text.flags.use_bounds_for_width") -->
     <public name="shiftDrawingOffsetForStartOverhang" />
@@ -3856,7 +3855,6 @@
   <public type="attr" name="supportsConnectionlessStylusHandwriting" id="0x0101069f" />
     <!-- @FlaggedApi("android.nfc.nfc_observe_mode") -->
   <public type="attr" name="shouldDefaultToObserveMode" id="0x010106a0" />
-    <!-- @FlaggedApi("android.security.asm_restrictions_enabled") -->
   <public type="attr" name="allowCrossUidActivitySwitchFromBelow" id="0x010106a1" />
     <!-- @FlaggedApi("com.android.text.flags.use_bounds_for_width") -->
   <public type="attr" name="shiftDrawingOffsetForStartOverhang" id="0x010106a2" />
