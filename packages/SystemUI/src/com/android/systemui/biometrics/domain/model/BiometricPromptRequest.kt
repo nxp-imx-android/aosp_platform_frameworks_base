@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.hardware.biometrics.FallbackOption
 import android.hardware.biometrics.PromptContentView
 import android.hardware.biometrics.PromptInfo
+import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 
@@ -65,6 +66,7 @@ sealed class BiometricPromptRequest(
             operationInfo = operationInfo,
             showEmergencyCallButton = info.isShowEmergencyCallButton,
         ) {
+        val biometricsRequested: Boolean = Utils.isBiometricAllowed(info)
 
         /** PIN prompt. */
         class Pin(

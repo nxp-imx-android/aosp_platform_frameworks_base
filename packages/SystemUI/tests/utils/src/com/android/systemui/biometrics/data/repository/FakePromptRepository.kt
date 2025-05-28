@@ -1,6 +1,7 @@
 package com.android.systemui.biometrics.data.repository
 
 import android.hardware.biometrics.PromptInfo
+import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.PromptKind
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +33,10 @@ class FakePromptRepository : PromptRepository {
     private val _opPackageName: MutableStateFlow<String?> = MutableStateFlow(null)
     override val opPackageName = _opPackageName.asStateFlow()
 
+    private val _fallbackOptions: MutableStateFlow<List<FallbackOptionModel>> =
+        MutableStateFlow(emptyList())
+    override val fallbackOptions = _fallbackOptions.asStateFlow()
+
     override fun setPrompt(
         promptInfo: PromptInfo,
         userId: Int,
@@ -47,7 +52,7 @@ class FakePromptRepository : PromptRepository {
             gatekeeperChallenge,
             kind,
             forceConfirmation = false,
-            opPackageName = opPackageName
+            opPackageName = opPackageName,
         )
 
     fun setPrompt(
