@@ -10396,6 +10396,10 @@ public class AudioService extends IAudioService.Stub
                         mVolumeGroupState.updateVolumeIndex(groupIndex, device);
                         // Only propage mute of stream when applicable
                         if (isMutable()) {
+                            if (deviceVolumeApis() && device != getDeviceForStream(mStreamType)) {
+                                // only mute if the device is active
+                                return;
+                            }
                             // For call stream, align mute only when muted, not when index is set to
                             // 0
                             mVolumeGroupState.mute(
