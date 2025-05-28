@@ -39,6 +39,7 @@ import android.os.OutcomeReceiver;
 import android.os.ParcelableException;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.permission.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -178,6 +179,112 @@ public final class AppFunctionManager {
      * with this value.
      */
     public static final int APP_FUNCTION_STATE_DISABLED = 2;
+
+    /**
+     * App Function access request state indicating that the access has been granted for a
+     * particular agent and target
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public static final int ACCESS_REQUEST_STATE_GRANTED = 0;
+
+    /**
+     * App Function access request state indicating that the access has been denied for a
+     * particular agent and target
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public static final int ACCESS_REQUEST_STATE_DENIED = 1;
+
+    /**
+     * App Function access request state indicating that the access is not able to be granted for
+     * a particular agent and target, due to the agent not being granted the EXECUTE_APP_FUNCTIONS
+     * permission, or the target not having an App Function Service, or the agent not being in the
+     * device allowlist, or one or both apps not being installed.
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public static final int ACCESS_REQUEST_STATE_UNREQUESTABLE = 2;
+
+    /** @hide */
+    @IntDef(prefix = { "ACCESS_REQUEST_STATE_" }, value = {
+            ACCESS_REQUEST_STATE_DENIED,
+            ACCESS_REQUEST_STATE_GRANTED,
+            ACCESS_REQUEST_STATE_UNREQUESTABLE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface AppFunctionAccessState {}
+
+    /**
+     * A flag indicating the app function access state has been pregranted by the system
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_PREGRANTED = 1;
+
+    /**
+     * A flag indicating the app function access is granted through a mechanism not tied to any
+     * other flag (e.g. ADB)
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_OTHER_GRANTED = 1 << 1;
+
+    /**
+     * A flag indicating the app function access state has been denied by some other mechanism not
+     * covered by another flag (e.g. ADB, self revoke)
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_OTHER_DENIED = 1 << 2;
+
+    /**
+     * A flag indicating the user granted the app function access state through UI
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_USER_GRANTED = 1 << 3;
+
+    /**
+     * A flag indicating the app function access state has been denied by the user
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @SystemApi
+    public static final int ACCESS_FLAG_USER_DENIED = 1 << 4;
+
+    /**
+     * All USER flags
+     * @hide
+     */
+    public static final int ACCESS_FLAG_MASK_USER =
+            ACCESS_FLAG_USER_GRANTED | ACCESS_FLAG_USER_DENIED;
+    /**
+     * All OTHER flags
+     * @hide
+     */
+    public static final int ACCESS_FLAG_MASK_OTHER =
+            ACCESS_FLAG_OTHER_GRANTED | ACCESS_FLAG_OTHER_DENIED;
+
+    /**
+     * All access flags
+     * @hide
+     */
+    public static final int
+            ACCESS_FLAG_MASK_ALL = ACCESS_FLAG_PREGRANTED | ACCESS_FLAG_OTHER_GRANTED
+            | ACCESS_FLAG_OTHER_DENIED | ACCESS_FLAG_USER_GRANTED | ACCESS_FLAG_USER_DENIED;
+
+
+    @IntDef(prefix = { "ACCESS_FLAG_" }, flag = true, value = {
+            ACCESS_FLAG_PREGRANTED,
+            ACCESS_FLAG_OTHER_GRANTED,
+            ACCESS_FLAG_OTHER_DENIED,
+            ACCESS_FLAG_USER_GRANTED,
+            ACCESS_FLAG_USER_DENIED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface AppFunctionAccessFlags {}
 
     private final IAppFunctionManager mService;
     private final Context mContext;

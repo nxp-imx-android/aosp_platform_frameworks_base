@@ -16,6 +16,7 @@
 
 package com.android.server.appfunctions
 
+import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.flags.Flags
 import android.content.Context
 import android.content.pm.PackageManagerInternal
@@ -46,7 +47,8 @@ class AppFunctionManagerServiceImplTest {
     private val context: Context
         get() = ApplicationProvider.getApplicationContext()
 
-    private val serviceImpl = AppFunctionManagerServiceImpl(context, mock<PackageManagerInternal>())
+    private val serviceImpl = AppFunctionManagerServiceImpl(context, mock<PackageManagerInternal>(),
+        mock<AppFunctionAccessServiceInterface>())
 
     @Test
     fun testGetLockForPackage_samePackage() {
