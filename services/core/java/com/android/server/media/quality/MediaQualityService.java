@@ -744,7 +744,6 @@ public class MediaQualityService extends SystemService {
                     if (count == 0) {
                         return profiles;
                     }
-                    cursor.moveToFirst();
                     while (cursor.moveToNext()) {
                         profiles.add(MediaQualityUtils.convertCursorToPictureProfileWithTempId(
                                 cursor, mPictureProfileTempIdMap));
