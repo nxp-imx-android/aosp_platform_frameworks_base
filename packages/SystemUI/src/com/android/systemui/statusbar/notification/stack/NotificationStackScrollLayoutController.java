@@ -135,7 +135,6 @@ import com.android.systemui.statusbar.policy.ConfigurationController.Configurati
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.tuner.TunerService;
-import com.android.systemui.util.Compile;
 import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
 
@@ -1624,6 +1623,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      * Set the maximum number of notifications that can currently be displayed
      */
     public void setMaxDisplayedNotifications(int maxNotifications) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         mNotificationListContainer.setMaxDisplayedNotifications(maxNotifications);
     }
 
