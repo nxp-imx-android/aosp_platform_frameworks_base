@@ -15,11 +15,17 @@ android_library {
         "SettingsLintDefaults",
     ],
 
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
     resource_dirs: ["res"],
 
     static_libs: [
+        "SettingsLibDataStore",
         "androidx.annotation_annotation",
+        "androidx.collection_collection",
+        "kotlinx-coroutines-android",
     ],
 
     sdk_version: "system_current",
