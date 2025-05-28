@@ -147,6 +147,16 @@ flag {
 }
 
 flag {
+    name: "fix_no_set_position_mode_when_hal_restarts"
+    namespace: "location"
+    description: "Fix setPostionMode() is not called when HAL restarts"
+    bug: "419597768"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_is_in_emergency_anr"
     namespace: "location"
     description: "Avoid calling IPC with a lock to avoid deadlock"

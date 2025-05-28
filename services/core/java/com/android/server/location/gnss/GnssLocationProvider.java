@@ -1485,7 +1485,11 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
 
     private void restartLocationRequest() {
         if (DEBUG) Log.d(TAG, "restartLocationRequest");
-        setStarted(false);
+        if (Flags.fixNoSetPositionModeWhenHalRestarts()) {
+            stopNavigating();
+        } else {
+            setStarted(false);
+        }
         updateRequirements();
     }
 
@@ -1705,6 +1709,7 @@ public class GnssLocationProvider extends AbstractLocationProvider implements
     public void onCapabilitiesChanged(GnssCapabilities oldCapabilities,
             GnssCapabilities newCapabilities) {
         mHandler.post(() -> {
+            Log.d(TAG, "onCapabilitiesChanged");
             boolean useOnDemandTimeInjection = mGnssNative.getCapabilities().hasOnDemandTime();
 
             // b/73893222: There is a historic bug on Android, which means that the capability
