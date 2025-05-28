@@ -20,7 +20,6 @@ import static com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler
 import static com.android.systemui.shared.recents.utilities.Utilities.isLargeScreen;
 import static com.android.wm.shell.Flags.enableTaskbarNavbarUnification;
 import static com.android.wm.shell.Flags.enableTaskbarOnPhones;
-import static com.android.window.flags.Flags.enableSysDecorsCallbacksViaWm;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -148,7 +147,7 @@ public class NavigationBarControllerImpl implements
         mDisplayTracker = displayTracker;
         mDisplayManager = mContext.getSystemService(DisplayManager.class);
         commandQueue.addCallback(mCommandQueueCallbacks);
-        if (enableSysDecorsCallbacksViaWm()) {
+        if (DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()) {
             displaysWithDecorationsRepositoryCompat.registerDisplayDecorationListener(
                     mDisplayDecorationListener, mainCoroutineDispatcher);
         }

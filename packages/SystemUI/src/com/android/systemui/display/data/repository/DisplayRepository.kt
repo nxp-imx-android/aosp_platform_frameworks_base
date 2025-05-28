@@ -16,11 +16,11 @@
 
 package com.android.systemui.display.data.repository
 
+import android.window.DesktopExperienceFlags
 import com.android.app.displaylib.DisplayRepository as DisplayRepositoryFromLib
 import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayLib
-import com.android.window.flags.Flags.enableSysDecorsCallbacksViaWm
 import javax.inject.Inject
 
 /**
@@ -41,7 +41,9 @@ constructor(
     private val displaysWithDecorationsRepositoryImplFromLib: DisplaysWithDecorationsRepository,
 ) :
     DisplayRepositoryFromLib by displayRepositoryFromLib,
-    DisplaysWithDecorationsRepository by (if (enableSysDecorsCallbacksViaWm()) {
+    DisplaysWithDecorationsRepository by (if (
+        DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()
+    ) {
         displaysWithDecorationsRepositoryImplFromLib
     } else {
         displaysWithDecorationsRepositoryImpl
