@@ -41,10 +41,13 @@ import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_BRIG
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
@@ -56,6 +59,10 @@ import android.hardware.display.DisplayManagerInternal;
 import android.os.PowerManager;
 import android.os.PowerSaveState;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
 
@@ -64,6 +71,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.internal.util.LatencyTracker;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.power.feature.PowerManagerFlags;
 
 import org.junit.Before;
@@ -102,6 +110,10 @@ public class PowerGroupTest {
 
     @Rule
     public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule =
+            DeviceFlagsValueProvider.createCheckFlagsRule();
 
     private PowerGroup mPowerGroup;
     @Mock private PowerGroup.PowerGroupListener mWakefulnessCallbackMock;
@@ -551,6 +563,76 @@ public class PowerGroupTest {
         assertThat(displayPowerRequest.lowPowerMode).isEqualTo(batterySaverEnabled);
         assertThat(displayPowerRequest.screenLowPowerBrightnessFactor).isWithin(PRECISION).of(
                 brightnessFactor);
+    }
+
+    @Test
+    public void dozeLocked_alreadyDozing_returnsFalse() {
+        mPowerGroup.dozeLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_APPLICATION);
+        assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_DOZING);
+
+        // Flag state shouldn't matter for this check
+        boolean result = mPowerGroup.dozeLocked(TIMESTAMP2, UID,
+                PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, true);
+
+        assertFalse("Should return false if already dozing", result);
+        assertEquals(WAKEFULNESS_DOZING, mPowerGroup.getWakefulnessLocked());
+        verify(mWakefulnessCallbackMock, never()).onWakefulnessChangedLocked(anyInt(), anyInt(),
+                anyLong(), anyInt(), anyInt(), anyInt(), anyString(), anyString());
+    }
+
+    // --- Tests with separateTimeouts Flag DISABLED ---
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_SEPARATE_TIMEOUTS)
+    public void dozeLocked_flagDisabled_fromAsleep_returnsFalse() throws Exception {
+        mPowerGroup.sleepLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_TIMEOUT);
+        assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
+
+        // allowSleepToDozeTransition is ignored when flag is false
+        boolean result = mPowerGroup.dozeLocked(TIMESTAMP2, UID,
+                PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, true);
+
+        assertFalse("Should return false from ASLEEP when flag is disabled", result);
+        assertEquals(WAKEFULNESS_ASLEEP, mPowerGroup.getWakefulnessLocked());
+        verify(mWakefulnessCallbackMock, never()).onWakefulnessChangedLocked(anyInt(), anyInt(),
+                anyLong(), anyInt(), anyInt(), anyInt(), anyString(), anyString());
+    }
+
+    // --- Tests with separateTimeouts Flag ENABLED ---
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_SEPARATE_TIMEOUTS)
+    public void dozeLocked_flagEnabled_fromAsleep_allowTransitionFalse_returnsFalse() {
+        mPowerGroup.sleepLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_TIMEOUT);
+        assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
+
+        boolean result = mPowerGroup.dozeLocked(TIMESTAMP2, UID,
+                PowerManager.GO_TO_SLEEP_REASON_TIMEOUT);
+
+        assertFalse("Should return false from ASLEEP when transition not allowed", result);
+        assertEquals(WAKEFULNESS_ASLEEP, mPowerGroup.getWakefulnessLocked());
+        verify(mWakefulnessCallbackMock, never()).onWakefulnessChangedLocked(anyInt(), anyInt(),
+                anyLong(), anyInt(), anyInt(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_SEPARATE_TIMEOUTS)
+    public void dozeLocked_flagEnabled_fromAsleep_allowTransitionTrue_doesNotReturnEarly() {
+        mPowerGroup.sleepLocked(TIMESTAMP1, UID, GO_TO_SLEEP_REASON_TIMEOUT);
+        assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
+
+        boolean result = mPowerGroup.dozeLocked(TIMESTAMP2, UID,
+                PowerManager.GO_TO_SLEEP_REASON_TIMEOUT, /* allowSleepToDozeTransition */ true);
+
+        // We only test that it didn't return false *early*. The actual transition happens later.
+        // The result should be true because a state change *will* occur.
+        assertTrue("Should return true from ASLEEP when transition allowed", result);
+        // Verify the state *did* change (to DOZING)
+        assertEquals(WAKEFULNESS_DOZING, mPowerGroup.getWakefulnessLocked());
+        verify(mWakefulnessCallbackMock).onWakefulnessChangedLocked(eq(GROUP_ID),
+                eq(WAKEFULNESS_DOZING), eq(TIMESTAMP2),
+                eq(PowerManager.GO_TO_SLEEP_REASON_TIMEOUT), eq(UID),
+                eq(0), eq(null), eq(null));
     }
 
     @Test

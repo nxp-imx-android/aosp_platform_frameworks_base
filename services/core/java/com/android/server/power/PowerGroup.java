@@ -107,6 +107,8 @@ public class PowerGroup {
     private final long mDimDuration;
     private final long mScreenOffTimeout;
 
+    private boolean mDreamManagerAttemptedDreaming;
+
     PowerGroup(int groupId, PowerGroupListener wakefulnessListener, Notifier notifier,
             DisplayManagerInternal displayManagerInternal, int wakefulness, boolean ready,
             boolean supportsSandman, long eventTime, PowerManagerFlags featureFlags,
@@ -211,12 +213,55 @@ public class PowerGroup {
                     mLastSleepReason = reason;
                 }
             }
+
+            // Since the group is transitioning to interactive wakefulness, we should reset the
+            // previous attempt of dream made by DreamManager
+            if (newWakefulness == WAKEFULNESS_AWAKE) {
+                setDreamManagerAttemptedDreamingLocked(/* dreamManagerAttemptedDreaming */ false);
+            }
             mWakefulness = newWakefulness;
             mWakefulnessListener.onWakefulnessChangedLocked(mGroupId, mWakefulness, eventTime,
                     reason, uid, opUid, opPackageName, details);
             return true;
         }
         return false;
+    }
+
+    /**
+     * Indicates if the power group already attempted to dream by the DreamManagerService. This
+     * doesn't necessarily indicate that the group is dreaming, as DreamManagerService might
+     * have failed
+     */
+    public boolean dreamManagerAttemptedDreamingLocked() {
+        return mDreamManagerAttemptedDreaming;
+    }
+
+    /**
+     * Sets the dreamManagerAttemptedDreaming status, indicating if the DreamManager attempted to
+     * put the group to dream. This being true doesn't necessarily mean that the group is dreaming
+     * as it can fail in that attempt
+     * @param dreamManagerAttemptedDreaming
+     */
+    public void setDreamManagerAttemptedDreamingLocked(boolean dreamManagerAttemptedDreaming) {
+        Slog.i(TAG, "dreamManagerAttemptedDreaming status changed to "
+                + dreamManagerAttemptedDreaming + " for group " + mGroupId);
+        mDreamManagerAttemptedDreaming = dreamManagerAttemptedDreaming;
+    }
+
+    public boolean isDefaultOrAdjacentGroup() {
+        return isDefaultGroupAdjacent() || getGroupId() == Display.DEFAULT_DISPLAY_GROUP;
+    }
+
+    /**
+     * A group can transition from sleep to doze
+     * 1. It is a default display
+     * 2. com.android.server.display.feature.flags.Flags.separateTimeouts() is enabled
+     * 3. Is non interactive
+     */
+    public boolean canTransitionBetweenNonInteractiveStates() {
+        return (com.android.server.display.feature.flags.Flags.separateTimeouts())
+                && (getGroupId() == Display.DEFAULT_DISPLAY_GROUP)
+                && !isInteractive(getWakefulnessLocked());
     }
 
     /**
@@ -258,8 +303,7 @@ public class PowerGroup {
         return mPoweringOn;
     }
 
-    @VisibleForTesting
-    boolean isDefaultGroupAdjacent() {
+    public boolean isDefaultGroupAdjacent() {
         return mIsDefaultGroupAdjacent;
     }
 
@@ -324,7 +368,20 @@ public class PowerGroup {
     }
 
     boolean dozeLocked(long eventTime, int uid, @PowerManager.GoToSleepReason int reason) {
-        if (eventTime < getLastWakeTimeLocked() || !isInteractive(mWakefulness)) {
+        return dozeLocked(eventTime, uid, reason, false);
+    }
+
+    boolean dozeLocked(long eventTime, int uid, @PowerManager.GoToSleepReason int reason,
+            boolean allowSleepToDozeTransition) {
+        if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
+            allowSleepToDozeTransition = false;
+        }
+
+        if (eventTime < getLastWakeTimeLocked() || mWakefulness == WAKEFULNESS_DOZING) {
+            return false;
+        }
+
+        if (mWakefulness == WAKEFULNESS_ASLEEP && !allowSleepToDozeTransition) {
             return false;
         }
 
@@ -586,6 +643,8 @@ public class PowerGroup {
                 + "\nmDimDuration=" + mDimDuration
                 + "\nmWakefulness=" + mWakefulness
                 + "\nmIsDefaultGroupAdjacent=" + mIsDefaultGroupAdjacent
+                + "\nmSupportsSandman=" + mSupportsSandman
+                + "\nmDreamManagerAttemptedDreaming=" + mDreamManagerAttemptedDreaming
                 + "\nmScreenOffTimeout=" + mScreenOffTimeout;
     }
 
