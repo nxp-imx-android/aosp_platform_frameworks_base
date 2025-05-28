@@ -19,6 +19,7 @@ package com.android.systemui.biometrics;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FACE;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRINT;
 import static android.hardware.fingerprint.FingerprintSensorProperties.TYPE_REAR;
+import static android.hardware.fingerprint.FingerprintSensorProperties.TYPE_UNKNOWN;
 import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.systemui.Flags.contAuthPlugin;
@@ -366,6 +367,8 @@ public class AuthController implements
                         mSfpsEnrolledForUser.put(userId, hasEnrollments);
                     } else if (prop.sensorType == TYPE_REAR) {
                         sensorBiometricType = BiometricType.REAR_FINGERPRINT;
+                    } else {
+                        sensorBiometricType = BiometricType.OTHER_FINGERPRINT;
                     }
                     break;
                 }
@@ -1003,6 +1006,22 @@ public class AuthController implements
         if (mFpProps != null) {
             for (FingerprintSensorPropertiesInternal prop: mFpProps) {
                 if (prop.sensorType == TYPE_REAR) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return true if fps HW is supported on this device, but location is unknown. Can return
+     * true even if the user has not enrolled fps. This may be false if called before
+     * onAllAuthenticatorsRegistered.
+     */
+    public boolean isUnknownFpsSupported() {
+        if (mFpProps != null) {
+            for (FingerprintSensorPropertiesInternal prop: mFpProps) {
+                if (prop.sensorType == TYPE_UNKNOWN) {
                     return true;
                 }
             }
