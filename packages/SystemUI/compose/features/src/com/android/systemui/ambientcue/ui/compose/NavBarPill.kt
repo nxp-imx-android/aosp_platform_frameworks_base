@@ -124,7 +124,7 @@ fun NavBarPill(
                             cornerRadius = 16.dp,
                             visible = visible,
                         )
-                        .clickable { onClick() }
+                        .then(if (expanded) Modifier else Modifier.clickable { onClick() })
                         .padding(horizontal = 8.dp, vertical = 6.dp)
                         .onGloballyPositioned { expandedSize = it.size },
             ) {
