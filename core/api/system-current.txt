@@ -16598,6 +16598,8 @@ package android.telephony.data {
     method public int getNetworkValidationStatus();
     method @NonNull public java.util.List<java.net.InetAddress> getPcscfAddresses();
     method public int getPduSessionId();
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_notify_ims_data_network") public int getPhysicalNetworkSlotIndex();
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_notify_ims_data_network") public int getPhysicalNetworkTransportType();
     method public int getProtocolType();
     method public long getRetryDurationMillis();
     method @Nullable public android.telephony.data.NetworkSliceInfo getSliceInfo();
@@ -16635,6 +16637,8 @@ package android.telephony.data {
     method @NonNull public android.telephony.data.DataCallResponse.Builder setNetworkValidationStatus(int);
     method @NonNull public android.telephony.data.DataCallResponse.Builder setPcscfAddresses(@NonNull java.util.List<java.net.InetAddress>);
     method @NonNull public android.telephony.data.DataCallResponse.Builder setPduSessionId(@IntRange(from=android.telephony.data.DataCallResponse.PDU_SESSION_ID_NOT_SET, to=15) int);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_notify_ims_data_network") @NonNull public android.telephony.data.DataCallResponse.Builder setPhysicalNetworkSlotIndex(int);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_notify_ims_data_network") @NonNull public android.telephony.data.DataCallResponse.Builder setPhysicalNetworkTransportType(int);
     method @NonNull public android.telephony.data.DataCallResponse.Builder setProtocolType(int);
     method @NonNull public android.telephony.data.DataCallResponse.Builder setRetryDurationMillis(long);
     method @NonNull public android.telephony.data.DataCallResponse.Builder setSliceInfo(@Nullable android.telephony.data.NetworkSliceInfo);
@@ -16711,6 +16715,7 @@ package android.telephony.data {
     method public final void notifyApnUnthrottled(@NonNull String);
     method public final void notifyDataCallListChanged(java.util.List<android.telephony.data.DataCallResponse>);
     method public final void notifyDataProfileUnthrottled(@NonNull android.telephony.data.DataProfile);
+    method @FlaggedApi("com.android.internal.telephony.flags.data_service_notify_ims_data_network") public void notifyImsDataNetwork(int, int, int, int, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @FlaggedApi("com.android.internal.telephony.flags.data_service_user_data_toggle_notify") public void notifyUserDataEnabled(boolean, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method @FlaggedApi("com.android.internal.telephony.flags.data_service_user_data_toggle_notify") public void notifyUserDataRoamingEnabled(boolean, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Integer>);
     method public void requestDataCallList(@NonNull android.telephony.data.DataServiceCallback);

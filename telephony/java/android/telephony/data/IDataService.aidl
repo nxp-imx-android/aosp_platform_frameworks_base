@@ -51,4 +51,7 @@ oneway interface IDataService
     void requestNetworkValidation(int slotId, int cid, IIntegerConsumer callback);
     void notifyUserDataEnabled(int slotId, boolean enabled, IIntegerConsumer callback);
     void notifyUserDataRoamingEnabled(int slotId, boolean enabled, IIntegerConsumer callback);
+    void notifyImsDataNetwork(int slotId, int accessNetwork, int dataNetworkState,
+                              int physicalTransportType, int physicalNetworkSlotIndex,
+                              IIntegerConsumer callback);
 }
