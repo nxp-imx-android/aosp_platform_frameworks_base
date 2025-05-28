@@ -16,13 +16,15 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.content.Context
 import android.provider.Settings
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
@@ -73,8 +75,9 @@ interface ShadeModeInteractor {
 class ShadeModeInteractorImpl
 @Inject
 constructor(
-    @Application applicationScope: CoroutineScope,
+    @Background applicationScope: CoroutineScope,
     @Background backgroundDispatcher: CoroutineDispatcher,
+    @ShadeDisplayAware private val context: Context,
     private val repository: ShadeRepository,
     secureSettingsRepository: SecureSettingsRepository,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
@@ -109,9 +112,12 @@ constructor(
     ): ShadeMode {
         return when {
             isDualShadeEnabled -> ShadeMode.Dual
-            // TODO(b/376411622): Once Dual Shade is enabled by default in SceneContainer, replace
-            //  Split below with Dual. This will effectively remove Split mode from SceneContainer.
-            isShadeLayoutWide -> ShadeMode.Split
+            isShadeLayoutWide ->
+                if (context.resources.getBoolean(R.bool.config_disableSplitShade)) {
+                    ShadeMode.Dual
+                } else {
+                    ShadeMode.Split
+                }
             else -> ShadeMode.Single
         }
     }

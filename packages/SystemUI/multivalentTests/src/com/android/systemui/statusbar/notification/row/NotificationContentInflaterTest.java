@@ -52,6 +52,7 @@ import android.os.Looper;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper.RunWithLooper;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -341,10 +342,11 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     @Ignore
     public void testNotificationViewHeightTooSmallFailsValidation() {
+        DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
         View view = mock(View.class);
         when(view.getHeight())
                 .thenReturn((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 10,
-                        mContext.getResources().getDisplayMetrics()));
+                        displayMetrics));
         String result = NotificationContentInflater.isValidView(view, mEntry,
                 mContext.getResources());
         assertNotNull(result);
@@ -352,10 +354,11 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
 
     @Test
     public void testNotificationViewPassesValidation() {
+        DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
         View view = mock(View.class);
         when(view.getHeight())
                 .thenReturn((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 17,
-                        mContext.getResources().getDisplayMetrics()));
+                        displayMetrics));
         String result = NotificationContentInflater.isValidView(view, mEntry,
                 mContext.getResources());
         assertNull(result);

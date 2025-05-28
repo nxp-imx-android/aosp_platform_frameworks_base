@@ -56,11 +56,12 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private lateinit var underTest: CommunalUserActionsViewModel
+    private val underTest: CommunalUserActionsViewModel by lazy {
+        kosmos.communalUserActionsViewModel
+    }
 
     @Before
     fun setUp() {
-        underTest = kosmos.communalUserActionsViewModel
         underTest.activateIn(kosmos.testScope)
     }
 
