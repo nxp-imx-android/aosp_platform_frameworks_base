@@ -20,7 +20,9 @@ import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.os.UserHandle
 import android.view.View
+import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
 import androidx.annotation.StyleRes
+import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionContentManager
 import com.android.systemui.mediaprojection.permission.BaseMediaProjectionPermissionDialogDelegate
@@ -30,6 +32,7 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -49,6 +52,7 @@ class ScreenRecordPermissionDialogDelegate(
     @StyleRes private val theme: Int,
     private val context: Context,
     private val displayManager: DisplayManager,
+    private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
 ) :
     BaseMediaProjectionPermissionDialogDelegate<SystemUIDialog>(
         ScreenRecordPermissionContentManager.createOptionList(displayManager),
@@ -72,6 +76,7 @@ class ScreenRecordPermissionDialogDelegate(
         systemUIDialogFactory: SystemUIDialog.Factory,
         @ShadeDisplayAware context: Context,
         displayManager: DisplayManager,
+        displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
     ) : this(
         hostUserHandle,
         hostUid,
@@ -85,6 +90,7 @@ class ScreenRecordPermissionDialogDelegate(
         theme = SystemUIDialog.DEFAULT_THEME,
         context,
         displayManager,
+        displayWindowPropertiesRepository,
     )
 
     @AssistedFactory
@@ -112,7 +118,20 @@ class ScreenRecordPermissionDialogDelegate(
     }
 
     override fun createDialog(): SystemUIDialog {
-        return systemUIDialogFactory.create(this, context, theme)
+        val displayContext =
+            if (ShadeWindowGoesAround.isEnabled) {
+                // This dialog needs to stay visible even if the notification shade closes,
+                // for example, after unlocking the device. If we used the shade's own context, the
+                // dialog would be tied to the shade and disappear when the shade collapses.
+                // To avoid this, we get a context associated with the status bar on the current
+                // display.  This ensures the dialog remains visible independently of the shade.
+                displayWindowPropertiesRepository.get(context.displayId, TYPE_STATUS_BAR)?.context
+                    // falls back to the default context if the status bar context is not available
+                    ?: context
+            } else {
+                context
+            }
+        return systemUIDialogFactory.create(this, displayContext, theme)
     }
 
     override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
