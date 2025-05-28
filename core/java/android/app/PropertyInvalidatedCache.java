@@ -349,12 +349,6 @@ public class PropertyInvalidatedCache<Query, Result> {
     // Set this true to enable very chatty logging.  Never commit this true.
     private static final boolean DEBUG = false;
 
-    // Set this true to enable cache verification.  On every cache hit, the cache will compare the
-    // cached value to a value pulled directly from the source.  This completely negates any
-    // performance advantage of the cache.  Enable it only to test if a particular cache is not
-    // being properly invalidated.
-    private static final boolean VERIFY = false;
-
     // The test mode. This is only used to ensure that the test functions setTestMode() and
     // testPropertyName() are used correctly.
     @GuardedBy("sGlobalLock")
@@ -1663,36 +1657,6 @@ public class PropertyInvalidatedCache<Query, Result> {
     }
 
     /**
-     * Determines if a pair of responses are considered equal. Used to determine whether
-     * a cache is inadvertently returning stale results when VERIFY is set to true.
-     * @hide
-     */
-    public boolean resultEquals(Result cachedResult, Result fetchedResult) {
-        // If a service crashes and returns a null result, the cached value remains valid.
-        if (fetchedResult != null) {
-            return Objects.equals(cachedResult, fetchedResult);
-        }
-        return true;
-    }
-
-    /**
-     * Make result up-to-date on a cache hit.  Called unlocked;
-     * may block.
-     *
-     * Return either 1) oldResult itself (the same object, by reference equality), in which
-     * case we just return oldResult as the result of the cache query, 2) a new object, which
-     * replaces oldResult in the cache and which we return as the result of the cache query
-     * after performing another property read to make sure that the result hasn't changed in
-     * the meantime (if the nonce has changed in the meantime, we drop the cache and try the
-     * whole query again), or 3) null, which causes the old value to be removed from the cache
-     * and null to be returned as the result of the cache query.
-     * @hide
-     */
-    protected Result refresh(Result oldResult, Query query) {
-        return oldResult;
-    }
-
-    /**
      * Disable the use of this cache in this process.  This method is used internally and during
      * testing.  To disable a cache in normal code, use disableLocal().  A disabled cache cannot
      * be re-enabled.
@@ -1797,14 +1761,6 @@ public class PropertyInvalidatedCache<Query, Result> {
                         mSkips[(int) currentNonce]++;
                     }
                 }
-
-                if (DEBUG) {
-                    if (!mDisabled) {
-                        Log.d(TAG, formatSimple(
-                            "cache %s %s for %s",
-                            cacheName(), sNonceName[(int) currentNonce], queryToString(query)));
-                    }
-                }
                 return recompute(query);
             }
 
@@ -1826,12 +1782,6 @@ public class PropertyInvalidatedCache<Query, Result> {
                         mHits++;
                     }
                 } else {
-                    if (DEBUG) {
-                        Log.d(TAG, formatSimple(
-                            "clearing cache %s of %d entries because nonce changed [%s] -> [%s]",
-                            cacheName(), mCache.size(),
-                            mLastSeenNonce, currentNonce));
-                    }
                     clear();
                     mLastSeenNonce = currentNonce;
                     cacheHit = false;
@@ -1839,52 +1789,11 @@ public class PropertyInvalidatedCache<Query, Result> {
                 }
             }
 
-            // Cache hit --- but we're not quite done yet.  A value in the cache might need to
-            // be augmented in a "refresh" operation.  The refresh operation can combine the
-            // old and the new nonce values.  In order to make sure the new parts of the value
-            // are consistent with the old, possibly-reused parts, we check the property value
-            // again after the refresh and do the whole fetch again if the property invalidated
-            // us while we were refreshing.
             if (cacheHit) {
-                final Result refreshedResult = refresh(cachedResult, query);
-                if (refreshedResult != cachedResult) {
-                    if (DEBUG) {
-                        Log.d(TAG, "cache refresh for " + cacheName() + " " + queryToString(query));
-                    }
-                    final long afterRefreshNonce = getCurrentNonce();
-                    if (currentNonce != afterRefreshNonce) {
-                        currentNonce = afterRefreshNonce;
-                        if (DEBUG) {
-                            Log.d(TAG, formatSimple(
-                                    "restarting %s %s because nonce changed in refresh",
-                                    cacheName(),
-                                    queryToString(query)));
-                        }
-                        continue;
-                    }
-                    synchronized (mLock) {
-                        if (currentNonce != mLastSeenNonce) {
-                            // Do nothing: cache is already out of date. Just return the value
-                            // we already have: there's no guarantee that the contents of mCache
-                            // won't become invalid as soon as we return.
-                        } else if (refreshedResult == null) {
-                            mCache.remove(query);
-                        } else {
-                            mCache.put(query, refreshedResult);
-                        }
-                    }
-                    return maybeCheckConsistency(query, refreshedResult);
-                }
-                if (DEBUG) {
-                    Log.d(TAG, "cache hit for " + cacheName() + " " + queryToString(query));
-                }
-                return maybeCheckConsistency(query, cachedResult);
+                return cachedResult;
             }
 
             // Cache miss: make the value from scratch.
-            if (DEBUG) {
-                Log.d(TAG, "cache miss for " + cacheName() + " " + queryToString(query));
-            }
             final Result result = recompute(query);
             synchronized (mLock) {
                 // If someone else invalidated the cache while we did the recomputation, don't
@@ -1899,7 +1808,7 @@ public class PropertyInvalidatedCache<Query, Result> {
                 }
                 mMisses++;
             }
-            return maybeCheckConsistency(query, result);
+            return result;
         }
     }
 
@@ -2144,26 +2053,6 @@ public class PropertyInvalidatedCache<Query, Result> {
         private static Looper getLooper() {
             return BackgroundThread.getHandler().getLooper();
         }
-    }
-
-    /**
-     * Return the result generated by a given query to the cache, performing debugging checks when
-     * enabled.
-     */
-    private Result maybeCheckConsistency(Query query, Result proposedResult) {
-        if (VERIFY) {
-            Result resultToCompare = recompute(query);
-            boolean nonceChanged = (getCurrentNonce() != mLastSeenNonce);
-            if (!nonceChanged && !resultEquals(proposedResult, resultToCompare)) {
-                Log.e(TAG, formatSimple(
-                        "cache %s inconsistent for %s is %s should be %s",
-                        cacheName(), queryToString(query),
-                        proposedResult, resultToCompare));
-            }
-            // Always return the "true" result in verification mode.
-            return resultToCompare;
-        }
-        return proposedResult;
     }
 
     /**
