@@ -323,9 +323,8 @@ public:
     void setDisplayTopology(JNIEnv* env, jobject topologyGraph);
 
     base::Result<std::unique_ptr<InputChannel>> createInputChannel(const std::string& name);
-    base::Result<std::unique_ptr<InputChannel>> createInputMonitor(ui::LogicalDisplayId displayId,
-                                                                   const std::string& name,
-                                                                   gui::Pid pid);
+    base::Result<std::unique_ptr<InputChannel>> createFocusInputMonitor(
+            ui::LogicalDisplayId displayId, const std::string& name, gui::Pid pid);
     status_t removeInputChannel(const sp<IBinder>& connectionToken);
     status_t pilferPointers(const sp<IBinder>& token);
 
@@ -685,10 +684,10 @@ base::Result<std::unique_ptr<InputChannel>> NativeInputManager::createInputChann
     return mInputManager->getDispatcher().createInputChannel(name);
 }
 
-base::Result<std::unique_ptr<InputChannel>> NativeInputManager::createInputMonitor(
+base::Result<std::unique_ptr<InputChannel>> NativeInputManager::createFocusInputMonitor(
         ui::LogicalDisplayId displayId, const std::string& name, gui::Pid pid) {
     ATRACE_CALL();
-    return mInputManager->getDispatcher().createInputMonitor(displayId, name, pid);
+    return mInputManager->getDispatcher().createFocusInputMonitor(displayId, name, pid);
 }
 
 status_t NativeInputManager::removeInputChannel(const sp<IBinder>& connectionToken) {
@@ -2305,8 +2304,8 @@ static jobject nativeCreateInputChannel(JNIEnv* env, jobject nativeImplObj, jstr
     return inputChannelObj;
 }
 
-static jobject nativeCreateInputMonitor(JNIEnv* env, jobject nativeImplObj, jint displayId,
-                                        jstring nameObj, jint pid) {
+static jobject nativeCreateFocusInputMonitor(JNIEnv* env, jobject nativeImplObj, jint displayId,
+                                             jstring nameObj, jint pid) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
 
     if (ui::LogicalDisplayId{displayId} == ui::LogicalDisplayId::INVALID) {
@@ -2319,7 +2318,7 @@ static jobject nativeCreateInputMonitor(JNIEnv* env, jobject nativeImplObj, jint
     std::string name = nameChars.c_str();
 
     base::Result<std::unique_ptr<InputChannel>> inputChannel =
-            im->createInputMonitor(ui::LogicalDisplayId{displayId}, name, gui::Pid{pid});
+            im->createFocusInputMonitor(ui::LogicalDisplayId{displayId}, name, gui::Pid{pid});
 
     if (!inputChannel.ok()) {
         std::string message = inputChannel.error().message();
@@ -3296,8 +3295,8 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"getKeyCodeForKeyLocation", "(II)I", (void*)nativeGetKeyCodeForKeyLocation},
         {"createInputChannel", "(Ljava/lang/String;)Landroid/view/InputChannel;",
          (void*)nativeCreateInputChannel},
-        {"createInputMonitor", "(ILjava/lang/String;I)Landroid/view/InputChannel;",
-         (void*)nativeCreateInputMonitor},
+        {"createFocusInputMonitor", "(ILjava/lang/String;I)Landroid/view/InputChannel;",
+         (void*)nativeCreateFocusInputMonitor},
         {"removeInputChannel", "(Landroid/os/IBinder;)V", (void*)nativeRemoveInputChannel},
         {"pilferPointers", "(Landroid/os/IBinder;)V", (void*)nativePilferPointers},
         {"setInputFilterEnabled", "(Z)V", (void*)nativeSetInputFilterEnabled},

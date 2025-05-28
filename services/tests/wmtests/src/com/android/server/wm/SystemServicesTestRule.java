@@ -343,7 +343,7 @@ public class SystemServicesTestRule implements TestRule {
             channels[0].dispose();
             return channels[1];
         };
-        when(mImService.monitorInput(anyString(), anyInt())).thenAnswer(newInputChannel);
+        when(mImService.monitorFocusInput(anyString(), anyInt())).thenAnswer(newInputChannel);
         when(mImService.createInputChannel(anyString())).thenAnswer(newInputChannel);
 
         // StatusBarManagerInternal

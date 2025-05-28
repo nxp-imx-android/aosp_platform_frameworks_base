@@ -59,7 +59,7 @@ interface NativeInputManagerService {
 
     InputChannel createInputChannel(String name);
 
-    InputChannel createInputMonitor(int displayId, String name, int pid);
+    InputChannel createFocusInputMonitor(int displayId, String name, int pid);
 
     void removeInputChannel(IBinder connectionToken);
 
@@ -372,7 +372,7 @@ interface NativeInputManagerService {
         public native InputChannel createInputChannel(String name);
 
         @Override
-        public native InputChannel createInputMonitor(int displayId, String name, int pid);
+        public native InputChannel createFocusInputMonitor(int displayId, String name, int pid);
 
         @Override
         public native void removeInputChannel(IBinder connectionToken);
