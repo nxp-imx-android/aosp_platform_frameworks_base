@@ -51,6 +51,7 @@ import java.util.ArrayList;
  * <code>getInstance()</code> method.
  * </p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class Application extends ContextWrapper implements ComponentCallbacks2 {
     private static final String TAG = "Application";
 
@@ -65,6 +66,7 @@ public class Application extends ContextWrapper implements ComponentCallbacks2 {
 
     /** @hide */
     @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodRemove(blockedBy = LoadedApk.class)
     public LoadedApk mLoadedApk;
 
     public interface ActivityLifecycleCallbacks {
@@ -344,6 +346,11 @@ public class Application extends ContextWrapper implements ComponentCallbacks2 {
     @UnsupportedAppUsage
     /* package */ final void attach(Context context) {
         attachBaseContext(context);
+        setLoadedApk(context);
+    }
+
+    @android.ravenwood.annotation.RavenwoodIgnore(blockedBy = LoadedApk.class)
+    private void setLoadedApk(Context context) {
         mLoadedApk = ContextImpl.getImpl(context).mPackageInfo;
     }
 
@@ -607,6 +614,7 @@ public class Application extends ContextWrapper implements ComponentCallbacks2 {
 
     /** @hide */
     @Override
+    @android.ravenwood.annotation.RavenwoodIgnore(blockedBy = AutofillManager.class)
     public AutofillManager.AutofillClient getAutofillClient() {
         final AutofillManager.AutofillClient client = super.getAutofillClient();
         if (client != null) {

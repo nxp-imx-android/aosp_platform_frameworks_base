@@ -26,15 +26,33 @@ public class ActivityThread_ravenwood {
     private ActivityThread_ravenwood() {
     }
 
-    private static volatile Context sContext;
+    /**
+     * Equivalent to {@link ActivityThread#mInitialApplication}.
+     */
+    private static volatile Application sApplication;
+
+    /**
+     * Equivalent to {@link ActivityThread#getSystemContext}.
+     */
+    private static volatile Context sSystemContext;
 
     /** Initializer called by Ravenwood. */
-    public static void init(Context context) {
-        sContext = Objects.requireNonNull(context);
+    public static void init(Application application, Context systemContext) {
+        sApplication = Objects.requireNonNull(application);
+        sSystemContext = Objects.requireNonNull(application);
     }
 
-    /** Override {@link ActivityThread#currentSystemContext()}. */
+    private static <T> T ensureInitialized(T object) {
+        return Objects.requireNonNull(object, "ActivityThread_ravenwood not initialized");
+    }
+
+    /** Override the corresponding ActivityThread method. */
     public static Context currentSystemContext() {
-        return Objects.requireNonNull(sContext, "ActivityThread_ravenwood not initialized.");
+        return ensureInitialized(sSystemContext);
+    }
+
+    /** Override the corresponding ActivityThread method. */
+    public static Application currentApplication() {
+        return ensureInitialized(sApplication);
     }
 }
