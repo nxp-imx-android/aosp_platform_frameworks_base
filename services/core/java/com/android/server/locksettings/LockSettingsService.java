@@ -2029,13 +2029,13 @@ public class LockSettingsService extends ILockSettings.Stub {
             passwordHistory = "";
         } else {
             Slogf.d(TAG, "Adding new password to password history for user %d", userHandle);
-            final byte[] hashFactor = getHashFactor(password, userHandle);
+            final byte[] hashFactor = getHashFactorInternal(password, userHandle);
             final byte[] salt = getSalt(userHandle).getBytes();
             String hash = password.passwordToHistoryHash(salt, hashFactor);
             if (hash == null) {
                 // This should never happen, as all information needed to compute the hash should be
-                // available.  In particular, unwrapping the SP in getHashFactor() should always
-                // succeed, as we're using the LSKF that was just set.
+                // available. In particular, unwrapping the SP in getHashFactorInternal() should
+                // always succeed, as we're using the LSKF that was just set.
                 Slog.e(TAG, "Failed to compute password hash; password history won't be updated");
                 return;
             }
@@ -3320,14 +3320,12 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     /**
-     * Returns a fixed pseudorandom byte string derived from the user's synthetic password.
-     * This is used to salt the password history hash to protect the hash against offline
-     * bruteforcing, since rederiving this value requires a successful authentication.
-     * If user is a profile with unified challenge, currentCredential is ignored.
+     * Returns a fixed pseudorandom byte string derived from the user's synthetic password. This is
+     * used to salt the password history hash to protect the hash against offline bruteforcing,
+     * since rederiving this value requires a successful authentication. If user is a profile with
+     * unified challenge, currentCredential is ignored.
      */
-    @Override
-    public byte[] getHashFactor(LockscreenCredential currentCredential, int userId) {
-        checkPasswordReadPermission();
+    private byte[] getHashFactorInternal(LockscreenCredential currentCredential, int userId) {
         try {
             Slogf.d(TAG, "Getting password history hash factor for user %d", userId);
             if (isProfileWithUnifiedLock(userId)) {
@@ -3351,6 +3349,12 @@ public class LockSettingsService extends ILockSettings.Stub {
         } finally {
             scheduleGc();
         }
+    }
+
+    @Override
+    public byte[] getHashFactor(LockscreenCredential currentCredential, int userId) {
+        checkPasswordReadPermission();
+        return getHashFactorInternal(currentCredential, userId);
     }
 
     private long addEscrowToken(@NonNull byte[] token, @TokenType int type, int userId,
