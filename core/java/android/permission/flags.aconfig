@@ -573,3 +573,10 @@ flag {
     description: "Collect stats about permission one time sessions."
     bug: "417779908"
 }
+
+flag {
+    name: "app_ops_read_cell_information"
+    namespace: "privacy_infra_policy"
+    description: "This flag is used to read cell information from TelephonyManager"
+    bug: "391621017"
+}
