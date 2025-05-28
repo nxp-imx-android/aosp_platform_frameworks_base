@@ -20,6 +20,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
@@ -42,7 +44,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
     val backgroundColor = MaterialTheme.colorScheme.background
 
     Row(
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
@@ -58,20 +60,25 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             modifier = Modifier.size(24.dp).clip(CircleShape),
         )
 
-        Text(
-            action.label,
-            style = MaterialTheme.typography.labelLarge,
-            color = outlineColor,
-            maxLines = 1,
-        )
-        if (action.attribution != null) {
+        Column {
+            val hasAttribution = action.attribution != null
             Text(
-                action.attribution,
+                action.label,
                 style = MaterialTheme.typography.labelLarge,
                 color = outlineColor,
-                maxLines = 1,
-                modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
+                maxLines = if (hasAttribution) 1 else 2,
+                overflow = TextOverflow.Ellipsis,
             )
+            if (hasAttribution) {
+                Text(
+                    action.attribution!!,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = outlineColor,
+                    maxLines = 1,
+                    modifier = Modifier.alpha(0.4f),
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
