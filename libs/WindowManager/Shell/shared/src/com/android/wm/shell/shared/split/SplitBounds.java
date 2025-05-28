@@ -15,12 +15,18 @@
  */
 package com.android.wm.shell.shared.split;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+
+import android.annotation.NonNull;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -55,13 +61,34 @@ public class SplitBounds implements Parcelable {
      * From seascape, it is the rightBottom task that expands slightly.
      */
     public final boolean initiatedFromSeascape;
+    /** @deprecated Use {@link #leftTopTaskIds} instead. */
+    @Deprecated
     public final int leftTopTaskId;
+    /** @deprecated Use {@link #rightBottomTaskIds} instead. */
+    @Deprecated
     public final int rightBottomTaskId;
+    @NonNull
+    public final List<Integer> leftTopTaskIds;
+    @NonNull
+    public final List<Integer> rightBottomTaskIds;
 
-    public SplitBounds(Rect leftTopBounds, Rect rightBottomBounds, int leftTopTaskId,
-            int rightBottomTaskId, @PersistentSnapPosition int snapPosition) {
+    public SplitBounds(Rect leftTopBounds, Rect rightBottomBounds,
+            int leftTopTaskId, int rightBottomTaskId,
+            @NonNull List<Integer> leftTopTaskIds, @NonNull List<Integer> rightBottomTaskIds,
+            @PersistentSnapPosition int snapPosition) {
+        if (leftTopTaskId == INVALID_TASK_ID || rightBottomTaskId == INVALID_TASK_ID
+                || leftTopTaskId == rightBottomTaskId
+                || leftTopTaskIds.isEmpty() || rightBottomTaskIds.isEmpty()) {
+            throw new IllegalArgumentException("The Split task ids are invalid:"
+                    + " leftTopTaskId: " + leftTopTaskId
+                    + " rightBottomTaskId: " + rightBottomTaskId
+                    + " leftTopTaskId size: "  + leftTopTaskIds.size()
+                    + " rightBottomTaskId size: " + rightBottomTaskIds.size());
+        }
         this.leftTopBounds = leftTopBounds;
         this.rightBottomBounds = rightBottomBounds;
+        this.leftTopTaskIds = List.copyOf(leftTopTaskIds);
+        this.rightBottomTaskIds = List.copyOf(rightBottomTaskIds);
         this.leftTopTaskId = leftTopTaskId;
         this.rightBottomTaskId = rightBottomTaskId;
         this.snapPosition = snapPosition;
@@ -82,11 +109,7 @@ public class SplitBounds implements Parcelable {
             // all our current uses, but should be refactored.
             // TODO: Create a more reliable check, or refactor how splitting works on devices
             //  with insets.
-            if (rightBottomBounds.width() > leftTopBounds.width()) {
-                initiatedFromSeascape = true;
-            } else {
-                initiatedFromSeascape = false;
-            }
+            initiatedFromSeascape = rightBottomBounds.width() > leftTopBounds.width();
         }
 
         float totalWidth = rightBottomBounds.right - leftTopBounds.left;
@@ -95,6 +118,13 @@ public class SplitBounds implements Parcelable {
         topTaskPercent = leftTopBounds.height() / totalHeight;
         dividerWidthPercent = visualDividerBounds.width() / totalWidth;
         dividerHeightPercent = visualDividerBounds.height() / totalHeight;
+    }
+
+    public SplitBounds(Rect leftTopBounds, Rect rightBottomBounds, int leftTopTaskId,
+            int rightBottomTaskId, @PersistentSnapPosition int snapPosition) {
+        this(leftTopBounds, rightBottomBounds, leftTopTaskId, rightBottomTaskId,
+                Collections.singletonList(leftTopTaskId),
+                Collections.singletonList(rightBottomTaskId), snapPosition);
     }
 
     /**
@@ -138,11 +168,21 @@ public class SplitBounds implements Parcelable {
         leftTaskPercent = parcel.readFloat();
         appsStackedVertically = parcel.readBoolean();
         initiatedFromSeascape = parcel.readBoolean();
-        leftTopTaskId = parcel.readInt();
-        rightBottomTaskId = parcel.readInt();
         dividerWidthPercent = parcel.readFloat();
         dividerHeightPercent = parcel.readFloat();
         snapPosition = parcel.readInt();
+        leftTopTaskId = parcel.readInt();
+        rightBottomTaskId = parcel.readInt();
+        int size = parcel.readInt();
+        leftTopTaskIds = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            leftTopTaskIds.add(parcel.readInt());
+        }
+        size = parcel.readInt();
+        rightBottomTaskIds = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            rightBottomTaskIds.add(parcel.readInt());
+        }
     }
 
     @Override
@@ -154,11 +194,19 @@ public class SplitBounds implements Parcelable {
         parcel.writeFloat(leftTaskPercent);
         parcel.writeBoolean(appsStackedVertically);
         parcel.writeBoolean(initiatedFromSeascape);
-        parcel.writeInt(leftTopTaskId);
-        parcel.writeInt(rightBottomTaskId);
         parcel.writeFloat(dividerWidthPercent);
         parcel.writeFloat(dividerHeightPercent);
         parcel.writeInt(snapPosition);
+        parcel.writeInt(leftTopTaskId);
+        parcel.writeInt(rightBottomTaskId);
+        parcel.writeInt(leftTopTaskIds.size());
+        for (Integer id : leftTopTaskIds) {
+            parcel.writeInt(id); // Write each Integer in the List
+        }
+        parcel.writeInt(rightBottomTaskIds.size());
+        for (Integer id : rightBottomTaskIds) {
+            parcel.writeInt(id); // Write each Integer in the List
+        }
     }
 
     @Override
@@ -175,20 +223,23 @@ public class SplitBounds implements Parcelable {
         final SplitBounds other = (SplitBounds) obj;
         return Objects.equals(leftTopBounds, other.leftTopBounds)
                 && Objects.equals(rightBottomBounds, other.rightBottomBounds)
-                && leftTopTaskId == other.leftTopTaskId
-                && rightBottomTaskId == other.rightBottomTaskId
+                && leftTopTaskIds.equals(other.leftTopTaskIds)
+                && rightBottomTaskIds.equals(other.rightBottomTaskIds)
                 && snapPosition == other.snapPosition;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(leftTopBounds, rightBottomBounds, leftTopTaskId, rightBottomTaskId);
+        return Objects.hash(leftTopBounds, rightBottomBounds,
+                leftTopTaskId, rightBottomTaskId, leftTopTaskIds, rightBottomTaskIds);
     }
 
     @Override
     public String toString() {
-        return "LeftTop: " + leftTopBounds + ", taskId: " + leftTopTaskId + "\n"
-                + "RightBottom: " + rightBottomBounds + ", taskId: " + rightBottomTaskId +  "\n"
+        return "LeftTop: " + leftTopBounds + " taskId: " + leftTopTaskId
+                + ", taskIds: " + leftTopTaskIds + "\n"
+                + "RightBottom: " + rightBottomBounds + " taskId: " + rightBottomTaskId
+                + ", taskIds: " + rightBottomTaskIds +  "\n"
                 + "Divider: " + visualDividerBounds + "\n"
                 + "AppsVertical? " + appsStackedVertically + "\n"
                 + "snapPosition: " + snapPosition;
