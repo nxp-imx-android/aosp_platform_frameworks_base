@@ -117,7 +117,7 @@ class DragToBubblesZoneChangeListener(
         fun animateBubbleBarLocation(bubbleBarLocation: BubbleBarLocation)
 
         /** Called when the bubble bar pillow view is shown at position. */
-        fun bubbleBarPillowShownAtLocation(bubbleBarLocation: BubbleBarLocation?)
+        fun bubbleBarPillowShownAtLocation(bubbleBarLocation: BubbleBarLocation?) {}
 
         /**
          * Called when a drag operation enters or exits a bubble bar location.
