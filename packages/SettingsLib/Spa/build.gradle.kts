@@ -24,11 +24,11 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
 }
 
-val androidTop: String = File(rootDir, "../../../../..").canonicalPath
+val androidTop: String = file("../../../../..").canonicalPath
 
 allprojects {
     extra["androidTop"] = androidTop
-    extra["jetpackComposeVersion"] = "1.9.0-alpha02"
+    extra["jetpackComposeVersion"] = "1.9.0-alpha03"
 }
 
 subprojects {
