@@ -310,12 +310,19 @@ class KeyguardController {
         try {
             state.writeEventLog("keyguardGoingAway");
             final int transitFlags = convertTransitFlags(flags);
-            final DisplayContent dc = mRootWindowContainer.getDefaultDisplay();
-            // We are deprecating TRANSIT_KEYGUARD_GOING_AWAY for Shell transition and use
-            // TRANSIT_FLAG_KEYGUARD_GOING_AWAY to indicate that it should animate keyguard going
-            // away.
-            dc.mAtmService.getTransitionController().requestTransitionIfNeeded(
-                    TRANSIT_TO_BACK, transitFlags, null /* trigger */, dc, chain);
+            if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
+                final Transition transition = chain.getTransition();
+                if (transition != null && displayId == DEFAULT_DISPLAY) {
+                    transition.addFlag(TRANSIT_FLAG_KEYGUARD_GOING_AWAY);
+                }
+            } else {
+                final DisplayContent dc = mRootWindowContainer.getDefaultDisplay();
+                // We are deprecating TRANSIT_KEYGUARD_GOING_AWAY for Shell transition and use
+                // TRANSIT_FLAG_KEYGUARD_GOING_AWAY to indicate that it should animate keyguard
+                // going away.
+                dc.mAtmService.getTransitionController().requestTransitionIfNeeded(
+                        TRANSIT_TO_BACK, transitFlags, null /* trigger */, dc, chain);
+            }
             updateKeyguardSleepToken();
 
             // Some stack visibility might change (e.g. docked stack)
