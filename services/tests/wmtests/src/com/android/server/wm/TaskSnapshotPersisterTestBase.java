@@ -122,6 +122,8 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
 
     @After
     public void tearDown() {
+        mSnapshotPersistQueue.setPaused(false);
+        mSnapshotPersistQueue.waitForQueueEmpty();
         cleanDirectory();
     }
 
