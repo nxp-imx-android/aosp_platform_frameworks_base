@@ -688,7 +688,7 @@ class ActivityClientController extends IActivityClientController.Stub {
             }
             final Task task = r.getTask();
             if (onlyRoot) {
-                return task.getRootActivity() == r ? task.mTaskId : INVALID_TASK_ID;
+                return r.isRootOfTask() ? task.mTaskId : INVALID_TASK_ID;
             }
             return task.mTaskId;
         }

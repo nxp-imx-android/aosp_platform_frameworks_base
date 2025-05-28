@@ -1267,6 +1267,9 @@ public class TaskTests extends WindowTestsBase {
         activity1.finishing = true;
 
         assertNull("No activity must be reported if all are finishing", task.getRootActivity());
+        assertEquals("The task id of finishing root activity must be reported.",
+                task.mTaskId, mAtm.mActivityClientController.getTaskForActivity(
+                        activity0.token, true /* onlyRoot */));
     }
 
     /**
