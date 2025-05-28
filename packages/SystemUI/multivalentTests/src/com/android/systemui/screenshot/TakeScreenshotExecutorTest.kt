@@ -640,6 +640,48 @@ class TakeScreenshotExecutorTest : SysuiTestCase() {
             screenshotExecutor.onDestroy()
         }
 
+    @Test
+    @EnableFlags(Flags.FLAG_SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE)
+    fun executeScreenshots_consecutiveRequestsOnDifferentDisplays() =
+        testScope.runTest {
+            val secondaryDisplay = display(TYPE_EXTERNAL, id = 1)
+            var focusedDisplay = Display.DEFAULT_DISPLAY
+            setDisplays(display(TYPE_INTERNAL, id = Display.DEFAULT_DISPLAY), secondaryDisplay)
+            screenshotProxy.stub {
+                onBlocking { getFocusedDisplay() }.thenAnswer { focusedDisplay }
+            }
+
+            val secondaryController = mock<ScreenshotController>()
+            whenever(controllerFactory.create(eq(secondaryDisplay))).thenReturn(secondaryController)
+
+            screenshotExecutor.executeScreenshots(
+                createScreenshotRequest(
+                    source = WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER
+                ),
+                { _: Uri? -> },
+                callback,
+            )
+
+            verify(controller).handleScreenshot(any(), any(), any())
+            verify(secondaryController, never()).handleScreenshot(any(), any(), any())
+
+            // Now input focus moves to secondary display.
+            focusedDisplay = secondaryDisplay.displayId
+            screenshotExecutor.executeScreenshots(
+                createScreenshotRequest(
+                    source = WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER
+                ),
+                { _: Uri? -> },
+                callback,
+            )
+
+            // Destroy the old controller, send screenshot to the secondary display one.
+            verify(controller).onDestroy()
+            verify(secondaryController).handleScreenshot(any(), any(), any())
+
+            screenshotExecutor.onDestroy()
+        }
+
     private suspend fun TestScope.setDisplays(vararg displays: Display) {
         fakeDisplayRepository.emit(displays.toSet())
         runCurrent()

@@ -274,6 +274,16 @@ constructor(
     }
 
     private fun getScreenshotController(display: Display): InteractiveScreenshotHandler {
+
+        if (
+            SCREENSHOT_MULTIDISPLAY_FOCUS_CHANGE.isTrue &&
+                screenshotController?.getDisplay() != display
+        ) {
+            // New request is from a different display, throw out the old UI so we can instantiate a
+            // new one.
+            screenshotController?.onDestroy()
+            screenshotController = null
+        }
         val controller = screenshotController ?: interactiveScreenshotHandlerFactory.create(display)
         screenshotController = controller
         return controller

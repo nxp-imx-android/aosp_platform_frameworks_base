@@ -300,7 +300,10 @@ internal constructor(
         screenshotSoundController.releaseScreenshotSoundAsync()
         releaseContext()
         bgExecutor.shutdown()
+        screenshotHandler.cancelTimeout()
     }
+
+    override fun getDisplay() = display
 
     /** Release the constructed window context. */
     private fun releaseContext() {
