@@ -160,8 +160,12 @@ public class ShadeCarrier extends LinearLayout {
         mCarrierText.setText(text);
     }
 
-    public void updateTextAppearance(@StyleRes int resId) {
+    /** Update the text appearance of the text and the tint of the icon */
+    public void updateTextAppearanceAndTint(@StyleRes int resId, int fgColor, int bgColor) {
         mCarrierText.setTextAppearance(resId);
+        if (mModernMobileView != null) {
+            mModernMobileView.setStyleAndTint(resId, fgColor, bgColor);
+        }
     }
 
     @Override
