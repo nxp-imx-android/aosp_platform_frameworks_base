@@ -18,6 +18,9 @@ package com.android.systemui.clock.ui.viewmodel
 
 import com.android.systemui.clock.domain.interactor.clockInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.util.time.dateFormatUtil
 
 val Kosmos.clockViewModel: ClockViewModel by
-    Kosmos.Fixture { ClockViewModel(clockInteractor = clockInteractor) }
+    Kosmos.Fixture {
+        ClockViewModel(clockInteractor = clockInteractor, dateFormatUtil = dateFormatUtil)
+    }

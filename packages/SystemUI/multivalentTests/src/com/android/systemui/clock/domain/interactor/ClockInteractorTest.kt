@@ -24,7 +24,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runCurrent
@@ -33,7 +32,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.statusbar.policy.NextAlarmController.NextAlarmChangeCallback
 import com.android.systemui.statusbar.policy.nextAlarmController
 import com.android.systemui.testKosmos
-import com.android.systemui.util.time.systemClock
+import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import java.util.Date
 import kotlin.time.Duration
@@ -110,7 +109,7 @@ class ClockInteractorTest : SysuiTestCase() {
     fun currentTime_initialTime() =
         kosmos.runTest {
             assertThat(underTest.currentTime.value)
-                .isEqualTo(Date(kosmos.systemClock.currentTimeMillis()))
+                .isEqualTo(Date(fakeSystemClock.currentTimeMillis()))
         }
 
     @Test
@@ -121,7 +120,7 @@ class ClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
             val earlierTime = checkNotNull(currentTime)
 
-            advanceTimeBy(3.seconds)
+            fakeSystemClock.advanceTime(3.seconds.inWholeMilliseconds)
             runCurrent()
 
             sendIntentActionBroadcast(Intent.ACTION_TIME_CHANGED)
@@ -138,7 +137,7 @@ class ClockInteractorTest : SysuiTestCase() {
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
             val earlierTime = checkNotNull(currentTime)
 
-            advanceTimeBy(7.seconds)
+            fakeSystemClock.advanceTime(7.seconds.inWholeMilliseconds)
             runCurrent()
 
             sendIntentActionBroadcast(Intent.ACTION_TIME_TICK)
