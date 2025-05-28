@@ -26,6 +26,7 @@
         android:outlineAmbientShadowColor="@android:color/transparent"
         android:outlineSpotShadowColor="@android:color/transparent"
         android:background="@android:color/transparent"
+        android:touchscreenBlocksFocus="false"
         app:expanded="false"
         android:theme="@style/SettingsLibTheme.CollapsingToolbar.Expressive">
 
@@ -45,6 +46,8 @@
                 android:layout_marginStart="@dimen/settingslib_expressive_space_extrasmall4"
                 android:theme="?android:attr/actionBarTheme"
                 android:transitionName="shared_element_view"
+                android:nextFocusForward="@+id/content_frame"
+                android:touchscreenBlocksFocus="false"
                 app:layout_collapseMode="pin">
 
                 <LinearLayout
