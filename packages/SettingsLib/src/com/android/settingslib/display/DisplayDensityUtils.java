@@ -217,18 +217,11 @@ public class DisplayDensityUtils {
             summariesSmaller = SUMMARIES_SMALLER;
             summariesLarger = SUMMARIES_LARGER;
         } else {
-            if (currentDisplayInfo.physicalXDpi > 0 && currentDisplayInfo.physicalYDpi > 0) {
-                maxScaleFraction = R.fraction.external_display_density_max_scale;
-                minScaleFraction = R.fraction.external_display_density_min_scale;
-                summariesSmaller = SUMMARIES_SMALLER;
-                summariesLarger = SUMMARIES_LARGER;
-            } else {
-                // Use bigger range if the display xDPI or yDPI is missing.
-                maxScaleFraction = R.fraction.external_display_density_max_scale_extended;
-                minScaleFraction = R.fraction.external_display_density_min_scale_extended;
-                summariesSmaller = SUMMARIES_SMALLER_EXTENDED;
-                summariesLarger = SUMMARIES_LARGER_EXTENDED;
-            }
+            // Use bigger range of density values for external displays.
+            maxScaleFraction = R.fraction.external_display_density_max_scale;
+            minScaleFraction = R.fraction.external_display_density_min_scale;
+            summariesSmaller = SUMMARIES_SMALLER_EXTENDED;
+            summariesLarger = SUMMARIES_LARGER_EXTENDED;
         }
 
         // Compute number of "larger" and "smaller" scales for this display.
