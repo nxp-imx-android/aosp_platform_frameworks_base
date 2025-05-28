@@ -18,17 +18,16 @@ package com.android.test.input
 import android.Manifest
 import android.hardware.input.InputManager
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.view.KeyEvent
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.AdoptShellPermissionsRule
 import com.android.compatibility.common.util.PollingCheck
 import com.android.cts.input.CaptureEventActivity
+import com.android.cts.input.EvdevInputEventCodes
 import com.android.cts.input.UinputKeyboard
 import com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -55,10 +54,6 @@ class KeyEventActivityListenerTest {
             Manifest.permission.LISTEN_FOR_KEY_ACTIVITY,
         )
 
-    companion object {
-        const val KEY_A = 30
-    }
-
     @Before
     fun setUp() {
         lateinit var activity: CaptureEventActivity
@@ -70,31 +65,26 @@ class KeyEventActivityListenerTest {
         listener = mock(InputManager.KeyEventActivityListener::class.java)
     }
 
-    @After
-    fun tearDown() {
-        inputManager.unregisterKeyEventActivityListener(listener)
-    }
-
     @Test
     fun testKeyActivityListener() {
+        val isRegistered = inputManager.registerKeyEventActivityListener(listener)
+        assertTrue(isRegistered)
+        val latch = CountDownLatch(1)
+        doAnswer {
+                latch.countDown()
+                null
+            }
+            .`when`(listener)
+            .onKeyEventActivity()
         UinputKeyboard(instrumentation).use { keyboardDevice ->
-            val isRegistered = inputManager.registerKeyEventActivityListener(listener)
-            assertTrue(isRegistered)
-            val latch = CountDownLatch(1)
-            doAnswer {
-                    latch.countDown()
-                    null
-                }
-                .`when`(listener)
-                .onKeyEventActivity()
-            keyboardDevice.injectKeyDown(KEY_A)
-            keyboardDevice.injectKeyUp(KEY_A)
+            keyboardDevice.injectKeyDown(EvdevInputEventCodes.KEY_A)
+            keyboardDevice.injectKeyUp(EvdevInputEventCodes.KEY_A)
             assertTrue(latch.await(10, TimeUnit.SECONDS))
             verify(listener, times(1)).onKeyEventActivity()
             val isUnregistered = inputManager.unregisterKeyEventActivityListener(listener)
             assertTrue(isUnregistered)
-            keyboardDevice.injectKeyDown(KEY_A)
-            keyboardDevice.injectKeyUp(KEY_A)
+            keyboardDevice.injectKeyDown(EvdevInputEventCodes.KEY_A)
+            keyboardDevice.injectKeyUp(EvdevInputEventCodes.KEY_A)
             verifyNoMoreInteractions(listener)
         }
     }
