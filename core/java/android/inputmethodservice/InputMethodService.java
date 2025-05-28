@@ -1326,11 +1326,10 @@ public class InputMethodService extends AbstractInputMethodService {
     }
 
     private void updateEditorToolTypeInternal(int toolType) {
-        if (Flags.useHandwritingListenerForTooltype()) {
-            if (mInputEditorInfo != null) {
-                mInputEditorInfo.setInitialToolType(toolType);
-            }
+        if (mInputEditorInfo != null) {
+            mInputEditorInfo.setInitialToolType(toolType);
         }
+
         onUpdateEditorToolType(toolType);
     }
 
@@ -3652,10 +3651,8 @@ public class InputMethodService extends AbstractInputMethodService {
      *         had not seen the event at all.
      */
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (Flags.useHandwritingListenerForTooltype()) {
-            // any KeyEvent keyDown should reset last toolType.
-            updateEditorToolTypeInternal(MotionEvent.TOOL_TYPE_UNKNOWN);
-        }
+        // any KeyEvent keyDown should reset last toolType.
+        updateEditorToolTypeInternal(MotionEvent.TOOL_TYPE_UNKNOWN);
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             final ExtractEditText eet = getExtractEditTextIfVisible();
