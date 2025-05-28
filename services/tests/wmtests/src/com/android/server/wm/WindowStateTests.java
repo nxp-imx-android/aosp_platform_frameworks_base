@@ -1054,12 +1054,9 @@ public class WindowStateTests extends WindowTestsBase {
         mWm.mResizingWindows.remove(win);
         spyOn(win.mClient);
         try {
-            doThrow(new RemoteException("test")).when(win.mClient).resized(any() /* frames */,
-                    anyBoolean() /* reportDraw */, any() /* mergedConfig */,
-                    any() /* insetsState */, anyBoolean() /* forceLayout */,
-                    anyBoolean() /* alwaysConsumeSystemBars */, anyInt() /* displayId */,
-                    anyInt() /* seqId */, anyBoolean() /* dragResizing */,
-                    any() /* activityWindowInfo */);
+            doThrow(new RemoteException("test")).when(win.mClient).resized(any() /* layout */,
+                    anyBoolean() /* reportDraw */, anyBoolean() /* forceLayout */,
+                    anyInt() /* displayId */, anyBoolean() /* dragResizing */);
         } catch (RemoteException ignored) {
         }
         win.reportResized();
@@ -1723,7 +1720,7 @@ public class WindowStateTests extends WindowTestsBase {
         final InsetsState outInsetsState = new InsetsState();
         final InsetsSourceControl.Array outControls = new InsetsSourceControl.Array();
         final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(outFrames,
-                outConfig, outSurfaceControl, outInsetsState, outControls);
+                outConfig, outInsetsState, outControls);
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 TYPE_APPLICATION_OVERLAY);
         params.setTitle("imeLayeringTargetOverlay");
@@ -1731,10 +1728,10 @@ public class WindowStateTests extends WindowTestsBase {
         params.flags = FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
 
         mWm.addWindow(session, client, params, View.VISIBLE, DEFAULT_DISPLAY,
-                0 /* userUd */, WindowInsets.Type.defaultVisible(), null, new InsetsState(),
-                new InsetsSourceControl.Array(), new Rect(), new float[1]);
+                0 /* userUd */, WindowInsets.Type.defaultVisible(), null,
+                new WindowRelayoutResult());
         mWm.relayoutWindow(session, client, params, 100, 200, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult);
+                outRelayoutResult, outSurfaceControl);
         waitHandlerIdle(mWm.mH);
 
         final WindowState imeLayeringTargetOverlay = mDisplayContent.getWindow(
@@ -1747,7 +1744,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Scenario 2: test relayoutWindow to let the Ime layering target overlay window invisible.
         mWm.relayoutWindow(session, client, params, 100, 200, View.GONE, 0, 0, 0,
-                outRelayoutResult);
+                outRelayoutResult, outSurfaceControl);
         waitHandlerIdle(mWm.mH);
 
         assertThat(imeLayeringTargetOverlay.isVisible()).isFalse();
