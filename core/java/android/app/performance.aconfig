@@ -55,3 +55,10 @@ flag {
      description: "Controls the ability to get Debug.MemoryInfo stats from ApplicationExitInfo api"
      bug: "283096463"
 }
+
+flag {
+    name: "on_restart_activity_lifecycle_callback"
+    namespace: "system_performance"
+    description: "Controls the onRestart callback in ActivityLifeCycleCallbacks"
+    bug: "417520188"
+}
