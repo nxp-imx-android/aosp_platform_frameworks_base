@@ -39,7 +39,9 @@ exclude_large_tests=0
 atest_opts=""
 build_only=0
 list_options=""
-while getopts "sx:f:dtbLa:r" opt; do
+with_tools_tests=1
+
+while getopts "sx:f:dtbLa:rD" opt; do
 case "$opt" in
     s)
         # Remove slow tests.
@@ -79,6 +81,11 @@ case "$opt" in
         # only run tests under frameworks/base/ravenwood/
         list_options="$list_options -r"
         ;;
+    D)
+        # Run device tests under f/b/r
+        list_options="$list_options -D"
+        with_tools_tests=0
+        ;;
     '?')
         exit 1
         ;;
@@ -86,7 +93,9 @@ esac
 done
 shift $(($OPTIND - 1))
 
-all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest)
+if (( $with_tools_tests )) ; then
+    all_tests=(hoststubgentest tiny-framework-dump-test hoststubgen-invoke-test ravenwood-stats-checker ravenhelpertest)
+fi
 all_raven_tests=( $( ./list-ravenwood-tests.sh $list_options ) )
 
 all_tests+=( "${all_raven_tests[@]}" )
