@@ -21,6 +21,8 @@
 #include <android/activity_manager.h>
 #include <binder/ActivityManager.h>
 
+#include <mutex>
+
 namespace android {
 namespace activitymanager {
 
