@@ -1360,7 +1360,7 @@ final class KeyGestureController {
                     int existingPid = mSupportedKeyGestureToPidMap.get(gestureType);
                     KeyGestureHandlerRecord existingHandler = Objects.requireNonNull(
                             mKeyGestureHandlerRecords.get(existingPid));
-                    if (existingHandler.mKeyGestureHandler.asBinder().isBinderAlive()) {
+                    if (existingHandler.mKeyGestureHandler.asBinder().pingBinder()) {
                         throw new IllegalArgumentException(
                                 "Key gesture " + gestureType + " is already registered by pid = "
                                         + existingPid);
