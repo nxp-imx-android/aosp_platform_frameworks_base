@@ -1358,3 +1358,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_request_fullscreen_refactor"
+    namespace: "lse_desktop_experience"
+    description: "Refactors Activity#requestFullscreenMode internal implementation."
+    bug: "296268915"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
