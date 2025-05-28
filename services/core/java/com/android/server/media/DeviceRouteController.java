@@ -104,17 +104,17 @@ import java.util.List;
         }
     }
 
-    /** Returns the currently selected device (built-in or wired) route. */
+    /** Returns a list of currently selected devices (built-in, wired or bt) route. */
     @NonNull
-    MediaRoute2Info getSelectedRoute();
+    List<MediaRoute2Info> getSelectedRoutes();
 
     /**
      * Returns all available routes.
      *
      * <p>Note that this method returns available routes including the selected route because (a)
      * this interface doesn't guarantee that the internal state of the controller won't change
-     * between calls to {@link #getSelectedRoute()} and this method and (b) {@link
-     * #getSelectedRoute()} may be treated as a transferable route (not a selected route) if the
+     * between calls to {@link #getSelectedRoutes()} and this method and (b) {@link
+     * #getSelectedRoutes()} may be treated as a transferable route (not a selected route) if the
      * selected route is from {@link BluetoothRouteController}.
      */
     List<MediaRoute2Info> getAvailableRoutes();

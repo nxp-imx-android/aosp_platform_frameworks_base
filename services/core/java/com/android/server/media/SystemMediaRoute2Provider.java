@@ -42,9 +42,11 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.media.flags.Flags;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Provides routes for local playbacks such as phone speaker, wired headset, or Bluetooth speakers.
@@ -69,7 +71,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     private final DeviceRouteController mDeviceRouteController;
     private final BluetoothRouteController mBluetoothRouteController;
 
-    private String mSelectedRouteId;
+    @GuardedBy("mLock")
+    private List<String> mSelectedRouteIds = Collections.emptyList();
 
     /**
      * Placeholder {@link MediaRoute2Info} representation of the currently selected route for apps
@@ -185,17 +188,16 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             return;
         }
 
-        if (!Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
-            if (TextUtils.equals(routeOriginalId, mSelectedRouteId)) {
-                RoutingSessionInfo currentSessionInfo;
-                synchronized (mLock) {
-                    currentSessionInfo =
+        synchronized (mLock) {
+            if (!Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
+                if (mSelectedRouteIds.size() == 1 && mSelectedRouteIds.contains(routeOriginalId)) {
+                    RoutingSessionInfo currentSessionInfo =
                             Flags.enableMirroringInMediaRouter2()
                                     ? mSystemSessionInfo
                                     : mSessionInfos.get(0);
+                    mCallback.onSessionCreated(this, requestId, currentSessionInfo);
+                    return;
                 }
-                mCallback.onSessionCreated(this, requestId, currentSessionInfo);
-                return;
             }
         }
 
@@ -257,7 +259,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             String sessionOriginalId,
             String routeOriginalId,
             @RoutingSessionInfo.TransferReason int transferReason) {
-        String selectedDeviceRouteId = mDeviceRouteController.getSelectedRoute().getId();
+        String selectedDeviceRouteId =
+                mDeviceRouteController.getSelectedRoutes().getFirst().getId();
         if (TextUtils.equals(routeOriginalId, MediaRoute2Info.ROUTE_ID_DEFAULT)) {
             if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
                 // Transfer to the default route (which is the selected route). We replace the id to
@@ -309,8 +312,10 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
     @Override
     public void setRouteVolume(long requestId, String routeOriginalId, int volume) {
-        if (!TextUtils.equals(routeOriginalId, mSelectedRouteId)) {
-            return;
+        synchronized (mLock) {
+            if (!mSelectedRouteIds.contains(routeOriginalId)) {
+                return;
+            }
         }
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
     }
@@ -383,19 +388,27 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 return null;
             }
 
-            MediaRoute2Info selectedDeviceRoute = mDeviceRouteController.getSelectedRoute();
+            List<MediaRoute2Info> selectedDeviceRoutes = mDeviceRouteController.getSelectedRoutes();
 
             RoutingSessionInfo.Builder builder =
                     new RoutingSessionInfo.Builder(SYSTEM_SESSION_ID, packageName)
                             .setSystemSession(true);
-            builder.addSelectedRoute(selectedDeviceRoute.getId());
+
+            for (MediaRoute2Info route : selectedDeviceRoutes) {
+                builder.addSelectedRoute(route.getId());
+            }
             for (MediaRoute2Info route : mBluetoothRouteController.getAllBluetoothRoutes()) {
                 builder.addTransferableRoute(route.getId());
             }
 
             if (Flags.enableAudioPoliciesDeviceAndBluetoothController()) {
+                // Cache to list to avoid redundant list conversions
+                Set<String> selectedRouteIds =
+                        selectedDeviceRoutes.stream()
+                                .map(MediaRoute2Info::getId)
+                                .collect(Collectors.toUnmodifiableSet());
                 for (MediaRoute2Info route : mDeviceRouteController.getAvailableRoutes()) {
-                    if (!TextUtils.equals(selectedDeviceRoute.getId(), route.getId())) {
+                    if (!selectedRouteIds.contains(route.getId())) {
                         builder.addTransferableRoute(route.getId());
                     }
                 }
@@ -461,7 +474,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 setProviderState(builder.build());
             }
         } else {
-            builder.addRoute(mDeviceRouteController.getSelectedRoute());
+            builder.addRoute(mDeviceRouteController.getSelectedRoutes().getFirst());
         }
 
         for (MediaRoute2Info route : mBluetoothRouteController.getAllBluetoothRoutes()) {
@@ -490,19 +503,23 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                     SYSTEM_SESSION_ID, "" /* clientPackageName */)
                     .setSystemSession(true);
 
-            MediaRoute2Info selectedDeviceRoute = mDeviceRouteController.getSelectedRoute();
-            MediaRoute2Info selectedRoute = selectedDeviceRoute;
+            List<MediaRoute2Info> selectedDeviceRoutes = mDeviceRouteController.getSelectedRoutes();
+            List<MediaRoute2Info> selectedRoutes = selectedDeviceRoutes;
             MediaRoute2Info selectedBtRoute = mBluetoothRouteController.getSelectedRoute();
             List<String> transferableRoutes = new ArrayList<>();
 
             if (selectedBtRoute != null) {
-                selectedRoute = selectedBtRoute;
-                transferableRoutes.add(selectedDeviceRoute.getId());
+                selectedRoutes = List.of(selectedBtRoute);
+                for (MediaRoute2Info selectedDeviceRoute : selectedDeviceRoutes) {
+                    transferableRoutes.add(selectedDeviceRoute.getId());
+                }
             }
-            mSelectedRouteId = selectedRoute.getId();
+
+            mSelectedRouteIds = selectedRoutes.stream().map(MediaRoute2Info::getId).toList();
 
             var defaultRouteBuilder =
-                    new MediaRoute2Info.Builder(MediaRoute2Info.ROUTE_ID_DEFAULT, selectedRoute)
+                    new MediaRoute2Info.Builder(
+                                    MediaRoute2Info.ROUTE_ID_DEFAULT, selectedRoutes.getFirst())
                             .setSystemRoute(true)
                             .setProviderId(mUniqueId);
             if (Flags.hideBtAddressFromAppsWithoutBtPermission()) {
@@ -510,11 +527,13 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             }
             mDefaultRoute = defaultRouteBuilder.build();
 
-            builder.addSelectedRoute(mSelectedRouteId);
+            for (String selectedRouteId : mSelectedRouteIds) {
+                builder.addSelectedRoute(selectedRouteId);
+            }
             if (Flags.enableAudioPoliciesDeviceAndBluetoothController()) {
                 for (MediaRoute2Info route : mDeviceRouteController.getAvailableRoutes()) {
                     String routeId = route.getId();
-                    if (!mSelectedRouteId.equals(routeId)) {
+                    if (!mSelectedRouteIds.contains(routeId)) {
                         transferableRoutes.add(routeId);
                     }
                 }
@@ -533,7 +552,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 String transferInitiatorPackageName = null;
 
                 if (oldSessionInfo != null
-                        && containsSelectedRouteWithId(oldSessionInfo, selectedRoute.getId())) {
+                        && containsSelectedRouteWithId(
+                                oldSessionInfo, mSelectedRouteIds.getFirst())) {
                     transferReason = oldSessionInfo.getTransferReason();
                     transferInitiatorUserHandle = oldSessionInfo.getTransferInitiatorUserHandle();
                     transferInitiatorPackageName = oldSessionInfo.getTransferInitiatorPackageName();
@@ -542,7 +562,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 synchronized (mTransferLock) {
                     if (mPendingTransferRequest != null) {
                         boolean isTransferringToTheSelectedRoute =
-                                mPendingTransferRequest.isTargetRoute(selectedRoute);
+                                mPendingTransferRequest.isTargetRoute(selectedRoutes.getFirst());
                         boolean canBePotentiallyTransferred =
                                 mPendingTransferRequest.isTargetRouteIdInRouteOriginalIdList(
                                         transferableRoutes);
@@ -616,8 +636,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         }
 
         long pendingRequestId = mPendingSessionCreationOrTransferRequest.mRequestId;
-        if (mPendingSessionCreationOrTransferRequest.mTargetOriginalRouteId.equals(
-                mSelectedRouteId)) {
+        if (mSelectedRouteIds.contains(
+                mPendingSessionCreationOrTransferRequest.mTargetOriginalRouteId)) {
             if (DEBUG) {
                 Slog.w(
                         TAG,
@@ -705,10 +725,10 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     @Override
     protected String getDebugString() {
         return TextUtils.formatSimple(
-                "%s - package: %s, selected route id: %s, bluetooth impl: %s",
+                "%s - package: %s, selected route ids: %s, bluetooth impl: %s",
                 getClass().getSimpleName(),
                 mComponentName.getPackageName(),
-                mSelectedRouteId,
+                mSelectedRouteIds,
                 mBluetoothRouteController.getClass().getSimpleName());
     }
 
