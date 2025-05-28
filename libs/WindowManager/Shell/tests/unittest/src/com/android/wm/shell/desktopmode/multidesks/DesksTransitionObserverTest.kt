@@ -240,6 +240,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
             val task = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
             val transition = Binder()
             val change = Change(mock(), mock()).apply { taskInfo = task }
+            whenever(mockDesksOrganizer.isDeskChange(change, deskId = deskId)).thenReturn(true)
             whenever(mockDesksOrganizer.getDeskAtEnd(change)).thenReturn(deskId)
             val activateTransition =
                 DeskTransition.ActivateDeskWithTask(
@@ -258,6 +259,40 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
             assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(deskId)
             assertThat(repository.getActiveTaskIdsInDesk(deskId)).contains(task.taskId)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_activateDeskWithTask_trampolineTask_updatesRepositoryForDesk() =
+        testScope.runTest {
+            val deskId = 5
+            val task = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
+            val task2 = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
+            val transition = Binder()
+            val change = Change(mock(), mock()).apply { taskInfo = task2 }
+            whenever(mockDesksOrganizer.isDeskChange(change, deskId = deskId)).thenReturn(true)
+            whenever(mockDesksOrganizer.getDeskAtEnd(change)).thenReturn(deskId)
+            val activateTransition =
+                DeskTransition.ActivateDeskWithTask(
+                    transition,
+                    displayId = DEFAULT_DISPLAY,
+                    deskId = deskId,
+                    // Request was for |task|, but it will trampoline launch another task.
+                    enterTaskId = task.taskId,
+                )
+            repository.addDesk(DEFAULT_DISPLAY, deskId = deskId)
+
+            observer.addPendingTransition(activateTransition)
+            observer.onTransitionReady(
+                transition = transition,
+                info =
+                    TransitionInfo(TRANSIT_TO_FRONT, /* flags= */ 0)
+                        // Actual task in change is |task2|.
+                        .apply { addChange(change) },
+            )
+
+            // Desk is activated regardless of |task| not appearing in the transition.
+            assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(deskId)
         }
 
     @Test

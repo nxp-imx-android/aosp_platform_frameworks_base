@@ -151,6 +151,10 @@ class DesksTransitionObserver(
                             deskChangeDisplayId,
                         )
                     }
+                    desktopRepository.setActiveDesk(
+                        displayId = deskTransition.displayId,
+                        deskId = deskTransition.deskId,
+                    )
                 } else {
                     logW("ActivateDeskWithTask: did not find desk change")
                 }
@@ -161,10 +165,6 @@ class DesksTransitionObserver(
                             desksOrganizer.getDeskAtEnd(change) == deskTransition.deskId
                     }
                 if (taskChange != null) {
-                    desktopRepository.setActiveDesk(
-                        displayId = deskTransition.displayId,
-                        deskId = deskTransition.deskId,
-                    )
                     desktopRepository.addTaskToDesk(
                         displayId = deskTransition.displayId,
                         deskId = deskTransition.deskId,
@@ -172,6 +172,10 @@ class DesksTransitionObserver(
                         isVisible = true,
                     )
                 } else {
+                    // This is possible in cases where the task that was originally launched is a
+                    // trampoline and a new task ends up being the one that appeared. It's ok as
+                    // desktop task updates to the repository are handled by
+                    // [DesktopTaskChangeListener].
                     logW("ActivateDeskWithTask: did not find task change")
                 }
                 deskTransition.runOnTransitEnd?.invoke()
