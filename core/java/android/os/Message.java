@@ -174,14 +174,16 @@ public final class Message implements Parcelable {
      * avoid allocating new objects in many cases.
      */
     public static Message obtain() {
-        synchronized (sPoolSync) {
-            if (sPool != null) {
-                Message m = sPool;
-                sPool = m.next;
-                m.next = null;
-                m.flags = 0; // clear in-use flag
-                sPoolSize--;
-                return m;
+        if (!MessageQueue.getUseConcurrent()) {
+            synchronized (sPoolSync) {
+                if (sPool != null) {
+                    Message m = sPool;
+                    sPool = m.next;
+                    m.next = null;
+                    m.flags = 0; // clear in-use flag
+                    sPoolSize--;
+                    return m;
+                }
             }
         }
         return new Message();
@@ -360,11 +362,13 @@ public final class Message implements Parcelable {
         callback = null;
         data = null;
 
-        synchronized (sPoolSync) {
-            if (sPoolSize < MAX_POOL_SIZE) {
-                next = sPool;
-                sPool = this;
-                sPoolSize++;
+        if (!MessageQueue.getUseConcurrent()) {
+            synchronized (sPoolSync) {
+                if (sPoolSize < MAX_POOL_SIZE) {
+                    next = sPool;
+                    sPool = this;
+                    sPoolSize++;
+                }
             }
         }
     }
