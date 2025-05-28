@@ -271,16 +271,6 @@ flag {
 }
 
 flag {
-    name: "fix_output_media_item_list_index_out_of_bounds_exception"
-    namespace: "media_better_together"
-    description: "Fixes a bug of causing IndexOutOfBoundsException when building media item list."
-    bug: "398246089"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "avoid_binder_calls_during_render"
     namespace: "media_better_together"
     description: "Reduces number of expensive binder calls during rendering."

@@ -211,7 +211,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_FIX_OUTPUT_MEDIA_ITEM_LIST_INDEX_OUT_OF_BOUNDS_EXCEPTION,
                 Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING);
     }
 
