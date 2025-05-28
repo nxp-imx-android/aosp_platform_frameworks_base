@@ -30,6 +30,7 @@ import android.platform.test.annotations.Presubmit;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.widget.LockscreenCredential;
 
@@ -528,6 +529,11 @@ public class SoftwareRateLimiterTest {
         @Override
         public void postDelayed(Runnable runnable, Object token, long delayMillis) {
             mWorkList.add(new WorkItem(runnable, token, delayMillis));
+        }
+
+        @Override
+        public int getHardwareRateLimiter(LskfIdentifier id) {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
         }
     }
 

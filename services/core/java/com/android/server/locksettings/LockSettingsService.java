@@ -260,7 +260,10 @@ public class LockSettingsService extends ILockSettings.Stub {
 
     private static final int HEADLESS_VENDOR_AUTH_SECRET_LENGTH = 32;
 
-    // Order of holding lock: mSeparateChallengeLock -> mSpManager -> this
+    // Order of holding lock:
+    //          mSeparateChallengeLock -> mSpManager
+    //          mSpManager -> this
+    //          mSpManager -> mSoftwareRateLimiter
     // Do not call into ActivityManager while holding mSpManager lock.
     private final Object mSeparateChallengeLock = new Object();
 
@@ -680,6 +683,11 @@ public class LockSettingsService extends ILockSettings.Stub {
         @Override
         public void postDelayed(Runnable runnable, Object token, long delayMillis) {
             Handler.getMain().postDelayed(runnable, token, delayMillis);
+        }
+
+        @Override
+        public int getHardwareRateLimiter(LskfIdentifier id) {
+            return mSpManager.getHardwareRateLimiter(id);
         }
     }
 

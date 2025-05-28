@@ -252,7 +252,7 @@ class SoftwareRateLimiter {
                 }
                 state.savedWrongGuesses[0] = wrongGuess;
                 state.numDuplicateWrongGuesses++;
-                writeStats(state, /* success= */ false);
+                writeStats(id, state, /* success= */ false);
                 return mEnforcing
                         ? SoftwareRateLimiterResult.duplicateWrongGuess()
                         : SoftwareRateLimiterResult.continueToHardware();
@@ -269,7 +269,7 @@ class SoftwareRateLimiter {
      */
     synchronized void reportSuccess(LskfIdentifier id) {
         RateLimiterState state = getExistingState(id);
-        writeStats(state, /* success= */ true);
+        writeStats(id, state, /* success= */ true);
         // If the wrong guess counter is still 0, then there is no need to write it. Nor can there
         // be any saved wrong guesses, so there is no need to forget them. This optimizes for the
         // common case where the first guess is correct.
@@ -327,7 +327,7 @@ class SoftwareRateLimiter {
         // its containing directory. This minimizes the risk of the counter being rolled back.
         writeWrongGuessCounter(id, state);
 
-        writeStats(state, /* success= */ false);
+        writeStats(id, state, /* success= */ false);
 
         insertNewWrongGuess(state, newWrongGuess);
 
@@ -369,14 +369,15 @@ class SoftwareRateLimiter {
     }
 
     @GuardedBy("this")
-    private void writeStats(RateLimiterState state, boolean success) {
+    private void writeStats(LskfIdentifier id, RateLimiterState state, boolean success) {
         FrameworkStatsLog.write(
                 FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED,
                 /* success= */ success,
                 /* num_unique_guesses= */ state.numWrongGuesses + (success ? 1 : 0),
                 /* num_duplicate_guesses= */ state.numDuplicateWrongGuesses,
                 /* credential_type= */ state.statsCredentialType,
-                /* software_rate_limiter_enforcing= */ mEnforcing);
+                /* software_rate_limiter_enforcing= */ mEnforcing,
+                /* hardware_rate_limiter= */ mInjector.getHardwareRateLimiter(id));
     }
 
     @GuardedBy("this")
@@ -492,5 +493,7 @@ class SoftwareRateLimiter {
         void removeCallbacksAndMessages(Object token);
 
         void postDelayed(Runnable runnable, Object token, long delayMillis);
+
+        int getHardwareRateLimiter(LskfIdentifier id);
     }
 }
