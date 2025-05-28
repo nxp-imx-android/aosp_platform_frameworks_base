@@ -1694,10 +1694,6 @@ public class DisplayRotationTests {
                     com.android.internal.R.bool.config_windowManagerHalfFoldAutoRotateOverride))
                     .thenReturn(mSupportHalfFoldAutoRotateOverride);
 
-            when(mMockContext.getResources().getIntArray(
-                    R.array.config_foldedDeviceStates))
-                    .thenReturn(mIsFoldable ? new int[]{0} : new int[]{});
-
             mMockDisplayRotationReversionController =
                     mock(DisplayRotationReversionController.class);
             when(mMockDisplayContent.getRotationReversionController())
@@ -1718,6 +1714,7 @@ public class DisplayRotationTests {
                     .thenReturn(mMockDeviceStateManager);
 
             mDeviceStateController = mock(DeviceStateController.class);
+            when(mDeviceStateController.isFoldable()).thenReturn(mIsFoldable);
             mMockDisplayContent.mAppCompatCameraPolicy = mock(AppCompatCameraPolicy.class);
             mTarget = new TestDisplayRotation(mMockDisplayContent, mMockDisplayAddress,
                     mMockDisplayPolicy, mMockDisplayWindowSettings, mMockContext,

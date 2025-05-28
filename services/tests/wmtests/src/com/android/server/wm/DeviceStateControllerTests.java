@@ -29,6 +29,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -193,6 +194,24 @@ public class DeviceStateControllerTests {
         assertEquals(1, entries.size());
         assertEquals(mDeviceStateListener, entries.get(0).first);
         assertEquals(mExecutor, entries.get(0).second);
+    }
+
+    @Test
+    public void testWithFoldSupported_returnsThatDeviceIsFoldable() {
+        initialize(true /* supportFold */, false /* supportHalfFolded */);
+
+        final boolean isFoldable = mTarget.isFoldable();
+
+        assertTrue(isFoldable);
+    }
+
+    @Test
+    public void testWithFoldNotSupported_returnsThatDeviceIsNotFoldable() {
+        initialize(false /* supportFold */, false /* supportHalfFolded */);
+
+        final boolean isFoldable = mTarget.isFoldable();
+
+        assertFalse(isFoldable);
     }
 
     private final List<DeviceState> mFoldedStates = new ArrayList<>(

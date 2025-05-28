@@ -163,6 +163,15 @@ final class DeviceStateController {
     }
 
     /**
+     * Checks if the current device is a foldable device based on if there is at least one
+     * folded device state
+     * @return true if this is a foldable device, false otherwise
+     */
+    boolean isFoldable() {
+        return !mFoldedDeviceStates.isEmpty();
+    }
+
+    /**
      * @return true if the rotation direction on the Z axis should be reversed for the default
      * display.
      */
