@@ -25,6 +25,7 @@ import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.accessibility.data.repository.fakeAccessibilityRepository
 import com.android.systemui.biometrics.FaceHelpMessageDebouncer
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.biometrics.domain.faceHelpMessageDeferral
@@ -45,6 +46,7 @@ import com.android.systemui.keyguard.shared.model.ErrorFingerprintAuthentication
 import com.android.systemui.keyguard.shared.model.FailFingerprintAuthenticationStatus
 import com.android.systemui.keyguard.shared.model.HelpFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository.Companion.DEFAULT_SELECTED_USER
 import com.android.systemui.util.mockito.whenever
@@ -67,6 +69,7 @@ class BiometricMessageInteractorTest : SysuiTestCase() {
     private val faceAuthRepository = kosmos.fakeDeviceEntryFaceAuthRepository
     private val biometricSettingsRepository = kosmos.biometricSettingsRepository
     private val faceHelpMessageDeferral = kosmos.faceHelpMessageDeferral
+    private val accessibilityRepository = kosmos.fakeAccessibilityRepository
 
     @Test
     fun fingerprintErrorMessage() =
@@ -220,6 +223,28 @@ class BiometricMessageInteractorTest : SysuiTestCase() {
                         com.android.internal.R.string.fingerprint_udfps_error_not_match
                     )
                 )
+        }
+
+    @Test
+    fun fingerprintA11yMessage_fps() =
+        testScope.runTest {
+            val fingerprintA11yMessage by collectLastValue(underTest.fingerprintMessage)
+
+            // GIVEN UDFPS
+            fingerprintPropertyRepository.setProperties(
+                0,
+                SensorStrength.STRONG,
+                FingerprintSensorType.UDFPS_OPTICAL,
+                mapOf(),
+            )
+            accessibilityRepository.isTouchExplorationEnabled.value = true
+
+            // GIVEN fingerprint is allowed
+            biometricSettingsRepository.setIsFingerprintAuthCurrentlyAllowed(true)
+
+            // THEN fingerprintA11yMessage is updated to fps message
+            assertThat(fingerprintA11yMessage?.message)
+                .isEqualTo(kosmos.mainResources.getString(R.string.fingerprint_dialog_touch_sensor))
         }
 
     @Test
