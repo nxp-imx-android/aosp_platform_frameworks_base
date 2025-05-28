@@ -31,7 +31,12 @@ public class RemoteTaskInfo {
 
     public RemoteTaskInfo(TaskInfo taskInfo) {
         mId = taskInfo.taskId;
-        mLabel = taskInfo.taskDescription.getLabel().toString();
+
+        // TODO: joeantonetti - Proper fallback if task description is null.
+        if (taskInfo.taskDescription != null && taskInfo.taskDescription.getLabel() != null) {
+            mLabel = taskInfo.taskDescription.getLabel().toString();
+        }
+
         mLastUsedTimeMillis = taskInfo.lastActiveTime;
     }
 
