@@ -279,7 +279,8 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
             MODULE_TEST,
             MODULE_SYSTEM,
             MODULE_BLUETOOTH,
-            MODULE_TELEPHONY
+            MODULE_TELEPHONY,
+            MODULE_ADSERVICES,
         }
     )
     @Retention(RetentionPolicy.SOURCE)
@@ -308,6 +309,15 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
     @SystemApi(client=SystemApi.Client.MODULE_LIBRARIES)
     @TestApi
     public static final String MODULE_BLUETOOTH = PropertyInvalidatedCache.MODULE_BLUETOOTH;
+
+    /**
+     * The module used for adservices caches.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_IPC_DATA_CACHE_MODULE_ADSERVICES)
+    @SystemApi(client=SystemApi.Client.MODULE_LIBRARIES)
+    @TestApi
+    public static final String MODULE_ADSERVICES = PropertyInvalidatedCache.MODULE_ADSERVICES;
 
     /**
      * Make a new property invalidated cache.  The key is computed from the module and api

@@ -153,6 +153,12 @@ public class PropertyInvalidatedCache<Query, Result> {
     public static final String MODULE_TELEPHONY = "telephony";
 
     /**
+     * The module used by the adservices caches.
+     * @hide
+     */
+    public static final String MODULE_ADSERVICES = "adservices";
+
+    /**
      * An object that represents a distinct domain of cache keys.  The sole attribute is the
      * string name of the domain.
      */
@@ -161,14 +167,16 @@ public class PropertyInvalidatedCache<Query, Result> {
     // The system module that supports shared memory.
     private static final Namespace sNamespaceSystem = new Namespace(MODULE_SYSTEM);
     // Stub modules representing the known non-system domains.
+    private static final Namespace sNamespaceAdservices = new Namespace(MODULE_ADSERVICES);
     private static final Namespace sNamespaceBluetooth = new Namespace(MODULE_BLUETOOTH);
     private static final Namespace sNamespaceTelephony = new Namespace(MODULE_TELEPHONY);
     private static final Namespace sNamespaceTest = new Namespace(MODULE_TEST);
 
     private static Namespace nameToNamespace(@NonNull String name) {
         switch (name) {
-            case MODULE_SYSTEM: return sNamespaceSystem;
+            case MODULE_ADSERVICES: return sNamespaceAdservices;
             case MODULE_BLUETOOTH: return sNamespaceBluetooth;
+            case MODULE_SYSTEM: return sNamespaceSystem;
             case MODULE_TELEPHONY: return sNamespaceTelephony;
             case MODULE_TEST: return sNamespaceTest;
         }
@@ -191,6 +199,8 @@ public class PropertyInvalidatedCache<Query, Result> {
      */
     public static @NonNull String createPropertyName(@NonNull String module,
             @NonNull String apiName) {
+        throwIfInvalidModule(module);
+
         char[] api = apiName.toCharArray();
         int upper = 0;
         for (int i = 1; i < api.length; i++) {
@@ -214,15 +224,16 @@ public class PropertyInvalidatedCache<Query, Result> {
                 throw new IllegalArgumentException("invalid api name");
             }
         }
-
-        return CACHE_KEY_PREFIX + "." + module + "." + new String(suffix);
+        final String name = CACHE_KEY_PREFIX + "." + module + "." + new String(suffix);
+        throwIfInvalidCacheKey(name);
+        return name;
     }
 
     /**
      * The list of known and legal modules.  The order is not significant.
      */
     private static final String[] sValidModule = {
-        MODULE_SYSTEM, MODULE_BLUETOOTH, MODULE_TELEPHONY, MODULE_TEST,
+        MODULE_SYSTEM, MODULE_BLUETOOTH, MODULE_TELEPHONY, MODULE_TEST, MODULE_ADSERVICES,
     };
 
     /**
@@ -260,6 +271,7 @@ public class PropertyInvalidatedCache<Query, Result> {
         CACHE_KEY_PREFIX + "." + MODULE_BLUETOOTH + ".",
         CACHE_KEY_PREFIX + "." + MODULE_TELEPHONY + ".",
         CACHE_KEY_PREFIX + "." + MODULE_TEST + ".",
+        CACHE_KEY_PREFIX + "." + MODULE_ADSERVICES + ".",
     };
 
     // The components needed to identify a cache.
