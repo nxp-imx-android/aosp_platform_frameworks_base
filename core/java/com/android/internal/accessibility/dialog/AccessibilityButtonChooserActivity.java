@@ -54,7 +54,7 @@ public class AccessibilityButtonChooserActivity extends Activity {
 
         final ResolverDrawerLayout rdl = findViewById(R.id.contentPanel);
         if (rdl != null) {
-            rdl.setOnDismissedListener(this::finish);
+            rdl.setOnDismissListener(this::finish);
         }
 
         final AccessibilityManager accessibilityManager =
