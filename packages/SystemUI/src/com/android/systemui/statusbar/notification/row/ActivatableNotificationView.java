@@ -372,6 +372,18 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     }
 
     @Override
+    public void setBottomOverlap(int bottomOverlap) {
+        super.setBottomOverlap(bottomOverlap);
+        mBackgroundNormal.setBottomOverlap(bottomOverlap);
+    }
+
+    @Override
+    public void setTopOverlap(int topOverlap) {
+        super.setTopOverlap(topOverlap);
+        mBackgroundNormal.setTopOverlap(topOverlap);
+    }
+
+    @Override
     public long performRemoveAnimation(long duration, long delay, float translationDirection,
             boolean isHeadsUpAnimation, boolean isHeadsUpCycling, Runnable onStartedRunnable,
             Runnable onFinishedRunnable, AnimatorListenerAdapter animationListener,
@@ -517,6 +529,15 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
                         onAppearAnimationSkipped(isAppearing);
                     }
                 }, delay);
+    }
+
+    @Override
+    public int getBackgroundBottom() {
+        int backgroundBottom = super.getBackgroundBottom();
+        if (mDrawingAppearAnimation) {
+            backgroundBottom += (int) mAppearAnimationTranslation;
+        }
+        return backgroundBottom;
     }
 
     private int getCujType(boolean isAppearing) {

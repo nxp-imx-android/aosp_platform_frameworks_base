@@ -490,21 +490,8 @@ public class StackScrollAlgorithm {
                     }
                 }
 
-                notGoneIndex = updateNotGoneIndex(state, notGoneIndex, v);
-                if (v instanceof ExpandableNotificationRow row) {
-
-                    // handle the notGoneIndex for the children as well
-                    List<ExpandableNotificationRow> children = row.getAttachedChildren();
-                    if (row.isSummaryWithChildren() && children != null) {
-                        for (ExpandableNotificationRow childRow : children) {
-                            if (childRow.getVisibility() != View.GONE) {
-                                ExpandableViewState childState = childRow.getViewState();
-                                childState.notGoneIndex = notGoneIndex;
-                                notGoneIndex++;
-                            }
-                        }
-                    }
-                }
+                state.visibleChildren.add(v);
+                notGoneIndex = updateNotGoneIndex(notGoneIndex, v);
             }
         }
 
@@ -548,12 +535,28 @@ public class StackScrollAlgorithm {
         }
     }
 
-    private int updateNotGoneIndex(StackScrollAlgorithmState state, int notGoneIndex,
-            ExpandableView v) {
+    private int updateNotGoneIndex(int notGoneIndex, ExpandableView v) {
         ExpandableViewState viewState = v.getViewState();
         viewState.notGoneIndex = notGoneIndex;
-        state.visibleChildren.add(v);
         notGoneIndex++;
+        if (v instanceof ExpandableNotificationRow row) {
+
+            // handle the notGoneIndex for the children as well
+            List<ExpandableNotificationRow> children = row.getAttachedChildren();
+            if (row.isSummaryWithChildren() && children != null) {
+                for (ExpandableNotificationRow childRow : children) {
+                    if (childRow.getVisibility() != View.GONE) {
+                        if (NotificationBundleUi.isEnabled()) {
+                            notGoneIndex = updateNotGoneIndex(notGoneIndex, childRow);
+                        } else {
+                            ExpandableViewState childState = childRow.getViewState();
+                            childState.notGoneIndex = notGoneIndex;
+                            notGoneIndex++;
+                        }
+                    }
+                }
+            }
+        }
         return notGoneIndex;
     }
 
