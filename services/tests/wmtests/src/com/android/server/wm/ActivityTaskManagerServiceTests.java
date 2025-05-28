@@ -24,6 +24,7 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_FIRST_ORDERED_ID;
@@ -47,6 +48,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
@@ -581,6 +583,29 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         mAtm.endPowerMode(ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY);
         verify(mWm.mPowerManagerInternal).setPowerMode(
                 PowerManagerInternal.MODE_DISPLAY_CHANGE, false);
+    }
+
+    @Test
+    public void testUpdatePreviousProcess() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm).build();
+        activity.lastVisibleTime = 1;
+        mAtm.mTopApp = mock(WindowProcessController.class);
+        mAtm.updatePreviousProcess(activity);
+
+        assertEquals(activity.app, mAtm.mPreviousProcess);
+
+        final ActivityRecord recentsActivity = new ActivityBuilder(mAtm)
+                .setUid("recents".hashCode()).build();
+        final RecentTasks recentTasks = mAtm.getRecentTasks();
+        spyOn(recentTasks);
+        doReturn(true).when(recentTasks).isRecentsComponent(
+                eq(recentsActivity.mActivityComponent),
+                eq(recentsActivity.info.applicationInfo.uid));
+        recentsActivity.lastVisibleTime = 2;
+        mAtm.updatePreviousProcess(recentsActivity);
+
+        assertEquals("RecentsActivity must not occupy 'previous process'",
+                activity.app, mAtm.mPreviousProcess);
     }
 
     @Test
