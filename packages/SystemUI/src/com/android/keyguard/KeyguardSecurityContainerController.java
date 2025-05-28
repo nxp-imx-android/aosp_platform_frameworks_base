@@ -429,7 +429,29 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
 
                 @Override
                 public void onDevicePolicyManagerStateChanged() {
-                    showPrimarySecurityScreen(false);
+                    if (Flags.bouncerLifecycleFix()) {
+                        // Update the current security mode without showing it
+                        SecurityMode currSecurityMode = whitelistIpcs(
+                                () -> mSecurityModel.getSecurityMode(
+                                        mSelectedUserInteractor.getSelectedUserId())
+                        );
+                        if (DEBUG) {
+                            Log.d(TAG, "onDevicePolicyManagerStateChanged("
+                                    + currSecurityMode + ")");
+                        }
+
+                        if (currSecurityMode == SecurityMode.Invalid
+                                || currSecurityMode == mCurrentSecurityMode
+                                || currSecurityMode == SimPuk
+                                || currSecurityMode == SimPin) {
+                            return;
+                        }
+
+                        getCurrentSecurityController(oldView -> oldView.onPause());
+                        mCurrentSecurityMode = currSecurityMode;
+                    } else {
+                        showPrimarySecurityScreen(false);
+                    }
                 }
             };
     private final SelectedUserInteractor mSelectedUserInteractor;
