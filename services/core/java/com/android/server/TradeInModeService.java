@@ -25,6 +25,10 @@ import android.annotation.RequiresPermission;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -32,22 +36,16 @@ import android.net.NetworkRequest;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.ITradeInMode;
-import android.os.ITradeInMode.MoistureIntrusionStatus;
 import android.os.RemoteException;
 import android.os.SystemProperties;
-import android.os.RemoteException;
-import android.view.SurfaceControl;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.service.persistentdata.PersistentDataBlockManager;
 import android.util.Slog;
-import android.hardware.SensorManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
+import android.view.SurfaceControl;
 
-import com.android.server.health.HealthServiceWrapper;
 import com.android.server.display.DisplayControl;
+import com.android.server.health.HealthServiceWrapper;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -183,13 +181,7 @@ public final class TradeInModeService extends SystemService {
         public boolean enterEvaluationMode() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
                     "Cannot enter trade-in evaluation mode");
-            final int state = getTradeInModeState();
-            if (state != TIM_STATE_FOYER) {
-                Slog.e(TAG, "Cannot enter evaluation mode in state: " + state);
-                return false;
-            }
-            if (isFrpActive()) {
-                Slog.e(TAG, "Cannot enter evaluation mode, FRP lock is present.");
+            if (!checkEvaluationModePreconditions()) {
                 return false;
             }
             if (!scheduleTradeInModeWipe()) {
@@ -214,7 +206,7 @@ public final class TradeInModeService extends SystemService {
         public boolean isEvaluationModeAllowed() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
                     "Cannot test for trade-in evaluation mode allowed");
-            return !isFrpActive();
+            return checkEvaluationModePreconditions();
         }
 
         @Override
@@ -434,6 +426,19 @@ public final class TradeInModeService extends SystemService {
             Slog.e(TAG, "health: cannot register callback. (no supported health HAL service)");
             throw ex;
         }
+    }
+
+    private boolean checkEvaluationModePreconditions() {
+        final int state = getTradeInModeState();
+        if (!(state == TIM_STATE_FOYER || (isDebuggable() && state == TIM_STATE_UNSET))) {
+            Slog.i(TAG, "Cannot enter evaluation mode in state: " + state);
+            return false;
+        }
+        if (isFrpActive()) {
+            Slog.i(TAG, "Cannot enter evaluation mode, FRP lock is present.");
+            return false;
+        }
+        return true;
     }
 
     private int getTradeInModeState() {
