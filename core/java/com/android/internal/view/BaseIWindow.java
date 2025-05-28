@@ -68,13 +68,11 @@ public class BaseIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void showInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
+    public void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
     }
 
     @Override
-    public void hideInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
+    public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
     }
 
     @Override

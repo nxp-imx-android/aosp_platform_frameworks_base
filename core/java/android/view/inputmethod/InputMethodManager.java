@@ -1055,8 +1055,7 @@ public final class InputMethodManager {
                 Log.d(TAG, "onImeFocusLost, hiding IME because "
                         + "of STATE_ALWAYS_HIDDEN");
             }
-            previousRootView.getInsetsController().hide(WindowInsets.Type.ime(),
-                    false /* fromIme */, statsToken);
+            previousRootView.getInsetsController().hide(WindowInsets.Type.ime(), statsToken);
         }
     }
 
@@ -1449,11 +1448,9 @@ public final class InputMethodManager {
                                 ImeTracker.forLogging().onProgress(statsToken,
                                         ImeTracker.PHASE_CLIENT_HANDLE_SET_IME_VISIBILITY);
                                 if (visible) {
-                                    insetsController.show(WindowInsets.Type.ime(),
-                                            false /* fromIme */, statsToken);
+                                    insetsController.show(WindowInsets.Type.ime(), statsToken);
                                 } else {
-                                    insetsController.hide(WindowInsets.Type.ime(),
-                                            false /* fromIme */, statsToken);
+                                    insetsController.hide(WindowInsets.Type.ime(), statsToken);
                                 }
                             }
                         } else {
@@ -2468,11 +2465,10 @@ public final class InputMethodManager {
                     // we need to reschedule our work for over there.
                     if (DEBUG) Log.v(TAG, "Show soft input: reschedule to view thread");
                     final var finalStatsToken = statsToken;
-                    vh.post(() -> viewRootImpl.getInsetsController().show(
-                            WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
+                    vh.post(() -> viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
+                            finalStatsToken));
                 } else {
-                    viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
-                            false /* fromIme */, statsToken);
+                    viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(), statsToken);
                 }
                 return true;
             }
@@ -2656,11 +2652,10 @@ public final class InputMethodManager {
                     // we need to reschedule our work for over there.
                     if (DEBUG) Log.v(TAG, "Hiding soft input: reschedule to view thread");
                     final var finalStatsToken = statsToken;
-                    vh.post(() -> viewRootImpl.getInsetsController().hide(
-                            WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
+                    vh.post(() -> viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
+                            finalStatsToken));
                 } else {
-                    viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
-                            false /* fromIme */, statsToken);
+                    viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(), statsToken);
                 }
                 if (!CompatChanges.isChangeEnabled(
                         ALWAYS_RETURN_TRUE_HIDE_SOFT_INPUT_FROM_WINDOW)) {
@@ -3829,11 +3824,10 @@ public final class InputMethodManager {
                         Log.v(TAG, "Close current input: reschedule hide to view thread");
                     }
                     final var viewRootImpl = mCurRootView;
-                    vh.post(() -> viewRootImpl.getInsetsController().hide(
-                            WindowInsets.Type.ime(), false /* fromIme */, statsToken));
+                    vh.post(() -> viewRootImpl.getInsetsController().hide(WindowInsets.Type.ime(),
+                            statsToken));
                 } else {
-                    mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(),
-                            false /* fromIme */, statsToken);
+                    mCurRootView.getInsetsController().hide(WindowInsets.Type.ime(), statsToken);
                 }
             }
         }

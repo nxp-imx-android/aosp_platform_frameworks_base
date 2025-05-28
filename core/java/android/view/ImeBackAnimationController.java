@@ -121,7 +121,7 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
                     public void onCancelled(@Nullable WindowInsetsAnimationController controller) {
                         reset();
                     }
-                }, /*fromIme*/ false, /*durationMs*/ -1, /*interpolator*/ null, ANIMATION_TYPE_USER,
+                }, /*durationMs*/ -1, /*interpolator*/ null, ANIMATION_TYPE_USER,
                 /*fromPredictiveBack*/ true);
     }
 
@@ -146,7 +146,7 @@ public class ImeBackAnimationController implements OnBackAnimationCallback {
             ImeTracker.Token statsToken = ImeTracker.forLogging().onStart(ImeTracker.TYPE_HIDE,
                     ImeTracker.ORIGIN_CLIENT,
                     SoftInputShowHideReason.HIDE_SOFT_INPUT_REQUEST_HIDE_WITH_CONTROL, true);
-            mInsetsController.hide(IME, /*fromIme*/ false, statsToken);
+            mInsetsController.hide(IME, statsToken);
         } else {
             startPostCommitAnim(/*hideIme*/ true);
         }

@@ -116,12 +116,12 @@ public class TestIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void showInsets(int types, boolean fromIme, @Nullable ImeTracker.Token statsToken)
+    public void showInsets(int types, @Nullable ImeTracker.Token statsToken)
             throws RemoteException {
     }
 
     @Override
-    public void hideInsets(int types, boolean fromIme, @Nullable ImeTracker.Token statsToken)
+    public void hideInsets(int types, @Nullable ImeTracker.Token statsToken)
             throws RemoteException {
     }
 

@@ -133,7 +133,7 @@ public class ImeBackAnimationControllerTest {
         mBackAnimationController.onBackStarted(new BackEvent(0f, 0f, 0f, EDGE_LEFT));
         // verify that ImeBackAnimationController takes control over IME insets
         verify(mInsetsController, times(1)).controlWindowInsetsAnimation(anyInt(), any(), any(),
-                anyBoolean(), anyLong(), any(), anyInt(), anyBoolean());
+                anyLong(), any(), anyInt(), anyBoolean());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ImeBackAnimationControllerTest {
         mBackAnimationController.onBackStarted(new BackEvent(0f, 0f, 0f, EDGE_LEFT));
         // verify that ImeBackAnimationController takes control over IME insets
         verify(mInsetsController, times(1)).controlWindowInsetsAnimation(anyInt(), any(), any(),
-                anyBoolean(), anyLong(), any(), anyInt(), anyBoolean());
+                anyLong(), any(), anyInt(), anyBoolean());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ImeBackAnimationControllerTest {
         verify(mViewRootInsetsControllerHost, times(1)).getInputMethodManager();
         // verify that ImeBackAnimationController does not take control over IME insets
         verify(mInsetsController, never()).controlWindowInsetsAnimation(anyInt(), any(), any(),
-                anyBoolean(), anyLong(), any(), anyInt(), anyBoolean());
+                anyLong(), any(), anyInt(), anyBoolean());
     }
 
     @Test
@@ -183,7 +183,7 @@ public class ImeBackAnimationControllerTest {
         verify(mViewRootInsetsControllerHost, times(1)).getInputMethodManager();
         // verify that ImeBackAnimationController does not take control over IME insets
         verify(mInsetsController, never()).controlWindowInsetsAnimation(anyInt(), any(), any(),
-                anyBoolean(), anyLong(), any(), anyInt(), anyBoolean());
+                anyLong(), any(), anyInt(), anyBoolean());
     }
 
     @Test
@@ -312,7 +312,7 @@ public class ImeBackAnimationControllerTest {
         ArgumentCaptor<WindowInsetsAnimationControlListener> animationControlListener =
                 ArgumentCaptor.forClass(WindowInsetsAnimationControlListener.class);
         verify(mInsetsController, times(1)).controlWindowInsetsAnimation(anyInt(), any(),
-                animationControlListener.capture(), anyBoolean(), anyLong(), any(), anyInt(),
+                animationControlListener.capture(), anyLong(), any(), anyInt(),
                 anyBoolean());
 
         return animationControlListener.getValue();
