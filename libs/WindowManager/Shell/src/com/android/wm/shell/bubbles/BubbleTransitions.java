@@ -26,8 +26,8 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getEnterBubbleTransaction;
-import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.getExitBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.getEnterBubbleTransaction;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningMode;

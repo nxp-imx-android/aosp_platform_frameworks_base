@@ -24,83 +24,89 @@ import android.window.WindowContainerTransaction.Change.CHANGE_LAUNCH_NEXT_TO_BU
 import android.window.WindowContainerTransaction.HierarchyOp
 import com.google.common.truth.Truth.assertThat
 
-/** Verifies the [WindowContainerTransaction] to enter Bubble. */
-@JvmOverloads
-fun verifyEnterBubbleTransaction(
-    wct: WindowContainerTransaction,
-    taskToken: IBinder,
-    isAppBubble: Boolean,
-    reparentToTda: Boolean = false,
-) {
-    // Verify hierarchy ops
+object BubbleTestUtils {
 
-    val alwaysOnTopOp: HierarchyOp
+    /** Verifies the [WindowContainerTransaction] to enter Bubble. */
+    @JvmOverloads
+    @JvmStatic
+    fun verifyEnterBubbleTransaction(
+        wct: WindowContainerTransaction,
+        taskToken: IBinder,
+        isAppBubble: Boolean,
+        reparentToTda: Boolean = false,
+    ) {
+        // Verify hierarchy ops
 
-    if (reparentToTda) {
-        assertThat(wct.hierarchyOps.size).isEqualTo(2)
-        val reparentOp = wct.hierarchyOps[0]
-        assertThat(reparentOp.container).isEqualTo(taskToken)
-        assertThat(reparentOp.isReparent).isTrue()
-        assertThat(reparentOp.newParent).isNull()
-        assertThat(reparentOp.toTop).isTrue()
+        val alwaysOnTopOp: HierarchyOp
 
-        alwaysOnTopOp = wct.hierarchyOps[1]
-    } else {
-        assertThat(wct.hierarchyOps.size).isEqualTo(1)
-        alwaysOnTopOp = wct.hierarchyOps[0]
-    }
-    assertThat(alwaysOnTopOp.container).isEqualTo(taskToken)
-    assertThat(alwaysOnTopOp.isAlwaysOnTop).isTrue()
+        if (reparentToTda) {
+            assertThat(wct.hierarchyOps.size).isEqualTo(2)
+            val reparentOp = wct.hierarchyOps[0]
+            assertThat(reparentOp.container).isEqualTo(taskToken)
+            assertThat(reparentOp.isReparent).isTrue()
+            assertThat(reparentOp.newParent).isNull()
+            assertThat(reparentOp.toTop).isTrue()
 
-    // Verify Change
+            alwaysOnTopOp = wct.hierarchyOps[1]
+        } else {
+            assertThat(wct.hierarchyOps.size).isEqualTo(1)
+            alwaysOnTopOp = wct.hierarchyOps[0]
+        }
+        assertThat(alwaysOnTopOp.container).isEqualTo(taskToken)
+        assertThat(alwaysOnTopOp.isAlwaysOnTop).isTrue()
 
-    assertThat(wct.changes.size).isEqualTo(1)
-    assertThat(wct.changes[taskToken]).isNotNull()
-    val change = wct.changes[taskToken]!!
-    assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
-    if (isAppBubble) {
-        assertThat(change.launchNextToBubble).isTrue()
-    } else {
-        assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
-    }
-    assertThat(change.forceExcludedFromRecents).isTrue()
-    assertThat(change.disablePip).isTrue()
-    assertThat(change.disableLaunchAdjacent).isTrue()
-    assertThat(change.interceptBackPressed).isTrue()
-}
+        // Verify Change
 
-/** Verifies the [WindowContainerTransaction] to exit Bubble. */
-fun verifyExitBubbleTransaction(
-    wct: WindowContainerTransaction, taskToken: IBinder, captionInsetsOwner: IBinder?) {
-    // Verify hierarchy ops
-
-    // If there is a caption insets owner set, then that will add an hierarchy op after the
-    // alwaysOnTop hierarchy op to remove the insets source.
-    if (captionInsetsOwner != null) {
-        assertThat(wct.hierarchyOps.size).isEqualTo(2)
-
-        val removeInsetsHierarchyOp = wct.hierarchyOps[1]
-        assertThat(removeInsetsHierarchyOp.container).isEqualTo(taskToken)
-        assertThat(removeInsetsHierarchyOp.insetsFrameProvider).isNotNull()
-        assertThat(removeInsetsHierarchyOp.caller).isEqualTo(captionInsetsOwner)
-    } else {
-        assertThat(wct.hierarchyOps.size).isEqualTo(1)
+        assertThat(wct.changes.size).isEqualTo(1)
+        assertThat(wct.changes[taskToken]).isNotNull()
+        val change = wct.changes[taskToken]!!
+        assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW)
+        if (isAppBubble) {
+            assertThat(change.launchNextToBubble).isTrue()
+        } else {
+            assertThat(change.changeMask and CHANGE_LAUNCH_NEXT_TO_BUBBLE).isEqualTo(0)
+        }
+        assertThat(change.forceExcludedFromRecents).isTrue()
+        assertThat(change.disablePip).isTrue()
+        assertThat(change.disableLaunchAdjacent).isTrue()
+        assertThat(change.interceptBackPressed).isTrue()
     }
 
-    val alwaysOnTopHierarchyOp = wct.hierarchyOps[0]
-    assertThat(alwaysOnTopHierarchyOp.container).isEqualTo(taskToken)
-    assertThat(alwaysOnTopHierarchyOp.isAlwaysOnTop).isFalse()
+    /** Verifies the [WindowContainerTransaction] to exit Bubble. */
+    @JvmStatic
+    fun verifyExitBubbleTransaction(
+        wct: WindowContainerTransaction, taskToken: IBinder, captionInsetsOwner: IBinder?
+    ) {
+        // Verify hierarchy ops
 
-    // Verify Change
+        // If there is a caption insets owner set, then that will add an hierarchy op after the
+        // alwaysOnTop hierarchy op to remove the insets source.
+        if (captionInsetsOwner != null) {
+            assertThat(wct.hierarchyOps.size).isEqualTo(2)
 
-    assertThat(wct.changes.size).isEqualTo(1)
-    assertThat(wct.changes[taskToken]).isNotNull()
-    val change = wct.changes[taskToken]!!
-    assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_UNDEFINED)
-    assertThat(change.launchNextToBubble).isFalse()
-    assertThat(change.forceExcludedFromRecents).isFalse()
-    assertThat(change.disablePip).isFalse()
-    assertThat(change.disableLaunchAdjacent).isFalse()
-    assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
-    assertThat(change.interceptBackPressed).isFalse()
+            val removeInsetsHierarchyOp = wct.hierarchyOps[1]
+            assertThat(removeInsetsHierarchyOp.container).isEqualTo(taskToken)
+            assertThat(removeInsetsHierarchyOp.insetsFrameProvider).isNotNull()
+            assertThat(removeInsetsHierarchyOp.caller).isEqualTo(captionInsetsOwner)
+        } else {
+            assertThat(wct.hierarchyOps.size).isEqualTo(1)
+        }
+
+        val alwaysOnTopHierarchyOp = wct.hierarchyOps[0]
+        assertThat(alwaysOnTopHierarchyOp.container).isEqualTo(taskToken)
+        assertThat(alwaysOnTopHierarchyOp.isAlwaysOnTop).isFalse()
+
+        // Verify Change
+
+        assertThat(wct.changes.size).isEqualTo(1)
+        assertThat(wct.changes[taskToken]).isNotNull()
+        val change = wct.changes[taskToken]!!
+        assertThat(change.windowingMode).isEqualTo(WindowConfiguration.WINDOWING_MODE_UNDEFINED)
+        assertThat(change.launchNextToBubble).isFalse()
+        assertThat(change.forceExcludedFromRecents).isFalse()
+        assertThat(change.disablePip).isFalse()
+        assertThat(change.disableLaunchAdjacent).isFalse()
+        assertThat(change.configuration.windowConfiguration.bounds).isEqualTo(Rect())
+        assertThat(change.interceptBackPressed).isFalse()
+    }
 }

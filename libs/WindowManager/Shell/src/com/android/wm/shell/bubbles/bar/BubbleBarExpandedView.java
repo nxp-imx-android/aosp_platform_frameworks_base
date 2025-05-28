@@ -18,7 +18,7 @@ package com.android.wm.shell.bubbles.bar;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
-import static com.android.wm.shell.bubbles.util.BubbleUtilsKt.isValidToBubble;
+import static com.android.wm.shell.bubbles.util.BubbleUtils.isValidToBubble;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 
 import static java.lang.Math.max;

@@ -21,14 +21,13 @@ package com.android.wm.shell.bubbles
 
 import android.app.ActivityManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
-import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
-import com.android.wm.shell.bubbles.util.getExitBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.common.TaskStackListenerCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY
-import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskViewTaskController
 import dagger.Lazy
@@ -133,10 +132,4 @@ class BubbleTaskStackListener(
 
         taskViewTaskController.notifyTaskRemovalStarted(task)
     }
-}
-
-/** Determines if a bubble task is moving to fullscreen based on its windowing mode. */
-fun isBubbleToFullscreen(task: ActivityManager.RunningTaskInfo?): Boolean {
-    return BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()
-            && task?.windowingMode == WINDOWING_MODE_FULLSCREEN
 }

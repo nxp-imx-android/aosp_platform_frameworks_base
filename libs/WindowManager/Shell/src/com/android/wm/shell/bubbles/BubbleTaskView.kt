@@ -21,6 +21,7 @@ import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.content.ComponentName
 import androidx.annotation.VisibleForTesting
 import com.android.wm.shell.Flags
+import com.android.wm.shell.bubbles.util.BubbleUtils.isBubbleToFullscreen
 import com.android.wm.shell.taskview.TaskView
 import java.util.concurrent.Executor
 
