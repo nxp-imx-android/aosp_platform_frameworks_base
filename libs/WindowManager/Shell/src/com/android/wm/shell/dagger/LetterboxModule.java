@@ -26,6 +26,7 @@ import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleContr
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleControllerImpl;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.MultiLetterboxLifecycleEventFactory;
+import com.android.wm.shell.compatui.letterbox.lifecycle.SkipLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.TaskInfoLetterboxLifecycleEventFactory;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
@@ -55,8 +56,15 @@ public abstract class LetterboxModule {
 
     @WMSingleton
     @Provides
-    static LetterboxLifecycleEventFactory provideLetterboxLifecycleEventFactory() {
+    static LetterboxLifecycleEventFactory provideLetterboxLifecycleEventFactory(
+            @NonNull SkipLetterboxLifecycleEventFactory skipLetterboxLifecycleEventFactory
+    ) {
+        // The order of the LetterboxLifecycleEventFactory implementation matters because the
+        // first that can handle a Change will be chosen for the LetterboxLifecycleEvent creation.
         return new MultiLetterboxLifecycleEventFactory(List.of(
+                // Filters out transitions not related to Letterboxing.
+                skipLetterboxLifecycleEventFactory,
+                // Creates a LetterboxLifecycleEvent in case of Task transitions.
                 new TaskInfoLetterboxLifecycleEventFactory()
         ));
     }
