@@ -308,6 +308,10 @@ public final class MessageQueue {
         return 0;
     }
 
+    private static boolean isBarrier(MessageNode msgNode) {
+        return msgNode != null && msgNode.mMessage.target == null;
+    }
+
     static final class MatchDeliverableMessages extends MessageCompare {
         @Override
         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
@@ -326,12 +330,12 @@ public final class MessageQueue {
         }
 
         final MessageNode msgNode = first(mPriorityQueue);
-        if (msgNode != null && msgNode.getWhen() <= now) {
+        if (msgNode != null && msgNode.mMessage.when <= now) {
             return false;
         }
 
         final MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
-        if (asyncMsgNode != null && asyncMsgNode.getWhen() <= now) {
+        if (asyncMsgNode != null && asyncMsgNode.mMessage.when <= now) {
             return false;
         }
 
@@ -759,7 +763,7 @@ public final class MessageQueue {
                             + " what: " + msg.what
                             + " when: " + msg.when
                             + " seq: " + msgNode.mMessage.insertSeq
-                            + " barrier: " + msgNode.isBarrier()
+                            + " barrier: " + isBarrier(msgNode)
                             + " now: " + now);
                 }
                 if (asyncMsgNode != null) {
@@ -768,7 +772,7 @@ public final class MessageQueue {
                             + " what: " + msg.what
                             + " when: " + msg.when
                             + " seq: " + asyncMsgNode.mMessage.insertSeq
-                            + " barrier: " + asyncMsgNode.isBarrier()
+                            + " barrier: " + isBarrier(asyncMsgNode)
                             + " now: " + now);
                 }
             }
@@ -788,8 +792,8 @@ public final class MessageQueue {
             /*
              * If we have a barrier we should return the async node (if it exists and is ready)
              */
-            if (msgNode != null && msgNode.isBarrier()) {
-                if (asyncMsgNode != null && (returnEarliest || now >= asyncMsgNode.getWhen())) {
+            if (isBarrier(msgNode)) {
+                if (asyncMsgNode != null && (returnEarliest || now >= asyncMsgNode.mMessage.when)) {
                     found = asyncMsgNode;
                 } else {
                     next = asyncMsgNode;
@@ -803,7 +807,7 @@ public final class MessageQueue {
                 earliest = pickEarliestNode(msgNode, asyncMsgNode);
 
                 if (earliest != null) {
-                    if (returnEarliest || now >= earliest.getWhen()) {
+                    if (returnEarliest || now >= earliest.mMessage.when) {
                         found = earliest;
                     } else {
                         next = earliest;
@@ -818,8 +822,8 @@ public final class MessageQueue {
                             + " what: " + msg.what
                             + " when: " + msg.when
                             + " seq: " + found.mMessage.insertSeq
-                            + " barrier: " + found.isBarrier()
-                            + " async: " + found.isAsync()
+                            + " barrier: " + isBarrier(found)
+                            + " async: " + found.mMessage.isAsynchronous()
                             + " now: " + now);
                 } else {
                     Log.d(TAG_C, "No node to deliver");
@@ -830,8 +834,8 @@ public final class MessageQueue {
                             + " what: " + msg.what
                             + " when: " + msg.when
                             + " seq: " + next.mMessage.insertSeq
-                            + " barrier: " + next.isBarrier()
-                            + " async: " + next.isAsync()
+                            + " barrier: " + isBarrier(next)
+                            + " async: " + next.mMessage.isAsynchronous()
                             + " now: " + now);
                 } else {
                     Log.d(TAG_C, "No next node");
@@ -858,7 +862,7 @@ public final class MessageQueue {
                     }
                 } else {
                     /* Message not ready, or we found one to deliver already, set a timeout */
-                    long nextMessageWhen = next.getWhen();
+                    long nextMessageWhen = next.mMessage.when;
                     if (nextMessageWhen > now) {
                         mNextPollTimeoutMillis = (int) Math.min(nextMessageWhen - now,
                                 Integer.MAX_VALUE);
@@ -1550,7 +1554,7 @@ public final class MessageQueue {
 
             MessageNode queueNode = first(mPriorityQueue);
 
-            return (queueNode != null && queueNode.isBarrier());
+            return (isBarrier(queueNode));
         } else {
             Message msg = mMessages;
             return msg != null && msg.target == null;
@@ -2436,7 +2440,7 @@ public final class MessageQueue {
      */
     /* Helper to choose the correct queue to insert into. */
     private void insertIntoPriorityQueue(MessageNode msgNode) {
-        if (msgNode.isAsync()) {
+        if (msgNode.mMessage.isAsynchronous()) {
             mAsyncPriorityQueue.add(msgNode);
         } else {
             mPriorityQueue.add(msgNode);
@@ -2444,7 +2448,7 @@ public final class MessageQueue {
     }
 
     private boolean removeFromPriorityQueue(MessageNode msgNode) {
-        if (msgNode.isAsync()) {
+        if (msgNode.mMessage.isAsynchronous()) {
             return mAsyncPriorityQueue.remove(msgNode);
         } else {
             return mPriorityQueue.remove(msgNode);
@@ -2612,7 +2616,7 @@ public final class MessageQueue {
     }
 
     static final class MessageNode extends StackNode {
-        private final Message mMessage;
+        final Message mMessage;
         volatile StackNode mNext;
         StateNode mBottomOfStack;
         boolean mWokeUp;
@@ -2635,20 +2639,8 @@ public final class MessageQueue {
             message.insertSeq = insertSeq;
         }
 
-        long getWhen() {
-            return mMessage.when;
-        }
-
         boolean removeFromStack() {
             return sRemovedFromStack.compareAndSet(this, false, true);
-        }
-
-        boolean isAsync() {
-            return mMessage.isAsynchronous();
-        }
-
-        boolean isBarrier() {
-            return mMessage.target == null;
         }
     }
 
@@ -2933,8 +2925,8 @@ public final class MessageQueue {
                     + " what: " + msg.what
                     + " when: " + msg.when
                     + " seq: " + node.mMessage.insertSeq
-                    + " barrier: " + node.isBarrier()
-                    + " async: " + node.isAsync()
+                    + " barrier: " + isBarrier(node)
+                    + " async: " + node.mMessage.isAsynchronous()
                     + " now: " + SystemClock.uptimeMillis());
         }
 
@@ -2991,7 +2983,7 @@ public final class MessageQueue {
                 case STACK_NODE_TIMEDPARK:
                     node.mBottomOfStack = (StateNode) old;
                     inactive = true;
-                    wakeNeeded = mStackStateTimedPark.mWhenToWake >= node.getWhen();
+                    wakeNeeded = mStackStateTimedPark.mWhenToWake >= node.mMessage.when;
                     node.mWokeUp = wakeNeeded;
                     break;
 
@@ -3009,7 +3001,7 @@ public final class MessageQueue {
                     int bottomType = node.mBottomOfStack.getNodeType();
                     inactive = bottomType >= STACK_NODE_PARKED;
                     wakeNeeded = (bottomType == STACK_NODE_TIMEDPARK
-                            && mStackStateTimedPark.mWhenToWake >= node.getWhen()
+                            && mStackStateTimedPark.mWhenToWake >= node.mMessage.when
                             && !oldMessage.mWokeUp);
                     node.mWokeUp = oldMessage.mWokeUp || wakeNeeded;
                     break;
