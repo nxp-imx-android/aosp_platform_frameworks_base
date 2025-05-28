@@ -19,7 +19,10 @@ package com.android.systemui.statusbar.notification.row.data.model
 import android.os.UserHandle
 
 /**
- * Data class of information about an app, including its package name and the user associated with
- * the notification.
+ * Info necessary for app related bundle UI
+ *
+ * @property packageName The package name of the application.
+ * @property user The UserHandle associated with the notification from this application.
+ * @property timeAddedToBundle Uptime millis when last notif was put in current bundle
  */
-data class AppData(val packageName: String, val user: UserHandle)
+data class AppData(val packageName: String, val user: UserHandle, val timeAddedToBundle: Long)

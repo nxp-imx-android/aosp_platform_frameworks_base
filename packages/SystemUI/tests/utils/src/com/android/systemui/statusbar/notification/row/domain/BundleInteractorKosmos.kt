@@ -22,6 +22,7 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.statusbar.notification.row.data.repository.testBundleRepository
 import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
+import com.android.systemui.util.time.systemClock
 
 val Kosmos.bundleInteractor by
     Kosmos.Fixture {
@@ -30,5 +31,6 @@ val Kosmos.bundleInteractor by
             appIconProvider = appIconProvider,
             context = applicationContext,
             backgroundDispatcher = testDispatcher,
+            systemClock = systemClock,
         )
     }

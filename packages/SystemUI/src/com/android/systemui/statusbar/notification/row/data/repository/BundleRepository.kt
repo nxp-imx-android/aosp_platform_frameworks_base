@@ -36,7 +36,20 @@ class BundleRepository(
 
     var numberOfChildren by mutableStateOf<Int?>(0)
 
-    val appDataList = MutableStateFlow<List<AppData>>(emptyList())
+    /**
+     * Cleared on bundle expand; does not update while expanded; updated while bundle is closed.
+     * Guaranteed only one AppData per app, with timeAddedToBundle being the latest time that a
+     * notification from this app was added to this bundle.
+     */
+    var appDataList = MutableStateFlow<List<AppData>>(emptyList())
 
     var state by mutableStateOf<MutableSceneTransitionLayoutState?>(null)
+
+    /**
+     * Uptime millis when this specific bundle was last collapsed by the user. 0 if never. Used to
+     * filter for app icons of notifications that arrived since the bundle was last collapsed by
+     * user. Use last collapsed time instead of last expansion time because notifications arrived
+     * while the bundle was open are implicitly seen.
+     */
+    var lastCollapseTime by mutableStateOf(0L)
 }

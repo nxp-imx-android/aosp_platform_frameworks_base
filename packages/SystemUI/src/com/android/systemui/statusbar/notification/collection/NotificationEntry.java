@@ -52,6 +52,7 @@ import android.service.notification.NotificationListenerService.Ranking;
 import android.service.notification.SnoozeCriterion;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
+import android.util.Pair;
 import android.view.ContentInfo;
 
 import androidx.annotation.NonNull;
@@ -248,6 +249,16 @@ public final class NotificationEntry extends ListEntry {
     }
 
     /**
+     * Stores the key of the bundle this notification was added to
+     * and the uptimeMillis when it was first added to that bundle
+     *
+     * String is bundle key, Long is time of the first pipeline run that added this to the bundle
+     * Defaults to (null, 0L) if not in a bundle or timestamp is not set yet.
+     */
+    @NonNull
+    public Pair<String, Long> timeAddedToBundle = new Pair<>(null, 0L);
+
+    /**
      * @param sbn the StatusBarNotification from system server
      * @param ranking also from system server
      * @param creationTime SystemClock.elapsedRealtime of when we were created
@@ -264,6 +275,27 @@ public final class NotificationEntry extends ListEntry {
         setSbn(sbn);
         setRanking(ranking);
         mRemoteInputEntryAdapter = new RemoteInputEntryAdapter(this);
+    }
+
+    /**
+     * Updates the bundle this notif belongs to and when it was added.
+     * Timestamp is updated only if the bundle key actually changes.
+     * Called from BundleCoodinator on pipeline re-runs.
+     *
+     * @param newBundleKey The key of the bundle this notification is now part of, or null if none.
+     * @param pipelineRunUptimeMillis The current uptime from the pipeline run.
+     */
+    public void updateBundle(@Nullable String newBundleKey, long pipelineRunUptimeMillis) {
+        if (newBundleKey != null) {
+            final String oldBundleKey = this.timeAddedToBundle.first;
+            final Long oldTimeAdded = this.timeAddedToBundle.second;
+            // First time added to bundle
+            if (oldTimeAdded == 0L
+                    // or moved to different bundle
+                    || (oldBundleKey != null && !oldBundleKey.equals(newBundleKey))) {
+                this.timeAddedToBundle = new Pair<>(newBundleKey, pipelineRunUptimeMillis);
+            }
+        }
     }
 
     @Override
