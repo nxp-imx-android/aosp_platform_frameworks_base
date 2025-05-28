@@ -78,10 +78,10 @@ public class AudioManagerRouteControllerTest {
 
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_INFO_BUILTIN_SPEAKER =
             createAudioDeviceInfo(
-                    AudioSystem.DEVICE_OUT_SPEAKER, "name_builtin", /* address= */ null);
+                    AudioSystem.DEVICE_OUT_SPEAKER, "name_builtin", /* address= */ "");
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET =
             createAudioDeviceInfo(
-                    AudioSystem.DEVICE_OUT_WIRED_HEADSET, "name_wired_hs", /* address= */ null);
+                    AudioSystem.DEVICE_OUT_WIRED_HEADSET, "name_wired_hs", /* address= */ "");
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET_WITH_ADDRESS =
             createAudioDeviceInfo(
                     AudioSystem.DEVICE_OUT_WIRED_HEADSET,
@@ -93,13 +93,13 @@ public class AudioManagerRouteControllerTest {
 
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_BUILTIN_EARPIECE =
             createAudioDeviceInfo(
-                    AudioSystem.DEVICE_OUT_EARPIECE, /* name= */ null, /* address= */ null);
+                    AudioSystem.DEVICE_OUT_EARPIECE, /* name= */ "", /* address= */ "");
 
     private static final AudioDeviceInfo FAKE_AUDIO_DEVICE_NO_NAME =
             createAudioDeviceInfo(
                     AudioSystem.DEVICE_OUT_DGTL_DOCK_HEADSET,
-                    /* name= */ null,
-                    /* address= */ null);
+                    /* name= */ "",
+                    /* address= */ "");
 
     private Instrumentation mInstrumentation;
     private AudioDeviceInfo mSelectedAudioDeviceInfo;
@@ -248,7 +248,8 @@ public class AudioManagerRouteControllerTest {
         verify(mMockAudioManager, Mockito.timeout(ASYNC_CALL_TIMEOUTS_MS))
                 .setPreferredDeviceForStrategy(
                         mMediaAudioProductStrategy,
-                        createAudioDeviceAttribute(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER));
+                        createAudioDeviceAttribute(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
+                                                   /* address= */ ""));
 
         MediaRoute2Info wiredHeadsetRoute =
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_WIRED_HEADSET);
@@ -256,7 +257,8 @@ public class AudioManagerRouteControllerTest {
         verify(mMockAudioManager, Mockito.timeout(ASYNC_CALL_TIMEOUTS_MS))
                 .setPreferredDeviceForStrategy(
                         mMediaAudioProductStrategy,
-                        createAudioDeviceAttribute(AudioDeviceInfo.TYPE_WIRED_HEADSET));
+                        createAudioDeviceAttribute(AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                                                   /* address= */ ""));
     }
 
     @Test
@@ -395,18 +397,22 @@ public class AudioManagerRouteControllerTest {
     }
 
     private void updateMockAudioManagerState() {
+        int selectedDeviceAttributesType = mSelectedAudioDeviceInfo.getType();
+        String selectedDeviceAttributesAddr = mSelectedAudioDeviceInfo.getAddress();
         when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
                 .thenReturn(
-                        List.of(createAudioDeviceAttribute(mSelectedAudioDeviceInfo.getType())));
+                        List.of(createAudioDeviceAttribute(selectedDeviceAttributesType,
+                                                           selectedDeviceAttributesAddr)));
         when(mMockAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS))
                 .thenReturn(mAvailableAudioDeviceInfos.toArray(new AudioDeviceInfo[0]));
     }
 
     private static AudioDeviceAttributes createAudioDeviceAttribute(
-            @AudioDeviceInfo.AudioDeviceType int type) {
+            @AudioDeviceInfo.AudioDeviceType int type,
+            @NonNull String address) {
         // Address is unused.
         return new AudioDeviceAttributes(
-                AudioDeviceAttributes.ROLE_OUTPUT, type, /* address= */ "");
+                AudioDeviceAttributes.ROLE_OUTPUT, type, address);
     }
 
     private static AudioDeviceInfo createAudioDeviceInfo(
