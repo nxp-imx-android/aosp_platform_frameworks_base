@@ -177,6 +177,9 @@ public enum DesktopExperienceFlags {
     ENABLE_REJECT_HOME_TRANSITION(
             Flags::enableRejectHomeTransition, true,
             Flags.FLAG_ENABLE_REJECT_HOME_TRANSITION),
+    ENABLE_REQUEST_FULLSCREEN_REFACTOR(
+            Flags::enableRequestFullscreenRefactor, false,
+            Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_REFACTOR),
     ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS(Flags::enableRestartMenuForConnectedDisplays, true,
             Flags.FLAG_ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS),
     ENABLE_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS(
