@@ -18,7 +18,6 @@ package com.android.wm.shell.common.split;
 
 import static android.view.PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
 import static android.view.PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
-import static android.view.WindowManager.LayoutParams.FLAG_SLIPPERY;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CURSOR_HOVER_STATES_ENABLED;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.snapPositionToUIString;
@@ -46,7 +45,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.FrameLayout;
@@ -357,9 +355,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
             return false;
         }
 
-        if (mDoubleTapDetector.onTouchEvent(event)) {
-            return true;
-        }
+        mDoubleTapDetector.onTouchEvent(event);
 
         // Convert to use screen-based coordinates to prevent lost track of motion events while
         // moving divider bar and calculating dragging velocity.
@@ -524,7 +520,6 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     private void setTouching() {
-        setSlippery(false);
         mHandle.setTouching(true, true);
         // Lift handle as well so it doesn't get behind the background, even though it doesn't
         // cast shadow.
@@ -536,32 +531,12 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     private void releaseTouching() {
-        setSlippery(true);
         mHandle.setTouching(false, true);
         mHandle.animate()
                 .setInterpolator(Interpolators.FAST_OUT_SLOW_IN)
                 .setDuration(TOUCH_RELEASE_ANIMATION_DURATION)
                 .translationZ(0)
                 .start();
-    }
-
-    private void setSlippery(boolean slippery) {
-        if (mViewHost == null) {
-            return;
-        }
-
-        final WindowManager.LayoutParams lp = (WindowManager.LayoutParams) getLayoutParams();
-        final boolean isSlippery = (lp.flags & FLAG_SLIPPERY) != 0;
-        if (isSlippery == slippery) {
-            return;
-        }
-
-        if (slippery) {
-            lp.flags |= FLAG_SLIPPERY;
-        } else {
-            lp.flags &= ~FLAG_SLIPPERY;
-        }
-        mViewHost.relayout(lp);
     }
 
     @Override
@@ -648,17 +623,18 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     private class DoubleTapListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            if (mSplitLayout != null) {
-                mSplitLayout.onDoubleTappedDivider();
-            }
-            return true;
-        }
 
         @Override
         public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
-            return true;
+            // User could have started double tap and then dragged before letting go. Skip the
+            // swap if so
+            if (!mMoving && e.getAction() == MotionEvent.ACTION_UP) {
+                if (mSplitLayout != null) {
+                    mSplitLayout.onDoubleTappedDivider();
+                }
+                return true;
+            }
+            return false;
         }
     }
 }
