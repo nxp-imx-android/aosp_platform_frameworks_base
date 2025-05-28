@@ -44,3 +44,15 @@ enum class ActionCornerRegion {
     BOTTOM_LEFT,
     BOTTOM_RIGHT,
 }
+
+/**
+ * Indicates the action type configured for the action corner. For [NONE], it means there is no
+ * action configured for that corner.
+ */
+enum class ActionType {
+    NONE,
+    HOME,
+    OVERVIEW,
+    NOTIFICATIONS,
+    QUICK_SETTINGS,
+}

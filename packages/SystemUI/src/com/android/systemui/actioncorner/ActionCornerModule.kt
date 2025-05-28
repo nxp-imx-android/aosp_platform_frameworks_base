@@ -26,13 +26,14 @@ import com.android.systemui.cursorposition.data.repository.MultiDisplayCursorPos
 import com.android.systemui.cursorposition.data.repository.SingleDisplayCursorPositionRepository
 import com.android.systemui.cursorposition.data.repository.SingleDisplayCursorPositionRepositoryFactory
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.settings.UserSettingsRepositoryModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
-@Module
+@Module(includes = [UserSettingsRepositoryModule::class])
 abstract class ActionCornerModule {
     @Binds
     @IntoMap

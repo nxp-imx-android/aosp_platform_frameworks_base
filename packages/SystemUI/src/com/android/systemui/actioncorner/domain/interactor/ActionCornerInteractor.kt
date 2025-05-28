@@ -17,12 +17,20 @@
 package com.android.systemui.actioncorner.domain.interactor
 
 import com.android.systemui.LauncherProxyService
+import com.android.systemui.actioncorner.data.model.ActionCornerRegion
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_LEFT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RIGHT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_LEFT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_RIGHT
 import com.android.systemui.actioncorner.data.model.ActionCornerState
+import com.android.systemui.actioncorner.data.model.ActionType
+import com.android.systemui.actioncorner.data.model.ActionType.HOME
+import com.android.systemui.actioncorner.data.model.ActionType.NONE
+import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
+import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
+import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
+import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -30,8 +38,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode.Dual
-import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.HOME
-import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.OVERVIEW
+import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.awaitCancellation
@@ -47,15 +54,26 @@ constructor(
     private val launcherProxyService: LauncherProxyService,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val actionCornerSettingRepository: ActionCornerSettingRepository,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
         repository.actionCornerState
             .filterIsInstance<ActionCornerState.ActiveActionCorner>()
             .collect {
-                // TODO(b/410791828): Read corresponding action from Action Corner Setting page
-                when (it.region) {
-                    TOP_LEFT -> {
+                val action = getAction(it.region)
+                when (action) {
+                    HOME ->
+                        launcherProxyService.onActionCornerActivated(
+                            ActionCornerConstants.HOME,
+                            it.displayId,
+                        )
+                    OVERVIEW ->
+                        launcherProxyService.onActionCornerActivated(
+                            ActionCornerConstants.OVERVIEW,
+                            it.displayId,
+                        )
+                    NOTIFICATIONS -> {
                         if (isDualShadeEnabled()) {
                             withContext(mainThreadContext) {
                                 if (shadeInteractor.isShadeAnyExpanded.value) {
@@ -66,7 +84,7 @@ constructor(
                             }
                         }
                     }
-                    TOP_RIGHT -> {
+                    QUICK_SETTINGS -> {
                         if (isDualShadeEnabled()) {
                             withContext(mainThreadContext) {
                                 if (shadeInteractor.isQsExpanded.value) {
@@ -77,12 +95,19 @@ constructor(
                             }
                         }
                     }
-                    BOTTOM_LEFT ->
-                        launcherProxyService.onActionCornerActivated(OVERVIEW, it.displayId)
-                    BOTTOM_RIGHT -> launcherProxyService.onActionCornerActivated(HOME, it.displayId)
+                    NONE -> {}
                 }
             }
         awaitCancellation()
+    }
+
+    private fun getAction(region: ActionCornerRegion): ActionType {
+        return when (region) {
+            TOP_LEFT -> actionCornerSettingRepository.topLeftCornerAction.value
+            TOP_RIGHT -> actionCornerSettingRepository.topRightCornerAction.value
+            BOTTOM_LEFT -> actionCornerSettingRepository.bottomLeftCornerAction.value
+            BOTTOM_RIGHT -> actionCornerSettingRepository.bottomRightCornerAction.value
+        }
     }
 
     private fun isDualShadeEnabled(): Boolean {
