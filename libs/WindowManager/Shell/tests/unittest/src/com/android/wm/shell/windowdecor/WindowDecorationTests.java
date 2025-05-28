@@ -315,14 +315,8 @@ public class WindowDecorationTests extends ShellTestCase {
                 any(),
                 eq(null) /* onDrawTransaction */);
         verify(mMockView).setTaskFocusState(true);
-        verify(mMockWindowContainerTransaction).addInsetsSource(
-                eq(taskInfo.token),
-                any(),
-                eq(0 /* index */),
-                eq(WindowInsets.Type.captionBar()),
-                eq(new Rect(100, 300, 400, 364)),
-                any(),
-                anyInt());
+        verifyAddedInsets(1, taskInfo.token, 0 /* index */, WindowInsets.Type.captionBar(),
+                new Rect(100, 300, 400, 364));
 
         if (Flags.enableFreeformBoxShadows()) {
             if (inSyncWithTransition) {
@@ -1278,6 +1272,18 @@ public class WindowDecorationTests extends ShellTestCase {
         } else {
             verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
                     eq(index), eq(type), any(Rect.class), any(), eq(flags));
+        }
+    }
+
+    private void verifyAddedInsets(int times, WindowContainerToken token, int index, int type,
+            Rect attachedRect) {
+        if (com.android.window.flags.Flags.relativeInsets()) {
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), eq(Insets.of(0, attachedRect.height(), 0, 0)), any(),
+                    anyInt());
+        } else {
+            verify(mMockWindowContainerTransaction, times(times)).addInsetsSource(eq(token), any(),
+                    eq(index), eq(type), eq(attachedRect), any(), anyInt());
         }
     }
 
