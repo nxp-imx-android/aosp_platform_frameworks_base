@@ -81,7 +81,7 @@ fun AmbientCueContainer(
                     visible = visible,
                     expanded = expanded,
                     onShouldInterceptTouches = onShouldInterceptTouches,
-                    modifier = Modifier.align(Alignment.BottomCenter),
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp),
                 )
             }
             is PillStyleViewModel.ShortPillStyle -> {
