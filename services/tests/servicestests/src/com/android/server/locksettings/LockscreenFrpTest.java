@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import android.app.PropertyInvalidatedCache;
 import android.app.admin.DevicePolicyManager;
 import android.platform.test.annotations.Presubmit;
 
@@ -50,8 +49,6 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
 
     @Before
     public void setUp() throws Exception {
-        PropertyInvalidatedCache.disableForTestMode();
-
         // FRP credential can only be verified prior to provisioning
         setDeviceProvisioned(false);
 

@@ -45,7 +45,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.PropertyInvalidatedCache;
 import android.app.admin.PasswordMetrics;
 import android.content.pm.UserInfo;
 import android.os.RemoteException;
@@ -62,7 +61,6 @@ import com.android.server.locksettings.SyntheticPasswordManager.SyntheticPasswor
 
 import libcore.util.HexEncoding;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -80,11 +78,6 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
 
     public static final byte[] PAYLOAD = new byte[] {1, 2, -1, -2, 55};
     public static final byte[] PAYLOAD2 = new byte[] {2, 3, -2, -3, 44, 1};
-
-    @Before
-    public void disableProcessCaches() {
-        PropertyInvalidatedCache.disableForTestMode();
-    }
 
     @Test
     public void testNoneLskfBasedProtector() throws RemoteException {

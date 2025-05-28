@@ -31,6 +31,7 @@ import android.app.NotificationManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DeviceStateCache;
+import android.app.test.PropertyInvalidatedCacheTestRule;
 import android.app.trust.TrustManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -115,6 +116,9 @@ public abstract class BaseLockSettingsServiceTests {
     LockSettingsServiceTestable.MockInjector mInjector;
     @Rule
     public FakeSettingsProviderRule mSettingsRule = FakeSettingsProvider.rule();
+
+    @Rule
+    public PropertyInvalidatedCacheTestRule mCacheRule = new PropertyInvalidatedCacheTestRule();
 
     @Before
     public void setUp_baseServices() throws Exception {
