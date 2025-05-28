@@ -2057,10 +2057,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // TODO (b/336477473): Disallow enter PiP when launching a task in split by default;
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
-        // Set an empty rect as the requested launch bounds. This ensures that if an existing
-        // task is reused, and it has bounds set, they are cleared.
-        options.setLaunchBounds(new Rect());
-
         opts.putAll(options.toBundle());
     }
 
