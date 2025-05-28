@@ -24,11 +24,16 @@ import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy;
 import com.android.wm.shell.compatui.letterbox.MixedLetterboxController;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleControllerImpl;
+import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory;
+import com.android.wm.shell.compatui.letterbox.lifecycle.MultiLetterboxLifecycleEventFactory;
+import com.android.wm.shell.compatui.letterbox.lifecycle.TaskInfoLetterboxLifecycleEventFactory;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
 import dagger.Module;
 import dagger.Provides;
+
+import java.util.List;
 
 /**
  * Provides Letterbox Shell implementation components to Dagger dependency Graph.
@@ -41,10 +46,19 @@ public abstract class LetterboxModule {
     static DelegateLetterboxTransitionObserver provideDelegateLetterboxTransitionObserver(
             @NonNull ShellInit shellInit,
             @NonNull Transitions transitions,
-            @NonNull LetterboxLifecycleController letterboxLifecycleController
+            @NonNull LetterboxLifecycleController letterboxLifecycleController,
+            @NonNull LetterboxLifecycleEventFactory letterboxLifecycleEventFactory
     ) {
         return new DelegateLetterboxTransitionObserver(shellInit, transitions,
-                letterboxLifecycleController);
+                letterboxLifecycleController, letterboxLifecycleEventFactory);
+    }
+
+    @WMSingleton
+    @Provides
+    static LetterboxLifecycleEventFactory provideLetterboxLifecycleEventFactory() {
+        return new MultiLetterboxLifecycleEventFactory(List.of(
+                new TaskInfoLetterboxLifecycleEventFactory()
+        ));
     }
 
     @WMSingleton

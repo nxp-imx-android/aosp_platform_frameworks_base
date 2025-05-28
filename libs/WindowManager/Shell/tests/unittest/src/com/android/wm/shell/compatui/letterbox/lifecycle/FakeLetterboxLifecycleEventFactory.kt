@@ -24,7 +24,8 @@ import android.window.TransitionInfo.Change
  */
 class FakeLetterboxLifecycleEventFactory(
     private val canHandleReturn: Boolean = true,
-    private val eventToReturn: LetterboxLifecycleEvent? = null
+    private val eventToReturn: LetterboxLifecycleEvent? = null,
+    private val eventToReturnFactory: (Change) -> LetterboxLifecycleEvent? = { eventToReturn }
 ) : LetterboxLifecycleEventFactory {
 
     companion object {
@@ -46,6 +47,6 @@ class FakeLetterboxLifecycleEventFactory(
     override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? {
         createLifecycleEventInvokeTimes++
         lastCreateLifecycleEventChange = change
-        return eventToReturn
+        return eventToReturnFactory(change)
     }
 }

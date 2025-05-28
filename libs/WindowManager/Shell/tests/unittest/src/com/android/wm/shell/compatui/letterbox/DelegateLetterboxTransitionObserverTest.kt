@@ -24,8 +24,10 @@ import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.compatui.letterbox.lifecycle.FakeLetterboxLifecycleEventFactory
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
+import com.android.wm.shell.compatui.letterbox.lifecycle.toLetterboxLifecycleEvent
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.executeTransitionObserverTest
@@ -119,6 +121,9 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
 
                 validateOutput {
                     r.checkLifecycleControllerInvoked(times = 3)
+                    r.checkOnLetterboxLifecycleEventFactory { factory ->
+                        assert(factory.canHandleInvokeTimes == 3)
+                    }
                 }
             }
         }
@@ -139,6 +144,7 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
         private val transitions: Transitions
         private val letterboxObserver: DelegateLetterboxTransitionObserver
         private val letterboxLifecycleController: LetterboxLifecycleController
+        private var letterboxLifecycleEventFactory: FakeLetterboxLifecycleEventFactory
 
         val observerFactory: () -> DelegateLetterboxTransitionObserver
 
@@ -147,11 +153,15 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
             shellInit = ShellInit(executor)
             transitions = mock<Transitions>()
             letterboxLifecycleController = mock<LetterboxLifecycleController>()
+            letterboxLifecycleEventFactory = FakeLetterboxLifecycleEventFactory(
+                eventToReturnFactory = { c -> c.toLetterboxLifecycleEvent() }
+            )
             letterboxObserver =
                 DelegateLetterboxTransitionObserver(
                     shellInit,
                     transitions,
-                    letterboxLifecycleController
+                    letterboxLifecycleController,
+                    letterboxLifecycleEventFactory
                 )
             observerFactory = { letterboxObserver }
         }
@@ -162,6 +172,12 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
 
         fun checkObservableIsRegistered(expected: Boolean) {
             verify(transitions, expected.asMode()).registerObserver(observer())
+        }
+
+        fun checkOnLetterboxLifecycleEventFactory(
+            consumer: (FakeLetterboxLifecycleEventFactory) -> Unit
+        ) {
+            consumer(letterboxLifecycleEventFactory)
         }
 
         fun checkLifecycleControllerInvoked(
