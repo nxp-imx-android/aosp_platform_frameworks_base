@@ -48,6 +48,14 @@ public final class TaskContinuityMessage {
                     mData = new ContinuityDeviceConnected(pis);
                     pis.end(deviceConnectedToken);
                     break;
+                case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE:
+                    final long remoteTaskAddedMessageToken = pis.start(
+                        android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE
+                    );
+
+                    mData = new RemoteTaskAddedMessage(pis);
+                    pis.end(remoteTaskAddedMessageToken);
+                    break;
             }
         }
     }
@@ -66,12 +74,20 @@ public final class TaskContinuityMessage {
         ProtoOutputStream pos = new ProtoOutputStream();
         switch (mData) {
             case ContinuityDeviceConnected continuityDeviceConnected:
-                long token = pos.start(
+                long continutyDeviceConnectedToken = pos.start(
                     android.companion.TaskContinuityMessage.DEVICE_CONNECTED
                 );
 
                 continuityDeviceConnected.writeToProto(pos);
-                pos.end(token);
+                pos.end(continutyDeviceConnectedToken);
+                break;
+            case RemoteTaskAddedMessage remoteTaskAddedMessage:
+                long remoteTaskAddedMessageToken = pos.start(
+                    android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE
+                );
+
+                remoteTaskAddedMessage.writeToProto(pos);
+                pos.end(remoteTaskAddedMessageToken);
                 break;
             default:
                 break;
