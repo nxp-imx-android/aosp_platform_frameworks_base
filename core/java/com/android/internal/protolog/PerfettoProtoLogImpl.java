@@ -172,7 +172,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     @Override
-    public void registerGroups(IProtoLogGroup... groups) {
+    public void registerGroups(@NonNull IProtoLogGroup... groups) {
         registerGroupsLocally(groups);
 
         if (mConfigurationService != null) {
@@ -229,7 +229,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         });
     }
 
-    private void registerGroupsWithConfigurationServiceAsync(IProtoLogGroup... groups) {
+    private void registerGroupsWithConfigurationServiceAsync(@NonNull IProtoLogGroup... groups) {
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
 
@@ -288,13 +288,14 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      */
     @VisibleForTesting
     @Override
-    public void log(LogLevel logLevel, IProtoLogGroup group, long messageHash, int paramsMask,
-            @Nullable Object[] args) {
+    public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group, long messageHash,
+            int paramsMask, @Nullable Object[] args) {
         log(logLevel, group, new Message(messageHash, paramsMask), args);
     }
 
     @Override
-    public void log(LogLevel logLevel, IProtoLogGroup group, String messageString, Object... args) {
+    public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
+            @NonNull String messageString, @NonNull Object... args) {
         try {
             log(logLevel, group, new Message(messageString), args);
         } catch (InvalidFormatStringException e) {
@@ -307,7 +308,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * SLog wrapper.
      */
     @VisibleForTesting
-    public void passToLogcat(String tag, LogLevel level, String message) {
+    public void passToLogcat(
+            @NonNull String tag, @NonNull LogLevel level, @NonNull String message) {
         switch (level) {
             case DEBUG:
                 Slog.d(tag, message);
@@ -338,7 +340,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     @Override
-    public void toggleLogcat(boolean enabled, String[] groups) {
+    public void toggleLogcat(boolean enabled, @NonNull String[] groups) {
         final ILogger logger = (message) -> Log.d(LOG_TAG, message);
         if (enabled) {
             startLoggingToLogcat(groups, logger);
@@ -353,7 +355,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * @param logger A logger to write status updates to
      * @return status code
      */
-    public int startLoggingToLogcat(String[] groups, @NonNull ILogger logger) {
+    public int startLoggingToLogcat(@NonNull String[] groups, @NonNull ILogger logger) {
         return setTextLogging(true, logger, groups);
     }
 
@@ -363,12 +365,12 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * @param logger A logger to write status updates to
      * @return status code
      */
-    public int stopLoggingToLogcat(String[] groups, @NonNull ILogger logger) {
+    public int stopLoggingToLogcat(@NonNull String[] groups, @NonNull ILogger logger) {
         return setTextLogging(false, logger, groups);
     }
 
     @Override
-    public boolean isEnabled(IProtoLogGroup group, LogLevel level) {
+    public boolean isEnabled(@NonNull IProtoLogGroup group, @NonNull LogLevel level) {
         var readLock = mConfigUpdaterLock.readLock();
         readLock.lock();
         try {
@@ -384,7 +386,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @Override
     @NonNull
     public List<IProtoLogGroup> getRegisteredGroups() {
-        return mLogGroups.values().stream().toList();
+        return List.copyOf(mLogGroups.values());
     }
 
     private void registerGroupsLocally(@NonNull IProtoLogGroup[] protoLogGroups) {
@@ -422,7 +424,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
      * Responds to a shell command.
      */
     @Deprecated
-    public int onShellCommand(ShellCommand shell) {
+    public int onShellCommand(@NonNull ShellCommand shell) {
         PrintWriter pw = shell.getOutPrintWriter();
 
         if (android.tracing.Flags.clientSideProtoLogging()) {
@@ -459,8 +461,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
     }
 
-    private void log(LogLevel logLevel, IProtoLogGroup group, Message message,
-            @Nullable Object[] args) {
+    private void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
+            @NonNull Message message, @Nullable Object[] args) {
         if (isProtoEnabled()) {
             long tsNanos = SystemClock.elapsedRealtimeNanos();
             final String stacktrace;
@@ -534,8 +536,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         logToLogcat(tag, level, messageString, args);
     }
 
-    private void logToLogcat(String tag, LogLevel level, String messageString,
-            @Nullable Object[] args) {
+    private void logToLogcat(@NonNull String tag, @NonNull LogLevel level,
+            @NonNull String messageString, @Nullable Object[] args) {
         String message;
         if (args != null) {
             try {
@@ -551,8 +553,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         passToLogcat(tag, level, message);
     }
 
-    private void logToProto(LogLevel level, IProtoLogGroup logGroup, Message message, Object[] args,
-            long tsNanos, @Nullable String stacktrace) {
+    private void logToProto(@NonNull LogLevel level, @NonNull IProtoLogGroup logGroup,
+            @NonNull Message message, @Nullable Object[] args, long tsNanos,
+            @Nullable String stacktrace) {
         mDataSource.trace(ctx -> {
             final ProtoLogDataSource.TlsState tlsState = ctx.getCustomTlsState();
             final LogLevel logFrom = tlsState.getLogFromLevel(logGroup.name());
@@ -668,9 +671,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     private long internProtoMessage(
-            TracingContext<ProtoLogDataSource.Instance, ProtoLogDataSource.TlsState,
-                    ProtoLogDataSource.IncrementalState> ctx, LogLevel level,
-            IProtoLogGroup logGroup, String message) {
+            @NonNull TracingContext<ProtoLogDataSource.Instance, ProtoLogDataSource.TlsState,
+                    ProtoLogDataSource.IncrementalState> ctx, @NonNull LogLevel level,
+            @NonNull IProtoLogGroup logGroup, @NonNull String message) {
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
 
         if (!incrementalState.clearReported) {
@@ -720,9 +723,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     private Long hash(
-            LogLevel logLevel,
-            String logGroup,
-            String messageString
+            @NonNull LogLevel logLevel,
+            @NonNull String logGroup,
+            @NonNull String messageString
     ) {
         final String fullStringIdentifier =  messageString + logLevel + logGroup;
         return UUID.nameUUIDFromBytes(fullStringIdentifier.getBytes()).getMostSignificantBits();
@@ -730,6 +733,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     private static final int STACK_SIZE_TO_PROTO_LOG_ENTRY_CALL = 6;
 
+    @NonNull
     private String collectStackTrace() {
         StackTraceElement[] stackTrace =  Thread.currentThread().getStackTrace();
         StringWriter sw = new StringWriter();
@@ -742,20 +746,20 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return sw.toString();
     }
 
-    private int internStacktraceString(TracingContext<
+    private int internStacktraceString(@NonNull TracingContext<
             ProtoLogDataSource.Instance,
             ProtoLogDataSource.TlsState,
             ProtoLogDataSource.IncrementalState> ctx,
-            String stacktrace) {
+            @NonNull String stacktrace) {
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
         return internString(ctx, incrementalState.stacktraceInterningMap,
                 PROTOLOG_STACKTRACE, stacktrace);
     }
 
     private int internStringArg(
-            TracingContext<ProtoLogDataSource.Instance, ProtoLogDataSource.TlsState,
+            @NonNull TracingContext<ProtoLogDataSource.Instance, ProtoLogDataSource.TlsState,
                     ProtoLogDataSource.IncrementalState> ctx,
-            String string
+            @NonNull String string
     ) {
         final ProtoLogDataSource.IncrementalState incrementalState = ctx.getIncrementalState();
         return internString(ctx, incrementalState.argumentInterningMap,
@@ -763,9 +767,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     private int internString(
-            TracingContext<ProtoLogDataSource.Instance, ProtoLogDataSource.TlsState,
+            @NonNull TracingContext<ProtoLogDataSource.Instance, ProtoLogDataSource.TlsState,
                     ProtoLogDataSource.IncrementalState> ctx,
-            Map<String, Integer> internMap,
+            @NonNull Map<String, Integer> internMap,
             long fieldId,
             @NonNull String string
     ) {
@@ -793,7 +797,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return internMap.get(string);
     }
 
-    protected boolean validateGroups(ILogger logger, String[] groups) {
+    protected boolean validateGroups(@NonNull ILogger logger, @NonNull String[] groups) {
         for (int i = 0; i < groups.length; i++) {
             String group = groups[i];
             IProtoLogGroup g = mLogGroups.get(group);
@@ -805,7 +809,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return true;
     }
 
-    private int setTextLogging(boolean value, ILogger logger, String... groups) {
+    private int setTextLogging(boolean value, @NonNull ILogger logger, @NonNull String... groups) {
         if (!validateGroups(logger, groups)) {
             return -1;
         }
@@ -824,7 +828,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return 0;
     }
 
-    private int unknownCommand(PrintWriter pw) {
+    private int unknownCommand(@NonNull PrintWriter pw) {
         pw.println("Unknown command");
         pw.println("Window manager logging options:");
         pw.println("  enable-text [group...]: Enable logcat logging for given groups");
@@ -834,7 +838,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Override
     public void onTracingInstanceStart(
-            int instanceIdx, ProtoLogDataSource.ProtoLogConfig config) {
+            int instanceIdx, @NonNull ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStart");
 
         var writeLock = mConfigUpdaterLock.writeLock();
@@ -848,7 +852,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         Log.d(LOG_TAG, "Finished onTracingInstanceStart");
     }
 
-    private void onTracingInstanceStartLocked(ProtoLogDataSource.ProtoLogConfig config) {
+    private void onTracingInstanceStartLocked(@NonNull ProtoLogDataSource.ProtoLogConfig config) {
         final LogLevel defaultLogFrom = config.getDefaultGroupConfig().logFrom;
         for (int i = defaultLogFrom.ordinal(); i < LogLevel.values().length; i++) {
             mDefaultLogLevelCounts[i]++;
@@ -878,7 +882,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Override
     public synchronized void onTracingInstanceStop(
-            int instanceIdx, ProtoLogDataSource.ProtoLogConfig config) {
+            int instanceIdx, @NonNull ProtoLogDataSource.ProtoLogConfig config) {
         Log.d(LOG_TAG, "Executing onTracingInstanceStop");
 
         var writeLock = mConfigUpdaterLock.writeLock();
@@ -892,7 +896,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         Log.d(LOG_TAG, "Finished onTracingInstanceStop");
     }
 
-    private void onTracingInstanceStopLocked(ProtoLogDataSource.ProtoLogConfig config) {
+    private void onTracingInstanceStopLocked(@NonNull ProtoLogDataSource.ProtoLogConfig config) {
         this.mTracingInstances.decrementAndGet();
 
         final LogLevel defaultLogFrom = config.getDefaultGroupConfig().logFrom;
@@ -926,7 +930,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         mCacheUpdater.update(this);
     }
 
-    private static void logAndPrintln(@Nullable PrintWriter pw, String msg) {
+    private static void logAndPrintln(@Nullable PrintWriter pw, @NonNull String msg) {
         Slog.i(LOG_TAG, msg);
         if (pw != null) {
             pw.println(msg);
