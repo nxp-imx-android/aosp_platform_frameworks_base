@@ -154,6 +154,7 @@ constructor(
                 } else {
                     val showAnimation =
                         isChipAnimationEnabled() &&
+                            !containsOnlyLocation(currentPrivacyItems) &&
                             (!uniqueItemsMatch(currentPrivacyItems, previousPrivacyItems) ||
                                 systemClock.elapsedRealtime() - timeLastEmpty >= DEBOUNCE_TIME)
                     notifyPrivacyItemsChanged(showAnimation)
@@ -164,6 +165,15 @@ constructor(
             private fun uniqueItemsMatch(one: List<PrivacyItem>, two: List<PrivacyItem>): Boolean {
                 return one.map { it.application.uid to it.privacyType.permGroupName }.toSet() ==
                     two.map { it.application.uid to it.privacyType.permGroupName }.toSet()
+            }
+
+            // Return true if the only privacy item is location
+            private fun containsOnlyLocation(items: List<PrivacyItem>): Boolean {
+                return items
+                    .filterNot {
+                        it.privacyType.permGroupName == android.Manifest.permission_group.LOCATION
+                    }
+                    .isEmpty()
             }
 
             private fun isChipAnimationEnabled(): Boolean {
