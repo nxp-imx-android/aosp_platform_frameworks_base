@@ -185,8 +185,8 @@ static JNINativeMethod methods[] = {
          (void*)nativeWriteRotaryEncoderScrollEvent},
 };
 
-int register_android_server_companion_virtual_InputController(JNIEnv* env) {
-    return jniRegisterNativeMethods(env, "com/android/server/companion/virtual/InputController",
+int register_android_server_input_VirtualInputDeviceController(JNIEnv* env) {
+    return jniRegisterNativeMethods(env, "com/android/server/input/VirtualInputDeviceController",
                                     methods, NELEM(methods));
 }
 

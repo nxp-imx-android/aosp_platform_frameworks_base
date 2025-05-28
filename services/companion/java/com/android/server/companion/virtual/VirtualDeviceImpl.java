@@ -195,7 +195,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     private final int mDeviceId;
     @Nullable
     private final String mPersistentDeviceId;
-    private final InputController mInputController;
+    private final VirtualInputController mInputController;
     private final SensorController mSensorController;
     private final CameraAccessController mCameraAccessController;
     @Nullable private final ViewConfigurationController mViewConfigurationController;
@@ -425,7 +425,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             IBinder token,
             AttributionSource attributionSource,
             int deviceId,
-            InputController inputController,
+            VirtualInputController inputController,
             CameraAccessController cameraAccessController,
             PendingTrampolineCallback pendingTrampolineCallback,
             IVirtualDeviceActivityListener activityListener,
@@ -479,7 +479,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         mBaseVirtualDisplayFlags = flags;
 
         if (inputController == null) {
-            mInputController = new InputController(context.getMainThreadHandler(),
+            mInputController = new VirtualInputController(
                     context.getSystemService(InputManager.class),
                     context.getSystemService(WindowManager.class), mAttributionSource);
         } else {
@@ -997,16 +997,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.createDpad(config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return Binder.withCleanCallingIdentity(() ->
+                mInputController.createDpad(deviceToken, config));
     }
 
     @Override // Binder call
@@ -1016,21 +1008,12 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            IVirtualInputDevice device = mInputController.createKeyboard(
-                    config.getInputDeviceName(), config.getVendorId(), config.getProductId(),
-                    deviceToken, getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
-                    config.getLanguageTag(), config.getLayoutType());
-            synchronized (mVirtualDeviceLock) {
-                mLocaleList = LocaleList.forLanguageTags(config.getLanguageTag());
-            }
-            return device;
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
+        IVirtualInputDevice device = Binder.withCleanCallingIdentity(() ->
+                mInputController.createKeyboard(deviceToken, config));
+        synchronized (mVirtualDeviceLock) {
+            mLocaleList = LocaleList.forLanguageTags(config.getLanguageTag());
         }
+        return device;
     }
 
     @Override // Binder call
@@ -1040,15 +1023,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.createMouse(config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken, config.getAssociatedDisplayId());
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return Binder.withCleanCallingIdentity(() ->
+                mInputController.createMouse(deviceToken, config));
     }
 
     @Override // Binder call
@@ -1058,16 +1034,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.createTouchscreen(config.getInputDeviceName(),
-                    config.getVendorId(), config.getProductId(), deviceToken,
-                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth());
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return Binder.withCleanCallingIdentity(() ->
+                mInputController.createTouchscreen(deviceToken, config));
     }
 
     @Override // Binder call
@@ -1077,17 +1045,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.createNavigationTouchpad(config.getInputDeviceName(),
-                    config.getVendorId(), config.getProductId(), deviceToken,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
-                    config.getHeight(), config.getWidth());
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return Binder.withCleanCallingIdentity(() ->
+                mInputController.createNavigationTouchpad(deviceToken, config));
     }
 
     @Override // Binder call
@@ -1097,16 +1056,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.createStylus(config.getInputDeviceName(), config.getVendorId(),
-                    config.getProductId(), deviceToken, config.getAssociatedDisplayId(),
-                    config.getHeight(), config.getWidth());
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return Binder.withCleanCallingIdentity(() ->
+                mInputController.createStylus(deviceToken, config));
     }
 
     @Override // Binder call
@@ -1116,16 +1067,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         Objects.requireNonNull(config);
         Objects.requireNonNull(deviceToken);
         checkVirtualInputDeviceDisplayIdAssociation(config.getAssociatedDisplayId());
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            return mInputController.createRotaryEncoder(config.getInputDeviceName(),
-                    config.getVendorId(), config.getProductId(), deviceToken,
-                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
-        } catch (InputController.DeviceCreationException e) {
-            throw new IllegalArgumentException(e);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
+        return Binder.withCleanCallingIdentity(() ->
+                mInputController.createRotaryEncoder(deviceToken, config));
     }
 
     @Override // Binder call
@@ -1328,16 +1271,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         }
         fout.println(
                 indent + "hasCustomAudioInputSupport: " + hasCustomAudioInputSupportInternal());
-    }
-
-    // For display mirroring, we want to dispatch all key events to the source (default) display,
-    // as the virtual display doesn't have any focused windows. Hence, call this for
-    // associating any input device to the source display if the input device emits any key events.
-    private int getTargetDisplayIdForInput(int displayId) {
-        DisplayManagerInternal displayManager = LocalServices.getService(
-                DisplayManagerInternal.class);
-        int mirroredDisplayId = displayManager.getDisplayIdToMirror(displayId);
-        return mirroredDisplayId == Display.INVALID_DISPLAY ? displayId : mirroredDisplayId;
     }
 
     private GenericWindowPolicyController createWindowPolicyController(
@@ -1725,8 +1658,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     }
 
     boolean isInputDeviceOwnedByVirtualDevice(int inputDeviceId) {
-        return mInputController.getInputDeviceDescriptors().values().stream().anyMatch(
-                inputDeviceDescriptor -> inputDeviceDescriptor.getInputDeviceId() == inputDeviceId);
+        return mInputController.isInputDevicePresent(inputDeviceId);
     }
 
     void playSoundEffect(int effectType) {

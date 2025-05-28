@@ -47,6 +47,12 @@ interface IVirtualInputDevice {
     int getInputDeviceId();
 
     /**
+     * Returns the ID of the display that this virtual input device is associated with, or
+     * {@code INVALID_DISPLAY} if not associated with any display.
+     */
+    int getAssociatedDisplayId();
+
+    /**
      * Injects a virtual dpad key event.
      */
     boolean sendDpadKeyEvent(in VirtualKeyEvent event);
