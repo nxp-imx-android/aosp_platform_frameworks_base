@@ -19,6 +19,7 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.tools.NavBar
 import android.tools.Rotation
+import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -48,11 +49,6 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0) {
 
     @Before
     fun setup() {
-        val overview = tapl.workspace.switchToOverview()
-        if (overview.hasTasks()) {
-            overview.dismissAllTasks()
-        }
-
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(rotation.value)
 
@@ -72,6 +68,7 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0) {
     fun teardown() {
         primaryApp.exit(wmHelper)
         secondaryApp.exit(wmHelper)
+        RemoveAllTasksButHomeRule.removeAllTasksButHome()
     }
 
     private fun waitForWindowsToSwitch(wmHelper: WindowManagerStateHelper) {
