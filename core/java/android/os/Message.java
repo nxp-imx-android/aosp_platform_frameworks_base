@@ -167,8 +167,6 @@ public final class Message implements Parcelable {
 
     private static final int MAX_POOL_SIZE = 50;
 
-    private static boolean gCheckRecycle = true;
-
     /**
      * Return a new Message instance from the global pool. Allows us to
      * avoid allocating new objects in many cases.
@@ -313,13 +311,6 @@ public final class Message implements Parcelable {
         return m;
     }
 
-    /** @hide */
-    public static void updateCheckRecycle(int targetSdkVersion) {
-        if (targetSdkVersion < Build.VERSION_CODES.LOLLIPOP) {
-            gCheckRecycle = false;
-        }
-    }
-
     /**
      * Return a Message instance to the global pool.
      * <p>
@@ -330,11 +321,8 @@ public final class Message implements Parcelable {
      */
     public void recycle() {
         if (isInUse()) {
-            if (gCheckRecycle) {
-                throw new IllegalStateException("This message cannot be recycled because it "
-                        + "is still in use.");
-            }
-            return;
+            throw new IllegalStateException("This message cannot be recycled because it "
+                    + "is still in use.");
         }
         recycleUnchecked();
     }
