@@ -1414,6 +1414,10 @@ public class AudioDeviceBroker {
         return mDeviceInventory.setPreferredDevicesForStrategyAndSave(strategy, devices);
     }
 
+    /*package*/ List<AudioDeviceAttributes> getPreferredDevicesForStrategy(int strategy) {
+        return mDeviceInventory.getPreferredDevicesForStrategy(strategy);
+    }
+
     /*package*/ int removePreferredDevicesForStrategySync(int strategy) {
         return mDeviceInventory.removePreferredDevicesForStrategyAndSave(strategy);
     }
