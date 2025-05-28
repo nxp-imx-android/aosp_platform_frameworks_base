@@ -285,7 +285,10 @@ private class TextPolicyToAnnotationConverter(
             }
             log.v("Found simple class policy: $className - ${policy.policy}")
 
-            val annot = annotations.get(policy.policy, Annotations.Target.Class)!!
+            val annot = annotations.get(policy.policy, Annotations.Target.Class)
+            if (annot == null) {
+                return // unsupported policy
+            }
             if (addClassAnnotation(className, annot)) {
                 classLineConverted = true
             }

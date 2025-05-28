@@ -189,6 +189,39 @@ java_genrule_host {
     ],
 }
 
+// Generate "PTA" script for tiny-framework.
+// The output contains files in the fullpaths, so we use the next
+// build rule "hoststubgen-test-tiny-framework-pta-output-normalized" to
+// remove the unnecessary prefixes.
+genrule {
+    name: "hoststubgen-test-tiny-framework-pta-output-orig",
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) pta " +
+        "--output-script $(out) " +
+        "--annotation-allowed-classes-file $(location annotation-allowed-classes-tiny-framework-for-pta-test.txt) " +
+        "--policy-override-file $(location policy-override-tiny-framework.txt) " +
+        "$(locations tiny-framework/src/**/*.java) ",
+    srcs: [
+        "policy-override-tiny-framework.txt",
+        "annotation-allowed-classes-tiny-framework-for-pta-test.txt",
+        "tiny-framework/src/**/*.java",
+    ],
+    out: [
+        "pta-output-orig.sed.txt",
+    ],
+}
+
+genrule {
+    name: "hoststubgen-test-tiny-framework-pta-output-normalized",
+    cmd: "sed -e 's!^apply .*/test-tiny-framework/!apply \"!' $(in) > $(out)",
+    srcs: [
+        ":hoststubgen-test-tiny-framework-pta-output-orig",
+    ],
+    out: [
+        "pta-output.sed.txt",
+    ],
+}
+
 // Compare the dump of the jar files to the golden output.
 python_test_host {
     name: "tiny-framework-dump-test",
@@ -197,6 +230,7 @@ python_test_host {
     ],
     data: [
         "golden-output/*.txt",
+        ":hoststubgen-test-tiny-framework-pta-output-normalized",
     ],
     java_data: [
         "hoststubgen-test-tiny-framework-orig-dump",
