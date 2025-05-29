@@ -128,6 +128,7 @@ import android.widget.Toast;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
+import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -423,10 +424,19 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getCachedOrSystemDisplayIds();
             displayIds.forEach(id -> {
                 taskOrganizer.createRootTask(
-                        id, WINDOWING_MODE_FULLSCREEN, this);
+                        new TaskOrganizer.CreateRootTaskRequest()
+                                .setName("SplitRoot")
+                                .setDisplayId(id)
+                                .setWindowingMode(WINDOWING_MODE_FULLSCREEN),
+                        this);
             });
         } else {
-            taskOrganizer.createRootTask(displayId, WINDOWING_MODE_FULLSCREEN, this /* listener */);
+            taskOrganizer.createRootTask(
+                    new TaskOrganizer.CreateRootTaskRequest()
+                            .setName("SplitRoot")
+                            .setDisplayId(displayId)
+                            .setWindowingMode(WINDOWING_MODE_FULLSCREEN),
+                    this);
         }
 
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Creating main/side root task");

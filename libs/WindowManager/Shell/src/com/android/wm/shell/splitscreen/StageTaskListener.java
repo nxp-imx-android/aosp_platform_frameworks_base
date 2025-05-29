@@ -17,6 +17,7 @@
 package com.android.wm.shell.splitscreen;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.res.Configuration.SCREEN_HEIGHT_DP_UNDEFINED;
@@ -41,6 +42,7 @@ import android.os.IBinder;
 import android.util.SparseArray;
 import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
+import android.window.TaskOrganizer;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -128,7 +130,12 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         mSyncQueue = syncQueue;
         mIconProvider = iconProvider;
         mWindowDecorViewModel = windowDecorViewModel;
-        taskOrganizer.createRootTask(displayId, WINDOWING_MODE_MULTI_WINDOW, this);
+        taskOrganizer.createRootTask(
+                new TaskOrganizer.CreateRootTaskRequest()
+                        .setName(stageTypeToString(id).toLowerCase())
+                        .setDisplayId(displayId)
+                        .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW),
+                this);
         mId = id;
     }
 
