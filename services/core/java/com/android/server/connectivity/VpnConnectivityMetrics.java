@@ -27,6 +27,7 @@ import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA384;
 import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA512;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CBC;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CTR;
+import static android.net.VpnManager.TYPE_VPN_OEM;
 import static android.net.VpnManager.TYPE_VPN_PLATFORM;
 
 import android.net.ConnectivityManager;
@@ -43,6 +44,7 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
 
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
@@ -53,10 +55,13 @@ import java.util.List;
  */
 public class VpnConnectivityMetrics {
     private static final String TAG = VpnConnectivityMetrics.class.getSimpleName();
-    public static final int VPN_TYPE_UNKNOWN = 0;
-    public static final int VPN_PROFILE_TYPE_UNKNOWN = 0;
-    private static final int UNKNOWN_UNDERLYING_NETWORK_TYPE = -1;
     // Copied from corenetworking platform vpn enum
+    @VisibleForTesting
+    static final int VPN_TYPE_UNKNOWN = 0;
+    @VisibleForTesting
+    static final int VPN_PROFILE_TYPE_UNKNOWN = 0;
+    private static final int VPN_PROFILE_TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS = 10;
+    private static final int UNKNOWN_UNDERLYING_NETWORK_TYPE = -1;
     @VisibleForTesting
     static final int IP_PROTOCOL_UNKNOWN = 0;
     @VisibleForTesting
@@ -82,6 +87,14 @@ public class VpnConnectivityMetrics {
      */
     private int mAllowedAlgorithms = 0;
     /**
+     * The maximum value that {@code mAllowedAlgorithms} can take.
+     * It's calculated based on the number of algorithms defined in {@code sAlgorithms}.
+     * Each algorithm corresponds to a bit in the bitmask, so the maximum value is
+     * 2^numberOfAlgorithms - 1.
+     * This value should be updated if {@code sAlgorithms} is modified.
+     */
+    private static final int MAX_ALLOWED_ALGORITHMS_VALUE = (1 << 11) - 1;
+    /**
      * An array representing the transport types of the underlying networks for the VPN.
      * Each element in this array corresponds to a specific underlying network.
      * The value of each element is the primary transport type of the network
@@ -91,7 +104,7 @@ public class VpnConnectivityMetrics {
      * {@code UNKNOWN_UNDERLYING_NETWORK_TYPE}.
      */
     @NonNull
-    private int[] mUnderlyingNetworkTypes;
+    private int[] mUnderlyingNetworkTypes = new int[0];
     private int mVpnNetworkIpProtocol = IP_PROTOCOL_UNKNOWN;
     private int mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
 
@@ -261,8 +274,10 @@ public class VpnConnectivityMetrics {
         // IPv4-mapped IPv6 addresses.
         if (address instanceof Inet4Address) {
             mServerIpProtocol = IP_PROTOCOL_IPv4;
-        } else {
+        } else if (address instanceof Inet6Address) {
             mServerIpProtocol = IP_PROTOCOL_IPv6;
+        } else {
+            mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
         }
     }
 
@@ -279,6 +294,7 @@ public class VpnConnectivityMetrics {
         boolean hasIpv6 = false;
         int ipProtocol = IP_PROTOCOL_UNKNOWN;
         for (LinkAddress address : addresses) {
+            if (address == null) continue;
             if (address.isIpv4()) {
                 hasIpv4 = true;
             } else if (address.isIpv6()) {
@@ -307,15 +323,43 @@ public class VpnConnectivityMetrics {
         return mVpnType == TYPE_VPN_PLATFORM;
     }
 
-
-
     /**
-     * Notifies that a VPN connected event has occurred.
-     *
-     * This method gathers the current VPN state information from internal fields and reports it to
-     * the system's statistics logging service.
+     * Validates and corrects the internal VPN metrics to ensure the collected data fall within
+     * acceptable ranges.
+     * <p>
+     * This method checks the values of {@code mVpnType}, {@code mVpnNetworkIpProtocol},
+     * {@code mServerIpProtocol}, {@code mVpnProfileType}, and {@code mAllowedAlgorithms}.
+     * If any value is found to be outside its expected bounds, an error is logged, and the metric
+     * is reset to default state.
+     * </p>
      */
-    public void notifyVpnConnected() {
+    private void validateAndCorrectMetrics() {
+        if (mVpnType < VPN_TYPE_UNKNOWN || mVpnType > TYPE_VPN_OEM) {
+            Log.e(TAG, "Invalid vpnType: " + mVpnType);
+            mVpnType = VPN_TYPE_UNKNOWN;
+        }
+        if (mVpnNetworkIpProtocol < IP_PROTOCOL_UNKNOWN
+                || mVpnNetworkIpProtocol > IP_PROTOCOL_IPv4v6) {
+            Log.e(TAG, "Invalid vpnNetworkIpProtocol: " + mVpnNetworkIpProtocol);
+            mVpnNetworkIpProtocol = IP_PROTOCOL_UNKNOWN;
+        }
+        if (mServerIpProtocol < IP_PROTOCOL_UNKNOWN || mServerIpProtocol > IP_PROTOCOL_IPv6) {
+            Log.e(TAG, "Invalid serverIpProtocol: " + mServerIpProtocol);
+            mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
+        }
+        if (mVpnProfileType < VPN_PROFILE_TYPE_UNKNOWN
+                || mVpnProfileType > VPN_PROFILE_TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS) {
+            Log.e(TAG, "Invalid vpnProfileType: " + mVpnProfileType);
+            mVpnProfileType = VPN_PROFILE_TYPE_UNKNOWN;
+        }
+        if (mAllowedAlgorithms < 0 || mAllowedAlgorithms > MAX_ALLOWED_ALGORITHMS_VALUE) {
+            Log.e(TAG, "Invalid allowedAlgorithms: " + mAllowedAlgorithms);
+            mAllowedAlgorithms = 0;
+        }
+    }
+
+    private void validateAndReportVpnConnectionEvent(boolean connected) {
+        validateAndCorrectMetrics();
         mDependencies.statsWrite(
                 mVpnType,
                 mVpnNetworkIpProtocol,
@@ -324,8 +368,18 @@ public class VpnConnectivityMetrics {
                 mAllowedAlgorithms,
                 mMtu,
                 mUnderlyingNetworkTypes,
-                true /* connected */,
+                connected,
                 mUserId);
+    }
+
+    /**
+     * Notifies that a VPN connected event has occurred.
+     *
+     * This method gathers the current VPN state information from internal fields and reports it to
+     * the system's statistics logging service.
+     */
+    public void notifyVpnConnected() {
+        validateAndReportVpnConnectionEvent(true /* connected */);
     }
 
     /**
@@ -335,15 +389,6 @@ public class VpnConnectivityMetrics {
      * the system's statistics logging service.
      */
     public void notifyVpnDisconnected() {
-        mDependencies.statsWrite(
-                mVpnType,
-                mVpnNetworkIpProtocol,
-                mServerIpProtocol,
-                mVpnProfileType,
-                mAllowedAlgorithms,
-                mMtu,
-                mUnderlyingNetworkTypes,
-                false /* connected */,
-                mUserId);
+        validateAndReportVpnConnectionEvent(false /* connected */);
     }
 }

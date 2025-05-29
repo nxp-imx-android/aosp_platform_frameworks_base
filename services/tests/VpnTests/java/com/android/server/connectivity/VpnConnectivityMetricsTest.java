@@ -32,6 +32,8 @@ import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL
 import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_IPv4v6;
 import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_IPv6;
 import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_UNKNOWN;
+import static com.android.server.connectivity.VpnConnectivityMetrics.VPN_PROFILE_TYPE_UNKNOWN;
+import static com.android.server.connectivity.VpnConnectivityMetrics.VPN_TYPE_UNKNOWN;
 import static com.android.testutils.Cleanup.testAndCleanup;
 import static com.android.server.connectivity.VpnConnectivityMetrics.buildAllowedAlgorithmsBitmask;
 import static com.android.server.connectivity.VpnConnectivityMetrics.checkIpProtocol;
@@ -61,6 +63,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -179,5 +182,57 @@ public class VpnConnectivityMetricsTest {
                 new int[] { NetworkCapabilities.TRANSPORT_WIFI },
                 false /* connected */,
                 USER_ID);
+    }
+
+    @Test
+    public void testInvalidMetrics() {
+        final Log.TerribleFailureHandler originalHandler =
+                Log.setWtfHandler((tag, what, system) -> {});
+        testAndCleanup(() -> {
+            // Fill in invalid metrics data
+            mMetrics.setVpnType(VpnManager.TYPE_VPN_NONE);
+            mMetrics.setMtu(1280);
+            mMetrics.setVpnProfileType(-1);
+            mMetrics.setAllowedAlgorithms(List.of("unknown"));
+            mMetrics.setVpnNetworkIpProtocol(List.of());
+            mMetrics.setServerIpProtocol(null);
+
+            // Verify a vpn connected event with the filled in correct data.
+            mMetrics.notifyVpnConnected();
+            verify(mDeps).statsWrite(
+                    VPN_TYPE_UNKNOWN,
+                    IP_PROTOCOL_UNKNOWN,
+                    IP_PROTOCOL_UNKNOWN,
+                    VPN_PROFILE_TYPE_UNKNOWN,
+                    0 /* allowedAlgorithms */,
+                    1280 /* mtu */,
+                    new int[0],
+                    true /* connected */,
+                    USER_ID);
+
+            // Fill in invalid metrics data again
+            mMetrics.setVpnType(VpnManager.TYPE_VPN_OEM_SERVICE);
+            mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS + 1);
+            final List<String> allowedAlgorithms = new ArrayList<>();
+            allowedAlgorithms.add(null);
+            mMetrics.setAllowedAlgorithms(allowedAlgorithms);
+            final List<LinkAddress> addresses = new ArrayList<>();
+            addresses.add(null);
+            mMetrics.setVpnNetworkIpProtocol(addresses);
+            mMetrics.setServerIpProtocol(null);
+
+            // Verify a vpn disconnected event with the filled in correct data.
+            mMetrics.notifyVpnDisconnected();
+            verify(mDeps).statsWrite(
+                    VPN_TYPE_UNKNOWN,
+                    IP_PROTOCOL_UNKNOWN,
+                    IP_PROTOCOL_UNKNOWN,
+                    VPN_PROFILE_TYPE_UNKNOWN,
+                    0 /* allowedAlgorithms */,
+                    1280 /* mtu */,
+                    new int[0],
+                    false /* connected */,
+                    USER_ID);
+        }, () -> Log.setWtfHandler(originalHandler));
     }
 }
