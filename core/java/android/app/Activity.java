@@ -9894,7 +9894,6 @@ public class Activity extends ContextThemeWrapper
      * @param allowed {@code true} to disable the UID restrictions; {@code false} to revert back to
      *                            the default behaviour
      */
-    @FlaggedApi(android.security.Flags.FLAG_ASM_RESTRICTIONS_ENABLED)
     @SuppressLint("OnNameExpected")
     public void setAllowCrossUidActivitySwitchFromBelow(boolean allowed) {
         ActivityClient.getInstance().setAllowCrossUidActivitySwitchFromBelow(mToken, allowed);
