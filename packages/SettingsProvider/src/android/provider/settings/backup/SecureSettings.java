@@ -91,6 +91,7 @@ public class SecureSettings {
         Settings.Secure.KEY_REPEAT_ENABLED,
         Settings.Secure.KEY_REPEAT_TIMEOUT_MS,
         Settings.Secure.KEY_REPEAT_DELAY_MS,
+        Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
         Settings.Secure.CAMERA_GESTURE_DISABLED,
         Settings.Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE,
         Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,

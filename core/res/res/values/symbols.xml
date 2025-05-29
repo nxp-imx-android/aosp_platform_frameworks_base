@@ -6227,4 +6227,9 @@
 
   <!-- Maximum number of devices that allows for audio sharing. -->
   <java-symbol type="integer" name="config_audio_sharing_maximum_sinks" />
+
+  <!-- Values for the user-configurable text cursor blink interval. -->
+  <java-symbol type="integer" name="def_accessibility_text_cursor_blink_interval_ms" />
+  <java-symbol type="integer" name="no_blink_accessibility_text_cursor_blink_interval_ms" />
+  <java-symbol type="array" name="accessibility_text_cursor_blink_intervals" />
 </resources>

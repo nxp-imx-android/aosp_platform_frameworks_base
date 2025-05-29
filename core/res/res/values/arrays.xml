@@ -233,4 +233,22 @@
     <string-array name="demo_device_provisioning_known_signers">
         <item>@string/config_retailDemoPackageSignature</item>
     </string-array>
+
+    <!-- Non-zero text cursor blink intervals. The first value in the array is the
+         minimum allowable blink interval. This array must adhere to the following
+         constraints: 1) there is at least one value 2) the values are in ascending
+         order. Keep in sync with ViewConfiguration. -->
+    <integer-array name="accessibility_text_cursor_blink_intervals">
+        <item>333</item>
+        <item>357</item>
+        <item>385</item>
+        <item>417</item>
+        <item>455</item>
+        <item>500</item>
+        <item>556</item>
+        <item>625</item>
+        <item>714</item>
+        <item>833</item>
+        <item>1000</item>
+    </integer-array>
 </resources>
