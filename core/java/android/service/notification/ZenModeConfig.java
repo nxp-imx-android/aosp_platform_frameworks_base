@@ -325,6 +325,7 @@ public class ZenModeConfig implements Parcelable {
     private static final String DEVICE_EFFECT_MINIMIZE_RADIO_USAGE = "zdeMinimizeRadioUsage";
     private static final String DEVICE_EFFECT_MAXIMIZE_DOZE = "zdeMaximizeDoze";
     private static final String DEVICE_EFFECT_USE_NIGHT_LIGHT = "zdeUseNightLight";
+    private static final String DEVICE_EFFECT_CAP_BRIGHTNESS = "zdeCapBrightness";
     private static final String DEVICE_EFFECT_EXTRAS = "zdeExtraEffects";
     private static final String DEVICE_EFFECT_USER_MODIFIED_FIELDS = "zdeUserModifiedFields";
 
@@ -1214,7 +1215,7 @@ public class ZenModeConfig implements Parcelable {
 
     @Nullable
     private static ZenDeviceEffects readZenDeviceEffectsXml(TypedXmlPullParser parser) {
-        ZenDeviceEffects deviceEffects =
+        ZenDeviceEffects.Builder builder =
                 new ZenDeviceEffects.Builder()
                         .setShouldDisplayGrayscale(
                                 safeBoolean(parser, DEVICE_EFFECT_DISPLAY_GRAYSCALE, false))
@@ -1238,9 +1239,11 @@ public class ZenModeConfig implements Parcelable {
                                 safeBoolean(parser, DEVICE_EFFECT_MAXIMIZE_DOZE, false))
                         .setShouldUseNightLight(
                                 safeBoolean(parser, DEVICE_EFFECT_USE_NIGHT_LIGHT, false))
-                        .setExtraEffects(safeStringSet(parser, DEVICE_EFFECT_EXTRAS))
-                        .build();
-
+                        .setExtraEffects(safeStringSet(parser, DEVICE_EFFECT_EXTRAS));
+        if (android.service.notification.Flags.applyBrightnessClampingForModes()) {
+            builder.setBrightnessPercentageCap(unsafeFloat(parser, DEVICE_EFFECT_CAP_BRIGHTNESS));
+        }
+        ZenDeviceEffects deviceEffects = builder.build();
         return deviceEffects.hasEffects() ? deviceEffects : null;
     }
 
@@ -1263,6 +1266,10 @@ public class ZenModeConfig implements Parcelable {
                 deviceEffects.shouldMinimizeRadioUsage());
         writeBooleanIfTrue(out, DEVICE_EFFECT_MAXIMIZE_DOZE, deviceEffects.shouldMaximizeDoze());
         writeBooleanIfTrue(out, DEVICE_EFFECT_USE_NIGHT_LIGHT, deviceEffects.shouldUseNightLight());
+        if (android.service.notification.Flags.applyBrightnessClampingForModes()) {
+            writeFloatIfNotNull(
+                    out, DEVICE_EFFECT_CAP_BRIGHTNESS, deviceEffects.getBrightnessPercentageCap());
+        }
         writeStringSet(out, DEVICE_EFFECT_EXTRAS, deviceEffects.getExtraEffects());
     }
 
@@ -1270,6 +1277,13 @@ public class ZenModeConfig implements Parcelable {
             throws IOException {
         if (value) {
             out.attributeBoolean(null, att, true);
+        }
+    }
+
+    private static void writeFloatIfNotNull(
+            TypedXmlSerializer out, String att, @Nullable Float value) throws IOException {
+        if (value != null) {
+            out.attributeFloat(null, att, value);
         }
     }
 
@@ -1324,6 +1338,15 @@ public class ZenModeConfig implements Parcelable {
 
     private static int safeInt(TypedXmlPullParser parser, String att, int defValue) {
         return parser.getAttributeInt(null, att, defValue);
+    }
+
+    @Nullable
+    private static Float unsafeFloat(TypedXmlPullParser parser, String att) {
+        try {
+            return parser.getAttributeFloat(null, att);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static ComponentName safeComponentName(TypedXmlPullParser parser, String att) {

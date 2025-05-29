@@ -82,6 +82,12 @@ flag {
   bug: "409474564"
 }
 
+flag {
+  name: "apply_brightness_clamping_for_modes"
+  namespace: "wear_frameworks"
+  description: "Whether to apply brightness clamping for modes"
+  bug: "387528442"
+}
 
 
 

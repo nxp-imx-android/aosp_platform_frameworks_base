@@ -155,6 +155,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.SimpleClock;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -2645,7 +2646,51 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.service.notification.Flags.FLAG_APPLY_BRIGHTNESS_CLAMPING_FOR_MODES)
     public void addAutomaticZenRule_fromApp_ignoresHiddenEffects() {
+        ZenDeviceEffects zde =
+                new ZenDeviceEffects.Builder()
+                        .setShouldDisplayGrayscale(true)
+                        .setShouldSuppressAmbientDisplay(true)
+                        .setShouldDimWallpaper(true)
+                        .setShouldUseNightMode(true)
+                        .setShouldDisableAutoBrightness(true)
+                        .setShouldDisableTapToWake(true)
+                        .setShouldDisableTiltToWake(true)
+                        .setShouldDisableTouch(true)
+                        .setShouldMinimizeRadioUsage(true)
+                        .setShouldMaximizeDoze(true)
+                        .setShouldUseNightLight(true)
+                        .setBrightnessPercentageCap(50f)
+                        .build();
+
+        String ruleId =
+                mZenModeHelper.addAutomaticZenRule(
+                        UserHandle.CURRENT,
+                        mContext.getPackageName(),
+                        new AutomaticZenRule.Builder("Rule", CONDITION_ID)
+                                .setOwner(OWNER)
+                                .setDeviceEffects(zde)
+                                .build(),
+                        ORIGIN_APP,
+                        "reasons",
+                        CUSTOM_PKG_UID);
+
+        AutomaticZenRule savedRule =
+                mZenModeHelper.getAutomaticZenRule(UserHandle.CURRENT, ruleId, CUSTOM_PKG_UID);
+        assertThat(savedRule.getDeviceEffects())
+                .isEqualTo(
+                        new ZenDeviceEffects.Builder()
+                                .setShouldDisplayGrayscale(true)
+                                .setShouldSuppressAmbientDisplay(true)
+                                .setShouldDimWallpaper(true)
+                                .setShouldUseNightMode(true)
+                                .build());
+    }
+
+    @Test
+    @DisableFlags(android.service.notification.Flags.FLAG_APPLY_BRIGHTNESS_CLAMPING_FOR_MODES)
+    public void addAutomaticZenRule_fromApp_ignoresHiddenEffects_legacy() {
         ZenDeviceEffects zde =
                 new ZenDeviceEffects.Builder()
                         .setShouldDisplayGrayscale(true)
