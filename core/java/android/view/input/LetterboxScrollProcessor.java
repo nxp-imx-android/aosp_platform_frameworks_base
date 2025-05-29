@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.InputEvent;
+import android.view.InputEventCompatProcessor;
 import android.view.MotionEvent;
 
 import com.android.window.flags.Flags;
@@ -40,7 +41,7 @@ import java.util.Set;
  *
  * @hide
  */
-public class LetterboxScrollProcessor {
+public class LetterboxScrollProcessor extends InputEventCompatProcessor {
 
     private enum LetterboxScrollState {
         AWAITING_GESTURE_START,
@@ -63,6 +64,7 @@ public class LetterboxScrollProcessor {
     private final Set<Integer> mGeneratedEventIds = new HashSet<>();
 
     public LetterboxScrollProcessor(@NonNull Context context, @Nullable Handler handler) {
+        super(context, handler);
         mContext = context;
         mScrollDetector = new GestureDetector(context, new ScrollListener(), handler);
     }
@@ -71,18 +73,8 @@ public class LetterboxScrollProcessor {
         return Flags.scrollingFromLetterbox();
     }
 
-    /**
-     * Processes the InputEvent. If the gesture is started in the app's bounds, or moves over the
-     * app then the motion events are not adjusted. Motion events from outside the app's
-     * bounds that are detected as a scroll gesture are adjusted to be over the app's bounds.
-     * Otherwise (if the events are outside the app's bounds and not part of a scroll gesture), the
-     * motion events are ignored.
-     *
-     * @param inputEvent The InputEvent to process.
-     * @return The list of adjusted events, or null if no adjustments are needed. The list is empty
-     * if the event should be ignored. Do not keep a reference to the output as the list is reused.
-     */
     @Nullable
+    @Override
     public List<InputEvent> processInputEventForCompatibility(@NonNull InputEvent inputEvent) {
         if (!(inputEvent instanceof MotionEvent motionEvent)
                 || motionEvent.getAction() == MotionEvent.ACTION_OUTSIDE
@@ -150,14 +142,8 @@ public class LetterboxScrollProcessor {
         return makeNoAdjustments ? null : mProcessedEvents;
     }
 
-    /**
-     * Processes the InputEvent for compatibility before it is finished by calling
-     * InputEventReceiver#finishInputEvent().
-     *
-     * @param inputEvent The InputEvent to process.
-     * @return The motionEvent to finish, or null if it should not be finished.
-     */
     @Nullable
+    @Override
     public InputEvent processInputEventBeforeFinish(@NonNull InputEvent inputEvent) {
         if (mGeneratedEventIds.remove(inputEvent.getId())) {
             inputEvent.recycleIfNeededAfterDispatch();

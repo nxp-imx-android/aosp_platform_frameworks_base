@@ -23,9 +23,9 @@ import android.platform.test.annotations.Presubmit
 import android.view.MotionEvent
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -45,7 +45,7 @@ class StylusButtonCompatibilityTest {
     @Before
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
-        stylusButtonCompatibility = StylusButtonCompatibility()
+        stylusButtonCompatibility = StylusButtonCompatibility(context, null)
     }
 
     @Test
@@ -72,10 +72,10 @@ class StylusButtonCompatibilityTest {
 
         val result = stylusButtonCompatibility.processInputEventForCompatibility(event)
 
-        assertNotNull(result)
+        assertThat(result).hasSize(1)
         assertEquals(
             MotionEvent.BUTTON_SECONDARY or MotionEvent.BUTTON_STYLUS_PRIMARY,
-            (result as MotionEvent).buttonState
+            (result!![0] as MotionEvent).buttonState
         )
     }
 
@@ -89,10 +89,10 @@ class StylusButtonCompatibilityTest {
 
         val result = stylusButtonCompatibility.processInputEventForCompatibility(event)
 
-        assertNotNull(result)
+        assertThat(result).hasSize(1)
         assertEquals(
             MotionEvent.BUTTON_TERTIARY or MotionEvent.BUTTON_STYLUS_SECONDARY,
-            (result as MotionEvent).buttonState
+            (result!![0] as MotionEvent).buttonState
         )
     }
 }
