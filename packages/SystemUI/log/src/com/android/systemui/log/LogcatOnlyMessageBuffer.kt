@@ -27,13 +27,13 @@ import kotlin.collections.ArrayDeque
  * immediately. This defeats the intention behind [LogBuffer] and should only be used when
  * [LogBuffer]s are unavailable in a certain context.
  */
-class LogcatOnlyMessageBuffer
-@JvmOverloads
-constructor(
+class LogcatOnlyMessageBuffer(
     private val targetLogLevel: LogLevel,
-    private val maxMessageCount: Int = DEFAULT_MESSAGE_MAX_COUNT,
-) : MessageBuffer {
+    private val maxMessageCount: Int,
+): MessageBuffer {
     private val messages = ArrayDeque<LogMessageImpl>(maxMessageCount)
+
+    constructor(targetLogLevel: LogLevel) : this(targetLogLevel, DEFAULT_MESSAGE_MAX_COUNT)
 
     override fun obtain(
         tag: String,
@@ -65,6 +65,6 @@ constructor(
     }
 
     companion object {
-        val DEFAULT_MESSAGE_MAX_COUNT = 4
+        private const val DEFAULT_MESSAGE_MAX_COUNT = 4
     }
 }
