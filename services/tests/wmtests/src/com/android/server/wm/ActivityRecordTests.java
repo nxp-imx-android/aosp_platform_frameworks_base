@@ -3529,7 +3529,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         // Create a new DisplayContent so that the flag values create the camera freeform policy.
         mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayContent.getSurfaceWidth(),
                 mDisplayContent.getSurfaceHeight()).build();
-        final CameraStateMonitorImpl cameraStateMonitor = mDisplayContent.mAppCompatCameraPolicy
+        final CameraStateMonitor cameraStateMonitor = mDisplayContent.mAppCompatCameraPolicy
                 .mCameraStateMonitor;
         spyOn(cameraStateMonitor);
         doReturn(isCameraRunning).when(cameraStateMonitor).isCameraRunningForActivity(any());

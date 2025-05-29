@@ -37,8 +37,8 @@ import java.util.Set;
  * Class that listens to camera open/closed signals, keeps track of the current apps using camera,
  * and notifies listeners.
  */
-class CameraStateMonitorImpl {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "CameraStateMonitorImpl" : TAG_WM;
+class CameraStateMonitor {
+    private static final String TAG = TAG_WITH_CLASS_NAME ? "CameraStateMonitor" : TAG_WM;
 
     // Delay for updating letterbox after Camera connection is closed. Needed to avoid flickering
     // when an app is flipping between front and rear cameras or when size compat mode is restarted.
@@ -100,7 +100,7 @@ class CameraStateMonitorImpl {
                 }
             };
 
-    CameraStateMonitorImpl(@NonNull DisplayContent displayContent, @NonNull Handler handler) {
+    CameraStateMonitor(@NonNull DisplayContent displayContent, @NonNull Handler handler) {
         // This constructor is called from DisplayContent constructor. Don't use any fields in
         // DisplayContent here since they aren't guaranteed to be set.
         mHandler = handler;
