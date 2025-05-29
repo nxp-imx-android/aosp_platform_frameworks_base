@@ -79,7 +79,6 @@ import android.hardware.display.IDisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
 import android.hardware.input.IVirtualInputDevice;
-import android.hardware.input.InputManager;
 import android.hardware.input.VirtualDpadConfig;
 import android.hardware.input.VirtualKeyboardConfig;
 import android.hardware.input.VirtualMouseConfig;
@@ -222,7 +221,7 @@ public class VirtualDeviceManagerServiceTest {
 
     private Context mContext;
     private VirtualDeviceImpl mDeviceImpl;
-    private VirtualInputController mInputController;
+    private InputController mInputController;
     private SensorController mSensorController;
     private CameraAccessController mCameraAccessController;
     private AssociationInfo mAssociationInfo;
@@ -322,9 +321,6 @@ public class VirtualDeviceManagerServiceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        LocalServices.removeServiceForTest(DisplayManagerInternal.class);
-        LocalServices.addService(DisplayManagerInternal.class, mDisplayManagerInternalMock);
-
         when(mInputManagerInternalMock.createVirtualTouchscreen(any(), any()))
                 .thenReturn(mIVirtualInputDevice);
         when(mInputManagerInternalMock.createVirtualKeyboard(any(), any()))
@@ -350,15 +346,13 @@ public class VirtualDeviceManagerServiceTest {
         doNothing().when(mContext).sendBroadcastAsUser(any(), any());
         when(mContext.getSystemService(Context.DEVICE_POLICY_SERVICE)).thenReturn(
                 mDevicePolicyManagerMock);
+        when(mContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mWindowManager);
 
         PowerManager powerManager = new PowerManager(mContext, mIPowerManagerMock,
                 mIThermalServiceMock,
                 new Handler(TestableLooper.get(this).getLooper()));
         when(mContext.getSystemService(Context.POWER_SERVICE)).thenReturn(powerManager);
-        mInputController = new VirtualInputController(
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(
-                        InputManager.class), mWindowManager,
-                AttributionSource.myAttributionSource());
+        mInputController = new InputController(mContext, AttributionSource.myAttributionSource());
         mCameraAccessController =
                 new CameraAccessController(mContext, mLocalService, mCameraAccessBlockedCallback);
 
@@ -642,7 +636,7 @@ public class VirtualDeviceManagerServiceTest {
         mInputController.addDeviceForTesting(BINDER, mIVirtualInputDevice);
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isTrue();
 
-        mInputController.unregisterInputDevice(BINDER);
+        mInputController.removeDeviceForTesting(BINDER);
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isFalse();
     }
 
