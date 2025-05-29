@@ -1697,18 +1697,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"دستگاه خارجی"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"هدفون‌ها"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
-    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
-    <skip />
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"صدای تلویزیون"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"آنالوگ"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"دیجیتال"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"سیستم"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"بلوتوث‌های صوتی"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"صفحه نمایش بی‌سیم"</string>
@@ -2559,10 +2553,28 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"نقشه"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"برنامه‌ها"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"اثر انگشتانتان دیگر قابل‌شناسایی نیست. «قفل‌گشایی با اثر انگشت» را دوباره راه‌اندازی کنید."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"‏دستگاه USB هنگام قفل بودن وصل شده است"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"‏دستگاه USB هنگام قفل بودن Android متصل شده است. برای استفاده از دستگاه، لطفاً ابتدا قفل Android را باز کنید و سپس دستگاه USB را دوباره وارد کنید."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"قابلیت شارژ شدن ممکن است هنگام قفل بودن کاهش یابد یا دردسترس نباشد."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>

@@ -1697,18 +1697,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Thiết bị bên ngoài"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Tai nghe"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
-    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
-    <skip />
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"Âm thanh TV"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"Analog"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"Kỹ thuật số"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Hệ thống"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Âm thanh Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Hiển thị không dây"</string>
@@ -2559,10 +2553,28 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Bản đồ"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Ứng dụng"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Hệ thống không nhận dạng được vân tay của bạn. Hãy thiết lập lại tính năng Mở khoá bằng vân tay."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Thiết bị USB được cắm khi thiết bị Android đang khoá"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Thiết bị USB đã được cắm khi thiết bị Android đang khoá. Để sử dụng thiết bị USB, trước tiên, hãy mở khoá thiết bị Android."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Thiết bị USB đã được cắm khi thiết bị Android đang khoá. Để sử dụng thiết bị USB, trước tiên, hãy mở khoá thiết bị Android rồi cắm lại thiết bị USB."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Khả năng sạc có thể bị giảm hoặc không sạc được khi ở trạng thái khoá."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Hoạt động đáng ngờ liên quan đến USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Tín hiệu dữ liệu qua USB đã bị tắt."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Bạn gặp sự cố khi sử dụng tính năng Mở khoá bằng vân tay?"</string>
