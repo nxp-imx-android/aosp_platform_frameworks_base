@@ -6586,6 +6586,15 @@ public final class Settings {
                 "cv_enabled";
 
         /**
+         * Setting to set enable/disable CV dynamic mode.
+         * Setting should be boolean (0 or 1)
+         *
+         * @hide
+         */
+        public static final String CV_DYNAMIC_ENABLED =
+                "cv_dynamic_enabled";
+
+        /**
          * Integer property that specifes the color for screen flash notification as a
          * packed 32-bit color.
          *
