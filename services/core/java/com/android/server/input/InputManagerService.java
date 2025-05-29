@@ -3413,7 +3413,8 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
-        public void sendInputEvent(@NonNull InputEvent event, int policyFlags) {
+        public void sendInputEvent(@NonNull InputEvent event, int policyFlags)
+                throws RemoteException {
             if (!checkCallingPermission(android.Manifest.permission.INJECT_EVENTS,
                     "sendInputEvent()")) {
                 throw new SecurityException(
@@ -3423,9 +3424,14 @@ public class InputManagerService extends IInputManager.Stub
 
             synchronized (mInputFilterLock) {
                 if (!mDisconnected) {
-                    mNative.injectInputEvent(event, false /* injectIntoUid */, -1 /* uid */,
+                    @InputEventInjectionResult int result = mNative.injectInputEvent(
+                            event, false /* injectIntoUid */, -1 /* uid */,
                             InputManager.INJECT_INPUT_EVENT_MODE_ASYNC, 0 /* timeout */,
                             policyFlags | WindowManagerPolicy.FLAG_FILTERED);
+                    if (result != InputEventInjectionResult.SUCCEEDED) {
+                        throw new RemoteException(
+                                "Injection did not succeed, result= " + result + ".");
+                    }
                 }
             }
         }

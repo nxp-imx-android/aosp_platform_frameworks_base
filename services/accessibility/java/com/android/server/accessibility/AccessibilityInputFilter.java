@@ -28,6 +28,7 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
+import android.os.Build;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -251,6 +252,9 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
      */
     private MotionEvent mLastActiveDeviceMotionEvent = null;
 
+    @Nullable
+    private final AccessibilityInputDebugger mInputDebugger;
+
     private static MotionEvent cancelMotion(MotionEvent event) {
         if (event.getActionMasked() == MotionEvent.ACTION_CANCEL
                 || event.getActionMasked() == MotionEvent.ACTION_HOVER_EXIT
@@ -313,6 +317,10 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mEventHandler = eventHandler;
         mMagnificationGestureHandler = magnificationGestureHandler;
+        // Enable debugger only for debug builds or when debug logging is active.
+        mInputDebugger = (DEBUG || Build.isDebuggable())
+                ? new AccessibilityInputDebugger()
+                : null;
     }
 
     @Override
@@ -323,6 +331,9 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         mInstalled = true;
         disableFeatures(/* featuresToBeEnabled= */ FLAG_FEATURE_NONE);
         enableFeatures();
+        if (mInputDebugger != null) {
+            mInputDebugger.clearCachedEvents();
+        }
         mAms.onInputFilterInstalled(true);
         super.onInstalled();
     }
@@ -334,13 +345,15 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
         mInstalled = false;
         disableFeatures(/* featuresToBeEnabled= */ FLAG_FEATURE_NONE);
+        if (mInputDebugger != null) {
+            mInputDebugger.clearCachedEvents();
+        }
         mAms.onInputFilterInstalled(false);
         super.onUninstalled();
     }
 
     void onDisplayAdded(@NonNull Display display) {
         enableFeaturesForDisplayIfInstalled(display);
-
     }
 
     void onDisplayRemoved(int displayId) {
@@ -366,7 +379,25 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
             }
         }
 
+        if (mInputDebugger != null) {
+            mInputDebugger.onReceiveEvent(event);
+        }
         onInputEventInternal(event, policyFlags);
+    }
+
+    @Override
+    public void sendInputEvent(InputEvent event, int policyFlags) {
+        if (mInputDebugger != null) {
+            mInputDebugger.onSendEvent(event);
+        }
+        super.sendInputEvent(event, policyFlags);
+    }
+
+    @Override
+    public void onSendInputEventException(Exception exception) {
+        if (mInputDebugger != null) {
+            mInputDebugger.onSendEventException(exception);
+        }
     }
 
     private void onInputEventInternal(InputEvent event, int policyFlags) {
