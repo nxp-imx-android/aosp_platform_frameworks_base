@@ -25,6 +25,7 @@ message TaskContinuityMessage {
     oneof data {
         ContinuityDeviceConnected device_connected = 1;
         RemoteTaskAddedMessage remote_task_added_message = 2;
+        RemoteTaskRemovedMessage remote_task_removed = 3;
     }
 }
 
@@ -42,4 +43,8 @@ message RemoteTaskInfo {
     string label = 2;
     int64 lastUsedTimeMillis = 3;
     bytes taskIcon = 4;
+}
+
+message RemoteTaskRemovedMessage {
+    int32 taskId = 1;
 }

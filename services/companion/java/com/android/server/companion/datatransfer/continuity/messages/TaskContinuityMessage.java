@@ -54,6 +54,13 @@ public final class TaskContinuityMessage {
                     mData = new RemoteTaskAddedMessage(pis);
                     pis.end(remoteTaskAddedMessageToken);
                     break;
+                case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
+                    final long remoteTaskRemovedToken = pis.start(
+                        android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED
+                    );
+                    mData = RemoteTaskRemovedMessage.readFromProto(pis);
+                    pis.end(remoteTaskRemovedToken);
+                    break;
             }
         }
     }
@@ -86,6 +93,13 @@ public final class TaskContinuityMessage {
 
                 remoteTaskAddedMessage.writeToProto(pos);
                 pos.end(remoteTaskAddedMessageToken);
+                break;
+            case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
+                long remoteTaskRemovedToken = pos.start(
+                    android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED
+                );
+                remoteTaskRemovedMessage.writeToProto(pos);
+                pos.end(remoteTaskRemovedToken);
                 break;
             default:
                 break;
