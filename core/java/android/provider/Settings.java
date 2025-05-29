@@ -8818,6 +8818,19 @@ public final class Settings {
                 "suggested_theme_feature_enabled";
 
         /**
+         * Setting to indicate whether the AppFunction agent allowlist should be enabled.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Enabled (Default)
+         * </ul>
+         *
+         * @hide
+         */
+        public static final String APP_FUNCTION_AGENT_ALLOWLIST_ENABLED =
+                "app_function_agent_allowlist_enabled";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide

@@ -813,7 +813,8 @@ public class SettingsBackupTest {
                  Settings.Secure.PACK_THEME_FEATURE_ENABLED,
                  Settings.Secure.SUGGESTED_THEME_FEATURE_ENABLED,
                  Settings.Secure.REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI,
-                 Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME);
+                 Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME,
+                 Settings.Secure.APP_FUNCTION_AGENT_ALLOWLIST_ENABLED);
 
     @Test
     public void systemSettingsBackedUpOrDenied() {
