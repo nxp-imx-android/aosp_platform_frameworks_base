@@ -538,8 +538,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
 
     /** Returns whether split shade is enabled and an x coordinate is outside of the QS frame. */
     private boolean isSplitShadeAndTouchXOutsideQs(float touchX) {
-        return mSplitShadeEnabled && touchX < mQsFrame.getX()
-                || touchX > mQsFrame.getX() + mQsFrame.getWidth();
+        return mSplitShadeEnabled
+                && (touchX < mQsFrame.getX() || touchX > mQsFrame.getX() + mQsFrame.getWidth());
     }
 
     /**
