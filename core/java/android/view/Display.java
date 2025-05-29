@@ -1675,11 +1675,37 @@ public final class Display {
     @TestApi
     @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
     public void setUserPreferredDisplayMode(@NonNull Display.Mode mode) {
+        setUserPreferredDisplayMode(mode, true);
+    }
+
+    /**
+     * Sets the default {@link Display.Mode} to use for the display.  The display mode includes
+     * preference for resolution and refresh rate.
+     * If the mode specified is not supported by the display, then no mode change occurs.
+     *
+     * @param mode The {@link Display.Mode} to set, which can include resolution and/or
+     * refresh-rate. It is created using {@link Display.Mode.Builder}.
+     * @param storeMode controls if the mode should be persisted or not.
+     *`
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
+    public void setUserPreferredDisplayMode(@NonNull Display.Mode mode, boolean storeMode) {
         // Create a new object containing default values for the unused fields like mode ID and
         // alternative refresh rates.
         Display.Mode preferredMode = new Display.Mode(mode.getPhysicalWidth(),
                 mode.getPhysicalHeight(), mode.getRefreshRate());
-        mGlobal.setUserPreferredDisplayMode(mDisplayId, preferredMode);
+        mGlobal.setUserPreferredDisplayMode(mDisplayId, preferredMode, storeMode);
+    }
+
+    /**
+     * Resets the default {@link Display.Mode} to use for the display from persistence.
+     *`
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
+    public void resetUserPreferredDisplayMode() {
+        mGlobal.resetUserPreferredDisplayMode(mDisplayId);
     }
 
     /**

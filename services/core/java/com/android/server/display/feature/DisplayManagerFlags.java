@@ -300,6 +300,11 @@ public class DisplayManagerFlags {
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
     );
 
+    private final FlagState mModeSwitchWithoutSaving = new FlagState(
+            Flags.FLAG_MODE_SWITCH_WITHOUT_SAVING,
+            Flags::modeSwitchWithoutSaving
+    );
+
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
      */
@@ -637,6 +642,10 @@ public class DisplayManagerFlags {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
 
+    public boolean isModeSwitchWithoutSavingEnabled() {
+        return mModeSwitchWithoutSaving.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -698,6 +707,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
+        pw.println(" " + mModeSwitchWithoutSaving);
     }
 
     private static class FlagState {

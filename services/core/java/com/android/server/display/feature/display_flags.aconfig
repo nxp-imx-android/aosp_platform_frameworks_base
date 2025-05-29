@@ -540,3 +540,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "mode_switch_without_saving"
+    namespace: "display_manager"
+    description: "New hidden API allowing to switch mode without persisting"
+    bug: "253296253"
+    is_fixed_read_only: true
+}
