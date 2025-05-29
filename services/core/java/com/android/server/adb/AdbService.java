@@ -162,20 +162,6 @@ public class AdbService extends IAdbManager.Stub {
             mContentResolver.registerContentObserver(
                     Settings.Global.getUriFor(Settings.Global.ADB_WIFI_ENABLED),
                     false, mObserver);
-
-            /*
-             * The observer will only trigger when the value *changes*.
-             * We need to initialize the state according to the current setting value.
-             */
-            if (Settings.Global.getInt(mContentResolver,
-                                       Settings.Global.ADB_ENABLED, 0) != 0) {
-                mObserver.setInitialAdbState(true, AdbTransportType.USB);
-            }
-
-            if (Settings.Global.getInt(mContentResolver,
-                                       Settings.Global.ADB_WIFI_ENABLED, 0) != 0) {
-                mObserver.setInitialAdbState(true, AdbTransportType.WIFI);
-            }
         } catch (Exception e) {
             Slog.e(TAG, "Error in registerContentObservers", e);
         }
@@ -211,10 +197,6 @@ public class AdbService extends IAdbManager.Stub {
                 setAdbEnabled(shouldEnable, AdbTransportType.WIFI);
             }
         }
-
-        private void setInitialAdbState(boolean enable, byte transportType) {
-            setAdbEnabled(enable, transportType);
-        }
     }
 
     private static final String TAG = AdbService.class.getSimpleName();
@@ -239,7 +221,7 @@ public class AdbService extends IAdbManager.Stub {
     private boolean mIsAdbWifiEnabled;
     private final AdbDebuggingManager mDebuggingManager;
 
-    private AdbSettingsObserver mObserver;
+    private ContentObserver mObserver;
 
     private AdbService(Context context) {
         mContext = context;
