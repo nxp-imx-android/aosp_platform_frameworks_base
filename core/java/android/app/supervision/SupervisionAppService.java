@@ -50,9 +50,9 @@ public class SupervisionAppService extends Service {
                 @Override
                 public void onSetSupervisionEnabled(int userId, boolean enabled) {
                     if (enabled) {
-                        SupervisionAppService.this.onEnabled();
+                        SupervisionAppService.this.onSupervisionEnabled();
                     } else {
-                        SupervisionAppService.this.onDisabled();
+                        SupervisionAppService.this.onSupervisionDisabled();
                     }
                 }
             };
@@ -70,7 +70,7 @@ public class SupervisionAppService extends Service {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
-    public void onEnabled() {}
+    public void onSupervisionEnabled() {}
 
     /**
      * Called when supervision is disabled.
@@ -79,5 +79,5 @@ public class SupervisionAppService extends Service {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
-    public void onDisabled() {}
+    public void onSupervisionDisabled() {}
 }
