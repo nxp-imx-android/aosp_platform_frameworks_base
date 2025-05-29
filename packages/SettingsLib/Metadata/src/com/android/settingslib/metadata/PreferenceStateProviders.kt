@@ -39,6 +39,18 @@ interface PreferenceTitleProvider {
 }
 
 /**
+ * Provides preference title to be shown in search result.
+ *
+ * This is used to add more context to the title, and it is effective only when building indexable
+ * data in [PreferenceSearchIndexablesProvider].
+ */
+interface PreferenceIndexableTitleProvider {
+
+    /** Provides preference indexable title. */
+    fun getIndexableTitle(context: Context): CharSequence?
+}
+
+/**
  * Interface to provide dynamic preference summary.
  *
  * Implement this interface implies that the preference summary should not be cached for indexing.

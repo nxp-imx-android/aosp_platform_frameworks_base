@@ -64,7 +64,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         val start = SystemClock.elapsedRealtime()
         val context = requireContext()
         context.visitPreferenceScreen { preferenceScreenMetadata ->
-            val screenTitle = preferenceScreenMetadata.getPreferenceScreenTitle(context)
+            val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
             fun PreferenceHierarchyNode.visitRecursively(isParentAvailableOnCondition: Boolean) {
                 if (!metadata.isAvailable(context)) return
                 val isAvailableOnCondition =
@@ -94,7 +94,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         val start = SystemClock.elapsedRealtime()
         val context = requireContext()
         context.visitPreferenceScreen { preferenceScreenMetadata ->
-            val screenTitle = preferenceScreenMetadata.getPreferenceScreenTitle(context)
+            val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
             fun PreferenceHierarchyNode.visitRecursively() {
                 if (metadata.isAvailableOnCondition) return
                 if (
@@ -141,7 +141,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         val intent = preferenceScreenMetadata.getLaunchIntent(context, this) ?: return null
         val columnValues = arrayOfNulls<Any>(SearchIndexablesContract.INDEXABLES_RAW_COLUMNS.size)
 
-        columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_TITLE] = getPreferenceTitle(context)
+        columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_TITLE] = getIndexableTitle(context)
         columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_KEYWORDS] = getKeywords(context)
         columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_SCREEN_TITLE] = screenTitle
         val iconResId = getPreferenceIcon(context)
@@ -160,6 +160,18 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         }
         return columnValues
     }
+
+    private fun PreferenceScreenMetadata.getIndexableTitle(context: Context) =
+        when (this) {
+            is PreferenceIndexableTitleProvider -> getIndexableTitle(context)
+            else -> getPreferenceScreenTitle(context)
+        }
+
+    private fun PreferenceMetadata.getIndexableTitle(context: Context) =
+        when (this) {
+            is PreferenceIndexableTitleProvider -> getIndexableTitle(context)
+            else -> getPreferenceTitle(context)
+        }
 
     private fun PreferenceMetadata.getKeywords(context: Context) =
         if (keywords != 0) context.getString(keywords) else null
