@@ -87,14 +87,11 @@ status_t android_hardware_display_DisplayTopologyAdjacentDisplay_toNative(
 
 status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
         JNIEnv* env, jobject nodeObj,
-        std::unordered_map<ui::LogicalDisplayId, std::vector<DisplayTopologyAdjacentDisplay>>&
-                graph,
-        std::unordered_map<ui::LogicalDisplayId, int>& displaysDensity,
-        std::unordered_map<ui::LogicalDisplayId, FloatRect>& displayBoundsDp) {
+        std::unordered_map<ui::LogicalDisplayId, DisplayTopologyGraph::Properties>& topologyGraph) {
     ui::LogicalDisplayId displayId = ui::LogicalDisplayId{
             env->GetIntField(nodeObj, gDisplayTopologyGraphNodeClassInfo.displayId)};
 
-    displaysDensity[displayId] =
+    topologyGraph[displayId].density =
             env->GetIntField(nodeObj, gDisplayTopologyGraphNodeClassInfo.density);
 
     ScopedLocalRef<jobject> displayBounds(env,
@@ -102,7 +99,8 @@ status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
                                                               gDisplayTopologyGraphNodeClassInfo
                                                                       .boundsInGlobalDp));
     android_hardware_display_DisplayTopologyDisplayBounds_toNative(env, displayBounds.get(),
-                                                                   &displayBoundsDp[displayId]);
+                                                                   &topologyGraph[displayId]
+                                                                            .boundsInGlobalDp);
 
     jobjectArray adjacentDisplaysArray = static_cast<jobjectArray>(
             env->GetObjectField(nodeObj, gDisplayTopologyGraphNodeClassInfo.adjacentDisplays));
@@ -121,7 +119,7 @@ status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
                                                                              adjacentDisplayObj
                                                                                      .get(),
                                                                              &adjacentDisplay);
-            graph[displayId].push_back(adjacentDisplay);
+            topologyGraph[displayId].adjacentDisplays.push_back(adjacentDisplay);
         }
     }
     return OK;
@@ -129,10 +127,7 @@ status_t android_hardware_display_DisplayTopologyGraphNode_toNative(
 
 base::Result<const DisplayTopologyGraph> android_hardware_display_DisplayTopologyGraph_toNative(
         JNIEnv* env, jobject topologyObj) {
-    std::unordered_map<ui::LogicalDisplayId, std::vector<DisplayTopologyAdjacentDisplay>>
-            topologyGraph;
-    std::unordered_map<ui::LogicalDisplayId, int> displaysDensity;
-    std::unordered_map<ui::LogicalDisplayId, FloatRect> absoluteDisplayBoundsDp;
+    std::unordered_map<ui::LogicalDisplayId, DisplayTopologyGraph::Properties> topologyGraph;
     ui::LogicalDisplayId primaryDisplayId = ui::LogicalDisplayId{
             env->GetIntField(topologyObj, gDisplayTopologyGraphClassInfo.primaryDisplayId)};
 
@@ -148,15 +143,10 @@ base::Result<const DisplayTopologyGraph> android_hardware_display_DisplayTopolog
             }
 
             android_hardware_display_DisplayTopologyGraphNode_toNative(env, nodeObj.get(),
-                                                                       /*byRef*/ topologyGraph,
-                                                                       /*byRef*/ displaysDensity,
-                                                                       /*byRef*/
-                                                                       absoluteDisplayBoundsDp);
+                                                                       /*byRef*/ topologyGraph);
         }
     }
-    return DisplayTopologyGraph::create(primaryDisplayId, std::move(topologyGraph),
-                                        std::move(displaysDensity),
-                                        std::move(absoluteDisplayBoundsDp));
+    return DisplayTopologyGraph::create(primaryDisplayId, std::move(topologyGraph));
 }
 
 // ----------------------------------------------------------------------------
