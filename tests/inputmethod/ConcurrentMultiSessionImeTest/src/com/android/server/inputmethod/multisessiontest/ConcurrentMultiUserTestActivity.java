@@ -43,7 +43,7 @@ import com.android.compatibility.common.util.concurrentuser.ConcurrentUserActivi
 /**
  * An {@link Activity} to test multiple concurrent session IME.
  */
-public final class MainActivity extends ConcurrentUserActivityBase {
+public final class ConcurrentMultiUserTestActivity extends ConcurrentUserActivityBase {
     private static final String TAG = ConcurrentMultiUserTest.class.getSimpleName();
     private static final long WAIT_IME_TIMEOUT_MS = 3000;
 
@@ -55,7 +55,7 @@ public final class MainActivity extends ConcurrentUserActivityBase {
         Log.v(TAG, "Create MainActivity as user "
                 + Process.myUserHandle().getIdentifier() + " on display "
                 + getDisplay().getDisplayId());
-        setContentView(R.layout.main_activity);
+        setContentView(R.layout.concurrent_multi_user_test_activity);
         mEditor = requireViewById(R.id.edit_text);
     }
 

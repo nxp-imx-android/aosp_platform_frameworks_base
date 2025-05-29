@@ -49,6 +49,8 @@ import androidx.test.core.app.ActivityScenario;
 
 import com.android.bedstead.harrier.BedsteadJUnit4;
 import com.android.bedstead.harrier.DeviceState;
+import com.android.bedstead.harrier.annotations.RequireAutomotive;
+import com.android.bedstead.multiuser.annotations.RequireVisibleBackgroundUsers;
 import com.android.compatibility.common.util.SystemUtil;
 
 import org.junit.After;
@@ -63,6 +65,9 @@ import java.io.IOException;
 import java.util.List;
 
 @RunWith(BedsteadJUnit4.class)
+@RequireVisibleBackgroundUsers(reason = "This test requires a background visible user in addition"
+        + " to the current visible user to test concurrent multi-user IME scenarios")
+@RequireAutomotive(reason = "Visible background users are currently only supported on automotive")
 public final class ConcurrentMultiUserTest {
 
     @ClassRule
@@ -71,14 +76,14 @@ public final class ConcurrentMultiUserTest {
 
     private static final ComponentName TEST_ACTIVITY = new ComponentName(
             getInstrumentation().getTargetContext().getPackageName(),
-            MainActivity.class.getName());
+            ConcurrentMultiUserTestActivity.class.getName());
     private final Context mContext = getInstrumentation().getTargetContext();
     private final InputMethodManager mInputMethodManager =
             mContext.getSystemService(InputMethodManager.class);
     private final UiAutomation mUiAutomation = getInstrumentation().getUiAutomation();
 
-    private ActivityScenario<MainActivity> mActivityScenario;
-    private MainActivity mActivity;
+    private ActivityScenario<ConcurrentMultiUserTestActivity> mActivityScenario;
+    private ConcurrentMultiUserTestActivity mActivity;
     private int mPeerUserId;
 
     @Before
@@ -88,7 +93,7 @@ public final class ConcurrentMultiUserTest {
         launchActivityAsUserSync(TEST_ACTIVITY, mPeerUserId);
 
         // Launch driver activity.
-        mActivityScenario = ActivityScenario.launch(MainActivity.class);
+        mActivityScenario = ActivityScenario.launch(ConcurrentMultiUserTestActivity.class);
         mActivityScenario.onActivity(activity -> mActivity = activity);
         mUiAutomation.adoptShellPermissionIdentity(INTERACT_ACROSS_USERS_FULL);
     }
