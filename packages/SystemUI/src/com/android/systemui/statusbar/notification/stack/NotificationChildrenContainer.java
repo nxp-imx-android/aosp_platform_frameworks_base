@@ -96,11 +96,6 @@ public class NotificationChildrenContainer extends ViewGroup
         }
     }.setDuration(200);
     private static final SourceType FROM_PARENT = SourceType.from("FromParent(NCC)");
-    /**
-     * Temporary "flag" for a hack that works around an issue where isRemoved is always false for
-     * rows.
-     */
-    private static final boolean USE_IS_CHANGING_POSITION_TO_RESTORE = true;
 
     private final List<View> mDividers = new ArrayList<>();
     private final List<ExpandableNotificationRow> mAttachedChildren = new ArrayList<>();
@@ -423,23 +418,12 @@ public class NotificationChildrenContainer extends ViewGroup
         row.setSystemChildExpanded(false);
         row.setNotificationFaded(false);
         row.setUserLocked(false);
-        if (shouldRestoreChild(row)) {
+        if (!row.isRemoved()) {
             mGroupingUtil.restoreChildNotification(row);
         }
 
         row.requestRoundnessReset(FROM_PARENT, /* animate = */ false);
         applyRoundnessAndInvalidate();
-    }
-
-    private static boolean shouldRestoreChild(ExpandableNotificationRow row) {
-        // TODO: b/417457086 - We're only checking for isChangingPosition here as a quick-and-dirty
-        //  fix for b/415665263, but the real issue is that isRemoved is currently ALWAYS false.
-        //  We need to fix that behind a flag, so this hack is temporary.
-        if (USE_IS_CHANGING_POSITION_TO_RESTORE) {
-            return !row.isRemoved() && row.isChangingPosition();
-        } else {
-            return !row.isRemoved();
-        }
     }
 
     /**
