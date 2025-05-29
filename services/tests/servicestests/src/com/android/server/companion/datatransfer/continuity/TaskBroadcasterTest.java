@@ -24,6 +24,7 @@ import static org.mockito.Mockito.never;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.ActivityManager;
@@ -31,6 +32,7 @@ import android.app.ActivityTaskManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.companion.AssociationInfo;
 import android.companion.IOnTransportsChangedListener;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
@@ -151,7 +153,8 @@ public class TaskBroadcasterTest {
             .thenReturn(Arrays.asList(taskInfo));
 
         // Add a new transport
-        mTaskBroadcaster.onTransportConnected(1);
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        mTaskBroadcaster.onTransportConnected(associationInfo);
 
         // Verify the message is sent.
         ArgumentCaptor<byte[]> messageCaptor
@@ -180,8 +183,9 @@ public class TaskBroadcasterTest {
         // Start broadcasting.
         mTaskBroadcaster.startBroadcasting();
         verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
+        AssociationInfo associationInfo = createAssociationInfo(1, "name1");
         when(mMockConnectedAssociationStore.getConnectedAssociations())
-            .thenReturn(new HashSet<>(Arrays.asList(1)));
+            .thenReturn(Arrays.asList(associationInfo));
 
         // Define a new task.
         String taskLabel = "newTask";

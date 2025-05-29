@@ -27,16 +27,14 @@ import java.util.List;
 class RemoteDeviceTaskList {
     private final int mAssociationId;
     private final String mDeviceName;
-    private List<RemoteTaskInfo> mTasks;
+    private final List<RemoteTaskInfo> mTasks = new ArrayList<>();
 
     RemoteDeviceTaskList(
         int associationId,
-        String deviceName,
-        List<RemoteTaskInfo> tasks) {
+        String deviceName) {
 
         mAssociationId = associationId;
         mDeviceName = deviceName;
-        mTasks = new ArrayList<>(tasks);
     }
 
     /**
@@ -59,6 +57,14 @@ class RemoteDeviceTaskList {
      */
     void addTask(RemoteTaskInfo taskInfo) {
         mTasks.add(taskInfo);
+    }
+
+    /**
+     * Sets the list of tasks currently available on the remote device.
+     */
+    void setTasks(List<RemoteTaskInfo> tasks) {
+        mTasks.clear();
+        mTasks.addAll(tasks);
     }
 
     /**

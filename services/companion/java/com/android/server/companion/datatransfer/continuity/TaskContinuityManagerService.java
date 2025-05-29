@@ -53,7 +53,7 @@ public final class TaskContinuityManagerService extends SystemService {
             mConnectedAssociationStore);
 
         mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
-        mRemoteTaskStore = new RemoteTaskStore();
+        mRemoteTaskStore = new RemoteTaskStore(mConnectedAssociationStore);
     }
 
     @Override
@@ -76,10 +76,8 @@ public final class TaskContinuityManagerService extends SystemService {
 
         switch (taskContinuityMessage.getData()) {
             case ContinuityDeviceConnected continuityDeviceConnected:
-                // TODO: joeantonetti - Extract a readable device name and pass it to the store.
-                mRemoteTaskStore.registerDevice(
+                mRemoteTaskStore.setTasks(
                     associationId,
-                    String.format("device-%d", associationId),
                     continuityDeviceConnected.getRemoteTasks());
                 break;
             default:

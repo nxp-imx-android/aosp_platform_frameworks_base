@@ -17,6 +17,7 @@
 package com.android.server.companion.datatransfer.continuity;
 
 import android.app.ActivityManager;
+import android.companion.AssociationInfo;
 
 public final class TaskContinuityTestUtils {
 
@@ -30,5 +31,11 @@ public final class TaskContinuityTestUtils {
         taskInfo.taskDescription = new ActivityManager.TaskDescription(label);
         taskInfo.lastActiveTime = lastActiveTime;
         return taskInfo;
+    }
+
+    public static AssociationInfo createAssociationInfo(int id, String displayName) {
+        return new AssociationInfo.Builder(id, 0, "com.android.test")
+            .setDisplayName(displayName)
+            .build();
     }
 }

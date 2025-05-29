@@ -24,6 +24,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
 
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
@@ -48,6 +49,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -95,70 +97,66 @@ public class ConnectedAssociationStoreTest {
     @Test
     public void testOnTransportConnected_notifyObserver() throws RemoteException {
         // Simulate a new association connected.
-        int associationId = 1;
-        notifyTransportsChanged(
-                Arrays.asList(createAssociationInfo(associationId)));
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        notifyTransportsChanged(Arrays.asList(associationInfo));
 
         // Verify the observer is notified.
-        verify(mMockObserver).onTransportConnected(associationId);
-        verify(mMockObserver, never()).onTransportDisconnected(associationId);
+        verify(mMockObserver).onTransportConnected(associationInfo);
+        verify(mMockObserver, never()).onTransportDisconnected(associationInfo.getId());
     }
 
     @Test
     public void testOnTransportDisconnected_notifyObserver() throws RemoteException {
         // Start with an association connected.
-        int associationId = 1;
-        notifyTransportsChanged(
-                Arrays.asList(createAssociationInfo(associationId)));
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        notifyTransportsChanged(Arrays.asList(associationInfo));
 
         // Simulate the association being disconnected.
         notifyTransportsChanged(Collections.emptyList());
 
         // Verify the observer is notified of the disconnection.
-        verify(mMockObserver).onTransportDisconnected(associationId);
+        verify(mMockObserver).onTransportDisconnected(associationInfo.getId());
     }
 
     @Test
     public void testOnTransportChanged_noChange_noNotification() throws RemoteException {
         // Start with an association connected.
-        int associationId = 1;
-        notifyTransportsChanged(
-                Arrays.asList(createAssociationInfo(associationId)));
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        notifyTransportsChanged(Arrays.asList(associationInfo));
 
         // Simulate the same association still connected.
-        notifyTransportsChanged(
-                Arrays.asList(createAssociationInfo(associationId)));
+        notifyTransportsChanged(Arrays.asList(associationInfo));
 
         // Verify the observer is only notified once for the initial connection.
-        verify(mMockObserver, times(1)).onTransportConnected(associationId);
-        verify(mMockObserver, never()).onTransportDisconnected(associationId);
+        verify(mMockObserver, times(1)).onTransportConnected(associationInfo);
+        verify(mMockObserver, never()).onTransportDisconnected(associationInfo.getId());
     }
 
     @Test
     public void testGetConnectedAssociations() throws RemoteException {
         // Connect two associations.
-        int associationId1 = 1;
-        int associationId2 = 2;
-        notifyTransportsChanged(
-                Arrays.asList(
-                        createAssociationInfo(associationId1),
-                        createAssociationInfo(associationId2)));
+        AssociationInfo associationInfo1 = createAssociationInfo(1, "name");
+        AssociationInfo associationInfo2 = createAssociationInfo(2, "name");
+        notifyTransportsChanged(Arrays.asList(associationInfo1, associationInfo2));
 
         // Verify that getConnectedAssociations returns the correct set.
-        Set<Integer> connectedAssociations
+        Collection<AssociationInfo> connectedAssociations
             = mConnectedAssociationStore.getConnectedAssociations();
         assertThat(connectedAssociations)
-            .containsExactly(associationId1, associationId2);
+            .containsExactly(associationInfo1, associationInfo2);
+
+        AssociationInfo result
+            = mConnectedAssociationStore.getConnectedAssociationById(1);
+        assertThat(result).isEqualTo(associationInfo1);
 
         // Disconnect one association.
         notifyTransportsChanged(
-                Arrays.asList(createAssociationInfo(associationId1)));
+                Arrays.asList(associationInfo1));
 
         // Verify that getConnectedAssociations returns the updated set.
-        connectedAssociations
-            = mConnectedAssociationStore.getConnectedAssociations();
+        connectedAssociations = mConnectedAssociationStore.getConnectedAssociations();
 
-        assertThat(connectedAssociations).containsExactly(associationId1);
+        assertThat(connectedAssociations).containsExactly(associationInfo1);
     }
 
     @Test
@@ -170,12 +168,12 @@ public class ConnectedAssociationStoreTest {
         mConnectedAssociationStore.addObserver(newMockObserver);
 
         // Simulate a new association connected.
-        int associationId = 1;
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
         notifyTransportsChanged(
-            Arrays.asList(createAssociationInfo(associationId)));
+            Arrays.asList(associationInfo));
 
         // Verify the new observer is notified.
-        verify(newMockObserver).onTransportConnected(associationId);
+        verify(newMockObserver).onTransportConnected(associationInfo);
 
         // Remove the new observer
         mConnectedAssociationStore.removeObserver(newMockObserver);
@@ -184,9 +182,9 @@ public class ConnectedAssociationStoreTest {
         notifyTransportsChanged(Collections.emptyList());
 
         // Verify the removed observer is not notified.
-        verify(newMockObserver, never()).onTransportDisconnected(associationId);
+        verify(newMockObserver, never()).onTransportDisconnected(associationInfo.getId());
         // But the original observer is still notified
-        verify(mMockObserver).onTransportDisconnected(associationId);
+        verify(mMockObserver).onTransportDisconnected(associationInfo.getId());
     }
 
     private void notifyTransportsChanged(
@@ -194,11 +192,5 @@ public class ConnectedAssociationStoreTest {
 
         mListenerCaptor.getValue().onTransportsChanged(associationInfos);
         TestableLooper.get(this).processAllMessages();
-    }
-
-    private AssociationInfo createAssociationInfo(int associationId) {
-        return new AssociationInfo.Builder(associationId, 0, "test_device_mac_address")
-                .setDisplayName("test_device_name")
-                .build();
     }
 }

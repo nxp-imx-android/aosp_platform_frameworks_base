@@ -21,6 +21,7 @@ import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.TaskStackListener;
+import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,6 +36,7 @@ import com.android.server.companion.datatransfer.continuity.messages.TaskContinu
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -97,12 +99,11 @@ class TaskBroadcaster
     }
 
     @Override
-    public void onTransportConnected(int associationId) {
+    public void onTransportConnected(AssociationInfo associationInfo) {
         Slog.v(
             TAG,
-            "Transport connected for association id: " + associationId);
-
-        sendDeviceConnectedMessage(associationId);
+            "Transport connected for association id: " + associationInfo.getId());
+        sendDeviceConnectedMessage(associationInfo.getId());
     }
 
     @Override
@@ -178,15 +179,15 @@ class TaskBroadcaster
     private void sendMessageToAllConnectedAssociations(
         TaskContinuityMessageData data) {
 
-        Set<Integer> connectedAssociations
+        Collection<AssociationInfo> connectedAssociations
             = mConnectedAssociationStore.getConnectedAssociations();
 
         Slog.v(
             TAG,
             "Sending message to " + connectedAssociations.size() + " associations.");
 
-        for (Integer associationId : connectedAssociations) {
-            sendMessage(associationId, data);
+        for (AssociationInfo associationInfo : connectedAssociations) {
+            sendMessage(associationInfo.getId(), data);
         }
     }
 

@@ -15,6 +15,10 @@
  */
 package com.android.server.companion.datatransfer.continuity.tasks;
 
+import android.companion.AssociationInfo;
+import android.util.Slog;
+
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import java.util.ArrayList;
@@ -22,28 +26,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RemoteTaskStore {
+public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
+
+    private static final String TAG = "RemoteTaskStore";
+
+    private final ConnectedAssociationStore mConnectedAssociationStore;
     private final Map<Integer, RemoteDeviceTaskList> mRemoteDeviceTaskLists
         = new HashMap<>();
 
-    public RemoteTaskStore() {}
+    public RemoteTaskStore(
+        ConnectedAssociationStore connectedAssociationStore) {
+
+        mConnectedAssociationStore = connectedAssociationStore;
+        mConnectedAssociationStore.addObserver(this);
+    }
 
     /**
-     * Registers a device with the task store.
+     * Sets the task list of the given association id to the given tasks.
      *
-     * @param associationId The ID of the device.
-     * @param deviceName The name of the device.
+     * @param associationId The association id of the device.
      * @param tasks The list of tasks currently available on the device on first
      * connection.
      */
-    public void registerDevice(
+    public void setTasks(
         int associationId,
-        String deviceName,
         List<RemoteTaskInfo> tasks) {
+        synchronized (mRemoteDeviceTaskLists) {
+            if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
+                Slog.e(
+                    TAG,
+                    "Attempted to set tasks for association: " + associationId + " which is not connected.");
 
-        RemoteDeviceTaskList taskList
-            = new RemoteDeviceTaskList(associationId, deviceName, tasks);
-        mRemoteDeviceTaskLists.put(associationId, taskList);
+                return;
+            }
+
+            mRemoteDeviceTaskLists.get(associationId).setTasks(tasks);
+        }
     }
 
     /**
@@ -53,13 +71,48 @@ public class RemoteTaskStore {
      * store.
      */
     public List<RemoteTaskInfo> getMostRecentTasks() {
-        List<RemoteTaskInfo> mostRecentTasks = new ArrayList<>();
-        for (RemoteDeviceTaskList taskList : mRemoteDeviceTaskLists.values()) {
-            RemoteTaskInfo mostRecentTask = taskList.getMostRecentTask();
-            if (mostRecentTask != null) {
-                mostRecentTasks.add(mostRecentTask);
+        synchronized (mRemoteDeviceTaskLists) {
+            List<RemoteTaskInfo> mostRecentTasks = new ArrayList<>();
+            for (RemoteDeviceTaskList taskList : mRemoteDeviceTaskLists.values()) {
+                RemoteTaskInfo mostRecentTask = taskList.getMostRecentTask();
+                if (mostRecentTask != null) {
+                    mostRecentTasks.add(mostRecentTask);
+                }
+            }
+            return mostRecentTasks;
+        }
+    }
+
+    @Override
+    public void onTransportConnected(AssociationInfo associationInfo) {
+        synchronized (mRemoteDeviceTaskLists) {
+            if (!mRemoteDeviceTaskLists.containsKey(associationInfo.getId())) {
+                Slog.v(
+                    TAG,
+                    "Creating new RemoteDeviceTaskList for association: " + associationInfo.getId());
+
+                RemoteDeviceTaskList taskList
+                    = new RemoteDeviceTaskList(
+                        associationInfo.getId(),
+                        associationInfo.getDisplayName().toString());
+
+                mRemoteDeviceTaskLists.put(associationInfo.getId(), taskList);
+            } else {
+                Slog.v(
+                    TAG,
+                    "Transport already connected for association: " + associationInfo.getId());
             }
         }
-        return mostRecentTasks;
+    }
+
+    @Override
+    public void onTransportDisconnected(int associationId) {
+        synchronized (mRemoteDeviceTaskLists) {
+            Slog.v(
+                TAG,
+                "Deleting RemoteDeviceTaskList for association: " + associationId);
+
+            mRemoteDeviceTaskLists.remove(associationId);
+        }
     }
 }

@@ -17,74 +17,109 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.ActivityManager;
+import android.companion.AssociationInfo;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
 public class RemoteTaskStoreTest {
 
+    @Mock
+    private ConnectedAssociationStore mMockConnectedAssociationStore;
+
     private RemoteTaskStore taskStore;
 
     @Before
     public void setUp() {
-        taskStore = new RemoteTaskStore();
+        MockitoAnnotations.initMocks(this);
+
+        taskStore = new RemoteTaskStore(mMockConnectedAssociationStore);
     }
 
     @Test
-    public void testRegisterDevice_addsDeviceToStore() {
-        RemoteTaskInfo expectedTask = createNewRemoteTaskInfo("task1", 100);
-
-        taskStore.registerDevice(0, "device name", Arrays.asList(expectedTask));
-
-        assertThat(taskStore.getMostRecentTasks()).containsExactly(expectedTask);
+    public void constructor_registersObserver() {
+        verify(mMockConnectedAssociationStore, times(1))
+            .addObserver(taskStore);
     }
 
     @Test
-    public void testGetMostRecentTasks_emptyStore_returnsEmptyList() {
-        assertThat(taskStore.getMostRecentTasks()).isEmpty();
-    }
+    public void onTransportConnected_addsNewAssociation() {
+        // Simulate a new association being connected.
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        taskStore.onTransportConnected(associationInfo);
 
-    @Test
-    public void testGetMostRecentTasks_multipleDevices_returnsMostRecentFromEach() {
-        RemoteTaskInfo expectedTaskFromDevice1 = createNewRemoteTaskInfo("task1", 100);
-        RemoteTaskInfo expectedTaskFromDevice2 = createNewRemoteTaskInfo("task2", 200);
+        // Add tasks to the new association.
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo("task1", 100L);
+        taskStore.setTasks(
+            associationInfo.getId(),
+            Collections.singletonList(remoteTaskInfo));
 
-        taskStore.registerDevice(
-            0,
-            "device1",
-            Arrays.asList(expectedTaskFromDevice1, createNewRemoteTaskInfo("task2", 1)));
-
-        taskStore.registerDevice(
-            1,
-            "device2",
-            Arrays.asList(expectedTaskFromDevice2, createNewRemoteTaskInfo("task2", 1)));
-
+        // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks())
-            .containsExactly(expectedTaskFromDevice1, expectedTaskFromDevice2);
+            .containsExactly(remoteTaskInfo);
     }
 
     @Test
-    public void testGetMostRecentTasks_deviceWithNoTasks_returnsEmptyList() {
-        taskStore.registerDevice(0, "device name", new ArrayList<>());
+    public void setTasks_doesNotAddADeviceIfNoInformationAvailable() {
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(0))
+            .thenReturn(null);
+
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo("task1", 100L);
+
+        // Add the task. Since ConnectedAssociationStore does not have this
+        // association, this should be ignored.
+        taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
     }
 
-    private RemoteTaskInfo createNewRemoteTaskInfo(String label, long lastUsedTimeMillis) {
+    @Test
+    public void onTransportDisconnected_removesAssociation() {
+        // Create a fake association info, and have connected association store
+        // return it.
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(1))
+                .thenReturn(associationInfo);
+
+        // Set tasks for the association.
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo("task1", 100L);
+        taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
+
+        // Simulate the association being disconnected.
+        taskStore.onTransportDisconnected(0);
+
+        // Verify the most recent task is added to the task store.
+        assertThat(taskStore.getMostRecentTasks()).isEmpty();
+    }
+
+    private RemoteTaskInfo createNewRemoteTaskInfo(
+        String label,
+        long lastUsedTimeMillis) {
+
         ActivityManager.RunningTaskInfo runningTaskInfo
             = createRunningTaskInfo(1, label, lastUsedTimeMillis);
 

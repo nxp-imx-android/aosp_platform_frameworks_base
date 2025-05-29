@@ -20,26 +20,26 @@ import android.annotation.NonNull;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class ConnectedAssociationStore {
 
     private static final String TAG = "ConnectedAssociationStore";
 
     private final CompanionDeviceManager mCompanionDeviceManager;
-    private final Set<Integer> mConnectedAssociations = new HashSet<>();
+    private final Map<Integer, AssociationInfo> mConnectedAssociations = new HashMap<>();
     private final List<Observer> mObservers = new ArrayList<>();
 
     public interface Observer {
-        void onTransportConnected(int associationId);
+        void onTransportConnected(AssociationInfo associationInfo);
         void onTransportDisconnected(int associationId);
     }
 
@@ -61,18 +61,22 @@ public class ConnectedAssociationStore {
         mObservers.remove(observer);
     }
 
-    public Set<Integer> getConnectedAssociations() {
-        return mConnectedAssociations;
+    public Collection<AssociationInfo> getConnectedAssociations() {
+        return mConnectedAssociations.values();
+    }
+
+    public AssociationInfo getConnectedAssociationById(int associationId) {
+        return mConnectedAssociations.get(associationId);
     }
 
     private void onTransportsChanged(List<AssociationInfo> associationInfos) {
         Set<Integer> removedAssociations
-            = new HashSet<>(mConnectedAssociations);
+            = new HashSet<>(mConnectedAssociations.keySet());
 
-        Set<Integer> addedAssociations = new HashSet<>();
+        Set<AssociationInfo> addedAssociations = new HashSet<>();
         for (AssociationInfo associationInfo : associationInfos) {
-            if (!mConnectedAssociations.contains(associationInfo.getId())) {
-                addedAssociations.add(associationInfo.getId());
+            if (!mConnectedAssociations.containsKey(associationInfo.getId())) {
+                addedAssociations.add(associationInfo);
             }
 
             if (removedAssociations.contains(associationInfo.getId())) {
@@ -80,23 +84,27 @@ public class ConnectedAssociationStore {
             }
         }
 
-        mConnectedAssociations.addAll(addedAssociations);
-        mConnectedAssociations.removeAll(removedAssociations);
-
         for (Integer associationId : removedAssociations) {
             Log.i(
                 TAG,
                 "Transport disconnected for association: " + associationId);
+
+            mConnectedAssociations.remove(associationId);
 
             for (Observer observer : mObservers) {
                 observer.onTransportDisconnected(associationId);
             }
         }
 
-        for (Integer associationId : addedAssociations) {
-            Log.i(TAG, "Transport connected for association: " + associationId);
+        for (AssociationInfo associationInfo : addedAssociations) {
+            Log.i(
+                TAG,
+                "Transport connected for association: " + associationInfo.getId());
+
+            mConnectedAssociations.put(associationInfo.getId(), associationInfo);
+
             for (Observer observer : mObservers) {
-                observer.onTransportConnected(associationId);
+                observer.onTransportConnected(associationInfo);
             }
         }
     }
