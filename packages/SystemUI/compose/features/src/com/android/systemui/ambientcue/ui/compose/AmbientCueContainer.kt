@@ -81,7 +81,7 @@ fun AmbientCueContainer(
                     visible = visible,
                     expanded = expanded,
                     onShouldInterceptTouches = onShouldInterceptTouches,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp),
+                    modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
             is PillStyleViewModel.ShortPillStyle -> {
@@ -207,7 +207,7 @@ private fun NavBarAmbientCue(
         navBarWidth = navBarWidth,
         visible = visible,
         expanded = expanded,
-        modifier = modifier,
+        modifier = modifier.padding(bottom = 4.dp),
         onClick = { viewModel.expand() },
         onCloseClick = { viewModel.hide() },
     )
