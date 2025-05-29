@@ -31,28 +31,20 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Permita que a app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; faça a gestão do dispositivo &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispositivo"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Esta app vai poder aceder a estas autorizações no seu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for title_app_streaming (237666000400427614) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
-    <skip />
-    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
-    <skip />
+    <string name="title_app_streaming" msgid="237666000400427614">"Permitir que a app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; faça stream de apps e funcionalidades do sistema entre o seu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> e o &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_app_streaming" msgid="8346968726357732862">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> vai ter as seguintes autorizações:"</string>
+    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"A app <xliff:g id="APP_NAME_0">%1$s</xliff:g> vai ter acesso a tudo o que seja visível ou reproduzido no seu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, incluindo áudio, fotos, informações de pagamento, palavras-passe e mensagens.&lt;br/&gt;&lt;br/&gt;A app <xliff:g id="APP_NAME_1">%1$s</xliff:g> vai poder fazer stream de apps para o <xliff:g id="DEVICE_NAME">%3$s</xliff:g> até remover o acesso a esta autorização."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> está a pedir autorização em nome do <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para fazer stream de apps e funcionalidades do sistema entre os seus dispositivos"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Permita que a app &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; aceda a estas informações do seu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> está a pedir autorização em nome do seu dispositivo <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para aceder às fotos, ao conteúdo multimédia e às notificações do seu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
-    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
-    <skip />
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Permitir que a app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; faça stream de apps e funcionalidades do sistema entre o seu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> e o &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> vai ter as seguintes autorizações:"</string>
+    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"A app <xliff:g id="APP_NAME_0">%1$s</xliff:g> vai ter acesso a tudo o que seja visível ou reproduzido no <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, incluindo áudio, fotos, informações de pagamento, palavras-passe e mensagens.&lt;br/&gt;&lt;br/&gt;A app <xliff:g id="APP_NAME_2">%1$s</xliff:g> vai poder fazer stream de apps para o <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> até remover o acesso a esta autorização."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> está a pedir autorização em nome do dispositivo <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para fazer stream de apps do seu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Permitir que a app &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; faça stream de áudio e funcionalidades do sistema entre o seu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> e o &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
-    <skip />
+    <string name="summary_virtual_device" msgid="1062189396947962635">"A app <xliff:g id="APP_NAME">%2$s</xliff:g> vai ter as seguintes autorizações:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"dispositivo"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Esta app vai poder sincronizar informações, como o nome do autor de uma chamada, entre o telemóvel e o dispositivo escolhido"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permitir"</string>
@@ -92,8 +84,7 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Enviar-lhe notificações"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Faça stream de dados do microfone, da câmara e de outros sensores do &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; para o <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Grave, transmita ou partilhe o ecrã do <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> para &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;A app <xliff:g id="APP_NAME">%1$s</xliff:g> vai ter acesso a tudo o que seja visível ou reproduzido no seu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, incluindo áudio, fotos, informações de pagamento, palavras-passe e mensagens."</string>
-    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
-    <skip />
+    <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Faça stream das apps do <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> para &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;A app <xliff:g id="APP_NAME">%1$s</xliff:g> vai ter acesso a tudo o que for visível ou reproduzido no <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, incluindo áudio, fotos, informações de pagamento, palavras-passe e mensagens, mesmo quando o <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> estiver bloqueado."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Aceda a uma lista de dispositivos disponíveis e controle qual deles faz stream ou transmite áudio ou vídeo de outras apps"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telemóvel"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
