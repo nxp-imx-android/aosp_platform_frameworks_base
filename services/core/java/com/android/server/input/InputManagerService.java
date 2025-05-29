@@ -54,7 +54,6 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
 import android.hardware.input.AidlInputGestureData;
-import android.hardware.input.AppLaunchData;
 import android.hardware.input.HostUsiVersion;
 import android.hardware.input.IInputDeviceBatteryListener;
 import android.hardware.input.IInputDeviceBatteryState;
@@ -838,10 +837,7 @@ public class InputManagerService extends IInputManager.Stub
                     new GestureMonitorSpyWindow(monitorToken, name, displayId, pid, uid, sc,
                             channel));
         }
-
-        final InputChannel outInputChannel = new InputChannel();
-        channel.copyTo(outInputChannel);
-        return outInputChannel;
+        return channel;
     }
 
     private void removeSpyWindowGestureMonitor(@NonNull IBinder inputChannelToken) {
