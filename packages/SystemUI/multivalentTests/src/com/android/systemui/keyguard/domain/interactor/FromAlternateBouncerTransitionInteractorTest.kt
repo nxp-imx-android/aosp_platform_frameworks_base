@@ -47,6 +47,7 @@ import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnable
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
@@ -83,6 +84,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
+                .andSceneContainer()
         }
     }
 
@@ -257,6 +259,7 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
 
     @Test
     @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    @DisableSceneContainer
     fun transitionToOccluded_glanceableHubShowing() =
         kosmos.runTest {
             val currentScene by collectLastValue(communalSceneInteractor.currentScene)
