@@ -5365,7 +5365,11 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // The stopped activity must have been visible later than the previous.
                 && stoppedActivity.lastVisibleTime > mPreviousProcessVisibleTime
                 // Home has its own retained state, so don't let it occupy the previous.
-                && stoppedActivity.app != mHomeProcess) {
+                && stoppedActivity.app != mHomeProcess
+                // Exclude recents that should be bound-foreground-service state.
+                && !mRecentTasks.isRecentsComponent(
+                        stoppedActivity.mActivityComponent,
+                        stoppedActivity.info.applicationInfo.uid)) {
             mPreviousProcess = stoppedActivity.app;
             mPreviousProcessVisibleTime = stoppedActivity.lastVisibleTime;
         }
