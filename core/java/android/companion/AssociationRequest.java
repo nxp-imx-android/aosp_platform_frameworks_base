@@ -372,6 +372,11 @@ public final class AssociationRequest implements Parcelable {
         public Builder setDisplayName(@NonNull CharSequence displayName) {
             checkNotUsed();
             mDisplayName = requireNonNull(displayName);
+            if (displayName.length() > 1024) {
+                throw new IllegalArgumentException("Length of the display name must be at most "
+                        + "1024 characters");
+            }
+
             return this;
         }
 
