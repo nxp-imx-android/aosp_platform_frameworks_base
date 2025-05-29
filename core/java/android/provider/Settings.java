@@ -6595,6 +6595,14 @@ public final class Settings {
                 "cv_dynamic_enabled";
 
         /**
+         * Setting to set CV preferred intensity
+         * Setting should be integer (0-10)
+         *
+         * @hide
+         */
+        public static final String CV_PREFERRED_INTENSITY = "cv_preferred_intensity";
+
+        /**
          * Integer property that specifes the color for screen flash notification as a
          * packed 32-bit color.
          *

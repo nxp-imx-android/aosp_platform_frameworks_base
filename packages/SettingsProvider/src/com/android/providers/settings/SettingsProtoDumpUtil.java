@@ -3178,6 +3178,9 @@ class SettingsProtoDumpUtil {
         dumpSetting(s, p,
                 Settings.System.CV_DYNAMIC_ENABLED,
                 SystemSettingsProto.Display.CV_DYNAMIC_ENABLED);
+        dumpSetting(s, p,
+                Settings.System.CV_PREFERRED_INTENSITY,
+                SystemSettingsProto.Display.CV_PREFERRED_INTENSITY);
         p.end(systemDisplayToken);
 
         dumpSetting(s, p,
