@@ -21,7 +21,7 @@ import android.app.Flags
 import android.graphics.drawable.TestStubDrawable
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.settingslib.notification.modes.TestModeBuilder
@@ -31,12 +31,14 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
@@ -52,11 +54,19 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @OptIn(ExperimentalCoroutinesApi::class)
-class ModesTileDataInteractorTest : SysuiTestCase() {
+class ModesTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
+    private val TEST_USER = UserHandle.of(1)!!
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val dispatcher = kosmos.testDispatcher
@@ -292,7 +302,11 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             // Open shade, deactivate mode and use it as override -> quick mode is deactivated mode
             keyguardRepository.setStatusBarState(StatusBarState.SHADE)
             // TODO: b/381869885 - Here and below, replace by setShadeExpansion.
-            shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(true)
+            if (SceneContainerFlag.isEnabled) {
+                shadeTestUtil.setShadeExpansion(1f)
+            } else {
+                shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(true)
+            }
             zenModeRepository.deactivateMode("mode1")
             underTest.setQuickModeOverride(listOf("mode1"))
             runCurrent()
@@ -300,7 +314,12 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
             assertThat(tileData?.icon).isEqualTo(BEDTIME_ICON)
 
             // Shade closes -> Tile reverts to DND as quick mode
-            shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(false)
+            if (SceneContainerFlag.isEnabled) {
+                shadeTestUtil.setShadeExpansion(0f)
+            } else {
+                shadeTestUtil.setLegacyExpandedOrAwaitingInputTransfer(false)
+            }
+
             runCurrent()
             assertThat(tileData?.quickMode?.id).isEqualTo(TestModeBuilder.MANUAL_DND.id)
             assertThat(tileData?.icon).isEqualTo(MODES_ICON)
@@ -386,7 +405,12 @@ class ModesTileDataInteractorTest : SysuiTestCase() {
     }
 
     private companion object {
-        val TEST_USER = UserHandle.of(1)!!
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+        }
+
         const val CUSTOM_PACKAGE = "com.some.mode.owner.package"
 
         const val MODES_DRAWABLE_ID = R.drawable.ic_zen_priority_modes
