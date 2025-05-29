@@ -7,14 +7,3 @@ flag {
   description: "Log print job creation and state transitions."
   bug: "385340868"
 }
-
-flag {
-   name: "printer_button_contrast"
-   namespace: "printing"
-   description: "Use themed colors instead of hard-coded values for print icon"
-   is_fixed_read_only: true
-   bug: "341591022"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
