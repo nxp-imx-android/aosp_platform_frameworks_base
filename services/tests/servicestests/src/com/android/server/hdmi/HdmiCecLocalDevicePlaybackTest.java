@@ -2903,14 +2903,18 @@ public class HdmiCecLocalDevicePlaybackTest {
     }
 
     @Test
-    public void powerStatusMonitorActionFromPlayback_TvReportPowerOff_goToSleep() {
+    public void powerStatusMonitorActionFromPlayback_TvReportsStandbyTwice_goesToSleep() {
+        mHdmiCecLocalDevicePlayback.mService.getHdmiCecConfig().setStringValue(
+                HdmiControlManager.CEC_SETTING_NAME_POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST,
+                HdmiControlManager.POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST_STANDBY_NOW);
+        mTestLooper.dispatchAll();
+
         mHdmiControlService.onWakeUp(HdmiControlService.WAKE_UP_SCREEN_ON);
         mTestLooper.dispatchAll();
 
         assertThat(mHdmiCecLocalDevicePlayback.getActions(
                 PowerStatusMonitorActionFromPlayback.class)).hasSize(1);
         assertThat(mPowerManager.isInteractive()).isTrue();
-        mNativeWrapper.clearResultMessages();
         mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
         mTestLooper.dispatchAll();
 
@@ -2924,23 +2928,150 @@ public class HdmiCecLocalDevicePlaybackTest {
                 HdmiCecMessageBuilder.buildReportPowerStatus(ADDR_TV, mPlaybackLogicalAddress,
                         HdmiControlManager.POWER_STATUS_STANDBY);
 
-        assertThat(mNativeWrapper.getResultMessages().contains(givePowerStatus)).isTrue();
-        mNativeWrapper.onCecMessage(reportPowerStatusTvOn);
-        mTestLooper.dispatchAll();
-
-        assertThat(mPowerManager.isInteractive()).isTrue();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
         mNativeWrapper.clearResultMessages();
-        mTestLooper.moveTimeForward(TIMEOUT_MS);
+        // TV reports Standby (1st time)
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
         mTestLooper.dispatchAll();
-
+        assertThat(mPowerManager.isInteractive()).isTrue(); // Should not go to sleep yet.
         mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
         mTestLooper.dispatchAll();
 
-        assertThat(mNativeWrapper.getResultMessages().contains(givePowerStatus)).isTrue();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        // TV reports Standby (2nd time)
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
+        mTestLooper.dispatchAll();
+
+        // Playback device should go to sleep
+        assertThat(mPowerManager.isInteractive()).isFalse();
+        assertThat(mHdmiCecLocalDevicePlayback.getActions(
+                PowerStatusMonitorActionFromPlayback.class)).isEmpty();
+    }
+
+    @Test
+    public void powerStatusMonitorActionFromPlayback_StandbyThenOnThenStandbyTwice_goesToSleep() {
+        mHdmiCecLocalDevicePlayback.mService.getHdmiCecConfig().setStringValue(
+                HdmiControlManager.CEC_SETTING_NAME_POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST,
+                HdmiControlManager.POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST_STANDBY_NOW);
+        mTestLooper.dispatchAll();
+
+        mHdmiControlService.onWakeUp(HdmiControlService.WAKE_UP_SCREEN_ON);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDevicePlayback.getActions(
+                PowerStatusMonitorActionFromPlayback.class)).hasSize(1);
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        HdmiCecMessage givePowerStatus =
+                HdmiCecMessageBuilder.buildGiveDevicePowerStatus(mPlaybackLogicalAddress,
+                        Constants.ADDR_TV);
+        HdmiCecMessage reportPowerStatusTvStandby =
+                HdmiCecMessageBuilder.buildReportPowerStatus(ADDR_TV, mPlaybackLogicalAddress,
+                        HdmiControlManager.POWER_STATUS_STANDBY);
+        HdmiCecMessage reportPowerStatusTvOn =
+                HdmiCecMessageBuilder.buildReportPowerStatus(ADDR_TV, mPlaybackLogicalAddress,
+                        HdmiControlManager.POWER_STATUS_ON);
+
+        // First monitoring cycle: TV reports Standby (1st time)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
+        mTestLooper.dispatchAll();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        // Second monitoring cycle: TV reports On (resets counter)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mNativeWrapper.onCecMessage(reportPowerStatusTvOn);
+        mTestLooper.dispatchAll();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        // Third monitoring cycle: TV reports Standby (1st consecutive)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
+        mTestLooper.dispatchAll();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        // Fourth monitoring cycle: TV reports Standby (2nd consecutive)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
         mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
         mTestLooper.dispatchAll();
 
         assertThat(mPowerManager.isInteractive()).isFalse();
+        assertThat(mHdmiCecLocalDevicePlayback.getActions(
+                PowerStatusMonitorActionFromPlayback.class)).isEmpty();
+    }
+
+    @Test
+    public void powerStatusMonitorActionFromPlayback_StandbyTimeoutStandbyTwice_goesToSleep() {
+        mHdmiCecLocalDevicePlayback.mService.getHdmiCecConfig().setStringValue(
+                HdmiControlManager.CEC_SETTING_NAME_POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST,
+                HdmiControlManager.POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST_STANDBY_NOW);
+        mTestLooper.dispatchAll();
+
+        mHdmiControlService.onWakeUp(HdmiControlService.WAKE_UP_SCREEN_ON);
+        mTestLooper.dispatchAll();
+
+        assertThat(mHdmiCecLocalDevicePlayback.getActions(
+                PowerStatusMonitorActionFromPlayback.class)).hasSize(1);
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        HdmiCecMessage givePowerStatus =
+                HdmiCecMessageBuilder.buildGiveDevicePowerStatus(mPlaybackLogicalAddress,
+                        Constants.ADDR_TV);
+        HdmiCecMessage reportPowerStatusTvStandby =
+                HdmiCecMessageBuilder.buildReportPowerStatus(ADDR_TV, mPlaybackLogicalAddress,
+                        HdmiControlManager.POWER_STATUS_STANDBY);
+
+        // First monitoring cycle: TV reports Standby (1st time)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
+        mTestLooper.dispatchAll();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        // Second monitoring cycle: Timeout waiting for report (resets counter)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS); // Triggers <Give Power Status>
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mTestLooper.moveTimeForward(TIMEOUT_MS); // Timeout for <Report Power Status>
+        mTestLooper.dispatchAll();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        // Third monitoring cycle: TV reports Standby (1st consecutive)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
+        mTestLooper.dispatchAll();
+        assertThat(mPowerManager.isInteractive()).isTrue();
+
+        // Fourth monitoring cycle: TV reports Standby (2nd consecutive)
+        mTestLooper.moveTimeForward(MONITORING_INTERVAL_MS);
+        mTestLooper.dispatchAll();
+        assertThat(mNativeWrapper.getResultMessages()).contains(givePowerStatus);
+        mNativeWrapper.clearResultMessages();
+        mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
+        mTestLooper.dispatchAll();
+
+        assertThat(mPowerManager.isInteractive()).isFalse();
+        assertThat(mHdmiCecLocalDevicePlayback.getActions(
+                PowerStatusMonitorActionFromPlayback.class)).isEmpty();
     }
 
     private void skipActiveSourceLostUi(long idleDuration, boolean activeSourceLostToTv,
