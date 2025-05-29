@@ -3963,6 +3963,9 @@ public class MockingOomAdjusterTests {
             app.setIsolatedEntryPoint(mIsolatedEntryPoint);
             setFieldValue(ProcessRecord.class, app, "mWindowProcessController",
                     mock(WindowProcessController.class));
+            doReturn(Long.MIN_VALUE)
+                .when(app.getWindowProcessController())
+                .getPerceptibleTaskStoppedTimeMillis();
             profile.setLastPssTime(mLastPssTime);
             profile.setNextPssTime(mNextPssTime);
             profile.setLastPss(mLastPss);
