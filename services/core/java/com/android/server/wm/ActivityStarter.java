@@ -1093,6 +1093,9 @@ class ActivityStarter {
                     .append(intent.toShortString(true, true, true, false))
                     .append("} with ").append(launchModeToString(launchMode))
                     .append(" from uid ").append(callingUid);
+            if (callingPackage != null) {
+                request.logMessage.append(" (").append(callingPackage).append(")");
+            }
             if (callingUid != realCallingUid
                     && realCallingUid != Request.DEFAULT_REAL_CALLING_UID) {
                 request.logMessage.append(" (realCallingUid=").append(realCallingUid).append(")");
