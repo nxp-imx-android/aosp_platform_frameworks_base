@@ -932,8 +932,8 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
-    static SplitState provideSplitState(Context context) {
-        return new SplitState(context.getResources());
+    static SplitState provideSplitState() {
+        return new SplitState();
     }
 
     //

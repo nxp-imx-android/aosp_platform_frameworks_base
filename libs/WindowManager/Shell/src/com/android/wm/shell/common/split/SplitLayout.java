@@ -599,7 +599,6 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         dividerBounds.set(mRootBounds);
         bounds1.set(mRootBounds);
         bounds2.set(mRootBounds);
-        int snapMode = mSplitState.getSplitTargetProvider().getSnapMode();
         if (mIsLeftRightSplit) {
             position += mRootBounds.left;
             dividerBounds.left = position - mDividerInsets;
@@ -608,7 +607,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             bounds2.left = bounds1.right + mDividerSize;
 
             if (mDividerSnapAlgorithm.areOffscreenRatiosSupported()) {
-                if (snapMode == SNAP_FLEXIBLE_SPLIT) {
+                if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_SPLIT) {
                     // In flexible split, also extend app offscreen.
                     int distanceToCenter =
                             position - mDividerSnapAlgorithm.getMiddleTarget().position;
@@ -617,7 +616,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                     } else {
                         bounds2.right += distanceToCenter * 2;
                     }
-                } else if (snapMode == SNAP_FLEXIBLE_HYBRID) {
+                } else if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID) {
                     // In flex hybrid split, extend offscreen only if it is at the flex breakpoint.
                     int leftFlexTargetPos = mDividerSnapAlgorithm.getFirstSplitTarget().position;
                     int rightFlexTargetPos = mDividerSnapAlgorithm.getLastSplitTarget().position;
@@ -637,7 +636,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             bounds2.top = bounds1.bottom + mDividerSize;
 
             if (mDividerSnapAlgorithm.areOffscreenRatiosSupported()) {
-                if (snapMode == SNAP_FLEXIBLE_SPLIT) {
+                if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_SPLIT) {
                     // In flexible split, also extend app offscreen.
                     int distanceToCenter =
                             position - mDividerSnapAlgorithm.getMiddleTarget().position;
@@ -646,7 +645,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                     } else {
                         bounds2.bottom += distanceToCenter * 2;
                     }
-                } else if (snapMode == SNAP_FLEXIBLE_HYBRID) {
+                } else if (mDividerSnapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID) {
                     // In flex hybrid split, extend offscreen only if it is at the flex breakpoint.
                     int topFlexTargetPos = mDividerSnapAlgorithm.getFirstSplitTarget().position;
                     int bottomFlexTargetPos = mDividerSnapAlgorithm.getLastSplitTarget().position;
@@ -671,8 +670,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     public void init() {
         if (mInitialized) return;
         mInitialized = true;
-        mSplitWindowManager.init(this, mInsetsState, false /* isRestoring */, mDesktopState,
-                mSplitState.getSplitTargetProvider());
+        mSplitWindowManager.init(this, mInsetsState, false /* isRestoring */, mDesktopState);
         populateTouchZones();
         mDisplayImeController.addPositionProcessor(mImePositionProcessor);
     }
@@ -705,8 +703,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         if (resetImePosition) {
             mImePositionProcessor.reset();
         }
-        mSplitWindowManager.init(this, mInsetsState, true /* isRestoring */, mDesktopState,
-                mSplitState.getSplitTargetProvider());
+        mSplitWindowManager.init(this, mInsetsState, true /* isRestoring */, mDesktopState);
         populateTouchZones();
         // Update the surface positions again after recreating the divider in case nothing else
         // triggers it
@@ -864,11 +861,6 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         }
     }
 
-    /** Same as {@link #snapToTarget(int, SnapTarget)}, defaults to current divider position. */
-    public void snapToTarget(int snapPosition) {
-        snapToTarget(getDividerPosition(), mDividerSnapAlgorithm.findSnapTarget(snapPosition));
-    }
-
     /**
      * Same as {@link #snapToTarget(int, SnapTarget, int, Interpolator)}, with default animation
      * duration and interpolator.
@@ -937,8 +929,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 mIsLeftRightSplit,
                 insets,
                 mPinnedTaskbarInsets.toRect(),
-                mIsLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP /* dockSide */,
-                mSplitState.getSplitTargetProvider());
+                mIsLeftRightSplit ? DOCKED_LEFT : DOCKED_TOP /* dockSide */);
     }
 
     /** Fling divider from current position to end or start position then exit */

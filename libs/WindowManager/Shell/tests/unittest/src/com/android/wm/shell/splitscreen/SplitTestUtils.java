@@ -22,12 +22,9 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_5
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import android.app.IActivityTaskManager;
 import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
@@ -44,10 +41,8 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.LaunchAdjacentController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.common.split.SnapToTargetConverter;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
-import com.android.wm.shell.common.split.SplitTargetProvider;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
@@ -87,14 +82,6 @@ public class SplitTestUtils {
         SurfaceControl sc = mock(SurfaceControl.class);
         ExtendedMockito.doReturn(valid).when(sc).isValid();
         return sc;
-    }
-
-    public static SplitTargetProvider setupSplitTargetProvider(Resources spyResources,
-            Configuration configuration) {
-        configuration.windowConfiguration.setMaxBounds(new Rect(0, 0, 1080, 2160));
-        configuration.smallestScreenWidthDp = spyResources.getConfiguration().smallestScreenWidthDp;
-        when(spyResources.getConfiguration()).thenReturn(configuration);
-        return new SnapToTargetConverter(spyResources, false);
     }
 
     static class TestStageCoordinator extends StageCoordinator {

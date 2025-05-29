@@ -42,7 +42,6 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class SplitWindowManagerTests extends ShellTestCase {
     @Mock SplitLayout mSplitLayout;
-    @Mock SplitTargetProvider mSplitTargetProvider;
     @Mock SplitWindowManager.ParentContainerCallbacks mCallbacks;
     private FakeDesktopState mDesktopState;
     private SplitWindowManager mSplitWindowManager;
@@ -64,7 +63,7 @@ public class SplitWindowManagerTests extends ShellTestCase {
     @UiThreadTest
     public void testInitRelease() {
         mSplitWindowManager.init(mSplitLayout, new InsetsState(), false /* isRestoring */,
-                mDesktopState, mSplitTargetProvider);
+                mDesktopState);
         assertThat(mSplitWindowManager.getSurfaceControl()).isNotNull();
         mSplitWindowManager.release(null /* t */);
         assertThat(mSplitWindowManager.getSurfaceControl()).isNull();
