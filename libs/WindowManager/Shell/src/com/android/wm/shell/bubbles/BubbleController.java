@@ -510,8 +510,7 @@ public class BubbleController implements ConfigurationChangeListener,
             }
         }, mMainHandler);
 
-        mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData,
-                mBubbleTransitions.mTaskViewTransitions, mSplitScreenController));
+        mTransitions.registerObserver(new BubblesTransitionObserver(this, mBubbleData));
 
         mTaskStackListener.addListener(
                 new BubbleTaskStackListener(this, mBubbleData, mSplitScreenController));
