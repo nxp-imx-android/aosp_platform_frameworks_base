@@ -63,9 +63,7 @@ import java.util.List;
         // bluetooth adapter or a strategy for media. If no strategy for media is available we can
         // disallow media router transfers, and without a bluetooth adapter we can remove support
         // for transfers to inactive bluetooth routes.
-        if (strategyForMedia != null
-                && btAdapter != null
-                && Flags.enableAudioPoliciesDeviceAndBluetoothController()) {
+        if (strategyForMedia != null && btAdapter != null) {
             AudioManagerRouteController controller =
                     AudioManagerRouteController.getInstance(
                             context, audioManager, looper, strategyForMedia, btAdapter);

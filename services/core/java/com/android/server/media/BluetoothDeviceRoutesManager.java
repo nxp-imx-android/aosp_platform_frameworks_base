@@ -65,6 +65,13 @@ import java.util.stream.Collectors;
     private static final String HEARING_AID_ROUTE_ID_PREFIX = "HEARING_AID_";
     private static final String LE_AUDIO_ROUTE_ID_PREFIX = "LE_AUDIO_";
 
+    /** Interface for receiving events about Bluetooth routes changes. */
+    interface BluetoothRoutesUpdatedListener {
+
+        /** Called when Bluetooth routes have changed. */
+        void onBluetoothRoutesUpdated();
+    }
+
     @NonNull
     private final AdapterStateChangedReceiver mAdapterStateChangedReceiver =
             new AdapterStateChangedReceiver();
@@ -80,8 +87,7 @@ import java.util.stream.Collectors;
     private final Context mContext;
     @NonNull private final Handler mHandler;
     @NonNull private final BluetoothAdapter mBluetoothAdapter;
-    @NonNull
-    private final BluetoothRouteController.BluetoothRoutesUpdatedListener mListener;
+    @NonNull private final BluetoothRoutesUpdatedListener mListener;
     @NonNull
     private final BluetoothProfileMonitor mBluetoothProfileMonitor;
 
@@ -89,7 +95,7 @@ import java.util.stream.Collectors;
             @NonNull Context context,
             @NonNull Handler handler,
             @NonNull BluetoothAdapter bluetoothAdapter,
-            @NonNull BluetoothRouteController.BluetoothRoutesUpdatedListener listener) {
+            @NonNull BluetoothRoutesUpdatedListener listener) {
         this(
                 context,
                 handler,
@@ -104,7 +110,7 @@ import java.util.stream.Collectors;
             @NonNull Handler handler,
             @NonNull BluetoothAdapter bluetoothAdapter,
             @NonNull BluetoothProfileMonitor bluetoothProfileMonitor,
-            @NonNull BluetoothRouteController.BluetoothRoutesUpdatedListener listener) {
+            @NonNull BluetoothRoutesUpdatedListener listener) {
         mContext = Objects.requireNonNull(context);
         mHandler = handler;
         mBluetoothAdapter = Objects.requireNonNull(bluetoothAdapter);
