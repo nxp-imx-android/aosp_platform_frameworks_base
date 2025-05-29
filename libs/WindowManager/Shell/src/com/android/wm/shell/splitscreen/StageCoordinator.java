@@ -38,6 +38,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
 import static com.android.window.flags.Flags.enableMultiDisplaySplit;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplit;
+import static com.android.wm.shell.Flags.enableEnterSplitRemoveBubble;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
@@ -2057,6 +2058,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // TODO (b/336477473): Disallow enter PiP when launching a task in split by default;
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
+        if (enableEnterSplitRemoveBubble()) {
+            // Set an empty rect as the requested launch bounds. This ensures that if an existing
+            // task is reused, and it has bounds set, they are cleared.
+            options.setLaunchBounds(new Rect());
+        }
+
         opts.putAll(options.toBundle());
     }
 
