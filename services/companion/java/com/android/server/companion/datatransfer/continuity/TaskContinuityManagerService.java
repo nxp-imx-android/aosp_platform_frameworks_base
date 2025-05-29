@@ -16,6 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
+import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.content.Context;
 import android.util.Slog;
@@ -25,6 +26,7 @@ import com.android.server.companion.datatransfer.continuity.messages.TaskContinu
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
 import com.android.server.SystemService;
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 
 /**
  * Service to handle task continuity features
@@ -38,12 +40,18 @@ public final class TaskContinuityManagerService extends SystemService {
 
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskBroadcaster mTaskBroadcaster;
+    private ConnectedAssociationStore mConnectedAssociationStore;
     private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
     private RemoteTaskStore mRemoteTaskStore;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
-        mTaskBroadcaster = new TaskBroadcaster(context);
+        mConnectedAssociationStore = new ConnectedAssociationStore(context);
+
+        mTaskBroadcaster = new TaskBroadcaster(
+            context,
+            mConnectedAssociationStore);
+
         mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
         mRemoteTaskStore = new RemoteTaskStore();
     }

@@ -21,10 +21,10 @@ import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.companion.CompanionDeviceManager;
-import android.companion.AssociationInfo;
 import android.content.Context;
 import android.util.Slog;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
@@ -34,28 +34,28 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Responsible for broadcasting recent tasks on the current device to the user's
  * other devices via {@link CompanionDeviceManager}.
  */
-class TaskBroadcaster {
+class TaskBroadcaster implements ConnectedAssociationStore.Observer {
 
     private static final String TAG = "TaskBroadcaster";
 
     private final Context mContext;
     private final ActivityTaskManager mActivityTaskManager;
     private final CompanionDeviceManager mCompanionDeviceManager;
-    private final Set<Integer> mConnectedAssociationIds = new HashSet<>();
-
-    private final Consumer<List<AssociationInfo>> mOnTransportsChangedListener =
-        this::onTransportsChanged;
+    private final ConnectedAssociationStore mConnectedAssociationStore;
 
     private boolean mIsBroadcasting = false;
 
-    public TaskBroadcaster(Context context) {
+    public TaskBroadcaster(
+        Context context,
+        ConnectedAssociationStore connectedAssociationStore) {
+
         mContext = context;
+        mConnectedAssociationStore = connectedAssociationStore;
 
         mActivityTaskManager
             = context.getSystemService(ActivityTaskManager.class);
@@ -71,10 +71,7 @@ class TaskBroadcaster {
         }
 
         Slog.v(TAG, "Starting broadcasting");
-        mCompanionDeviceManager.addOnTransportsChangedListener(
-            mContext.getMainExecutor(),
-            mOnTransportsChangedListener
-        );
+        mConnectedAssociationStore.addObserver(this);
         mIsBroadcasting = true;
     }
 
@@ -86,28 +83,23 @@ class TaskBroadcaster {
 
         Slog.v(TAG, "Stopping broadcasting");
         mIsBroadcasting = false;
-        mCompanionDeviceManager.removeOnTransportsChangedListener(
-            mOnTransportsChangedListener
-        );
+        mConnectedAssociationStore.removeObserver(this);
     }
 
-    private void onTransportsChanged(List<AssociationInfo> associationInfos) {
-        Set<Integer> removedAssociationIds
-            = new HashSet<>(mConnectedAssociationIds);
+    @Override
+    public void onTransportConnected(int associationId) {
+        Slog.v(
+            TAG,
+            "Transport connected for association id: " + associationId);
 
-        for (AssociationInfo associationInfo : associationInfos) {
-            if (!mConnectedAssociationIds.contains(associationInfo.getId())) {
-                sendDeviceConnectedMessage(associationInfo.getId());
-            } else {
-                removedAssociationIds.remove(associationInfo.getId());
-            }
+        sendDeviceConnectedMessage(associationId);
+    }
 
-            mConnectedAssociationIds.add(associationInfo.getId());
-        }
-
-        for (Integer removedAssociationId : removedAssociationIds) {
-            mConnectedAssociationIds.remove(removedAssociationId);
-        }
+    @Override
+    public void onTransportDisconnected(int associationId) {
+        Slog.v(
+            TAG,
+            "Transport disconnected for association id: " + associationId);
     }
 
     private void sendDeviceConnectedMessage(int associationId) {

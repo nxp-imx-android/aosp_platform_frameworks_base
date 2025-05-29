@@ -38,6 +38,7 @@ import android.testing.TestableLooper;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 
@@ -65,6 +66,8 @@ public class TaskBroadcasterTest {
 
     private CompanionDeviceManager mCompanionDeviceManager;
 
+    @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
+
     private TaskBroadcaster mTaskBroadcaster;
 
     @Before
@@ -88,7 +91,9 @@ public class TaskBroadcasterTest {
             .thenReturn(mCompanionDeviceManager);
 
         // Create TaskBroadcaster.
-        mTaskBroadcaster = new TaskBroadcaster(mMockContext);
+        mTaskBroadcaster = new TaskBroadcaster(
+            mMockContext,
+            mMockConnectedAssociationStore);
     }
 
     @Test
@@ -96,40 +101,31 @@ public class TaskBroadcasterTest {
         throws Exception {
 
         mTaskBroadcaster.stopBroadcasting();
-        verify(mMockCompanionDeviceManagerService, never())
-            .removeOnTransportsChangedListener(any());
+        verify(mMockConnectedAssociationStore, never())
+            .addObserver(mTaskBroadcaster);
     }
 
     @Test
     public void testStartAndStopBroadcasting_updatesTransportsListener()
         throws Exception {
 
-        // Start broadcasting, verifying a transport listener is added.
-        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor
-            = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
+        // Start broadcasting, verifying an association listener is added.
         mTaskBroadcaster.startBroadcasting();
-        verify(mMockCompanionDeviceManagerService, times(1))
-            .addOnTransportsChangedListener(
-                listenerCaptor.capture());
-        IOnTransportsChangedListener listener = listenerCaptor.getValue();
-        assertThat(listener).isNotNull();
+        verify(mMockConnectedAssociationStore, times(1))
+            .addObserver(mTaskBroadcaster);
 
-        // Stop broadcasting, verifying the transport listener is removed.
+        // Stop broadcasting, verifying the association listener is removed.
         mTaskBroadcaster.stopBroadcasting();
-        verify(mMockCompanionDeviceManagerService, times(1))
-            .removeOnTransportsChangedListener(listener);
+        verify(mMockConnectedAssociationStore, times(1))
+            .removeObserver(mTaskBroadcaster);
     }
 
     @Test
     public void testStartBroadcasting_startsBroadcasting() throws Exception {
         // Start broadcasting, verifying a transport listener is added.
-        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor
-            = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
         mTaskBroadcaster.startBroadcasting();
-        verify(mMockCompanionDeviceManagerService, times(1))
-            .addOnTransportsChangedListener(
-                listenerCaptor.capture());
-        IOnTransportsChangedListener listener = listenerCaptor.getValue();
+        verify(mMockConnectedAssociationStore, times(1))
+            .addObserver(mTaskBroadcaster);
 
         // Setup a fake foreground task.
         String expectedLabel = "test";
@@ -143,12 +139,7 @@ public class TaskBroadcasterTest {
             .thenReturn(Arrays.asList(taskInfo));
 
         // Add a new transport
-        AssociationInfo associationInfo = new AssociationInfo.Builder(1, 0, "")
-            .setDisplayName("test")
-            .build();
-
-        listener.onTransportsChanged(Arrays.asList(associationInfo));
-        TestableLooper.get(this).processAllMessages();
+        mTaskBroadcaster.onTransportConnected(1);
 
         // Verify the message is sent.
         ArgumentCaptor<byte[]> messageCaptor
