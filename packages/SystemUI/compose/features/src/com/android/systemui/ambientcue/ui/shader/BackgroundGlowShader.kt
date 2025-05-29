@@ -21,7 +21,7 @@ import org.intellij.lang.annotations.Language
 
 object BackgroundGlowShader {
     @Language("AGSL")
-    val FRAG_SHADER =
+    const val FRAG_SHADER =
         ShaderUtilLibrary.SHADER_LIB +
             """
     uniform float2 resolution;
@@ -54,5 +54,4 @@ object BackgroundGlowShader {
         return combinedGradients;
     }
 """
-                .trimIndent()
 }
