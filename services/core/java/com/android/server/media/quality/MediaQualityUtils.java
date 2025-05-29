@@ -207,7 +207,7 @@ public final class MediaQualityUtils {
         PersistableBundle bundle = new PersistableBundle();
         for (PictureParameter pp : parameters) {
             if (pp.getBrightness() > -1) {
-                bundle.putLong(PictureQuality.PARAMETER_BRIGHTNESS, (long) pp.getBrightness());
+                bundle.putDouble(PictureQuality.PARAMETER_BRIGHTNESS, (double) pp.getBrightness());
             }
             if (pp.getContrast() > -1) {
                 bundle.putInt(PictureQuality.PARAMETER_CONTRAST, pp.getContrast());
