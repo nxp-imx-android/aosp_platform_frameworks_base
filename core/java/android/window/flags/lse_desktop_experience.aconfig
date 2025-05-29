@@ -1368,3 +1368,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_first_listener"
+    namespace: "lse_desktop_experience"
+    description: "Enables DesktopFirstListener for Shell/SysUI."
+    bug: "415120289"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
