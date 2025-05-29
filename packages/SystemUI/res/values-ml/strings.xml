@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"പരിശോധിച്ചുറപ്പിച്ചു"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"പരിശോധിച്ചുറപ്പിക്കൽ റദ്ദാക്കുക"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"കൂടുതൽ ഓപ്‌ഷനുകൾ"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"കൂടുതൽ ഓപ്‌ഷനുകൾ"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"മറ്റൊരു രീതിയിലൂടെ പരിശോധിച്ചുറപ്പിക്കുക"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ഐഡന്റിറ്റി പരിശോധന മാനേജ് ചെയ്യുക"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ഐഡന്റിറ്റി പരിശോധന ഓണായിരിക്കുന്നതിനാലും ബയോമെട്രിക്സ് ആവശ്യമുള്ളതിനാലും പരിശോധിച്ചുറപ്പിക്കാൻ പിൻ ഉപയോഗിക്കാൻ കഴിയില്ല. ഐഡന്റിറ്റി പരിശോധനയെ കുറിച്ച് കൂടുതലറിയുക"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"പിൻ ഉപയോഗിക്കുക"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"പാറ്റേൺ ഉപയോഗിക്കുക"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"പാസ്‌വേഡ് ഉപയോഗിക്കുക"</string>
@@ -289,8 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"ദ്രുത ക്രമീകരണങ്ങൾ."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"അറിയിപ്പ് ഷെയ്‌ഡിനുള്ള ദ്രുത ക്രമീകരണം."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"ലോക്ക് സ്‌ക്രീൻ"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"ലോക്ക് സ്ക്രീൻ, ലോക്ക് സ്ക്രീൻ ഇഷ്ടാനുസൃതമാക്കാൻ ഡബിൾ ടാപ്പ് ചെയ്ത് പിടിക്കുക."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"ഔദ്യോഗിക ലോക്ക് സ്ക്രീൻ"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"അവസാനിപ്പിക്കുക"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"പൂർണ്ണ നിശബ്‌ദത"</string>
@@ -385,10 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# ഉപകരണം}other{# ഉപകരണങ്ങൾ}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"ടോർച്ച്"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"ക്യാമറ ഉപയോഗത്തിലാണ്"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"ഫ്ലാഷ്‌ലൈറ്റിന്റെ തീവ്രത"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"മൊബൈൽ ഡാറ്റ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"ഡാറ്റാ ഉപയോഗം"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"ശേഷിക്കുന്ന ഡാറ്റ"</string>
@@ -827,11 +820,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ഓണാക്കുക"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ഓണാണ് - ഫേസ് ബേസ്‌ഡ്"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"നിശബ്‌ദമാക്കലും ബണ്ടിൽ ചെയ്യലും"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്ന കുട്ടിക്ക്"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"സെയിൽസും പുതിയ ഫീച്ചറുകളും മറ്റും"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"പ്രധാന വാർത്തകളും എഡിറ്റോറിയലുകളും മറ്റും"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ലൈക്കുകളും പോസ്റ്റുകളും മറ്റും"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"വാർത്താക്കുറിപ്പുകളും നിർദ്ദേശിക്കുന്ന മീഡിയയും മറ്റും"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>

@@ -820,11 +820,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Turn on"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"On - Face-based"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silence and bundle"</string>
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Use Notification Organizer"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"For <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sales, new features, and more"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Top stories, editorials, and more"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Likes, posts, and more"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, recommended media, and more"</string>
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Turn on"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Your longer conversations can now be summarized to give you quick recaps"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Notification organizer bundles and silences lower priority notifications"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Done"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Apply"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Turn off"</string>

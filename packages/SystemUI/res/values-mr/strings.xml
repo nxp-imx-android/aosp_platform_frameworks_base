@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"ऑथेंटिकेशन केलेले"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"ऑथेंटिकेशन रद्द करा"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"अधिक पर्याय"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"अधिक पर्याय"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"दुसऱ्या प्रकारे पडताळणी करा"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ओळख तपासणी व्यवस्थापित करा"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ओळख तपासणी सुरू असल्यामुळे आणि बायोमेट्रिक आवश्यक असल्यामुळे पडताळणीसाठी पिन वापरता येऊ शकत नाही. ओळख तपासणीबद्दल अधिक जाणून घ्या"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"पिन वापरा"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"पॅटर्न वापरा"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"पासवर्ड वापरा"</string>
@@ -827,11 +823,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सुरू करा"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"सुरू - चेहऱ्यावर आधारित"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"सायलंट आणि बंडल करा"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> साठी"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"विक्री, बातम्यांसंबंधित वैशिष्ट्ये आणि आणखी बरेच काही"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"टॉप स्टोरी, संपादकीय आणि आणखी बरेच काही"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"लाइक, पोस्ट आणि आणखी बरेच काही"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"बातमीपत्रक, शिफारस केलेला मीडिया आणि आणखी बरेच काही"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करा"</string>
