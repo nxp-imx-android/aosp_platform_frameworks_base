@@ -108,8 +108,6 @@ public class PipDisplayTransferHandler implements
     @Override
     public void onPipTransitionStateChanged(@PipTransitionState.TransitionState int oldState,
             @PipTransitionState.TransitionState int newState, @Nullable Bundle extra) {
-        if (extra == null) return;
-
         switch (newState) {
             case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
                 if (!extra.containsKey(ORIGIN_DISPLAY_ID_KEY) || !extra.containsKey(
@@ -182,6 +180,11 @@ public class PipDisplayTransferHandler implements
                 });
                 animator.start();
                 break;
+            case PipTransitionState.EXITED_PIP:
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "%s Exited PiP. Removing drag mirrors", TAG);
+                removeMirrors();
+                break;
         }
     }
 
@@ -237,7 +240,6 @@ public class PipDisplayTransferHandler implements
     /**
      * Remove all drag indicator mirrors from each connected display.
      */
-    // TODO(b/408982524): Remove mirrors on opening app while dragging
     public void removeMirrors() {
         final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
         for (SurfaceControl mirror : mOnDragMirrorPerDisplayId.values()) {
