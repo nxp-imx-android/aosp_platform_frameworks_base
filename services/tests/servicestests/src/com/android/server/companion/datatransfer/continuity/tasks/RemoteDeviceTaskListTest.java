@@ -17,6 +17,7 @@
 package com.android.server.companion.datatransfer.continuity.tasks;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.ActivityManager;
 import android.platform.test.annotations.Presubmit;
@@ -108,13 +109,11 @@ public class RemoteDeviceTaskListTest {
         String label,
         long lastUsedTimeMillis) {
 
-        ActivityManager.RunningTaskInfo runningTaskInfo
-            = new ActivityManager.RunningTaskInfo();
+        ActivityManager.RunningTaskInfo runningTaskInfo = createRunningTaskInfo(
+            1,
+            label,
+            lastUsedTimeMillis);
 
-        runningTaskInfo.taskId = 1;
-        runningTaskInfo.taskDescription
-            = new ActivityManager.TaskDescription(label);
-        runningTaskInfo.lastActiveTime = lastUsedTimeMillis;
         return new RemoteTaskInfo(runningTaskInfo);
     }
 }

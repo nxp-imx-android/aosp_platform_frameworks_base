@@ -20,12 +20,16 @@ import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
 
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
+import android.app.TaskStackListener;
 import android.companion.CompanionDeviceManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.os.RemoteException;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
@@ -37,9 +41,12 @@ import java.util.Set;
 
 /**
  * Responsible for broadcasting recent tasks on the current device to the user's
+ *
  * other devices via {@link CompanionDeviceManager}.
  */
-class TaskBroadcaster implements ConnectedAssociationStore.Observer {
+class TaskBroadcaster
+    extends TaskStackListener
+    implements ConnectedAssociationStore.Observer {
 
     private static final String TAG = "TaskBroadcaster";
 
@@ -72,6 +79,8 @@ class TaskBroadcaster implements ConnectedAssociationStore.Observer {
 
         Slog.v(TAG, "Starting broadcasting");
         mConnectedAssociationStore.addObserver(this);
+        mActivityTaskManager.registerTaskStackListener(this);
+
         mIsBroadcasting = true;
     }
 
@@ -84,6 +93,7 @@ class TaskBroadcaster implements ConnectedAssociationStore.Observer {
         Slog.v(TAG, "Stopping broadcasting");
         mIsBroadcasting = false;
         mConnectedAssociationStore.removeObserver(this);
+        mActivityTaskManager.unregisterTaskStackListener(this);
     }
 
     @Override
@@ -102,14 +112,33 @@ class TaskBroadcaster implements ConnectedAssociationStore.Observer {
             "Transport disconnected for association id: " + associationId);
     }
 
+    @Override
+    public void onTaskCreated(
+        int taskId,
+        ComponentName componentName) throws RemoteException {
+
+        Slog.v(TAG, "onTaskCreated: taskId=" + taskId);
+
+        ActivityManager.RunningTaskInfo taskInfo = getRunningTask(taskId);
+
+        if (taskInfo != null) {
+            RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
+            RemoteTaskAddedMessage taskAddedMessage
+                = new RemoteTaskAddedMessage(remoteTaskInfo);
+
+            sendMessageToAllConnectedAssociations(taskAddedMessage);
+        } else {
+            Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
+        }
+    }
+
     private void sendDeviceConnectedMessage(int associationId) {
         Slog.v(
             TAG,
             "Sending device connected message for association id: "
                 + associationId);
 
-        List<ActivityManager.RunningTaskInfo> runningTasks
-            = mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
+        List<ActivityManager.RunningTaskInfo> runningTasks = getRunningTasks();
 
         int currentForegroundTaskId = -1;
         if (runningTasks.size() > 0) {
@@ -127,7 +156,9 @@ class TaskBroadcaster implements ConnectedAssociationStore.Observer {
         sendMessage(associationId, deviceConnectedMessage);
     }
 
-    private void sendMessage(int associationId, TaskContinuityMessageData data) {
+    private void sendMessage(
+        int associationId,
+        TaskContinuityMessageData data) {
 
         Slog.v(
             TAG,
@@ -142,5 +173,37 @@ class TaskBroadcaster implements ConnectedAssociationStore.Observer {
             CompanionDeviceManager.MESSAGE_TASK_CONTINUITY,
             message.toBytes(),
             new int[] {associationId});
+    }
+
+    private void sendMessageToAllConnectedAssociations(
+        TaskContinuityMessageData data) {
+
+        Set<Integer> connectedAssociations
+            = mConnectedAssociationStore.getConnectedAssociations();
+
+        Slog.v(
+            TAG,
+            "Sending message to " + connectedAssociations.size() + " associations.");
+
+        for (Integer associationId : connectedAssociations) {
+            sendMessage(associationId, data);
+        }
+    }
+
+    private ActivityManager.RunningTaskInfo getRunningTask(int taskId) {
+        List<ActivityManager.RunningTaskInfo> runningTasks = getRunningTasks();
+        if (runningTasks != null) {
+            for (ActivityManager.RunningTaskInfo info : runningTasks) {
+                if (info.taskId == taskId) {
+                    return info;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private List<ActivityManager.RunningTaskInfo> getRunningTasks() {
+        return mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
     }
 }
