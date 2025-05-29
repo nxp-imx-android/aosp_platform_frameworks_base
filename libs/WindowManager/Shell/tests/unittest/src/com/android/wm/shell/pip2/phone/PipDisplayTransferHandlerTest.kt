@@ -243,6 +243,26 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
     }
 
     @Test
+    fun onPipTransitionStateChanged_exitedPip_removesMirrors() {
+        pipDisplayTransferHandler.mOnDragMirrorPerDisplayId = ArrayMap()
+        pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.apply {
+            put(0, mockLeash)
+            put(1, mockLeash)
+            put(2, mockLeash)
+        }
+
+        pipDisplayTransferHandler.onPipTransitionStateChanged(
+            UNDEFINED,
+            EXITED_PIP,
+            null
+        )
+
+        verify(mockTransaction, times(3)).remove(any())
+        verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
+    }
+
+    @Test
     fun showDragMirrorOnConnectedDisplays_hasNotLeftOriginDisplay_shouldNotCreateMirrors() {
         val globalDpBounds = MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
             displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
