@@ -46,6 +46,13 @@ team {
 }
 
 team {
+    name: "trendy_team_drag_and_drop",
+
+    // go/trendy/manage/engineers/6499203070394368
+    trendy_team_id: "6499203070394368",
+}
+
+team {
     name: "trendy_team_device_state",
 
     // go/trendy/manage/engineers/4888053706752000
