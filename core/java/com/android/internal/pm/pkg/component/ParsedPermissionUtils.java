@@ -138,19 +138,8 @@ public class ParsedPermissionUtils {
                 }
             }
 
-            final boolean isPlatform = "android".equals(permission.getPackageName());
-
-            // For now only platform permissions can be purpose guarded.
-            if (Flags.purposeDeclarationEnabled() && isPlatform) {
-                final boolean requiresPurpose =
-                        sa.getBoolean(
-                                R.styleable.AndroidManifestPermission_requiresPurpose,
-                                /* defValue= */ false);
-                permission.setPurposeRequired(requiresPurpose);
-            }
-
             // For now only platform runtime permissions can be restricted
-            if (!isRuntime(permission) || !isPlatform) {
+            if (!isRuntime(permission) || !"android".equals(permission.getPackageName())) {
                 permission.setFlags(permission.getFlags() & ~PermissionInfo.FLAG_HARD_RESTRICTED);
                 permission.setFlags(permission.getFlags() & ~PermissionInfo.FLAG_SOFT_RESTRICTED);
             } else {

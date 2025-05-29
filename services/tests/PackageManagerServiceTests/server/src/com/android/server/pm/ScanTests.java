@@ -69,7 +69,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.UUID;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -510,8 +509,7 @@ public class ScanTests {
     public void factoryTestFlagSet() throws Exception {
         final ParsingPackage basicPackage = createBasicPackage(DUMMY_PACKAGE_NAME)
                 .addUsesPermission(
-                        new ParsedUsesPermissionImpl(Manifest.permission.FACTORY_TEST, 0,
-                                Collections.emptySet()));
+                        new ParsedUsesPermissionImpl(Manifest.permission.FACTORY_TEST, 0));
 
         final ScanResult scanResult = ScanPackageUtils.scanPackageOnly(
                 createBasicScanRequestBuilder(basicPackage).build(),
