@@ -45,7 +45,7 @@
     <string name="wifi_security_eap_wpa3" msgid="7961135182909018796">"WPA3-Enterprise"</string>
     <string name="wifi_security_passpoint" msgid="2209078477216565387">"Passpoint"</string>
     <string name="wifi_security_sae" msgid="3644520541721422843">"WPA3-Personal"</string>
-    <string name="wifi_security_psk_sae" msgid="8135104122179904684">"WPA2/WPA3-Personal"</string>
+    <string name="wifi_security_psk_sae" msgid="8135104122179904684">"WPA2/WPA3-Pessoal"</string>
     <string name="wifi_security_none_owe" msgid="5241745828327404101">"Nenhum/Enhanced Open"</string>
     <string name="wifi_security_owe" msgid="3343421403561657809">"Enhanced Open"</string>
     <string name="wifi_security_eap_suiteb" msgid="415842785991698142">"WPA3-Enterprise 192 bits"</string>
