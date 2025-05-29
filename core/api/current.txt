@@ -8926,6 +8926,27 @@ package android.app.admin {
 
 package android.app.appfunctions {
 
+  @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public final class AppFunctionAttribution implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public String getCustomInteractionType();
+    method public int getInteractionType();
+    method @Nullable public android.net.Uri getInteractionUri();
+    method @Nullable public String getThreadId();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionAttribution> CREATOR;
+    field public static final int INTERACTION_TYPE_OTHER = 0; // 0x0
+    field public static final int INTERACTION_TYPE_USER_QUERY = 1; // 0x1
+    field public static final int INTERACTION_TYPE_USER_SCHEDULED = 2; // 0x2
+  }
+
+  public static final class AppFunctionAttribution.Builder {
+    ctor public AppFunctionAttribution.Builder(int);
+    method @NonNull public android.app.appfunctions.AppFunctionAttribution build();
+    method @NonNull public android.app.appfunctions.AppFunctionAttribution.Builder setCustomInteractionType(@NonNull String);
+    method @NonNull public android.app.appfunctions.AppFunctionAttribution.Builder setInteractionUri(@Nullable android.net.Uri);
+    method @NonNull public android.app.appfunctions.AppFunctionAttribution.Builder setThreadId(@Nullable String);
+  }
+
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionException extends java.lang.Exception implements android.os.Parcelable {
     ctor public AppFunctionException(int, @Nullable String);
     ctor public AppFunctionException(int, @Nullable String, @NonNull android.os.Bundle);
@@ -8975,6 +8996,7 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class ExecuteAppFunctionRequest implements android.os.Parcelable {
     method public int describeContents();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @Nullable public android.app.appfunctions.AppFunctionAttribution getAttribution();
     method @NonNull public android.os.Bundle getExtras();
     method @NonNull public String getFunctionIdentifier();
     method @NonNull public android.app.appsearch.GenericDocument getParameters();
@@ -8986,6 +9008,7 @@ package android.app.appfunctions {
   public static final class ExecuteAppFunctionRequest.Builder {
     ctor public ExecuteAppFunctionRequest.Builder(@NonNull String, @NonNull String);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest build();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setAttribution(@NonNull android.app.appfunctions.AppFunctionAttribution);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setExtras(@NonNull android.os.Bundle);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest.Builder setParameters(@NonNull android.app.appsearch.GenericDocument);
   }
