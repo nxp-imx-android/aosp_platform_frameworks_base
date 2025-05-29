@@ -31,28 +31,20 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na pamahalaan ang &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"device"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Papayagan ang app na ito na ma-access ang mga pahintulot na ito sa iyong <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for title_app_streaming (237666000400427614) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
-    <skip />
-    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
-    <skip />
+    <string name="title_app_streaming" msgid="237666000400427614">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na mag-stream ng mga app at feature ng system sa pagitan ng iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> at &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_app_streaming" msgid="8346968726357732862">"Bibigyan ang <xliff:g id="APP_NAME">%1$s</xliff:g> ng mga sumusunod na pahintulot:"</string>
+    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"Magkakaroon ng access ang <xliff:g id="APP_NAME_0">%1$s</xliff:g> sa kahit anong nakikita o pine-play sa iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe.&lt;br/&gt;&lt;br/&gt;Magagawa ng<xliff:g id="APP_NAME_1">%1$s</xliff:g> na mag-stream ng mga app sa <xliff:g id="DEVICE_NAME">%3$s</xliff:g> hanggang sa alisin mo ang access sa pahintulot na ito."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"Humihingi ang <xliff:g id="APP_NAME">%1$s</xliff:g> ng pahintulot para sa <xliff:g id="DEVICE_NAME">%2$s</xliff:g> na mag-stream ng mga app at feature ng system sa pagitan ng iyong mga device"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Payagan ang &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; na i-access ang impormasyong ito sa iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"Humihiling ng pahintulot ang <xliff:g id="APP_NAME">%1$s</xliff:g> para sa iyong <xliff:g id="DEVICE_NAME">%2$s</xliff:g> na ma-access ang mga larawan, media, at notification ng <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> mo"</string>
-    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
-    <skip />
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na mag-stream ng mga app at feature ng system sa pagitan ng iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> at &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"Bibigyan ang <xliff:g id="APP_NAME">%1$s</xliff:g> ng mga sumusunod na pahintulot:"</string>
+    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"Magkakaroon ng access ang <xliff:g id="APP_NAME_0">%1$s</xliff:g> sa kahit anong nakikita o pine-play sa <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe.&lt;br/&gt;&lt;br/&gt;Magagawa ng <xliff:g id="APP_NAME_2">%1$s</xliff:g> na mag-stream ng mga app sa <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> hanggang sa alisin mo ang access sa pahintulot na ito."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"Humihingi ang <xliff:g id="APP_NAME">%1$s</xliff:g> ng pahintulot para sa <xliff:g id="DEVICE_NAME">%2$s</xliff:g> na mag-stream ng mga app mula sa iyong <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Payagan ang &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; na mag-stream ng audio at mga feature ng system sa pagitan ng iyong <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> at &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
-    <skip />
+    <string name="summary_virtual_device" msgid="1062189396947962635">"Bibigyan ang <xliff:g id="APP_NAME">%2$s</xliff:g> ng mga sumusunod na pahintulot:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"device"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Magagawa ng app na ito na mag-sync ng impormasyon, tulad ng pangalan ng taong tumatawag, sa pagitan ng telepono mo at ng napiling device"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Payagan"</string>
@@ -92,8 +84,7 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Padalhan ka ng mga notification"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"I-stream ang mikropono, camera, at iba pang data ng sensor sa iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> mula sa &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"I-record, i-cast, o i-share ang screen ng iyong <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sa &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Magkakaroon ng access ang <xliff:g id="APP_NAME">%1$s</xliff:g> sa anumang nakikita o nagpe-play sa <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> mo, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe."</string>
-    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
-    <skip />
+    <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"I-stream ang mga app ng iyong <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sa &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Magkakaroon ng access ang <xliff:g id="APP_NAME">%1$s</xliff:g> sa anumang nakikita o nagpe-play sa <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe, kahit kapag naka-lock ang <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> mo."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"I-access ang listahan ng mga available na device at kontrolin kung alin ang magsi-stream o magka-cast ng audio o video mula sa iba pang app"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telepono"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>

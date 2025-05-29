@@ -31,28 +31,20 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;? ನಿರ್ವಹಿಸಲು &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ಗೆ ಅನುಮತಿಸಬೇಕೇ?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"ಸಾಧನ"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ನಲ್ಲಿ ಈ ಅನುಮತಿಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಈ ಆ್ಯಪ್‌ ಅನ್ನು ಅನುಮತಿಸಲಾಗುತ್ತದೆ"</string>
-    <!-- no translation found for title_app_streaming (237666000400427614) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
-    <skip />
-    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
-    <skip />
+    <string name="title_app_streaming" msgid="237666000400427614">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ಮತ್ತು &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ರ ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ಅನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
+    <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಈ ಕೆಳಗಿನ ಅನುಮತಿಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ:"</string>
+    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"ಆಡಿಯೋ, ಫೋಟೋಗಳು, ಪಾವತಿ ಮಾಹಿತಿ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಸಂದೇಶಗಳು ಸೇರಿದಂತೆ ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ನಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಲಾಗುವ ಯಾವುದೇ ಕಂಟೆಂಟ್‌ಗೆ <xliff:g id="APP_NAME_0">%1$s</xliff:g> ಆ್ಯಕ್ಸೆಸ್ ಹೊಂದಿರುತ್ತದೆ. ನೀವು ಈ ಅನುಮತಿಗೆ ಆ್ಯಕ್ಸೆಸ್‌ ಅನ್ನು ತೆಗೆದುಹಾಕುವವರೆಗೆ <xliff:g id="DEVICE_NAME">%3$s</xliff:g> ಗೆ ಆ್ಯಪ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="APP_NAME_1">%1$s</xliff:g> ಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"ನಿಮ್ಮ ಸಾಧನಗಳ ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ನ ಪರವಾಗಿ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನುಮತಿಯನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ನಿಂದ ಈ ಮಾಹಿತಿಯನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; ಗೆ ಅನುಮತಿಸಿ"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ನ ಫೋಟೋಗಳು, ಮೀಡಿಯಾ ಮತ್ತು ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ನಿಮ್ಮ <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ಪರವಾಗಿ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನುಮತಿಯನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ"</string>
-    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
-    <skip />
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ಮತ್ತು &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ರ ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ಅನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
+    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಈ ಕೆಳಗಿನ ಅನುಮತಿಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ:"</string>
+    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"ಆಡಿಯೋ, ಫೋಟೋಗಳು, ಪಾವತಿ ಮಾಹಿತಿ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಸಂದೇಶಗಳು ಸೇರಿದಂತೆ <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g> ನಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಲಾಗುವ ಯಾವುದೇ ಕಂಟೆಂಟ್‌ಗೆ <xliff:g id="APP_NAME_0">%1$s</xliff:g> ಆ್ಯಕ್ಸೆಸ್ ಹೊಂದಿರುತ್ತದೆ. ನೀವು ಈ ಅನುಮತಿಗೆ ಆ್ಯಕ್ಸೆಸ್‌ ಅನ್ನು ತೆಗೆದುಹಾಕುವವರೆಗೆ <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> ಗೆ ಆ್ಯಪ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="APP_NAME_2">%1$s</xliff:g> ಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ನಿಂದ ಆ್ಯಪ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ಪರವಾಗಿ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನುಮತಿಗಾಗಿ ವಿನಂತಿಸುತ್ತಿದೆ"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> ಮತ್ತು <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ರ ನಡುವೆ ಆಡಿಯೋ ಮತ್ತು ಸಿಸ್ಟಮ್ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
-    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
-    <skip />
+    <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> ಗೆ ಈ ಕೆಳಗಿನ ಅನುಮತಿಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"ಸಾಧನ"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ಮೊಬೈಲ್ ಫೋನ್ ಮತ್ತು ಆಯ್ಕೆಮಾಡಿದ ಸಾಧನದ ನಡುವೆ, ಕರೆ ಮಾಡುವವರ ಹೆಸರಿನಂತಹ ಮಾಹಿತಿಯನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಈ ಆ್ಯಪ್‌ಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ"</string>
     <string name="consent_yes" msgid="8344487259618762872">"ಅನುಮತಿಸಿ"</string>
@@ -92,8 +84,7 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ನಿಮ್ಮ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಕಳುಹಿಸಿ"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮರಾ ಮತ್ತು ಇತರ ಸೆನ್ಸಾರ್ ಡೇಟಾವನ್ನು &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ನಿಂದ ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ಗೆ ಸ್ಟ್ರೀಮ್ ಮಾಡಿ."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ನ ಸ್ಕ್ರೀನ್ ಅನ್ನು &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ನಲ್ಲಿ ರೆಕಾರ್ಡ್ ಮಾಡಿ, ಬಿತ್ತರಿಸಿ ಅಥವಾ ಹಂಚಿಕೊಳ್ಳಿ.&lt;br/&gt;&lt;br/&gt;ಆಡಿಯೋ, ಫೋಟೋಗಳು, ಪಾವತಿಯ ಮಾಹಿತಿ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಸಂದೇಶಗಳು ಸೇರಿದಂತೆ, ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> ನಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಲಾಗುವ ಯಾವುದೇ ಕಂಟೆಂಟ್‌ಗೆ <xliff:g id="APP_NAME">%1$s</xliff:g> ಆ್ಯಕ್ಸೆಸ್ ಹೊಂದಿರುತ್ತದೆ."</string>
-    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
-    <skip />
+    <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ನ ಆ್ಯಪ್‌ಗಳನ್ನು &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; ನಲ್ಲಿ ಸ್ಟ್ರೀಮ್ ಮಾಡಿ.&lt;br/&gt;&lt;br/&gt;ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ಲಾಕ್ ಆಗಿದ್ದರೂ ಸಹ, ಆಡಿಯೋ, ಫೋಟೋಗಳು, ಪಾವತಿ ಮಾಹಿತಿ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಸಂದೇಶಗಳು ಸೇರಿದಂತೆ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> ನಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುವ ಅಥವಾ ಪ್ಲೇ ಮಾಡಲಾಗುವ ಯಾವುದೇ ಕಂಟೆಂಟ್‌ಗೆ <xliff:g id="APP_NAME">%1$s</xliff:g> ಆ್ಯಕ್ಸೆಸ್ ಹೊಂದಿರುತ್ತದೆ."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ಲಭ್ಯವಿರುವ ಸಾಧನಗಳ ಪಟ್ಟಿಯನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಿ ಮತ್ತು ಇತರ ಆ್ಯಪ್‌ಗಳಿಂದ ಯಾವುದು ಆಡಿಯೋ ಅಥವಾ ವೀಡಿಯೊವನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡುವುದು ಅಥವಾ ಕ್ಯಾಸ್ಟ್ ಮಾಡುವುದನ್ನು ಕಂಟ್ರೋಲ್ ಮಾಡಿ"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ಫೋನ್"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ಟ್ಯಾಬ್ಲೆಟ್"</string>

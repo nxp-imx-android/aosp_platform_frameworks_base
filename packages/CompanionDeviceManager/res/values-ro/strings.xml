@@ -31,28 +31,20 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să gestioneze &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispozitiv"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Aplicația va putea să acceseze următoarele permisiuni pe <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <!-- no translation found for title_app_streaming (237666000400427614) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
-    <skip />
-    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
-    <skip />
+    <string name="title_app_streaming" msgid="237666000400427614">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să redea în stream aplicații și funcții de sistem între <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> și &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> va primi următoarele permisiuni:"</string>
+    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> va putea să redea în stream aplicații pe <xliff:g id="DEVICE_NAME">%3$s</xliff:g> până când elimini accesul la această permisiune."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> solicită permisiunea pentru <xliff:g id="DEVICE_NAME">%2$s</xliff:g> de a reda în stream aplicații și funcții de sistem între dispozitive"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Permite ca &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; să acceseze aceste informații de pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> solicită permisiunea pentru <xliff:g id="DEVICE_NAME">%2$s</xliff:g> de a accesa fotografiile, conținutul media și notificările de pe <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
-    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
-    <skip />
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să redea în stream aplicații și funcții de sistem între <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> și &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> va primi următoarele permisiuni:"</string>
+    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> va putea să redea în stream aplicații pe <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> până când elimini accesul la această permisiune."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> solicită permisiunea pentru <xliff:g id="DEVICE_NAME">%2$s</xliff:g> de a reda în stream aplicații de pe <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Permiți ca &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; să redea în stream conținut audio și funcții de sistem între <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> și &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
-    <skip />
+    <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> va primi următoarele permisiuni:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"dispozitiv"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Aplicația va putea să sincronizeze informații, cum ar fi numele unui apelant, între telefonul tău și dispozitivul ales"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permite"</string>
@@ -92,8 +84,7 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Să îți trimită notificări"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Să redea în stream date de la microfon, camera foto și alți senzori de pe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Să înregistreze, să proiecteze sau să trimită ecranul <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> la &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje."</string>
-    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
-    <skip />
+    <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Să redea în stream aplicațiile de pe <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> pe &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje, chiar dacă <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> este blocat."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accesează lista dispozitivelor disponibile și alege-l pe cel care redă în stream sau proiectează conținut audio sau video din alte aplicații"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletă"</string>
