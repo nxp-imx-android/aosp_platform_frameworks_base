@@ -35,7 +35,7 @@ package com.android.systemui.keyguard.domain.interactor
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
@@ -48,6 +48,7 @@ import com.android.systemui.communal.domain.interactor.setCommunalV2Available
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.data.repository.FakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
@@ -73,6 +74,7 @@ import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInterac
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth
 import junit.framework.Assert.assertEquals
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -81,11 +83,25 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.reset
-import kotlin.time.Duration.Companion.milliseconds
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class FromAodTransitionInteractorTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class FromAodTransitionInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf().andSceneContainer()
+        }
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     private val kosmos =
         testKosmos().apply {
             this.keyguardTransitionRepository = fakeKeyguardTransitionRepositorySpy
@@ -451,6 +467,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    @DisableSceneContainer
     fun testTransitionToGlanceableHub_onWakeUpFromAod() =
         kosmos.runTest {
             setCommunalV2Available(true)
@@ -470,6 +487,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    @DisableSceneContainer
     fun testDoNotTransitionToGlanceableHub_onWakeUpFromAodDueToMotion() =
         kosmos.runTest {
             setCommunalV2Available(true)
