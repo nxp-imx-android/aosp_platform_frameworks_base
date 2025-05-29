@@ -77,16 +77,6 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         NON_RESIZABLE
     }
 
-    /** Wait for an app moved to desktop to finish its transition. */
-    private fun waitForAppToMoveToDesktop(wmHelper: WindowManagerStateHelper) {
-        wmHelper
-            .StateSyncBuilder()
-            .withWindowSurfaceAppeared(innerHelper)
-            .withFreeformApp(innerHelper)
-            .withAppTransitionIdle()
-            .waitForAndVerify()
-    }
-
     /** Launch an app and ensure it's moved to Desktop if it has not. */
     fun enterDesktopMode(
         wmHelper: WindowManagerStateHelper,
@@ -118,7 +108,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
             device = device,
             motionEventHelper = motionEventHelper
         )
-        waitForAppToMoveToDesktop(wmHelper)
+        waitForTransitionToFreeform(wmHelper)
     }
 
     private fun dragToDesktop(
@@ -549,7 +539,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     ) {
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_DPAD_DOWN, META_META_ON or META_CTRL_ON)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        waitForTransitionToFreeform(wmHelper)
     }
 
     fun exitDesktopModeToFullScreenViaKeyboard(
@@ -557,7 +547,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     ) {
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_DPAD_UP, META_META_ON or META_CTRL_ON)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        waitForTransitionToFullscreen(wmHelper)
     }
 
     fun enterDesktopModeFromAppHandleMenu(
@@ -575,12 +565,11 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
 
         val pill = getDesktopAppViewByRes(PILL_CONTAINER)
         val desktopModeButton =
-            pill
-                ?.children
-                ?.find { it.resourceName.endsWith(DESKTOP_MODE_BUTTON) }
+            pill.children?.find { it.resourceName.endsWith(DESKTOP_MODE_BUTTON) }
+                ?: error("Unable to find Desktop Mode button")
 
-        desktopModeButton?.click()
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        desktopModeButton.click()
+        waitForTransitionToFreeform(wmHelper)
     }
 
     fun moveToNextDisplayViaKeyboard(wmHelper: WindowManagerStateHelper) {
@@ -589,7 +578,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
-    private fun getDesktopAppViewByRes(viewResId: String): UiObject2? =
+    private fun getDesktopAppViewByRes(viewResId: String): UiObject2 =
         DeviceHelpers.waitForObj(By.res(SYSTEMUI_PACKAGE, viewResId), TIMEOUT)
 
     private fun getDisplayRect(wmHelper: WindowManagerStateHelper): Rect =
@@ -610,6 +599,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     fun waitForTransitionToFreeform(wmHelper: WindowManagerStateHelper) {
         wmHelper
             .StateSyncBuilder()
+            .withWindowSurfaceAppeared(innerHelper)
             .withFreeformApp(innerHelper)
             .withAppTransitionIdle()
             .waitForAndVerify()
