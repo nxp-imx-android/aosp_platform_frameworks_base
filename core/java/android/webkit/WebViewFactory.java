@@ -541,15 +541,8 @@ public final class WebViewFactory {
             Trace.traceBegin(Trace.TRACE_TAG_WEBVIEW, "WebViewFactory.getChromiumProviderClass()");
             try {
                 sTimestamps.mAddAssetsStart = SystemClock.uptimeMillis();
-                if (android.content.res.Flags.registerResourcePaths()) {
-                    Resources.registerResourcePaths(webViewContext.getPackageName(),
-                            webViewContext.getApplicationInfo());
-                } else {
-                    for (String newAssetPath : webViewContext.getApplicationInfo()
-                            .getAllApkPaths()) {
-                        initialApplication.getAssets().addAssetPathAsSharedLibrary(newAssetPath);
-                    }
-                }
+                Resources.registerResourcePaths(webViewContext.getPackageName(),
+                        webViewContext.getApplicationInfo());
                 sTimestamps.mAddAssetsEnd = sTimestamps.mGetClassLoaderStart =
                         SystemClock.uptimeMillis();
                 ClassLoader clazzLoader = webViewContext.getClassLoader();
