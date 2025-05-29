@@ -94,12 +94,7 @@ fun ShortPill(
             Modifier.graphicsLayer { alpha = enterProgress * expansionAlpha }
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
-                .animatedActionBorder(
-                    strokeWidth = 2.dp,
-                    strokeColor = outlineColor,
-                    cornerRadius = 16.dp,
-                    visible = visible,
-                )
+                .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
                 .widthIn(0.dp, minSize * 2)
                 .clickable { onClick() }
                 .padding(4.dp)
@@ -195,7 +190,11 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
         modifier =
             modifier
                 .size(18.dp)
-                .border(1.dp, backgroundColor, CircleShape)
+                .border(
+                    width = 0.75.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = CircleShape,
+                )
                 .padding(1.dp)
                 .clip(CircleShape)
                 .background(backgroundColor),
