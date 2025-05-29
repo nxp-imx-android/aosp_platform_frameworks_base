@@ -213,6 +213,13 @@ flag {
 }
 
 flag {
+    name: "navbar_flip_order_option"
+    namespace: "accessibility"
+    description: "Adds a setting for users to change the order of the navbar's 3 main buttons."
+    bug: "410601652"
+}
+
+flag {
     name: "prevent_a11y_nontool_from_injecting_into_sensitive_views"
     namespace: "accessibility"
     description: "Prevents injected gestures from A11yServices without isAccessibilityTool=true from reaching AccessibilityDataSensitive UI elements"
