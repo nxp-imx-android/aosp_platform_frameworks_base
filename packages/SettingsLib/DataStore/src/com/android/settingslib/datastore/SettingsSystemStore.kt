@@ -86,9 +86,8 @@ class SettingsSystemStore private constructor(contentResolver: ContentResolver) 
                 }
 
         @VisibleForTesting
-        fun reset() {
+        fun resetInstance() {
             instance = null
-            System.clearProviderForTest()
         }
 
         /** Returns the required permissions to read [System] settings. */

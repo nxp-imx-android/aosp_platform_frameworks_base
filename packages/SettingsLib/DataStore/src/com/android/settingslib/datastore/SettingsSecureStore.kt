@@ -86,9 +86,8 @@ class SettingsSecureStore private constructor(contentResolver: ContentResolver) 
                 }
 
         @VisibleForTesting
-        fun reset() {
+        fun resetInstance() {
             instance = null
-            Secure.clearProviderForTest()
         }
 
         /** Returns the required permissions to read [Secure] settings. */
