@@ -21142,6 +21142,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
 
         if (isHorizontalScrollBarEnabled() || isVerticalScrollBarEnabled()) {
 
+            if (invalidate) {
+                // Invalidate to show the scrollbars
+                postInvalidateOnAnimation();
+            }
+
             if (scrollCache.state == ScrollabilityCache.OFF) {
                 // FIXME: this is copied from WindowManagerService.
                 // We should get this value from the system when it
@@ -21157,17 +21162,11 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
             scrollCache.state = ScrollabilityCache.ON;
 
             // Schedule our fader to run if it's not already scheduled
-            if (!scrollCache.fadeScrollBarsScheduled) {
-                if (invalidate) {
-                    // Invalidate to show the scrollbars
-                    postInvalidateOnAnimation();
-                }
-                if (mAttachInfo != null) {
-                    final Handler handler = mAttachInfo.mHandler;
-                    scrollCache.handler = handler;
-                    scrollCache.fadeScrollBarsScheduled = true;
-                    handler.postAtTime(scrollCache, fadeStartTime);
-                }
+            if (!scrollCache.fadeScrollBarsScheduled && mAttachInfo != null) {
+                final Handler handler = mAttachInfo.mHandler;
+                scrollCache.handler = handler;
+                scrollCache.fadeScrollBarsScheduled = true;
+                handler.postAtTime(scrollCache, fadeStartTime);
             }
 
             return true;
