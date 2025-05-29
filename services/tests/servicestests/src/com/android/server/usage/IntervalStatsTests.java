@@ -17,9 +17,8 @@ package com.android.server.usage;
 
 import static android.app.usage.UsageEvents.Event.MAX_EVENT_TYPE;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import android.app.usage.Flags;
 import android.app.usage.UsageEvents;
@@ -27,8 +26,8 @@ import android.app.usage.UsageStatsManager;
 import android.content.res.Configuration;
 import android.os.PersistableBundle;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.util.ArrayUtils;
 
@@ -40,12 +39,10 @@ import java.util.Locale;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class IntervalStatsTests {
+public final class IntervalStatsTests {
     private static final int NUMBER_OF_PACKAGES = 7;
     private static final int NUMBER_OF_EVENTS_PER_PACKAGE = 200;
     private static final int NUMBER_OF_EVENTS = NUMBER_OF_PACKAGES * NUMBER_OF_EVENTS_PER_PACKAGE;
-
-    private long mEndTime = 0;
 
     private void populateIntervalStats(IntervalStats intervalStats) {
         final int timeProgression = 23;
@@ -77,7 +74,6 @@ public class IntervalStatsTests {
             event.mTimeStamp = time;
             event.mEventType = i % (MAX_EVENT_TYPE + 1); //"random" event type
             event.mInstanceId = instanceId;
-
 
             final int rootPackageInt = (i % 5); // 5 "apps" start each task
             event.mTaskRootPackage = "fake.package.name" + rootPackageInt;
@@ -121,7 +117,6 @@ public class IntervalStatsTests {
 
             time += timeProgression; // Arbitrary progression of time
         }
-        mEndTime = time;
 
         final Configuration config1 = new Configuration();
         config1.fontScale = 3.3f;
@@ -145,12 +140,12 @@ public class IntervalStatsTests {
         intervalStats.obfuscateData(packagesTokenData);
 
         // data is populated with 7 different "apps"
-        assertEquals(packagesTokenData.tokensToPackagesMap.size(), NUMBER_OF_PACKAGES);
-        assertEquals(packagesTokenData.packagesToTokensMap.size(), NUMBER_OF_PACKAGES);
-        assertEquals(packagesTokenData.counter, NUMBER_OF_PACKAGES + 1);
+        assertThat(packagesTokenData.tokensToPackagesMap.size()).isEqualTo(NUMBER_OF_PACKAGES);
+        assertThat(packagesTokenData.packagesToTokensMap.size()).isEqualTo(NUMBER_OF_PACKAGES);
+        assertThat(packagesTokenData.counter).isEqualTo(NUMBER_OF_PACKAGES + 1);
 
-        assertEquals(intervalStats.events.size(), NUMBER_OF_EVENTS);
-        assertEquals(intervalStats.packageStats.size(), NUMBER_OF_PACKAGES);
+        assertThat(intervalStats.events.size()).isEqualTo(NUMBER_OF_EVENTS);
+        assertThat(intervalStats.packageStats.size()).isEqualTo(NUMBER_OF_PACKAGES);
     }
 
     @Test
@@ -163,13 +158,13 @@ public class IntervalStatsTests {
         intervalStats.deobfuscateData(packagesTokenData);
 
         // ensure deobfuscation doesn't update any of the mappings data
-        assertEquals(packagesTokenData.tokensToPackagesMap.size(), NUMBER_OF_PACKAGES);
-        assertEquals(packagesTokenData.packagesToTokensMap.size(), NUMBER_OF_PACKAGES);
-        assertEquals(packagesTokenData.counter, NUMBER_OF_PACKAGES + 1);
+        assertThat(packagesTokenData.tokensToPackagesMap.size()).isEqualTo(NUMBER_OF_PACKAGES);
+        assertThat(packagesTokenData.packagesToTokensMap.size()).isEqualTo(NUMBER_OF_PACKAGES);
+        assertThat(packagesTokenData.counter).isEqualTo(NUMBER_OF_PACKAGES + 1);
 
         // ensure deobfuscation didn't remove any events or usage stats
-        assertEquals(intervalStats.events.size(), NUMBER_OF_EVENTS);
-        assertEquals(intervalStats.packageStats.size(), NUMBER_OF_PACKAGES);
+        assertThat(intervalStats.events.size()).isEqualTo(NUMBER_OF_EVENTS);
+        assertThat(intervalStats.packageStats.size()).isEqualTo(NUMBER_OF_PACKAGES);
     }
 
     @Test
@@ -186,9 +181,9 @@ public class IntervalStatsTests {
 
         intervalStats.deobfuscateData(packagesTokenData);
         // deobfuscation should have removed all events mapped to package token 2
-        assertEquals(intervalStats.events.size(),
-                NUMBER_OF_EVENTS - NUMBER_OF_EVENTS_PER_PACKAGE - 1);
-        assertEquals(intervalStats.packageStats.size(), NUMBER_OF_PACKAGES - 1);
+        assertThat(intervalStats.events.size())
+                .isEqualTo(NUMBER_OF_EVENTS - NUMBER_OF_EVENTS_PER_PACKAGE - 1);
+        assertThat(intervalStats.packageStats.size()).isEqualTo(NUMBER_OF_PACKAGES - 1);
     }
 
     @Test
@@ -206,8 +201,9 @@ public class IntervalStatsTests {
         intervalStats.deobfuscateData(packagesTokenData);
         // deobfuscation should not have removed all events for a package - however, it's possible
         // that some events were removed because of how shortcut and notification events are handled
-        assertTrue(intervalStats.events.size() > NUMBER_OF_EVENTS - NUMBER_OF_EVENTS_PER_PACKAGE);
-        assertEquals(intervalStats.packageStats.size(), NUMBER_OF_PACKAGES);
+        assertThat(intervalStats.events.size())
+                .isGreaterThan(NUMBER_OF_EVENTS - NUMBER_OF_EVENTS_PER_PACKAGE);
+        assertThat(intervalStats.packageStats.size()).isEqualTo(NUMBER_OF_PACKAGES);
     }
 
     // All fields in this list are defined in IntervalStats and persisted - please ensure they're
@@ -222,13 +218,13 @@ public class IntervalStatsTests {
 
     @Test
     public void testIntervalStatsFieldsAreKnown() {
-        final IntervalStats stats = new IntervalStats();
-        final Field[] fields = stats.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            if (!(ArrayUtils.contains(INTERVALSTATS_PERSISTED_FIELDS, field.getName())
-                    || ArrayUtils.contains(INTERVALSTATS_IGNORED_FIELDS, field.getName()))) {
-                fail("Found an unknown field: " + field.getName() + ". Please correctly update "
-                        + "either INTERVALSTATS_PERSISTED_FIELDS or INTERVALSTATS_IGNORED_FIELDS.");
+        for (Field field : IntervalStats.class.getDeclaredFields()) {
+            final String fieldName = field.getName();
+            if (!(ArrayUtils.contains(INTERVALSTATS_PERSISTED_FIELDS, fieldName)
+                    || ArrayUtils.contains(INTERVALSTATS_IGNORED_FIELDS, fieldName))) {
+                assertWithMessage("Found an unknown field: " + fieldName
+                        + ". Please correctly update either INTERVALSTATS_PERSISTED_FIELDS"
+                        + " or INTERVALSTATS_IGNORED_FIELDS.").fail();
             }
         }
     }
