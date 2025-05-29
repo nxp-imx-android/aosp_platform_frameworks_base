@@ -262,6 +262,15 @@ flag {
 }
 
 flag {
+     name: "ipc_data_cache_module_adservices"
+     namespace: "system_performance"
+     description: "IpcDataCache module for AdServices."
+     is_fixed_read_only: true
+     bug: "415306020"
+     is_exported: true
+}
+
+flag {
      name: "ipc_data_cache_testmode_apis"
      namespace: "system_performance"
      description: "Expose IpcDataCache testmode apis to mainline modules."
