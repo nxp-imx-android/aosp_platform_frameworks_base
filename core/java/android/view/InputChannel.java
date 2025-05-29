@@ -30,6 +30,15 @@ import libcore.util.NativeAllocationRegistry;
  * a window in another process.  It is Parcelable so that it can be sent
  * to the process that is to receive events.  Only one thread should be reading
  * from an InputChannel at a time.
+ *
+ * The InputChannel object follows 'move' semantics - there should only be a single owner of the
+ * InputChannel object at a time. This is done by transferring ownership of the native object.
+ * Typically, the InputEventReceiver is the class that takes over the ownership of InputChannel.
+ *
+ * Incorrect handling of InputChannel objects will cause hard-to-detect bugs like ANRs and
+ * unresponsive UI.
+ *
+ * If in doubt, consult with the Android Framework Input team about your InputChannel usage.
  * @hide
  */
 public final class InputChannel implements Parcelable {
@@ -61,6 +70,7 @@ public final class InputChannel implements Parcelable {
     };
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    // The address of the native object.
     private long mPtr; // used by native code
 
     private static native long[] nativeOpenInputChannelPair(String name);
@@ -73,6 +83,20 @@ public final class InputChannel implements Parcelable {
     private native IBinder nativeGetToken(long channel);
 
     private native String nativeGetName(long channel);
+    private native boolean nativeIsValid(long channel);
+
+    public static class UninitializedException extends IllegalStateException {
+        public UninitializedException(String message) {
+            super(message);
+        }
+    }
+
+    private void checkValid() {
+        if (mPtr == 0 || !nativeIsValid(mPtr)) {
+            throw new UninitializedException(
+                "InputChannel is not initialized or has already been disposed");
+        }
+    }
 
     /**
      * Creates an uninitialized input channel.
@@ -86,8 +110,6 @@ public final class InputChannel implements Parcelable {
     /**
      *  Set Native input channel object from native space.
      *  @param nativeChannel the native channel object.
-     *
-     *  @hide
      */
     private void setNativeInputChannel(long nativeChannel) {
         if (nativeChannel == 0) {
@@ -133,6 +155,7 @@ public final class InputChannel implements Parcelable {
      * @return The input channel name.
      */
     public String getName() {
+        checkValid();
         String name = nativeGetName(mPtr);
         return name != null ? name : "uninitialized";
     }
@@ -149,9 +172,15 @@ public final class InputChannel implements Parcelable {
     /**
      * Creates a copy of this instance to the outParameter. This is used to pass an input channel
      * as an out parameter in a binder call.
+     *
+     * This function should be avoided. You almost never want to actually make a copy of the
+     * channel. Incorrectly storing InputChannel will result in difficult-to-track ANRs in your
+     * process. Long-term, the input team is looking into removing this capability altogether.
+     *
      * @param other The other input channel instance.
      */
     public void copyTo(InputChannel outParameter) {
+        checkValid();
         if (outParameter == null) {
             throw new IllegalArgumentException("outParameter must not be null");
         }
@@ -163,8 +192,12 @@ public final class InputChannel implements Parcelable {
 
     /**
      * Duplicates the input channel.
+     * This function should be avoided. You almost never want to actually make a copy of the
+     * channel. Incorrectly storing InputChannel will result in difficult-to-track ANRs in your
+     * process. Long-term, the input team is looking into removing this capability altogether.
      */
     public InputChannel dup() {
+        checkValid();
         InputChannel target = new InputChannel();
         target.setNativeInputChannel(nativeDup(mPtr));
         return target;
@@ -185,6 +218,11 @@ public final class InputChannel implements Parcelable {
         }
     }
 
+    /**
+     * This is a one-way, destructive operation. Sending the InputChannel across the binder
+     * interface will cause the ownership of the channel to be transferred to the recipient.
+     * The InputChannel object will be invalidated after calling this method.
+     */
     @Override
     public void writeToParcel(Parcel out, int flags) {
         if (out == null) {
@@ -204,6 +242,7 @@ public final class InputChannel implements Parcelable {
     }
 
     public IBinder getToken() {
+        checkValid();
         return nativeGetToken(mPtr);
     }
 }

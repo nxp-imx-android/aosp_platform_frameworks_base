@@ -733,8 +733,8 @@ void InputFrameMetricsObserver::notify(const uirenderer::FrameInfoBuffer& buffer
 
 static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak,
         jobject inputChannelObj, jobject messageQueueObj) {
-    std::shared_ptr<InputChannel> inputChannel =
-            android_view_InputChannel_getInputChannel(env, inputChannelObj);
+    std::unique_ptr<InputChannel> inputChannel =
+            android_view_InputChannel_extractInputChannel(env, inputChannelObj);
     if (inputChannel == nullptr) {
         jniThrowRuntimeException(env, "InputChannel is not initialized.");
         return 0;
@@ -747,7 +747,8 @@ static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak,
     }
 
     sp<NativeInputEventReceiver> receiver =
-            sp<NativeInputEventReceiver>::make(env, receiverWeak, inputChannel, messageQueue);
+            sp<NativeInputEventReceiver>::make(env, receiverWeak, std::move(inputChannel),
+                                               messageQueue);
     status_t status = receiver->initialize();
     if (status) {
         std::string message = android::base::
