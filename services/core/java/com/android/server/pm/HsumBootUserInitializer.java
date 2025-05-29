@@ -200,7 +200,35 @@ public final class HsumBootUserInitializer {
                 }
                 return;
             }
-            createInitialUser(/* isMainUser= */ true);
+            if (!promoteAdminUserToMainUserIfNeeded(t)) {
+                createInitialUser(/* isMainUser= */ true);
+            }
+        } finally {
+            t.traceEnd();
+        }
+    }
+
+    private boolean promoteAdminUserToMainUserIfNeeded(TimingsTraceAndSlog t) {
+        t.traceBegin("promoteAdminUserToMainUserIfNeeded");
+        try {
+            // TODO(b/419086491): use getUsers(Filter)
+            var users = mUms.getUsers(/* excludeDying= */ true);
+            int numberUsers = users.size();
+            for (int i = 0; i < numberUsers; i++) {
+                var user = users.get(i);
+                if (user.isFull() && user.isAdmin()) {
+                    Slogf.i(TAG, "Promoting admin user (%d) as main user", user.id);
+                    if (!mUms.setMainUser(user.id)) {
+                        Slogf.e(TAG, "Failed to promote admin user (%d) as main user", user.id);
+                        continue;
+                    }
+                    return true;
+                }
+            }
+            if (DEBUG) {
+                Slogf.d(TAG, "No existing admin user was promoted as main user (users=%s)", users);
+            }
+            return false;
         } finally {
             t.traceEnd();
         }
@@ -223,9 +251,11 @@ public final class HsumBootUserInitializer {
             t.traceEnd();
         }
     }
+
     private void createAdminUserIfNeeded(TimingsTraceAndSlog t) {
         t.traceBegin("createAdminUserIfNeeded");
         try {
+            // TODO(b/419086491): use getUsers(Filter)
             int[] userIds = mUms.getUserIds();
             if (userIds != null && userIds.length > 1) {
                 if (DEBUG) {

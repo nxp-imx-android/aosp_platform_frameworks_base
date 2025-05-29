@@ -40,6 +40,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
+import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_PROMOTE_MAIN_USER;
 import static com.android.server.pm.UserManagerService.BOOT_TO_HSU_FOR_PROVISIONED_DEVICE;
 import static com.android.server.pm.UserManagerService.BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER;
 
@@ -1515,6 +1516,113 @@ public final class UserManagerServiceMockedTest {
         assertDefaultSystemUserName(resolvedNameUsers);
     }
 
+    @Test
+    @EnableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser() {
+        assumeDoesntHaveMainUser();
+        var adminUser = createAdminUser();
+        int userId = adminUser.id;
+        // Make sure the new user is not the main user
+        expect.withMessage("getMainUser() before").that(mUms.getMainUserId()).isNotEqualTo(userId);
+
+        expect.withMessage("setMainUser(%s)", userId).that(mUms.setMainUser(userId)).isTrue();
+
+        // Make sure it changed
+        expect.withMessage("getMainUser() after").that(mUms.getMainUserId()).isEqualTo(userId);
+
+        // assert journey logged
+        expectUserJourneyLogged(userId, USER_JOURNEY_PROMOTE_MAIN_USER);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_hasMainUser() {
+        var mainUserId = assumeHasMainUser();
+        var adminUser = createAdminUser();
+        int userId = adminUser.id;
+
+        expect.withMessage("setMainUser(%s)", userId).that(mUms.setMainUser(userId)).isFalse();
+
+        // Make sure it didn't change
+        expect.withMessage("getMainUser()").that(mUms.getMainUserId()).isEqualTo(mainUserId);
+
+        // assert journey not logged
+        expectUserJourneyNotLogged(userId, USER_JOURNEY_PROMOTE_MAIN_USER);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_userNotFound() {
+        assumeDoesntHaveMainUser();
+        int userId = 666;
+
+        expect.withMessage("setMainUser(%s)", userId).that(mUms.setMainUser(userId)).isFalse();
+
+        // Make sure it didn't change
+        expect.withMessage("getMainUser()").that(mUms.getMainUserId())
+                .isEqualTo(UserHandle.USER_NULL);
+
+        // assert journey not logged
+        expectUserJourneyNotLogged(userId, USER_JOURNEY_PROMOTE_MAIN_USER);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_userNotAdmin() {
+        assumeDoesntHaveMainUser();
+        var regularUser = createRegularUser();
+        int userId = regularUser.id;
+
+        expect.withMessage("setMainUser(%s)", userId).that(mUms.setMainUser(userId)).isFalse();
+
+        // Make sure it didn't change
+        expect.withMessage("getMainUser()").that(mUms.getMainUserId())
+                .isEqualTo(UserHandle.USER_NULL);
+
+        // assert journey not logged
+        expectUserJourneyNotLogged(userId, USER_JOURNEY_PROMOTE_MAIN_USER);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_flagDisabled() {
+        assumeDoesntHaveMainUser();
+        var adminUser = createAdminUser();
+        int userId = adminUser.id;
+        // Make sure the new user is not the main user
+        expect.withMessage("getMainUser() before").that(mUms.getMainUserId()).isNotEqualTo(userId);
+
+        expect.withMessage("setMainUser(%s)", userId).that(mUms.setMainUser(userId)).isFalse();
+
+        // Make sure it didn't change
+        expect.withMessage("getMainUser() after").that(mUms.getMainUserId())
+                .isEqualTo(UserHandle.USER_NULL);
+
+        // assert journey logged
+        expectUserJourneyNotLogged(userId, USER_JOURNEY_PROMOTE_MAIN_USER);
+    }
+
+    @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_hasMainUser_flagDisabled() {
+        // Should behave the same as when it's enabled (i.e. be a no-op)
+        testSetMainUser_hasMainUser();
+    }
+
+    @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_userNotFound_flagDisabled() {
+        // Should behave the same as when it's enabled (i.e. be a no-op)
+        testSetMainUser_userNotFound();
+    }
+
+    @Test
+    @DisableFlags(FLAG_DEMOTE_MAIN_USER)
+    public void testSetMainUser_userNotAdmin_flagDisabled() {
+        // Should behave the same as when it's enabled (i.e. be a no-op)
+        testSetMainUser_userNotAdmin();
+    }
+
     /**
      * Returns true if the user's XML file has Default restrictions
      * @param userId Id of the user.
@@ -1693,12 +1801,39 @@ public final class UserManagerServiceMockedTest {
                 mainUserId == USER_SYSTEM);
     }
 
+    @UserIdInt
+    private int assumeHasMainUser() {
+        var mainUserId = mUms.getMainUserId();
+        assumeFalse("main user exists (id=" + mainUserId + ")", mainUserId == UserHandle.USER_NULL);
+        return mainUserId;
+    }
+
+    private void assumeDoesntHaveMainUser() {
+        var mainUserId = mUms.getMainUserId();
+        assumeTrue("main user doesn't exsit", mainUserId == UserHandle.USER_NULL);
+    }
+
     private UserInfo createMainUser() {
-        UserInfo mainUser = mUms.createUserWithThrow("The Name is User, Main User",
+        UserInfo user = mUms.createUserWithThrow("The Name is User, Main User",
                 USER_TYPE_FULL_SECONDARY,
                 UserInfo.FLAG_ADMIN | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN);
-        Log.d(TAG, "created main user: " + mainUser);
-        return mainUser;
+        Log.d(TAG, "created main user: " + user);
+        return user;
+    }
+
+    private UserInfo createAdminUser() {
+        UserInfo user = mUms.createUserWithThrow("The Name is Admin, Admin User",
+                USER_TYPE_FULL_SECONDARY,
+                UserInfo.FLAG_ADMIN | UserInfo.FLAG_FULL);
+        Log.d(TAG, "created admin user: " + user);
+        return user;
+    }
+
+    private UserInfo createRegularUser() {
+        UserInfo user = mUms.createUserWithThrow("The Name is Regular, Regular User",
+                USER_TYPE_FULL_SECONDARY, UserInfo.FLAG_FULL);
+        Log.d(TAG, "created regular user: " + user);
+        return user;
     }
 
     private UserInfo getSystemUser() {

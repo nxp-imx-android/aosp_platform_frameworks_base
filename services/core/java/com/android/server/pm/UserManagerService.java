@@ -44,6 +44,7 @@ import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_ALREADY_AN
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_IS_NOT_AN_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
+import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_PROMOTE_MAIN_USER;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_GRANT_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_REVOKE_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_CREATE;
@@ -8851,6 +8852,11 @@ public class UserManagerService extends IUserManager.Stub {
         return defaultValue;
     }
 
+    /**
+     * "Demotes" the main user to be just an admin.
+     *
+     * <p>Should be called only by {@link HsumBootUserInitializer} and unit tests
+     */
     boolean demoteMainUser() {
         if (!android.multiuser.Flags.demoteMainUser()) {
             Slog.d(LOG_TAG, "demoteMainUser(): ignoring because flag is disabled");
@@ -8875,6 +8881,48 @@ public class UserManagerService extends IUserManager.Stub {
             writeUserLP(userData);
             return true;
         }
+    }
+
+    /**
+     * Sets the given user as the main user.
+     *
+     * <p>User must be an admin (and alive), and the current main user must be {@code null}.
+     *
+     * <p>Should be called only by {@link HsumBootUserInitializer} and unit tests
+     *
+     * @return whether it succeeded.
+     */
+    boolean setMainUser(@UserIdInt int userId) {
+        if (!android.multiuser.Flags.demoteMainUser()) {
+            Slogf.d(LOG_TAG, "setMainUser(%d): ignoring because flag is disabled", userId);
+            return false;
+        }
+        synchronized (mUsersLock) {
+            var mainUser = getMainUserLU();
+            if (mainUser != null) {
+                Slogf.e(LOG_TAG, "setMainUser(%d): already have a main user (%d)", userId,
+                        mainUser.id);
+                return false;
+            }
+
+            var userData = getUserDataLU(userId);
+            if (userData == null) {
+                Slogf.e(LOG_TAG, "setMainUser(%d): user not found", userId);
+                return false;
+
+            }
+            if (!userData.info.isAdmin()) {
+                Slogf.e(LOG_TAG, "setMainUser(%d): user is not an admin", userId);
+                return false;
+            }
+
+            Slogf.i(LOG_TAG, "Setting user %d as main user", userId);
+            mUserJourneyLogger.logUserJourneyBegin(userId, USER_JOURNEY_PROMOTE_MAIN_USER);
+            userData.info.flags |= UserInfo.FLAG_MAIN;
+            writeUserLP(userData);
+            return true;
+        }
+
     }
 
     /**
