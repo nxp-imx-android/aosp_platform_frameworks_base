@@ -6299,6 +6299,10 @@ public class Notification implements Parcelable
                 @NonNull TemplateBindResult result) {
             final Resources resources = mContext.getResources();
             final float density = resources.getDisplayMetrics().density;
+            int notifMarginId = notificationsRedesignTemplates()
+                    ? R.dimen.notification_2025_margin
+                    : R.dimen.notification_content_margin;
+            final float notificationMarginDp = resources.getDimension(notifMarginId) / density;
             int iconMarginId = notificationsRedesignTemplates()
                     ? R.dimen.notification_2025_right_icon_content_margin
                     : R.dimen.notification_right_icon_content_margin;
@@ -6337,8 +6341,8 @@ public class Notification implements Parcelable
             }
             // Margin needed for the header to accommodate the icon when shown
             final float extraMarginEndDpIfVisible = viewWidthDp + iconMarginDp;
-            result.setRightIconState(rightIcon != null /* visible */, viewWidthDp,
-                    viewHeightDp, extraMarginEndDpIfVisible, spaceForExpanderDp);
+            result.setRightIconState(rightIcon != null /* visible */, viewWidthDp, viewHeightDp,
+                    extraMarginEndDpIfVisible, spaceForExpanderDp, notificationMarginDp);
 
             if (mN.isPromotedOngoing() && !mParams.mHeaderless) {
                 result.mHeadingExtraMarginSet.setValues(
@@ -14932,7 +14936,7 @@ public class Notification implements Parcelable
 
         /**
          * The margin end that needs to be added to the heading so that it won't overlap
-         * with the large icon.  This value includes the space required to accommodate the large
+         * with the large icon. This value includes the space required to accommodate the large
          * icon, but should be added to the space needed to accommodate the expander. This does
          * not include the 16dp content margin that all notification views must have.
          */
@@ -14940,9 +14944,8 @@ public class Notification implements Parcelable
 
         /**
          * The margin end that needs to be added to the heading so that it won't overlap
-         * with the large icon.  This value includes the space required to accommodate the large
-         * icon as well as the expander.  This does not include the 16dp content margin that all
-         * notification views must have.
+         * with the large icon. This value includes the space required to accommodate the large
+         * icon as well as the expander. This DOES include the 16dp content margin.
          */
         public final MarginSet mHeadingFullMarginSet = new MarginSet();
 
@@ -14954,7 +14957,7 @@ public class Notification implements Parcelable
         public final MarginSet mTitleMarginSet = new MarginSet();
 
         public void setRightIconState(boolean visible, float widthDp, float heightDp,
-                float marginEndDpIfVisible, float spaceForExpanderDp) {
+                float marginEndDpIfVisible, float spaceForExpanderDp, float notificationMarginDp) {
             mRightIconVisible = visible;
             mRightIconWidthDp = widthDp;
             mRightIconHeightDp = heightDp;
@@ -14962,8 +14965,9 @@ public class Notification implements Parcelable
                     /* valueIfGone = */ 0,
                     /* valueIfVisible = */ marginEndDpIfVisible);
             mHeadingFullMarginSet.setValues(
-                    /* valueIfGone = */ spaceForExpanderDp,
-                    /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp);
+                    /* valueIfGone = */ spaceForExpanderDp + notificationMarginDp,
+                    /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp
+                            + notificationMarginDp);
             mTitleMarginSet.setValues(
                     /* valueIfGone = */ 0,
                     /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp);
