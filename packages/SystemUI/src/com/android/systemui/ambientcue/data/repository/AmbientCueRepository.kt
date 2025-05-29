@@ -142,7 +142,7 @@ constructor(
                                     icon =
                                         chip.icon?.loadDrawable(applicationContext)
                                             ?: applicationContext.getDrawable(
-                                                R.drawable.ic_content_paste_spark
+                                                R.drawable.ic_paste_spark
                                             )!!,
                                     label = title,
                                     attribution = chip.subtitle?.toString(),
