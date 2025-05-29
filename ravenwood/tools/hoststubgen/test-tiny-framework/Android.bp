@@ -222,6 +222,36 @@ genrule {
     ],
 }
 
+// Generate "MM" script for tiny-framework.
+// The output contains files in the fullpaths, so we use the next
+// build rule to remove the unnecessary prefixes.
+genrule {
+    name: "hoststubgen-test-tiny-framework-mm-output-orig",
+    tools: ["ravenhelper"],
+    cmd: "$(location ravenhelper) mm " +
+        "--output-script $(out) " +
+        "$(locations tiny-framework/src/**/*.java) " +
+        "< $(location mm-method-list.txt) ",
+    srcs: [
+        "tiny-framework/src/**/*.java",
+        "mm-method-list.txt",
+    ],
+    out: [
+        "mm-output-orig.sed.txt",
+    ],
+}
+
+genrule {
+    name: "hoststubgen-test-tiny-framework-mm-output-normalized",
+    cmd: "sed -e 's!^apply .*/test-tiny-framework/!apply \"!' $(in) > $(out)",
+    srcs: [
+        ":hoststubgen-test-tiny-framework-mm-output-orig",
+    ],
+    out: [
+        "mm-output.sed.txt",
+    ],
+}
+
 // Compare the dump of the jar files to the golden output.
 python_test_host {
     name: "tiny-framework-dump-test",
@@ -231,6 +261,7 @@ python_test_host {
     data: [
         "golden-output/*.txt",
         ":hoststubgen-test-tiny-framework-pta-output-normalized",
+        ":hoststubgen-test-tiny-framework-mm-output-normalized",
     ],
     java_data: [
         "hoststubgen-test-tiny-framework-orig-dump",
