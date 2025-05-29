@@ -21,7 +21,7 @@
     android:layout_height="@dimen/notification_right_icon_size"
     android:layout_gravity="top|end"
     android:layout_marginEnd="@dimen/notification_2025_right_icon_margin_end"
-    android:layout_marginVertical="@dimen/notification_2025_right_icon_vertical_margin"
+    android:layout_marginTop="@dimen/notification_2025_right_icon_vertical_margin"
     android:background="@drawable/notification_large_icon_outline"
     android:clipToOutline="true"
     android:importantForAccessibility="no"
