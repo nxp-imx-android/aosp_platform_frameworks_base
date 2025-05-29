@@ -36,8 +36,7 @@
     <string name="dock_multi_instances_not_supported_text" msgid="5011042177901502928">"આ ઍપ માત્ર 1 વિન્ડોમાં ખોલી શકાય છે"</string>
     <string name="forced_resizable_secondary_display" msgid="1768046938673582671">"ઍપ્લિકેશન ગૌણ ડિસ્પ્લે પર કદાચ કામ ન કરે."</string>
     <string name="activity_launch_on_secondary_display_failed_text" msgid="4226485344988071769">"ઍપ્લિકેશન ગૌણ ડિસ્પ્લે પર લૉન્ચનું સમર્થન કરતી નથી."</string>
-    <!-- no translation found for bubble_not_supported_text (8843806122229754809) -->
-    <skip />
+    <string name="bubble_not_supported_text" msgid="8843806122229754809">"ઍપ બબલને સપોર્ટ કરતી નથી"</string>
     <string name="accessibility_divider" msgid="6407584574218956849">"સ્ક્રીનને વિભાજિત કરતું વિભાજક"</string>
     <string name="divider_title" msgid="1963391955593749442">"સ્ક્રીનને વિભાજિત કરતું વિભાજક"</string>
     <string name="accessibility_action_divider_left_full" msgid="1792313656305328536">"ડાબી પૂર્ણ સ્ક્રીન"</string>

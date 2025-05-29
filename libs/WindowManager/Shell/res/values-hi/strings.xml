@@ -36,8 +36,7 @@
     <string name="dock_multi_instances_not_supported_text" msgid="5011042177901502928">"इस ऐप्लिकेशन को सिर्फ़ एक विंडो में खोला जा सकता है"</string>
     <string name="forced_resizable_secondary_display" msgid="1768046938673582671">"हो सकता है कि ऐप प्राइमरी (मुख्य) डिस्प्ले के अलावा बाकी दूसरे डिस्प्ले पर काम न करे."</string>
     <string name="activity_launch_on_secondary_display_failed_text" msgid="4226485344988071769">"प्राइमरी (मुख्य) डिस्प्ले के अलावा बाकी दूसरे डिस्प्ले पर ऐप लॉन्च नहीं किया जा सकता."</string>
-    <!-- no translation found for bubble_not_supported_text (8843806122229754809) -->
-    <skip />
+    <string name="bubble_not_supported_text" msgid="8843806122229754809">"इस ऐप्लिकेशन पर बबल की सुविधा काम नहीं करती"</string>
     <string name="accessibility_divider" msgid="6407584574218956849">"स्प्लिट स्क्रीन डिवाइडर मोड"</string>
     <string name="divider_title" msgid="1963391955593749442">"स्प्लिट स्क्रीन डिवाइडर मोड"</string>
     <string name="accessibility_action_divider_left_full" msgid="1792313656305328536">"बाईं स्क्रीन को फ़ुल स्क्रीन बनाएं"</string>
