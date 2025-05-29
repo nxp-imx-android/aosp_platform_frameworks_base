@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"인증됨"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"인증 취소"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"옵션 더보기"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"옵션 더보기"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"다른 방법으로 인증"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"본인 확인 관리"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"본인 확인이 사용 설정되어 있으며 생체 인식이 필요하므로 PIN을 사용하여 인증할 수 없습니다. 본인 확인 자세히 알아보기"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN 사용"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"패턴 사용"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"비밀번호 사용"</string>
@@ -289,8 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"빠른 설정"</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"빠른 설정 및 알림 창입니다."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"잠금 화면"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"잠금 화면, 잠금 화면을 맞춤설정하려면 두 번 탭한 후 길게 누릅니다."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"업무용 잠금 화면"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"닫기"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"모두 음소거"</string>
@@ -385,10 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{기기 #대}other{기기 #대}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"손전등"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"카메라 사용 중"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"손전등 밝기"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"모바일 데이터"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"데이터 사용"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"잔여 데이터"</string>
@@ -827,11 +820,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"사용"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"켜짐 - 얼굴 기준"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"알림 음소거 및 번들"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>용"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"할인, 새로운 기능 등"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"주요 뉴스, 사설 등"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"좋아요, 게시물 등"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"뉴스레터, 추천 미디어 등"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"완료"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"적용"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"사용 중지"</string>

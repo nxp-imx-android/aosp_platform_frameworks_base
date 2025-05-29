@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"पुष्टि हो गई"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"पुष्टि करने की प्रोसेस को रद्द करें"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ज़्यादा विकल्प"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"ज़्यादा विकल्प"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"अन्य तरीके से पुष्टि करें"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"पहचान की पुष्टि करने की सुविधा मैनेज करें"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"पुष्टि करने के लिए पिन का इस्तेमाल नहीं किया जा सकता, क्योंकि पहचान की पुष्टि करने की सुविधा चालू है. इसके लिए, आपको बायोमेट्रिक ऑथेंटिकेशन की ज़रूरत होगी. पहचान की पुष्टि करने की सुविधा के बारे में ज़्यादा जानें"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"पिन का इस्तेमाल करें"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"पैटर्न इस्तेमाल करें"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"पासवर्ड इस्तेमाल करें"</string>
@@ -289,8 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"त्वरित सेटिंग."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"क्विक सेटिंग और नोटिफ़िकेशन शेड."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"लॉक स्क्रीन"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"लॉक स्क्रीन, लॉक स्क्रीन को पसंद के मुताबिक बनाने के लिए, उस पर दो बार टैप करें और उसे दबाए रखें."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"वर्क लॉक स्‍क्रीन"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"बंद करें"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"कोई आवाज़ सुनाई नहीं देगी"</string>
@@ -385,10 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# डिवाइस}one{# डिवाइस}other{# डिवाइस}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"फ़्लैशलाइट"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"कैमरा इस्तेमाल में है"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"फ़्लैशलाइट की क्षमता"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"मोबाइल डेटा"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"डेटा खर्च"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"शेष डेटा"</string>
@@ -827,11 +820,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"चालू करें"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"चालू है - चेहरे की गतिविधि के हिसाब से कैमरे को घुमाने की सुविधा"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"साइलेंट मोड और बंडल में भेजी जाने वाली सूचना"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> के लिए"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"सेल, नई सुविधाएं वगैरह"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"लोकप्रिय खबरें, एडिटोरियल वगैरह"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"पसंद, पोस्ट वगैरह"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"न्यूज़लेटर, सुझाया गया मीडिया वगैरह"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"हो गया"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करें"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करें"</string>
