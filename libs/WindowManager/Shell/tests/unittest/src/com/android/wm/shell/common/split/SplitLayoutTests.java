@@ -20,7 +20,6 @@ import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
-import static com.android.wm.shell.splitscreen.SplitTestUtils.setupSplitTargetProvider;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -32,11 +31,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.window.WindowContainerTransaction;
@@ -77,7 +74,6 @@ public class SplitLayoutTests extends ShellTestCase {
     @Mock SplitStatusBarHider mStatusBarHider;
     @Mock Handler mHandler;
     @Mock MSDLPlayer mMSDLPlayer;
-    Resources mResources;
     @Captor ArgumentCaptor<Runnable> mRunnableCaptor;
     private SplitLayout mSplitLayout;
     private FakeDesktopState mDesktopState;
@@ -85,17 +81,11 @@ public class SplitLayoutTests extends ShellTestCase {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        Configuration configuration = getConfiguration();
-        mResources = spy(mContext.getResources());
-        SplitTargetProvider splitTargetProvider =
-                setupSplitTargetProvider(mResources,
-                        mContext.getResources().getConfiguration());
-        when(mSplitState.getSplitTargetProvider()).thenReturn(splitTargetProvider);
         mDesktopState = new FakeDesktopState();
         mSplitLayout = spy(new SplitLayout(
                 "TestSplitLayout",
                 mContext,
-                configuration,
+                getConfiguration(),
                 mSplitLayoutHandler,
                 mCallbacks,
                 mDisplayController,

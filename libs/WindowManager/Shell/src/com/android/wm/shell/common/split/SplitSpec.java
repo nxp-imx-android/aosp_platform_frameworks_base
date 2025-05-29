@@ -58,6 +58,17 @@ public class SplitSpec {
     public static final float OFFSCREEN_ASYMMETRIC_RATIO = 0.1f;
     /** A 50-50 split ratio. */
     public static final float MIDDLE_RATIO = 0.5f;
+
+    public static final List<Integer> ONE_TARGET = List.of(SNAP_TO_2_50_50);
+    public static final List<Integer> ONE_TARGET_MINIMIZED = List.of(SNAP_TO_MINIMIZE);
+    public static final List<Integer> THREE_TARGETS_ONSCREEN =
+            List.of(SNAP_TO_2_33_66, SNAP_TO_2_50_50, SNAP_TO_2_66_33);
+    public static final List<Integer> THREE_TARGETS_OFFSCREEN =
+            List.of(SNAP_TO_2_10_90, SNAP_TO_2_50_50, SNAP_TO_2_90_10);
+    public static final List<Integer> FIVE_TARGETS =
+            List.of(SNAP_TO_2_10_90, SNAP_TO_2_33_66, SNAP_TO_2_50_50, SNAP_TO_2_66_33,
+                    SNAP_TO_2_90_10);
+
     private final boolean mIsLeftRightSplit;
     /** The physical size of the display. */
     private final Rect mDisplayBounds;
@@ -193,5 +204,23 @@ public class SplitSpec {
     /** Returns whether a given Rect is partially offscreen on the current display. */
     boolean isOffscreen(Rect rect) {
         return !mDisplayBounds.contains(rect);
+    }
+
+    /**
+     * Returns the expected layout of snap targets for a particular snap mode as a List of
+     * SnapPositions.
+     */
+    public static List<Integer> getSnapTargetLayout(
+            int snapMode, boolean areOffscreenRatiosSupported) {
+        return switch (snapMode) {
+            case SNAP_ONLY_1_1 -> ONE_TARGET;
+            case SNAP_MODE_MINIMIZED -> ONE_TARGET_MINIMIZED;
+            case SNAP_MODE_16_9, SNAP_FIXED_RATIO -> THREE_TARGETS_ONSCREEN;
+            case SNAP_FLEXIBLE_SPLIT ->
+                    areOffscreenRatiosSupported ? THREE_TARGETS_OFFSCREEN : THREE_TARGETS_ONSCREEN;
+            case SNAP_FLEXIBLE_HYBRID ->
+                    areOffscreenRatiosSupported ? FIVE_TARGETS : THREE_TARGETS_ONSCREEN;
+            default -> throw new IllegalStateException("unrecognized snap mode");
+        };
     }
 }
