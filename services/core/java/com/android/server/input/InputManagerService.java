@@ -852,10 +852,7 @@ public class InputManagerService extends IInputManager.Stub
                     new GestureMonitorSpyWindow(monitorToken, name, displayId, pid, uid, sc,
                             channel));
         }
-
-        final InputChannel outInputChannel = new InputChannel();
-        channel.copyTo(outInputChannel);
-        return outInputChannel;
+        return channel;
     }
 
     private void removeSpyWindowGestureMonitor(@NonNull IBinder inputChannelToken) {
