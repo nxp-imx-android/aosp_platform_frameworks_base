@@ -15,17 +15,23 @@
 
 package com.android.systemui.statusbar.systemstatusicons.ui.viewmodel
 
+import android.app.AlarmManager
 import android.app.AutomaticZenRule
+import android.app.PendingIntent
 import android.bluetooth.BluetoothProfile
 import android.content.testableContext
 import android.media.AudioManager
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.settingslib.volume.shared.model.RingerMode
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.display
+import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -35,8 +41,12 @@ import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
 import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.fakeWifiRepository
+import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.policy.bluetooth.data.repository.bluetoothRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeZenModeRepository
+import com.android.systemui.statusbar.policy.fakeHotspotController
+import com.android.systemui.statusbar.policy.fakeNextAlarmController
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
 import com.android.systemui.testKosmos
@@ -63,18 +73,27 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private lateinit var slotAirplane: String
     private lateinit var slotBluetooth: String
+    private lateinit var slotConnectedDisplay: String
     private lateinit var slotEthernet: String
+    private lateinit var slotHotspot: String
     private lateinit var slotMute: String
+    private lateinit var slotNextAlarm: String
     private lateinit var slotVibrate: String
+    private lateinit var slotWifi: String
     private lateinit var slotZen: String
 
     @Before
     fun setUp() {
         slotAirplane = context.getString(com.android.internal.R.string.status_bar_airplane)
         slotBluetooth = context.getString(com.android.internal.R.string.status_bar_bluetooth)
+        slotConnectedDisplay =
+            context.getString(com.android.internal.R.string.status_bar_connected_display)
         slotEthernet = context.getString(com.android.internal.R.string.status_bar_ethernet)
+        slotHotspot = context.getString(com.android.internal.R.string.status_bar_hotspot)
         slotMute = context.getString(com.android.internal.R.string.status_bar_mute)
+        slotNextAlarm = context.getString(com.android.internal.R.string.status_bar_alarm_clock)
         slotVibrate = context.getString(com.android.internal.R.string.status_bar_volume)
+        slotWifi = context.getString(com.android.internal.R.string.status_bar_wifi)
         slotZen = context.getString(com.android.internal.R.string.status_bar_zen)
     }
 
@@ -169,20 +188,42 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
             showZenMode()
             showBluetooth()
+            showConnectedDisplay()
             showAirplaneMode()
+            showNextAlarm()
             showEthernet()
             showVibrate()
+            showHotspot()
 
             assertThat(underTest.activeSlotNames)
-                .containsExactly(slotAirplane, slotBluetooth, slotEthernet, slotVibrate, slotZen)
+                .containsExactly(
+                    slotAirplane,
+                    slotBluetooth,
+                    slotConnectedDisplay,
+                    slotEthernet,
+                    slotHotspot,
+                    slotNextAlarm,
+                    slotVibrate,
+                    slotZen,
+                )
                 .inOrder()
 
-            // The mute and vibrate icon can not be shown at the same time so we have to test it
-            // separately.
-            showMute()
+            // The [mute,vibrate] and [ethernet, wifi] icons can not be shown at the same time so we
+            // have to test it separately.
+            showMute() // This will make vibrate inactive
+            showWifi() // This will make ethernet inactive
 
             assertThat(underTest.activeSlotNames)
-                .containsExactly(slotAirplane, slotBluetooth, slotEthernet, slotMute, slotZen)
+                .containsExactly(
+                    slotAirplane,
+                    slotBluetooth,
+                    slotConnectedDisplay,
+                    slotHotspot,
+                    slotMute,
+                    slotNextAlarm,
+                    slotWifi,
+                    slotZen,
+                )
                 .inOrder()
         }
 
@@ -208,6 +249,19 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         )
     }
 
+    private suspend fun Kosmos.showConnectedDisplay(isSecure: Boolean = false) {
+        fakeKeyguardRepository.setKeyguardShowing(!isSecure)
+        displayRepository.setDefaultDisplayOff(false)
+        val flags = if (isSecure) Display.FLAG_SECURE else 0
+        displayRepository.addDisplay(
+            display(
+                type = Display.TYPE_EXTERNAL,
+                flags = flags,
+                id = (displayRepository.displays.value.maxOfOrNull { it.displayId } ?: 0) + 1,
+            )
+        )
+    }
+
     private fun Kosmos.showEthernet() {
         connectivityRepository.fake.setEthernetConnected(default = true, validated = true)
     }
@@ -216,8 +270,21 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_SILENT))
     }
 
+    private fun Kosmos.showNextAlarm() {
+        val alarmClockInfo = AlarmManager.AlarmClockInfo(1L, mock<PendingIntent>())
+        fakeNextAlarmController.setNextAlarm(alarmClockInfo)
+    }
+
     private fun Kosmos.showVibrate() {
         fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_VIBRATE))
+    }
+
+    private fun Kosmos.showWifi() {
+        fakeWifiRepository.setIsWifiEnabled(true)
+        val testNetwork =
+            WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "TestWifi")
+        fakeWifiRepository.setWifiNetwork(testNetwork)
+        connectivityRepository.fake.setWifiConnected()
     }
 
     private fun Kosmos.showZenMode() {
@@ -232,5 +299,9 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                 .build()
         fakeZenModeRepository.clearModes()
         fakeZenModeRepository.addMode(mode)
+    }
+
+    private fun Kosmos.showHotspot() {
+        fakeHotspotController.isHotspotEnabled = true
     }
 }
