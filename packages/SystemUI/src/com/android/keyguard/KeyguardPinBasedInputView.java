@@ -26,6 +26,7 @@ import static com.android.keyguard.KeyguardSecurityView.PROMPT_REASON_RESTART_FO
 import static com.android.keyguard.KeyguardSecurityView.PROMPT_REASON_TIMEOUT;
 import static com.android.keyguard.KeyguardSecurityView.PROMPT_REASON_TRUSTAGENT_EXPIRED;
 import static com.android.keyguard.KeyguardSecurityView.PROMPT_REASON_USER_REQUEST;
+import static com.android.systemui.Flags.bouncerLifecycleFix;
 import static com.android.systemui.Flags.pinInputFieldStyledFocusState;
 
 import android.animation.Animator;
@@ -79,7 +80,8 @@ public abstract class KeyguardPinBasedInputView extends KeyguardAbsKeyInputView 
     protected void setPasswordEntryEnabled(boolean enabled) {
         mPasswordEntry.setEnabled(enabled);
         mOkButton.setEnabled(enabled);
-        if (enabled && !mPasswordEntry.hasFocus()) {
+        if (enabled && !mPasswordEntry.hasFocus()
+                && (!bouncerLifecycleFix() || isVisibleToUser())) {
             mPasswordEntry.requestFocus();
         }
     }
@@ -88,7 +90,7 @@ public abstract class KeyguardPinBasedInputView extends KeyguardAbsKeyInputView 
     protected void setPasswordEntryInputEnabled(boolean enabled) {
         mPasswordEntry.setEnabled(enabled);
         mOkButton.setEnabled(enabled);
-        if (enabled) {
+        if (enabled && (!bouncerLifecycleFix() || isVisibleToUser())) {
             mPasswordEntry.requestFocus();
         }
     }
@@ -201,7 +203,9 @@ public abstract class KeyguardPinBasedInputView extends KeyguardAbsKeyInputView 
         mButtons[8] = findViewById(R.id.key8);
         mButtons[9] = findViewById(R.id.key9);
 
-        mPasswordEntry.requestFocus();
+        if ((!bouncerLifecycleFix() || isVisibleToUser())) {
+            mPasswordEntry.requestFocus();
+        }
         super.onFinishInflate();
         reloadColors();
     }
