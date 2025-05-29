@@ -300,7 +300,7 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         mPackageName = ownerPackageName;
         mTag = tag;
         mSessionInfo = sessionInfo;
-        mController = new ControllerStub(this);
+        mController = new ControllerStub(this, ownerPackageName);
         mSessionToken = new MediaSession.Token(ownerUid, mController);
         mSession = new SessionStub(this);
         mSessionCb = new SessionCb(cb);
@@ -2139,9 +2139,11 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
 
     private static final class ControllerStub extends ISessionController.Stub {
         private final WeakReference<MediaSessionRecord> mRecord;
+        private final String mPackageName;
 
-        ControllerStub(MediaSessionRecord record) {
+        ControllerStub(MediaSessionRecord record, String packageName) {
             mRecord = new WeakReference<>(record);
+            mPackageName = packageName;
         }
 
         public void release() {
@@ -2199,7 +2201,7 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
             MediaSessionRecord record = mRecord.get();
             if (record == null) {
                 Log.w(TAG, IGNORE_CALL_TO_DESTROYED_SESSION_MESSAGE);
-                return "";
+                return mPackageName;
             }
             return record.getPackageName();
         }
