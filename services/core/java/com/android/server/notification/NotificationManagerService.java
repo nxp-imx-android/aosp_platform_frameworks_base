@@ -12242,7 +12242,9 @@ public class NotificationManagerService extends SystemService {
         static final String TAG_ENABLED_NOTIFICATION_ASSISTANTS = "enabled_assistants";
 
         private static final String ATT_TYPES = "types";
-        private static final String TAG_DENIED = "user_denied_adjustments";
+        private static final String TAG_DENIED = android.app.Flags.nmSummarizationOnboardingUi()
+                ? "denied_adjustment_keys"
+                : "user_denied_adjustments";
         private static final String TAG_DENIED_KEY = "adjustment";
         private static final String ATT_DENIED_KEY = "key";
         private static final String ATT_DENIED_KEY_APPS = "denied_apps";
@@ -12443,6 +12445,7 @@ public class NotificationManagerService extends SystemService {
         // Convenience method to return the effective list of denied adjustments for the given user.
         // For full users, this is just the list of denied adjustments contained in
         // mDeniedAdjustments for that user.
+        // KEY_SUMMARIZATION is denied by default.
         // For profile users, this method checks additional criteria that may cause an adjustment to
         // be effectively denied for that user. In particular:
         // - if an adjustment is denied for that profile user's parent, then it is also effectively
@@ -12452,8 +12455,15 @@ public class NotificationManagerService extends SystemService {
         @GuardedBy("mLock")
         private @NonNull Set<String> deniedAdjustmentsForUser(@UserIdInt int userId) {
             Set<String> denied = new HashSet<>();
-            if (mDeniedAdjustments.containsKey(userId)) {
+            if (android.app.Flags.nmSummarizationOnboardingUi()) {
+                if (!mDeniedAdjustments.containsKey(userId)) {
+                    mDeniedAdjustments.put(userId, new ArraySet<>(List.of(KEY_SUMMARIZATION)));
+                }
                 denied.addAll(mDeniedAdjustments.get(userId));
+            } else {
+                if (mDeniedAdjustments.containsKey(userId)) {
+                    denied.addAll(mDeniedAdjustments.get(userId));
+                }
             }
             if (getUserProfiles().isProfileUser(userId, mContext)) {
                 final @UserIdInt int parentId = getUserProfiles().getProfileParentId(userId,
@@ -13155,6 +13165,10 @@ public class NotificationManagerService extends SystemService {
                     if (!TextUtils.isEmpty(keys)) {
                         userDeniedAdjustments.addAll(Arrays.asList(keys.split(",")));
                         mDeniedAdjustments.put(user, userDeniedAdjustments);
+                    } else {
+                        if (android.app.Flags.nmSummarizationOnboardingUi()) {
+                            mDeniedAdjustments.put(user, new ArraySet<>());
+                        }
                     }
                 }
             } else if (TAG_ENABLED_TYPES.equals(tag)) {
