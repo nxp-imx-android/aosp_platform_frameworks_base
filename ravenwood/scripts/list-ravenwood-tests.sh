@@ -18,11 +18,17 @@
 set -e
 
 fbr_only=0
-while getopts "r" opt; do
+device_test=0
+while getopts "rD" opt; do
 case "$opt" in
     r)
         # Only print tests under frameworks/base/ravenwood/
         fbr_only=1
+        ;;
+    D)
+        # Print device side tests under f/b/r.
+        fbr_only=1
+        device_test=1
         ;;
     '?')
         exit 1
@@ -32,13 +38,23 @@ done
 shift $(($OPTIND - 1))
 
 in="$OUT/module-info.json"
-cache="$OUT/ravenwood-test-list-fbr${fbr_only}.cached.txt"
+cache="$OUT/ravenwood-test-list-fbr${fbr_only}-dev${device_test}.cached.txt"
 cache_temp="${cache}.tmp"
+
+suite="ravenwood-tests"
+if (( $device_test )) ; then
+    suite="device-tests"
+fi
 
 extra_select=""
 if (( $fbr_only )) ; then
     extra_select='| select( .value.path.[] | startswith("frameworks/base/ravenwood"))'
 fi
+
+run() {
+    # echo "Running: $*" 1>&2 # for debugging
+    "$@"
+}
 
 # If module-info.json or this script itself is newer than the cache file,
 # then re-generate it.
@@ -48,7 +64,7 @@ if [[ "$in" -nt "$cache" ]] || [[ "$0" -nt "$cache" ]] ; then
     # First, create to a temp file, and once it's completed, rename it
     # to the actual cache file, so that if the command failed or is interrupted,
     # we don't update the cache.
-    jq -r 'to_entries[] | select( .value.compatibility_suites | index("ravenwood-tests") ) '"$extra_select"' | .key' \
+    run jq -r 'to_entries[] | select( .value.compatibility_suites | index("'$suite'") ) '"$extra_select"' | .key' \
             "$OUT/module-info.json" | sort > "$cache_temp"
     mv "$cache_temp" "$cache"
 fi
