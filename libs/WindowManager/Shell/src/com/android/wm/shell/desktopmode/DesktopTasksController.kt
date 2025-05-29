@@ -120,6 +120,7 @@ import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
@@ -143,6 +144,7 @@ import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -237,6 +239,7 @@ class DesktopTasksController(
     private val desktopState: DesktopState,
     private val desktopConfig: DesktopConfig,
     private val visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler,
+    private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -4765,6 +4768,26 @@ class DesktopTasksController(
         override fun moveFocusedTaskToStageSplit(displayId: Int, leftOrTop: Boolean) {
             logV("moveFocusedTaskToStageSplit")
             mainExecutor.execute { this@DesktopTasksController.enterSplit(displayId, leftOrTop) }
+        }
+
+        override fun registerDesktopFirstListener(listener: DesktopFirstListener) {
+            logV("registerDesktopFirstListener")
+            if (desktopFirstListenerManager.isEmpty) {
+                throw UnsupportedOperationException(
+                    "DesktopFirstListenerManager is not available on this device"
+                )
+            }
+            mainExecutor.execute { desktopFirstListenerManager.get().registerListener(listener) }
+        }
+
+        override fun unregisterDesktopFirstListener(listener: DesktopFirstListener) {
+            logV("unregisterDesktopFirstListener")
+            if (desktopFirstListenerManager.isEmpty) {
+                throw UnsupportedOperationException(
+                    "DesktopFirstListenerManager is not available on this device"
+                )
+            }
+            mainExecutor.execute { desktopFirstListenerManager.get().unregisterListener(listener) }
         }
     }
 
