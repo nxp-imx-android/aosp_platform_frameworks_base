@@ -253,6 +253,8 @@ public class GlobalSettingsValidators {
                             String.valueOf(Global.Wearable.AUTO_TIME_ZONE_OFF),
                             String.valueOf(Global.Wearable.INVALID_AUTO_TIME_ZONE_STATE)
                         }));
+        VALIDATORS.put(Global.Wearable.CLOCKWORK_LOCATION_TIME_ZONE_DETECTION_ENABLED,
+                BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.CLOCKWORK_24HR_TIME, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.AUTO_WIFI, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.WIFI_POWER_SAVE, ANY_INTEGER_VALIDATOR);

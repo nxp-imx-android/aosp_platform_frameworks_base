@@ -20234,6 +20234,12 @@ public final class Settings {
             /** @hide */
             public static final int INVALID_AUTO_TIME_ZONE_STATE = 3;
 
+            /** Store user enablement settings for location time zone detection
+             * Type: int (0 to disabled, 1 to enabled)
+             * @hide */
+            public static final String CLOCKWORK_LOCATION_TIME_ZONE_DETECTION_ENABLED =
+                    "clockwork_location_time_zone_detection_enabled";
+
             /**
              * Whether 24 hour time format is enabled on the watch.
              * @hide
