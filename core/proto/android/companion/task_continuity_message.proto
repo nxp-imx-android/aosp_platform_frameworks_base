@@ -24,12 +24,17 @@ option java_multiple_files = true;
 message TaskContinuityMessage {
     oneof data {
         ContinuityDeviceConnected device_connected = 1;
+        RemoteTaskAddedMessage remote_task_added_message = 2;
     }
 }
 
 message ContinuityDeviceConnected {
     int32 currentForegroundTaskId = 1;
     repeated RemoteTaskInfo remoteTasks = 2;
+}
+
+message RemoteTaskAddedMessage {
+    RemoteTaskInfo task = 1;
 }
 
 message RemoteTaskInfo {
