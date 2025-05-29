@@ -6688,12 +6688,6 @@ public class UserManager {
      *
      * <p>NOTE: The method performs disk I/O and shouldn't be called on the main thread
      *
-     * @param packageName the package name of the calling application
-     * @return a {@link Bundle} with the restrictions for that package, or an empty {@link Bundle}
-     * if there are no saved restrictions.
-     *
-     * @see #KEY_RESTRICTIONS_PENDING
-     *
      * <p>Starting from Android version {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE},
      * it is possible for there to be multiple managing apps on the device with the ability to set
      * restrictions, e.g. an Enterprise Device Policy Controller (DPC) and a Supervision admin.
@@ -6701,7 +6695,12 @@ public class UserManager {
      * set by all managing apps, use
      * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} instead.
      *
-     * @see DevicePolicyManager
+     * @param packageName the package name of the calling application
+     * @return a {@link Bundle} with the restrictions for that package, or an empty {@link Bundle}
+     * if there are no saved restrictions.
+     *
+     * @see #KEY_RESTRICTIONS_PENDING
+     * @see DevicePolicyManager#getApplicationRestrictions
      */
     @WorkerThread
     @UserHandleAware(enabledSinceTargetSdkVersion = Build.VERSION_CODES.TIRAMISU)
