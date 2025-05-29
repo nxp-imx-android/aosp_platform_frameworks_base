@@ -18,3 +18,11 @@ flag {
          purpose: PURPOSE_BUGFIX
      }
 }
+
+flag {
+    name: "stop_voice_command"
+    is_exported: true
+    namespace: "bluetooth"
+    description: "Feature flag to stop voice assistant session"
+    bug: "419049796"
+}

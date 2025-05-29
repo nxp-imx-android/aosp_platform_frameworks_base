@@ -11691,6 +11691,7 @@ package android.content {
     field public static final String ACTION_SHOW_APP_INFO = "android.intent.action.SHOW_APP_INFO";
     field public static final String ACTION_SHOW_WORK_APPS = "android.intent.action.SHOW_WORK_APPS";
     field public static final String ACTION_SHUTDOWN = "android.intent.action.ACTION_SHUTDOWN";
+    field @FlaggedApi("android.content.flags.stop_voice_command") public static final String ACTION_STOP_VOICE_COMMAND = "android.intent.action.STOP_VOICE_COMMAND";
     field public static final String ACTION_SYNC = "android.intent.action.SYNC";
     field public static final String ACTION_SYSTEM_TUTORIAL = "android.intent.action.SYSTEM_TUTORIAL";
     field public static final String ACTION_TIMEZONE_CHANGED = "android.intent.action.TIMEZONE_CHANGED";

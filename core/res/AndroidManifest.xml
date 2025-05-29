@@ -855,6 +855,9 @@
     <protected-broadcast android:name="android.service.ondeviceintelligence.MODEL_UNLOADED" />
     <protected-broadcast android:name="android.telephony.satellite.action.SATELLITE_START_NON_EMERGENCY_SESSION" />
 
+    <!-- Added in 25Q4 -->
+    <protected-broadcast android:name="android.intent.action.STOP_VOICE_COMMAND" />
+
 
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
