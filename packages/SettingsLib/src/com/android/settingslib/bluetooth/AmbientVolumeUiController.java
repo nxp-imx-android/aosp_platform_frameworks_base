@@ -371,6 +371,10 @@ public class AmbientVolumeUiController implements
         if (volume == INVALID_VOLUME) {
             return;
         }
+        if (!mRangeInitializedSliderSides.contains(side)) {
+            Log.w(TAG, "the slider is not initialized yet, skip set volume on side=" + side);
+            return;
+        }
         mAmbientLayout.setSliderValue(side, volume);
         // Update new value to local data
         if (side == SIDE_UNIFIED) {
@@ -418,6 +422,7 @@ public class AmbientVolumeUiController implements
                     mAmbientLayout.setSliderRange(side, ambientMin, ambientMax);
                     mAmbientLayout.setSliderRange(SIDE_UNIFIED, ambientMin, ambientMax);
                     mRangeInitializedSliderSides.add(side);
+                    mRangeInitializedSliderSides.add(SIDE_UNIFIED);
                 }
             }
         });
