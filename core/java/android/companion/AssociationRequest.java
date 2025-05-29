@@ -288,6 +288,8 @@ public final class AssociationRequest implements Parcelable {
     @Nullable
     private List<Integer> mRequestedPerms = new ArrayList<>();
 
+    private static final int DISPLAY_NAME_LENGTH_LIMIT = 1024;
+
     /**
      * Creates a new AssociationRequest.
      *
@@ -520,6 +522,11 @@ public final class AssociationRequest implements Parcelable {
         public Builder setDisplayName(@NonNull CharSequence displayName) {
             checkNotUsed();
             mDisplayName = requireNonNull(displayName);
+            if (displayName.length() > DISPLAY_NAME_LENGTH_LIMIT) {
+                throw new IllegalArgumentException("Length of the display name must be at most "
+                        + DISPLAY_NAME_LENGTH_LIMIT + " characters");
+            }
+
             return this;
         }
 
