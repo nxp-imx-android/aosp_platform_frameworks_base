@@ -239,7 +239,6 @@ public class PipDisplayTransferHandler implements
     /**
      * Remove all drag indicator mirrors from each connected display.
      */
-    // TODO(b/408981327): Remove mirrors on screen lock
     // TODO(b/408982524): Remove mirrors on opening app while dragging
     public void removeMirrors() {
         final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
