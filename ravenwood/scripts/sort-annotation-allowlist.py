@@ -32,7 +32,7 @@ output_name = f"{file_name}.tmp"
 with open(file_name) as f:
   lines = f.readlines()
 
-wildcards = []
+wildcards = set()
 pkg_dict = {}
 
 for line in lines:
@@ -42,16 +42,16 @@ for line in lines:
   if not class_name:
     continue
   if "*" in class_name:
-    wildcards.append(line)
+    wildcards.add(line)
     continue
   pkg = class_name.rsplit(".", 1)[0]
   if pkg not in pkg_dict:
-    pkg_dict[pkg] = []
-  pkg_dict[pkg].append(line)
+    pkg_dict[pkg] = set()
+  pkg_dict[pkg].add(line)
 
 
 with open(output_name, "w") as f:
-  print("# Only classes listed here can use the Ravenwood annotations.", file=f)
+  print("# Only classes listed here can use the Ravenwood annotations. Keep the list alphabetically sorted.", file=f)
   print("", file=f)
 
   # Put wildcards first
