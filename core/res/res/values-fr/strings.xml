@@ -1228,7 +1228,7 @@
     <string name="error_handwriting_unsupported_password" msgid="5095401146106891087">"Les champs de mot de passe ne prennent pas en charge l\'écriture manuscrite"</string>
     <string name="input_method_nav_back_button_desc" msgid="3655838793765691787">"Retour"</string>
     <string name="input_method_ime_switch_button_desc" msgid="2736542240252198501">"Changer le mode de saisie"</string>
-    <string name="input_method_ime_switch_long_click_action_desc" msgid="3161942124116646998">"Ouvrir l\'outil de sélection du mode de saisie"</string>
+    <string name="input_method_ime_switch_long_click_action_desc" msgid="3161942124116646998">"Ouvrir le sélecteur de mode de saisie"</string>
     <string name="input_method_switcher_settings_button" msgid="5609835654697108485">"Paramètres"</string>
     <string name="low_internal_storage_view_title" msgid="9024241779284783414">"Espace de stockage bientôt saturé"</string>
     <string name="low_internal_storage_view_text" msgid="8172166728369697835">"Il est possible que certaines fonctionnalités du système ne soient pas opérationnelles."</string>
@@ -1698,18 +1698,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Appareil externe"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Écouteurs"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
-    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
-    <skip />
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"Audio TV"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"Analogique"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"Numérique"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"Système"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Audio Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Affichage sans fil"</string>
@@ -2259,7 +2253,7 @@
     <string name="accessibility_system_action_screenshot_label" msgid="3581566515062741676">"Capture d\'écran"</string>
     <string name="accessibility_system_action_headset_hook_label" msgid="8524691721287425468">"Crochet du casque"</string>
     <string name="accessibility_system_action_on_screen_a11y_shortcut_label" msgid="8488701469459210309">"Raccourci d\'accessibilité à l\'écran"</string>
-    <string name="accessibility_system_action_on_screen_a11y_shortcut_chooser_label" msgid="1057878690209817886">"Outil de sélection des raccourcis d\'accessibilité à l\'écran"</string>
+    <string name="accessibility_system_action_on_screen_a11y_shortcut_chooser_label" msgid="1057878690209817886">"Sélecteur de raccourcis d\'accessibilité à l\'écran"</string>
     <string name="accessibility_system_action_hardware_a11y_shortcut_label" msgid="5764644187715255107">"Raccourci d\'accessibilité"</string>
     <string name="accessibility_system_action_dismiss_notification_shade" msgid="8931637495533770352">"Fermer le volet des notifications"</string>
     <string name="accessibility_system_action_menu_label" msgid="3385283204496447040">"Menu"</string>
@@ -2560,10 +2554,28 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Applications"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vos empreintes ne peuvent plus être reconnues. Reconfigurez le déverrouillage par empreinte digitale."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Appareil USB branché alors que l\'appareil Android est verrouillé"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"L\'appareil USB est branché alors que l\'appareil Android est verrouillé. Pour utiliser l\'appareil, veuillez d\'abord déverrouiller Android."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"L\'appareil USB est branché alors que l\'appareil Android est verrouillé. Pour utiliser l\'appareil, veuillez d\'abord déverrouiller Android, puis brancher à nouveau l\'appareil USB."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"La capacité de charge peut être réduite ou inexistante lorsque l\'appareil est verrouillé."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Activité USB suspecte"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Le signal de données USB a été désactivé."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vous rencontrez des problèmes avec le déverrouillage par empreinte digitale ?"</string>
