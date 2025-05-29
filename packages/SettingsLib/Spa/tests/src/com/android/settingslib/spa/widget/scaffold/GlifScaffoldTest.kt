@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,14 +28,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class SuwScaffoldTest {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+class GlifScaffoldTest {
+    @get:Rule val composeTestRule = createComposeRule()
 
     @Test
-    fun suwScaffold_titleIsDisplayed() {
+    fun glifScaffold_titleIsDisplayed() {
         composeTestRule.setContent {
-            SuwScaffold(imageVector = Icons.Outlined.SignalCellularAlt, title = TITLE) {
+            GlifScaffold(imageVector = Icons.Outlined.SignalCellularAlt, title = TITLE) {
                 Text(text = "AAA")
                 Text(text = "BBB")
             }
@@ -45,9 +44,25 @@ class SuwScaffoldTest {
     }
 
     @Test
-    fun suwScaffold_itemsAreDisplayed() {
+    fun glifScaffold_descriptionIsDisplayed() {
         composeTestRule.setContent {
-            SuwScaffold(imageVector = Icons.Outlined.SignalCellularAlt, title = TITLE) {
+            GlifScaffold(
+                imageVector = Icons.Outlined.SignalCellularAlt,
+                title = TITLE,
+                description = DESCRIPTION,
+            ) {
+                Text(text = "AAA")
+                Text(text = "BBB")
+            }
+        }
+
+        composeTestRule.onNodeWithText(DESCRIPTION).assertIsDisplayed()
+    }
+
+    @Test
+    fun glifScaffold_itemsAreDisplayed() {
+        composeTestRule.setContent {
+            GlifScaffold(imageVector = Icons.Outlined.SignalCellularAlt, title = TITLE) {
                 Text(text = "AAA")
                 Text(text = "BBB")
             }
@@ -58,9 +73,9 @@ class SuwScaffoldTest {
     }
 
     @Test
-    fun suwScaffold_actionButtonDisplayed() {
+    fun glifScaffold_actionButtonDisplayed() {
         composeTestRule.setContent {
-            SuwScaffold(
+            GlifScaffold(
                 imageVector = Icons.Outlined.SignalCellularAlt,
                 title = TITLE,
                 actionButton = BottomAppBarButton(TEXT) {},
@@ -71,9 +86,9 @@ class SuwScaffoldTest {
     }
 
     @Test
-    fun suwScaffold_dismissButtonDisplayed() {
+    fun glifScaffold_dismissButtonDisplayed() {
         composeTestRule.setContent {
-            SuwScaffold(
+            GlifScaffold(
                 imageVector = Icons.Outlined.SignalCellularAlt,
                 title = TITLE,
                 dismissButton = BottomAppBarButton(TEXT) {},
@@ -85,6 +100,7 @@ class SuwScaffoldTest {
 
     private companion object {
         const val TITLE = "Title"
+        const val DESCRIPTION = "Description"
         const val TEXT = "Text"
     }
 }

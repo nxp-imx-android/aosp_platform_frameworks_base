@@ -21,5 +21,6 @@ import androidx.compose.ui.unit.dp
 object SettingsSize {
     val small2 = 20.dp
     val medium3 = 40.dp
+    val medium4 = 48.dp
     val large2 = 64.dp
 }
