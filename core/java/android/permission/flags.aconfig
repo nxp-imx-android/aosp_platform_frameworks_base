@@ -521,6 +521,7 @@ flag {
 flag {
     name: "app_function_access_api_enabled"
     is_fixed_read_only: true
+    is_exported: true
     namespace: "permissions"
     description: "This flag gates the API for the App Function Access Control APIs"
     bug: "413087113"
