@@ -22,6 +22,8 @@ import android.os.Trace
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.shade.display.EnsureWallpaperDrawnOnDisplaySwitch
+import com.android.systemui.shade.display.PendingDisplayChangeController
 import com.android.systemui.unfold.SysUIUnfoldComponent
 import com.android.systemui.util.concurrency.PendingTasksContainer
 import com.android.systemui.util.kotlin.getOrNull
@@ -40,6 +42,7 @@ class ScreenOnCoordinator
 constructor(
     unfoldComponent: Optional<SysUIUnfoldComponent>,
     @Main private val mainHandler: Handler,
+    private val pendingDisplayChangeController: PendingDisplayChangeController
 ) {
 
     private val foldAodAnimationController =
@@ -61,6 +64,11 @@ constructor(
         foldAodAnimationController?.onScreenTurningOn(pendingTasks.registerTask("fold-to-aod"))
         fullScreenLightRevealAnimations?.forEach {
             it.onScreenTurningOn(pendingTasks.registerTask(it::class.java.simpleName))
+        }
+
+        if (EnsureWallpaperDrawnOnDisplaySwitch.isEnabled) {
+            pendingDisplayChangeController.onScreenTurningOn(reason,
+                pendingTasks.registerTask("pending-display-change-controller"));
         }
 
         pendingTasks.onTasksComplete {

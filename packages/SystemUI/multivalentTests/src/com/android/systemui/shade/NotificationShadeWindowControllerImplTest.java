@@ -17,6 +17,7 @@
 package com.android.systemui.shade;
 
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+import static com.android.window.flags.Flags.FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH;
 import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SECURE;
@@ -272,6 +273,31 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
 
         verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
         assertThat((mLayoutParameters.getValue().flags & FLAG_SHOW_WALLPAPER) != 0).isTrue();
+    }
+
+    @EnableFlags(FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    @Test
+    public void attach_pendingDisplayChange_wallpaperVisible() {
+        mNotificationShadeWindowController.attach();
+        clearInvocations(mWindowManager);
+
+        mNotificationShadeWindowController.setPendingDisplayChange(true);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_SHOW_WALLPAPER) != 0).isTrue();
+    }
+
+    @EnableFlags(FLAG_ENSURE_WALLPAPER_DRAWN_ON_DISPLAY_SWITCH)
+    @Test
+    public void attach_pendingDisplayChangeFinished_wallpaperNotVisible() {
+        mNotificationShadeWindowController.attach();
+        mNotificationShadeWindowController.setPendingDisplayChange(true);
+        clearInvocations(mWindowManager);
+
+        mNotificationShadeWindowController.setPendingDisplayChange(false);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_SHOW_WALLPAPER) != 0).isFalse();
     }
 
     @Test

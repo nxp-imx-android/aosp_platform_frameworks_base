@@ -64,6 +64,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.ui.view.WindowRootViewComponent;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.shade.display.EnsureWallpaperDrawnOnDisplaySwitch;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shade.ui.viewmodel.NotificationShadeWindowModel;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
@@ -402,7 +403,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         final boolean keyguardOrAod = state.keyguardShowing
                 || (state.dozing && mDozeParameters.getAlwaysOn());
         if ((keyguardOrAod && !state.mediaBackdropShowing && !state.lightRevealScrimOpaque)
-                || mKeyguardViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind()) {
+                || mKeyguardViewMediator.isAnimatingBetweenKeyguardAndSurfaceBehind()
+                || (EnsureWallpaperDrawnOnDisplaySwitch.isEnabled() && state.pendingDisplayChange)
+        ) {
             // Show the wallpaper if we're on keyguard/AOD and the wallpaper is not occluded by a
             // solid backdrop. Also, show it if we are currently animating between the
             // keyguard and the surface behind the keyguard - we want to use the wallpaper as a
@@ -655,6 +658,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.qsExpanded,
                 state.headsUpNotificationShowing,
                 state.lightRevealScrimOpaque,
+                state.pendingDisplayChange,
                 state.isSwitchingUsers,
                 state.forceWindowCollapsed,
                 state.forceDozeBrightness,
@@ -893,6 +897,16 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             return;
         }
         mCurrentState.lightRevealScrimOpaque = opaque;
+        apply(mCurrentState);
+    }
+
+    @Override
+    public void setPendingDisplayChange(boolean pendingDisplayChange) {
+        if (EnsureWallpaperDrawnOnDisplaySwitch.isUnexpectedlyInLegacyMode()
+                || mCurrentState.pendingDisplayChange == pendingDisplayChange) {
+            return;
+        }
+        mCurrentState.pendingDisplayChange = pendingDisplayChange;
         apply(mCurrentState);
     }
 
