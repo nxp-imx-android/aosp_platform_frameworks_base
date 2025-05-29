@@ -478,10 +478,6 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             }
         }
 
-        // Intentionally use the existing transaction since we want to ensure that the window
-        // states are applied along with the other surface preparations prior to the animation.
-        // The existing transaction is expected to be committed by the
-        // onStart() client callback together with client's custom transformation.
         if (!maxClosingBounds.isEmpty()) {
             logD("Applying closing window bounds: " + maxClosingBounds);
             transactions.setBounds(closingApp, maxClosingBounds);
@@ -555,6 +551,10 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             // Restore the pending animation states coming from predictive back transition.
             applyWindowAnimationStates(
                     transitionInfo, states, transactions, closingApp, openingApp);
+
+            // ensure that we apply any transactions (e.g. bounds/cropping/corners etc) that might
+            // be required prior to starting the actual animation.
+            transactions.commit();
 
             // Start.
             onStart(animationController, transactions, origin, closingApp, openingApp);
