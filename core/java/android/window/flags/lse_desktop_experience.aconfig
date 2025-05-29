@@ -836,6 +836,13 @@ flag {
 }
 
 flag {
+    name: "enable_close_lid_interaction"
+    namespace: "lse_desktop_experience"
+    description: "Enables new interaction that occurs when device lid is closed."
+    bug: "382689704"
+}
+
+flag {
     name: "show_desktop_experience_dev_option"
     namespace: "lse_desktop_experience"
     description: "Replace the freeform windowing dev options with a desktop experience one."
