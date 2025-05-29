@@ -41,6 +41,7 @@ val Kosmos.notificationListViewModel by Fixture {
         footerViewModelFactory = footerViewModelFactory,
         emptyShadeViewModelFactory = emptyShadeViewModelFactory,
         bundleOnboarding = bundleOnboardingViewModel,
+        summarizationOnboarding = summarizationOnboardingViewModel,
         logger = Optional.of(notificationListLoggerViewModel),
         activeNotificationsInteractor = activeNotificationsInteractor,
         notificationStackInteractor = notificationStackInteractor,

@@ -2418,6 +2418,16 @@ public final class Settings {
     public static final String ACTION_NOTIFICATION_BUNDLES
             = "android.settings.NOTIFICATION_BUNDLES";
 
+
+    /**
+     * Activity Action: Show notification summarization settings screen
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_NOTIFICATION_SUMMARIZATION =
+            "android.settings.NOTIFICATION_SUMMARIZATION";
+
     /**
      * Activity Action: Show app listing settings, filtered by those that send notifications.
      *

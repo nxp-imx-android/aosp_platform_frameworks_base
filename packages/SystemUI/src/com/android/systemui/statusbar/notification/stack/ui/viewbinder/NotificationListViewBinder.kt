@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.NotificationShelf
 import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
+import com.android.systemui.statusbar.notification.Summarization
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController
 import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView
@@ -58,6 +59,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationSta
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.HideNotificationsBinder.bindHideList
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.BundleOnboardingViewModel
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationListViewModel
+import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SummarizationOnboardingViewModel
 import com.android.systemui.statusbar.notification.ui.viewbinder.HeadsUpNotificationViewBinder
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
 import com.android.systemui.util.kotlin.getOrNull
@@ -97,7 +99,9 @@ constructor(
     private val viewModel: NotificationListViewModel,
     private val systemClock: SystemClock,
     private val bundleOnboardingBinder: Provider<BundleOnboardingViewBinder>,
+    private val summarizationOnboardingBinder: Provider<SummarizationOnboardingViewBinder>,
     @Bundles private val bundleOnboardingMgr: OnboardingAffordanceManager,
+    @Summarization private val summarizationOnboardingMgr: OnboardingAffordanceManager,
 ) {
 
     fun bindWhileAttached(
@@ -356,6 +360,27 @@ constructor(
 
     private suspend fun bindSummarizationOnboarding(parentView: NotificationStackScrollLayout) {
         if (NotificationSummarizationOnboardingUi.isUnexpectedlyInLegacyMode()) return
-        // TODO(b/391568054): not yet implemented
+        val summarizationViewModel: SummarizationOnboardingViewModel =
+            viewModel.summarizationOnboarding
+        summarizationViewModel.showAffordance
+            .flatMapLatestConflated { show ->
+                if (show) {
+                    configuration
+                        .inflateLayout<OnboardingAffordanceView>(
+                            R.layout.onboarding_summaries_affordance,
+                            parentView,
+                            attachToRoot = false,
+                        )
+                        .flowOn(inflationDispatcher)
+                } else {
+                    flowOf(null)
+                }
+            }
+            .collectLatest { summariesView ->
+                summarizationOnboardingMgr.view.value = summariesView
+                summariesView?.let {
+                    summarizationOnboardingBinder.get().bind(summarizationViewModel, summariesView)
+                }
+            }
     }
 }

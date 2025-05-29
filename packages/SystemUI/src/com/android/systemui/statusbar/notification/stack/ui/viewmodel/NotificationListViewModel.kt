@@ -63,6 +63,7 @@ constructor(
     val footerViewModelFactory: FooterViewModel.Factory,
     val emptyShadeViewModelFactory: EmptyShadeViewModel.Factory,
     val bundleOnboarding: BundleOnboardingViewModel,
+    val summarizationOnboarding: SummarizationOnboardingViewModel,
     val logger: Optional<NotificationLoggerViewModel>,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     notificationStackInteractor: NotificationStackInteractor,
