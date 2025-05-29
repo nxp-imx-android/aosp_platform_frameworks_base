@@ -98,7 +98,7 @@ fun ActionList(
         actions.forEachIndexed { index, action ->
             val scale by
                 animateFloatAsState(
-                    progress,
+                    targetValue = progress,
                     animationSpec =
                         spring(
                             dampingRatio = Spring.DampingRatioNoBouncy,
@@ -107,12 +107,8 @@ fun ActionList(
                 )
             val translation by
                 animateFloatAsState(
-                    progress,
-                    animationSpec =
-                        spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow,
-                        ),
+                    targetValue = progress,
+                    animationSpec = spring(dampingRatio = 0.6f, stiffness = 220f),
                 )
 
             Chip(

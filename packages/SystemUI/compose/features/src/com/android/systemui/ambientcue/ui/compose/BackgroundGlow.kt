@@ -54,12 +54,13 @@ fun BackgroundGlow(
     val density = LocalDensity.current
     val turbulenceDisplacementPx = with(density) { Defaults.TURBULENCE_DISPLACEMENT_DP.dp.toPx() }
     val gradientRadiusPx = with(density) { Defaults.GRADIENT_RADIUS.dp.toPx() }
+    val glowHeightInDp = (Defaults.GRADIENT_RADIUS + Defaults.TURBULENCE_SIZE).dp
 
     val visibleState = remember { MutableTransitionState(false) }
     visibleState.targetState = visible
 
     val transition = rememberTransition(visibleState)
-    val alpha by transition.animateFloat(transitionSpec = { tween(750) }) { if (it) 1f else 0f }
+    val alpha by transition.animateFloat(transitionSpec = { tween(750) }) { if (it) 0.55f else 0f }
     val verticalOffset by
         animateIntOffsetAsState(if (expanded) IntOffset.Zero else collapsedOffset, tween(350))
 
@@ -85,7 +86,7 @@ fun BackgroundGlow(
     val shaderBrush = remember { ShaderBrush(shader) }
 
     Box(
-        modifier.size(400.dp, 200.dp).alpha(alpha).drawWithCache {
+        modifier.size(400.dp, glowHeightInDp).alpha(alpha).drawWithCache {
             onDrawWithContent {
                 val offsetX = with(density) { verticalOffset.x.dp.toPx() }
                 val offsetY = with(density) { verticalOffset.y.dp.toPx() }
