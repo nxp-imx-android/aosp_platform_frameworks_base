@@ -2040,3 +2040,14 @@ flag {
      purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "remember_view_model_off_main_thread"
+    namespace: "systemui"
+    description: "View-models are remembered off the main thread"
+    bug: "421000550"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
