@@ -232,53 +232,132 @@ public class VpnConnectivityMetrics {
      * for a specific network, a predefined {@code UNKNOWN_UNDERLYING_NETWORK_TYPE} is
      * used for that entry.
      *
+     * <p>
+     * Note: This method contains a synchronized call to ConnectivityManager to query the network
+     * capability, so this method should not be called from the Network Callback.
+     *
+     * <p>
+     * If the underlying network types have changed are different from current, a sequence of
+     * notifications is triggered: first, a disconnection notification is sent with the old value,
+     * then {@code mUnderlyingNetworkTypes} is updated with the new value, and finally, a connection
+     * notification is issued with the new value.
+     *
      * @param networks An array of {@link android.net.Network} objects representing the underlying
      *                 networks currently in use.
      */
-    public void setUnderlyingNetwork(@NonNull Network[] networks) {
-        if (networks.length != 0) {
-            int[] types = new int[networks.length];
-            for (int i = 0; i < networks.length; i++) {
-                final NetworkCapabilities capabilities =
-                        mConnectivityManager.getNetworkCapabilities(networks[i]);
-                if (capabilities != null) {
-                    // Get the primary transport type of the network.
-                    types[i] = capabilities.getTransportTypes()[0];
-                } else {
-                    types[i] = UNKNOWN_UNDERLYING_NETWORK_TYPE;
-                }
-            }
-            mUnderlyingNetworkTypes = Arrays.copyOf(types, types.length);
-        } else {
-            mUnderlyingNetworkTypes = new int[0];
+    public void updateUnderlyingNetworkTypes(@NonNull Network[] networks) {
+        // Note: If the underlying network is lost, an empty underlying network won't be set.
+        // Instead, only a countdown timer will be activated. After a timeout, the NetworkAgent
+        // disconnects, and the disconnection is then notified from there. Therefore, the recorded
+        // time may not be accurate because there may be a gap between the NetworkAgent disconnect
+        // and the loss of the underlying network.
+        if (networks.length == 0) {
+            return; // Return if no networks.
         }
+
+        int[] newTypes = new int[networks.length];
+        for (int i = 0; i < networks.length; i++) {
+            final NetworkCapabilities capabilities =
+                    mConnectivityManager.getNetworkCapabilities(networks[i]);
+            if (capabilities != null) {
+                // Get the primary transport type of the network.
+                newTypes[i] = capabilities.getTransportTypes()[0];
+            } else {
+                newTypes[i] = UNKNOWN_UNDERLYING_NETWORK_TYPE;
+            }
+        }
+        // Set the underlying network types directly if it's the default value, skipping the
+        // connection status notification. Those notifications will be sent only when the VPN
+        // connection is established and the underlying network types change.
+        if (mUnderlyingNetworkTypes.length == 0) {
+            mUnderlyingNetworkTypes = newTypes;
+            return;
+        }
+        // Return if no type change.
+        if (Arrays.equals(mUnderlyingNetworkTypes, newTypes)) {
+            return;
+        }
+        // Notify the ip protocol change and set the new ip protocol.
+        notifyVpnDisconnected();
+        mUnderlyingNetworkTypes = newTypes;
+        notifyVpnConnected();
     }
 
     /**
      * Sets the IP protocol for the vpn network based on a list of {@link LinkAddress} objects.
      *
+     * <p>
+     * If the vpn network ip protocol has changed is different from current, a sequence of
+     * notifications is triggered: first, a disconnection notification is sent with the old value,
+     * then {@code mUnderlyingNetworkTypes} is updated with the new value, and finally, a connection
+     * notification is issued with the new value.
+     *
      * @param addresses A list of {@link LinkAddress} objects representing the IP addresses
      *                  configured on the VPN network.
      */
-    public void setVpnNetworkIpProtocol(@NonNull List<LinkAddress> addresses) {
-        mVpnNetworkIpProtocol = checkIpProtocol(addresses);
+    public void updateVpnNetworkIpProtocol(@NonNull List<LinkAddress> addresses) {
+        final int newVpnNetworkIpProtocol = checkIpProtocol(addresses);
+        // Set the vpn network ip protocol directly if it's the default value, skipping the
+        // connection status notification. Those notifications will be sent only when the VPN
+        // connection is established and the vpn network ip protocol changes.
+        if (mVpnNetworkIpProtocol == IP_PROTOCOL_UNKNOWN) {
+            mVpnNetworkIpProtocol = newVpnNetworkIpProtocol;
+            return;
+        }
+        // Return if no ip protocol change.
+        if (mVpnNetworkIpProtocol == newVpnNetworkIpProtocol) {
+            return;
+        }
+        // Notify the ip protocol change and set the new ip protocol.
+        notifyVpnDisconnected();
+        mVpnNetworkIpProtocol = newVpnNetworkIpProtocol;
+        notifyVpnConnected();
     }
 
     /**
      * Sets the IP protocol for the server based on its {@link InetAddress}.
      *
+     * <p>
+     * If the server ip protocol has changed is different from current, a sequence of notifications
+     * is triggered: first, a disconnection notification is sent with the old value, then
+     * {@code mUnderlyingNetworkTypes} is updated with the new value, and finally, a connection
+     * notification is issued with the new value.
+     *
      * @param address The {@link InetAddress} of the server.
      */
-    public void setServerIpProtocol(@NonNull InetAddress address) {
+    public void updateServerIpProtocol(@NonNull InetAddress address) {
+        final int newServerIpProtocol = getIpProtocolVersion(address);
+        // Set the server ip protocol directly if it's the default value, skipping the connection
+        // status notification. Those notifications will be sent only when the VPN connection is
+        // established and the server ip protocol changes.
+        if (mServerIpProtocol == IP_PROTOCOL_UNKNOWN) {
+            mServerIpProtocol = newServerIpProtocol;
+            return;
+        }
+        // Return if no ip protocol change.
+        if (mServerIpProtocol == newServerIpProtocol) {
+            return;
+        }
+        // Notify the ip protocol change and set the new ip protocol.
+        notifyVpnDisconnected();
+        mServerIpProtocol = newServerIpProtocol;
+        notifyVpnConnected();
+    }
+
+    /**
+     * Determines the IP protocol version of a given {@link InetAddress}.
+     *
+     * @param address The {@link InetAddress} for which to determine the IP protocol version.
+     * @return An integer representing the IP protocol version:
+     * {@link #IP_PROTOCOL_IPv4} for IPv4 addresses,
+     * {@link #IP_PROTOCOL_IPv6} for IPv6 addresses,
+     * or {@link #IP_PROTOCOL_UNKNOWN} for any other address types.
+     */
+    private static int getIpProtocolVersion(@NonNull InetAddress address) {
         // Assume that if the address is not IPv4, it is IPv6. It does not consider other cases like
         // IPv4-mapped IPv6 addresses.
-        if (address instanceof Inet4Address) {
-            mServerIpProtocol = IP_PROTOCOL_IPv4;
-        } else if (address instanceof Inet6Address) {
-            mServerIpProtocol = IP_PROTOCOL_IPv6;
-        } else {
-            mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
-        }
+        return (address instanceof Inet4Address) ? IP_PROTOCOL_IPv4 :
+                (address instanceof Inet6Address) ? IP_PROTOCOL_IPv6 : IP_PROTOCOL_UNKNOWN;
     }
 
     /**

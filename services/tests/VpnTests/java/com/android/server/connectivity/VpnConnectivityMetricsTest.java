@@ -41,6 +41,8 @@ import static com.android.server.connectivity.VpnConnectivityMetrics.checkIpProt
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.net.ConnectivityManager;
@@ -123,8 +125,7 @@ public class VpnConnectivityMetricsTest {
         assertEquals(IP_PROTOCOL_IPv4v6, checkIpProtocol(List.of(vpnClientIpv4, vpnClientIpv6)));
     }
 
-    @Test
-    public void testNotifyVpnConnected() {
+    private Network verifyNotifyVpnConnected() {
         final Network cellNetwork = new Network(1234);
         final NetworkCapabilities cellCap = new NetworkCapabilities();
         cellCap.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
@@ -135,14 +136,14 @@ public class VpnConnectivityMetricsTest {
         mMetrics.setMtu(1327);
         mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS);
         mMetrics.setAllowedAlgorithms(Ikev2VpnProfile.DEFAULT_ALGORITHMS);
-        mMetrics.setUnderlyingNetwork(new Network[] { cellNetwork });
-        mMetrics.setVpnNetworkIpProtocol(
+        mMetrics.updateUnderlyingNetworkTypes(new Network[] { cellNetwork });
+        mMetrics.updateVpnNetworkIpProtocol(
                 List.of(new LinkAddress(VPN_CLIENT_IP_V4), new LinkAddress(VPN_CLIENT_IP_V6)));
-        mMetrics.setServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
+        mMetrics.updateServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
 
         // Verify a vpn connected event with the filled in data.
         mMetrics.notifyVpnConnected();
-        verify(mDeps).statsWrite(
+        verify(mDeps, times(1)).statsWrite(
                 VpnManager.TYPE_VPN_PLATFORM,
                 IP_PROTOCOL_IPv4v6,
                 IP_PROTOCOL_IPv4,
@@ -152,6 +153,13 @@ public class VpnConnectivityMetricsTest {
                 new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
                 true /* connected */,
                 USER_ID);
+
+        return cellNetwork;
+    }
+
+    @Test
+    public void testNotifyVpnConnected() {
+        verifyNotifyVpnConnected();
     }
 
     @Test
@@ -166,9 +174,9 @@ public class VpnConnectivityMetricsTest {
         mMetrics.setMtu(1280);
         mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_FROM_IKE_TUN_CONN_PARAMS);
         mMetrics.setAllowedAlgorithms(Ikev2VpnProfile.DEFAULT_ALGORITHMS);
-        mMetrics.setUnderlyingNetwork(new Network[] { wifiNetwork });
-        mMetrics.setVpnNetworkIpProtocol(List.of(new LinkAddress(VPN_CLIENT_IP_V6)));
-        mMetrics.setServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V6));
+        mMetrics.updateUnderlyingNetworkTypes(new Network[] { wifiNetwork });
+        mMetrics.updateVpnNetworkIpProtocol(List.of(new LinkAddress(VPN_CLIENT_IP_V6)));
+        mMetrics.updateServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V6));
 
         // Verify a vpn disconnected event with the filled in data.
         mMetrics.notifyVpnDisconnected();
@@ -194,8 +202,8 @@ public class VpnConnectivityMetricsTest {
             mMetrics.setMtu(1280);
             mMetrics.setVpnProfileType(-1);
             mMetrics.setAllowedAlgorithms(List.of("unknown"));
-            mMetrics.setVpnNetworkIpProtocol(List.of());
-            mMetrics.setServerIpProtocol(null);
+            mMetrics.updateVpnNetworkIpProtocol(List.of());
+            mMetrics.updateServerIpProtocol(null);
 
             // Verify a vpn connected event with the filled in correct data.
             mMetrics.notifyVpnConnected();
@@ -218,8 +226,8 @@ public class VpnConnectivityMetricsTest {
             mMetrics.setAllowedAlgorithms(allowedAlgorithms);
             final List<LinkAddress> addresses = new ArrayList<>();
             addresses.add(null);
-            mMetrics.setVpnNetworkIpProtocol(addresses);
-            mMetrics.setServerIpProtocol(null);
+            mMetrics.updateVpnNetworkIpProtocol(addresses);
+            mMetrics.updateServerIpProtocol(null);
 
             // Verify a vpn disconnected event with the filled in correct data.
             mMetrics.notifyVpnDisconnected();
@@ -248,10 +256,10 @@ public class VpnConnectivityMetricsTest {
         mMetrics.setMtu(1327);
         mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS);
         mMetrics.setAllowedAlgorithms(Ikev2VpnProfile.DEFAULT_ALGORITHMS);
-        mMetrics.setUnderlyingNetwork(new Network[] { cellNetwork });
-        mMetrics.setVpnNetworkIpProtocol(
+        mMetrics.updateUnderlyingNetworkTypes(new Network[] { cellNetwork });
+        mMetrics.updateVpnNetworkIpProtocol(
                 List.of(new LinkAddress(VPN_CLIENT_IP_V4), new LinkAddress(VPN_CLIENT_IP_V6)));
-        mMetrics.setServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
+        mMetrics.updateServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
 
         // Verify a vpn connected event with the filled in data.
         mMetrics.notifyVpnConnected();
@@ -277,6 +285,201 @@ public class VpnConnectivityMetricsTest {
                 0 /* allowedAlgorithms */,
                 0 /* mtu */,
                 new int[0],
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testUpdateServerIpProtocol() {
+        verifyNotifyVpnConnected();
+
+        // Update server IP to IPv6, which should trigger both disconnected and connected
+        // notifications.
+        mMetrics.updateServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V6));
+
+        // Verify a vpn disconnected event.
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                false /* connected */,
+                USER_ID);
+
+        // Verify a vpn connected event with the new server IP protocol.
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv6,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testUpdateServerIpProtocol_NoIpProtocolChange() {
+        verifyNotifyVpnConnected();
+
+        // Update with the same server IP, which should not trigger any notifications.
+        mMetrics.updateServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
+
+        verify(mDeps, never()).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                false /* connected */,
+                USER_ID);
+
+        verify(mDeps, times(1)).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testUpdateVpnNetworkIpProtocol() {
+        verifyNotifyVpnConnected();
+
+        // Update vpn network IP to IPv4 only, which should trigger both disconnected and connected
+        // notifications.
+        mMetrics.updateVpnNetworkIpProtocol(List.of(new LinkAddress(VPN_CLIENT_IP_V4)));
+
+        // Verify a vpn disconnected event.
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                false /* connected */,
+                USER_ID);
+
+        // Verify a vpn connected event with the new server IP protocol.
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testUpdateVpnNetworkIpProtocol_NoIpProtocolChange() {
+        verifyNotifyVpnConnected();
+
+        // Update with the same vpn network IP, which should not trigger any notifications.
+        mMetrics.updateVpnNetworkIpProtocol(
+                List.of(new LinkAddress(VPN_CLIENT_IP_V4), new LinkAddress(VPN_CLIENT_IP_V6)));
+
+        verify(mDeps, never()).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                false /* connected */,
+                USER_ID);
+
+        verify(mDeps, times(1)).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testUpdateUnderlyingNetworkTypes() {
+        verifyNotifyVpnConnected();
+
+        final Network wifiNetwork = new Network(4321);
+        final NetworkCapabilities wifiCap = new NetworkCapabilities();
+        wifiCap.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+        doReturn(wifiCap).when(mCm).getNetworkCapabilities(wifiNetwork);
+
+        // Update underlying network to Wi-Fi, which should trigger both disconnected and connected
+        // notifications.
+        mMetrics.updateUnderlyingNetworkTypes(new Network[] { wifiNetwork });
+
+        // Verify a vpn disconnected event.
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                false /* connected */,
+                USER_ID);
+
+        // Verify a vpn connected event with the new underlying network.
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_WIFI },
+                true /* connected */,
+                USER_ID);
+    }
+
+    @Test
+    public void testUpdateUnderlyingNetworkTypes_NoNetworkTypeChange() {
+        final Network cellnetwork = verifyNotifyVpnConnected();
+
+        // Update with thhe same underlying network, which should not trigger any notifications.
+        mMetrics.updateUnderlyingNetworkTypes(new Network[] { cellnetwork });
+
+        verify(mDeps, never()).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                false /* connected */,
+                USER_ID);
+
+        verify(mDeps, times(1)).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
                 true /* connected */,
                 USER_ID);
     }

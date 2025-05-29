@@ -2314,7 +2314,7 @@ public class Vpn {
         synchronized (Vpn.this) {
             mConfig.underlyingNetworks = networks;
             if (mVpnConnectivityMetrics != null) {
-                mVpnConnectivityMetrics.setUnderlyingNetwork(mConfig.underlyingNetworks);
+                mVpnConnectivityMetrics.updateUnderlyingNetworkTypes(mConfig.underlyingNetworks);
             }
         }
     }
@@ -3005,7 +3005,8 @@ public class Vpn {
             // in onChildMigrated
             mIkeConnectionInfo = ikeConnectionInfo;
             if (mVpnConnectivityMetrics != null) {
-                mVpnConnectivityMetrics.setServerIpProtocol(ikeConnectionInfo.getRemoteAddress());
+                mVpnConnectivityMetrics.updateServerIpProtocol(
+                        ikeConnectionInfo.getRemoteAddress());
             }
         }
 
@@ -3084,7 +3085,7 @@ public class Vpn {
                     mConfig.addresses.clear();
                     mConfig.addresses.addAll(internalAddresses);
                     if (mVpnConnectivityMetrics != null) {
-                        mVpnConnectivityMetrics.setVpnNetworkIpProtocol(mConfig.addresses);
+                        mVpnConnectivityMetrics.updateVpnNetworkIpProtocol(mConfig.addresses);
                     }
 
                     mConfig.routes.clear();
