@@ -23,6 +23,9 @@ import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIG
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DOZE;
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_IDLE;
+import static com.android.server.display.TestUtilsKt.TEST_SENSOR_NAME;
+import static com.android.server.display.TestUtilsKt.createSensor;
+import static com.android.server.display.TestUtilsKt.createSensorEvent;
 import static com.android.server.display.config.DisplayDeviceConfigTestUtilsKt.createSensorData;
 
 import static org.junit.Assert.assertEquals;
@@ -244,7 +247,7 @@ public final class DisplayPowerControllerTest {
         SensorEventListener listener = getSensorEventListener(mProxSensor);
         assertNotNull(listener);
 
-        listener.onSensorChanged(TestUtils.createSensorEvent(mProxSensor, /* value= */ 5));
+        listener.onSensorChanged(createSensorEvent(mProxSensor, /* value= */ 5));
         advanceTime(1);
 
         // two times, one for unfinished business and one for proximity
@@ -274,7 +277,7 @@ public final class DisplayPowerControllerTest {
         assertNotNull(listener);
 
         // Send a positive proximity event
-        listener.onSensorChanged(TestUtils.createSensorEvent(mProxSensor, /* value= */ 1));
+        listener.onSensorChanged(createSensorEvent(mProxSensor, /* value= */ 1));
         advanceTime(1);
 
         // The display should have been turned off
@@ -284,7 +287,7 @@ public final class DisplayPowerControllerTest {
         clearInvocations(mHolder.displayPowerState);
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_OFF);
         // Send a negative proximity event
-        listener.onSensorChanged(TestUtils.createSensorEvent(mProxSensor,
+        listener.onSensorChanged(createSensorEvent(mProxSensor,
                 (int) PROX_SENSOR_MAX_RANGE + 1));
         // Advance time by less than PROXIMITY_SENSOR_NEGATIVE_DEBOUNCE_DELAY
         advanceTime(1);
@@ -317,7 +320,7 @@ public final class DisplayPowerControllerTest {
         assertNotNull(listener);
 
         // Send a positive proximity event
-        listener.onSensorChanged(TestUtils.createSensorEvent(mProxSensor, /* value= */ 1));
+        listener.onSensorChanged(createSensorEvent(mProxSensor, /* value= */ 1));
         advanceTime(1);
 
         // The display should have been turned off
@@ -2522,9 +2525,9 @@ public final class DisplayPowerControllerTest {
     }
 
     private void setUpSensors() throws Exception {
-        mProxSensor = TestUtils.createSensor(Sensor.TYPE_PROXIMITY, Sensor.STRING_TYPE_PROXIMITY,
-                PROX_SENSOR_MAX_RANGE);
-        Sensor screenOffBrightnessSensor = TestUtils.createSensor(
+        mProxSensor = createSensor(Sensor.TYPE_PROXIMITY, Sensor.STRING_TYPE_PROXIMITY,
+                TEST_SENSOR_NAME, PROX_SENSOR_MAX_RANGE);
+        Sensor screenOffBrightnessSensor = createSensor(
                 Sensor.TYPE_LIGHT, Sensor.STRING_TYPE_LIGHT);
         when(mSensorManagerMock.getSensorList(eq(Sensor.TYPE_ALL)))
                 .thenReturn(List.of(mProxSensor, screenOffBrightnessSensor));

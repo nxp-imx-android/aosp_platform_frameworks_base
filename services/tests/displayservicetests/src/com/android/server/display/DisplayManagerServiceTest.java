@@ -41,6 +41,10 @@ import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.server.display.ExternalDisplayPolicy.ENABLE_ON_CONNECT;
+import static com.android.server.display.TestUtilsKt.createInMemoryPersistentDataStore;
+import static com.android.server.display.TestUtilsKt.createSensor;
+import static com.android.server.display.TestUtilsKt.createTestDisplayAddress;
+import static com.android.server.display.TestUtilsKt.TEST_SENSOR_TYPE;
 import static com.android.server.display.VirtualDisplayAdapter.UNIQUE_ID_PREFIX;
 import static com.android.server.display.config.DisplayDeviceConfigTestUtilsKt.createSensorData;
 
@@ -393,7 +397,7 @@ public class DisplayManagerServiceTest {
 
         @Override
         PersistentDataStore getPersistentDataStore() {
-            return TestUtilsKt.createInMemoryPersistentDataStore();
+            return createInMemoryPersistentDataStore();
         }
     }
 
@@ -980,7 +984,7 @@ public class DisplayManagerServiceTest {
                 Insets.of(0, 10, 0, 0),
                 zeroRect, new Rect(0, 0, 10, 10), zeroRect, zeroRect);
         displayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
-        displayDeviceInfo.address = new TestUtils.TestDisplayAddress();
+        displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);
         displayManager.getDisplayDeviceRepository()
                 .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
@@ -2872,7 +2876,7 @@ public class DisplayManagerServiceTest {
 
         String testSensorName = "testName";
         String testSensorType = "testType";
-        Sensor testSensor = TestUtils.createSensor(testSensorType, testSensorName);
+        Sensor testSensor = createSensor(TEST_SENSOR_TYPE, testSensorType, testSensorName);
 
         SensorData sensorData = createSensorData(testSensorType, testSensorName,
                 /* minRefreshRate= */ 10f, /* maxRefreshRate= */ 100f);
@@ -2904,7 +2908,7 @@ public class DisplayManagerServiceTest {
 
         String testSensorName = "testName";
         String testSensorType = "testType";
-        Sensor testSensor = TestUtils.createSensor(testSensorType, testSensorName);
+        Sensor testSensor = createSensor(TEST_SENSOR_TYPE, testSensorType, testSensorName);
 
         when(mMockDisplayDeviceConfig.getProximitySensor()).thenReturn(null);
         when(mSensorManager.getSensorList(Sensor.TYPE_ALL)).thenReturn(Collections.singletonList(
@@ -4774,7 +4778,7 @@ public class DisplayManagerServiceTest {
                 Insets.of(0, 10, 0, 0),
                 zeroRect, new Rect(0, 0, 10, 10), zeroRect, zeroRect);
         displayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
-        displayDeviceInfo.address = new TestUtils.TestDisplayAddress();
+        displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);
         displayManager.getDisplayDeviceRepository()
                 .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
@@ -4838,7 +4842,7 @@ public class DisplayManagerServiceTest {
         if (displayType == Display.TYPE_EXTERNAL) {
             displayDeviceInfo.flags |= DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP;
         }
-        displayDeviceInfo.address = new TestUtils.TestDisplayAddress();
+        displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);
 
         displayManager.getDisplayDeviceRepository()
