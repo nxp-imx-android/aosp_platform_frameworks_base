@@ -36,6 +36,7 @@ import android.os.UserManager;
 import android.util.Pair;
 import android.util.Slog;
 
+import com.android.internal.R;
 import com.android.server.biometrics.sensors.LockoutTracker;
 
 import java.lang.annotation.Retention;
@@ -129,6 +130,11 @@ class PreAuthInfo {
                 updateAuthenticatorsIfIdentityCheckIsActive(promptInfo, effectiveUserId,
                         trustManager, settingObserver);
 
+        if (!Flags.bpFallbackOptions() && isMandatoryBiometricsAuthentication
+                && promptInfo.getNegativeButtonText() == null) {
+            promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
+        }
+
         final boolean biometricRequested = Utils.isBiometricRequested(promptInfo);
         final int requestedStrength = Utils.getPublicBiometricStrength(promptInfo);
         final boolean credentialRequested = Utils.isCredentialRequested(promptInfo);
@@ -189,16 +195,14 @@ class PreAuthInfo {
                         effectiveUserId), trustManager)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-            return true;
         } else if (Flags.identityCheckTestApi()
                 && Utils.shouldApplyIdentityCheck(promptInfo.getAuthenticators())
                 && settingObserver.isIdentityCheckActive(effectiveUserId)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-            return true;
         }
 
-        return false;
+        return promptInfo.isIdentityCheckActive();
     }
 
     private static boolean dropCredentialFallback(int authenticators,
