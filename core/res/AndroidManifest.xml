@@ -9056,7 +9056,11 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.security.secure_lockdown" />
 
-    <!-- Allows app to enter trade-in-mode.
+    <!-- Allows app to enter trade-in-mode and fetch hardware diagnostics info.
+        The permission name was initially introduced to be used for the tradeinmode evaluate
+        command to enter evaluation mode. TradeInModeService which implements evaluation mode
+        was extended to gather diagnostic signals so this permission is also extended to cover
+        those use cases.
         <p>Protection level: signature
         @hide
     -->
