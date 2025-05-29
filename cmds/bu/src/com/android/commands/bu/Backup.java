@@ -203,20 +203,37 @@ public final class Backup {
     }
 
     private static void showUsage() {
-        System.err.println(" backup [-user USER_ID] [-f FILE] [-apk|-noapk] [-obb|-noobb] [-shared|-noshared]");
-        System.err.println("        [-all] [-system|-nosystem] [-keyvalue|-nokeyvalue] [PACKAGE...]");
-        System.err.println("     write an archive of the device's data to FILE [default=backup.adb]");
-        System.err.println("     package list optional if -all/-shared are supplied");
-        System.err.println("     -user: user ID for which to perform the operation (default - system user)");
-        System.err.println("     -apk/-noapk: do/don't back up .apk files (default -noapk)");
-        System.err.println("     -obb/-noobb: do/don't back up .obb files (default -noobb)");
-        System.err.println("     -shared|-noshared: do/don't back up shared storage (default -noshared)");
-        System.err.println("     -all: back up all installed applications");
-        System.err.println("     -system|-nosystem: include system apps in -all (default -system)");
-        System.err.println("     -keyvalue|-nokeyvalue: include apps that perform key/value backups.");
-        System.err.println("         (default -nokeyvalue)");
-        System.err.println(" restore [-user USER_ID] FILE       restore device contents from FILE");
-        System.err.println("     -user: user ID for which to perform the operation (default - system user)");
+        System.err.println("""
+        Usage: bu <command> [options]
+
+        Commands:
+          backup [-user USER_ID] [-apk|-noapk] [-obb|-noobb] [-shared|-noshared]
+                 [-all] [-system|-nosystem] [-widgets|-nowidgets]
+                 [-compress|-nocompress] [-keyvalue|-nokeyvalue] [PACKAGE...]
+            Write an archive of the device's data to stdout.
+            The package list is optional if -all or -shared is supplied.
+            Example: bu backup -all -apk > backup.ab
+
+          restore [-user USER_ID]
+            Restore device contents from stdin.
+            Example: bu restore < backup.ab
+
+        Global options:
+          -user USER_ID: user ID for which to perform the operation (default - system user)
+
+        Options for 'backup':
+          -apk/-noapk: do/don't back up .apk files (default -noapk)
+          -obb/-noobb: do/don't back up .obb files (default -noobb)
+          -shared|-noshared: do/don't back up shared storage (default -noshared)
+          -all: back up all installed applications
+          -system|-nosystem: include system apps in -all (default -system)
+          -widgets|-nowidgets: do/don't back up widget data (default: -nowidgets)
+          -compress|-nocompress: enable/disable compression of the backup data (default: -compress)
+          -keyvalue|-nokeyvalue: do/don't back up apps that are key/value based
+                                 (default: -nokeyvalue)
+
+        'restore' command does not take any package names or options other than -user.
+                """);
     }
 
     private String nextArg() {
