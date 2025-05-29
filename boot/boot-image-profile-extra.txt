@@ -20,35 +20,9 @@
 # in the system server, not on the UI thread of an app.
 HSPLandroid/graphics/Color;->luminance()F
 
-# For now, compile all methods in MessageQueue to avoid performance cliffs for
-# flagged/evolving hot code paths. See: b/338098106
-# TODO(shayba): clean up redundant entries after the generated profile is updated
-# to include all hot MessageQueue methods, and the inner classes are profiled
-# as well.
-HSPLandroid/os/MessageQueue;->*
-HSPLandroid/os/MessageQueue$EnqueueOrder;->*
-HSPLandroid/os/MessageQueue$FileDescriptorRecord;->*
-HSPLandroid/os/MessageQueue$IdleHandler;->*
-HSPLandroid/os/MessageQueue$MessageCompare;->*
-HSPLandroid/os/MessageQueue$MatchAllFutureMessages;->*
-HSPLandroid/os/MessageQueue$MatchAllMessages;->*
-HSPLandroid/os/MessageQueue$MatchBarrierToken;->*
-HSPLandroid/os/MessageQueue$MatchDeliverableMessages;->*
-HSPLandroid/os/MessageQueue$MatchHandler;->*
-HSPLandroid/os/MessageQueue$MatchHandlerAndObject;->*
-HSPLandroid/os/MessageQueue$MatchHandlerAndObjectEquals;->*
-HSPLandroid/os/MessageQueue$MatchHandlerRunnableAndObject;->*
-HSPLandroid/os/MessageQueue$MatchHandlerRunnableAndObjectEquals;->*
-HSPLandroid/os/MessageQueue$MatchHandlerWhatAndObject;->*
-HSPLandroid/os/MessageQueue$MatchHandlerWhatAndObjectEquals;->*
-HSPLandroid/os/MessageQueue$MessageCounts;->*
-HSPLandroid/os/MessageQueue$StackNode;->*
-HSPLandroid/os/MessageQueue$MessageNode;->*
-HSPLandroid/os/MessageQueue$OnFileDescriptorEventListener$Events;->*
-HSPLandroid/os/MessageQueue$OnFileDescriptorEventListener;->*
-HSPLandroid/os/MessageQueue$StackNodeType;->*
-HSPLandroid/os/MessageQueue$StateNode;->*
-HSPLandroid/os/MessageQueue$TimedParkStateNode;->*
+# TODO(shayba): remove the below once the generated profile is updated.
+# See: b/419605355
+Landroid/os/MessageQueue$EnqueueOrder;->*
 
 # Concurrent MessageQueue uses ConcurrentSkipListMap.
 # See: b/415954362
@@ -57,31 +31,6 @@ HSPLjava/util/concurrent/ConcurrentSkipListMap;->*
 HSPLjava/util/concurrent/ConcurrentSkipListMap$KeyIterator;->*
 HSPLjava/util/concurrent/ConcurrentSkipListMap$KeySet;->*
 HSPLjava/util/concurrent/ConcurrentSkipListSet;->*
-
-# For now, compile all methods in PerfettoTrace and PerfettoTrackEventExtra.
-# Similar to the existing Trace APIs, these new APIs can impact the performance
-# of many subsystems including MessageQueue. This also keeps benchmark
-# comparisons between both APIs fair.
-HSPLandroid/os/PerfettoTrace$Category;->*
-HSPLandroid/os/PerfettoTrace;->*
-HSPLandroid/os/PerfettoTrackEventExtra;->*
-HSPLandroid/os/PerfettoTrackEventExtra$Builder;->*
-HSPLandroid/os/PerfettoTrackEventExtra$ArgBool;->*
-HSPLandroid/os/PerfettoTrackEventExtra$ArgInt64;->*
-HSPLandroid/os/PerfettoTrackEventExtra$ArgDouble;->*
-HSPLandroid/os/PerfettoTrackEventExtra$ArgString;->*
-HSPLandroid/os/PerfettoTrackEventExtra$CounterInt64;->*
-HSPLandroid/os/PerfettoTrackEventExtra$CounterDouble;->*
-HSPLandroid/os/PerfettoTrackEventExtra$CounterTrack;->*
-HSPLandroid/os/PerfettoTrackEventExtra$NamedTrack;->*
-HSPLandroid/os/PerfettoTrackEventExtra$Flow;->*
-HSPLandroid/os/PerfettoTrackEventExtra$Proto;->*
-HSPLandroid/os/PerfettoTrackEventExtra$FieldInt64;->*
-HSPLandroid/os/PerfettoTrackEventExtra$FieldDouble;->*
-HSPLandroid/os/PerfettoTrackEventExtra$FieldString;->*
-HSPLandroid/os/PerfettoTrackEventExtra$FieldNested;->*
-HSPLandroid/os/PerfettoTrackEventExtra$Pool;->*
-HSPLandroid/os/PerfettoTrackEventExtra$RingBuffer;->*
 
 # While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
 # pre-initialized in the boot image to avoid redundant per-process overhead.
