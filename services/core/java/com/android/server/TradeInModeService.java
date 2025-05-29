@@ -140,8 +140,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public boolean start() {
-            mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                    "Cannot enter trade-in mode foyer");
+            enforceEnterTradeInModePermission();
             final int state = getTradeInModeState();
             if (state == TIM_STATE_FOYER) {
                 return true;
@@ -179,8 +178,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public boolean enterEvaluationMode() {
-            mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                    "Cannot enter trade-in evaluation mode");
+            enforceEnterTradeInModePermission();
             if (!checkEvaluationModePreconditions()) {
                 return false;
             }
@@ -204,8 +202,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public boolean isEvaluationModeAllowed() {
-            mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                    "Cannot test for trade-in evaluation mode allowed");
+            enforceEnterTradeInModePermission();
             return checkEvaluationModePreconditions();
         }
 
@@ -253,6 +250,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public int[] getScreenPartStatus() throws RemoteException {
+            enforceEnterTradeInModePermission();
             int[] statuses = new int[DisplayControl.getPhysicalDisplayIds().length];
             int index = 0;
             // loop through all displayId to find id of internal display
@@ -268,6 +266,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public int getHingeCount() throws RemoteException {
+            enforceEnterTradeInModePermission();
             android.hardware.health.HingeInfo[] info = getHealthService().getHingeInfo();
             return (info == null) ? 0 : info.length;
         }
@@ -275,6 +274,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public int getFoldCount(int hingeId) throws RemoteException {
+            enforceEnterTradeInModePermission();
             int hingeCount = getHingeCount();
             if (hingeId >= hingeCount) {
                 Slog.e(TAG, "Hinge " + hingeId + " is greater than hinge count: " + hingeCount);
@@ -286,6 +286,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public int getHingeLifeSpan(int hingeId) throws RemoteException {
+            enforceEnterTradeInModePermission();
             int hingeCount = getHingeCount();
             if (hingeId >= hingeCount) {
                 Slog.e(TAG, "Hinge " + hingeId + " is greater than hinge count: " + hingeCount);
@@ -297,6 +298,7 @@ public final class TradeInModeService extends SystemService {
         @Override
         @RequiresPermission(android.Manifest.permission.ENTER_TRADE_IN_MODE)
         public int getMoistureIntrusionDetected(long timeoutMillis) throws RemoteException {
+            enforceEnterTradeInModePermission();
             SensorManager m = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
             Sensor moistureDetectionSensor = m.getDefaultSensor(Sensor.TYPE_MOISTURE_INTRUSION);
 
@@ -338,9 +340,13 @@ public final class TradeInModeService extends SystemService {
             }
         }
 
-        private void enforceTestingPermissions() {
+        private void enforceEnterTradeInModePermission() {
             mContext.enforceCallingOrSelfPermission("android.permission.ENTER_TRADE_IN_MODE",
-                    "Caller must have ENTER_TRADE_IN_MODE permission");
+                    "caller missing ENTER_TRADE_IN_MODE permission");
+        }
+
+        private void enforceTestingPermissions() {
+            enforceEnterTradeInModePermission();
             if (!isDebuggable()) {
                 throw new SecurityException("ro.debuggable must be set to 1");
             }
