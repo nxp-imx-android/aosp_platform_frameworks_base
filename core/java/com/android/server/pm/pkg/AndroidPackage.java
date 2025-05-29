@@ -1354,15 +1354,6 @@ public interface AndroidPackage {
     List<ParsedUsesPermission> getUsesPermissions();
 
     /**
-     * A mapping of the requested permission name to its {@link ParsedUsesPermission} object.
-     *
-     * @hide
-     */
-    @Immutable.Ignore
-    @NonNull
-    Map<String, ParsedUsesPermission> getUsesPermissionMapping();
-
-    /**
      * TODO(b/135203078): Move SDK library stuff to an inner data class
      *
      * @see R.styleable#AndroidManifestUsesSdkLibrary

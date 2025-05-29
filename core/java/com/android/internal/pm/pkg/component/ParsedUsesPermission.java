@@ -22,7 +22,6 @@ import android.content.pm.PackageInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Set;
 
 /**
  * A {@link android.R.styleable#AndroidManifestUsesPermission
@@ -54,7 +53,4 @@ public interface ParsedUsesPermission {
 
     @UsesPermissionFlags
     int getUsesPermissionFlags();
-
-    @NonNull
-    Set<String> getPurposes();
 }

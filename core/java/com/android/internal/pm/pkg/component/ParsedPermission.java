@@ -41,10 +41,5 @@ public interface ParsedPermission extends ParsedComponent {
 
     int getRequestRes();
 
-    boolean isPurposeRequired();
-
-    @NonNull
-    Set<String> getValidPurposes();
-
     boolean isTree();
 }
