@@ -189,10 +189,7 @@ constructor(
             hydrateActivityTransitionAnimationState()
             lockWhenDeviceBecomesUntrusted()
         } else {
-            sceneLogger.logFrameworkEnabled(
-                isEnabled = false,
-                reason = SceneContainerFlag.requirementDescription(),
-            )
+            sceneLogger.logFrameworkEnabled(isEnabled = false)
         }
     }
 
@@ -201,7 +198,6 @@ constructor(
             printSection("SceneContainerFlag") {
                 printSection("Framework availability") {
                     println("isEnabled", SceneContainerFlag.isEnabled)
-                    println(SceneContainerFlag.requirementDescription())
                 }
 
                 if (!SceneContainerFlag.isEnabled) {
