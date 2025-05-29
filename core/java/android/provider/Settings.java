@@ -13257,6 +13257,60 @@ public final class Settings {
         public static final String DEVICE_STATE_ROTATION_LOCK =
                 "device_state_rotation_lock";
 
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_NONE = 0;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_HOME = 1;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_OVERVIEW = 2;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_NOTIFICATIONS = 3;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_QUICK_SETTINGS = 4;
+
+        /**
+         * The different actions that can be used for action corners
+         * @hide
+         */
+        @IntDef(prefix = {"ACTION_CORNER_ACTION_"}, value = {
+                ACTION_CORNER_ACTION_NONE,
+                ACTION_CORNER_ACTION_HOME,
+                ACTION_CORNER_ACTION_OVERVIEW,
+                ACTION_CORNER_ACTION_NOTIFICATIONS,
+                ACTION_CORNER_ACTION_QUICK_SETTINGS,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ActionCornerActionType {
+        }
+
+        /**
+         * Action Corner type configured for top left corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_TOP_LEFT_ACTION =
+                "action_corner_top_left_action";
+
+        /**
+         * Action Corner type configured for top right corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_TOP_RIGHT_ACTION =
+                "action_corner_top_right_action";
+
+        /**
+         * Action Corner type configured for bottom left corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_BOTTOM_LEFT_ACTION =
+                "action_corner_bottom_left_action";
+
+        /**
+         * Action Corner type configured for bottom right corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_BOTTOM_RIGHT_ACTION =
+                "action_corner_bottom_right_action";
+
         /**
          * Control whether communal mode is allowed on this device.
          *
