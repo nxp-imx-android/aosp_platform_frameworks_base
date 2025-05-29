@@ -113,7 +113,7 @@ public final class SplitWindowManager extends WindowlessWindowManager {
 
     /** Inflates {@link DividerView} on to the root surface. */
     void init(SplitLayout splitLayout, InsetsState insetsState, boolean isRestoring,
-            DesktopState desktopState) {
+            DesktopState desktopState, SplitTargetProvider splitTargetProvider) {
         if (mDividerView != null || mViewHost != null) {
             throw new UnsupportedOperationException(
                     "Try to inflate divider view again without release first");
@@ -134,7 +134,8 @@ public final class SplitWindowManager extends WindowlessWindowManager {
         lp.privateFlags |= PRIVATE_FLAG_NO_MOVE_ANIMATION | PRIVATE_FLAG_TRUSTED_OVERLAY;
         lp.accessibilityTitle = mContext.getResources().getString(R.string.accessibility_divider);
         mViewHost.setView(mDividerView, lp);
-        mDividerView.setup(splitLayout, this, mViewHost, insetsState, desktopState);
+        mDividerView.setup(splitLayout, this, mViewHost, insetsState, desktopState,
+                splitTargetProvider);
         if (isRestoring) {
             mDividerView.setInteractive(mLastDividerInteractive, mLastDividerHandleHidden,
                     "restore_setup");

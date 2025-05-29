@@ -18,12 +18,17 @@ package com.android.wm.shell.common.split;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CURSOR_HOVER_STATES_ENABLED;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
+import static com.android.wm.shell.splitscreen.SplitTestUtils.setupSplitTargetProvider;
 
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -31,6 +36,7 @@ import android.provider.DeviceConfig;
 import android.view.InputDevice;
 import android.view.InsetsState;
 import android.view.MotionEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -73,8 +79,12 @@ public class DividerViewTest extends ShellTestCase {
     @UiThreadTest
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        mDesktopState = new FakeDesktopState();
         Configuration configuration = getConfiguration();
+        Resources resources = spy(mContext.getResources());
+        SplitTargetProvider splitTargetProvider =
+                setupSplitTargetProvider(resources, configuration);
+        when(mSplitState.getSplitTargetProvider()).thenReturn(splitTargetProvider);
+        mDesktopState = new FakeDesktopState();
         mSplitLayout = spy(new SplitLayout("TestSplitLayout", mContext, configuration,
                 mSplitLayoutHandler, mCallbacks, mDisplayController, mDisplayImeController,
                 mTaskOrganizer, SplitLayout.PARALLAX_NONE, mSplitState, mHandler, mStatusBarHider,
@@ -82,7 +92,7 @@ public class DividerViewTest extends ShellTestCase {
         SplitWindowManager splitWindowManager = new SplitWindowManager("TestSplitWindowManager",
                 mContext, configuration, mCallbacks);
         splitWindowManager.init(mSplitLayout, new InsetsState(), false /* isRestoring */,
-                mDesktopState);
+                mDesktopState, splitTargetProvider);
         mDividerView = spy(splitWindowManager.getDividerView());
     }
 
@@ -114,6 +124,17 @@ public class DividerViewTest extends ShellTestCase {
         mDividerView.getAccessibilityDelegate().performAccessibilityAction(mDividerView,
                 R.id.action_swap_apps, null);
         verify(mSplitLayout, times(1)).onDoubleTappedDivider();
+    }
+
+    @Test
+    public void topLeft50ActionForA11y() {
+        doNothing().when(mSplitLayout).snapToTarget(SNAP_TO_2_50_50);
+        mDividerView.setAccessibilityDelegate(mDividerView.mHandleDelegate);
+        mDividerView.getAccessibilityDelegate().onInitializeAccessibilityNodeInfo(mDividerView,
+                new AccessibilityNodeInfo());
+        mDividerView.getAccessibilityDelegate().performAccessibilityAction(mDividerView,
+                R.id.action_move_tl_50, null);
+        verify(mSplitLayout, times(1)).snapToTarget(SNAP_TO_2_50_50);
     }
 
     private static MotionEvent getMotionEvent(long eventTime, int action, float x, float y) {
