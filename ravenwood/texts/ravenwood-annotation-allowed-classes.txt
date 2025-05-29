@@ -216,6 +216,7 @@ android.hardware.SerialManagerInternal
 android.metrics.LogMaker
 
 android.os.AggregateBatteryConsumer
+android.os.AsyncTask
 android.os.BadParcelableException
 android.os.BadTypeParcelableException
 android.os.BaseBundle
