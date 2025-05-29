@@ -15,8 +15,10 @@
  */
 package com.android.server.locksettings;
 
+import static org.junit.Assert.assertNull;
+
 import android.content.Context;
-import android.hardware.weaver.V1_0.IWeaver;
+import android.hardware.weaver.IWeaver;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.util.ArrayMap;
@@ -35,6 +37,8 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
 
     private FakeGateKeeperService mGateKeeper;
     private MockWeaverService mWeaverService;
+    private IWeaver mWeaverAidl;
+    private android.hardware.weaver.V1_0.IWeaver mWeaverHidl;
 
     public MockSyntheticPasswordManager(Context context, LockSettingsStorage storage,
             FakeGateKeeperService gatekeeper, UserManager userManager,
@@ -112,13 +116,33 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
         }
     }
 
-    @Override
-    protected IWeaver getWeaverHidlService() throws RemoteException {
-        return mWeaverService;
+    /** Enables MockWeaverService. */
+    public void enableWeaver() {
+        enableWeaverAidl();
     }
 
-    public void enableWeaver() {
+    /** Enables MockWeaverService with the current (AIDL) interface. */
+    public void enableWeaverAidl() {
+        assertNull(mWeaverService);
         mWeaverService = new MockWeaverService();
+        mWeaverAidl = mWeaverService;
+    }
+
+    @Override
+    protected IWeaver getWeaverAidlService() {
+        return mWeaverAidl;
+    }
+
+    /** Enables MockWeaverService with the old (HIDL) interface. */
+    public void enableWeaverHidl() {
+        assertNull(mWeaverService);
+        mWeaverService = new MockWeaverService();
+        mWeaverHidl = mWeaverService.asHidl();
+    }
+
+    @Override
+    protected android.hardware.weaver.V1_0.IWeaver getWeaverHidlService() throws RemoteException {
+        return mWeaverHidl;
     }
 
     public int getSumOfWeaverFailureCounters() {
