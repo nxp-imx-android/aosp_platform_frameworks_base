@@ -41,3 +41,13 @@ flag {
   description: "This flag controls FRR dialog improvement"
   bug: "380800403"
 }
+
+flag {
+  name: "biometric_scheduler_fix"
+  namespace: "biometrics_framework"
+  description: "This flag fixes a bug where watchdog is ineffective when user switching is required."
+  bug: "420939050"
+  metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
