@@ -291,7 +291,8 @@ public final class CameraExtensionCharacteristics {
         }
 
         private void connectToProxyLocked(Context ctx, int extension, boolean useFallback) {
-            if (mConnectionManager.getConnection(extension) == null) {
+            if ((mConnectionManager.getConnection(extension) == null) ||
+                    (mConnectionManager.getProxy(extension) == null)) {
                 Intent intent = new Intent();
                 intent.setClassName(PROXY_PACKAGE_NAME, PROXY_SERVICE_NAME);
                 String vendorProxyPackage = SystemProperties.get(
