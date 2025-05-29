@@ -17,10 +17,8 @@
 package com.android.server.notification;
 
 import static android.Manifest.permission.CONTROL_KEYGUARD_SECURE_NOTIFICATIONS;
-import static android.Manifest.permission.GRANT_RUNTIME_PERMISSIONS;
 import static android.Manifest.permission.POST_PROMOTED_NOTIFICATIONS;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
-import static android.Manifest.permission.REVOKE_RUNTIME_PERMISSIONS;
 import static android.Manifest.permission.STATUS_BAR_SERVICE;
 import static android.Manifest.permission.UPDATE_APP_OPS_STATS;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
@@ -4731,9 +4729,9 @@ public class NotificationManagerService extends SystemService {
          */
         @Override
         @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING)
-        @RequiresPermission(anyOf = {GRANT_RUNTIME_PERMISSIONS, REVOKE_RUNTIME_PERMISSIONS})
         public void setCanBePromoted(
                 String pkg, int uid, boolean promote, boolean fromUser) {
+            // Only the OS is allowed to change this permission
             checkCallerIsSystemOrSystemUiOrShell();
             if (!android.app.Flags.apiRichOngoing()) {
                 return;
@@ -4753,14 +4751,19 @@ public class NotificationManagerService extends SystemService {
                 boolean wasPromoted = checkPostPromotedNotificationPermission(pkg, uid);
 
                 int mode = promote ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED;
-                mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
 
-                mPackageManagerClient.updatePermissionFlags(POST_PROMOTED_NOTIFICATIONS, pkg,
-                        FLAG_PERMISSION_USER_SET, FLAG_PERMISSION_USER_SET,
-                        getUserHandleForUid(uid));
-                Log.i(TAG, "Set promoted permission: " + pkg + ", " + uid + "," + mode);
+                final long identity = Binder.clearCallingIdentity();
+                try {
+                    mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
+                    mPackageManagerClient.updatePermissionFlags(POST_PROMOTED_NOTIFICATIONS, pkg,
+                            FLAG_PERMISSION_USER_SET, FLAG_PERMISSION_USER_SET,
+                            getUserHandleForUid(uid));
+                    Log.i(TAG, "Set promoted permission: " + pkg + ", " + uid + "," + mode);
+                    changed = wasPromoted != promote;
+                } finally {
+                    Binder.restoreCallingIdentity(identity);
+                }
 
-                changed = wasPromoted != promote;
             } else {
                 // Use preferences backend for allowing promotion per app
                 changed = mPreferencesHelper.setCanBePromoted(pkg, uid, promote, fromUser);
