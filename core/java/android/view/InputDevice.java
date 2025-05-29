@@ -88,7 +88,6 @@ public final class InputDevice implements Parcelable {
     private final String mKeyboardLayoutType;
     private final boolean mHasVibrator;
     private final boolean mHasMicrophone;
-    private final boolean mHasButtonUnderPad;
     private final boolean mHasSensor;
     private final boolean mHasBattery;
     private final HostUsiVersion mHostUsiVersion;
@@ -502,8 +501,8 @@ public final class InputDevice implements Parcelable {
             int productId, int deviceBus, String descriptor, boolean isExternal, int sources,
             int keyboardType, KeyCharacterMap keyCharacterMap, @Nullable String keyboardLanguageTag,
             @Nullable String keyboardLayoutType, boolean hasVibrator, boolean hasMicrophone,
-            boolean hasButtonUnderPad, boolean hasSensor, boolean hasBattery, int usiVersionMajor,
-            int usiVersionMinor, int associatedDisplayId, boolean enabled) {
+            boolean hasSensor, boolean hasBattery, int usiVersionMajor, int usiVersionMinor,
+            int associatedDisplayId, boolean enabled) {
         mId = id;
         mGeneration = generation;
         mControllerNumber = controllerNumber;
@@ -528,7 +527,6 @@ public final class InputDevice implements Parcelable {
         mKeyboardLayoutType = keyboardLayoutType;
         mHasVibrator = hasVibrator;
         mHasMicrophone = hasMicrophone;
-        mHasButtonUnderPad = hasButtonUnderPad;
         mHasSensor = hasSensor;
         mHasBattery = hasBattery;
         mIdentifier = new InputDeviceIdentifier(descriptor, vendorId, productId);
@@ -554,7 +552,6 @@ public final class InputDevice implements Parcelable {
         mKeyboardLayoutType = in.readString8();
         mHasVibrator = in.readInt() != 0;
         mHasMicrophone = in.readInt() != 0;
-        mHasButtonUnderPad = in.readInt() != 0;
         mHasSensor = in.readInt() != 0;
         mHasBattery = in.readInt() != 0;
         mHostUsiVersion = HostUsiVersion.CREATOR.createFromParcel(in);
@@ -596,7 +593,6 @@ public final class InputDevice implements Parcelable {
         private KeyCharacterMap mKeyCharacterMap = null;
         private boolean mHasVibrator = false;
         private boolean mHasMicrophone = false;
-        private boolean mHasButtonUnderPad = false;
         private boolean mHasSensor = false;
         private boolean mHasBattery = false;
         private String mKeyboardLanguageTag = null;
@@ -693,12 +689,6 @@ public final class InputDevice implements Parcelable {
             return this;
         }
 
-        /** @see InputDevice#hasButtonUnderPad() */
-        public Builder setHasButtonUnderPad(boolean hasButtonUnderPad) {
-            mHasButtonUnderPad = hasButtonUnderPad;
-            return this;
-        }
-
         /** @see InputDevice#hasSensor() */
         public Builder setHasSensor(boolean hasSensor) {
             mHasSensor = hasSensor;
@@ -778,7 +768,6 @@ public final class InputDevice implements Parcelable {
                     mKeyboardLayoutType,
                     mHasVibrator,
                     mHasMicrophone,
-                    mHasButtonUnderPad,
                     mHasSensor,
                     mHasBattery,
                     mUsiVersionMajor,
@@ -1367,15 +1356,6 @@ public final class InputDevice implements Parcelable {
     }
 
     /**
-     * Reports whether the device has a button under its touchpad
-     * @return Whether the device has a button under its touchpad
-     * @hide
-     */
-    public boolean hasButtonUnderPad() {
-        return mHasButtonUnderPad;
-    }
-
-    /**
      * Reports whether the device has a sensor.
      * @return Whether the device has a sensor.
      * @hide
@@ -1618,7 +1598,6 @@ public final class InputDevice implements Parcelable {
         out.writeString8(mKeyboardLayoutType);
         out.writeInt(mHasVibrator ? 1 : 0);
         out.writeInt(mHasMicrophone ? 1 : 0);
-        out.writeInt(mHasButtonUnderPad ? 1 : 0);
         out.writeInt(mHasSensor ? 1 : 0);
         out.writeInt(mHasBattery ? 1 : 0);
         mHostUsiVersion.writeToParcel(out, flags);
