@@ -265,3 +265,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_enter_split_remove_bubble"
+    namespace: "multitasking"
+    description: "Enable removing a task from bubbles when it is entering split screen"
+    bug: "396315875"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
