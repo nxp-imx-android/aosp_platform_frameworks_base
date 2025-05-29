@@ -108,6 +108,7 @@ final class VibrationStepConductor {
     private int mPendingVibrateSteps;
     private int mRemainingStartSequentialEffectSteps;
     private int mSuccessfulVibratorOnSteps;
+    private int mFailedVibratorOnSteps;
 
     VibrationStepConductor(HalVibration vib, boolean isInSession,
             VibrationSettings vibrationSettings, DeviceAdapter deviceAdapter,
@@ -255,12 +256,25 @@ final class VibrationStepConductor {
             // Vibration still running.
             return null;
         }
-        // No pending steps, and something happened.
-        if (mSuccessfulVibratorOnSteps > 0) {
-            return new Vibration.EndInfo(Status.FINISHED);
+        if (Flags.vibrationThreadHandlingHalFailure()) {
+            if (mFailedVibratorOnSteps > 0) {
+                // Some steps failed to dispatch vibration to the vibrator HAL.
+                return new Vibration.EndInfo(Status.IGNORED_ERROR_DISPATCHING);
+            }
+            if (mSuccessfulVibratorOnSteps > 0) {
+                // Some steps played successfully, and there was no failure.
+                return new Vibration.EndInfo(Status.FINISHED);
+            }
+            // No step was successful or failed, nothing played.
+            return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
+        } else {
+            // No pending steps, and something happened.
+            if (mSuccessfulVibratorOnSteps > 0) {
+                return new Vibration.EndInfo(Status.FINISHED);
+            }
+            // If no step was able to turn the vibrator ON successfully.
+            return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
         }
-        // If no step was able to turn the vibrator ON successfully.
-        return new Vibration.EndInfo(Status.IGNORED_UNSUPPORTED);
     }
 
     /**
@@ -353,6 +367,8 @@ final class VibrationStepConductor {
             List<Step> nextSteps = nextStep.play();
             if (nextStep.getVibratorOnDuration() > 0) {
                 mSuccessfulVibratorOnSteps++;
+            } else if (nextStep.getVibratorOnDuration() < 0) {
+                mFailedVibratorOnSteps++;
             }
             if (nextStep instanceof StartSequentialEffectStep) {
                 mRemainingStartSequentialEffectSteps--;

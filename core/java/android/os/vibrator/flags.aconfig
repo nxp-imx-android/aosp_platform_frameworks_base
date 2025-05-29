@@ -136,3 +136,13 @@ flag {
       purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "vibration_thread_handling_hal_failure"
+    description: "Fixes how VibrationThread handled HAL failures"
+    bug: "419572960"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

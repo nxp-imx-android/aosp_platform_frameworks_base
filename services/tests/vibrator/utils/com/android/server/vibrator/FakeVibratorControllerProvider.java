@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -45,7 +46,7 @@ import java.util.TreeMap;
  * fake interactions for tests.
  */
 public final class FakeVibratorControllerProvider {
-    private static final int EFFECT_DURATION = 20;
+    private static final long EFFECT_DURATION = 20;
 
     private final Map<Long, PrebakedSegment> mEnabledAlwaysOnEffects = new HashMap<>();
     private final Map<Long, List<VibrationEffectSegment>> mEffectSegments = new TreeMap<>();
@@ -63,6 +64,7 @@ public final class FakeVibratorControllerProvider {
     private long mOnLatency;
     private long mOffLatency;
     private int mOffCount;
+    private Optional<Long> mOverrideOnResult = Optional.empty();
 
     private int mCapabilities;
     private int[] mSupportedEffects;
@@ -123,7 +125,7 @@ public final class FakeVibratorControllerProvider {
                     /* frequencyHz= */ 0, (int) milliseconds));
             applyLatency(mOnLatency);
             scheduleListener(milliseconds, vibrationId, stepId);
-            return milliseconds;
+            return mOverrideOnResult.orElse(milliseconds);
         }
 
         @Override
@@ -148,7 +150,7 @@ public final class FakeVibratorControllerProvider {
                     new PrebakedSegment((int) effect, false, (int) strength));
             applyLatency(mOnLatency);
             scheduleListener(EFFECT_DURATION, vibrationId, stepId);
-            return EFFECT_DURATION;
+            return mOverrideOnResult.orElse(EFFECT_DURATION);
         }
 
         @Override
@@ -163,7 +165,7 @@ public final class FakeVibratorControllerProvider {
             applyLatency(mOnLatency);
             scheduleListener(mVendorEffectDuration, vibrationId, stepId);
             // HAL has unknown duration for vendor effects.
-            return Long.MAX_VALUE;
+            return mOverrideOnResult.orElse(Long.MAX_VALUE);
         }
 
         @Override
@@ -183,7 +185,7 @@ public final class FakeVibratorControllerProvider {
             }
             applyLatency(mOnLatency);
             scheduleListener(duration, vibrationId, stepId);
-            return duration;
+            return mOverrideOnResult.orElse(duration);
         }
 
         @Override
@@ -197,7 +199,7 @@ public final class FakeVibratorControllerProvider {
             recordBraking(vibrationId, braking);
             applyLatency(mOnLatency);
             scheduleListener(duration, vibrationId, stepId);
-            return duration;
+            return mOverrideOnResult.orElse(duration);
         }
 
         @Override
@@ -210,7 +212,7 @@ public final class FakeVibratorControllerProvider {
             applyLatency(mOnLatency);
             scheduleListener(duration, vibrationId, stepId);
 
-            return duration;
+            return mOverrideOnResult.orElse(duration);
         }
 
         @Override
@@ -286,13 +288,6 @@ public final class FakeVibratorControllerProvider {
     }
 
     /**
-     * Disable fake vibrator hardware, mocking a state where the underlying service is unavailable.
-     */
-    public void disableVibrators() {
-        mIsAvailable = false;
-    }
-
-    /**
      * Sets the result for the method that loads the {@link VibratorInfo}, for faking a vibrator
      * that fails to load some of the hardware data.
      */
@@ -318,6 +313,15 @@ public final class FakeVibratorControllerProvider {
     /** Sets the latency this controller should fake for turning the vibrator off. */
     public void setOffLatency(long millis) {
         mOffLatency = millis;
+    }
+
+    /**
+     * Sets the result this controller should fake for turning the vibrator hardware on.
+     *
+     * <p>Zero means the HAL returned unsupported operation, negative value indicates HAL failure.
+     */
+    public void setOnResultOverride(long value) {
+        mOverrideOnResult = Optional.of(value);
     }
 
     /** Set the capabilities of the fake vibrator hardware. */

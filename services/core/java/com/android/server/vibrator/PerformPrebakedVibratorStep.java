@@ -52,8 +52,7 @@ final class PerformPrebakedVibratorStep extends AbstractComposedVibratorStep {
             if (!(segment instanceof PrebakedSegment)) {
                 Slog.w(VibrationThread.TAG, "Ignoring wrong segment for a "
                         + "PerformPrebakedVibratorStep: " + segment);
-                // Skip this step and play the next one right away.
-                return nextSteps(/* segmentsPlayed= */ 1);
+                return skipStep();
             }
 
             PrebakedSegment prebaked = (PrebakedSegment) segment;
@@ -85,8 +84,7 @@ final class PerformPrebakedVibratorStep extends AbstractComposedVibratorStep {
                 return fallbackResult;
             }
 
-            // The next start and off times will be calculated from mVibratorOnResult.
-            return nextSteps(/* segmentsPlayed= */ 1);
+            return vibratorOnNextSteps(/* segmentsPlayed= */ 1);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIBRATOR);
         }
