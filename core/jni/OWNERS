@@ -123,3 +123,6 @@ per-file *PropertyInvalidatedCache* = file:/PERFORMANCE_OWNERS
 
 # MessageQueue
 per-file *MessageQueue* = file:/MESSAGE_QUEUE_OWNERS
+
+# Perfetto SDK
+per-file android_os_Perfetto* = file:/PERFETTO_OWNERS

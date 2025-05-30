@@ -23,4 +23,4 @@ per-file RemoteCallbackListTest.java = shayba@google.com
 per-file MessageQueueTest.java = file:/MESSAGE_QUEUE_OWNERS
 
 # Perfetto SDK
-per-file PerfettoTrace*Test.java = zezeozue@google.com, ktimofeev@google.com
+per-file PerfettoTrace*Test.java = file:/PERFETTO_OWNERS
