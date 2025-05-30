@@ -271,7 +271,8 @@ public class VirtualDeviceManagerService extends SystemService {
         for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
             final CameraAccessController cameraAccessController =
                     virtualDevicesSnapshot.get(i).getCameraAccessController();
-            if (cameraAccessController.getUserId() == userId) {
+            if (cameraAccessController != null
+                    && cameraAccessController.getUserId() == userId) {
                 return cameraAccessController;
             }
         }        Context userContext = getContext().createContextAsUser(userHandle, 0);
