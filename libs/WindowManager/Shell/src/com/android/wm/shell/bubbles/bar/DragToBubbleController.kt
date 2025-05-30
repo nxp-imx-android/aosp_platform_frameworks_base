@@ -28,11 +28,12 @@ import com.android.wm.shell.bubbles.BubblePositioner
 import com.android.wm.shell.draganddrop.DragAndDropController.DragAndDropListener
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation
+import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
+import com.android.wm.shell.shared.bubbles.DragToBubblesZoneChangeListener
 import com.android.wm.shell.shared.bubbles.DragZone
 import com.android.wm.shell.shared.bubbles.DragZoneFactory
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.BubbleBarPropertiesProvider
 import com.android.wm.shell.shared.bubbles.DragZoneFactory.SplitScreenModeChecker.SplitScreenMode
-import com.android.wm.shell.shared.bubbles.DraggedObject
 import com.android.wm.shell.shared.bubbles.DraggedObject.LauncherIcon
 import com.android.wm.shell.shared.bubbles.DropTargetManager
 
@@ -52,12 +53,13 @@ class DragToBubbleController(
                 )
         }
 
-    private val isRtl: Boolean
-        get() = containerView.isLayoutRtl
-
     @VisibleForTesting
     val dropTargetManager: DropTargetManager =
-        DropTargetManager(context, containerView, createDragZoneListener())
+        DropTargetManager(
+            context,
+            containerView,
+            createDragZoneChangedListener()
+        )
 
     @VisibleForTesting
     val dragZoneFactory = createDragZoneFactory()
@@ -116,72 +118,29 @@ class DragToBubbleController(
         )
     }
 
-    private fun createDragZoneListener() = object : DropTargetManager.DragZoneChangedListener {
-
-            private var lastUpdateLocation: BubbleBarLocation? = null
-            private val isLocationChangedFromOriginal: Boolean
-                get() = lastUpdateLocation != null
-                        && isDifferentSides(lastUpdateLocation, bubbleController.bubbleBarLocation)
-
-            override fun onInitialDragZoneSet(dragZone: DragZone?) {}
-
-            override fun onDragZoneChanged(
-                draggedObject: DraggedObject,
-                from: DragZone?,
-                to: DragZone?,
-            ) {
-                val updateLocation = getBarLocation(to)
-                updateBubbleBarLocation(updateLocation)
-                lastUpdateLocation = updateLocation
-            }
-
-            override fun onDragEnded(zone: DragZone?) {
-                updateBubbleBarLocation(updateLocation = null)
-            }
-
-            fun updateBubbleBarLocation(updateLocation: BubbleBarLocation?) {
-                val updatedBefore = lastUpdateLocation != null
-                val originalLocation = bubbleController.bubbleBarLocation
-                val isLocationUpdated = isDifferentSides(lastUpdateLocation, updateLocation)
-                if (!bubbleController.hasBubbles()) {
-                    // has no bubbles, so showing the pin view
-                    if (updateLocation == null || !updatedBefore || isLocationUpdated) {
-                        bubbleController.showBubbleBarPinAtLocation(updateLocation)
-                    }
-                    return
-                }
-                if (updateLocation == null && isLocationChangedFromOriginal) {
-                    bubbleController.animateBubbleBarLocation(originalLocation)
-                    return
-                }
-                if (updatedBefore && isLocationUpdated) {
-                    // updated before and location updated - update to new location
-                    bubbleController.animateBubbleBarLocation(updateLocation)
-                    return
-                }
-                if (!updatedBefore && isDifferentSides(originalLocation, updateLocation)) {
-                    // not updated before and location changed from original
-                    bubbleController.animateBubbleBarLocation(updateLocation)
-                }
-            }
-
-            fun getBarLocation(dragZone: DragZone?): BubbleBarLocation? {
-                return when (dragZone) {
-                    is DragZone.Bubble.Left -> BubbleBarLocation.LEFT
-                    is DragZone.Bubble.Right -> BubbleBarLocation.RIGHT
-                    else -> null
-                }
-            }
-
-            fun isDifferentSides(f: BubbleBarLocation?, s: BubbleBarLocation?): Boolean {
-                return f != null && s != null && f.isOnLeft(isRtl) != s.isOnLeft(isRtl)
-            }
-        }
-
     private fun DragZone.getBubbleBarLocation(): BubbleBarLocation? =
         when (this) {
             is DragZone.Bubble.Left -> BubbleBarLocation.LEFT
             is DragZone.Bubble.Right -> BubbleBarLocation.RIGHT
             else -> null
         }
+
+    private fun createDragZoneChangedListener() = DragToBubblesZoneChangeListener(
+        context.isRtl,
+        object : DragToBubblesZoneChangeListener.Callback {
+
+            override fun getStartingBubbleBarLocation(): BubbleBarLocation {
+                return bubbleController.bubbleBarLocation ?: BubbleBarLocation.DEFAULT
+            }
+
+            override fun hasBubbles(): Boolean = bubbleController.hasBubbles()
+
+            override fun animateBubbleBarLocation(bubbleBarLocation: BubbleBarLocation) {
+                bubbleController.animateBubbleBarLocation(bubbleBarLocation)
+            }
+
+            override fun bubbleBarPillowShownAtLocation(bubbleBarLocation: BubbleBarLocation?) {
+                bubbleController.showBubbleBarPinAtLocation(bubbleBarLocation)
+            }
+        })
 }
