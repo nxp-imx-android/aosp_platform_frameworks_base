@@ -1253,16 +1253,20 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         fout.println(indent + "mOwnerPackageName: " + mOwnerPackageName);
         fout.println(indent + "mParams: ");
         mParams.dump(fout, indent + indent);
-        fout.println(indent + "mVirtualDisplayIds: ");
         synchronized (mVirtualDeviceLock) {
+            StringBuilder displays = new StringBuilder();
             for (int i = 0; i < mVirtualDisplays.size(); i++) {
-                fout.println(indent + "  " + mVirtualDisplays.keyAt(i));
+                displays.append(mVirtualDisplays.keyAt(i));
+                if (i < mVirtualDisplays.size() - 1) {
+                    displays.append(", ");
+                }
             }
-            fout.println("    mDevicePolicies: " + mDevicePolicies);
+            fout.println(indent + "mVirtualDisplayIds: " + displays);
+            fout.println(indent + "mDevicePolicies: " + mDevicePolicies);
             fout.println(indent + "mDefaultShowPointerIcon: " + mDefaultShowPointerIcon);
         }
-        mInputController.dump(fout);
-        mSensorController.dump(fout);
+        mInputController.dump(fout, indent);
+        mSensorController.dump(fout, indent);
         if (mVirtualCameraController != null) {
             mVirtualCameraController.dump(fout, indent);
         }
