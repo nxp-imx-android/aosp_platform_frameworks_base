@@ -104,6 +104,29 @@ fun LegacyFlickerTest.leftTiledAppLargerThanRightAtEnd(
         visibleRegion(leftComponent).isStrictlyWiderThan(rightRegion.region)
     }
 }
+/**
+ * Verify that app window fills > 95% of either half of the screen, accounting for the difference
+ * due to the divider handle.
+ */
+fun LegacyFlickerTest.appWindowCoversHalfScreenAtEnd(
+    component: IComponentMatcher,
+    isLeftHalf: Boolean,
+    coverageDifferenceThresholdRatio: Double = 0.05,
+) {
+    assertLayersEnd {
+        // Build expected bounds of half the display (minus given threshold)
+        val expectedBounds =
+            WindowUtils.getInsetDisplayBounds(scenario.startRotation).apply {
+                if (isLeftHalf) {
+                    right = (centerX() * (1 - coverageDifferenceThresholdRatio)).toInt()
+                } else {
+                    left = (centerX() * (1 + coverageDifferenceThresholdRatio)).toInt()
+                }
+            }
+        visibleRegion(component).coversAtLeast(expectedBounds)
+    }
+}
+
 
 fun LegacyFlickerTest.tilingDividerBecomesVisibleThenInvisible() {
     assertLayers {
