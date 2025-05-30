@@ -51,7 +51,7 @@ import java.util.List;
     /* package */ static DeviceRouteController createInstance(
             @NonNull Context context,
             @NonNull Looper looper,
-            @NonNull OnDeviceRouteChangedListener onDeviceRouteChangedListener) {
+            @NonNull EventListener eventListener) {
         AudioManager audioManager = context.getSystemService(AudioManager.class);
         AudioProductStrategy strategyForMedia = AudioRoutingUtils.getMediaAudioProductStrategy();
 
@@ -67,14 +67,14 @@ import java.util.List;
             AudioManagerRouteController controller =
                     AudioManagerRouteController.getInstance(
                             context, audioManager, looper, strategyForMedia, btAdapter);
-            controller.registerRouteChangeListener(onDeviceRouteChangedListener);
+            controller.registerRouteChangeListener(eventListener);
             return controller;
         } else {
             IAudioService audioService =
                     IAudioService.Stub.asInterface(
                             ServiceManager.getService(Context.AUDIO_SERVICE));
             return new LegacyDeviceRouteController(
-                    context, audioManager, audioService, onDeviceRouteChangedListener);
+                    context, audioManager, audioService, eventListener);
         }
     }
 
@@ -122,9 +122,10 @@ import java.util.List;
      *
      * <p>If the route is {@code null} then active route will be deactivated.
      *
-     * @param routeId to switch to or {@code null} to unset the active device.
+     * @param requestId Identifies the request.
+     * @param routeId To switch to or {@code null} to unset the active device.
      */
-    void transferTo(@Nullable String routeId);
+    void transferTo(long requestId, @Nullable String routeId);
 
     /**
      * Updates device route volume.
@@ -153,13 +154,14 @@ import java.util.List;
     /** Releases the routing session. */
     void releaseRoutingSession();
 
-    /**
-     * Interface for receiving events when device route has changed.
-     */
-    interface OnDeviceRouteChangedListener {
+    /** Interface for receiving route events. */
+    interface EventListener {
 
         /** Called when device route has changed. */
         void onDeviceRouteChanged();
+
+        /** Called when device route request is failed. */
+        void onDeviceRouteRequestFailed(long requestId, int reason);
     }
 
 }

@@ -67,8 +67,7 @@ import java.util.Objects;
     @NonNull
     private final IAudioService mAudioService;
 
-    @NonNull
-    private final OnDeviceRouteChangedListener mOnDeviceRouteChangedListener;
+    @NonNull private final EventListener mEventListener;
     @NonNull
     private final AudioRoutesObserver mAudioRoutesObserver = new AudioRoutesObserver();
 
@@ -77,17 +76,18 @@ import java.util.Objects;
     private int mDeviceVolume;
     private MediaRoute2Info mDeviceRoute;
 
-    /* package */ LegacyDeviceRouteController(@NonNull Context context,
+    /* package */ LegacyDeviceRouteController(
+            @NonNull Context context,
             @NonNull AudioManager audioManager,
             @NonNull IAudioService audioService,
-            @NonNull OnDeviceRouteChangedListener onDeviceRouteChangedListener) {
+            @NonNull EventListener eventListener) {
         Objects.requireNonNull(context);
         Objects.requireNonNull(audioManager);
         Objects.requireNonNull(audioService);
-        Objects.requireNonNull(onDeviceRouteChangedListener);
+        Objects.requireNonNull(eventListener);
 
         mContext = context;
-        mOnDeviceRouteChangedListener = onDeviceRouteChangedListener;
+        mEventListener = eventListener;
 
         mAudioManager = audioManager;
         mAudioService = audioService;
@@ -137,7 +137,7 @@ import java.util.Objects;
     }
 
     @Override
-    public synchronized void transferTo(@Nullable String routeId) {
+    public synchronized void transferTo(long requestId, @Nullable String routeId) {
         // Unsupported. This implementation doesn't support transferable routes (always exposes a
         // single non-bluetooth route).
     }
@@ -206,7 +206,7 @@ import java.util.Objects;
     }
 
     private void notifyDeviceRouteUpdate() {
-        mOnDeviceRouteChangedListener.onDeviceRouteChanged();
+        mEventListener.onDeviceRouteChanged();
     }
 
     private class AudioRoutesObserver extends IAudioRoutesObserver.Stub {

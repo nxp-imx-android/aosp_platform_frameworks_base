@@ -87,8 +87,7 @@ public class LegacyDeviceRouteControllerTest {
         private AudioManager mAudioManager;
         @Mock
         private AudioService mAudioService;
-        @Mock
-        private DeviceRouteController.OnDeviceRouteChangedListener mOnDeviceRouteChangedListener;
+        @Mock private DeviceRouteController.EventListener mEventListener;
 
         @Before
         public void setUp() {
@@ -106,12 +105,9 @@ public class LegacyDeviceRouteControllerTest {
             // Default route should be initialized even when AudioService returns null.
             when(mAudioService.startWatchingRoutes(any())).thenReturn(null);
 
-            LegacyDeviceRouteController deviceRouteController = new LegacyDeviceRouteController(
-                    mContext,
-                    mAudioManager,
-                    mAudioService,
-                    mOnDeviceRouteChangedListener
-            );
+            LegacyDeviceRouteController deviceRouteController =
+                    new LegacyDeviceRouteController(
+                            mContext, mAudioManager, mAudioService, mEventListener);
 
             MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoutes().getFirst();
 
@@ -131,12 +127,9 @@ public class LegacyDeviceRouteControllerTest {
             AudioRoutesInfo fakeBluetoothAudioRoute = createFakeBluetoothAudioRoute();
             when(mAudioService.startWatchingRoutes(any())).thenReturn(fakeBluetoothAudioRoute);
 
-            LegacyDeviceRouteController deviceRouteController = new LegacyDeviceRouteController(
-                    mContext,
-                    mAudioManager,
-                    mAudioService,
-                    mOnDeviceRouteChangedListener
-            );
+            LegacyDeviceRouteController deviceRouteController =
+                    new LegacyDeviceRouteController(
+                            mContext, mAudioManager, mAudioService, mEventListener);
 
             MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoutes().getFirst();
 
@@ -155,7 +148,7 @@ public class LegacyDeviceRouteControllerTest {
 
             LegacyDeviceRouteController deviceRouteController =
                     new LegacyDeviceRouteController(
-                            mContext, mAudioManager, mAudioService, mOnDeviceRouteChangedListener);
+                            mContext, mAudioManager, mAudioService, mEventListener);
 
             MediaRoute2Info selectedRoute = deviceRouteController.getSelectedRoutes().getFirst();
             assertThat(deviceRouteController.getAvailableRoutes())
@@ -220,8 +213,7 @@ public class LegacyDeviceRouteControllerTest {
         private AudioManager mAudioManager;
         @Mock
         private AudioService mAudioService;
-        @Mock
-        private DeviceRouteController.OnDeviceRouteChangedListener mOnDeviceRouteChangedListener;
+        @Mock private DeviceRouteController.EventListener mEventListener;
 
         @IdRes
         private final int mExpectedRouteNameResource;
@@ -261,12 +253,9 @@ public class LegacyDeviceRouteControllerTest {
             when(mResources.getText(mExpectedRouteNameResource))
                     .thenReturn(mExpectedRouteNameValue);
 
-            LegacyDeviceRouteController deviceRouteController = new LegacyDeviceRouteController(
-                    mContext,
-                    mAudioManager,
-                    mAudioService,
-                    mOnDeviceRouteChangedListener
-            );
+            LegacyDeviceRouteController deviceRouteController =
+                    new LegacyDeviceRouteController(
+                            mContext, mAudioManager, mAudioService, mEventListener);
 
             MediaRoute2Info actualMediaRoute = deviceRouteController.getSelectedRoutes().getFirst();
 
@@ -288,8 +277,7 @@ public class LegacyDeviceRouteControllerTest {
         private AudioManager mAudioManager;
         @Mock
         private AudioService mAudioService;
-        @Mock
-        private DeviceRouteController.OnDeviceRouteChangedListener mOnDeviceRouteChangedListener;
+        @Mock private DeviceRouteController.EventListener mEventListener;
 
         @Captor
         private ArgumentCaptor<IAudioRoutesObserver.Stub> mAudioRoutesObserverCaptor;
@@ -312,12 +300,9 @@ public class LegacyDeviceRouteControllerTest {
             when(mAudioService.startWatchingRoutes(mAudioRoutesObserverCaptor.capture()))
                     .thenReturn(audioRoutesInfo);
 
-            mDeviceRouteController = new LegacyDeviceRouteController(
-                    mContext,
-                    mAudioManager,
-                    mAudioService,
-                    mOnDeviceRouteChangedListener
-            );
+            mDeviceRouteController =
+                    new LegacyDeviceRouteController(
+                            mContext, mAudioManager, mAudioService, mEventListener);
 
             mAudioRoutesObserver = mAudioRoutesObserverCaptor.getValue();
         }

@@ -35,6 +35,7 @@ import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaRoute2Info;
+import android.media.MediaRoute2ProviderService;
 import android.media.RoutingSessionInfo;
 import android.media.audio.Flags;
 import android.media.audiopolicy.AudioProductStrategy;
@@ -97,8 +98,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
     @NonNull private final Handler mHandler;
 
     @NonNull
-    private final CopyOnWriteArrayList<OnDeviceRouteChangedListener>
-            mOnDeviceRouteChangedListeners = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<EventListener> mEventListeners =
+            new CopyOnWriteArrayList<>();
 
     @NonNull private final BluetoothDeviceRoutesManager mBluetoothRouteController;
 
@@ -187,14 +188,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
         rebuildAvailableRoutes();
     }
 
-    public void registerRouteChangeListener(
-            @NonNull OnDeviceRouteChangedListener onDeviceRouteChangedListener) {
-        mOnDeviceRouteChangedListeners.add(onDeviceRouteChangedListener);
+    public void registerRouteChangeListener(@NonNull EventListener eventListener) {
+        mEventListeners.add(eventListener);
     }
 
-    public void unregisterRouteChangeListener(
-            @NonNull OnDeviceRouteChangedListener onDeviceRouteChangedListener) {
-        mOnDeviceRouteChangedListeners.remove(onDeviceRouteChangedListener);
+    public void unregisterRouteChangeListener(@NonNull EventListener eventListener) {
+        mEventListeners.remove(eventListener);
     }
 
     @RequiresPermission(
@@ -273,13 +272,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
     @Override
-    public void transferTo(@Nullable String routeId) {
+    public void transferTo(long requestId, @Nullable String routeId) {
         if (routeId == null) {
             // This should never happen: This branch should only execute when the matching bluetooth
             // route controller is not the no-op one.
             // TODO: b/305199571 - Make routeId non-null and remove this branch once we remove the
             // legacy route controller implementations.
             Slog.e(TAG, "Unexpected call to AudioPoliciesDeviceRouteController#transferTo(null)");
+            notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
             return;
         }
         MediaRoute2InfoHolder mediaRoute2InfoHolder;
@@ -302,6 +302,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
                                 TAG,
                                 "Unexpected exception while transferring to route id: " + routeId,
                                 throwable);
+                        notifyRequestFailed(
+                                requestId, MediaRoute2ProviderService.REASON_UNKNOWN_ERROR);
                         mHandler.post(this::rebuildAvailableRoutesAndNotify);
                     }
                 };
@@ -369,7 +371,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             })
     private void rebuildAvailableRoutesAndNotify() {
         rebuildAvailableRoutes();
-        for (OnDeviceRouteChangedListener listener : mOnDeviceRouteChangedListeners) {
+        for (EventListener listener : mEventListeners) {
             listener.onDeviceRouteChanged();
         }
     }
@@ -606,6 +608,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
         }
 
         return builder.build();
+    }
+
+    /**
+     * Notifies the MediaRouter for failed requests.
+     *
+     * @param requestId Identifies the request that failed.
+     * @param reason Value from {@link MediaRoute2ProviderService.Reason}.
+     */
+    private void notifyRequestFailed(long requestId, int reason) {
+        for (EventListener listener : mEventListeners) {
+            listener.onDeviceRouteRequestFailed(requestId, reason);
+        }
     }
 
     /**
