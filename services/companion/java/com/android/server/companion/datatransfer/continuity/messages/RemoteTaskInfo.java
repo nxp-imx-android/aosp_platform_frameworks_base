@@ -19,7 +19,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import android.app.TaskInfo;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import java.io.IOException;
 
@@ -37,7 +36,7 @@ public class RemoteTaskInfo {
     }
 
     public RemoteTaskInfo(ProtoInputStream protoInputStream)
-        throws IOException, ProtoParseException {
+        throws IOException {
 
         while (protoInputStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (protoInputStream.getFieldNumber()) {

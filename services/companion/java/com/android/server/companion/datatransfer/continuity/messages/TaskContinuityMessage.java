@@ -18,7 +18,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import java.io.IOException;
 
@@ -34,8 +33,7 @@ public final class TaskContinuityMessage {
         mData = builder.mData;
     }
 
-    public TaskContinuityMessage(byte[] data)
-        throws IOException, ProtoParseException {
+    public TaskContinuityMessage(byte[] data) throws IOException {
 
         ProtoInputStream pis = new ProtoInputStream(data);
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
