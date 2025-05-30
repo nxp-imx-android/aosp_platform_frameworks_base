@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles.bar;
 
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
@@ -598,6 +599,8 @@ public class BubbleBarLayerView extends FrameLayout
 
     /** Hides the current modal education/menu view, IME or collapses the expanded view */
     private void hideModalOrCollapse() {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "hideModalOrCollapse(): expanded=%s",
+                mExpandedBubble != null ? mExpandedBubble.getKey() : "null");
         if (mEducationViewController.isEducationVisible()) {
             mEducationViewController.hideEducation(/* animated = */ true);
             return;

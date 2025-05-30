@@ -2750,6 +2750,8 @@ public class BubbleStackView extends FrameLayout
                         if (expView != null) {
                             expView.setSurfaceZOrderedOnTop(false);
                         }
+                    })
+                    .withEndOrCancelActions(() -> {
                         if (mAfterTransitionRunnable != null) {
                             mAfterTransitionRunnable.run();
                             mAfterTransitionRunnable = null;
@@ -2966,6 +2968,8 @@ public class BubbleStackView extends FrameLayout
                             expandedView.setSurfaceZOrderedOnTop(false);
                             expandedView.setAnimating(false);
                         }
+                    })
+                    .withEndOrCancelActions(() -> {
                         if (mAfterTransitionRunnable != null) {
                             mAfterTransitionRunnable.run();
                             mAfterTransitionRunnable = null;

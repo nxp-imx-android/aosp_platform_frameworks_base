@@ -35,6 +35,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.graphics.Rect;
@@ -43,6 +44,7 @@ import android.view.SurfaceControl;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.dynamicanimation.animation.FloatPropertyCompat;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.protolog.ProtoLog;
@@ -119,9 +121,12 @@ public class BubbleBarAnimationHelper {
 
     /**
      * Animates the provided bubble's expanded view to the expanded state.
+     *
+     * @param endRunnable a runnable to run at the end of the animation (even if the animation is
+     *                    canceled)
      */
     public void animateExpansion(BubbleViewProvider expandedBubble,
-            @Nullable Runnable afterAnimation) {
+            @Nullable Runnable endRunnable) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateExpansion()");
         mExpandedBubble = expandedBubble;
         final BubbleBarExpandedView bbev = getExpandedView();
@@ -140,8 +145,6 @@ public class BubbleBarAnimationHelper {
         bbev.setAnimationMatrix(mExpandedViewContainerMatrix);
 
         bbev.animateExpansionWhenTaskViewVisible(() -> {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateExpansion(): "
-                    + "task view visible");
             bbev.getHandleView().setAlpha(1);
             ObjectAnimator alphaAnim = createAlphaAnimator(bbev, /* visible= */ true);
             alphaAnim.setDuration(EXPANDED_VIEW_EXPAND_ALPHA_DURATION);
@@ -168,8 +171,12 @@ public class BubbleBarAnimationHelper {
                     .withEndActions(() -> {
                         bbev.setAnimationMatrix(null);
                         updateExpandedView(bbev);
-                        if (afterAnimation != null) {
-                            afterAnimation.run();
+                    })
+                    .withEndOrCancelActions(() -> {
+                        ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                                "BBAnimationHelper.animateExpansion(): finished");
+                        if (endRunnable != null) {
+                            endRunnable.run();
                         }
                     })
                     .start();
@@ -192,7 +199,8 @@ public class BubbleBarAnimationHelper {
     /**
      * Collapses the currently expanded bubble.
      *
-     * @param endRunnable a runnable to run at the end of the animation.
+     * @param endRunnable a runnable to run at the end of the animation (even if the animation is
+     *                    canceled)
      */
     public void animateCollapse(Runnable endRunnable) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateCollapse()");
@@ -235,6 +243,10 @@ public class BubbleBarAnimationHelper {
                 .withEndActions(() -> {
                     bbev.setAnimationMatrix(null);
                     bbev.resetBottomClip();
+                })
+                .withEndOrCancelActions(() -> {
+                    ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                            "BBAnimationHelper.animateCollapse(): finished");
                     if (endRunnable != null) {
                         endRunnable.run();
                     }
@@ -255,11 +267,13 @@ public class BubbleBarAnimationHelper {
      *
      * @param fromBubble bubble to hide
      * @param toBubble bubble to show
-     * @param afterAnimation optional runnable after animation finishes
+     * @param endRunnable optional runnable after animation finishes (even if the animation is
+     *                    canceled)
      */
     public void animateSwitch(BubbleViewProvider fromBubble, BubbleViewProvider toBubble,
-            @Nullable Runnable afterAnimation) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateSwitch()");
+            @Nullable Runnable endRunnable) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateSwitch(): from=%s to=%s",
+                fromBubble.getKey(), toBubble.getKey());
         /*
          * Switch animation
          *
@@ -289,12 +303,13 @@ public class BubbleBarAnimationHelper {
         toBbev.animateExpansionWhenTaskViewVisible(() -> {
             AnimatorSet switchAnim = new AnimatorSet();
             switchAnim.playTogether(switchOutAnimator(fromBbev), switchInAnimator(toBbev, endTx));
-
             switchAnim.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    if (afterAnimation != null) {
-                        afterAnimation.run();
+                    ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                            "BBAnimationHelper.animateSwitch(): finished");
+                    if (endRunnable != null) {
+                        endRunnable.run();
                     }
                 }
             });
@@ -311,7 +326,6 @@ public class BubbleBarAnimationHelper {
     }
 
     private Animator switchOutAnimator(BubbleBarExpandedView bbev) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.switchOutAnimator()");
         setPivotToCenter(bbev);
         AnimatorSet scaleAnim = new AnimatorSet();
         scaleAnim.playTogether(
@@ -341,7 +355,6 @@ public class BubbleBarAnimationHelper {
     }
 
     private Animator switchInAnimator(BubbleBarExpandedView bbev, float restingTx) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.switchInAnimator(): alpha=1f");
         ObjectAnimator positionAnim = ObjectAnimator.ofFloat(bbev, TRANSLATION_X, restingTx);
         positionAnim.setInterpolator(Interpolators.EMPHASIZED_DECELERATE);
         positionAnim.setStartDelay(SWITCH_IN_ANIM_DELAY);
@@ -424,7 +437,8 @@ public class BubbleBarAnimationHelper {
     /**
      * Animates dismissal of currently expanded bubble
      *
-     * @param endRunnable a runnable to run at the end of the animation
+     * @param endRunnable a runnable to run at the end of the animation (even if the animation is
+     *                    canceled)
      */
     public void animateDismiss(Runnable endRunnable) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateDismiss()");
@@ -437,13 +451,19 @@ public class BubbleBarAnimationHelper {
         int[] location = bbev.getLocationOnScreen();
         int diffFromBottom = mPositioner.getScreenRect().bottom - location[1];
 
-        cancelAnimations();
-        bbev.animate()
-                // 2x distance from bottom so the view flies out
-                .translationYBy(diffFromBottom * 2)
-                .setDuration(EXPANDED_VIEW_DISMISS_DURATION)
-                .withEndAction(endRunnable)
-                .start();
+        ObjectAnimator animator = ObjectAnimator.ofFloat(
+                bbev, TRANSLATION_Y, bbev.getTranslationY() + (diffFromBottom * 2));
+        animator.setDuration(EXPANDED_VIEW_DISMISS_DURATION);
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateDismiss(): finished");
+                if (endRunnable != null) {
+                    endRunnable.run();
+                }
+            }
+        });
+        startNewAnimator(animator);
     }
 
     /**
@@ -492,7 +512,8 @@ public class BubbleBarAnimationHelper {
      * Animates currently expanded bubble into the given {@link MagneticTarget}.
      *
      * @param target magnetic target to snap to
-     * @param endRunnable a runnable to run at the end of the animation
+     * @param endRunnable a runnable to run at the end of the animation (even if the animation is
+     *                    canceled)
      */
     public void animateIntoTarget(MagneticTarget target, @Nullable Runnable endRunnable) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateIntoTarget()");
@@ -554,6 +575,8 @@ public class BubbleBarAnimationHelper {
         animatorSet.addListener(new DragAnimatorListenerAdapter(bbev) {
             @Override
             public void onAnimationEnd(Animator animation) {
+                ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                        "BBAnimationHelper.animateIntoTarget(): finished");
                 super.onAnimationEnd(animation);
                 if (endRunnable != null) {
                     endRunnable.run();
@@ -592,6 +615,9 @@ public class BubbleBarAnimationHelper {
 
     /**
      * Animates converting of a non-bubble task into an expanded bubble view.
+     *
+     * @param endRunnable a runnable to run at the end of the animation (even if the animation is
+     *                    canceled)
      */
     public void animateConvert(BubbleViewProvider expandedBubble,
             @NonNull SurfaceControl.Transaction startT,
@@ -599,7 +625,7 @@ public class BubbleBarAnimationHelper {
             float origScale,
             @NonNull SurfaceControl snapshot,
             @NonNull SurfaceControl taskLeash,
-            @Nullable Runnable afterAnimation) {
+            @Nullable Runnable endRunnable) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateConvert()");
         mExpandedBubble = expandedBubble;
         final BubbleBarExpandedView bbev = getExpandedView();
@@ -625,12 +651,13 @@ public class BubbleBarAnimationHelper {
         sca.initialize(bbev, taskLeash, snapshot, startT);
 
         Animator a = sca.buildViewAnimator(bbev, tvSf, snapshot, /* onFinish */ (va) -> {
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateConvert(): finished");
             updateExpandedView(bbev);
             snapshot.release();
             bbev.setSurfaceZOrderedOnTop(false);
             bbev.setAnimating(false);
-            if (afterAnimation != null) {
-                afterAnimation.run();
+            if (endRunnable != null) {
+                endRunnable.run();
             }
         });
 
@@ -648,10 +675,6 @@ public class BubbleBarAnimationHelper {
                 + "hasRunningAnimator=%b",
                 (mRunningAnimator != null && mRunningAnimator.isRunning()));
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
-        BubbleBarExpandedView bbev = getExpandedView();
-        if (bbev != null) {
-            bbev.animate().cancel();
-        }
         if (mRunningAnimator != null) {
             if (mRunningAnimator.isRunning()) {
                 mRunningAnimator.cancel();
