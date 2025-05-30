@@ -656,6 +656,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             VerifyCredentialResponse response =
                     mService.verifyCredential(wrongPin, userId, 0 /* flags */);
             assertFalse(response.isMatched());
+            assertEquals(
+                    i == 0
+                            ? VerifyCredentialResponse.RESPONSE_CRED_INCORRECT
+                            : VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED,
+                    response.getResponseCode());
             assertEquals(0, response.getTimeout());
         }
         // The software and hardware counters should now be 1, for 1 unique guess.
@@ -685,12 +690,33 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             VerifyCredentialResponse response =
                     mService.verifyCredential(wrongPin, userId, 0 /* flags */);
             assertFalse(response.isMatched());
+            assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
         }
         // The software counter should still be 0, since the software rate-limiter is fully disabled
         // and thus it should have never been told about the guesses at all. The hardware counter
         // should now be numGuesses, as all the (duplicate) guesses should have been sent to it.
         assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
         assertEquals(numGuesses, mSpManager.getSumOfWeaverFailureCounters());
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testVerifyCredentialTooShort() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        setCredential(userId, newPassword("password"));
+        VerifyCredentialResponse response =
+                mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_CRED_TOO_SHORT, response.getResponseCode());
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testVerifyCredentialTooShort_softwareRateLimiterFlagDisabled() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        setCredential(userId, newPassword("password"));
+        VerifyCredentialResponse response =
+                mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
     }
 
     private void checkRecordedFrpNotificationIntent() {

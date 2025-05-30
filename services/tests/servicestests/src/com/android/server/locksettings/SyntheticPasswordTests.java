@@ -48,7 +48,10 @@ import static org.mockito.Mockito.when;
 import android.app.admin.PasswordMetrics;
 import android.content.pm.UserInfo;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -61,6 +64,7 @@ import com.android.server.locksettings.SyntheticPasswordManager.SyntheticPasswor
 
 import libcore.util.HexEncoding;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -75,6 +79,8 @@ import java.util.Arrays;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     public static final byte[] PAYLOAD = new byte[] {1, 2, -1, -2, 55};
     public static final byte[] PAYLOAD2 = new byte[] {2, 3, -2, -3, 44, 1};
@@ -179,6 +185,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testVerifyCredential() throws RemoteException {
         LockscreenCredential password = newPassword("password");
         LockscreenCredential badPassword = newPassword("badpassword");
@@ -186,6 +193,29 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         initSpAndSetCredential(PRIMARY_USER_ID, password);
         assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
                 password, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
+        verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
+
+        int expectedResponseCode =
+                mSpManager.isWeaverEnabled()
+                        ? VerifyCredentialResponse.RESPONSE_CRED_INCORRECT
+                        : VerifyCredentialResponse.RESPONSE_OTHER_ERROR;
+        assertEquals(
+                expectedResponseCode,
+                mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
+                        .getResponseCode());
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testVerifyCredential_softwareRateLimiterFlagDisabled() throws RemoteException {
+        LockscreenCredential password = newPassword("password");
+        LockscreenCredential badPassword = newPassword("badpassword");
+
+        initSpAndSetCredential(PRIMARY_USER_ID, password);
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OK,
+                mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */)
+                        .getResponseCode());
         verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
 
         assertEquals(

@@ -2479,9 +2479,14 @@ public class LockSettingsService extends ILockSettings.Stub {
                     case SoftwareRateLimiterResult.RATE_LIMITED:
                         return VerifyCredentialResponse.fromTimeout(res.remainingDelay);
                     case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
+                        return VerifyCredentialResponse.fromError(
+                                VerifyCredentialResponse.RESPONSE_CRED_TOO_SHORT);
                     case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
+                        return VerifyCredentialResponse.fromError(
+                                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED);
                     default:
-                        return VerifyCredentialResponse.fromError();
+                        return VerifyCredentialResponse.fromError(
+                                VerifyCredentialResponse.RESPONSE_OTHER_ERROR);
                 }
             }
             if (isSpecialUserId(userId)) {
