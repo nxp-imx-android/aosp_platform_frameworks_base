@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.NotificationChannel
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -23,12 +24,13 @@ import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.FeedbackIcon
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
-import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
 import com.android.systemui.statusbar.notification.collection.render.NotifRowController
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
@@ -44,12 +46,14 @@ import org.mockito.MockitoAnnotations.initMocks
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class RowAppearanceCoordinatorTest : SysuiTestCase() {
+    private val kosmos = testKosmos()
     private lateinit var coordinator: RowAppearanceCoordinator
     private lateinit var beforeRenderListListener: OnBeforeRenderListListener
     private lateinit var afterRenderEntryListener: OnAfterRenderEntryListener
 
     private lateinit var entry1: NotificationEntry
     private lateinit var entry2: NotificationEntry
+    private lateinit var entry3: NotificationEntry
 
     @Mock private lateinit var pipeline: NotifPipeline
     @Mock private lateinit var assistantFeedbackController: AssistantFeedbackController
@@ -57,17 +61,16 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
 
     @Mock private lateinit var section1: NotifSection
     @Mock private lateinit var section2: NotifSection
+    @Mock private lateinit var section3: NotifSection
     @Mock private lateinit var controller1: NotifRowController
     @Mock private lateinit var controller2: NotifRowController
+    @Mock private lateinit var controller3: NotifRowController
 
     @Before
     fun setUp() {
         initMocks(this)
-        coordinator = RowAppearanceCoordinator(
-            mContext,
-            assistantFeedbackController,
-            sectionStyleProvider
-        )
+        coordinator =
+            RowAppearanceCoordinator(mContext, assistantFeedbackController, sectionStyleProvider)
         coordinator.attach(pipeline)
         beforeRenderListListener = withArgCaptor {
             verify(pipeline).addOnBeforeRenderListListener(capture())
@@ -76,8 +79,13 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
             verify(pipeline).addOnAfterRenderEntryListener(capture())
         }
         whenever(assistantFeedbackController.getFeedbackIcon(any())).thenReturn(FeedbackIcon(1, 2))
-        entry1 = NotificationEntryBuilder().setSection(section1).build()
-        entry2 = NotificationEntryBuilder().setSection(section2).build()
+        entry1 = kosmos.buildNotificationEntry { setSection(section1) }
+        entry2 = kosmos.buildNotificationEntry { setSection(section2) }
+        entry3 =
+            kosmos.buildNotificationEntry {
+                setChannel(NotificationChannel(NotificationChannel.RECS_ID, "recs", 2))
+                setSection(section2)
+            }
     }
 
     @Test
@@ -100,6 +108,17 @@ class RowAppearanceCoordinatorTest : SysuiTestCase() {
         verify(controller1).setSystemExpanded(eq(false))
         afterRenderEntryListener.onAfterRenderEntry(entry2, controller2)
         verify(controller2).setSystemExpanded(eq(false))
+    }
+
+    @Test
+    fun testSetSystemExpandedNeverIfBundled() {
+        whenever(sectionStyleProvider.isMinimizedSection(eq(section1))).thenReturn(false)
+        whenever(sectionStyleProvider.isMinimizedSection(eq(section3))).thenReturn(false)
+        beforeRenderListListener.onBeforeRenderList(listOf(entry1, entry3))
+        afterRenderEntryListener.onAfterRenderEntry(entry1, controller1)
+        verify(controller1).setSystemExpanded(eq(true))
+        afterRenderEntryListener.onAfterRenderEntry(entry3, controller3)
+        verify(controller3).setSystemExpanded(eq(false))
     }
 
     @Test
