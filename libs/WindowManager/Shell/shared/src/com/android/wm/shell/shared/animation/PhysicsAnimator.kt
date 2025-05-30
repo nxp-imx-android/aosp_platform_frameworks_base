@@ -785,7 +785,8 @@ class PhysicsAnimator<T> private constructor (target: T) {
      * animator is under test.
      */
     internal fun cancelInternal(properties: Set<FloatPropertyCompat<in T>>) {
-        for (property in properties) {
+        val propertiesCopy = properties.toSet()
+        for (property in propertiesCopy) {
             flingAnimations[property]?.cancel()
             springAnimations[property]?.cancel()
         }
