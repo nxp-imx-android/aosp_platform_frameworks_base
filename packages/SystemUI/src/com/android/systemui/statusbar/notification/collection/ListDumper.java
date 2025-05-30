@@ -139,7 +139,7 @@ public class ListDumper {
                     .append(entry.getSection().getLabel());
         }
 
-        if (includeRecordKeeping) {
+        if (includeRecordKeeping && listEntry != null) {
             requireNonNull(notifEntry);
             StringBuilder rksb = new StringBuilder();
 
