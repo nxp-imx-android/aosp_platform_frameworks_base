@@ -629,7 +629,10 @@ public class CachedAppOptimizer {
                     + Arrays.toString(mProcStateThrottle.toArray(new Integer[0])));
         }
 
-        mCompactStatsManager.dump(pw);
+        if (mCompactStatsManager != null) {
+            // Compaction stats manager only exists when compaction is enabled.
+            mCompactStatsManager.dump(pw);
+        }
 
         synchronized (mProcLock) {
             if (!mPendingCompactionProcesses.isEmpty()) {
