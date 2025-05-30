@@ -16,11 +16,8 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,16 +68,14 @@ fun ShortPill(
     val backgroundColor = MaterialTheme.colorScheme.background
     val minSize = 48.dp
     val closeButtonSize = 28.dp
-    val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
+    val transitionTween: AnimationSpec<Float> = tween(250, delayMillis = 200)
 
-    val visibleState = remember { MutableTransitionState(false) }
-    visibleState.targetState = visible
-
-    val transition = rememberTransition(visibleState)
     val enterProgress by
-        transition.animateFloat(transitionSpec = { transitionTween }, label = "enter") {
-            if (it) 1f else 0f
-        }
+        animateFloatAsState(
+            if (visible) 1f else 0f,
+            animationSpec = transitionTween,
+            label = "enter",
+        )
     val expansionAlpha by
         animateFloatAsState(
             if (expanded) 0f else 1f,
