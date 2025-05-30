@@ -63,6 +63,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @RavenwoodKeepWholeClass
 @RavenwoodRedirectionClass("MessageQueue_ravenwood")
 public final class MessageQueue {
+    private static final String TAG = "MessageQueue";
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
@@ -1372,6 +1373,14 @@ public final class MessageQueue {
         return enqueueMessageUnchecked(msg, when);
     }
 
+    @NeverCompile
+    private static void logDeadThread(Message msg) {
+        IllegalStateException e = new IllegalStateException(
+                msg.target + " sending message to a Handler on a dead thread");
+        Log.w(TAG, e.getMessage(), e);
+        msg.recycleUnchecked();
+    }
+
     private boolean enqueueMessageLegacy(Message msg, long when) {
         synchronized (this) {
             if (msg.isInUse()) {
@@ -1379,10 +1388,7 @@ public final class MessageQueue {
             }
 
             if (mQuitting) {
-                IllegalStateException e = new IllegalStateException(
-                        msg.target + " sending message to a Handler on a dead thread");
-                Log.w(TAG_L, e.getMessage(), e);
-                msg.recycle();
+                logDeadThread(msg);
                 return false;
             }
 
@@ -2910,11 +2916,7 @@ public final class MessageQueue {
         /* If we are running on the looper thread we can add directly to the priority queue */
         if (myLooper != null && myLooper.getQueue() == this) {
             if (getQuitting()) {
-                IllegalStateException e = new IllegalStateException(
-                        msg.target + " sending message to a Handler on a dead thread");
-                Log.w(TAG_C, e.getMessage(), e);
-                msg.recycleUnchecked();
-                decAndTraceMessageCount();
+                logDeadThread(msg);
                 return false;
             }
 
@@ -2965,10 +2967,7 @@ public final class MessageQueue {
                     break;
 
                 case STACK_NODE_QUITTING:
-                    IllegalStateException e = new IllegalStateException(
-                            msg.target + " sending message to a Handler on a dead thread");
-                    Log.w(TAG_C, e.getMessage(), e);
-                    msg.recycleUnchecked();
+                    logDeadThread(msg);
                     return false;
 
                 default:
