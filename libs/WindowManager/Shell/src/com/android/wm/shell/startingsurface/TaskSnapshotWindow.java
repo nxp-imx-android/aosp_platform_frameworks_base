@@ -211,16 +211,17 @@ public class TaskSnapshotWindow {
 
         @BinderThread
         @Override
-        public void resized(WindowRelayoutResult layout, boolean reportDraw,
-                boolean forceLayout, int displayId, boolean dragResizing) {
+        public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
+                int displayId, boolean syncWithBuffers, boolean dragResizing) {
             final TaskSnapshotWindow snapshot = mOuter.get();
             if (snapshot == null) {
                 return;
             }
             snapshot.mSplashScreenExecutor.execute(() -> {
-                if (layout.mergedConfiguration != null
-                        && snapshot.mOrientationOnCreation
-                        != layout.mergedConfiguration.getMergedConfiguration().orientation) {
+                final boolean clearSnapshot = layout.mergedConfiguration != null
+                        && (snapshot.mOrientationOnCreation != layout.mergedConfiguration
+                                .getMergedConfiguration().orientation);
+                if (clearSnapshot) {
                     // The orientation of the screen is changing. We better remove the snapshot
                     // ASAP as we are going to wait on the new window in any case to unfreeze
                     // the screen, and the starting window is not needed anymore.

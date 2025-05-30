@@ -58,7 +58,7 @@ oneway interface IWindow {
      * the system server.
      */
     void resized(in WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
-            int displayId, boolean dragResizing);
+            int displayId, boolean syncWithBuffers, boolean dragResizing);
 
     /**
      * Called when this window retrieved control over a specified set of insets sources.
@@ -83,7 +83,7 @@ oneway interface IWindow {
     void hideInsets(int types, in @nullable ImeTracker.Token statsToken);
 
     void moved(int newX, int newY);
-    void dispatchAppVisibility(boolean visible);
+    void dispatchAppVisibility(boolean visible, int seqId);
     void dispatchGetNewSurface();
 
     void closeSystemDialogs(String reason);

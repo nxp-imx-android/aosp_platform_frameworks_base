@@ -212,7 +212,7 @@ public class ViewFrameRateTest {
         );
 
         mActivityRule.runOnUiThread(() -> {
-            mMovingView.getViewRootImpl().dispatchAppVisibility(false);
+            mMovingView.getViewRootImpl().dispatchAppVisibility(false, Integer.MAX_VALUE);
         });
 
         down.setSource(InputDevice.SOURCE_TOUCHSCREEN);
@@ -240,7 +240,7 @@ public class ViewFrameRateTest {
         assertFalse(mViewRoot.getIsTouchBoosting());
 
         mActivityRule.runOnUiThread(() -> {
-            mMovingView.getViewRootImpl().dispatchAppVisibility(true);
+            mMovingView.getViewRootImpl().dispatchAppVisibility(true, Integer.MAX_VALUE);
         });
     }
 

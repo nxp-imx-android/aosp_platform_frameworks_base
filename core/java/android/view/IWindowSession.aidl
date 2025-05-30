@@ -82,7 +82,7 @@ interface IWindowSession {
      * @param viewVisibility Window root view's visibility.
      * @param flags Request flags: {@link WindowManagerGlobal#RELAYOUT_INSETS_PENDING}.
      * @param seq The calling sequence of {@link #relayout} and {@link #relayoutAsync}.
-     * @param lastSyncSeqId The last SyncSeqId that the client applied.
+     * @param syncSeqId The latest SyncSeqId that the client is using.
      * @param outRelayoutResult Data object contains the info to be returned from server side.
      * @param outSurface Object in which is placed the new display surface.
      * @return int Result flags, defined in {@link WindowManagerGlobal}.
@@ -359,7 +359,7 @@ interface IWindowSession {
     /**
      * Returns whether this window needs to cancel draw and retry later.
      */
-    boolean cancelDraw(IWindow window);
+    boolean cancelDraw(IWindow window, int seqId);
 
     /**
      * Moves the focus to the adjacent window if there is one in the given direction. This can only

@@ -2403,21 +2403,21 @@ public class WindowManagerService extends IWindowManager.Stub
     /**
      * Returns whether this window can proceed with drawing or needs to retry later.
      */
-    public boolean cancelDraw(Session session, IWindow client) {
+    public boolean cancelDraw(Session session, IWindow client, int seqId) {
         synchronized (mGlobalLock) {
             final WindowState win = windowForClientLocked(session, client, false);
             if (win == null) {
                 return false;
             }
 
-            return win.cancelAndRedraw();
+            return win.cancelAndRedraw(seqId);
         }
     }
 
     /** Relayouts window. */
     public int relayoutWindow(Session session, IWindow client, LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewVisibility, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult,
+            int syncSeqId, WindowRelayoutResult outRelayoutResult,
             SurfaceControl outSurfaceControl) {
         final ClientWindowFrames outFrames;
         final MergedConfiguration outMergedConfiguration;
@@ -2454,7 +2454,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 return 0;
             }
 
-            if (win.cancelAndRedraw() && win.mPrepareSyncSeqId <= lastSyncSeqId) {
+            if (win.cancelAndRedraw(syncSeqId) && win.mPrepareSyncSeqId <= syncSeqId) {
                 // The client has reported the sync draw, but we haven't finished it yet.
                 // Don't let the client perform a non-sync draw at this time.
                 result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
@@ -2817,7 +2817,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             if (outRelayoutResult != null) {
                 if (win.syncNextBuffer() && viewVisibility == View.VISIBLE
-                        && win.mSyncSeqId > lastSyncSeqId && !displayContent.mWaitingForConfig) {
+                        && win.mSyncSeqId > syncSeqId && !displayContent.mWaitingForConfig) {
                     outRelayoutResult.syncSeqId = win.shouldSyncWithBuffers()
                             ? win.mSyncSeqId
                             : -1;

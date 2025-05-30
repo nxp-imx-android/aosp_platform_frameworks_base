@@ -49,7 +49,7 @@ public class BaseIWindow extends IWindow.Stub {
 
     @Override
     public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
-            int displayId, boolean dragResizing) {
+            int displayId, boolean syncWithBuffers, boolean dragResizing) {
         if (reportDraw) {
             try {
                 mSession.finishDrawing(this, null /* postDrawTransaction */, layout.syncSeqId);
@@ -76,7 +76,7 @@ public class BaseIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void dispatchAppVisibility(boolean visible) {
+    public void dispatchAppVisibility(boolean visible, int seqId) {
     }
 
     @Override
