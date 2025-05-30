@@ -850,11 +850,9 @@ constructor(
      * When expanding or when the user is interacting with the shade, keep the count stable; do not
      * emit a value.
      */
-    fun getLockscreenDisplayConfig(
-        calculateSpace: (Float, Boolean) -> Int
-    ): Flow<LockscreenDisplayConfig> {
+    fun getMaxNotifications(calculateSpace: (Float, Boolean) -> Int): Flow<Int> {
         val showLimitedNotifications = isOnLockscreenWithoutShade
-        val showUnlimitedNotificationsAndIsOnLockScreen =
+        val showUnlimitedNotifications =
             combine(
                     isOnLockscreen,
                     keyguardInteractor.statusBarState,
@@ -864,43 +862,31 @@ constructor(
                         )
                         .onStart { emit(false) },
                 ) { isOnLockscreen, statusBarState, showAllNotifications ->
-                    (statusBarState == SHADE_LOCKED || !isOnLockscreen || showAllNotifications) to
-                        isOnLockscreen
+                    statusBarState == SHADE_LOCKED || !isOnLockscreen || showAllNotifications
                 }
-                .dumpWhileCollecting("showUnlimitedNotificationsAndIsOnLockScreen")
+                .dumpWhileCollecting("showUnlimitedNotifications")
 
         @Suppress("UNCHECKED_CAST")
         return combineTransform(
                 showLimitedNotifications,
-                showUnlimitedNotificationsAndIsOnLockScreen,
+                showUnlimitedNotifications,
                 shadeInteractor.isUserInteracting.dumpWhileCollecting("isUserInteracting"),
                 availableHeight,
                 interactor.useExtraShelfSpace,
                 interactor.notificationStackChanged,
             ) { flows ->
                 val showLimitedNotifications = flows[0] as Boolean
-                val (showUnlimitedNotifications, isOnLockscreen) =
-                    flows[1] as Pair<Boolean, Boolean>
+                val showUnlimitedNotifications = flows[1] as Boolean
                 val isUserInteracting = flows[2] as Boolean
                 val availableHeight = flows[3] as Float
                 val useExtraShelfSpace = flows[4] as Boolean
 
                 if (!isUserInteracting) {
                     if (showLimitedNotifications) {
-                        emit(
-                            LockscreenDisplayConfig(
-                                isOnLockscreen = isOnLockscreen,
-                                maxNotifications =
-                                    calculateSpace(availableHeight, useExtraShelfSpace),
-                            )
-                        )
+                        emit(calculateSpace(availableHeight, useExtraShelfSpace))
                     } else if (showUnlimitedNotifications) {
-                        emit(
-                            LockscreenDisplayConfig(
-                                isOnLockscreen = isOnLockscreen,
-                                maxNotifications = -1,
-                            )
-                        )
+                        // -1 means no limit
+                        emit(-1)
                     }
                 }
             }
@@ -931,10 +917,7 @@ constructor(
             .flatMapLatest { (hasNotifications, isOnLockscreen, hasActiveMedia) ->
                 if ((hasNotifications || hasActiveMedia) && isOnLockscreen) {
                     combine(
-                            getLockscreenDisplayConfig(calculateMaxNotifications).map {
-                                (_, maxNotifications) ->
-                                maxNotifications
-                            },
+                            getMaxNotifications(calculateMaxNotifications),
                             bounds.map { it.top },
                             isOnLockscreenWithoutShade,
                             interactor.notificationStackChanged,
@@ -983,13 +966,4 @@ constructor(
         /** The container is laid out from the given [ratio] of the screen width to the end edge. */
         data class MiddleToEdge(val ratio: Float = 0.5f) : HorizontalPosition
     }
-
-    /**
-     * Data class representing a configuration for displaying Notifications on the Lockscreen.
-     *
-     * @param isOnLockscreen is the user on the lockscreen
-     * @param maxNotifications Limit for the max number of top-level Notifications to be displayed.
-     *   A value of -1 indicates no limit.
-     */
-    data class LockscreenDisplayConfig(val isOnLockscreen: Boolean, val maxNotifications: Int)
 }

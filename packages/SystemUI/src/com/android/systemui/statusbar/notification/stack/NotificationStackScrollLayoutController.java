@@ -1613,12 +1613,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mView.setPulsing(pulsing, animatePulse);
     }
 
-    /** Sets whether the NSSL is displayed over the unoccluded Lockscreen. */
-    public void setOnLockscreen(boolean isOnLockscreen) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mNotificationListContainer.setOnLockscreen(isOnLockscreen);
-    }
-
     /**
      * Set the maximum number of notifications that can currently be displayed
      */
@@ -2029,11 +2023,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         @Override
         public void addContainerViewAt(View v, int index) {
             mView.addContainerViewAt(v, index);
-        }
-
-        @Override
-        public void setOnLockscreen(boolean isOnLockscreen) {
-            mView.setOnLockscreen(isOnLockscreen);
         }
 
         @Override
