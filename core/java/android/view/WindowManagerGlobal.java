@@ -901,19 +901,18 @@ public final class WindowManagerGlobal {
     private static InputChannel createInputChannel(@NonNull IBinder clientToken,
             @NonNull InputTransferToken hostToken, @NonNull SurfaceControl surfaceControl,
             @Nullable InputTransferToken inputTransferToken) {
-        InputChannel inputChannel = new InputChannel();
         try {
             // TODO (b/329860681): Use INVALID_DISPLAY for now because the displayId will be
             // selected in  SurfaceFlinger. This should be cleaned up so grantInputChannel doesn't
             // take in a displayId at all
-            WindowManagerGlobal.getWindowSession().grantInputChannel(INVALID_DISPLAY,
+            return WindowManagerGlobal.getWindowSession().grantInputChannel(INVALID_DISPLAY,
                     surfaceControl, clientToken, hostToken, 0, 0, TYPE_APPLICATION, 0, null,
-                    inputTransferToken, surfaceControl.getName(), inputChannel);
+                    inputTransferToken, surfaceControl.getName());
         } catch (RemoteException e) {
             Log.e(TAG, "Failed to create input channel", e);
             e.rethrowAsRuntimeException();
+            return null;
         }
-        return inputChannel;
     }
 
     private static void removeInputChannel(IBinder clientToken) {

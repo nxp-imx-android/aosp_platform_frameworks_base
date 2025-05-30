@@ -243,17 +243,19 @@ public class WindowlessWindowManager implements IWindowSession {
                 WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL) == 0)) {
             try {
                 if (mRealWm instanceof IWindowSession.Stub) {
-                    mRealWm.grantInputChannel(displayId,
+                    InputChannel inputChannel = mRealWm.grantInputChannel(
+                            displayId,
                             new SurfaceControl(sc, "WindowlessWindowManager.addToDisplay"),
                             window.asBinder(), mHostInputTransferToken, attrs.flags,
                             attrs.privateFlags, attrs.inputFeatures, attrs.type, attrs.token,
-                            state.mInputTransferToken, attrs.getTitle().toString(),
-                            outInputChannel);
+                            state.mInputTransferToken, attrs.getTitle().toString());
+                    inputChannel.copyTo(outInputChannel);
                 } else {
-                    mRealWm.grantInputChannel(displayId, sc, window.asBinder(),
-                            mHostInputTransferToken, attrs.flags, attrs.privateFlags,
-                            attrs.inputFeatures, attrs.type, attrs.token, state.mInputTransferToken,
-                            attrs.getTitle().toString(), outInputChannel);
+                    InputChannel inputChannel = mRealWm.grantInputChannel(displayId, sc,
+                            window.asBinder(), mHostInputTransferToken, attrs.flags,
+                            attrs.privateFlags, attrs.inputFeatures, attrs.type, attrs.token,
+                            state.mInputTransferToken, attrs.getTitle().toString());
+                    inputChannel.copyTo(outInputChannel);
                 }
                 state.mInputChannelToken =
                         outInputChannel != null ? outInputChannel.getToken() : null;
@@ -626,10 +628,11 @@ public class WindowlessWindowManager implements IWindowSession {
             List<Rect> unrestrictedRects) {}
 
     @Override
-    public void grantInputChannel(int displayId, SurfaceControl surface, IBinder clientToken,
-            InputTransferToken hostInputToken, int flags, int privateFlags, int inputFeatures,
-            int type, IBinder windowToken, InputTransferToken embeddedInputTransferToken,
-            String inputHandleName, InputChannel outInputChannel) {
+    public InputChannel grantInputChannel(int displayId, SurfaceControl surface,
+            IBinder clientToken, InputTransferToken hostInputToken, int flags, int privateFlags,
+            int inputFeatures, int type, IBinder windowToken,
+            InputTransferToken embeddedInputTransferToken, String inputHandleName) {
+        return null;
     }
 
     @Override

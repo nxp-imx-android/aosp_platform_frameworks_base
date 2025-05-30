@@ -9420,15 +9420,15 @@ public class WindowManagerService extends IWindowManager.Stub
      * Used by WindowlessWindowManager to enable input on SurfaceControl embedded
      * views.
      */
-    void grantInputChannel(Session session, int callingUid, int callingPid, int displayId,
+    InputChannel grantInputChannel(Session session, int callingUid, int callingPid, int displayId,
             SurfaceControl surface, IBinder clientToken,
             @Nullable InputTransferToken hostInputTransferToken, int flags, int privateFlags,
             int inputFeatures, int type, IBinder windowToken, InputTransferToken inputTransferToken,
-            String inputHandleName, InputChannel outInputChannel) {
+            String inputHandleName) {
         final int sanitizedType = sanitizeWindowType(session, displayId, windowToken, type);
         final InputApplicationHandle applicationHandle;
         final String name;
-        Objects.requireNonNull(outInputChannel);
+        InputChannel inputChannel = new InputChannel();
         Objects.requireNonNull(inputTransferToken);
 
         synchronized (mGlobalLock) {
@@ -9438,15 +9438,16 @@ public class WindowManagerService extends IWindowManager.Stub
                     new EmbeddedWindowController.EmbeddedWindow(session, this, clientToken,
                             hostWindowState, callingUid, callingPid, sanitizedType, displayId,
                             inputTransferToken, inputHandleName, (flags & FLAG_NOT_FOCUSABLE) == 0);
-            win.openInputChannel(outInputChannel);
-            mEmbeddedWindowController.add(outInputChannel.getToken(), win);
+            win.openInputChannel(inputChannel);
+            mEmbeddedWindowController.add(inputChannel.getToken(), win);
             applicationHandle = win.getApplicationHandle();
             name = win.toString();
         }
 
-        updateInputChannel(outInputChannel.getToken(), callingUid, callingPid, displayId, surface,
+        updateInputChannel(inputChannel.getToken(), callingUid, callingPid, displayId, surface,
                 name, applicationHandle, flags, privateFlags, inputFeatures, sanitizedType,
                 null /* region */, clientToken);
+        return inputChannel;
     }
 
     @Override
