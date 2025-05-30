@@ -15,16 +15,28 @@
  */
 package com.android.ravenwoodtest.coretest;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 import android.app.ActivityThread;
+import android.content.Context;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.Test;
 
 public class RavenwoodActivityThreadTest {
+    private static final Context sContext =
+            InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     @Test
-    public void testActivityThreadSystemContext() {
-        assertNotNull(ActivityThread.currentSystemContext());
+    public void testActivityThreadCurrentSystemContext() {
+        assertEquals(ActivityThread.currentSystemContext().getPackageName(),
+                sContext.getPackageName());
+    }
+
+    @Test
+    public void testActivityThreadCurrentApplication() {
+        assertEquals(ActivityThread.currentApplication().getPackageName(),
+                sContext.getPackageName());
     }
 }

@@ -35,6 +35,8 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityThread_ravenwood;
 import android.app.AppCompatCallbacks;
+import android.app.Application;
+import android.app.Application_ravenwood;
 import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.ResourcesManager;
@@ -223,6 +225,7 @@ public class RavenwoodRuntimeEnvironmentController {
 
     static volatile RavenwoodContext sInstContext;
     static volatile RavenwoodContext sTargetContext;
+    static volatile Application sTargetApplication;
     private static Instrumentation sInstrumentation;
     private static final long sCallingIdentity =
             packBinderIdentityToken(false, FIRST_APPLICATION_UID, sMyPid);
@@ -392,20 +395,22 @@ public class RavenwoodRuntimeEnvironmentController {
         sTargetContext = new RavenwoodContext(
                 sTargetPackageName, main, targetResourcesLoader);
 
-        // Set up app context.
-        var appContext = new RavenwoodContext(sTargetPackageName, main, targetResourcesLoader);
-        appContext.setApplicationContext(appContext);
+        // Set up app context. App context is always created for the target app.
+        var application = new Application();
+        Application_ravenwood.attach(application, sTargetContext);
         if (isSelfInstrumenting) {
-            sInstContext.setApplicationContext(appContext);
-            sTargetContext.setApplicationContext(appContext);
+            sInstContext.attachApplicationContext(application);
+            sTargetContext.attachApplicationContext(application);
         } else {
             // When instrumenting into another APK, the test context doesn't have an app context.
-            sTargetContext.setApplicationContext(appContext);
+            sTargetContext.attachApplicationContext(application);
         }
+        sTargetApplication = application;
 
-        // Set up ActivityThread.currentSystemContext(), which is technically a different
-        // thing from the app context, but for now let's just do it this way.
-        ActivityThread_ravenwood.init(appContext);
+        // Set up ActivityThread.currentXxx().
+        // "System context" is _not_ the same thing as the target context, but
+        // the difference doesn't matter at least for now, so we just use the target context.
+        ActivityThread_ravenwood.init(application, sTargetContext);
 
         final Supplier<Resources> systemResourcesLoader = () -> loadResources(null);
 

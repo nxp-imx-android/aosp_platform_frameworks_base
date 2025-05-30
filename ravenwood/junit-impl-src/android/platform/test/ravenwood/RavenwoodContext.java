@@ -18,6 +18,7 @@ package android.platform.test.ravenwood;
 
 import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_RESOURCE_APK;
 
+import android.app.Application;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -65,7 +66,7 @@ public class RavenwoodContext extends RavenwoodBaseContext {
     private final File mDataDir;
     private final Supplier<Resources> mResourcesSupplier;
 
-    private RavenwoodContext mAppContext;
+    private Application mAppContext;
 
     @GuardedBy("mLock")
     private Resources mResources;
@@ -301,7 +302,7 @@ public class RavenwoodContext extends RavenwoodBaseContext {
         return new File(RAVENWOOD_RESOURCE_APK).getAbsolutePath();
     }
 
-    public void setApplicationContext(RavenwoodContext appContext) {
+    final void attachApplicationContext(Application appContext) {
         mAppContext = appContext;
     }
 
