@@ -24,6 +24,8 @@ import com.android.internal.protolog.common.IProtoLogGroup;
 
 import com.google.common.truth.Truth;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -33,6 +35,21 @@ import org.junit.runners.JUnit4;
 @Presubmit
 @RunWith(JUnit4.class)
 public class ProtoLogTest {
+
+    ProtoLogController mController;
+
+    @Before
+    public void setUp() {
+        mController = ProtoLog.getControllerInstanceForTest();
+        ProtoLog.setControllerInstanceForTest(new ProtoLogController());
+    }
+
+    @After
+    public void tearDown() {
+        final var testProtoLogController = ProtoLog.getControllerInstanceForTest();
+        testProtoLogController.tearDown();
+        ProtoLog.setControllerInstanceForTest(mController);
+    }
 
     @Test
     public void canRunProtoLogInitMultipleTimes() {

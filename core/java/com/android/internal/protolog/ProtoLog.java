@@ -17,28 +17,24 @@
 package com.android.internal.protolog;
 
 import android.annotation.NonNull;
-import android.os.ServiceManager;
+import android.annotation.Nullable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodReplace;
 import android.tracing.perfetto.DataSourceParams;
 import android.tracing.perfetto.InitArguments;
 import android.tracing.perfetto.Producer;
 
-import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
 import com.android.internal.protolog.common.LogLevel;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * ProtoLog API - exposes static logging methods. Usage of this API is similar
  * to {@code android.utils.Log} class. Instead of plain text log messages each call consists of
  * a messageString, which is a format string for the log message (has to be a string literal or
  * a concatenation of string literals) and a vararg array of parameters for the formatter.
- *
+ * <p>
  * The syntax for the message string depends on
  * {@link android.text.TextUtils#formatSimple(String, Object...)}}.
  * Supported conversions:
@@ -48,7 +44,7 @@ import java.util.Set;
  * %s - string
  * %% - a literal percent character
  * The width and precision modifiers are supported, argument_index and flags are not.
- *
+ * <p>
  * Methods in this class are stubs, that are replaced by optimised versions by the ProtoLogTool
  * during build.
  */
@@ -61,14 +57,23 @@ public class ProtoLog {
     @Deprecated
     public static boolean REQUIRE_PROTOLOGTOOL = true;
 
-    private static IProtoLog sProtoLogInstance;
+    @NonNull
+    private static final Object sDataSourceLock = new Object();
 
     private static ProtoLogDataSource sDataSource;
 
-    private static final Object sInitLock = new Object();
-
-    @GuardedBy("sInitLock")
-    private static final Set<IProtoLogGroup> sGroups = new HashSet<>();
+    /**
+     * The central controller for ProtoLog's state and logic.
+     * This instance manages log groups, the underlying logging implementation, and the data source.
+     * It is declared {@code volatile} to ensure that changes to its reference are visible across
+     * threads, particularly when a new controller is set for testing purposes via
+     * {@link #setControllerInstanceForTest(ProtoLogController)}.
+     * In production, this is initialized once to a default controller and remains unchanged.
+     * For testing, {@link #setControllerInstanceForTest(ProtoLogController)} allows swapping this
+     * out to isolate test environments.
+     */
+    @NonNull
+    private static volatile ProtoLogController sController = new ProtoLogController();
 
     /**
      * Registers ProtoLog groups in the current process.
@@ -78,20 +83,7 @@ public class ProtoLog {
      * @param groups A varargs array of {@link IProtoLogGroup} instances to be registered.
      */
     public static void registerLogGroupInProcess(@NonNull IProtoLogGroup... groups) {
-        synchronized (sInitLock) {
-            var newGroups = Arrays.stream(groups)
-                    .filter(group -> !sGroups.contains(group))
-                    .toArray(IProtoLogGroup[]::new);
-            if (newGroups.length == 0) {
-                return;
-            }
-
-            sGroups.addAll(Arrays.stream(newGroups).toList());
-
-            if (sProtoLogInstance != null) {
-                sProtoLogInstance.registerGroups(newGroups);
-            }
-        }
+        sController.registerLogGroupInProcess(groups);
     }
 
     /**
@@ -101,133 +93,98 @@ public class ProtoLog {
      * Ensure that all groups that will be used for protologging are registered.
      */
     public static void init(@NonNull IProtoLogGroup... groups) {
-        registerLogGroupInProcess(groups);
-
-        synchronized (sInitLock) {
-            if (sProtoLogInstance != null) {
-                return;
-            }
-
-            // These tracing instances are only used when we cannot or do not preprocess the source
-            // files to extract out the log strings. Otherwise, the trace calls are replaced with
-            // calls directly to the generated tracing implementations.
-            if (logOnlyToLogcat()) {
-                sProtoLogInstance = new LogcatOnlyProtoLogImpl();
-            } else {
-                var datasource = getSharedSingleInstanceDataSource();
-
-                sProtoLogInstance = createAndEnableNewPerfettoProtoLogImpl(
-                        datasource, sGroups.toArray(new IProtoLogGroup[0]));
-            }
-        }
-    }
-
-    @RavenwoodReplace(reason = "Always use the Log backend on ravenwood, not Perfetto")
-    private static boolean logOnlyToLogcat() {
-        return false;
-    }
-
-    private static boolean logOnlyToLogcat$ravenwood() {
-        // We don't want to initialize Perfetto data sources and have to deal with Perfetto
-        // when running tests on the host side, instead just log everything to logcat which has
-        // already been made compatible with ravenwood.
-        return true;
-    }
-
-    private static PerfettoProtoLogImpl createAndEnableNewPerfettoProtoLogImpl(
-            @NonNull ProtoLogDataSource datasource, @NonNull IProtoLogGroup[] groups) {
-        try {
-            var unprocessedPerfettoProtoLogImpl =
-                    new UnprocessedPerfettoProtoLogImpl(datasource, groups);
-            unprocessedPerfettoProtoLogImpl.enable();
-
-            return unprocessedPerfettoProtoLogImpl;
-        } catch (ServiceManager.ServiceNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        sController.init(groups);
     }
 
     /**
      * DEBUG level log.
+     * <p>
+     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
+     *       executed. Check generated code for actual call.
      *
      * @param group         {@code IProtoLogGroup} controlling this log call.
      * @param messageString constant format string for the logged message.
      * @param args          parameters to be used with the format string.
-     *
-     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
-     *       executed. Check generated code for actual call.
      */
-    public static void d(IProtoLogGroup group, String messageString, Object... args) {
+    public static void d(@NonNull IProtoLogGroup group, @NonNull String messageString,
+            @NonNull Object... args) {
         logStringMessage(LogLevel.DEBUG, group, messageString, args);
     }
 
     /**
      * VERBOSE level log.
+     * <p>
+     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
+     *       executed. Check generated code for actual call.
      *
      * @param group         {@code IProtoLogGroup} controlling this log call.
      * @param messageString constant format string for the logged message.
      * @param args          parameters to be used with the format string.
-     *
-     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
-     *       executed. Check generated code for actual call.
      */
-    public static void v(IProtoLogGroup group, String messageString, Object... args) {
+    public static void v(@NonNull IProtoLogGroup group, @NonNull String messageString,
+            @NonNull Object... args) {
         logStringMessage(LogLevel.VERBOSE, group, messageString, args);
     }
 
     /**
      * INFO level log.
+     * <p>
+     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
+     *       executed. Check generated code for actual call.
      *
      * @param group         {@code IProtoLogGroup} controlling this log call.
      * @param messageString constant format string for the logged message.
      * @param args          parameters to be used with the format string.
-     *
-     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
-     *       executed. Check generated code for actual call.
+
      */
-    public static void i(IProtoLogGroup group, String messageString, Object... args) {
+    public static void i(@NonNull IProtoLogGroup group, @NonNull String messageString,
+            @NonNull Object... args) {
         logStringMessage(LogLevel.INFO, group, messageString, args);
     }
 
     /**
      * WARNING level log.
+     * <p>
+     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
+     *       executed. Check generated code for actual call.
      *
      * @param group         {@code IProtoLogGroup} controlling this log call.
      * @param messageString constant format string for the logged message.
      * @param args          parameters to be used with the format string.
-     *
-     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
-     *       executed. Check generated code for actual call.
      */
-    public static void w(IProtoLogGroup group, String messageString, Object... args) {
+    public static void w(@NonNull IProtoLogGroup group, @NonNull String messageString,
+            @NonNull Object... args) {
         logStringMessage(LogLevel.WARN, group, messageString, args);
     }
 
     /**
      * ERROR level log.
+     * <p>
+     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
+     *       executed. Check generated code for actual call.
      *
      * @param group         {@code IProtoLogGroup} controlling this log call.
      * @param messageString constant format string for the logged message.
      * @param args          parameters to be used with the format string.
-     *
-     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
-     *       executed. Check generated code for actual call.
+
      */
-    public static void e(IProtoLogGroup group, String messageString, Object... args) {
+    public static void e(@NonNull IProtoLogGroup group, @NonNull String messageString,
+            @NonNull Object... args) {
         logStringMessage(LogLevel.ERROR, group, messageString, args);
     }
 
     /**
-     * WHAT A TERRIBLE FAILURE level log.
+     * WHAT A TERRIBLE FAILURE level log
+     * <p>
+     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
+     *       executed. Check generated code for actual call.
      *
      * @param group         {@code IProtoLogGroup} controlling this log call.
      * @param messageString constant format string for the logged message.
      * @param args          parameters to be used with the format string.
-     *
-     * NOTE: If source code is pre-processed by ProtoLogTool this is not the function call that is
-     *       executed. Check generated code for actual call.
      */
-    public static void wtf(IProtoLogGroup group, String messageString, Object... args) {
+    public static void wtf(@NonNull IProtoLogGroup group, @NonNull String messageString,
+            @NonNull Object... args) {
         logStringMessage(LogLevel.WTF, group, messageString, args);
     }
 
@@ -236,16 +193,17 @@ public class ProtoLog {
      * @param group Group to check enable status of.
      * @return true iff this is being logged.
      */
-    public static boolean isEnabled(IProtoLogGroup group, LogLevel level) {
-        return sProtoLogInstance.isEnabled(group, level);
+    public static boolean isEnabled(@NonNull IProtoLogGroup group, @NonNull LogLevel level) {
+        return sController.mProtoLogInstance.isEnabled(group, level);
     }
 
     /**
      * Get the single ProtoLog instance.
      * @return A singleton instance of ProtoLog.
      */
+    @Nullable
     public static IProtoLog getSingleInstance() {
-        return sProtoLogInstance;
+        return sController.mProtoLogInstance;
     }
 
     /**
@@ -256,33 +214,64 @@ public class ProtoLog {
      * @return The single ProtoLog datasource instance to be shared across all ProtoLog tracing
      *         objects.
      */
-    public static synchronized ProtoLogDataSource getSharedSingleInstanceDataSource() {
-        if (sDataSource == null) {
-            Producer.init(InitArguments.DEFAULTS);
-            sDataSource = new ProtoLogDataSource();
-            DataSourceParams params =
-                    new DataSourceParams.Builder()
-                            .setBufferExhaustedPolicy(
-                                    DataSourceParams
-                                            .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_DROP)
-                            .build();
-            // NOTE: Registering that datasource is an async operation, so there may be no data
-            // traced for some messages logged right after the construction of this class.
-            sDataSource.register(params);
+    @NonNull
+    public static ProtoLogDataSource getSharedSingleInstanceDataSource() {
+        synchronized (sDataSourceLock) {
+            if (sDataSource == null) {
+                Producer.init(InitArguments.DEFAULTS);
+                sDataSource = new ProtoLogDataSource();
+                DataSourceParams params =
+                        new DataSourceParams.Builder()
+                                .setBufferExhaustedPolicy(
+                                        DataSourceParams
+                                                .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_DROP)
+                                .build();
+                sDataSource.register(params);
+            }
+            return sDataSource;
         }
-
-        return sDataSource;
     }
 
-    private static void logStringMessage(LogLevel logLevel, IProtoLogGroup group,
-            String stringMessage, Object... args) {
-        if (sProtoLogInstance == null) {
+    private static void logStringMessage(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
+            @NonNull String stringMessage, @NonNull Object... args) {
+        final var instance = sController.mProtoLogInstance;
+        if (instance == null) {
             throw new IllegalStateException(
                     "Trying to use ProtoLog before it is initialized in this process.");
         }
 
-        if (sProtoLogInstance.isEnabled(group, logLevel)) {
-            sProtoLogInstance.log(logLevel, group, stringMessage, args);
+        if (instance.isEnabled(group, logLevel)) {
+            instance.log(logLevel, group, stringMessage, args);
         }
+    }
+
+    /**
+     * For testing purposes only. Sets the controller instance, allowing tests to
+     * provide a fresh or mocked controller to isolate test state.
+     *
+     * @param controller The controller instance to use. If null, a new default
+     *                   controller will be created on next access.
+     */
+    @VisibleForTesting
+    public static void setControllerInstanceForTest(@NonNull ProtoLogController controller) {
+        sController = controller;
+    }
+
+    @VisibleForTesting
+    @NonNull
+    public static ProtoLogController getControllerInstanceForTest() {
+        return sController;
+    }
+
+    @RavenwoodReplace(reason = "Always use the Log backend on ravenwood, not Perfetto")
+    static boolean logOnlyToLogcat() {
+        return false;
+    }
+
+    static boolean logOnlyToLogcat$ravenwood() {
+        // We don't want to initialize Perfetto data sources and have to deal with Perfetto
+        // when running tests on the host side, instead just log everything to logcat which has
+        // already been made compatible with ravenwood.
+        return true;
     }
 }
