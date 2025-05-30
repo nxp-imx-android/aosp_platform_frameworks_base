@@ -77,8 +77,16 @@ public class PowerStatusMonitorActionFromPlayback extends HdmiCecFeatureAction {
         }
 
         if (mConsecutiveStandbyReports >= REQUIRED_CONSECUTIVE_STANDBY_REPORTS) {
+            HdmiCecLocalDeviceSource source = source();
             Slog.d(TAG, "TV reported standby, going to sleep.");
-            source().getService().standby();
+            // Invalidate the internal active source record before calling the active source logic.
+            // This logic allows the user to be visually notified in case they have a faulty CEC
+            // setup (e.g. an old TV panel) where they can easily disable the setting that sends
+            // their source device to sleep.
+            source.mService
+                    .setActiveSource(Constants.ADDR_INVALID, Constants.INVALID_PHYSICAL_ADDRESS,
+                    "HdmiCecLocalDevicePlayback#onStandby()");
+            source.onActiveSourceLost();
             finish();
         }
         // Schedule next monitoring.

@@ -2943,6 +2943,9 @@ public class HdmiCecLocalDevicePlaybackTest {
         mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
         mTestLooper.dispatchAll();
 
+        // After 30s of device inactivity, device would go to sleep.
+        skipActiveSourceLostUi(STANDBY_AFTER_ACTIVE_SOURCE_LOST_DELAY_MS, false,
+                false);
         // Playback device should go to sleep
         assertThat(mPowerManager.isInteractive()).isFalse();
         assertThat(mHdmiCecLocalDevicePlayback.getActions(
@@ -3008,6 +3011,9 @@ public class HdmiCecLocalDevicePlaybackTest {
         mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
         mTestLooper.dispatchAll();
 
+        // After 30s of device inactivity, device would go to sleep.
+        skipActiveSourceLostUi(STANDBY_AFTER_ACTIVE_SOURCE_LOST_DELAY_MS, false,
+                false);
         assertThat(mPowerManager.isInteractive()).isFalse();
         assertThat(mHdmiCecLocalDevicePlayback.getActions(
                 PowerStatusMonitorActionFromPlayback.class)).isEmpty();
@@ -3069,6 +3075,9 @@ public class HdmiCecLocalDevicePlaybackTest {
         mNativeWrapper.onCecMessage(reportPowerStatusTvStandby);
         mTestLooper.dispatchAll();
 
+        // After 30s of device inactivity, device would go to sleep.
+        skipActiveSourceLostUi(STANDBY_AFTER_ACTIVE_SOURCE_LOST_DELAY_MS, false,
+                false);
         assertThat(mPowerManager.isInteractive()).isFalse();
         assertThat(mHdmiCecLocalDevicePlayback.getActions(
                 PowerStatusMonitorActionFromPlayback.class)).isEmpty();
