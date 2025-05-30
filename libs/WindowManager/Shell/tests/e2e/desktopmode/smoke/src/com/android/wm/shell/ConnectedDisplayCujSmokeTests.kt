@@ -100,19 +100,24 @@ class ConnectedDisplayCujSmokeTests {
     @get:Rule(order = 0)
     val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
+    // This rule must have higher priority than other setup-related rules to skip certain tests on
+    // the unsupported device as soon as possible.
     @get:Rule(order = 1)
-    val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
+    val desktopDeviceTypeRule = DesktopDeviceTypeRule()
 
     @get:Rule(order = 2)
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
+    val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
 
     @get:Rule(order = 3)
-    val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
     @get:Rule(order = 4)
-    val shadeDisplayGoesAroundTestRule = ShadeDisplayGoesAroundTestRule()
+    val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @get:Rule(order = 5)
+    val shadeDisplayGoesAroundTestRule = ShadeDisplayGoesAroundTestRule()
+
+    @get:Rule(order = 6)
     val desktopMouseRule = DesktopMouseTestRule()
 
     @Before
@@ -202,24 +207,23 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: When a device is connected to ext.display, the user can change topology in Settings
     // > Connected devices > Connected Display
     @Test
+    @ExtendedOnly
     fun cuj1e() {
-        Assume.assumeTrue(canEnterExtended)
         cuj1()
     }
 
     // Projected: When a device is connected to ext.display, the user can change topology in
     // Settings > Connected devices > Connected Display
     @Test
+    @ProjectedOnly
     fun cuj1p() {
-        Assume.assumeFalse(canEnterExtended)
         cuj1()
     }
 
     // Extended: When an ext. display is connected, Taskbar shows on both displays
     @Test
+    @ExtendedOnly
     fun cuj2e() {
-        Assume.assumeTrue(canEnterExtended)
-
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
 
         assertTaskbarVisible(DEFAULT_DISPLAY)
@@ -229,9 +233,8 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: When an ext. display is connected, apps can be opened via Taskbar or All Apps on
     // the external monitor and they default to Desktop Windowing mode
     @Test
+    @ExtendedOnly
     fun cuj3e() {
-        Assume.assumeTrue(canEnterExtended)
-
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
 
@@ -245,9 +248,8 @@ class ConnectedDisplayCujSmokeTests {
     // Projected: When an ext. display is connected, apps can be opened via Taskbar or All Apps on
     // the external monitor and they default to Desktop Windowing mode
     @Test
+    @ProjectedOnly
     fun cuj3p() {
-        Assume.assumeFalse(canEnterExtended)
-
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
 
@@ -261,9 +263,8 @@ class ConnectedDisplayCujSmokeTests {
     // Projected: When a phone / foldable is connected to a display, the phone / foldable state
     // remains unchanged and a blank desktop session starts on the external monitor
     @Test
+    @ProjectedOnly
     fun cuj4p() {
-        Assume.assumeFalse(canEnterExtended)
-
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
 
         assertTaskbarInvisible(DEFAULT_DISPLAY)
@@ -280,9 +281,8 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: All apps can be invoked on either display at any time, but will only ever be shown
     // on one
     @Test
+    @ExtendedOnly
     fun cuj5e() {
-        Assume.assumeTrue(canEnterExtended)
-
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyWindowCount(browserApp, expectedCount = 1)
@@ -298,9 +298,8 @@ class ConnectedDisplayCujSmokeTests {
     // Projected: All apps can be invoked on either display at any time, but will only ever be shown
     // on one
     @Test
+    @ProjectedOnly
     fun cuj5p() {
-        Assume.assumeFalse(canEnterExtended)
-
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
         verifyWindowCount(browserApp, expectedCount = 1)
@@ -342,15 +341,15 @@ class ConnectedDisplayCujSmokeTests {
 
     // Extended: All window modes are supported on the connected display, including split screen
     @Test
+    @ExtendedOnly
     fun cuj6e() {
-        Assume.assumeTrue(canEnterExtended)
         cuj6()
     }
 
     // Projected: All window modes are supported on the connected display, including split screen
     @Test
+    @ProjectedOnly
     fun cuj6p() {
-        Assume.assumeFalse(canEnterExtended)
         cuj6()
     }
 
@@ -358,9 +357,8 @@ class ConnectedDisplayCujSmokeTests {
     // going to overview in this state will show the desktop view, with any full screen apps as
     // tiles to the left
     @Test
+    @ExtendedOnly
     fun cuj7e() {
-        Assume.assumeTrue(canEnterExtended)
-
         // TODO(b/416610249) - Remove assumption of touch-first-by-default.
         // Start an fullscreen app assuming the device is in touch-first mode.
         clockApp.launchViaIntent()
@@ -385,9 +383,8 @@ class ConnectedDisplayCujSmokeTests {
     // to the desktop session, going to overview in this state will show the desktop view, with any
     // full screen apps as tiles to the left
     @Test
+    @ProjectedOnly
     fun cuj7p() {
-        Assume.assumeFalse(canEnterExtended)
-
         // Clear all tasks
         with(tapl.workspace.openOverviewFromRecentsKeyboardShortcut()) {
             if (hasTasks()) {
@@ -434,9 +431,8 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: Desktop Windows can be dragged across displays using a cursor when external display
     // isn’t in fullscreen
     @Test
+    @ExtendedOnly
     fun cuj8e() {
-        Assume.assumeTrue(canEnterExtended)
-
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         disableMouseScaling(externalDisplayId)
         assertTaskbarVisible(DEFAULT_DISPLAY)
@@ -470,9 +466,8 @@ class ConnectedDisplayCujSmokeTests {
     // Projected: If an app is open on a device, and selected on the other display on the taskbar,
     // it is moved across
     @Test
+    @ProjectedOnly
     fun cuj9p() {
-        Assume.assumeFalse(canEnterExtended)
-
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
 
@@ -504,19 +499,18 @@ class ConnectedDisplayCujSmokeTests {
     // Extended: Device state should be recoverable when connecting and disconnecting an
     // ext.display (i.e. does not crash)
     @Test
+    @ExtendedOnly
     fun cuj10e() {
-        Assume.assumeTrue(canEnterExtended)
         cuj10()
     }
 
     // Projected: Device state should be recoverable when connecting and disconnecting an
     // ext.display (i.e. does not crash)
     @Test
+    @ProjectedOnly
     fun cuj10p() {
-        Assume.assumeFalse(canEnterExtended)
         cuj10()
     }
-
 
     @After
     fun teardown() {
