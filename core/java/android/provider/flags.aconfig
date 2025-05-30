@@ -56,3 +56,12 @@ flag {
     description: "Feature flag for regional preferences APIs"
     bug: "370379000"
 }
+
+flag {
+    name: "enable_documents_trash_api"
+    is_exported: true
+    namespace: "documentsui"
+    is_fixed_read_only: true
+    description: "This flag will enable documents trash APIs"
+    bug: "409260986"
+}

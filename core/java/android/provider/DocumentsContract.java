@@ -19,6 +19,7 @@ package android.provider;
 import static com.android.internal.util.Preconditions.checkCollectionElementsNotNull;
 import static com.android.internal.util.Preconditions.checkCollectionNotEmpty;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
@@ -581,6 +582,29 @@ public final class DocumentsContract {
          * @see #COLUMN_FLAGS
          */
         public static final int FLAG_DIR_BLOCKS_OPEN_DOCUMENT_TREE = 1 << 15;
+
+        /**
+         * Flag indicating that a document can be trashed.
+         *
+         * @see #COLUMN_FLAGS
+         * @see DocumentsContract#trashDocument(ContentResolver, Uri)
+         * @see DocumentsProvider#trashDocument(String)
+         */
+
+        @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+        public static final int FLAG_SUPPORTS_TRASH = 1 << 16;
+
+        /**
+         * Flag indicating that a document can be restored.
+         * Only trashed documents can be restored
+         *
+         * @see #COLUMN_FLAGS
+         * @see DocumentsContract#restoreDocumentFromTrash(ContentResolver, Uri, Uri)
+         * @see DocumentsProvider#restoreDocumentFromTrash(String, String)
+         */
+
+        @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+        public static final int FLAG_SUPPORTS_RESTORE = 1 << 17;
     }
 
     /**
@@ -875,6 +899,13 @@ public final class DocumentsContract {
     public static final String METHOD_CREATE_WEB_LINK_INTENT = "android:createWebLinkIntent";
     /** {@hide} */
     public static final String METHOD_GET_DOCUMENT_METADATA = "android:getDocumentMetadata";
+    /** {@hide} */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    public static final String METHOD_TRASH_DOCUMENT = "android:trashDocument";
+    /** {@hide} */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    public static final String METHOD_RESTORE_DOCUMENT_FROM_TRASH =
+            "android:restoreDocumentFromTrash";
 
     /** {@hide} */
     public static final String EXTRA_PARENT_URI = "parentUri";
@@ -888,6 +919,7 @@ public final class DocumentsContract {
 
     private static final String PATH_ROOT = "root";
     private static final String PATH_RECENT = "recent";
+    private static final String PATH_TRASH = "trash";
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private static final String PATH_DOCUMENT = "document";
     private static final String PATH_CHILDREN = "children";
@@ -933,6 +965,20 @@ public final class DocumentsContract {
         return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
                 .authority(authority).appendPath(PATH_ROOT).appendPath(rootId)
                 .appendPath(PATH_RECENT).build();
+    }
+
+
+
+    /**
+     * Returns URI representing the query trash documents of a specific document provider.
+     *
+     * @see DocumentsProvider#queryTrashDocuments(String[])
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    @NonNull
+    public static Uri buildTrashDocumentsUri(@NonNull String authority) {
+        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
+                .authority(authority).appendPath(PATH_TRASH).build();
     }
 
     /**
@@ -1554,6 +1600,67 @@ public final class DocumentsContract {
             Log.w(TAG, "Failed to remove document", e);
             rethrowIfNecessary(e);
             return false;
+        }
+    }
+
+    /**
+     * Trashes the given document.
+     *
+     * @param documentUri document with {@link Document#FLAG_SUPPORTS_TRASH}
+     * @return the trashed document, or {@code null} if failed.
+     * @throws FileNotFoundException         if the documentUri does not exist.
+     * @throws IllegalArgumentException      if the document does not support trashing.
+     * @throws UnsupportedOperationException if the document provider does not support trashing.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    @Nullable
+    public static Uri trashDocument(@NonNull ContentResolver content, @NonNull Uri documentUri)
+            throws FileNotFoundException {
+        try {
+            final Bundle in = new Bundle();
+            in.putParcelable(DocumentsContract.EXTRA_URI, documentUri);
+
+            final Bundle out = content.call(documentUri.getAuthority(),
+                    METHOD_TRASH_DOCUMENT, null, in);
+            return out.getParcelable(DocumentsContract.EXTRA_URI,
+                    android.net.Uri.class);
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to trash document", e);
+            rethrowIfNecessary(e);
+            return null;
+        }
+    }
+
+    /**
+     * Restores a document from the trash.
+     *
+     * @param sourceDocumentUri       trashed document to restore
+     * @param targetParentDocumentUri parent document to restore the document to
+     * @return the restored document, or {@code null} if failed.
+     * @throws FileNotFoundException         if the {@code sourceDocumentUri} does not exist or the
+     *                                       {@code targetParentDocumentUri} does not exist.
+     * @throws IllegalStateException         if the document cannot be restored (e.g., already
+     *                                       restored, or original parent is invalid).
+     * @throws UnsupportedOperationException if the document provider does not support restoring.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    @Nullable
+    public static Uri restoreDocumentFromTrash(@NonNull ContentResolver content,
+            @NonNull Uri sourceDocumentUri, @Nullable Uri targetParentDocumentUri)
+            throws FileNotFoundException {
+        try {
+            final Bundle in = new Bundle();
+            in.putParcelable(DocumentsContract.EXTRA_URI, sourceDocumentUri);
+            in.putParcelable(DocumentsContract.EXTRA_TARGET_URI, targetParentDocumentUri);
+
+            final Bundle out = content.call(sourceDocumentUri.getAuthority(),
+                    METHOD_RESTORE_DOCUMENT_FROM_TRASH, null, in);
+            return out.getParcelable(DocumentsContract.EXTRA_URI,
+                    android.net.Uri.class);
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to restore document", e);
+            rethrowIfNecessary(e);
+            return null;
         }
     }
 
