@@ -38,8 +38,8 @@ enum class LetterboxLifecycleEventType {
  */
 data class LetterboxLifecycleEvent(
     val type: LetterboxLifecycleEventType = NONE,
-    val taskId: Int,
-    val displayId: Int,
+    val taskId: Int = -1,
+    val displayId: Int = -1,
     val taskBounds: Rect,
     val letterboxBounds: Rect? = null,
     val letterboxActivityToken: WindowContainerToken? = null,
