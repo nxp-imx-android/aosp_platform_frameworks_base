@@ -30,8 +30,10 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.transition.TransitionStateHolder
+import com.android.wm.shell.compatui.letterbox.lifecycle.FakeLetterboxLifecycleEventFactory
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleControllerImpl
+import com.android.wm.shell.compatui.letterbox.lifecycle.toLetterboxLifecycleEvent
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -97,6 +99,9 @@ class MigrationLetterboxTransitionObserverTest : ShellTestCase() {
                     r.visibilityEventDetected(expected = false)
                     r.destroyEventDetected(expected = false)
                     r.updateSurfaceBoundsEventDetected(expected = false)
+                    r.checkOnLetterboxLifecycleEventFactory { factory ->
+                        assert(factory.canHandleInvokeTimes == 3)
+                    }
                 }
             }
         }
@@ -220,6 +225,7 @@ class MigrationLetterboxTransitionObserverTest : ShellTestCase() {
         private val transitionStateHolder: TransitionStateHolder
         private val letterboxStrategy: LetterboxControllerStrategy
         private val letterboxLifecycleContoller: LetterboxLifecycleController
+        private var letterboxLifecycleEventFactory: FakeLetterboxLifecycleEventFactory
 
         val observerFactory: () -> DelegateLetterboxTransitionObserver
 
@@ -237,11 +243,15 @@ class MigrationLetterboxTransitionObserverTest : ShellTestCase() {
                 transitionStateHolder,
                 letterboxStrategy
             )
+            letterboxLifecycleEventFactory = FakeLetterboxLifecycleEventFactory(
+                eventToReturnFactory = { c -> c.toLetterboxLifecycleEvent() }
+            )
             letterboxObserver =
                 DelegateLetterboxTransitionObserver(
                     shellInit,
                     transitions,
-                    letterboxLifecycleContoller
+                    letterboxLifecycleContoller,
+                    letterboxLifecycleEventFactory
                 )
             observerFactory = { letterboxObserver }
         }
@@ -252,6 +262,12 @@ class MigrationLetterboxTransitionObserverTest : ShellTestCase() {
 
         fun checkObservableIsRegistered(expected: Boolean) {
             verify(transitions, expected.asMode()).registerObserver(observer())
+        }
+
+        fun checkOnLetterboxLifecycleEventFactory(
+            consumer: (FakeLetterboxLifecycleEventFactory) -> Unit
+        ) {
+            consumer(letterboxLifecycleEventFactory)
         }
 
         fun configureRecentsState(running: Boolean) {
