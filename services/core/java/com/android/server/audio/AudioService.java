@@ -9791,7 +9791,7 @@ public class AudioService extends IAudioService.Stub
                     }
 
                     if (mVolumeGroupState != null) {
-                        mVolumeGroupState.mIndexMin = mIndexMin;
+                        mVolumeGroupState.mIndexMin = mIndexMin / 10;
                     }
 
                     mIndexMinNoPerm = mIndexMin;
