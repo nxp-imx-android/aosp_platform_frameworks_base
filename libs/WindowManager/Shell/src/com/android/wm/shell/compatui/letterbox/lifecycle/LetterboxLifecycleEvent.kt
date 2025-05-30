@@ -42,8 +42,8 @@ data class LetterboxLifecycleEvent(
     val displayId: Int = -1,
     val taskBounds: Rect,
     val letterboxBounds: Rect? = null,
-    val letterboxActivityToken: WindowContainerToken? = null,
-    val letterboxActivityLeash: SurfaceControl? = null,
+    val containerToken: WindowContainerToken? = null,
+    val leash: SurfaceControl? = null,
 )
 
 /**
@@ -52,6 +52,14 @@ data class LetterboxLifecycleEvent(
 fun LetterboxLifecycleEvent.letterboxKey(): LetterboxKey =
     LetterboxKey(displayId = displayId, taskId = taskId)
 
+/**
+ * Maps a [TransitionInfo.Change] mode in a [LetterboxLifecycleEventType].
+ */
+fun Change.asLetterboxLifecycleEventType() = when {
+    isClosingType(mode) -> CLOSE
+    isOpeningType(mode) -> OPEN
+    else -> NONE
+}
 
 /**
  * Creates a [LetterboxLifecycleEvent] from the information in a [Change].
@@ -81,7 +89,7 @@ fun Change.toLetterboxLifecycleEvent(): LetterboxLifecycleEvent {
         taskId = taskInfo?.taskId ?: -1,
         taskBounds = taskBounds,
         letterboxBounds = letterboxBounds,
-        letterboxActivityToken = taskInfo?.token,
-        letterboxActivityLeash = leash
+        containerToken = taskInfo?.token,
+        leash = leash
     )
 }

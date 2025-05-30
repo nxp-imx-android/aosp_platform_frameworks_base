@@ -16,6 +16,9 @@
 
 package com.android.wm.shell.util
 
+import android.app.ActivityManager.RunningTaskInfo
+import android.graphics.Point
+import android.graphics.Rect
 import android.view.SurfaceControl
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerToken
@@ -35,13 +38,16 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
 
     // TODO(b/419766870): Implement TestInputBuilder for main objects in input on tests.
     private val inputParams = InputParams()
+    var endAbsBounds: Rect? = null
+    var endRelOffset: Point? = null
 
     data class InputParams(
         var token: WindowContainerToken = mock<WindowContainerToken>(),
-        var leash: SurfaceControl = mock<SurfaceControl>()
+        var leash: SurfaceControl = mock<SurfaceControl>(),
+        var taskInfo: RunningTaskInfo? = null
     )
 
-    fun binder(
+    fun token(
         builder: WindowContainerTokenTestInputBuilder.() -> WindowContainerToken
     ): WindowContainerToken {
         val binderObj = WindowContainerTokenTestInputBuilder()
@@ -57,11 +63,30 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
         }
     }
 
-    override fun build(): Change { // 6
+    fun runningTaskInfo(
+        builder: RunningTaskInfoTestInputBuilder.(RunningTaskInfo) -> Unit
+    ): RunningTaskInfo {
+        val runningTaskInfoObj = RunningTaskInfoTestInputBuilder()
+        return RunningTaskInfo().also {
+            runningTaskInfoObj.builder(it)
+        }.apply {
+            inputParams.taskInfo = this
+        }
+    }
+
+    override fun build(): Change {
         return Change(
             inputParams.token,
             inputParams.leash
-        )
+        ).apply {
+            taskInfo = inputParams.taskInfo
+            this@ChangeTestInputBuilder.endAbsBounds?.let {
+                this@apply.endAbsBounds.set(endAbsBounds)
+            }
+            this@ChangeTestInputBuilder.endRelOffset?.let {
+                this@apply.endRelOffset.set(endRelOffset)
+            }
+        }
     }
 }
 
@@ -70,3 +95,6 @@ class WindowContainerTokenTestInputBuilder
 
 // [TestInputBuilder] for a [SurfaceControl]
 class SurfaceControlTestInputBuilder
+
+// This should create the [RunningTaskInfo] to use in the test.
+class RunningTaskInfoTestInputBuilder
