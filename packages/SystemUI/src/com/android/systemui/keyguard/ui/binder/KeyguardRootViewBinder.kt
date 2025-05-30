@@ -379,12 +379,25 @@ object KeyguardRootViewBinder {
                 )
             )
 
+        // Ensure the view reflects the final state after items are added.
+        fun onViewAdded(id: Int, view: View) {
+            when (id) {
+                aodPromotedNotificationId ->
+                    view.setAodPromotedNotifIsVisible(viewModel.isAodPromotedNotifVisible.value)
+                aodNotificationIconContainerId ->
+                    view.setAodNotifIconContainerIsVisible(
+                        viewModel.isNotifIconContainerVisible.value
+                    )
+            }
+        }
+
         // Views will be added or removed after the call to bind(). This is needed to avoid many
         // calls to findViewById
         view.setOnHierarchyChangeListener(
             object : OnHierarchyChangeListener {
                 override fun onChildViewAdded(parent: View, child: View) {
                     childViews.put(child.id, child)
+                    onViewAdded(child.id, child)
                 }
 
                 override fun onChildViewRemoved(parent: View, child: View) {
