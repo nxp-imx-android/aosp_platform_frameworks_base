@@ -16,7 +16,10 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -81,12 +83,17 @@ fun NavBarPill(
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
     var expandedSize by remember { mutableStateOf(IntSize.Zero) }
+    val visibleState = remember { MutableTransitionState(false) }
+    visibleState.targetState = visible
+
+    val transition = rememberTransition(visibleState)
     val enterProgress by
-        animateFloatAsState(
-            if (visible) 1f else 0f,
-            animationSpec = tween(250, delayMillis = 200),
+        transition.animateFloat(
+            transitionSpec = { tween(250, delayMillis = 200) },
             label = "enter",
-        )
+        ) {
+            if (it) 1f else 0f
+        }
     val expansionAlpha by
         animateFloatAsState(
             if (expanded) 0f else 1f,
