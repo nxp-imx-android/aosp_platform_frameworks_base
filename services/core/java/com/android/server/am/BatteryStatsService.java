@@ -1805,7 +1805,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 if (DBG) Slog.d(TAG, "end noteScreenState");
             });
         }
-        FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
     }
 
     @Override
@@ -1823,7 +1822,6 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                 }
             });
         }
-        FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_BRIGHTNESS_CHANGED, brightness);
     }
 
     @Override

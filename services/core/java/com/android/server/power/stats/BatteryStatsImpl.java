@@ -1212,6 +1212,10 @@ public class BatteryStatsImpl extends BatteryStats {
          */
         public int screenBrightnessBin = -1;
         /**
+         * Per display screen brightness.
+         */
+        public int screenBrightness = -1;
+        /**
          * Per display screen brightness timers.
          */
         public StopwatchTimer[] screenBrightnessTimers =
@@ -5644,6 +5648,7 @@ public class BatteryStatsImpl extends BatteryStats {
                     state = Display.STATE_OFF;
                 }
             }
+            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
         }
 
         final boolean batteryRunning = mOnBatteryTimeBase.isRunning();
@@ -5759,7 +5764,6 @@ public class BatteryStatsImpl extends BatteryStats {
         else if (bin >= NUM_SCREEN_BRIGHTNESS_BINS) bin = NUM_SCREEN_BRIGHTNESS_BINS-1;
 
         final int overallBin;
-
         final int numDisplays = mPerDisplayBatteryStats.length;
         if (display < 0 || display >= numDisplays) {
             Slog.wtf(TAG, "Unexpected note screen brightness for display " + display + " (only "
@@ -5784,8 +5788,33 @@ public class BatteryStatsImpl extends BatteryStats {
             }
             overallBin = evaluateOverallScreenBrightnessBinLocked();
         }
-
         maybeUpdateOverallScreenBrightness(overallBin, elapsedRealtimeMs, uptimeMs);
+
+        // Calulcating overall brightness among all display
+        final int oldBrightness = displayStats.screenBrightness;
+        if (brightness != oldBrightness) {
+            displayStats.screenBrightness = brightness;
+            int overallBrightness = evaluateOverallScreenBrightnessLocked();
+            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_BRIGHTNESS_CHANGED, overallBrightness);
+        }
+    }
+
+    @GuardedBy("this")
+    private int evaluateOverallScreenBrightnessLocked() {
+        int overallBrightness = -1;
+        final int numDisplays = getDisplayCount();
+        for (int display = 0; display < numDisplays; display++) {
+            final int displayBrightness;
+            if (mPerDisplayBatteryStats[display].screenState == Display.STATE_ON) {
+                displayBrightness = mPerDisplayBatteryStats[display].screenBrightness;
+            } else {
+                displayBrightness = -1;
+            }
+            if (displayBrightness > overallBrightness) {
+                overallBrightness = displayBrightness;
+            }
+        }
+        return overallBrightness;
     }
 
     @GuardedBy("this")
