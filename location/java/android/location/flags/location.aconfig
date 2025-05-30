@@ -187,3 +187,11 @@ flag {
     description: "Adds missing attribution tags in the Fused and Gnss overlay"
     bug: "403337028"
 }
+
+
+flag {
+    name: "location_indicators_enabled"
+    namespace: "location"
+    description: "Enables modified location privacy item behavior"
+    bug: "419834493"
+}
