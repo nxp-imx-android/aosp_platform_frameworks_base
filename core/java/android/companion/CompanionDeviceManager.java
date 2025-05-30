@@ -266,7 +266,7 @@ public final class CompanionDeviceManager {
      *
      * @hide
      */
-    public static final int MESSAGE_TASK_CONTINUITY = 0x63678884; // ?TSK
+    public static final int MESSAGE_ONEWAY_TASK_CONTINUITY = 0x43678884; // +TSK
     /**
      * Message header assigned to the permission restore request.
      *

@@ -16,7 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
@@ -171,7 +171,7 @@ class TaskBroadcaster
                 .build();
 
         mCompanionDeviceManager.sendMessage(
-            CompanionDeviceManager.MESSAGE_TASK_CONTINUITY,
+            CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
             message.toBytes(),
             new int[] {associationId});
     }

@@ -23,6 +23,7 @@ import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_CONTEXT_S
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PERMISSION_RESTORE;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PING;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_REMOTE_AUTHENTICATION;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.annotation.NonNull;
 import android.companion.IOnMessageReceivedListener;
@@ -243,7 +244,8 @@ public abstract class Transport {
         switch (message) {
             case MESSAGE_ONEWAY_PING:
             case MESSAGE_ONEWAY_FROM_WEARABLE:
-            case MESSAGE_ONEWAY_TO_WEARABLE: {
+            case MESSAGE_ONEWAY_TO_WEARABLE:
+            case MESSAGE_ONEWAY_TASK_CONTINUITY: {
                 callback(message, data);
                 break;
             }
