@@ -27,6 +27,7 @@ import static android.app.ActivityManagerInternal.ALLOW_NON_FULL_IN_PROFILE;
 import static android.app.ActivityManagerInternal.ALLOW_PROFILES_OR_NON_FULL;
 import static android.app.KeyguardManager.LOCK_ON_USER_SWITCH_CALLBACK;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
 import static android.testing.DexmakerShareClassLoaderRule.runWithDexmakerShareClassLoader;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
@@ -152,13 +153,13 @@ import java.util.stream.Stream;
 @Presubmit
 public class UserControllerTest {
     // Use big enough user id to avoid picking up already active user id.
-    private static final int TEST_USER_ID = 100;
+    private static final int TEST_USER_ID = 100; // This user is uniquely pre-setup in setUp()
     private static final int TEST_USER_ID1 = 101;
     private static final int TEST_USER_ID2 = 102;
     private static final int TEST_USER_ID3 = 103;
     private static final int SYSTEM_USER_ID = UserHandle.SYSTEM.getIdentifier();
     private static final int NONEXIST_USER_ID = 2;
-    private static final int TEST_PRE_CREATED_USER_ID = 103;
+    private static final int TEST_PRE_CREATED_USER_ID = 103; // This user is pre-setup in setUp()
 
     private static final int DEFAULT_USER_FLAGS = UserInfo.FLAG_FULL;
 
@@ -254,6 +255,10 @@ public class UserControllerTest {
 
     @Test
     public void testStartUser_background() {
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
         boolean started = mUserController.startUser(TEST_USER_ID, USER_START_MODE_BACKGROUND);
         assertWithMessage("startUser(%s, foreground=false)", TEST_USER_ID).that(started).isTrue();
         verify(mInjector, never()).showUserSwitchingDialog(
@@ -266,9 +271,13 @@ public class UserControllerTest {
 
     @Test
     public void testStartUser_background_duringBootHsum() {
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
         mockIsHeadlessSystemUserMode(true);
         mUserController.setAllowUserUnlocking(false);
         mInjector.mRelevantUser = TEST_USER_ID;
+
         boolean started = mUserController.startUser(TEST_USER_ID, USER_START_MODE_BACKGROUND);
         assertWithMessage("startUser(%s, foreground=false)", TEST_USER_ID).that(started).isTrue();
 
@@ -322,6 +331,10 @@ public class UserControllerTest {
 
     @Test
     public void testStartUserVisibleOnDisplay() {
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
         boolean started = mUserController.startUserVisibleOnDisplay(TEST_USER_ID, 42,
                 /* unlockProgressListener= */ null);
 
@@ -361,6 +374,10 @@ public class UserControllerTest {
 
     @Test
     public void testStartPreCreatedUser_background() throws Exception {
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
         assertTrue(mUserController.startUser(TEST_PRE_CREATED_USER_ID, USER_START_MODE_BACKGROUND));
         // Make sure no intents have been fired for pre-created users.
         assertTrue(mInjector.mSentIntents.isEmpty());
@@ -707,7 +724,7 @@ public class UserControllerTest {
         // and one profile (which should not).
         setUpAndStartUserInBackground(TEST_USER_ID);
         setUpAndStartUserInBackground(TEST_USER_ID1);
-        setUpAndStartProfileInBackground(TEST_USER_ID2, UserManager.USER_TYPE_PROFILE_MANAGED);
+        setUpAndStartProfileInBackground(TEST_USER_ID2, USER_TYPE_PROFILE_MANAGED);
 
         assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1, TEST_USER_ID2);
 
@@ -1121,6 +1138,232 @@ public class UserControllerTest {
                 .lockCeStorage(TEST_USER_ID);
     }
 
+    /** Tests that we stop excess users when starting a background user. */
+    @Test
+    public void testStoppingExcessRunningUsers_onBackgroundStart() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        setUpUser(TEST_USER_ID1, 0);
+        setUpUser(TEST_USER_ID2, 0);
+
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
+
+        mUserController.startUser(TEST_USER_ID1, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(TEST_USER_ID1, SYSTEM_USER_ID);
+
+        // Start a user in the background. This exceeds max. Make sure we cut down to 2 users.
+        mUserController.startUser(TEST_USER_ID2, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(TEST_USER_ID2, SYSTEM_USER_ID);
+    }
+
+    /** Tests that we stop excess users when starting a profile. */
+    @Test
+    public void testStoppingExcessRunningUsers_onProfileStart() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        setUpUser(TEST_USER_ID1, 0);
+        setUpUser(TEST_USER_ID2, UserInfo.FLAG_PROFILE);
+
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
+
+        mUserController.startUser(TEST_USER_ID1, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(TEST_USER_ID1, SYSTEM_USER_ID);
+
+        // Start a profile. This exceeds max. Make sure we cut down to 2 users.
+        assertThat(mUserController.startProfile(TEST_USER_ID2, true, null)).isTrue();
+        assertRunningUsersInOrder(TEST_USER_ID2, SYSTEM_USER_ID);
+    }
+
+    /** Tests that we stop excess users when starting a foreground user. */
+    @Test
+    public void testStoppingExcessRunningUsers_onForegroundStart() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        setUpUser(TEST_USER_ID1, 0);
+        setUpUser(TEST_USER_ID2, 0);
+
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
+
+        mUserController.startUser(TEST_USER_ID1, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(TEST_USER_ID1, SYSTEM_USER_ID);
+
+        // Start a user in the foreground. This exceeds max. Make sure we cut down to 2 users.
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID2, UserHandle.USER_SYSTEM,
+                1, false, false);
+        mUserController.finishUserSwitch(mUserStates.get(TEST_USER_ID2));
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID2);
+    }
+
+    /**
+     * Tests that (per current policy) we don't stop excess users when temporarily starting a
+     * background user.
+     */
+    @Test
+    public void testStoppingExcessRunningUsers_notOnTempBackgroundStart() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        setUpUser(TEST_USER_ID1, 0);
+        setUpUser(TEST_USER_ID2, 0);
+
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
+
+        mUserController.startUser(TEST_USER_ID1, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(TEST_USER_ID1, SYSTEM_USER_ID);
+
+        // Start a user temporarily in the background. This exceeds max. But our current policy is
+        // to allow exceeding max since it's only temporary.
+        mUserController.startUserInBackgroundTemporarily(TEST_USER_ID2, 50);
+        assertRunningUsersInOrder(TEST_USER_ID1, TEST_USER_ID2, SYSTEM_USER_ID);
+    }
+
+    /** Tests that starting a background user won't just automatically stop that same user if it
+     * wound up exceeding maxRunningUsers.
+      */
+    @Test
+    public void testStoppingExcessRunningUsers_doNotStopTheUserBeingStarted() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 2, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        setUpUser(TEST_USER_ID1, 0); // Foreground user
+        setUpUser(TEST_USER_ID2, 0); // First background user
+        setUpUser(TEST_USER_ID3, 0); // Second background user
+
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
+
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID1, UserHandle.USER_SYSTEM,
+                1, false, false);
+        mUserController.finishUserSwitch(mUserStates.get(TEST_USER_ID1));
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID1);
+
+        // Start TEST_USER_ID2 in background. Make sure we don't stop the user we just explicitly
+        // started, even though it leaves us exceeding max.
+        mUserController.startUser(TEST_USER_ID2, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID2, TEST_USER_ID1);
+
+        // Start TEST_USER_ID3 in background. Make sure we don't stop the user we just explicitly
+        // started, even though it leaves us exceeding max. But still stop the old TEST_USER_ID2.
+        mUserController.startUser(TEST_USER_ID3, USER_START_MODE_BACKGROUND);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID3, TEST_USER_ID1);
+    }
+
+    /**
+     * Tests that manually starting the current user's profiles can exceed maxRunningUsers,
+     * even though unrelated background users will be stopped.
+     */
+    @Test
+    public void testStoppingExcessRunningUsers_currentProfilesCanExceed_manual() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        final int PARENT_ID = 300;
+        final int PROFILE1_ID = 301;
+        final int PROFILE2_ID = 302;
+        final int BG_USER_ID = 400;
+
+        // These profiles are not specifically set up to start with parent.
+        UserInfo parent = setUpUser(PARENT_ID, 0);
+        UserInfo profile1 = setUpUser(PROFILE1_ID,
+                UserInfo.FLAG_PROFILE,
+                false, null);
+        UserInfo profile2 = setUpUser(PROFILE2_ID,
+                UserInfo.FLAG_PROFILE,
+                false, null);
+        UserInfo bgUser = setUpUser(BG_USER_ID, 0);
+
+        parent.profileGroupId = profile1.profileGroupId = profile2.profileGroupId = PARENT_ID;
+        bgUser.profileGroupId = UserInfo.NO_PROFILE_GROUP_ID;
+        mUserController.onSystemReady(); // To set the profileGroupIds in UserController.
+        when(mInjector.mUserManagerMock.getProfiles(eq(PARENT_ID), anyBoolean()))
+                .thenReturn(Arrays.asList(parent, profile1, profile2));
+
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID);
+
+        // Start BG_USER_ID
+        mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
+        assertRunningUsersIgnoreOrder(BG_USER_ID, SYSTEM_USER_ID);
+
+        // Start PARENT_ID
+        addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM, 1, false, false);
+        // We call startProfiles(), but the profiles were configured to not auto-start.
+        mUserController.finishUserSwitch(mUserStates.get(PARENT_ID)); // Calls startProfiles()
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        assertRunningUsersIgnoreOrder(BG_USER_ID, SYSTEM_USER_ID, PARENT_ID);
+
+        // Start PROFILE1_ID. This exceeds max, so BG_USER_ID should be stopped.
+        mUserController.startProfile(PROFILE1_ID, true, null);
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID);
+
+        // Start PROFILE2_ID. This exceeds max, but they are current user profiles, so no stopping.
+        mUserController.startProfile(PROFILE2_ID, true, null);
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PROFILE2_ID, PARENT_ID);
+    }
+
+    /**
+     * Tests that {@link UserController#startProfiles()} (called upon switching users) can exceed
+     * maxRunningUsers, even though unrelated background users will be stopped.
+     */
+    @Test
+    public void testStoppingExcessRunningUsers_currentProfilesCanExceed_auto() throws Exception {
+        mSetFlagsRule.enableFlags(android.multiuser.Flags.FLAG_STOP_EXCESS_FOR_BACKGROUND_STARTS);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        final int PARENT_ID = 300;
+        final int PROFILE1_ID = 301;
+        final int PROFILE2_ID = 302;
+        final int BG_USER_ID = 400;
+
+        // These profiles are managed and initialized, so they start automatically via startProfiles
+        UserInfo parent = setUpUser(PARENT_ID, 0);
+        UserInfo profile1 = setUpUser(PROFILE1_ID,
+                UserInfo.FLAG_PROFILE | UserInfo.FLAG_INITIALIZED,
+                false, USER_TYPE_PROFILE_MANAGED);
+        UserInfo profile2 = setUpUser(PROFILE2_ID,
+                UserInfo.FLAG_PROFILE | UserInfo.FLAG_INITIALIZED,
+                false, USER_TYPE_PROFILE_MANAGED);
+        UserInfo bgUser = setUpUser(BG_USER_ID, 0);
+
+        parent.profileGroupId = profile1.profileGroupId = profile2.profileGroupId = PARENT_ID;
+        bgUser.profileGroupId = UserInfo.NO_PROFILE_GROUP_ID;
+        mUserController.onSystemReady(); // To set the profileGroupIds in UserController.
+        when(mInjector.mUserManagerMock.getProfiles(eq(PARENT_ID), anyBoolean()))
+                .thenReturn(Arrays.asList(parent, profile1, profile2));
+
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID);
+
+        // Start BG_USER_ID
+        mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
+        assertRunningUsersIgnoreOrder(BG_USER_ID, SYSTEM_USER_ID);
+
+        // Start PARENT_ID
+        addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM, 1, false, false);
+        // We call startProfiles(), which auto-starts the profiles.
+        mUserController.finishUserSwitch(mUserStates.get(PARENT_ID)); // Calls startProfiles()
+        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+
+        // Exceeding max should stop BG_USER_ID, but not prevent the profiles from starting.
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PROFILE2_ID, PARENT_ID);
+    }
+
     /**
      * Test that, when exceeding the maximum number of running users, a profile of the current user
      * is not stopped.
@@ -1138,6 +1381,8 @@ public class UserControllerTest {
         final int FG_USER_ID = 300;
         final int BG_USER_ID = 400;
 
+        // The profiles here do not automatically start when their parent starts since they're not
+        // set to shouldStartWithParent (and also because they're not initialized).
         setUpUser(PARENT_ID, 0).profileGroupId = PARENT_ID;
         setUpUser(PROFILE1_ID, UserInfo.FLAG_PROFILE).profileGroupId = PARENT_ID;
         setUpUser(PROFILE2_ID, UserInfo.FLAG_PROFILE).profileGroupId = PARENT_ID;
@@ -1145,7 +1390,7 @@ public class UserControllerTest {
         setUpUser(BG_USER_ID, 0).profileGroupId = UserInfo.NO_PROFILE_GROUP_ID;
         mUserController.onSystemReady(); // To set the profileGroupIds in UserController.
 
-        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID);
+        assertRunningUsersInOrder(SYSTEM_USER_ID);
 
         int numberOfUserSwitches = 1;
         addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM,
@@ -1153,10 +1398,10 @@ public class UserControllerTest {
         mUserController.finishUserSwitch(mUserStates.get(PARENT_ID));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
         assertTrue(mUserController.canStartMoreUsers());
-        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PARENT_ID);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PARENT_ID);
 
         assertThat(mUserController.startProfile(PROFILE1_ID, true, null)).isTrue();
-        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID);
 
         numberOfUserSwitches++;
         addForegroundUserAndContinueUserSwitch(FG_USER_ID, PARENT_ID,
@@ -1164,21 +1409,18 @@ public class UserControllerTest {
         mUserController.finishUserSwitch(mUserStates.get(FG_USER_ID));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
         assertTrue(mUserController.canStartMoreUsers());
-        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, FG_USER_ID);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, FG_USER_ID);
 
         mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
-        assertRunningUsersIgnoreOrder(
+        assertRunningUsersInOrder(
                 SYSTEM_USER_ID, PROFILE1_ID, PARENT_ID, BG_USER_ID, FG_USER_ID);
 
-        // Now we exceed the maxRunningUsers parameter (of 5):
-        assertThat(mUserController.startProfile(PROFILE2_ID, true, null)).isTrue();
-        // Currently, starting a profile doesn't trigger evaluating whether we've exceeded max, so
-        // we expect no users to be stopped. This policy may change in the future. Log but no fail.
-        if (!newHashSet(SYSTEM_USER_ID, PROFILE1_ID, BG_USER_ID, PROFILE2_ID, PARENT_ID, FG_USER_ID)
-                .equals(new HashSet<>(mUserController.getRunningUsersLU()))) {
-            Log.w(TAG, "Starting a profile that exceeded max running users didn't lead to "
-                    + "expectations: " + mUserController.getRunningUsersLU());
-        }
+        // Now we exceed the maxRunningUsers parameter (of 5) but in a way that purposefully won't
+        // trigger stopExcessRunningUsers. We'll use a temporary background stop for this purpose.
+        // If that policy changes, choose some other way of starting without stopExcessRunningUsers.
+        mUserController.startUserInBackgroundTemporarily(PROFILE2_ID, 2);
+        assertRunningUsersInOrder(
+                SYSTEM_USER_ID, PROFILE1_ID, BG_USER_ID, PROFILE2_ID, PARENT_ID, FG_USER_ID);
 
         numberOfUserSwitches++;
         addForegroundUserAndContinueUserSwitch(PARENT_ID, FG_USER_ID,
@@ -1189,8 +1431,7 @@ public class UserControllerTest {
         // users. The oldest background user should be stopped (BG_USER); even though PROFILE1 was
         // older, it should not be stopped since it's a profile of the (new) current user.
         assertFalse(mUserController.canStartMoreUsers());
-        assertRunningUsersIgnoreOrder(
-                SYSTEM_USER_ID, PROFILE1_ID, PROFILE2_ID, FG_USER_ID, PARENT_ID);
+        assertRunningUsersInOrder(SYSTEM_USER_ID, PROFILE1_ID, PROFILE2_ID, FG_USER_ID, PARENT_ID);
     }
 
     @Test
@@ -1493,7 +1734,7 @@ public class UserControllerTest {
     @Test
     public void testStartProfile_disabledProfileFails() {
         setUpUser(TEST_USER_ID1, UserInfo.FLAG_PROFILE | UserInfo.FLAG_DISABLED, /* preCreated= */
-                false, UserManager.USER_TYPE_PROFILE_MANAGED);
+                false, USER_TYPE_PROFILE_MANAGED);
         assertThat(mUserController.startProfile(TEST_USER_ID1, /* evenWhenDisabled=*/ false,
                 /* unlockListener= */ null)).isFalse();
 
@@ -1502,7 +1743,11 @@ public class UserControllerTest {
 
     @Test
     public void testStartManagedProfile() throws Exception {
-        setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_MANAGED);
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
+
+        setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
 
         startBackgroundUserAssertions();
         verifyUserAssignedToDisplay(TEST_USER_ID1, Display.DEFAULT_DISPLAY);
@@ -1510,9 +1755,12 @@ public class UserControllerTest {
 
     @Test
     public void testStartManagedProfile_whenUsersOnSecondaryDisplaysIsEnabled() throws Exception {
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
         mockIsUsersOnSecondaryDisplaysEnabled(true);
 
-        setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_MANAGED);
+        setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
 
         startBackgroundUserAssertions();
         verifyUserAssignedToDisplay(TEST_USER_ID1, Display.DEFAULT_DISPLAY);
@@ -1520,14 +1768,14 @@ public class UserControllerTest {
 
     @Test
     public void testStopManagedProfile() throws Exception {
-        setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_MANAGED);
+        setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
         assertProfileLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* expectLocking= */ true);
         verifyUserUnassignedFromDisplay(TEST_USER_ID1);
     }
 
     @Test
     public void testStopPrivateProfile() throws Exception {
-        mUserController.setInitialConfig(/* mUserSwitchUiEnabled */ true,
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */ -1);
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
@@ -1546,7 +1794,7 @@ public class UserControllerTest {
 
     @Test
     public void testStopPrivateProfileWithDelayedLocking() throws Exception {
-        mUserController.setInitialConfig(/* mUserSwitchUiEnabled */ true,
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */ -1);
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
@@ -1559,7 +1807,7 @@ public class UserControllerTest {
 
     @Test
     public void testStopPrivateProfileWithDelayedLocking_flagDisabled() throws Exception {
-        mUserController.setInitialConfig(/* mUserSwitchUiEnabled */ true,
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */ -1);
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
@@ -1590,14 +1838,14 @@ public class UserControllerTest {
     @Test
     public void testStopPrivateProfileWithDelayedLocking_imperviousToNumberOfRunningUsers()
             throws Exception {
-        mUserController.setInitialConfig(/* mUserSwitchUiEnabled */ true,
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 1, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */ -1);
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
                 android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE,
                 android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
         setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_PRIVATE);
-        setUpAndStartProfileInBackground(TEST_USER_ID2, UserManager.USER_TYPE_PROFILE_MANAGED);
+        setUpAndStartProfileInBackground(TEST_USER_ID2, USER_TYPE_PROFILE_MANAGED);
         assertUserLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* allowDelayedLocking= */ true,
                 /* keyEvictedCallback */ null, /* expectLocking= */ false);
     }
@@ -1608,13 +1856,13 @@ public class UserControllerTest {
     */
     @Test
     public void testStopManagedProfileWithDelayedLocking() throws Exception {
-        mUserController.setInitialConfig(/* mUserSwitchUiEnabled */ true,
+        mUserController.setInitialConfig(/* mUserSwitchUiEnabled= */ true,
                 /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
                 /* backgroundUserScheduledStopTimeSecs= */ -1);
         mSetFlagsRule.enableFlags(android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE,
                 android.multiuser.Flags.FLAG_ENABLE_BIOMETRICS_TO_UNLOCK_PRIVATE_SPACE,
                 android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES);
-        setUpAndStartProfileInBackground(TEST_USER_ID1, UserManager.USER_TYPE_PROFILE_MANAGED);
+        setUpAndStartProfileInBackground(TEST_USER_ID1, USER_TYPE_PROFILE_MANAGED);
         assertUserLockedOrUnlockedAfterStopping(TEST_USER_ID1, /* allowDelayedLocking= */ true,
                 /* keyEvictedCallback */ null, /* expectLocking= */ true);
     }
