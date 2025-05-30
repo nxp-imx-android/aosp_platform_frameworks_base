@@ -568,7 +568,9 @@ class SyntheticPasswordManager {
         }
     }
 
-    private @Nullable IWeaver getWeaverAidlService() {
+    @VisibleForTesting
+    @Nullable
+    protected IWeaver getWeaverAidlService() {
         final IWeaver aidlWeaver;
         try {
             aidlWeaver =
