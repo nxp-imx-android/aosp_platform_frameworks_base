@@ -78,8 +78,9 @@ internal constructor(
         // very first notification if it's not a child of grouped notifications and when
         // mAutoExpandFirstNotification is true.
         controller.setSystemExpanded(
-            mAlwaysExpandNonGroupedNotification ||
-                (mAutoExpandFirstNotification && entry == entryToExpand)
+            !entry.isBundled &&
+                (mAlwaysExpandNonGroupedNotification ||
+                    (mAutoExpandFirstNotification && entry == entryToExpand))
         )
         // Show/hide the feedback icon
         controller.setFeedbackIcon(mAssistantFeedbackController.getFeedbackIcon(entry.ranking))
