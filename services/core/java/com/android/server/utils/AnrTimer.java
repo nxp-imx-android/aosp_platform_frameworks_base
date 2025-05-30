@@ -18,13 +18,14 @@ package com.android.server.utils;
 
 import static android.text.TextUtils.formatSimple;
 
+import static java.util.Comparator.comparingInt;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.os.Trace;
-import android.text.TextUtils;
 import android.text.format.TimeMigrationUtils;
 import android.util.ArrayMap;
 import android.util.CloseGuard;
@@ -39,12 +40,14 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.TimeoutRecord;
 import com.android.internal.util.RingBuffer;
 
-import java.lang.ref.WeakReference;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.SortedSet;
+import java.util.StringJoiner;
+import java.util.TreeSet;
 
 /**
  * This class managers AnrTimers.  An AnrTimer is a substitute for a delayed Message.  In legacy
@@ -147,10 +150,27 @@ public class AnrTimer<V> implements AutoCloseable {
     private static final Injector sDefaultInjector = new Injector();
 
     /**
+     * Token for Long Method Tracing notifications.
+     * This token is used in early notifications to trigger long method tracing.
+     */
+    private static final int TOKEN_LONG_METHOD_TRACING = 0x4d54;
+
+    /** Minimum duration to trace long methods */
+    private static final int MIN_LMT_DURATION_MS = 1000;
+
+    /**
      * This class provides build-style arguments to an AnrTimer constructor.  This simplifies the
      * number of AnrTimer constructors needed, especially as new options are added.
      */
     public static class Args {
+
+        /** Represents a point in time (as percent of total) and an associated token. */
+        private record SplitPoint(int percent, int token) {}
+
+        /** Split point for long method tracing, at 50% elapsed time. */
+        private static final SplitPoint sLongMethodTracingPoint =
+                new SplitPoint(50, TOKEN_LONG_METHOD_TRACING);
+
         /** The Injector (used only for testing). */
         private Injector mInjector = AnrTimer.sDefaultInjector;
 
@@ -159,6 +179,19 @@ public class AnrTimer<V> implements AutoCloseable {
 
         /** Grant timer extensions when the system is heavily loaded. */
         private boolean mExtend = false;
+
+        /**
+         * All split points, each specifying a percent threshold and an associated token.
+         *
+         * This set is sorted by percent first so the collection is ordered the way we
+         * want, then token second so tow split points with the same percent do not collide.
+         *
+         * A TreeSet is used to maintain this sorted order, and the uniqueness of split points.
+         *
+         */
+        private final SortedSet<SplitPoint> mSplitPoints =
+                new TreeSet<>(comparingInt(SplitPoint::percent)
+                        .thenComparingInt(SplitPoint::token));
 
         // This is only used for testing, so it is limited to package visibility.
         Args injector(@NonNull Injector injector) {
@@ -175,6 +208,62 @@ public class AnrTimer<V> implements AutoCloseable {
             mExtend = flag;
             return this;
         }
+
+        /**
+         * Enables or disables long method tracing.
+         * When enabled, the timer will trigger long method tracing if it reaches 50%
+         * of its timeout duration.
+         *
+         * @param enabled {@code true} to enable long method tracing; {@code false} to disable it.
+         * @return this {@link Args} instance for chaining.
+         */
+        public Args longMethodTracing(boolean enabled) {
+            final int percent = 50;
+            if (enabled) {
+                mSplitPoints.add(sLongMethodTracingPoint);
+            } else {
+                mSplitPoints.remove(sLongMethodTracingPoint);
+            }
+            return this;
+
+        }
+
+        /**
+         * Extracts the percent values from all {@code SplitPoint} objects into an array.
+         * <p>
+         * This method creates an integer array containing the percent value
+         * from each {@code SplitPoint} in the same order they appear in the original list.
+         *
+         * @return A new {@code int[]} array of all percent values. Never returns null.
+         * @see SplitPoint#percent()
+         */
+        public int[] getSplitPercentArray() {
+            int[] percents = new int[mSplitPoints.size()];
+            int i = 0;
+            for (SplitPoint sp : mSplitPoints) {
+                percents[i++] = sp.percent();
+            }
+            return percents;
+        }
+
+        /**
+         * Extracts the token values from all {@code SplitPoint} objects into an array.
+         * <p>
+         * This method creates an integer array containing the token value
+         * from each {@code SplitPoint} in the same order they appear in the original list.
+         *
+         * @return A new {@code int[]} array of all token values. Never returns null.
+         * @see SplitPoint#token()
+         */
+        public int[] getSplitTokenArray() {
+            int[] tokens = new int[mSplitPoints.size()];
+            int i = 0;
+            for (SplitPoint sp : mSplitPoints) {
+                tokens[i++] = sp.token();
+            }
+            return tokens;
+        }
+
     }
 
     /**
@@ -384,30 +473,15 @@ public class AnrTimer<V> implements AutoCloseable {
     }
 
     /**
-     * Generate a trace point with full timer information.  The meaning of milliseconds depends on
-     * the caller.
+     * Emit a trace instant event with an arbitrary list of arguments.
+     * Arguments are comma-joined and wrapped in <code>op(...)</code>.
      */
-    private void trace(String op, int timerId, int pid, int uid, long milliseconds) {
-        final String label =
-                formatSimple("%s(%d,%d,%d,%s,%d)", op, timerId, pid, uid, mLabel, milliseconds);
-        Trace.instantForTrack(TRACE_TAG, TRACK, label);
-        if (DEBUG) Log.i(TAG, label);
-    }
+    private static void trace(String op, Object... args) {
+        StringJoiner joiner = new StringJoiner(",", op + "(", ")");
 
-    /**
-     * Generate a trace point with just the timer ID.
-     */
-    private void trace(String op, int timerId) {
-        final String label = formatSimple("%s(%d)", op, timerId);
-        Trace.instantForTrack(TRACE_TAG, TRACK, label);
-        if (DEBUG) Log.i(TAG, label);
-    }
+        for (Object arg : args) joiner.add(String.valueOf(arg));
 
-    /**
-     * Generate a trace point with a pid and uid but no timer ID.
-     */
-    private static void trace(String op, int pid, int uid) {
-        final String label = formatSimple("%s(%d,%d)", op, pid, uid);
+        final String label = joiner.toString();
         Trace.instantForTrack(TRACE_TAG, TRACK, label);
         if (DEBUG) Log.i(TAG, label);
     }
@@ -514,7 +588,8 @@ public class AnrTimer<V> implements AutoCloseable {
 
         /** Create the native AnrTimerService that will host all timers from this instance. */
         FeatureEnabled() {
-            mNative = nativeAnrTimerCreate(mLabel, mArgs.mExtend);
+            mNative = nativeAnrTimerCreate(mLabel, mArgs.mExtend, mArgs.getSplitPercentArray(),
+                    mArgs.getSplitTokenArray());
             if (mNative == 0) throw new IllegalArgumentException("unable to create native timer");
             synchronized (sAnrTimerList) {
                 sAnrTimerList.put(mNative, new WeakReference(AnrTimer.this));
@@ -753,7 +828,7 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     @Keep
     private boolean expire(int timerId, int pid, int uid, long elapsedMs) {
-        trace("expired", timerId, pid, uid, elapsedMs);
+        trace("expired", timerId, pid, uid, mLabel, elapsedMs);
         V arg = null;
         synchronized (mLock) {
             arg = mTimerArgMap.get(timerId);
@@ -767,6 +842,30 @@ public class AnrTimer<V> implements AutoCloseable {
         }
         mHandler.sendMessage(Message.obtain(mHandler, mWhat, arg));
         return true;
+    }
+
+    /**
+     * Called when a timer reaches an early notification split point.
+     * This allows for proactive actions before the timer fully expires.
+     *
+     * @param timerId the timer ID
+     * @param pid pid of the timed operation
+     * @param uid uid of the timed operation
+     * @param elapsedMs milliseconds elapsed since timer start
+     * @param token identifies the type of early notification
+     */
+    @Keep
+    private void notifyEarly(int timerId, int pid, int uid,
+                            long elapsedMs, int token) {
+        trace("notifyEarly", timerId, pid, uid, mLabel, elapsedMs, token);
+        switch(token) {
+            case TOKEN_LONG_METHOD_TRACING:
+                LongMethodTracer.trigger(pid,
+                        (int) Math.max(MIN_LMT_DURATION_MS, elapsedMs * 1.5));
+                break;
+            default:
+                Log.w(TAG, "Received a notification with an unknown token: " + token);
+        }
     }
 
     /**
@@ -931,7 +1030,8 @@ public class AnrTimer<V> implements AutoCloseable {
      * Unlike the other methods, this is an instance method: the "this" parameter is passed into
      * the native layer.
      */
-    private native long nativeAnrTimerCreate(String name, boolean extend);
+    private native long nativeAnrTimerCreate(String name, boolean extend,
+            int[] splitPercent, int[] splitToken);
 
     /** Release the native resources.  No further operations are premitted. */
     private static native int nativeAnrTimerClose(long service);

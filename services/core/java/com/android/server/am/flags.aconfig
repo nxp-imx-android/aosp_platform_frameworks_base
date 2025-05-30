@@ -279,3 +279,11 @@ flag {
     description: "Allow am to dump information and contents of bitmaps"
     bug: "369619160"
 }
+
+flag {
+    name: "enable_long_method_tracing_on_anr_timer"
+    namespace: "stability"
+    description: "Enable Long Method Tracing for ANR Timer"
+    bug: "419753987"
+    is_fixed_read_only: true
+}
