@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.resizing
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.ResizeAppCornerMultiWindowAndPip
+import com.android.wm.shell.scenarios.ResizeAppCornerMultiWindow
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [ResizeAppCornerMultiWindowAndPip]. */
+/* Functional test for [ResizeAppCornerMultiWindow]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class ResizeAppCornerMultiWindowAndPipTest : ResizeAppCornerMultiWindowAndPip()
+class ResizeAppCornerMultiWindowTest : ResizeAppCornerMultiWindow()

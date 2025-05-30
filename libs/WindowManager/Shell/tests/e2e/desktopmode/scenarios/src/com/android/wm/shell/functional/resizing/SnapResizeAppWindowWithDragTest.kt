@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.resizing
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.SnapResizeAppWindowWithButton
+import com.android.wm.shell.scenarios.SnapResizeAppWindowWithDrag
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [SnapResizeAppWindowWithButton]. */
+/* Functional test for [SnapResizeAppWindowWithDrag]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class SnapResizeAppWindowWithButtonTest : SnapResizeAppWindowWithButton()
+class SnapResizeAppWindowWithDragTest : SnapResizeAppWindowWithDrag()
