@@ -96,6 +96,7 @@ public class InputMethodManagerServiceTestBase {
                     TEST_FOCUSED_WINDOW_NAME,
                     TEST_FOCUSED_WINDOW_NAME,
                     TEST_FOCUSED_WINDOW_NAME,
+                    TEST_FOCUSED_WINDOW_NAME,
                     TEST_FOCUSED_WINDOW_NAME);
     protected static final InputBindResult SUCCESS_WAITING_IME_BINDING_RESULT =
             new InputBindResult(
