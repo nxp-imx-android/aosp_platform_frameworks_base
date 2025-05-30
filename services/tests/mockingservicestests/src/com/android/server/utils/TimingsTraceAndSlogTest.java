@@ -17,7 +17,6 @@ package com.android.server.utils;
 
 import static android.os.Trace.TRACE_TAG_APP;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -36,12 +35,11 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.dx.mockito.inline.extended.MockedVoidMethod;
+import com.android.modules.utils.testing.ExtendedMockitoRule;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.MockitoSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,24 +51,15 @@ import java.util.List;
  */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class TimingsTraceAndSlogTest {
+public final class TimingsTraceAndSlogTest {
 
     private static final String TAG = "TEST";
 
-    private MockitoSession mSession;
-
-    @Before
-    public final void startMockSession() {
-        mSession = mockitoSession()
+    @Rule
+    public final ExtendedMockitoRule extendedMockito = new ExtendedMockitoRule.Builder(this)
                 .spyStatic(Slog.class)
                 .spyStatic(Trace.class)
-                .startMocking();
-    }
-
-    @After
-    public final void finishMockSession() {
-        mSession.finishMocking();
-    }
+                .build();
 
     @Test
     public void testDifferentThreads() throws Exception {
@@ -135,6 +124,7 @@ public class TimingsTraceAndSlogTest {
 
         verify((MockedVoidMethod) () -> Trace.traceBegin(TRACE_TAG_APP, "test"));
         verify((MockedVoidMethod) () -> Trace.traceEnd(TRACE_TAG_APP));
+        verify((MockedVoidMethod) () -> Slog.d(TAG, "test"));
         verify((MockedVoidMethod) () -> Slog.v(eq(TAG), matches("test took to complete: \\dms")));
     }
 
@@ -150,6 +140,8 @@ public class TimingsTraceAndSlogTest {
         verify((MockedVoidMethod) () -> Trace.traceBegin(TRACE_TAG_APP, "L2"));
         verify((MockedVoidMethod) () -> Trace.traceEnd(TRACE_TAG_APP), times(2)); // L1 and L2
 
+        verify((MockedVoidMethod) () -> Slog.d(TAG, "L1"));
+        verify((MockedVoidMethod) () -> Slog.d(TAG, "L2"));
         verify((MockedVoidMethod) () -> Slog.v(eq(TAG), matches("L2 took to complete: \\d+ms")));
         verify((MockedVoidMethod) () -> Slog.v(eq(TAG), matches("L1 took to complete: \\d+ms")));
     }
