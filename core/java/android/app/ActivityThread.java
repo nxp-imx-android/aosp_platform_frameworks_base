@@ -7658,8 +7658,6 @@ public final class ActivityThread extends ClientTransactionHandler
         UtilConfig.setThrowExceptionForUpperArrayOutOfBounds(
                 data.appInfo.targetSdkVersion >= Build.VERSION_CODES.Q);
 
-        Message.updateCheckRecycle(data.appInfo.targetSdkVersion);
-
         // Supply the targetSdkVersion to the UI rendering module, which may
         // need it in cases where it does not have access to the appInfo.
         android.graphics.Compatibility.setTargetSdkVersion(data.appInfo.targetSdkVersion);
