@@ -61,6 +61,12 @@ class DropTargetManagerTest {
             bounds = RectZone(Rect(0, 0, 100, 100)),
             dropTarget = DropTargetRect(Rect(0, 0, 50, 200), cornerRadius = 30f)
         )
+    private val bubbleLeftDragZoneOnlySecondDropTarget =
+        DragZone.Bubble.Left(
+            bounds = RectZone(Rect(0, 0, 100, 100)),
+            dropTarget = null,
+            secondDropTarget = DropTargetRect(Rect(0, 250, 50, 300), cornerRadius = 25f)
+        )
     private val bubbleLeftDragZoneWithSecondDropTarget =
         DragZone.Bubble.Left(
             bounds = RectZone(Rect(0, 0, 100, 100)),
@@ -73,6 +79,12 @@ class DropTargetManagerTest {
         DragZone.Bubble.Right(
             bounds = RectZone(Rect(200, 0, 300, 100)),
             dropTarget = DropTargetRect(Rect(200, 0, 280, 150), cornerRadius = 30f)
+        )
+    private val bubbleRightDragZoneOnlySecondDropTarget =
+        DragZone.Bubble.Right(
+            bounds = RectZone(Rect(200, 0, 300, 100)),
+            dropTarget = null,
+            secondDropTarget = DropTargetRect(Rect(200, 200, 80, 280), cornerRadius = 25f)
         )
     private val bubbleRightDragZoneWithSecondDropTarget =
         DragZone.Bubble.Right(
@@ -321,7 +333,7 @@ class DropTargetManagerTest {
         }
 
         assertThat(dropTargetView.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleRightDragZone.dropTarget.rect)
+        verifyDropTargetPosition(bubbleRightDragZone.dropTarget!!.rect)
     }
 
     @Test
@@ -358,7 +370,7 @@ class DropTargetManagerTest {
         }
 
         assertThat(dropTargetView.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleRightDragZone.dropTarget.rect)
+        verifyDropTargetPosition(bubbleRightDragZone.dropTarget!!.rect)
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val dragZone = dropTargetManager.onDragUpdated(
@@ -370,7 +382,7 @@ class DropTargetManagerTest {
         }
 
         assertThat(dropTargetView.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleLeftDragZone.dropTarget.rect)
+        verifyDropTargetPosition(bubbleLeftDragZone.dropTarget!!.rect)
     }
 
     @Test
@@ -403,7 +415,7 @@ class DropTargetManagerTest {
     fun onDragUpdated_noZoneToZoneWithDropTargetView_listenerNotified() {
         val onDropAction = Runnable { }
         dropTargetManager.onDragStarted(
-            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true, onDropAction),
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = true, onDropAction = onDropAction),
             listOf(bubbleLeftDragZone, bubbleRightDragZone)
         )
 
@@ -441,7 +453,7 @@ class DropTargetManagerTest {
         assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT)
         assertThat(dropTargetView.alpha).isEqualTo(1)
         assertThat(secondDropTargetView).isNull()
-        verifyDropTargetPosition(bubbleLeftDragZone.dropTarget.rect)
+        verifyDropTargetPosition(bubbleLeftDragZone.dropTarget!!.rect)
     }
 
     @Test
@@ -460,13 +472,38 @@ class DropTargetManagerTest {
             animatorTestRule.advanceTimeBy(250)
         }
 
-        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
         assertThat(dropTargetView.alpha).isEqualTo(1)
         assertThat(secondDropTargetView!!.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleRightDragZoneWithSecondDropTarget.dropTarget.rect)
+        verifyDropTargetPosition(bubbleRightDragZoneWithSecondDropTarget.dropTarget!!.rect)
         verifyDropTargetPosition(
             secondDropTargetView!!,
             bubbleRightDragZoneWithSecondDropTarget.secondDropTarget!!.rect
+        )
+    }
+
+    @Test
+    fun onDragUpdated_noZoneToZoneWithOnlySecondDropTargetView_secondDropTargetShown() {
+        dropTargetManager.onDragStarted(
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
+            listOf(bubbleLeftDragZoneOnlySecondDropTarget, bubbleRightDragZoneOnlySecondDropTarget)
+        )
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val dragZone = dropTargetManager.onDragUpdated(
+                bubbleRightDragZoneOnlySecondDropTarget.bounds.rect.centerX(),
+                bubbleRightDragZoneOnlySecondDropTarget.bounds.rect.centerY()
+            )
+            assertThat(dragZone).isNotNull()
+            animatorTestRule.advanceTimeBy(250)
+        }
+
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
+        assertThat(dropTargetView.alpha).isEqualTo(0)
+        assertThat(secondDropTargetView!!.alpha).isEqualTo(1)
+        verifyDropTargetPosition(
+            secondDropTargetView!!,
+            bubbleRightDragZoneOnlySecondDropTarget.secondDropTarget!!.rect
         )
     }
 
@@ -478,14 +515,14 @@ class DropTargetManagerTest {
             DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
             listOf(bubbleLeftDragZoneWithSecondDropTarget, bubbleRightDragZoneWithSecondDropTarget)
         )
-        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
         dropTargetManager.onDropTargetRemoved(action)
         assertThat(runnableExecuted).isFalse()
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             dropTargetManager.onDragEnded()
         }
-        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
         assertThat(runnableExecuted).isFalse()
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -543,10 +580,10 @@ class DropTargetManagerTest {
             )
             animatorTestRule.advanceTimeBy(250)
         }
-        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON)
+        assertThat(container.childCount).isEqualTo(DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
         assertThat(dropTargetView.alpha).isEqualTo(1)
         assertThat(secondDropTargetView!!.alpha).isEqualTo(1)
-        verifyDropTargetPosition(bubbleRightDragZoneWithSecondDropTarget.dropTarget.rect)
+        verifyDropTargetPosition(bubbleRightDragZoneWithSecondDropTarget.dropTarget!!.rect)
         verifyDropTargetPosition(
             secondDropTargetView!!,
             bubbleRightDragZoneWithSecondDropTarget.secondDropTarget!!.rect
@@ -592,6 +629,6 @@ class DropTargetManagerTest {
 
     companion object {
         const val DROP_VIEWS_COUNT = 1
-        const val DROP_VIEWS_COUNT_FOR_LAUNCHER_ICON = 2
+        const val DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS = 2
     }
 }
