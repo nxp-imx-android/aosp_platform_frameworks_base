@@ -609,7 +609,7 @@ public interface ImeTracker {
             SystemProperties.addChangeCallback(this::reloadSystemProperties);
 
             if (android.tracing.Flags.imetrackerProtolog()) {
-                // TODO(b/410517697): Register ProtoLog groups
+                ProtoLog.registerLogGroupInProcess(IME_TRACKER);
             }
         }
 

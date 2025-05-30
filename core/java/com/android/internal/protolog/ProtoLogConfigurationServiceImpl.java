@@ -206,6 +206,12 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
         clientBinder.linkToDeath(this, /* flags= */ 0);
     }
 
+    @Override
+    public void registerGroups(@NonNull IProtoLogClient client, @NonNull RegisterGroupsArgs args)
+            throws RemoteException {
+        registerGroups(client, args.groups, args.groupsDefaultLogcatStatus);
+    }
+
     /**
      * Unregister the {@param client}.
      */
