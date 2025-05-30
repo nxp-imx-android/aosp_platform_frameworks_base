@@ -48,9 +48,17 @@ class WallpaperData {
     final int userId;
 
     /**
+     * Description of the static wallpaper in the process of being applied. This is set when
+     * starting the process of applying a static wallpaper and cleared after it's successfully done.
+     */
+    WallpaperDescription mPendingStaticDescription = null;
+
+    /**
      * True while the client is writing a new wallpaper
      */
-    boolean imageWallpaperPending;
+    boolean imageWallpaperPending() {
+        return mPendingStaticDescription != null;
+    }
 
     /**
      * Which wallpaper is set. Flag values are from {@link SetWallpaperFlags}.
