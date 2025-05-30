@@ -4471,6 +4471,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mWmService.dispatchImeInputTargetVisibilityChanged(targetWin.mClient.asBinder(),
                         targetWin.isVisible() /* visible */, false /* removed */, mDisplayId);
             }
+        } else if (mImeControlTarget != null && mImeControlTarget == mRemoteInsetsControlTarget) {
+            // TODO(b/421886264) Verify the case when the current display policy doesn't allow
+            //  showing the IME and use default display remoteInsetsControlTarget instead.
+            // The IME is not visible by definition of WindowInsets.Type.defaultVisible()
+            mImeControlTarget.setImeInputTargetRequestedVisibility(false /* visible */,
+                    null /* statsToken */);
         }
         if (refreshImeSecureFlag(getPendingTransaction())) {
             mWmService.requestTraversal();
