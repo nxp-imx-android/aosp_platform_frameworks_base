@@ -95,7 +95,6 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         shouldUseDragToDesktop: Boolean = false,
     ) {
         innerHelper.launchViaIntent(wmHelper)
-        if (isInDesktopWindowingMode(wmHelper)) return
         if (shouldUseDragToDesktop) {
             enterDesktopModeWithDrag(
                 wmHelper = wmHelper,
@@ -113,6 +112,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         device: UiDevice,
         motionEventHelper: MotionEventHelper = MotionEventHelper(getInstrumentation(), TOUCH)
     ) {
+        if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
+
         dragToDesktop(
             wmHelper = wmHelper,
             device = device,
@@ -547,6 +548,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     fun enterDesktopModeViaKeyboard(
         wmHelper: WindowManagerStateHelper,
     ) {
+        if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
+
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_DPAD_DOWN, META_META_ON or META_CTRL_ON)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
@@ -564,6 +567,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         wmHelper: WindowManagerStateHelper,
         device: UiDevice
     ) {
+        if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
+
         val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
         val startX = windowRect.centerX()
         // Click a little under the top to prevent opening the notification shade.
@@ -649,6 +654,9 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     // Requirement of DesktopWindowingMode is having a minimum of 1 app in WINDOWING_MODE_FREEFORM.
     private fun isInDesktopWindowingMode(wmHelper: WindowManagerStateHelper) =
         wmHelper.getWindow(innerHelper)?.windowingMode == WINDOWING_MODE_FREEFORM
+
+    private fun isAnyDesktopWindowVisible(wmHelper: WindowManagerStateHelper) =
+        wmHelper.currentState.wmState.hasFreeformWindow()
 
     private fun areSnapWindowRegionsMatchingWithinThreshold(
         surfaceRegion: Region, expectedRegion: Region, toLeft: Boolean

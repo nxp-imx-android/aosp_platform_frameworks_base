@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.NavBar
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.device.apphelpers.CalculatorAppHelper
@@ -33,11 +34,13 @@ import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions
 import com.android.window.flags.Flags
+import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Test Base Class")
@@ -59,6 +62,10 @@ abstract class OpenTrampolineAppInDesktopModeTaskLimit(val rotation: Rotation = 
         launcherName = ActivityOptions.TrampolineStartActivity.LABEL,
         component = ActivityOptions.TrampolineStartActivity.COMPONENT.toFlickerComponent()
     )
+
+    @Rule
+    @JvmField
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
 
     @Before
     fun setup() {
