@@ -1112,7 +1112,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     && startInfo != null
                     && startInfo.getStartType() == ApplicationStartInfo.START_TYPE_COLD
                     && startInfo.getPackageName() != null) {
-                ProfilingServiceHelper.getInstance().onProfilingTriggerOccurred(
+                sendProfilingTrigger(
                         startInfo.getRealUid(),
                         startInfo.getPackageName(),
                         ProfilingTrigger.TRIGGER_TYPE_APP_FULLY_DRAWN);
@@ -19671,11 +19671,16 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     /** Helper method for sending profiling triggers asynchronously. */
-    private void sendProfilingTrigger(int uid, @NonNull String packageName, int triggerType) {
+    public void sendProfilingTrigger(int uid, @NonNull String packageName, int triggerType) {
         mHandler.post(new Runnable() {
             @Override public void run() {
-                ProfilingServiceHelper.getInstance().onProfilingTriggerOccurred(
-                        uid, packageName, triggerType);
+                try {
+                    ProfilingServiceHelper.getInstance().onProfilingTriggerOccurred(
+                            uid, packageName, triggerType);
+                } catch (IllegalStateException e) {
+                    // Service isn't set up yet, do nothing, trigger will not be sent.
+                   Slog.d(TAG, "Profiling trigger not sent due to Service not running.", e);
+                }
             }
         });
     }
