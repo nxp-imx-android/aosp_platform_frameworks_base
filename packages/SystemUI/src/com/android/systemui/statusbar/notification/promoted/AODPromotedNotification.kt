@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
+import android.view.NotificationHeaderView
 import android.view.NotificationTopLineView
 import android.view.View
 import android.view.View.GONE
@@ -302,7 +303,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val time: DateTimeView? = root.findViewById(R.id.time)
     private val timeDivider: TextView? = root.findViewById(R.id.time_divider)
     private val title: TextView? = root.findViewById(R.id.title)
+    private val header: NotificationHeaderView? = root.findViewById(R.id.notification_header)
     private val topLine: NotificationTopLineView? = root.findViewById(R.id.notification_top_line)
+    private val actionsContainer: FrameLayout? = root.findViewById(R.id.actions_container)
     private val verificationDivider: TextView? = root.findViewById(R.id.verification_divider)
     private val verificationIcon: ImageView? = root.findViewById(R.id.verification_icon)
     private val verificationText: TextView? = root.findViewById(R.id.verification_text)
@@ -452,9 +455,18 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     ) {
         val hasTitle = titleView != null && content.title != null
         val hasSubText = content.subText != null
+        val hasText = content.text != null
+        val isSingleLine = !hasTitle && !hasText
+
         // the collapsed form doesn't show the app name unless there is no other text in the header
         val appNameRequired = !hasTitle && !hasSubText
         val hideAppName = (!appNameRequired && collapsed)
+
+        // We're only showing the top line (e.g. for redacted notifs), so center it
+        header?.centerTopLine(isSingleLine)
+        // We normally use the (empty) actions container for the bottom padding of the notification,
+        // but that's not necessary when single line
+        actionsContainer?.isVisible = !isSingleLine
 
         updateAppName(content, forceHide = hideAppName)
         updateTextView(headerTextSecondary, content.subText)
