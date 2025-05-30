@@ -6266,13 +6266,25 @@ public class Notification implements Parcelable
                 result = new TemplateBindResult();
             }
             bindLargeIcon(contentView, p, result);
-            if (!p.mHeaderless) {
-                // views in states with a header (big states)
-                result.mHeadingExtraMarginSet.applyToView(contentView, R.id.notification_header);
+            if (!p.mHeaderless) { // views in states with a header (expanded states)
+                if (mN.isPromotedOngoing()) {
+                    // When promoted, the expander is hidden but we need to include the notif margin
+                    result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_header);
+                } else {
+                    result.mHeadingExtraMarginSet.applyToView(contentView,
+                            R.id.notification_header);
+                }
                 result.mTitleMarginSet.applyToView(contentView, R.id.title);
                 // If there is no title, the text (or big_text) needs to wrap around the image
                 result.mTitleMarginSet.applyToView(contentView, p.mTextViewId);
                 contentView.setInt(p.mTextViewId, "setNumIndentLines", p.hasTitle() ? 0 : 1);
+            } else if (notificationsRedesignTemplates()) {
+                // In the collapsed view, the top line needs to accommodate both the expander and
+                // large icon (when present)
+                result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_top_line);
+                // The text underneath can flow below the expander, but only if there's no large
+                // icon to leave space for (similar to the title in the expanded version).
+                result.mTitleMarginSet.applyToView(contentView, R.id.notification_main_column);
             }
             // The expand button uses paddings rather than margins, so we'll adjust it
             // separately.
@@ -6299,6 +6311,10 @@ public class Notification implements Parcelable
                 @NonNull TemplateBindResult result) {
             final Resources resources = mContext.getResources();
             final float density = resources.getDisplayMetrics().density;
+            int notifMarginId = notificationsRedesignTemplates()
+                    ? R.dimen.notification_2025_margin
+                    : R.dimen.notification_content_margin;
+            final float notificationMarginDp = resources.getDimension(notifMarginId) / density;
             int iconMarginId = notificationsRedesignTemplates()
                     ? R.dimen.notification_2025_right_icon_content_margin
                     : R.dimen.notification_right_icon_content_margin;
@@ -6306,17 +6322,18 @@ public class Notification implements Parcelable
             final float contentMarginDp = resources.getDimension(
                     R.dimen.notification_content_margin_end) / density;
             float spaceForExpanderDp;
-            if (mN.isPromotedOngoing()) {
+            if (Flags.uiRichOngoing() && mN.isPromotedOngoing() && !mParams.mHeaderless) {
+                // No expander is shown in promoted notifications
                 spaceForExpanderDp = 0;
             } else {
-                final int expanderSizeRes;
                 if (notificationsRedesignTemplates()) {
-                    expanderSizeRes = R.dimen.notification_2025_right_icon_expanded_margin_end;
+                    spaceForExpanderDp = getLargeIconMarginEnd(mParams) / density
+                            - notificationMarginDp;
                 } else {
-                    expanderSizeRes =  R.dimen.notification_header_expand_icon_size;
+                    spaceForExpanderDp = resources.getDimension(
+                            R.dimen.notification_header_expand_icon_size) / density
+                            - contentMarginDp;
                 }
-                spaceForExpanderDp = resources.getDimension(
-                        expanderSizeRes) / density - contentMarginDp;
             }
 
             final float viewHeightDp = resources.getDimension(
@@ -6335,16 +6352,11 @@ public class Notification implements Parcelable
                     }
                 }
             }
+            result.setRightIconState(rightIcon != null /* visible */, viewWidthDp, viewHeightDp);
             // Margin needed for the header to accommodate the icon when shown
             final float extraMarginEndDpIfVisible = viewWidthDp + iconMarginDp;
-            result.setRightIconState(rightIcon != null /* visible */, viewWidthDp,
-                    viewHeightDp, extraMarginEndDpIfVisible, spaceForExpanderDp);
-
-            if (mN.isPromotedOngoing() && !mParams.mHeaderless) {
-                result.mHeadingExtraMarginSet.setValues(
-                        /* valueIfGone = */ contentMarginDp,
-                        /* valueIfVisible = */ extraMarginEndDpIfVisible + contentMarginDp);
-            }
+            result.calculateMargins(extraMarginEndDpIfVisible, spaceForExpanderDp,
+                    notificationMarginDp);
         }
 
         /**
@@ -6387,20 +6399,9 @@ public class Notification implements Parcelable
                 contentView.setImageViewIcon(R.id.right_icon, rightIcon);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon,
                         isPromotedPicture ? 1 : 0);
-                if (Flags.uiRichOngoing() && !p.mHeaderless) {
-                    final int largeIconMarginEnd;
-                    if (mN.isPromotedOngoing()) {
-                        largeIconMarginEnd = R.dimen.notification_content_margin;
-                    } else {
-                        if (notificationsRedesignTemplates()) {
-                            largeIconMarginEnd =
-                                    R.dimen.notification_2025_right_icon_expanded_margin_end;
-                        } else {
-                            largeIconMarginEnd = R.dimen.notification_header_expand_icon_size;
-                        }
-                    }
-                    contentView.setViewLayoutMarginDimen(
-                            R.id.right_icon, RemoteViews.MARGIN_END, largeIconMarginEnd);
+                if (notificationsRedesignTemplates() || Flags.uiRichOngoing()) {
+                    contentView.setViewLayoutMargin(R.id.right_icon,
+                            RemoteViews.MARGIN_END, getLargeIconMarginEnd(p), COMPLEX_UNIT_PX);
                 }
 
                 processLargeLegacyIcon(rightIcon, contentView, p);
@@ -6410,6 +6411,29 @@ public class Notification implements Parcelable
                 // visibility) is used by NotificationGroupingUtil to set the visibility.
                 contentView.setImageViewIcon(R.id.right_icon, null);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon, 0);
+            }
+        }
+
+        int getLargeIconMarginEnd(@NonNull StandardTemplateParams p) {
+            Resources res = mContext.getResources();
+
+            if (Flags.uiRichOngoing() && mN.isPromotedOngoing() && !p.mHeaderless) {
+                // Promoted notifications don't need space for the expand button
+                if (notificationsRedesignTemplates()) {
+                    return res.getDimensionPixelSize(R.dimen.notification_2025_margin);
+                } else {
+                    return res.getDimensionPixelSize(R.dimen.notification_content_margin);
+                }
+            }
+
+            if (notificationsRedesignTemplates()) {
+                int rightIconMarginPx = res.getDimensionPixelSize(
+                        R.dimen.notification_2025_right_icon_margin_end);
+                int extraSpaceForExpanderPx = res.getDimensionPixelSize(
+                        R.dimen.notification_2025_extra_space_for_expander);
+                return rightIconMarginPx + extraSpaceForExpanderPx;
+            } else {
+                return res.getDimensionPixelSize(R.dimen.notification_header_expand_icon_size);
             }
         }
 
@@ -8371,12 +8395,16 @@ public class Notification implements Parcelable
             customContent = customContent.clone();
             if (p.mHeaderless) {
                 template.removeFromParent(R.id.notification_top_line);
-                // We do not know how many lines ar emote view has, so we presume it has 2;  this
+                // We do not know how many lines a remote view has, so we presume it has 2;  this
                 // ensures that we don't under-pad the content, which could lead to abuse, at the
                 // cost of making single-line custom content over-padded.
                 Builder.setHeaderlessVerticalMargins(template, p, true /* hasSecondLine */);
+                if (notificationsRedesignTemplates()) {
+                    // also update the end margin to account for the large icon or expander
+                    result.mHeadingFullMarginSet.applyToView(template,
+                            R.id.notification_main_column);
+                }
             } else {
-                // also update the end margin to account for the large icon or expander
                 Resources resources = context.getResources();
                 result.mTitleMarginSet.applyToView(template, R.id.notification_main_column,
                         resources.getDimension(R.dimen.notification_content_margin_end)
@@ -14932,7 +14960,7 @@ public class Notification implements Parcelable
 
         /**
          * The margin end that needs to be added to the heading so that it won't overlap
-         * with the large icon.  This value includes the space required to accommodate the large
+         * with the large icon. This value includes the space required to accommodate the large
          * icon, but should be added to the space needed to accommodate the expander. This does
          * not include the 16dp content margin that all notification views must have.
          */
@@ -14940,9 +14968,8 @@ public class Notification implements Parcelable
 
         /**
          * The margin end that needs to be added to the heading so that it won't overlap
-         * with the large icon.  This value includes the space required to accommodate the large
-         * icon as well as the expander.  This does not include the 16dp content margin that all
-         * notification views must have.
+         * with the large icon. This value includes the space required to accommodate the large
+         * icon as well as the expander (when present). This DOES include the 16dp content margin.
          */
         public final MarginSet mHeadingFullMarginSet = new MarginSet();
 
@@ -14953,17 +14980,21 @@ public class Notification implements Parcelable
          */
         public final MarginSet mTitleMarginSet = new MarginSet();
 
-        public void setRightIconState(boolean visible, float widthDp, float heightDp,
-                float marginEndDpIfVisible, float spaceForExpanderDp) {
+        public void setRightIconState(boolean visible, float widthDp, float heightDp) {
             mRightIconVisible = visible;
             mRightIconWidthDp = widthDp;
             mRightIconHeightDp = heightDp;
+        }
+
+        public void calculateMargins(float marginEndDpIfVisible, float spaceForExpanderDp,
+                float notificationMarginDp) {
             mHeadingExtraMarginSet.setValues(
                     /* valueIfGone = */ 0,
                     /* valueIfVisible = */ marginEndDpIfVisible);
             mHeadingFullMarginSet.setValues(
-                    /* valueIfGone = */ spaceForExpanderDp,
-                    /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp);
+                    /* valueIfGone = */ spaceForExpanderDp + notificationMarginDp,
+                    /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp
+                            + notificationMarginDp);
             mTitleMarginSet.setValues(
                     /* valueIfGone = */ 0,
                     /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp);
