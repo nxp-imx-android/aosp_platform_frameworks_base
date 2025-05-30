@@ -665,6 +665,8 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                 || mAuthController.isUdfpsFingerDown();
         final boolean isBouncerShowing = mKeyguardViewController.primaryBouncerIsOrWillBeShowing()
                 || mKeyguardTransitionInteractor.getCurrentState()
+                    == KeyguardState.ALTERNATE_BOUNCER
+                || mKeyguardTransitionInteractor.getStartedState()
                     == KeyguardState.ALTERNATE_BOUNCER;
 
         logCalculateModeForPassiveAuth(unlockingAllowed, deviceInteractive, isKeyguardShowing,
