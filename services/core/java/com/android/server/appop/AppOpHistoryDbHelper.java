@@ -238,9 +238,29 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         } catch (SQLiteException exception) {
-            Slog.e(LOG_TAG, "Error reading attribution chain id", exception);
+            Slog.e(LOG_TAG, "Error reading chain id " + mDatabaseFile.getName(), exception);
         }
         return chainId;
+    }
+
+    long getTotalRecordsCount() {
+        long count = 0;
+        try {
+            SQLiteDatabase db = getReadableDatabase();
+            db.beginTransactionReadOnly();
+            try (SQLiteRawStatement statement = db.createRawStatement(
+                    AppOpHistoryTable.SELECT_RECORDS_COUNT)) {
+                if (statement.step()) {
+                    count = statement.getColumnLong(0);
+                }
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        } catch (SQLiteException exception) {
+            Slog.e(LOG_TAG, "Error reading records count " + mDatabaseFile.getName(), exception);
+        }
+        return count;
     }
 
     @VisibleForTesting
