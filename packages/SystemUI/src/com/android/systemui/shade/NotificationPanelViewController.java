@@ -199,6 +199,7 @@ import com.android.systemui.unfold.SysUIUnfoldComponent;
 import com.android.systemui.util.Utils;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperFocalAreaViewModel;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -329,6 +330,7 @@ public final class NotificationPanelViewController implements
     private final QuickSettingsControllerImpl mQsController;
     private final TouchHandler mTouchHandler = new TouchHandler();
     private final BlurConfig mBlurConfig;
+    private final WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
 
     private long mDownTime;
     private long mStatusBarLongPressDowntime = -1L;
@@ -648,8 +650,10 @@ public final class NotificationPanelViewController implements
             MSDLPlayer msdlPlayer,
             BrightnessMirrorShowingRepository brightnessMirrorShowingRepository,
             BlurConfig blurConfig,
-            Lazy<ShadeDisplaysRepository> shadeDisplaysRepository) {
+            Lazy<ShadeDisplaysRepository> shadeDisplaysRepository,
+            WindowRootViewBlurInteractor windowRootViewBlurInteractor) {
         mBlurConfig = blurConfig;
+        mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
         SceneContainerFlag.assertInLegacyMode();
         keyguardStateController.addCallback(new KeyguardStateController.Callback() {
             @Override
@@ -1953,6 +1957,9 @@ public final class NotificationPanelViewController implements
     }
 
     private void onExpandingFinished() {
+        if (Flags.bouncerUiRevamp()) {
+            mWindowRootViewBlurInteractor.setTrackingShadeMotion(false);
+        }
         if (!SceneContainerFlag.isEnabled()) {
             mNotificationStackScrollLayoutController.onExpansionStopped();
         }
@@ -2236,6 +2243,9 @@ public final class NotificationPanelViewController implements
     }
 
     private void onClosingFinished() {
+        if (Flags.bouncerUiRevamp()) {
+            mWindowRootViewBlurInteractor.setTrackingShadeMotion(false);
+        }
         if (mOpenCloseListener != null) {
             mOpenCloseListener.onClosingFinished();
         }
@@ -2874,6 +2884,9 @@ public final class NotificationPanelViewController implements
     /** Called when a MotionEvent is about to trigger Shade expansion. */
     private void startExpandMotion(float newX, float newY, boolean startTracking,
             float expandedHeight) {
+        if (Flags.bouncerUiRevamp()) {
+            mWindowRootViewBlurInteractor.setTrackingShadeMotion(true);
+        }
         if (!mHandlingPointerUp && !mStatusBarStateController.isDozing()) {
             mQsController.beginJankMonitoring(isFullyCollapsed());
         }
