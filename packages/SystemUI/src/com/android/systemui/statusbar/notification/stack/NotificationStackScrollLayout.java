@@ -5496,6 +5496,7 @@ public class NotificationStackScrollLayout
     }
 
     /** @see #isOnLockscreen() */
+    @Override
     public void setOnLockscreen(boolean isOnLockscreen) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         if (mIsOnLockscreen != isOnLockscreen) {
@@ -5509,6 +5510,18 @@ public class NotificationStackScrollLayout
         }
     }
 
+    @Override
+    public int calculateMaxNotifications(int availableSpace, boolean useExtraShelfSpace) {
+        int shelfHeight = mShelf != null ? mShelf.getIntrinsicHeight() : 0;
+        return mNotificationStackSizeCalculator.computeMaxKeyguardNotifications(
+                /* stack = */ this,
+                /* space = */ availableSpace,
+                /* shelfHeight = */ shelfHeight,
+                /* extraShelfSpace = */ useExtraShelfSpace ? shelfHeight : 0
+        );
+    }
+
+    @Override
     public void setMaxDisplayedNotifications(int maxDisplayedNotifications) {
         if (mMaxDisplayedNotifications != maxDisplayedNotifications) {
             if (mLogger != null) {
