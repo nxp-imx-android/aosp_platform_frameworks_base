@@ -25,7 +25,6 @@
 #include <binder/IServiceManager.h>
 #include <binder/Parcel.h>
 #include <binder/ProcessState.h>
-#include <cutils/atomic.h>
 #include <fcntl.h>
 #include <nativehelper/JNIPlatformHelp.h>
 #include <nativehelper/ScopedLocalRef.h>
