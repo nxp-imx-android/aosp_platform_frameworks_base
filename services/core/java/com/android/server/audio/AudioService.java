@@ -74,6 +74,7 @@ import static com.android.media.audio.Flags.asDeviceConnectionFailure;
 import static com.android.media.audio.Flags.audioserverPermissions;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
+import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
 import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.replaceStreamBtSco;
@@ -826,9 +827,11 @@ public class AudioService extends IAudioService.Stub
     /*package*/ static final int BT_COMM_DEVICE_ACTIVE_BLE_HEADSET = 1 << 1;
     /** The active bluetooth device type used for communication is ble speaker. */
     /*package*/ static final int BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER = 1 << 2;
+    /** The active bluetooth device type used for communication is hearing aid. */
+    /*package*/ static final int BT_COMM_DEVICE_ACTIVE_HA = 1 << 3;
     @IntDef({
             BT_COMM_DEVICE_ACTIVE_SCO, BT_COMM_DEVICE_ACTIVE_BLE_HEADSET,
-            BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER
+            BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER, BT_COMM_DEVICE_ACTIVE_HA
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BtCommDeviceActiveType {
@@ -5277,6 +5280,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder - EOL");
         pw.println("\tcom.android.media.audio.replaceStreamBtSco:"
                 + replaceStreamBtSco());
+        pw.println("\tcom.android.media.audio.equalScoHaVcIndexRange:"
+                + equalScoHaVcIndexRange());
         pw.println("\tcom.android.media.audio.equalScoLeaVcIndexRange:"
                 + equalScoLeaVcIndexRange());
         pw.println("\tcom.android.media.audio.ringMyCar:"
@@ -9753,7 +9758,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         public void updateIndexFactors() {
-            if (!replaceStreamBtSco() && !equalScoLeaVcIndexRange()) {
+            if (!replaceStreamBtSco() && !equalScoLeaVcIndexRange() && !equalScoHaVcIndexRange()) {
                 return;
             }
 
@@ -9767,17 +9772,23 @@ public class AudioService extends IAudioService.Stub
                         mIndexMax = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                     }
 
-                    if (!equalScoLeaVcIndexRange() && isStreamBluetoothSco(mStreamType)) {
+                    if (!equalScoLeaVcIndexRange() && !equalScoHaVcIndexRange()
+                            && isStreamBluetoothSco(mStreamType)) {
                         // SCO devices have a different min index
                         mIndexMin = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                         indexMinVolCurve = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                         indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                         mIndexStepFactor = 1.f;
-                    } else if (equalScoLeaVcIndexRange() && isStreamBluetoothComm(mStreamType)) {
+                    } else if ((equalScoLeaVcIndexRange() || equalScoHaVcIndexRange())
+                            && isStreamBluetoothComm(mStreamType)) {
                         // For non SCO devices the stream state does not change the min index
                         if (mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_SCO) {
                             mIndexMin = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                             indexMinVolCurve = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
+                            indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
+                        } else if (equalScoHaVcIndexRange()
+                                && mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_HA) {
+                            mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;
                             indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                         } else {
                             mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;

@@ -34,10 +34,12 @@ import static android.media.AudioSystem.DEVICE_OUT_USB_HEADSET;
 import static android.media.AudioSystem.DEVICE_OUT_WIRED_HEADSET;
 import static android.media.AudioSystem.isBluetoothScoOutDevice;
 
+import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
 import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_HEADSET;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER;
+import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_HA;
 import static com.android.server.audio.AudioService.BT_COMM_DEVICE_ACTIVE_SCO;
 import static com.android.server.utils.EventLogger.Event.ALOGW;
 
@@ -923,6 +925,10 @@ public class AudioDeviceBroker {
         return isDeviceActiveForCommunication(AudioDeviceInfo.TYPE_BLE_SPEAKER);
     }
 
+    private boolean isBluetoothHaActive() {
+        return isDeviceActiveForCommunication(AudioDeviceInfo.TYPE_HEARING_AID);
+    }
+
     /*package*/ boolean isDeviceConnected(@NonNull AudioDeviceAttributes device) {
         synchronized (mDeviceStateLock) {
             return mDeviceInventory.isDeviceConnected(device);
@@ -1505,13 +1511,15 @@ public class AudioDeviceBroker {
         mCurCommunicationPortId = portId;
 
         @BtCommDeviceActiveType int btCommDeviceActiveType = 0;
-        if (equalScoLeaVcIndexRange()) {
+        if (equalScoLeaVcIndexRange() || equalScoHaVcIndexRange()) {
             if (isBluetoothScoActive()) {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_SCO;
             } else if (isBluetoothBleHeadsetActive()) {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_BLE_HEADSET;
             } else if (isBluetoothBleSpeakerActive()) {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER;
+            } else if (equalScoHaVcIndexRange() && isBluetoothHaActive()) {
+                btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_HA;
             }
             mAudioService.postBtCommDeviceActive(btCommDeviceActiveType);
         } else {
