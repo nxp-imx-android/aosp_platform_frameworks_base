@@ -49,7 +49,7 @@ class VolumeDialogRingerInteractorTest : SysuiTestCase() {
     @Before
     fun setUp() {
         underTest = kosmos.volumeDialogRingerInteractor
-        controller.setStreamVolume(STREAM_RING, 50)
+        controller.setStreamVolume(STREAM_RING, 50, true)
     }
 
     @Test
