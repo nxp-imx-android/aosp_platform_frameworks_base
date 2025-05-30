@@ -1495,7 +1495,7 @@ public class SettingsState {
             TypedXmlPullParser parser = Xml.resolvePullParser(in);
             parseStateLocked(parser);
             return true;
-        } catch (XmlPullParserException | IOException | NumberFormatException e) {
+        } catch (XmlPullParserException | IOException | IllegalArgumentException e) {
             Slog.e(LOG_TAG, "parse settings xml failed", e);
             return false;
         } finally {
