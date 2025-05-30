@@ -494,6 +494,10 @@ constructor(
         }
     }
 
+    fun onQsHeightUpdated() {
+        updateTargetState()
+    }
+
     init {
         dumpManager.registerNormalDumpable(TAG, this)
         updateConfiguration()
