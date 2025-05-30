@@ -228,9 +228,9 @@ fun NavBarPill(
                 iconResource = R.drawable.ic_close_white_rounded,
                 colors =
                     IconButtonColors(
-                        containerColor = backgroundColor,
+                        containerColor = Color.Transparent,
                         contentColor = outlineColor,
-                        disabledContainerColor = backgroundColor,
+                        disabledContainerColor = Color.Transparent,
                         disabledContentColor = outlineColor,
                     ),
                 contentDescription =
