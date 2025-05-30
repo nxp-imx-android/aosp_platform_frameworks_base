@@ -38,6 +38,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.ui.StateToValue
+import com.android.systemui.minmode.MinModeManager
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -69,6 +70,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.flowOf
+import java.util.Optional
 
 @SysUISingleton
 class KeyguardRootViewModel
@@ -140,6 +143,7 @@ constructor(
     private val aodBurnInViewModel: AodBurnInViewModel,
     shadeInteractor: ShadeInteractor,
     dumpManager: DumpManager,
+    private val minModeManager: Optional<MinModeManager>,
 ) : FlowDumperImpl(dumpManager) {
     val burnInLayerVisibility: Flow<Int> =
         keyguardTransitionInteractor.startedKeyguardTransitionStep
@@ -197,11 +201,15 @@ constructor(
             .distinctUntilChanged()
 
     /**
-     * Keyguard should not show if fully transitioned into a hidden keyguard state or if
-     * transitioning between hidden states.
+     * Keyguard should not show in any of the following conditions:
+     * 1. If fully transitioned into a hidden keyguard state
+     * 2. If transitioning between hidden states
+     * 3. If minmode activity is in foreground.
      */
     private val hideKeyguard: Flow<Boolean> =
         anyOf(
+            if (minModeManager.isPresent) minModeManager.get().isMinModeInForegroundFlow
+            else flowOf(false),
             notificationShadeWindowModel.isKeyguardOccluded,
             communalInteractor.isIdleOnCommunal,
             keyguardTransitionInteractor
