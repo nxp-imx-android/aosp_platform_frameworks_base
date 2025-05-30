@@ -51,3 +51,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "biometric_prompt_external_display"
+  namespace: "biometrics_framework"
+  description: "This flag returns error code when biometric prompt is requested on external display."
+  bug: "421237594"
+  metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

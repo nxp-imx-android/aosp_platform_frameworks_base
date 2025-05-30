@@ -16,6 +16,7 @@
 
 package com.android.server.biometrics;
 
+import static android.hardware.biometrics.BiometricAuthenticator.TYPE_ANY_BIOMETRIC;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_CREDENTIAL;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FACE;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRINT;
@@ -35,6 +36,7 @@ import android.os.RemoteException;
 import android.os.UserManager;
 import android.util.Pair;
 import android.util.Slog;
+import android.view.Display;
 
 import com.android.internal.R;
 import com.android.server.biometrics.sensors.LockoutTracker;
@@ -397,7 +399,11 @@ class PreAuthInfo {
             cameraPrivacyEnabled = mBiometricCameraManager.isCameraPrivacyEnabled();
         }
 
-        if (mBiometricRequested && credentialRequested) {
+        if (com.android.server.biometrics.Flags.biometricPromptExternalDisplay()
+                && isExternalDisplay()) {
+            status = BIOMETRIC_HARDWARE_NOT_DETECTED;
+            modality = TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL;
+        } else if (mBiometricRequested && credentialRequested) {
             if (credentialAvailable || !eligibleSensors.isEmpty()) {
                 for (BiometricSensor sensor : eligibleSensors) {
                     modality |= sensor.modality;
@@ -478,6 +484,15 @@ class PreAuthInfo {
         return Utils.biometricConstantsToBiometricManager(
                 Utils.authenticatorStatusToBiometricConstant(
                         getInternalStatus().second));
+    }
+
+    private boolean isExternalDisplay() {
+        try {
+            return context.getDisplay().getType() == Display.TYPE_EXTERNAL;
+        } catch (UnsupportedOperationException e) {
+            Slog.d(TAG, "Exception thrown when checking display type " + e);
+            return false;
+        }
     }
 
     /** Returns if mandatory biometrics authentication is in effect */
