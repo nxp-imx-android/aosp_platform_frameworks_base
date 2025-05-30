@@ -103,6 +103,7 @@ class MediaOutputComponent @Inject constructor(private val viewModel: MediaOutpu
                     MaterialTheme.colorScheme.surfaceContainerHighest
                 },
             shape = RoundedCornerShape(28.dp),
+            useModifierBasedImplementation = true,
             onClick =
                 if (enabled) {
                     { viewModel.onBarClick(it) }
