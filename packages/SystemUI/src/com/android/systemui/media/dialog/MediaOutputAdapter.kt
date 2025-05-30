@@ -20,6 +20,7 @@ import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
+import android.text.BidiFormatter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -596,14 +597,20 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             groupStatus: GroupStatus,
             colorTheme: ColorTheme,
         ) {
-            mGroupButton.contentDescription =
-                mContext.getString(
-                    if (groupStatus.selected) R.string.accessibility_remove_device_from_group
-                    else R.string.accessibility_add_device_to_group
-                )
+            val resId =
+                if (groupStatus.selected) {
+                    R.string.accessibility_remove_device_from_group_with_name
+                } else {
+                    R.string.accessibility_add_device_to_group_with_name
+                }
+            mGroupButton.contentDescription = mContext.getString(
+                    resId, BidiFormatter.getInstance().unicodeWrap(device.name))
             mGroupButton.setImageResource(
-                if (groupStatus.selected) R.drawable.ic_check_circle_filled
-                else R.drawable.ic_add_circle_rounded
+                if (groupStatus.selected) {
+                    R.drawable.ic_check_circle_filled
+                } else {
+                    R.drawable.ic_add_circle_rounded
+                }
             )
             mGroupButton.setOnClickListener {
                 onGroupActionTriggered(!groupStatus.selected, device)
