@@ -3968,4 +3968,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             }
         }
     }
+
+    boolean isTaskMoveAllowedOnDisplay(int displayId) {
+        DisplayContent dc = getDisplayContent(displayId);
+        return dc == null ? false : dc.isTaskMoveAllowedOnDisplay();
+    }
 }

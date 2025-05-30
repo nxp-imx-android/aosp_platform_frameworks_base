@@ -89,6 +89,7 @@ import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS;
+import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -2987,6 +2988,26 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Verify that forced density is updated based on the ratio.
         assertEquals(320, dc.mBaseDisplayDensity);
+    }
+
+    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @Test
+    public void testIsTaskMoveAllowedOnDisplay() {
+        final TaskDisplayArea taskDisplayArea = mDisplayContent.getDefaultTaskDisplayArea();
+        final Task rootTask = taskDisplayArea.createRootTask(WINDOWING_MODE_FULLSCREEN,
+                ACTIVITY_TYPE_STANDARD, ON_TOP);
+
+        taskDisplayArea.setIsTaskMoveAllowed(true);
+        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
+
+        rootTask.setIsTaskMoveAllowed(true);
+        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
+
+        taskDisplayArea.setIsTaskMoveAllowed(false);
+        assertTrue(mDisplayContent.isTaskMoveAllowedOnDisplay());
+
+        rootTask.setIsTaskMoveAllowed(false);
+        assertFalse(mDisplayContent.isTaskMoveAllowedOnDisplay());
     }
 
     private void removeRootTaskTests(@NonNull Runnable runnable) {

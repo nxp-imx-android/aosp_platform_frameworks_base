@@ -3835,11 +3835,28 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return mSyncTransactionCommitCallbackDepth;
     }
 
+    /**
+     * Sets whether this WindowContainer allows holding self-movable tasks. This WindowContainer
+     * must be either a TaskDisplayArea or a root Task for this setter to have effect.
+     */
     void setIsTaskMoveAllowed(boolean isTaskMoveAllowed) {
+        if (mIsTaskMoveAllowed == isTaskMoveAllowed) return;
+        if (!canHoldSelfMovableTasks()) {
+            Slog.e(TAG,
+                    "Tried to set isTaskMoveAllowed on a WindowContainer of unsuitable subtype: "
+                    + this);
+            return;
+        }
+
         mIsTaskMoveAllowed = isTaskMoveAllowed;
     }
 
     boolean getIsTaskMoveAllowed() {
         return mIsTaskMoveAllowed;
+    }
+
+    boolean canHoldSelfMovableTasks() {
+        // Is a TaskDisplayArea or a root Task.
+        return (asTaskDisplayArea() != null) || (asTask() != null && asTask().isRootTask());
     }
 }

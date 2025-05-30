@@ -7234,4 +7234,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .reparent(mA11yOverlayLayer, null)
                 .apply();
     }
+
+    boolean isTaskMoveAllowedOnDisplay() {
+        // Keep the WindowContainer's subtypes we are traversing here in sync with
+        // WindowContainer#canHoldSelfMovableTasks.
+        return forAllTaskDisplayAreas(TaskDisplayArea::getIsTaskMoveAllowed)
+                || forAllRootTasks(Task::getIsTaskMoveAllowed);
+    }
 }
