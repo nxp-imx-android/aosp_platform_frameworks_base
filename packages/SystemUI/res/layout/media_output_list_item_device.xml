@@ -64,7 +64,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="variable-title-small"
-                android:alpha="@dimen/media_output_item_subtitle_alpha"
                 android:maxLines="1"
                 android:singleLine="true" />
         </LinearLayout>
