@@ -45,7 +45,6 @@ import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.ArrayMap;
 import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
@@ -145,10 +144,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         mSyncQueue = syncQueue;
         if (useRepo()) {
             mTaskViews = null;
-        } else if (Flags.enableTaskViewControllerCleanup()) {
-            mTaskViews = new WeakHashMap<>();
         } else {
-            mTaskViews = new ArrayMap<>();
+            mTaskViews = new WeakHashMap<>();
         }
         mTaskViewRepo = repository;
         // Defer registration until the first TaskView because we want this to be the "first" in
@@ -325,21 +322,10 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             final TaskViewRepository.TaskViewState state = mTaskViewRepo.byToken(taskInfo.token);
             return state != null ? state.getTaskView() : null;
         }
-        if (Flags.enableTaskViewControllerCleanup()) {
-            for (TaskViewTaskController controller : mTaskViews.keySet()) {
-                if (controller.getTaskInfo() == null) continue;
-                if (taskInfo.token.equals(controller.getTaskInfo().token)) {
-                    return controller;
-                }
-            }
-        } else {
-            ArrayMap<TaskViewTaskController, TaskViewRepository.TaskViewState> taskViews =
-                    (ArrayMap<TaskViewTaskController, TaskViewRepository.TaskViewState>) mTaskViews;
-            for (int i = 0; i < taskViews.size(); ++i) {
-                if (taskViews.keyAt(i).getTaskInfo() == null) continue;
-                if (taskInfo.token.equals(taskViews.keyAt(i).getTaskInfo().token)) {
-                    return taskViews.keyAt(i);
-                }
+        for (TaskViewTaskController controller : mTaskViews.keySet()) {
+            if (controller.getTaskInfo() == null) continue;
+            if (taskInfo.token.equals(controller.getTaskInfo().token)) {
+                return controller;
             }
         }
         return null;
@@ -430,11 +416,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.removeTaskView(): taskView=%d no token",
                     taskView.hashCode());
             // We don't have a task yet, so just clean up records
-            if (!Flags.enableTaskViewControllerCleanup()) {
-                // Call to remove task before we have one, do nothing
-                Slog.w(TAG, "Trying to remove a task that was never added? (no taskToken)");
-                return;
-            }
             unregisterTaskView(taskView);
             return;
         }

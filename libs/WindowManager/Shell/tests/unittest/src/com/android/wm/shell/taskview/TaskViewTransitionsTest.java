@@ -26,7 +26,6 @@ import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
-import static com.android.wm.shell.Flags.FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -91,7 +90,6 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
         return FlagsParameterization.allCombinationsOf(
-                FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP,
                 FLAG_EXCLUDE_TASK_FROM_RECENTS,
                 FLAG_ENABLE_BUBBLE_ANYTHING);
     }
