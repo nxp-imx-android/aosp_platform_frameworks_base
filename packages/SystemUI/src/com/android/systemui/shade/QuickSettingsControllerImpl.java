@@ -872,6 +872,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             mMaxExpansionHeight = mQs.getDesiredHeight();
             mNotificationStackScrollLayoutController.setMaxTopPadding(
                     getMaxExpansionHeight());
+            mMediaHierarchyManager.onQsHeightUpdated();
         }
         return oldMaxHeight;
     }
