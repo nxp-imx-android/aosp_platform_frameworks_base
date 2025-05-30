@@ -289,8 +289,9 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         mServiceContext = mContext;
         mServiceContext.binder.callingUid = DpmMockContext.CALLER_UID;
         when(getServices().userManagerInternal.getUserIds()).thenReturn(new int[]{0});
-        when(getServices().packageManager.hasSystemFeature(eq(PackageManager.FEATURE_DEVICE_ADMIN)))
-                .thenReturn(true);
+        doReturn(true)
+                .when(getServices().packageManager)
+                .hasSystemFeature(eq(PackageManager.FEATURE_DEVICE_ADMIN));
         doReturn(Collections.singletonList(new ResolveInfo()))
                 .when(getServices().packageManager).queryBroadcastReceiversAsUser(
                         any(Intent.class),
@@ -432,8 +433,9 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
     @Test
     public void testHasNoFeature() throws Exception {
-        when(getServices().packageManager.hasSystemFeature(eq(PackageManager.FEATURE_DEVICE_ADMIN)))
-                .thenReturn(false);
+        doReturn(false)
+                .when(getServices().packageManager)
+                .hasSystemFeature(eq(PackageManager.FEATURE_DEVICE_ADMIN));
 
         new DevicePolicyManagerServiceTestable(getServices(), mContext);
 
@@ -3605,8 +3607,9 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     private void setup_DeviceAdminFeatureOff() throws Exception {
-        when(getServices().packageManager.hasSystemFeature(PackageManager.FEATURE_DEVICE_ADMIN))
-                .thenReturn(false);
+        doReturn(false)
+                .when(getServices().packageManager)
+                .hasSystemFeature(eq(PackageManager.FEATURE_DEVICE_ADMIN));
         when(getServices().ipackageManager
                 .hasSystemFeature(PackageManager.FEATURE_MANAGED_USERS, 0)).thenReturn(false);
         initializeDpms();
@@ -5529,15 +5532,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
         doReturn(PackageManager.FLAG_PERMISSION_POLICY_FIXED).when(getServices().packageManager)
                 .getPermissionFlags(permission, app1, UserHandle.SYSTEM);
-        when(getServices().packageManager.getPermissionFlags(permission, app1,
-                UserHandle.of(CALLER_USER_HANDLE)))
-                .thenReturn(PackageManager.FLAG_PERMISSION_POLICY_FIXED);
+        doReturn(PackageManager.FLAG_PERMISSION_POLICY_FIXED).when(getServices().packageManager)
+                .getPermissionFlags(permission, app1, UserHandle.of(CALLER_USER_HANDLE));
         when(getServices().ipackageManager.checkPermission(eq(permission), eq(app2), anyInt()))
                 .thenReturn(PackageManager.PERMISSION_DENIED);
         doReturn(0).when(getServices().packageManager).getPermissionFlags(permission, app2,
                 UserHandle.SYSTEM);
-        when(getServices().packageManager.getPermissionFlags(permission, app2,
-                UserHandle.of(CALLER_USER_HANDLE))).thenReturn(0);
+        doReturn(0).when(getServices().packageManager)
+                .getPermissionFlags(permission, app2, UserHandle.of(CALLER_USER_HANDLE));
 
         // System can retrieve permission grant state.
         mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
@@ -6594,8 +6596,9 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
     @Test
     public void testOverrideApnAPIsFailWithPO() throws Exception {
-        when(getServices().packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY))
-                .thenReturn(true);
+        doReturn(true)
+                .when(getServices().packageManager)
+                .hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
         // FEATURE_TELEPHONY is set in DPMS's constructor and therefore a new DPMS instance
         // is created after turning on the feature.
         initializeDpms();
