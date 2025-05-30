@@ -2970,6 +2970,8 @@ package android.app.supervision {
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public android.content.Intent createConfirmSupervisionCredentialsIntent();
     method @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_USERS}) public boolean isSupervisionEnabled();
     method @FlaggedApi("android.permission.flags.enable_system_supervision_role_behavior") @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean shouldAllowBypassingSupervisionRoleQualification();
+    field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String ACTION_DISABLE_SUPERVISION = "android.app.supervision.action.DISABLE_SUPERVISION";
+    field @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public static final String ACTION_ENABLE_SUPERVISION = "android.app.supervision.action.ENABLE_SUPERVISION";
   }
 
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public final class SupervisionRecoveryInfo implements android.os.Parcelable {
