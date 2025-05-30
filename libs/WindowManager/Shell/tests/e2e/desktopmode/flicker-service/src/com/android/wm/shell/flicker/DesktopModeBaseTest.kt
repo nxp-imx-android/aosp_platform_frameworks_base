@@ -23,7 +23,6 @@ import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Test
-import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.rules.TestName
 import com.android.server.wm.flicker.entireScreenCovered
@@ -43,8 +42,8 @@ abstract class DesktopModeBaseTest(flicker: LegacyFlickerTest) : BaseBenchmarkTe
     @get:Rule
     val testName = TestName()
 
-    @get:ClassRule
-    val screenRecordRule = ScreenRecordRule()
+    @get:Rule
+    val screenRecordRule = ScreenRecordRule(keepTestLevelRecordingOnSuccess = false)
 
     // Override this set with the test method names that you want to exclude from the test
     open val excludedTests: Set<String> = emptySet()
