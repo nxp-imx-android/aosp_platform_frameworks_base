@@ -42,7 +42,9 @@ enum class DozeStateModel {
     /** AOD, prox is near, transitions to DOZE_AOD_PAUSED after a timeout. */
     DOZE_AOD_PAUSING,
     /** Always-on doze. Device is awake, showing docking UI and listening for pulse triggers. */
-    DOZE_AOD_DOCKED;
+    DOZE_AOD_DOCKED,
+    /** Always-on doze. Device is awake, showing min-mode UI and listening for pulse triggers. */
+    DOZE_AOD_MINMODE;
 
     companion object {
         fun isDozeOff(model: DozeStateModel): Boolean {
