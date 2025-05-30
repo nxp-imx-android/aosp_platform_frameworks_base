@@ -56,6 +56,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.SignedPackage;
 import android.content.pm.SigningInfo;
 import android.os.Binder;
 import android.os.CancellationSignal;
@@ -68,6 +69,8 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.UserHandle;
+import android.permission.flags.Flags;
+import android.provider.DeviceConfig;
 import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -76,12 +79,15 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
+import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -91,6 +97,9 @@ import java.util.concurrent.Executor;
 /** Implementation of the AppFunctionManagerService. */
 public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static final String TAG = AppFunctionManagerServiceImpl.class.getSimpleName();
+    private static final String ALLOWLISTED_APP_FUNCTIONS_AGENTS =
+            "allowlisted_app_functions_agents";
+    private static final String NAMESPACE_MACHINE_LEARNING = "machine_learning";
 
     private final RemoteServiceCaller<IAppFunctionService> mRemoteServiceCaller;
     private final CallerValidator mCallerValidator;
@@ -137,7 +146,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     /** Called when the user is unlocked. */
     public void onUserUnlocked(TargetUser user) {
         Objects.requireNonNull(user);
-
         registerAppSearchObserver(user);
         trySyncRuntimeMetadata(user);
         PackageMonitor pkgMonitorForUser =
@@ -182,6 +190,66 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull ResultReceiver resultReceiver) {
         new AppFunctionManagerServiceShellCommand(this)
                 .exec(this, in, out, err, args, callback, resultReceiver);
+    }
+
+    private final DeviceConfig.OnPropertiesChangedListener mDeviceConfigListener =
+            new DeviceConfig.OnPropertiesChangedListener() {
+
+                @Override
+                public void onPropertiesChanged(DeviceConfig.Properties properties) {
+                    if (Flags.appFunctionAccessServiceEnabled()) {
+                        if (properties.getKeyset().contains(ALLOWLISTED_APP_FUNCTIONS_AGENTS)) {
+                            final String signaturesString =
+                                    properties.getString(ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
+                            Slog.d(TAG, "onPropertiesChanged signatureString " + signaturesString);
+                            try {
+                                final List<SignedPackage> allowedSignedPackages =
+                                        SignedPackageParser.parseList(signaturesString);
+                                // TODO(b/416661798): Calls new
+                                // AppFunctionAccessService#updateAgentAllowlist API to update
+                                // the allowlist
+                            } catch (Exception e) {
+                                Slog.e(
+                                        TAG,
+                                        "Cannot parse signature string: " + signaturesString,
+                                        e);
+                            }
+                        }
+                    }
+                }
+            };
+
+    /**
+     * Called during different phases of the system boot process.
+     *
+     * <p>This method is used to initialize AppFunctionManagerService components that depend on
+     * other system services being ready. Specifically, it handles reading DeviceConfig properties
+     * related to allowed agent package signatures and registers a listener for changes to these
+     * properties.
+     *
+     * @param phase The current boot phase, as defined in {@link SystemService}. This method
+     *     specifically acts on {@link SystemService#PHASE_SYSTEM_SERVICES_READY}.
+     */
+    public void onBootPhase(int phase) {
+        if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
+            final String signatureString =
+                    DeviceConfig.getString(
+                            NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
+            try {
+                final List<SignedPackage> allowedSignedPackages =
+                        SignedPackageParser.parseList(signatureString);
+
+                // TODO(b/416661798): Similar to the callback, update the allowlist with
+                // AppFunctionAccessService#updateAgentAllowlist API.
+
+            } catch (Exception e) {
+                Slog.e(TAG, "Cannot parse signature string: " + signatureString, e);
+            }
+            DeviceConfig.addOnPropertiesChangedListener(
+                    NAMESPACE_MACHINE_LEARNING,
+                    BackgroundThread.getExecutor(),
+                    mDeviceConfigListener);
+        }
     }
 
     @Override
