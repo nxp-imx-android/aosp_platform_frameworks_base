@@ -86,9 +86,8 @@ class SettingsGlobalStore private constructor(contentResolver: ContentResolver) 
                 }
 
         @VisibleForTesting
-        fun reset() {
+        fun resetInstance() {
             instance = null
-            Global.clearProviderForTest()
         }
 
         /** Returns the required permissions to read [Global] settings. */
