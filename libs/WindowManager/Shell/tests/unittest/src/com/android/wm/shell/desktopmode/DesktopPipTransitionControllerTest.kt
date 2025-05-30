@@ -87,6 +87,7 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         whenever(mockPipDesktopState.isDesktopWindowingPipEnabled()).thenReturn(true)
         whenever(mockPipDesktopState.isDisplayDesktopFirst(any())).thenReturn(false)
         whenever(mockPipDesktopState.isPipInDesktopMode()).thenReturn(true)
+        whenever(mockPipDesktopState.isRecentsAnimating()).thenReturn(false)
         whenever(mockDesktopUserRepositories.getProfile(any())).thenReturn(mockDesktopRepository)
         whenever(mockDesktopRepository.getActiveDeskId(any())).thenReturn(DESK_ID)
         whenever(mockShellTaskOrganizer.getRunningTaskInfo(taskInfo.taskId)).thenReturn(taskInfo)
@@ -163,6 +164,17 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         controller.maybeUpdateParentInWct(wct, fullscreenParentTask.taskId)
 
         assertThat(wct.changes.isEmpty()).isTrue()
+    }
+
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @Test
+    fun maybeReparentTaskToDesk_recentsAnimating_noAddMoveToDeskTaskChanges() {
+        whenever(mockPipDesktopState.isRecentsAnimating()).thenReturn(true)
+
+        controller.maybeReparentTaskToDesk(wct, taskInfo.taskId)
+
+        verify(mockDesktopTasksController, never())
+            .addMoveToDeskTaskChanges(wct = wct, task = taskInfo, deskId = DESK_ID)
     }
 
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)

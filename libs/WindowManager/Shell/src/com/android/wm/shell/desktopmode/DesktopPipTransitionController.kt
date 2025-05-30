@@ -91,8 +91,11 @@ class DesktopPipTransitionController(
      * @param taskId of the task that is exiting PiP
      */
     fun maybeReparentTaskToDesk(wct: WindowContainerTransaction, taskId: Int) {
+        // Temporary workaround for b/409201669: We always expand to fullscreen if we're exiting PiP
+        // in the middle of Recents animation from Desktop session, so don't reparent to the Desk.
         if (
             !pipDesktopState.isDesktopWindowingPipEnabled() ||
+                pipDesktopState.isRecentsAnimating() ||
                 !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
             return
