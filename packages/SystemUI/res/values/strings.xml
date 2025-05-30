@@ -616,6 +616,12 @@
     <!-- Content description of the button to remove a device from a group. [CHAR LIMIT=NONE] -->
     <string name="accessibility_remove_device_from_group">Remove device from group.</string>
 
+    <!-- Content description of the button to add a device to a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_add_device_to_group_with_name">Add <xliff:g id="device_name">%s</xliff:g> to group.</string>
+
+    <!-- Content description of the button to remove a device from a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_remove_device_from_group_with_name">Remove <xliff:g id="device_name">%s</xliff:g> from group.</string>
+
     <!-- Content description of the button to open the application . [CHAR LIMIT=NONE] -->
     <string name="accessibility_open_application">Open application.</string>
 
