@@ -30,7 +30,6 @@ import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
@@ -39,6 +38,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.keyguard.ui.viewmodel.DozingToLockscreenTransitionViewModel
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.LogLevel
@@ -130,6 +130,7 @@ class ClockEventControllerTest : SysuiTestCase() {
     @Mock private lateinit var parentView: View
     @Mock private lateinit var keyguardTransitionInteractor: KeyguardTransitionInteractor
     @Mock private lateinit var userTracker: UserTracker
+    @Mock private lateinit var dozingToLockscreenViewModel: DozingToLockscreenTransitionViewModel
 
     @Mock private lateinit var zenModeController: ZenModeController
     private var zenModeControllerCallback: ZenModeController.Callback? = null
@@ -163,7 +164,6 @@ class ClockEventControllerTest : SysuiTestCase() {
         kosmos.fakeFeatureFlagsClassic.set(Flags.REGION_SAMPLING, false)
         underTest =
             ClockEventController(
-                kosmos.keyguardInteractor,
                 keyguardTransitionInteractor,
                 broadcastDispatcher,
                 batteryController,
@@ -178,6 +178,7 @@ class ClockEventControllerTest : SysuiTestCase() {
                 zenModeController,
                 zenModeInteractor,
                 userTracker,
+                { dozingToLockscreenViewModel },
             )
         underTest.clock = clock
 

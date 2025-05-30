@@ -307,6 +307,17 @@ public class DozeLog implements Dumpable {
         mLogger.logUltrasonicScreenOffPulseEvent(state);
     }
 
+    /**
+     * Appends fingerprint screen-off pulse event to the logs.
+     * @param state the authentication state that caused the pulse request
+     * @param failureCount number of fingerprint failures during this AOD session
+     */
+    public void traceFingerprintScreenOffPulseEvent(FingerprintAuthenticationStatus state,
+            int failureCount) {
+        if (state == null) return;
+        mLogger.logFingerprintScreenOffPulseEvent(state, failureCount);
+    }
+
     @Override
     public void dump(@NonNull PrintWriter pw, @NonNull String[] args) {
         synchronized (DozeLog.class) {
@@ -568,7 +579,7 @@ public class DozeLog implements Dumpable {
             case REASON_SENSOR_UDFPS_LONG_PRESS: return "udfps";
             case REASON_SENSOR_QUICK_PICKUP: return "quickPickup";
             case PULSE_REASON_FINGERPRINT_ACTIVATED: return "fingerprint-triggered";
-            case REASON_USUDFPS_PULSE: return "usudfps-pulse";
+            case PULSE_REASON_FINGERPRINT_PULSE: return "fingerprint-pulse";
             case PULSE_REASON_MINMODE: return "minmode";
             default: throw new IllegalArgumentException("invalid reason: " + pulseReason);
         }
@@ -600,8 +611,8 @@ public class DozeLog implements Dumpable {
             PULSE_REASON_SENSOR_SIGMOTION, REASON_SENSOR_PICKUP, REASON_SENSOR_DOUBLE_TAP,
             PULSE_REASON_SENSOR_LONG_PRESS, PULSE_REASON_DOCKING, REASON_SENSOR_WAKE_UP_PRESENCE,
             PULSE_REASON_SENSOR_WAKE_REACH, REASON_SENSOR_TAP,
-            REASON_SENSOR_UDFPS_LONG_PRESS, REASON_SENSOR_QUICK_PICKUP,
-            PULSE_REASON_FINGERPRINT_ACTIVATED, REASON_USUDFPS_PULSE, PULSE_REASON_MINMODE
+            PULSE_REASON_FINGERPRINT_PULSE, REASON_SENSOR_QUICK_PICKUP,
+            PULSE_REASON_FINGERPRINT_ACTIVATED, PULSE_REASON_MINMODE
     })
     public @interface Reason {}
     public static final int PULSE_REASON_NONE = -1;
@@ -618,7 +629,7 @@ public class DozeLog implements Dumpable {
     public static final int REASON_SENSOR_UDFPS_LONG_PRESS = 10;
     public static final int REASON_SENSOR_QUICK_PICKUP = 11;
     public static final int PULSE_REASON_FINGERPRINT_ACTIVATED = 12;
-    public static final int REASON_USUDFPS_PULSE = 13;
+    public static final int PULSE_REASON_FINGERPRINT_PULSE = 13;
     public static final int PULSE_REASON_MINMODE = 14;
 
     public static final int TOTAL_REASONS = 15;

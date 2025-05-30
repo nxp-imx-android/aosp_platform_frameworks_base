@@ -98,5 +98,8 @@ val Kosmos.keyguardRootViewModel by Fixture {
         glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
         aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
         minModeManager = Optional.of(minModeManager),
+        primaryBouncerToDozingTransitionViewModel = primaryBouncerToDozingTransitionViewModel,
+        alternateBouncerToDozingTransitionViewModel = alternateBouncerToDozingTransitionViewModel,
+        glanceableHubToDozingTransitionViewModel = glanceableHubToDozingTransitionViewModel,
     )
 }

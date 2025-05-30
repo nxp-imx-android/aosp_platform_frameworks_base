@@ -661,6 +661,8 @@ constructor(
             DozeMachine.State.DOZE_AOD -> DozeStateModel.DOZE_AOD
             DozeMachine.State.DOZE_REQUEST_PULSE -> DozeStateModel.DOZE_REQUEST_PULSE
             DozeMachine.State.DOZE_PULSING -> DozeStateModel.DOZE_PULSING
+            DozeMachine.State.DOZE_PULSING_WITHOUT_UI -> DozeStateModel.DOZE_PULSING_WITHOUT_UI
+            DozeMachine.State.DOZE_PULSING_AUTH_UI -> DozeStateModel.DOZE_PULSING_AUTH_UI
             DozeMachine.State.DOZE_PULSING_BRIGHT -> DozeStateModel.DOZE_PULSING_BRIGHT
             DozeMachine.State.DOZE_PULSE_DONE -> DozeStateModel.DOZE_PULSE_DONE
             DozeMachine.State.FINISH -> DozeStateModel.FINISH

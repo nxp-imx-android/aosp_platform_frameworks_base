@@ -467,6 +467,21 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
         )
     }
 
+    fun logFingerprintScreenOffPulseEvent(
+        state: FingerprintAuthenticationStatus,
+        failureCount: Int,
+    ) {
+        buffer.log(
+            TAG,
+            DEBUG,
+            {
+                str1 = state.toString()
+                int1 = failureCount
+            },
+            { "onFingerprintScreenOffPulseEvent - state=$str1 failureCount=$int1" },
+        )
+    }
+
     fun log(@CompileTimeConstant msg: String) {
         buffer.log(TAG, DEBUG, msg)
     }

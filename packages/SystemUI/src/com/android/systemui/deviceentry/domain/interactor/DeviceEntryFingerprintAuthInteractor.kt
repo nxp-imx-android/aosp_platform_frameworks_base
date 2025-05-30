@@ -73,8 +73,14 @@ constructor(
      * Whether the fingerprint sensor is present under the display as opposed to being on the power
      * button or behind/rear of the phone.
      */
-    val isSensorUnderDisplay =
-        fingerprintPropertyRepository.sensorType.map(FingerprintSensorType::isUdfps)
+    val isSensorUnderDisplay: StateFlow<Boolean> =
+        fingerprintPropertyRepository.sensorType
+            .map(FingerprintSensorType::isUdfps)
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = fingerprintPropertyRepository.sensorType.value.isUdfps(),
+            )
 
     /** True if it is ultrasonic udfps sensor, otherwise false. */
     val isUltrasonic: StateFlow<Boolean> =

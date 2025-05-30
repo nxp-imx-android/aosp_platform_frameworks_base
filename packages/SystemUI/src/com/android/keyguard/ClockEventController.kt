@@ -15,6 +15,7 @@
  */
 package com.android.keyguard
 
+import android.R
 import android.app.NotificationManager.zenModeFromInterruptionFilter
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -43,13 +44,13 @@ import com.android.systemui.dagger.qualifiers.DisplaySpecific
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags.REGION_SAMPLING
-import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.keyguard.ui.viewmodel.DozingToLockscreenTransitionViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
@@ -75,6 +76,7 @@ import com.android.systemui.statusbar.policy.ZenModeController
 import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor
 import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
 import com.android.systemui.util.concurrency.DelayableExecutor
+import dagger.Lazy
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.Executor
@@ -94,7 +96,6 @@ import kotlinx.coroutines.flow.merge
 open class ClockEventController
 @Inject
 constructor(
-    private val keyguardInteractor: KeyguardInteractor,
     private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val batteryController: BatteryController,
@@ -110,6 +111,7 @@ constructor(
     private val zenModeController: ZenModeController,
     private val zenModeInteractor: ZenModeInteractor,
     private val userTracker: UserTracker,
+    private val dozingToLockscreenViewModel: Lazy<DozingToLockscreenTransitionViewModel>,
 ) {
     var loggers =
         listOf(
@@ -257,7 +259,7 @@ constructor(
 
     private fun isDarkTheme(): Boolean {
         val isLightTheme = TypedValue()
-        context.theme.resolveAttribute(android.R.attr.isLightTheme, isLightTheme, true)
+        context.theme.resolveAttribute(R.attr.isLightTheme, isLightTheme, true)
         return isLightTheme.data == 0
     }
 
@@ -478,6 +480,9 @@ constructor(
                     listenForAnyStateToAodTransition(this)
                     listenForAnyStateToLockscreenTransition(this)
                     listenForAnyStateToDozingTransition(this)
+                    if (com.android.systemui.Flags.newDozingKeyguardStates()) {
+                        listenForDozingToLockscreen(this)
+                    }
                 }
             }
         smallTimeListener?.update(shouldTimeListenerRun)
@@ -624,7 +629,16 @@ constructor(
                 .transition(Edge.create(to = LOCKSCREEN))
                 .filter { it.transitionState == TransitionState.STARTED }
                 .filter { it.from != AOD }
+                .filter {
+                    !com.android.systemui.Flags.newDozingKeyguardStates() || it.from != DOZING
+                }
                 .collect { handleDoze(0f) }
+        }
+    }
+
+    private fun listenForDozingToLockscreen(scope: CoroutineScope): Job {
+        return scope.launch {
+            dozingToLockscreenViewModel.get().clockDozeAmount.collect { handleDoze(it) }
         }
     }
 
