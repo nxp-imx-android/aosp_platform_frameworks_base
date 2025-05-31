@@ -252,7 +252,7 @@ public final class MessageQueue {
     private void incAndTraceMessageCount(Message msg, long when) {
         mMessageCount.incrementAndGet();
         if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
-            msg.mSendingThreadName = Thread.currentThread().getName();
+            msg.sendingThreadName = Thread.currentThread().getName();
             msg.mEventId.set(PerfettoTrace.getFlowId());
 
             traceMessageCount();

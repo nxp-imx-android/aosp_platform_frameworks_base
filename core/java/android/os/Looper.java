@@ -204,7 +204,7 @@ public final class Looper {
             PerfettoTrace.begin(PerfettoTrace.MQ_CATEGORY, "message_queue_receive")
                     .beginProto()
                     .beginNested(2004 /* message_queue */)
-                    .addField(1 /* sending_thread_name */, msg.mSendingThreadName)
+                    .addField(1 /* sending_thread_name */, msg.sendingThreadName)
                     .endNested()
                     .endProto()
                     .setTerminatingFlow(msg.mEventId.get())

@@ -111,11 +111,9 @@ public final class Message implements Parcelable {
     public int workSourceUid = UID_NONE;
 
     /**
-     * Sending thread
-     *
-     * @hide
+     * Name of the thread that sent the message.
      */
-    public String mSendingThreadName;
+    /*package*/ String sendingThreadName;
 
     /** If set message is in use.
      * This flag is set when the message is enqueued and remains set while it
