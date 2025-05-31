@@ -64,6 +64,7 @@ fun Change.asLetterboxLifecycleEventType() = when {
 /**
  * Creates a [LetterboxLifecycleEvent] from the information in a [Change].
  */
+// TODO(b/375339716): Clean code and improve readability.
 fun Change.toLetterboxLifecycleEvent(): LetterboxLifecycleEvent {
     val taskBounds = Rect(
         endRelOffset.x,

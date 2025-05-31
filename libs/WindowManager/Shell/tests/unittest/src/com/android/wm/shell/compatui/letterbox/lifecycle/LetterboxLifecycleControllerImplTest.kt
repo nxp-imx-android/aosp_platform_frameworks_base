@@ -23,18 +23,16 @@ import android.view.SurfaceControl.Transaction
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.common.transition.TransitionStateHolder
 import com.android.wm.shell.compatui.letterbox.LetterboxController
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
 import com.android.wm.shell.compatui.letterbox.asMode
+import java.util.function.Consumer
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import java.util.function.Consumer
 
 /**
  * Tests for [LetterboxLifecycleControllerImpl].
@@ -52,32 +50,6 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             r.invokeLifecycleControllerWith(
                 r.createLifecycleEvent()
             )
-        }
-    }
-
-    @Test
-    fun `Letterbox surfaces is destroyed when CLOSE and isRecentsTransitionRunning is false`() {
-        runTestScenario { r ->
-            r.configureIsRecentsTransitionRunning(running = false)
-            r.invokeLifecycleControllerWith(
-                r.createLifecycleEvent(
-                    type = LetterboxLifecycleEventType.CLOSE
-                )
-            )
-            r.verifyDestroyLetterboxSurface(expected = true)
-        }
-    }
-
-    @Test
-    fun `Letterbox surfaces is NOT destroyed when CLOSE and isRecentsTransitionRunning is true`() {
-        runTestScenario { r ->
-            r.configureIsRecentsTransitionRunning(running = true)
-            r.invokeLifecycleControllerWith(
-                r.createLifecycleEvent(
-                    type = LetterboxLifecycleEventType.CLOSE
-                )
-            )
-            r.verifyDestroyLetterboxSurface(expected = false)
         }
     }
 
@@ -149,7 +121,6 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
 
         private val lifecycleController: LetterboxLifecycleControllerImpl
         private val letterboxController: LetterboxController
-        private val transitionStateHolder: TransitionStateHolder
         private val letterboxModeStrategy: LetterboxControllerStrategy
         private val startTransaction: Transaction
         private val finishTransaction: Transaction
@@ -169,7 +140,6 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
 
         init {
             letterboxController = mock<LetterboxController>()
-            transitionStateHolder = mock<TransitionStateHolder>()
             letterboxModeStrategy = mock<LetterboxControllerStrategy>()
             startTransaction = mock<Transaction>()
             finishTransaction = mock<Transaction>()
@@ -177,7 +147,6 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             leash = mock<SurfaceControl>()
             lifecycleController = LetterboxLifecycleControllerImpl(
                 letterboxController,
-                transitionStateHolder,
                 letterboxModeStrategy
             )
         }
@@ -200,27 +169,12 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             leash = letterboxActivityLeash
         )
 
-        fun configureIsRecentsTransitionRunning(running: Boolean) {
-            doReturn(running).`when`(transitionStateHolder).isRecentsTransitionRunning()
-        }
-
         fun invokeLifecycleControllerWith(event: LetterboxLifecycleEvent) {
             lifecycleController.onLetterboxLifecycleEvent(
                 event,
                 startTransaction,
                 finishTransaction
             )
-        }
-
-        fun verifyDestroyLetterboxSurface(
-            expected: Boolean,
-            displayId: Int = DISPLAY_ID,
-            taskId: Int = TASK_ID
-        ) {
-            verify(
-                letterboxController,
-                expected.asMode()
-            ).destroyLetterboxSurface(eq(LetterboxKey(displayId, taskId)), eq(finishTransaction))
         }
 
         fun verifyCreateLetterboxSurface(
