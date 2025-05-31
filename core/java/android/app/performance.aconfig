@@ -62,3 +62,10 @@ flag {
     description: "Controls the onRestart callback in ActivityLifeCycleCallbacks"
     bug: "417520188"
 }
+
+flag {
+    name: "include_anr_subreason"
+    namespace: "system_performance"
+    description: "Include the ANR subreason in the description retrieved from ApplicationExitInfo"
+    bug: "295599954"
+}
