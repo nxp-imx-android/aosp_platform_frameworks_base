@@ -196,7 +196,8 @@ public class DozeServiceHostTest extends SysuiTestCase {
                         DozeLog.REASON_SENSOR_WAKE_UP_PRESENCE,
                         DozeLog.REASON_SENSOR_QUICK_PICKUP,
                         DozeLog.PULSE_REASON_FINGERPRINT_ACTIVATED,
-                        DozeLog.REASON_SENSOR_TAP));
+                        DozeLog.REASON_SENSOR_TAP,
+                        DozeLog.PULSE_REASON_MINMODE));
         HashSet<Integer> reasonsThatDontPulse = new HashSet<>(
                 Arrays.asList(DozeLog.REASON_SENSOR_PICKUP,
                         DozeLog.REASON_SENSOR_DOUBLE_TAP,

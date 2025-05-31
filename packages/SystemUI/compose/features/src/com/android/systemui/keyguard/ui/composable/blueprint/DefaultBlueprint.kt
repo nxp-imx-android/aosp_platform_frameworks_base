@@ -17,38 +17,31 @@
 package com.android.systemui.keyguard.ui.composable.blueprint
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.modifiers.padding
-import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.keyguard.ui.composable.LockscreenTouchHandling
-import com.android.systemui.keyguard.ui.composable.section.AmbientIndicationSection
-import com.android.systemui.keyguard.ui.composable.section.BottomAreaSection
-import com.android.systemui.keyguard.ui.composable.section.LockSection
-import com.android.systemui.keyguard.ui.composable.section.NotificationSection
-import com.android.systemui.keyguard.ui.composable.section.SettingsMenuSection
-import com.android.systemui.keyguard.ui.composable.section.StatusBarSection
-import com.android.systemui.keyguard.ui.composable.section.TopAreaSection
+import com.android.systemui.keyguard.ui.composable.element.AmbientIndicationElement
+import com.android.systemui.keyguard.ui.composable.element.AodPromotedNotificationAreaElement
+import com.android.systemui.keyguard.ui.composable.element.DateAndWeatherElement
+import com.android.systemui.keyguard.ui.composable.element.HeadsUpNotificationsElement
+import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
+import com.android.systemui.keyguard.ui.composable.element.LargeClockElement
+import com.android.systemui.keyguard.ui.composable.element.LockElement
+import com.android.systemui.keyguard.ui.composable.element.MediaCarouselElement
+import com.android.systemui.keyguard.ui.composable.element.NotificationElement
+import com.android.systemui.keyguard.ui.composable.element.SettingsMenuElement
+import com.android.systemui.keyguard.ui.composable.element.ShortcutElement
+import com.android.systemui.keyguard.ui.composable.element.SmallClockElement
+import com.android.systemui.keyguard.ui.composable.element.SmartSpaceElement
+import com.android.systemui.keyguard.ui.composable.element.StatusBarElement
+import com.android.systemui.keyguard.ui.composable.layout.LockscreenSceneLayout
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
-import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel.NotificationsPlacement.BelowClock
-import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel.NotificationsPlacement.BesideClock
-import com.android.systemui.res.R
 import java.util.Optional
 import javax.inject.Inject
-import kotlin.math.roundToInt
 
 /**
  * Renders the lockscreen scene when showing with the default layout (e.g. vertical phone form
@@ -57,224 +50,103 @@ import kotlin.math.roundToInt
 class DefaultBlueprint
 @Inject
 constructor(
-    private val statusBarSection: StatusBarSection,
-    private val lockSection: LockSection,
-    private val ambientIndicationSectionOptional: Optional<AmbientIndicationSection>,
-    private val bottomAreaSection: BottomAreaSection,
-    private val settingsMenuSection: SettingsMenuSection,
-    private val topAreaSection: TopAreaSection,
-    private val notificationSection: NotificationSection,
+    private val statusBarElement: StatusBarElement,
+    private val lockElement: LockElement,
+    private val ambientIndicationElementOptional: Optional<AmbientIndicationElement>,
+    private val shortcutElement: ShortcutElement,
+    private val indicationAreaElement: IndicationAreaElement,
+    private val settingsMenuElement: SettingsMenuElement,
+    private val headsUpNotificationsElement: HeadsUpNotificationsElement,
+    private val notificationsElement: NotificationElement,
+    private val aodPromotedNotificationAreaElement: AodPromotedNotificationAreaElement,
+    private val smallClockElement: SmallClockElement,
+    private val largeClockElement: LargeClockElement,
+    private val keyguardClockViewModel: KeyguardClockViewModel,
+    private val smartSpaceElement: SmartSpaceElement,
+    private val dateAndWeatherElement: DateAndWeatherElement,
+    private val mediaCarouselElement: MediaCarouselElement,
 ) : ComposableLockscreenSceneBlueprint {
 
     override val id: String = "default"
 
     @Composable
     override fun ContentScope.Content(viewModel: LockscreenContentViewModel, modifier: Modifier) {
-        val isUdfpsVisible = viewModel.isUdfpsVisible
         val isBypassEnabled = viewModel.isBypassEnabled
-        val notificationsPlacement = viewModel.notificationsPlacement
 
         if (isBypassEnabled) {
-            with(notificationSection) { HeadsUpNotifications() }
+            with(headsUpNotificationsElement) { HeadsUpNotifications() }
         }
 
         LockscreenTouchHandling(
             viewModelFactory = viewModel.touchHandlingFactory,
             modifier = modifier,
         ) { onSettingsMenuPlaced ->
-            Layout(
-                content = {
-                    // Constrained to above the lock icon.
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        with(statusBarSection) {
-                            StatusBar(
-                                modifier =
-                                    Modifier.fillMaxWidth()
-                                        .padding(
-                                            horizontal = {
-                                                viewModel.unfoldTranslations.start.roundToInt()
-                                            }
-                                        )
-                            )
-                        }
+            val burnIn = rememberBurnIn(keyguardClockViewModel)
 
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            with(topAreaSection) {
-                                DefaultClockLayout(
-                                    smartSpacePaddingTop = viewModel::getSmartSpacePaddingTop,
-                                    modifier =
-                                        Modifier.fillMaxWidth().graphicsLayer {
-                                            translationX = viewModel.unfoldTranslations.start
-                                        },
-                                )
-                            }
-                            if (notificationsPlacement is BesideClock && !isBypassEnabled) {
-                                with(notificationSection) {
-                                    Box(modifier = Modifier.fillMaxHeight()) {
-                                        AodPromotedNotificationArea(
-                                            modifier =
-                                                Modifier.fillMaxWidth(0.5f)
-                                                    .align(notificationsPlacement.alignment)
-                                        )
-                                        Notifications(
-                                            areNotificationsVisible =
-                                                viewModel.areNotificationsVisible,
-                                            burnInParams = null,
-                                            modifier =
-                                                Modifier.fillMaxWidth(0.5f)
-                                                    .fillMaxHeight()
-                                                    .align(notificationsPlacement.alignment)
-                                                    .padding(top = 12.dp),
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Not a mistake; reusing below_clock_padding_start_icons as AOD RON top
-                        // padding for now.
-                        val aodPromotedNotifTopPadding: Dp =
-                            dimensionResource(R.dimen.below_clock_padding_start_icons)
-                        val aodIconPadding: Dp =
-                            dimensionResource(R.dimen.below_clock_padding_start_icons)
-
-                        with(notificationSection) {
-                            if (notificationsPlacement is BelowClock && !isBypassEnabled) {
-                                Box(modifier = Modifier.weight(weight = 1f)) {
-                                    Column(Modifier.align(alignment = Alignment.TopStart)) {
-                                        AodPromotedNotificationArea(
-                                            modifier =
-                                                Modifier.padding(top = aodPromotedNotifTopPadding)
-                                        )
-                                        AodNotificationIcons(
-                                            modifier = Modifier.padding(start = aodIconPadding)
-                                        )
-                                    }
-                                    Notifications(
-                                        areNotificationsVisible = viewModel.areNotificationsVisible,
-                                        burnInParams = null,
-                                    )
-                                }
-                            } else {
-                                Column {
-                                    if (viewModel.notificationsPlacement is BelowClock) {
-                                        AodPromotedNotificationArea(
-                                            modifier =
-                                                Modifier.padding(top = aodPromotedNotifTopPadding)
-                                        )
-                                    }
-                                    AodNotificationIcons(
-                                        modifier =
-                                            Modifier.padding(
-                                                top =
-                                                    dimensionResource(
-                                                        R.dimen.keyguard_status_view_bottom_margin
-                                                    ),
-                                                start = aodIconPadding,
-                                            )
-                                    )
-                                }
-                            }
-                        }
-                        if (!isUdfpsVisible && ambientIndicationSectionOptional.isPresent) {
-                            with(ambientIndicationSectionOptional.get()) {
-                                AmbientIndication(modifier = Modifier.fillMaxWidth())
-                            }
-                        }
-                    }
-
-                    with(lockSection) { LockIcon() }
-
-                    // Aligned to bottom and constrained to below the lock icon.
-                    Column(modifier = Modifier.fillMaxWidth().sysuiResTag("keyguard_root_view")) {
-                        if (isUdfpsVisible && ambientIndicationSectionOptional.isPresent) {
-                            with(ambientIndicationSectionOptional.get()) {
-                                AmbientIndication(modifier = Modifier.fillMaxWidth())
-                            }
-                        }
-
-                        with(bottomAreaSection) {
-                            IndicationArea(modifier = Modifier.fillMaxWidth())
-                        }
-                    }
-
-                    // Aligned to bottom and NOT constrained by the lock icon.
-                    with(bottomAreaSection) {
-                        Shortcut(
-                            isStart = true,
-                            applyPadding = true,
-                            modifier =
-                                Modifier.graphicsLayer {
-                                    translationX = viewModel.unfoldTranslations.start
-                                },
-                        )
-                        Shortcut(
-                            isStart = false,
-                            applyPadding = true,
-                            modifier =
-                                Modifier.graphicsLayer {
-                                    translationX = viewModel.unfoldTranslations.end
-                                },
-                        )
-                    }
-                    with(settingsMenuSection) { SettingsMenu(onSettingsMenuPlaced) }
+            LockscreenSceneLayout(
+                viewModel = viewModel.layout,
+                statusBar = {
+                    with(statusBarElement) { StatusBar(modifier = Modifier.fillMaxWidth()) }
                 },
-                modifier = Modifier.fillMaxSize(),
-            ) { measurables, constraints ->
-                check(measurables.size == 6) { "Expected 6 measurables, got: ${measurables.size}" }
-                val aboveLockIconMeasurable = measurables[0]
-                val lockIconMeasurable = measurables[1]
-                val belowLockIconMeasurable = measurables[2]
-                val startShortcutMeasurable = measurables[3]
-                val endShortcutMeasurable = measurables[4]
-                val settingsMenuMeasurable = measurables[5]
-
-                val noMinConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-                val lockIconPlaceable = lockIconMeasurable.measure(noMinConstraints)
-                val lockIconBounds =
-                    IntRect(
-                        left = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Left],
-                        top = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Top],
-                        right = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Right],
-                        bottom = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Bottom],
-                    )
-
-                val aboveLockIconPlaceable =
-                    aboveLockIconMeasurable.measure(
-                        noMinConstraints.copy(maxHeight = lockIconBounds.top)
-                    )
-                val belowLockIconPlaceable =
-                    belowLockIconMeasurable.measure(
-                        noMinConstraints.copy(
-                            maxHeight =
-                                (constraints.maxHeight - lockIconBounds.bottom).coerceAtLeast(0)
+                smallClock = {
+                    with(smallClockElement) {
+                        SmallClock(
+                            burnInParams = burnIn.parameters,
+                            onTopChanged = burnIn.onSmallClockTopChanged,
                         )
-                    )
-                val startShortcutPleaceable = startShortcutMeasurable.measure(noMinConstraints)
-                val endShortcutPleaceable = endShortcutMeasurable.measure(noMinConstraints)
-                val settingsMenuPlaceable = settingsMenuMeasurable.measure(noMinConstraints)
-
-                layout(constraints.maxWidth, constraints.maxHeight) {
-                    aboveLockIconPlaceable.place(x = 0, y = 0)
-                    lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
-                    belowLockIconPlaceable.place(
-                        x = 0,
-                        y = constraints.maxHeight - belowLockIconPlaceable.height,
-                    )
-                    startShortcutPleaceable.place(
-                        x = 0,
-                        y = constraints.maxHeight - startShortcutPleaceable.height,
-                    )
-                    endShortcutPleaceable.place(
-                        x = constraints.maxWidth - endShortcutPleaceable.width,
-                        y = constraints.maxHeight - endShortcutPleaceable.height,
-                    )
-                    settingsMenuPlaceable.place(
-                        x = (constraints.maxWidth - settingsMenuPlaceable.width) / 2,
-                        y = constraints.maxHeight - settingsMenuPlaceable.height,
-                    )
-                }
-            }
+                    }
+                },
+                largeClock = {
+                    with(largeClockElement) { LargeClock(burnInParams = burnIn.parameters) }
+                },
+                dateAndWeather = { orientation ->
+                    with(dateAndWeatherElement) { DateAndWeather(orientation) }
+                },
+                smartSpace = {
+                    with(smartSpaceElement) {
+                        SmartSpace(
+                            burnInParams = burnIn.parameters,
+                            onTopChanged = burnIn.onSmartspaceTopChanged,
+                            smartSpacePaddingTop = { 0 },
+                        )
+                    }
+                },
+                media = {
+                    with(mediaCarouselElement) {
+                        KeyguardMediaCarousel(isShadeLayoutWide = viewModel.isShadeLayoutWide)
+                    }
+                },
+                notifications = {
+                    Box(modifier = Modifier.fillMaxHeight()) {
+                        with(aodPromotedNotificationAreaElement) { AodPromotedNotificationArea() }
+                        with(notificationsElement) {
+                            Notifications(areNotificationsVisible = true, burnInParams = null)
+                        }
+                    }
+                },
+                lockIcon = { with(lockElement) { LockIcon() } },
+                startShortcut = {
+                    with(shortcutElement) { Shortcut(isStart = true, applyPadding = false) }
+                },
+                ambientIndication = {
+                    if (ambientIndicationElementOptional.isPresent) {
+                        with(ambientIndicationElementOptional.get()) {
+                            AmbientIndication(modifier = Modifier.fillMaxWidth())
+                        }
+                    }
+                },
+                bottomIndication = {
+                    with(indicationAreaElement) {
+                        IndicationArea(modifier = Modifier.fillMaxWidth())
+                    }
+                },
+                endShortcut = {
+                    with(shortcutElement) { Shortcut(isStart = false, applyPadding = false) }
+                },
+                settingsMenu = {
+                    with(settingsMenuElement) { SettingsMenu(onPlaced = onSettingsMenuPlaced) }
+                },
+            )
         }
     }
 }

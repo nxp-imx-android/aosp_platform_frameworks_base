@@ -855,6 +855,9 @@
     <protected-broadcast android:name="android.service.ondeviceintelligence.MODEL_UNLOADED" />
     <protected-broadcast android:name="android.telephony.satellite.action.SATELLITE_START_NON_EMERGENCY_SESSION" />
 
+    <!-- Added in 25Q4 -->
+    <protected-broadcast android:name="android.intent.action.STOP_VOICE_COMMAND" />
+
 
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
@@ -8232,6 +8235,8 @@
                 android:protectionLevel="normal|appop" />
 
     <!-- Required for apps to post promoted notifications.
+         <p>This is required in addition to (not instead of)
+         {@link android.app.Manifest.permission#POST_NOTIFICATIONS}.
          <p>Protection level: normal|appops
          @FlaggedApi(android.app.Flags.FLAG_API_RICH_ONGOING_PERMISSION)
          -->
@@ -8239,7 +8244,7 @@
         android:label="@string/permlab_postPromotedNotifications"
         android:description="@string/permdesc_postPromotedNotifications"
         android:protectionLevel="normal|appop"
-        android:featureFlag="android.app.api_rich_ongoing_permission"/>
+        android:featureFlag="android.app.ui_rich_ongoing"/>
 
     <!-- @SystemApi Required for the privileged assistant apps targeting
          {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM}
@@ -9128,6 +9133,17 @@
     <permission android:name="android.permission.BIND_SUPERVISION_APP_SERVICE"
         android:protectionLevel="signature"
         android:featureFlag="android.permission.flags.supervision_role_enabled" />
+
+    <!-- @SystemApi
+        @FlaggedApi(android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+        This permission is required to set the access state flags on an agent, to access
+        AppFunctions of other apps.
+        <p> Protection level: signature|installer
+        @hide
+    -->
+    <permission android:name="android.permission.MANAGE_APP_FUNCTION_ACCESS"
+        android:protectionLevel="signature|installer"
+        android:featureFlag="android.permission.flags.app_function_access_api_enabled"/>
 
     <!-- Allows an application to programmatically move and resize its tasks when the system is in
         a state that allows such operations, e.g. in a desktop-like environment. It is only

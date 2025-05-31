@@ -25,16 +25,14 @@ val jetpackComposeVersion: String? by extra
 android {
     namespace = "com.android.settingslib.spa.testutils"
 
-    sourceSets {
-        sourceSets.getByName("main") {
-            kotlin.setSrcDirs(listOf("src"))
-            manifest.srcFile("AndroidManifest.xml")
-        }
+    sourceSets.getByName("main") {
+        kotlin.setSrcDirs(listOf("src"))
+        manifest.srcFile("AndroidManifest.xml")
     }
 }
 
 dependencies {
-    api(project(":Spa:spa"))
+    api(project(":Spa"))
 
     api("androidx.arch.core:core-testing:2.2.0")
     api("androidx.compose.ui:ui-test-junit4:$jetpackComposeVersion")

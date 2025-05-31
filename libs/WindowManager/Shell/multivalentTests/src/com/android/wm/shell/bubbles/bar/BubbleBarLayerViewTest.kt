@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles.bar
 
 import android.animation.AnimatorTestRule
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.LauncherApps
 import android.graphics.Insets
@@ -500,6 +501,7 @@ class BubbleBarLayerViewTest {
             testBubblesList.add(it)
         }
         val bubbleTaskView = FakeBubbleTaskViewFactory(context, mainExecutor).create()
+        bubbleTaskView.listener.onTaskCreated(/* taskId= */ 1, ComponentName("package", "class"))
         val bubbleBarExpandedView =
             FakeBubbleFactory.createExpandedView(
                 context,

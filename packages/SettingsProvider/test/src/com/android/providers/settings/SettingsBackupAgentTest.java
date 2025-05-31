@@ -45,6 +45,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
@@ -63,6 +64,7 @@ import android.telephony.SubscriptionManager;
 import android.test.mock.MockContentProvider;
 import android.test.mock.MockContentResolver;
 
+import androidx.annotation.NonNull;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
@@ -321,6 +323,73 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
         // When the current value is larger than the only one available, the largest allowed
         // is returned.
         assertEquals("1.5", testedMethod.apply("1.8"));
+    }
+
+    @Test
+    @DisableFlags(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
+    public void testFindEqualOrNextLargestTextCursorBlinkInterval_flagOff() {
+        final Function<String, String> testedMethod =
+                getFindEqualOrNextLargestTextCursorBlinkInterval();
+
+        // Always return default if flag is off.
+        assertEquals("500", testedMethod.apply("0"));
+        assertEquals("500", testedMethod.apply("333"));
+        assertEquals("500", testedMethod.apply("385"));
+        assertEquals("500", testedMethod.apply("500"));
+        assertEquals("500", testedMethod.apply("625"));
+        assertEquals("500", testedMethod.apply("1000"));
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
+    public void testFindEqualOrNextLargestTextCursorBlinkInterval() {
+        final Function<String, String> testedMethod =
+                getFindEqualOrNextLargestTextCursorBlinkInterval();
+
+        // Any allowed value needs to be preserved.
+        assertEquals("0", testedMethod.apply("0"));
+        assertEquals("333", testedMethod.apply("333"));
+        assertEquals("385", testedMethod.apply("385"));
+        assertEquals("500", testedMethod.apply("500"));
+        assertEquals("625", testedMethod.apply("625"));
+        assertEquals("1000", testedMethod.apply("1000"));
+
+        // When the current value is not one of the available, the next largest is returned.
+        assertEquals("0", testedMethod.apply("-1"));
+        assertEquals("333", testedMethod.apply("5"));
+        assertEquals("385", testedMethod.apply("370"));
+        assertEquals("500", testedMethod.apply("490"));
+        assertEquals("625", testedMethod.apply("600"));
+        assertEquals("1000", testedMethod.apply("900"));
+
+        // When the current value is larger than the only one available, the largest allowed
+        // is returned.
+        assertEquals("1000", testedMethod.apply("1333"));
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
+    public void testFindEqualOrNextLargestTextCursorBlinkInterval_numberFormatException() {
+        final Function<String, String> testedMethod =
+                getFindEqualOrNextLargestTextCursorBlinkInterval();
+
+        // A string with no integer should return the default value.
+        assertEquals("500", testedMethod.apply("test"));
+    }
+
+    @NonNull
+    private Function<String, String> getFindEqualOrNextLargestTextCursorBlinkInterval() {
+        Resources resources = getContext().getResources();
+        return (value) -> SettingsBackupAgent.findEqualOrNextLargestTextCursorBlinkInterval(value,
+                resources.getIntArray(
+                        com.android.internal.R.array
+                                .accessibility_text_cursor_blink_intervals),
+                resources.getInteger(
+                        com.android.internal.R.integer
+                                .no_blink_accessibility_text_cursor_blink_interval_ms),
+                resources.getInteger(
+                        com.android.internal.R.integer
+                                .def_accessibility_text_cursor_blink_interval_ms));
     }
 
     @Test

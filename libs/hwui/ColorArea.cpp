@@ -21,7 +21,7 @@
 
 namespace android::uirenderer {
 
-constexpr static int kMinimumAlphaToConsiderArea = 200;
+constexpr static float kMinimumAlphaToConsiderArea = 200.0f / 255.0f;
 
 inline uint64_t calculateArea(int32_t width, int32_t height) {
     // HWUI doesn't draw anything with negative width or height
@@ -49,7 +49,7 @@ void ColorArea::addArea(uint64_t area, const SkPaint& paint) {
         return;
     }
 
-    addArea(area, paint.getColor());
+    addArea(area, paint.getColor4f());
 }
 
 void ColorArea::addArea(const SkRect& bounds, const SkPaint& paint,
@@ -70,8 +70,8 @@ void ColorArea::addArea(const SkRect& bounds, const SkPaint& paint,
     }
 }
 
-void ColorArea::addArea(uint64_t area, SkColor color) {
-    if (CC_UNLIKELY(SkColorGetA(color) < kMinimumAlphaToConsiderArea)) return;
+void ColorArea::addArea(uint64_t area, SkColor4f color) {
+    if (CC_UNLIKELY(color.fA < kMinimumAlphaToConsiderArea)) return;
 
     // TODO(b/381930266): optimize by detecting common black/white/grey colors and avoid converting
     //  also maybe cache colors or something?

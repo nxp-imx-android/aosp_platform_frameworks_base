@@ -221,6 +221,8 @@ public class MockingOomAdjusterTests {
         ProcessList pr = spy(new ProcessList());
         pr.mService = mService;
         AppProfiler profiler = mock(AppProfiler.class);
+        setFieldValue(ActivityManagerService.class, mService, "mOomAdjObserverLock",
+                new Object());
         setFieldValue(ActivityManagerService.class, mService, "mProcessList",
                 pr);
         setFieldValue(ActivityManagerService.class, mService, "mHandler",
@@ -3961,6 +3963,9 @@ public class MockingOomAdjusterTests {
             app.setIsolatedEntryPoint(mIsolatedEntryPoint);
             setFieldValue(ProcessRecord.class, app, "mWindowProcessController",
                     mock(WindowProcessController.class));
+            doReturn(Long.MIN_VALUE)
+                .when(app.getWindowProcessController())
+                .getPerceptibleTaskStoppedTimeMillis();
             profile.setLastPssTime(mLastPssTime);
             profile.setNextPssTime(mNextPssTime);
             profile.setLastPss(mLastPss);

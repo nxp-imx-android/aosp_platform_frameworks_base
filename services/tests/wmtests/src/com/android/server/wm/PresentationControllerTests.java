@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 
 import android.annotation.NonNull;
-import android.graphics.Rect;
 import android.os.Binder;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
@@ -40,12 +39,11 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.DisplayInfo;
 import android.view.IWindow;
-import android.view.InsetsSourceControl;
-import android.view.InsetsState;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
+import android.view.WindowRelayoutResult;
 
 import androidx.test.filters.SmallTest;
 
@@ -288,8 +286,7 @@ public class PresentationControllerTests extends WindowTestsBase {
                 WindowManager.LayoutParams.TYPE_PRESENTATION);
         final IWindow clientWindow = new TestIWindow();
         final int res = mWm.addWindow(session, clientWindow, params, View.VISIBLE, displayId,
-                userId, WindowInsets.Type.defaultVisible(), null, new InsetsState(),
-                new InsetsSourceControl.Array(), new Rect(), new float[1]);
+                userId, WindowInsets.Type.defaultVisible(), null, new WindowRelayoutResult());
         assertTrue(res >= WindowManagerGlobal.ADD_OKAY);
         final WindowState window = mWm.windowForClientLocked(session, clientWindow, false);
         window.mHasSurface = true;
@@ -310,8 +307,7 @@ public class PresentationControllerTests extends WindowTestsBase {
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.TYPE_PRESENTATION);
         return mWm.addWindow(session, clientWindow, params, View.VISIBLE, displayId, userId,
-                WindowInsets.Type.defaultVisible(), null, new InsetsState(),
-                new InsetsSourceControl.Array(), new Rect(), new float[1]);
+                WindowInsets.Type.defaultVisible(), null, new WindowRelayoutResult());
     }
 
     private DisplayContent createPresentationDisplay() {

@@ -23,11 +23,9 @@ import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
 
 import android.annotation.BinderThread;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.Trace;
@@ -42,7 +40,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.WindowRelayoutResult;
-import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 import android.window.SnapshotDrawerUtils;
 import android.window.StartingWindowInfo;
@@ -117,13 +114,13 @@ public class TaskSnapshotWindow {
 
         final InsetsState tmpInsetsState = new InsetsState();
         final InputChannel tmpInputChannel = new InputChannel();
-        final float[] sizeCompatScale = { 1f };
 
         try {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "TaskSnapshot#addToDisplay");
+            final WindowRelayoutResult addRes = new WindowRelayoutResult(new ClientWindowFrames(),
+                    new MergedConfiguration(), tmpInsetsState, tmpControls);
             final int res = session.addToDisplay(window, layoutParams, View.GONE, displayId,
-                    info.requestedVisibleTypes, tmpInputChannel, tmpInsetsState, tmpControls,
-                    new Rect(), sizeCompatScale);
+                    info.requestedVisibleTypes, tmpInputChannel, addRes);
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             if (res < 0) {
                 Slog.w(TAG, "Failed to add snapshot starting window res=" + res);
@@ -135,9 +132,9 @@ public class TaskSnapshotWindow {
         try {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "TaskSnapshot#relayout");
             final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(tmpFrames,
-                    tmpMergedConfiguration, surfaceControl, tmpInsetsState, tmpControls);
+                    tmpMergedConfiguration, tmpInsetsState, tmpControls);
             session.relayout(window, layoutParams, -1, -1, View.VISIBLE, 0, 0, 0,
-                    outRelayoutResult);
+                    outRelayoutResult, surfaceControl);
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         } catch (RemoteException e) {
             snapshotSurface.clearWindowSynced();
@@ -214,18 +211,16 @@ public class TaskSnapshotWindow {
 
         @BinderThread
         @Override
-        public void resized(ClientWindowFrames frames, boolean reportDraw,
-                MergedConfiguration mergedConfiguration, InsetsState insetsState,
-                boolean forceLayout, boolean alwaysConsumeSystemBars, int displayId, int seqId,
-                boolean dragResizing, @Nullable ActivityWindowInfo activityWindowInfo) {
+        public void resized(WindowRelayoutResult layout, boolean reportDraw,
+                boolean forceLayout, int displayId, boolean dragResizing) {
             final TaskSnapshotWindow snapshot = mOuter.get();
             if (snapshot == null) {
                 return;
             }
             snapshot.mSplashScreenExecutor.execute(() -> {
-                if (mergedConfiguration != null
+                if (layout.mergedConfiguration != null
                         && snapshot.mOrientationOnCreation
-                        != mergedConfiguration.getMergedConfiguration().orientation) {
+                        != layout.mergedConfiguration.getMergedConfiguration().orientation) {
                     // The orientation of the screen is changing. We better remove the snapshot
                     // ASAP as we are going to wait on the new window in any case to unfreeze
                     // the screen, and the starting window is not needed anymore.

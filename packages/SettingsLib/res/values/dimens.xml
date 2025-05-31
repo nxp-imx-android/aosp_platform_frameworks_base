@@ -92,7 +92,7 @@
     <!-- Maximum density scale for external displays. -->
     <fraction name="external_display_density_max_scale">150%</fraction>
     <!-- Minimum density scale for external displays. -->
-    <fraction name="external_display_density_min_scale">80%</fraction>
+    <fraction name="external_display_density_min_scale">70%</fraction>
     <!-- Maximum density scale for external displays for 9 stops. -->
     <fraction name="external_display_density_max_scale_extended">200%</fraction>
     <!-- Minimum density scale for external displays for 9 stops. -->

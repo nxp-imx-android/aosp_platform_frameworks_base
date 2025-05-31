@@ -19,7 +19,7 @@
 
     <application>
         <uses-library android:name="android.test.runner" />
-        <activity android:name=".MainActivity"
+        <activity android:name=".ConcurrentMultiUserTestActivity"
                   android:theme="@android:style/Theme.Material.NoActionBar"
                   android:exported="true">
             <intent-filter>

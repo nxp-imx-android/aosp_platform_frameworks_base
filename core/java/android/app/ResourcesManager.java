@@ -30,7 +30,6 @@ import android.content.res.AssetManager;
 import android.content.res.CompatResources;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
-import android.content.res.Flags;
 import android.content.res.Resources;
 import android.content.res.ResourcesImpl;
 import android.content.res.ResourcesKey;
@@ -148,12 +147,8 @@ public class ResourcesManager {
      * This will collect the package resources' paths from its ApplicationInfo and add them to all
      * existing and future contexts while the application is running.
      */
-    @RavenwoodThrow(reason = "FLAG_REGISTER_RESOURCE_PATHS is unsupported")
+    @RavenwoodThrow(reason = "registerResourcePaths is unsupported")
     public void registerResourcePaths(@NonNull String uniqueId, @NonNull ApplicationInfo appInfo) {
-        if (!Flags.registerResourcePaths()) {
-            return;
-        }
-
         final var application = ActivityThread.currentActivityThread().getApplication();
         final var currentAppInfo = application != null ? application.getApplicationInfo() : null;
         final var sharedLibAssets = new SharedLibraryAssets(appInfo, currentAppInfo);
@@ -178,10 +173,6 @@ public class ResourcesManager {
      */
     public @NonNull Pair<AssetManager, Integer> updateResourceImplAssetsWithRegisteredLibs(
             @NonNull AssetManager assets, boolean reuseAssets) {
-        if (!Flags.registerResourcePaths()) {
-            return new Pair<>(assets, 0);
-        }
-
         final int size;
         final PathCollector collector;
 
@@ -2046,12 +2037,10 @@ public class ResourcesManager {
      * asset paths. This is invoked in Resources constructor to include all Resources instances.
      */
     public void registerAllResourcesReference(@NonNull Resources resources) {
-        if (android.content.res.Flags.registerResourcePaths()) {
-            synchronized (mLock) {
-                cleanupReferences(mAllResourceReferences, mAllResourceReferencesQueue);
-                mAllResourceReferences.add(
-                        new WeakReference<>(resources, mAllResourceReferencesQueue));
-            }
+        synchronized (mLock) {
+            cleanupReferences(mAllResourceReferences, mAllResourceReferencesQueue);
+            mAllResourceReferences.add(
+                    new WeakReference<>(resources, mAllResourceReferencesQueue));
         }
     }
 }

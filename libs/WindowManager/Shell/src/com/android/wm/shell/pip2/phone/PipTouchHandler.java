@@ -41,6 +41,7 @@ import android.os.SystemProperties;
 import android.provider.DeviceConfig;
 import android.util.Size;
 import android.view.DisplayCutout;
+import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -98,7 +99,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
     @NonNull private final SizeSpecSource mSizeSpecSource;
     @NonNull private final PipDisplayLayoutState mPipDisplayLayoutState;
     private final PipUiEventLogger mPipUiEventLogger;
-    private final PipDismissTargetHandler mPipDismissTargetHandler;
+    private PipDismissTargetHandler mPipDismissTargetHandler;
     private final ShellExecutor mMainExecutor;
     @Nullable private final PipPerfHintController mPipPerfHintController;
 
@@ -554,6 +555,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         }
 
         if ((ev.getAction() == MotionEvent.ACTION_DOWN || mTouchState.isUserInteracting())
+                && isDismissTargetEnabled(ev)
                 && mPipDismissTargetHandler.maybeConsumeMotionEvent(ev)) {
             // If the first touch event occurs within the magnetic field, pass the ACTION_DOWN event
             // to the touch state. Touch state needs a DOWN event in order to later process MOVE
@@ -607,6 +609,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             }
             // Fall through to clean up
             case MotionEvent.ACTION_CANCEL: {
+                if (mPipDesktopState.isDraggingPipAcrossDisplaysEnabled()) {
+                    mPipDisplayTransferHandler.removeMirrors();
+                }
                 shouldDeliverToMenu = !mTouchState.startedDragging() && !mTouchState.isDragging();
                 mTouchState.reset();
                 break;
@@ -787,22 +792,29 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         return mMotionHelper;
     }
 
-    @VisibleForTesting
-    public PipResizeGestureHandler getPipResizeGestureHandler() {
+    @VisibleForTesting PipResizeGestureHandler getPipResizeGestureHandler() {
         return mPipResizeGestureHandler;
     }
 
     @VisibleForTesting
-    public void setPipResizeGestureHandler(PipResizeGestureHandler pipResizeGestureHandler) {
+    void setPipResizeGestureHandler(PipResizeGestureHandler pipResizeGestureHandler) {
         mPipResizeGestureHandler = pipResizeGestureHandler;
     }
 
+    @VisibleForTesting PipDismissTargetHandler getPipDismissTargetHandler() {
+        return mPipDismissTargetHandler;
+    }
+
     @VisibleForTesting
-    public void setPipMotionHelper(PipMotionHelper pipMotionHelper) {
+    void setPipDismissTargetHandler(PipDismissTargetHandler pipDismissTargetHandler) {
+        mPipDismissTargetHandler = pipDismissTargetHandler;
+    }
+
+    @VisibleForTesting void setPipMotionHelper(PipMotionHelper pipMotionHelper) {
         mMotionHelper = pipMotionHelper;
     }
 
-    @VisibleForTesting public void setPipTouchState(PipTouchState pipTouchState) {
+    @VisibleForTesting void setPipTouchState(PipTouchState pipTouchState) {
         mTouchState = pipTouchState;
     }
 
@@ -876,7 +888,9 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
             if (touchState.startedDragging()) {
                 mSavedSnapFraction = -1f;
-                mPipDismissTargetHandler.showDismissTargetMaybe();
+                if (isDismissTargetEnabled(touchState.getLatestMotionEvent())) {
+                    mPipDismissTargetHandler.showDismissTargetMaybe();
+                }
             }
 
             if (touchState.isDragging()) {
@@ -1085,6 +1099,13 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             return (stashFromFlingToEdge || stashFromDroppingOnEdge)
                     && !mPipDisplayTransferHandler.isMirrorShown();
         }
+    }
+
+    private boolean isDismissTargetEnabled(MotionEvent ev) {
+        // Only allow dismiss target to be shown and enabled on touch screen and stylus input
+        return !mPipDesktopState.isDraggingPipAcrossDisplaysEnabled()
+                || ev.getSource() == InputDevice.SOURCE_TOUCHSCREEN
+                || ev.getSource() == InputDevice.SOURCE_STYLUS;
     }
 
     /**

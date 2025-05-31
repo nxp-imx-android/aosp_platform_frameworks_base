@@ -16,11 +16,23 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
+import android.annotation.NonNull;
+import android.companion.CompanionDeviceManager;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
+import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.content.Context;
+import android.util.Slog;
+
+import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
 import com.android.server.SystemService;
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service to handle task continuity features
@@ -30,25 +42,64 @@ import com.android.server.SystemService;
  */
 public final class TaskContinuityManagerService extends SystemService {
 
+    private static final String TAG = "TaskContinuityManagerService";
+
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskBroadcaster mTaskBroadcaster;
-    private TaskReceiver mTaskReceiver;
+    private ConnectedAssociationStore mConnectedAssociationStore;
+    private TaskContinuityMessageReceiver mTaskContinuityMessageReceiver;
+    private RemoteTaskStore mRemoteTaskStore;
 
     public TaskContinuityManagerService(Context context) {
         super(context);
-        mTaskBroadcaster = new TaskBroadcaster(context);
-        mTaskReceiver = new TaskReceiver(context);
+        mConnectedAssociationStore = new ConnectedAssociationStore(context);
+
+        mTaskBroadcaster = new TaskBroadcaster(
+            context,
+            mConnectedAssociationStore);
+
+        mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
+        mRemoteTaskStore = new RemoteTaskStore(mConnectedAssociationStore);
     }
 
     @Override
     public void onStart() {
         mTaskContinuityManagerService = new TaskContinuityManagerServiceImpl();
         mTaskBroadcaster.startBroadcasting();
-        mTaskReceiver.startListening();
+        mTaskContinuityMessageReceiver.startListening(this::onTaskContinuityMessageReceived);
         publishBinderService(Context.TASK_CONTINUITY_SERVICE, mTaskContinuityManagerService);
     }
 
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
+        @Override
+        public List<RemoteTask> getRemoteTasks() {
+            return new ArrayList<>();
+        }
 
+        @Override
+        public void registerRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+        }
+
+        @Override
+        public void unregisterRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+        }
+    }
+
+    private void onTaskContinuityMessageReceived(
+        int associationId,
+        TaskContinuityMessage taskContinuityMessage) {
+
+        Slog.v(TAG, "Received message from association id: " + associationId);
+
+        switch (taskContinuityMessage.getData()) {
+            case ContinuityDeviceConnected continuityDeviceConnected:
+                mRemoteTaskStore.setTasks(
+                    associationId,
+                    continuityDeviceConnected.getRemoteTasks());
+                break;
+            default:
+                Slog.w(TAG, "Received unknown message from device: " + associationId);
+                break;
+        }
     }
 }

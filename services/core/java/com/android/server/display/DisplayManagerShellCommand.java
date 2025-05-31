@@ -86,6 +86,8 @@ class DisplayManagerShellCommand extends ShellCommand {
                 return setAmbientColorTemperatureOverride();
             case "set-user-preferred-display-mode":
                 return setUserPreferredDisplayMode();
+            case "reset-user-preferred-display-mode":
+                return resetUserPreferredDisplayMode();
             case "clear-user-preferred-display-mode":
                 return clearUserPreferredDisplayMode();
             case "get-user-preferred-display-mode":
@@ -163,7 +165,17 @@ class DisplayManagerShellCommand extends ShellCommand {
         pw.println("  dwb-set-cct CCT");
         pw.println("    Sets the ambient color temperature override to CCT (use -1 to disable).");
         pw.println("  set-user-preferred-display-mode WIDTH HEIGHT REFRESH-RATE "
-                + "DISPLAY_ID (optional)");
+                + "DISPLAY_ID (optional) STORE_MODE (optional)");
+        pw.println("    Sets the user preferred display mode which has fields WIDTH, HEIGHT and "
+                + "REFRESH-RATE. If DISPLAY_ID is passed, the mode change is applied to display"
+                + "with id = DISPLAY_ID, if DISPLAY_ID == -1 or missing change is applied globally."
+                + " If STORE_MODE is true or missing, mode will be persisted, otherwise it will be"
+                + "applied without persisting. Should be used only together with DISPLAY_ID.");
+        pw.println("  reset-user-preferred-display-mode DISPLAY_ID (optional)");
+        pw.println("    Resets the user preferred display mode with stored mode. "
+                + "If DISPLAY_ID is passed, the persisted mode is applied to display with "
+                + "id = DISPLAY_ID, if DISPLAY_ID == -1 or missing persisted mode "
+                + "is applied globally.");
         pw.println("    Sets the user preferred display mode which has fields WIDTH, HEIGHT and "
                 + "REFRESH-RATE. If DISPLAY_ID is passed, the mode change is applied to display"
                 + "with id = DISPLAY_ID, else mode change is applied globally.");
@@ -492,8 +504,29 @@ class DisplayManagerShellCommand extends ShellCommand {
                 return 1;
             }
         }
+        final String storeModeText = getNextArg();
+        boolean storeMode = true;
+        if (storeModeText != null) {
+            storeMode = Boolean.parseBoolean(storeModeText);
+        }
+
         mService.setUserPreferredDisplayModeInternal(
-                displayId, new Display.Mode(width, height, refreshRate));
+                displayId, new Display.Mode(width, height, refreshRate), storeMode);
+        return 0;
+    }
+
+    private int resetUserPreferredDisplayMode() {
+        final String displayIdText = getNextArg();
+        int displayId = Display.INVALID_DISPLAY;
+        if (displayIdText != null) {
+            try {
+                displayId = Integer.parseInt(displayIdText);
+            } catch (NumberFormatException e) {
+                getErrPrintWriter().println("Error: invalid format of display ID");
+                return 1;
+            }
+        }
+        mService.resetUserPreferredDisplayModeInternal(displayId);
         return 0;
     }
 

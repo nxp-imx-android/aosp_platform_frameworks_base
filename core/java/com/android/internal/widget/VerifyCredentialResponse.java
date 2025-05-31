@@ -23,6 +23,8 @@ import android.os.Parcelable;
 import android.service.gatekeeper.GateKeeperResponse;
 import android.util.Slog;
 
+import com.android.internal.util.Preconditions;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.time.Duration;
@@ -33,18 +35,48 @@ import java.time.Duration;
  */
 public final class VerifyCredentialResponse implements Parcelable {
 
-    public static final int RESPONSE_ERROR = -1;
+    /**
+     * Credential verification failed for a reason that isn't covered by one of the more specific
+     * response codes.
+     */
+    public static final int RESPONSE_OTHER_ERROR = -1;
+
+    /** Credential was successfully verified. */
     public static final int RESPONSE_OK = 0;
+
+    /**
+     * Either the credential could not be verified because a timeout is still active, or the
+     * credential was incorrect and there is a timeout before the next attempt will be allowed.
+     * {@link #getTimeout()} gives the timeout.
+     */
     public static final int RESPONSE_RETRY = 1;
-    @IntDef({RESPONSE_ERROR,
-            RESPONSE_OK,
-            RESPONSE_RETRY})
+
+    /** Credential was shorter than the minimum length. */
+    public static final int RESPONSE_CRED_TOO_SHORT = 2;
+
+    /** Credential was incorrect and was already tried recently. */
+    public static final int RESPONSE_CRED_ALREADY_TRIED = 3;
+
+    /**
+     * Credential was incorrect and none of {@link #RESPONSE_RETRY}, {@link
+     * #RESPONSE_CRED_TOO_SHORT}, or {@link #RESPONSE_CRED_ALREADY_TRIED} applies.
+     */
+    public static final int RESPONSE_CRED_INCORRECT = 4;
+
+    @IntDef({
+        RESPONSE_OTHER_ERROR,
+        RESPONSE_OK,
+        RESPONSE_RETRY,
+        RESPONSE_CRED_TOO_SHORT,
+        RESPONSE_CRED_ALREADY_TRIED,
+        RESPONSE_CRED_INCORRECT
+    })
     @Retention(RetentionPolicy.SOURCE)
     @interface ResponseCode {}
 
     public static final VerifyCredentialResponse OK = new VerifyCredentialResponse.Builder()
             .build();
-    public static final VerifyCredentialResponse ERROR = fromError();
+    public static final VerifyCredentialResponse OTHER_ERROR = fromError(RESPONSE_OTHER_ERROR);
     private static final String TAG = "VerifyCredentialResponse";
 
     private final @ResponseCode int mResponseCode;
@@ -119,12 +151,23 @@ public final class VerifyCredentialResponse implements Parcelable {
         return fromTimeout((int) Math.min(timeout.toMillis(), (long) Integer.MAX_VALUE));
     }
 
-    /**
-     * Since error (incorrect password) should never result in any of the other fields from
-     * being populated, provide a default method to return a VerifyCredentialResponse.
-     */
+    /** Builds a {@link VerifyCredentialResponse} with {@link RESPONSE_OTHER_ERROR}. */
     public static VerifyCredentialResponse fromError() {
-        return new VerifyCredentialResponse(RESPONSE_ERROR,
+        return fromError(RESPONSE_OTHER_ERROR);
+    }
+
+    /**
+     * Builds a {@link VerifyCredentialResponse} for an error response that does not use any of the
+     * additional fields.
+     */
+    public static VerifyCredentialResponse fromError(@ResponseCode int responseCode) {
+        Preconditions.checkArgument(
+                responseCode == RESPONSE_OTHER_ERROR
+                        || responseCode == RESPONSE_CRED_TOO_SHORT
+                        || responseCode == RESPONSE_CRED_ALREADY_TRIED
+                        || responseCode == RESPONSE_CRED_INCORRECT);
+        return new VerifyCredentialResponse(
+                responseCode,
                 0 /* timeout */,
                 null /* gatekeeperHAT */,
                 0L /* gatekeeperPasswordHandle */);

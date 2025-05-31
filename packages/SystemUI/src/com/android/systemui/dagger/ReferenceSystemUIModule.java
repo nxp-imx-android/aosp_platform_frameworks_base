@@ -37,6 +37,9 @@ import com.android.systemui.dock.DockManager;
 import com.android.systemui.dock.DockManagerImpl;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.education.dagger.ContextualEducationModule;
+import com.android.systemui.Flags;
+import com.android.systemui.minmode.MinModeManager;
+import com.android.systemui.minmode.MinModeManagerImpl;
 import com.android.systemui.emergency.EmergencyGestureModule;
 import com.android.systemui.inputdevice.tutorial.KeyboardTouchpadTutorialModule;
 import com.android.systemui.keyboard.shortcut.ShortcutHelperModule;
@@ -107,9 +110,11 @@ import dagger.Provides;
 import dagger.multibindings.ClassKey;
 import dagger.multibindings.IntoMap;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Named;
+import javax.inject.Provider;
 
 /**
  * A dagger module for injecting default implementations of components of System UI.
@@ -219,6 +224,16 @@ public abstract class ReferenceSystemUIModule {
 
     @Binds
     abstract DockManager bindDockManager(DockManagerImpl dockManager);
+
+    @Provides
+    @SysUISingleton
+    static Optional<MinModeManager> bindMinModeManager(Provider<MinModeManagerImpl> minModeManager) {
+      if (Flags.enableMinmode()) {
+        return Optional.of(minModeManager.get());
+      } else {
+        return Optional.empty();
+      }
+    }
 
     @SysUISingleton
     @Provides

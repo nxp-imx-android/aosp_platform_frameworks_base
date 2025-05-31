@@ -287,10 +287,6 @@ public final class InputMethodDebug {
                 return "DISPLAY_INSETS_CHANGED";
             case SoftInputShowHideReason.DISPLAY_CONTROLS_CHANGED:
                 return "DISPLAY_CONTROLS_CHANGED";
-            case SoftInputShowHideReason.UNBIND_CURRENT_METHOD:
-                return "UNBIND_CURRENT_METHOD";
-            case SoftInputShowHideReason.HIDE_SOFT_INPUT_ON_ANIMATION_STATE_CHANGED:
-                return "HIDE_SOFT_INPUT_ON_ANIMATION_STATE_CHANGED";
             case SoftInputShowHideReason.HIDE_SOFT_INPUT_REQUEST_HIDE_WITH_CONTROL:
                 return "HIDE_SOFT_INPUT_REQUEST_HIDE_WITH_CONTROL";
             case SoftInputShowHideReason.SHOW_SOFT_INPUT_IME_TOGGLE_SOFT_INPUT:

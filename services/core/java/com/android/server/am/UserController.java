@@ -245,6 +245,13 @@ class UserController implements Handler.Callback {
     private static final long TIME_BEFORE_USERS_ALARM_TO_AVOID_STOPPING_MS = 60 * 60_000; // 60 mins
 
     /**
+     * If a background user stop is requested, but doing so right now isn't suitable (e.g. because
+     * it is currently playing audio) and we have to reschedule that background stop, we should
+     * schedule that stop for this many seconds from now.
+     */
+    private static final int POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS = 30 * 60; // 30 mins
+
+    /**
      * Maximum number of users we allow to be running at a time, including system user.
      *
      * <p>This parameter only affects how many background users will be stopped when switching to a
@@ -2650,6 +2657,16 @@ class UserController implements Handler.Callback {
     }
 
     /**
+     * Possibly schedules the user to be stopped at a future point, even though we had originally
+     * wanted to stop it now. For example, perhaps we have to postpone a scheduled user stop for
+     * some reason, and therefore are rescheduling it until a later point.
+     * This is only intended for full users that are currently in the background.
+     */
+    private void rescheduleStopOfBackgroundUser(@UserIdInt int oldUserId) {
+        scheduleStopOfBackgroundUser(oldUserId, POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS);
+    }
+
+    /**
      * Possibly schedules the user to be stopped at after the given number of seconds.
      * This is only intended for full users that are currently in the background.
      */
@@ -2708,13 +2725,13 @@ class UserController implements Handler.Callback {
         if (avoidStoppingUserDueToUpcomingAlarm(userId)) {
             // We want this user running soon for alarm-purposes, so don't stop it now. Reschedule.
             Slogf.d(TAG, "User %d will fire an alarm soon, so reschedule bg stopping", userId);
-            scheduleStopOfInactiveBackgroundUser(userId);
+            rescheduleStopOfBackgroundUser(userId);
             return;
         }
         if (mInjector.getAudioManagerInternal().isUserPlayingAudio(userId)) {
             // User is audible (even if invisibly, e.g. via an alarm), so don't stop it. Reschedule.
             Slogf.d(TAG, "User %d is playing audio, so reschedule bg stopping", userId);
-            scheduleStopOfInactiveBackgroundUser(userId);
+            rescheduleStopOfBackgroundUser(userId);
             return;
         }
         synchronized (mLock) {
@@ -2729,7 +2746,7 @@ class UserController implements Handler.Callback {
             final UserInfo currentOrTargetUser = getCurrentUserLU();
             if (currentOrTargetUser != null && currentOrTargetUser.isGuest()) {
                 // Don't kill any background users for the sake of a Guest. Just reschedule instead.
-                scheduleStopOfInactiveBackgroundUser(userId);
+                rescheduleStopOfBackgroundUser(userId);
                 return;
             }
             Slogf.i(TAG, "Stopping background user %d due to inactivity", userId);

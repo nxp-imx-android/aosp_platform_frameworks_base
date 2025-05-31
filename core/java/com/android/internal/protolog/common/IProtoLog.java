@@ -75,4 +75,11 @@ public interface IProtoLog {
      * @return an immutable list of the registered ProtoLog groups in this ProtoLog instance.
      */
     List<IProtoLogGroup> getRegisteredGroups();
+
+    /**
+     * Register ProtoLog groups with this ProtoLog instance.
+     * Only groups registered with this ProtoLog instance should be logged through this instance.
+     * @param groups The groups to register.
+     */
+    void registerGroups(IProtoLogGroup... groups);
 }

@@ -29,18 +29,13 @@ android {
         versionName = "1.0"
     }
 
-    sourceSets {
-        sourceSets.getByName("main") {
-            kotlin.setSrcDirs(listOf("src"))
-            res.setSrcDirs(listOf("res"))
-            manifest.srcFile("AndroidManifest.xml")
-        }
-    }
-    buildFeatures {
-        compose = true
+    sourceSets.getByName("main") {
+        kotlin.setSrcDirs(listOf("src"))
+        res.setSrcDirs(listOf("res"))
+        manifest.srcFile("AndroidManifest.xml")
     }
 }
 
 dependencies {
-    implementation(project(":Spa:spa"))
+    implementation(project(":Spa"))
 }

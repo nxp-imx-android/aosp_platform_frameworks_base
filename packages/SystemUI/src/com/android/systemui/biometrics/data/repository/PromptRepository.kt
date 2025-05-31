@@ -19,10 +19,12 @@ package com.android.systemui.biometrics.data.repository
 import android.hardware.biometrics.PromptInfo
 import android.util.Log
 import com.android.systemui.biometrics.AuthController
+import com.android.systemui.biometrics.shared.model.FallbackOptionModel
+import com.android.systemui.biometrics.shared.model.IconType
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -61,6 +63,9 @@ interface PromptRepository {
 
     /** The package name that the prompt is called from. */
     val opPackageName: StateFlow<String?>
+
+    /** The fallback options set by prompt caller. */
+    val fallbackOptions: Flow<List<FallbackOptionModel>>
 
     /**
      * If explicit confirmation is required.
@@ -122,6 +127,16 @@ constructor(
 
     private val _opPackageName: MutableStateFlow<String?> = MutableStateFlow(null)
     override val opPackageName = _opPackageName.asStateFlow()
+
+    override val fallbackOptions: Flow<List<FallbackOptionModel>> =
+        promptInfo.map { info ->
+            info?.fallbackOptions?.map { fallbackOption ->
+                FallbackOptionModel(
+                    fallbackOption.text,
+                    IconType.entries.first { it.ordinal == fallbackOption.iconType },
+                )
+            } ?: emptyList()
+        }
 
     private val _faceSettings =
         _userId.map { id -> faceSettings.forUser(id) }.distinctUntilChanged()

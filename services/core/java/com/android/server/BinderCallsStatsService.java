@@ -53,6 +53,7 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.BinderCallsStats;
 import com.android.internal.os.BinderInternal;
 import com.android.internal.os.CachedDeviceState;
+import com.android.internal.os.NativeBinderStats;
 import com.android.internal.util.DumpUtils;
 
 import java.io.FileDescriptor;
@@ -255,6 +256,7 @@ public class BinderCallsStatsService extends Binder {
         private BinderCallsStatsService mService;
         private BinderCallsStats mBinderCallsStats;
         private AuthorizedWorkSourceProvider mWorkSourceProvider;
+        private NativeBinderStats mNativeBinderStats;
 
         public LifeCycle(Context context) {
             super(context);
@@ -266,6 +268,7 @@ public class BinderCallsStatsService extends Binder {
             mWorkSourceProvider = new AuthorizedWorkSourceProvider();
             mService = new BinderCallsStatsService(
                     mBinderCallsStats, mWorkSourceProvider);
+            mNativeBinderStats = new NativeBinderStats(getContext());
             publishLocalService(Internal.class, new Internal(mBinderCallsStats));
             publishBinderService(SERVICE_NAME, mService);
             boolean detailedTrackingEnabled = SystemProperties.getBoolean(
@@ -290,6 +293,7 @@ public class BinderCallsStatsService extends Binder {
                 // initialized before installing it.
                 mWorkSourceProvider.systemReady(getContext());
                 mService.systemReady(getContext());
+                mNativeBinderStats.systemReady();
             }
         }
     }

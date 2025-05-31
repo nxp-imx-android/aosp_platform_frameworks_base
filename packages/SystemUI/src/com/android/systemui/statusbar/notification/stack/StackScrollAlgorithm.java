@@ -474,12 +474,11 @@ public class StackScrollAlgorithm {
                 if (v instanceof EmptyShadeView) {
                     emptyShadeVisible = true;
                 }
-                if (v instanceof FooterView footerView) {
+                if (!SceneContainerFlag.isEnabled() && v instanceof FooterView footerView) {
                     if (emptyShadeVisible || notGoneIndex == 0) {
                         // if the empty shade is visible or the footer is the first visible
                         // view, we're in a transitory state so let's leave the footer alone.
-                        if (Flags.notificationsFooterVisibilityFix()
-                                && !SceneContainerFlag.isEnabled()) {
+                        if (Flags.notificationsFooterVisibilityFix()) {
                             // ...except for the hidden state, to prevent it from flashing on
                             // the screen (this piece is copied from updateChild, and is not
                             // necessary in flexiglass).
@@ -491,21 +490,8 @@ public class StackScrollAlgorithm {
                     }
                 }
 
-                notGoneIndex = updateNotGoneIndex(state, notGoneIndex, v);
-                if (v instanceof ExpandableNotificationRow row) {
-
-                    // handle the notGoneIndex for the children as well
-                    List<ExpandableNotificationRow> children = row.getAttachedChildren();
-                    if (row.isSummaryWithChildren() && children != null) {
-                        for (ExpandableNotificationRow childRow : children) {
-                            if (childRow.getVisibility() != View.GONE) {
-                                ExpandableViewState childState = childRow.getViewState();
-                                childState.notGoneIndex = notGoneIndex;
-                                notGoneIndex++;
-                            }
-                        }
-                    }
-                }
+                state.visibleChildren.add(v);
+                notGoneIndex = updateNotGoneIndex(notGoneIndex, v);
             }
         }
 
@@ -549,12 +535,28 @@ public class StackScrollAlgorithm {
         }
     }
 
-    private int updateNotGoneIndex(StackScrollAlgorithmState state, int notGoneIndex,
-            ExpandableView v) {
+    private int updateNotGoneIndex(int notGoneIndex, ExpandableView v) {
         ExpandableViewState viewState = v.getViewState();
         viewState.notGoneIndex = notGoneIndex;
-        state.visibleChildren.add(v);
         notGoneIndex++;
+        if (v instanceof ExpandableNotificationRow row) {
+
+            // handle the notGoneIndex for the children as well
+            List<ExpandableNotificationRow> children = row.getAttachedChildren();
+            if (row.isSummaryWithChildren() && children != null) {
+                for (ExpandableNotificationRow childRow : children) {
+                    if (childRow.getVisibility() != View.GONE) {
+                        if (NotificationBundleUi.isEnabled()) {
+                            notGoneIndex = updateNotGoneIndex(notGoneIndex, childRow);
+                        } else {
+                            ExpandableViewState childState = childRow.getViewState();
+                            childState.notGoneIndex = notGoneIndex;
+                            notGoneIndex++;
+                        }
+                    }
+                }
+            }
+        }
         return notGoneIndex;
     }
 

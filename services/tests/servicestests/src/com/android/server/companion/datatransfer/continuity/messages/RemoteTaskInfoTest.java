@@ -17,8 +17,8 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
-import android.app.ActivityManager;
 import android.app.TaskInfo;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
@@ -40,11 +40,10 @@ public class RemoteTaskInfoTest {
         String expectedLabel = "test";
         long expectedLastActiveTime = 0;
 
-        TaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        taskInfo.taskId = expectedId;
-        taskInfo.taskDescription
-            = new ActivityManager.TaskDescription(expectedLabel);
-        taskInfo.lastActiveTime = expectedLastActiveTime;
+        TaskInfo taskInfo = createRunningTaskInfo(
+            expectedId,
+            expectedLabel,
+            expectedLastActiveTime);
 
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
 
@@ -102,12 +101,11 @@ public class RemoteTaskInfoTest {
         int expectedId = 1;
         String expectedLabel = "test";
         long expectedLastActiveTime = 1;
+        TaskInfo taskInfo = createRunningTaskInfo(
+            expectedId,
+            expectedLabel,
+            expectedLastActiveTime);
 
-       TaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        taskInfo.taskId = expectedId;
-        taskInfo.taskDescription
-            = new ActivityManager.TaskDescription(expectedLabel);
-        taskInfo.lastActiveTime = expectedLastActiveTime;
         RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
 
         ProtoOutputStream pos = new ProtoOutputStream();

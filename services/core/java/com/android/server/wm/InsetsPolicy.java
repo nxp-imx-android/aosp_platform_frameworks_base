@@ -49,7 +49,6 @@ import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowInsetsAnimation;
 import android.view.WindowInsetsAnimation.Bounds;
 import android.view.WindowManager;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodManager;
 
@@ -403,8 +402,7 @@ class InsetsPolicy {
             // Keep frames, caption, and IME.
             int types = WindowInsets.Type.captionBar();
             if (windowingMode != WINDOWING_MODE_PINNED) {
-                if (!Flags.refactorInsetsController() || (mDisplayContent != null
-                        && target == mDisplayContent.getImeInputTarget()
+                if ((mDisplayContent != null && target == mDisplayContent.getImeInputTarget()
                         && (WindowInsets.Type.ime() & target.getRequestedVisibleTypes()) != 0)) {
                     types |= WindowInsets.Type.ime();
                 }
@@ -483,8 +481,7 @@ class InsetsPolicy {
                 state.addSource(imeSource);
                 return state;
             }
-        } else if (Flags.refactorInsetsController()
-                && (w.mMergedExcludeInsetsTypes & WindowInsets.Type.ime()) != 0) {
+        } else if ((w.mMergedExcludeInsetsTypes & WindowInsets.Type.ime()) != 0) {
             // In some cases (e.g. split screen from when the IME was requested and the animation
             // actually starts) the insets should not be send, unless the flag is unset.
             final InsetsSource originalImeSource = originalState.peekSource(ID_IME);

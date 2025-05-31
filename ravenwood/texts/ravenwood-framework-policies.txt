@@ -65,3 +65,4 @@ class android.graphics.drawable.Drawable allow-annotation
 
 class android.app.ActivityThread allow-annotation
     method currentSystemContext allow-annotation
+    method currentApplication allow-annotation

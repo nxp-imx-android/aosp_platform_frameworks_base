@@ -823,9 +823,15 @@
     <!-- The alpha of the dividing line between child notifications of a notification group. -->
     <item name="notification_divider_alpha" format="float" type="dimen">1</item>
 
+
+    <!-- The minimum spacing to ensure between notifications in case they overlap -->
+    <dimen name="notification_minimum_spacing_between_children">0.5dp</dimen>
+
     <!-- The height of the divider between the individual notifications in a notification
          group. -->
-    <dimen name="notification_children_container_divider_height">0.5dp</dimen>
+    <dimen name="notification_children_container_divider_height">
+        @dimen/notification_minimum_spacing_between_children
+    </dimen>
 
     <!-- The height of the divider between the individual notifications within a bundle -->
     <dimen name="bundle_children_container_divider_height">2dp</dimen>

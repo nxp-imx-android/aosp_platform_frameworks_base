@@ -226,7 +226,7 @@ class ActivityMetricsLogger {
             Trace.asyncTraceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, mTraceName, 0);
         }
 
-        void stopTrace(boolean abort, TransitionInfo endInfo) {
+        void stopTrace(boolean abort, TransitionInfo endInfo, String cause) {
             if (mTraceName == null) return;
             if (!abort && endInfo != mAssociatedTransitionInfo) {
                 // Multiple TransitionInfo can be associated with the same LaunchingState (e.g. a
@@ -241,7 +241,7 @@ class ActivityMetricsLogger {
             } else {
                 final String status;
                 if (abort) {
-                    status = ":canceled:";
+                    status = ":canceled-" + cause + ":";
                 } else if (!mAssociatedTransitionInfo.mProcessSwitch) {
                     status = ":completed-same-process:";
                 } else {
@@ -941,7 +941,15 @@ class ActivityMetricsLogger {
         mLastTransitionInfo.remove(r);
         final TransitionInfo info = getActiveTransitionInfo(r);
         if (info != null) {
-            abort(info, "removed");
+            final Task task = r.getTask();
+            if (task == null
+                    // If the task of removing activity may be launching another activity, e.g.
+                    // executing FLAG_ACTIVITY_CLEAR_TASK from ActivityStarter#complyActivityFlags,
+                    // then do not abort the tracker because a new activity will be added.
+                    || !task.isClearingToReuseTask()
+                    || !r.mAtmService.getActivityStartController().isInExecution()) {
+                abort(info, "activity removed");
+            }
         }
 
         final int packageUid = r.info.applicationInfo.uid;
@@ -1075,7 +1083,7 @@ class ActivityMetricsLogger {
             return;
         }
         if (DEBUG_METRICS) Slog.i(TAG, "abort launch cause=" + cause);
-        state.stopTrace(true /* abort */, null /* endInfo */);
+        state.stopTrace(true /* abort */, null /* endInfo */, cause);
         launchObserverNotifyIntentFailed(state.mStartUptimeNs);
     }
 
@@ -1091,7 +1099,7 @@ class ActivityMetricsLogger {
             Slog.i(TAG, "done abort=" + abort + " cause=" + cause + " timestamp=" + timestampNs
                     + " info=" + info);
         }
-        info.mLaunchingState.stopTrace(abort, info);
+        info.mLaunchingState.stopTrace(abort, info, cause);
         stopLaunchTrace(info);
         final Boolean isHibernating =
                 mLastHibernationStates.remove(info.mLastLaunchedActivity.packageName);

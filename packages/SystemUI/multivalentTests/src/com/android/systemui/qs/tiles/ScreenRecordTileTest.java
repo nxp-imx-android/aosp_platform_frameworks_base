@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.when;
 import android.app.Dialog;
 import android.media.projection.StopReason;
 import android.os.Handler;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.quicksettings.Tile;
@@ -44,6 +46,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.classifier.FalsingManagerFake;
+import com.android.systemui.Flags;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger;
 import com.android.systemui.plugins.ActivityStarter;
@@ -216,6 +219,86 @@ public class ScreenRecordTileTest extends SysuiTestCase {
         verify(mController, times(1)).cancelCountdown();
     }
 
+    // Test that clicking the tile is NOP if opened from desktop.
+    @Test
+    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
+    public void testClickFromDesktop() {
+        when(mController.isStarting()).thenReturn(false);
+        when(mController.isRecording()).thenReturn(false);
+
+        mTile.refreshState();
+        mTestableLooper.processAllMessages();
+
+        // Override the resource to enable desktop features.
+        overrideResource(R.bool.config_enableDesktopScreenCapture, true);
+
+        mTile.handleClick(null /* view */);
+        mTestableLooper.processAllMessages();
+        verify(mController, never()).createScreenRecordDialog(null);
+    }
+
+    // Test that clicking the tile in desktop opens the recording dialog if flag is disabled.
+    @Test
+    @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
+    public void testClickFromDesktopFlagDisabled() {
+        when(mController.isStarting()).thenReturn(false);
+        when(mController.isRecording()).thenReturn(false);
+
+        mTile.refreshState();
+        mTestableLooper.processAllMessages();
+
+        // Override the resource to enable desktop features.
+        overrideResource(R.bool.config_enableDesktopScreenCapture, true);
+
+        mTile.handleClick(null /* view */);
+        mTestableLooper.processAllMessages();
+
+        ArgumentCaptor<Runnable> onStartRecordingClicked = ArgumentCaptor.forClass(Runnable.class);
+        verify(mController).createScreenRecordDialog(onStartRecordingClicked.capture());
+    }
+
+    // Test that clicking the tile not in desktop opens the recording dialog even if flag is
+    // enabled.
+    @Test
+    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
+    public void testClickNotFromDesktopFlagEnabled() {
+        when(mController.isStarting()).thenReturn(false);
+        when(mController.isRecording()).thenReturn(false);
+
+        mTile.refreshState();
+        mTestableLooper.processAllMessages();
+
+        // Override the resource to disable desktop features.
+        overrideResource(R.bool.config_enableDesktopScreenCapture, false);
+
+        mTile.handleClick(null /* view */);
+        mTestableLooper.processAllMessages();
+
+        ArgumentCaptor<Runnable> onStartRecordingClicked = ArgumentCaptor.forClass(Runnable.class);
+        verify(mController).createScreenRecordDialog(onStartRecordingClicked.capture());
+    }
+
+    // Test that clicking the tile not in desktop opens the recording dialog when the flag is
+    // disabled.
+    @Test
+    @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
+    public void testClickNotFromDesktopFlagDisabled() {
+        when(mController.isStarting()).thenReturn(false);
+        when(mController.isRecording()).thenReturn(false);
+
+        mTile.refreshState();
+        mTestableLooper.processAllMessages();
+
+        // Override the resource to disable desktop features.
+        overrideResource(R.bool.config_enableDesktopScreenCapture, false);
+
+        mTile.handleClick(null /* view */);
+        mTestableLooper.processAllMessages();
+
+        ArgumentCaptor<Runnable> onStartRecordingClicked = ArgumentCaptor.forClass(Runnable.class);
+        verify(mController).createScreenRecordDialog(onStartRecordingClicked.capture());
+    }
+
     // Test that the tile is active and labeled correctly when the controller is recording
     @Test
     public void testIsRecording() {
@@ -379,5 +462,4 @@ public class ScreenRecordTileTest extends SysuiTestCase {
             return QSTileImpl.ResourceIcon.get(resId);
         }
     }
-
 }

@@ -16,8 +16,11 @@
 
 package com.android.systemui.privacy
 
+import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.content.Context
+import android.content.PermissionChecker
+import android.content.pm.PackageManager
 import android.content.pm.UserInfo
 import android.os.UserHandle
 import com.android.internal.annotations.GuardedBy
@@ -28,6 +31,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.privacy.logging.PrivacyLogger
 import com.android.systemui.settings.UserTracker
+import com.android.systemui.util.Assert
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.withIncreasedIndent
@@ -39,100 +43,107 @@ import javax.inject.Inject
  * - Mic & Camera
  * - Location
  *
- * If [PrivacyConfig.micCameraAvailable] / [PrivacyConfig.locationAvailable] are disabled,
- * the corresponding PrivacyItems will not be reported.
+ * If [PrivacyConfig.micCameraAvailable] / [PrivacyConfig.locationAvailable] are disabled, the
+ * corresponding PrivacyItems will not be reported.
  */
 @SysUISingleton
-class AppOpsPrivacyItemMonitor @Inject constructor(
+class AppOpsPrivacyItemMonitor
+@Inject
+constructor(
     private val appOpsController: AppOpsController,
     private val userTracker: UserTracker,
     private val privacyConfig: PrivacyConfig,
     @Background private val bgExecutor: DelayableExecutor,
-    private val logger: PrivacyLogger
+    private val logger: PrivacyLogger,
+    private val packageManager: PackageManager,
+    private val activityManager: ActivityManager,
+    private val context: Context,
 ) : PrivacyItemMonitor {
 
     @VisibleForTesting
     companion object {
-        val OPS_MIC_CAMERA = intArrayOf(
+        val OPS_MIC_CAMERA =
+            intArrayOf(
                 AppOpsManager.OP_CAMERA,
                 AppOpsManager.OP_PHONE_CALL_CAMERA,
                 AppOpsManager.OP_RECORD_AUDIO,
                 AppOpsManager.OP_PHONE_CALL_MICROPHONE,
                 AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO,
                 AppOpsManager.OP_RECEIVE_EXPLICIT_USER_INTERACTION_AUDIO,
-                AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO)
-        val OPS_LOCATION = intArrayOf(
-                AppOpsManager.OP_COARSE_LOCATION,
-                AppOpsManager.OP_FINE_LOCATION)
+                AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
+            )
+        val OPS_LOCATION =
+            intArrayOf(AppOpsManager.OP_COARSE_LOCATION, AppOpsManager.OP_FINE_LOCATION)
         val OPS = OPS_MIC_CAMERA + OPS_LOCATION
-        val USER_INDEPENDENT_OPS = intArrayOf(AppOpsManager.OP_PHONE_CALL_CAMERA,
-                AppOpsManager.OP_PHONE_CALL_MICROPHONE)
+        val USER_INDEPENDENT_OPS =
+            intArrayOf(AppOpsManager.OP_PHONE_CALL_CAMERA, AppOpsManager.OP_PHONE_CALL_MICROPHONE)
     }
 
     private val lock = Any()
 
-    @GuardedBy("lock")
-    private var callback: PrivacyItemMonitor.Callback? = null
-    @GuardedBy("lock")
-    private var micCameraAvailable = privacyConfig.micCameraAvailable
-    @GuardedBy("lock")
-    private var locationAvailable = privacyConfig.locationAvailable
-    @GuardedBy("lock")
-    private var listening = false
+    @GuardedBy("lock") private var callback: PrivacyItemMonitor.Callback? = null
+    @GuardedBy("lock") private var micCameraAvailable = privacyConfig.micCameraAvailable
+    @GuardedBy("lock") private var locationAvailable = privacyConfig.locationAvailable
+    @GuardedBy("lock") private var listening = false
 
-    private val appOpsCallback = object : AppOpsController.Callback {
-        override fun onActiveStateChanged(
-            code: Int,
-            uid: Int,
-            packageName: String,
-            active: Boolean
-        ) {
-            synchronized(lock) {
-                // Check if we care about this code right now
-                if (code in OPS_MIC_CAMERA && !micCameraAvailable) {
-                    return
-                }
-                if (code in OPS_LOCATION && !locationAvailable) {
-                    return
-                }
-                if (userTracker.userProfiles.any { it.id == UserHandle.getUserId(uid) } ||
-                        code in USER_INDEPENDENT_OPS) {
-                    logger.logUpdatedItemFromAppOps(code, uid, packageName, active)
-                    dispatchOnPrivacyItemsChanged()
+    private val appOpsCallback =
+        object : AppOpsController.Callback {
+            override fun onActiveStateChanged(
+                code: Int,
+                uid: Int,
+                packageName: String,
+                active: Boolean,
+            ) {
+                synchronized(lock) {
+                    // Check if we care about this code right now
+                    if (code in OPS_MIC_CAMERA && !micCameraAvailable) {
+                        return
+                    }
+                    if (code in OPS_LOCATION && !locationAvailable) {
+                        return
+                    }
+                    if (
+                        userTracker.userProfiles.any { it.id == UserHandle.getUserId(uid) } ||
+                            code in USER_INDEPENDENT_OPS
+                    ) {
+                        logger.logUpdatedItemFromAppOps(code, uid, packageName, active)
+                        dispatchOnPrivacyItemsChanged()
+                    }
                 }
             }
         }
-    }
 
     @VisibleForTesting
-    internal val userTrackerCallback = object : UserTracker.Callback {
-        override fun onUserChanged(newUser: Int, userContext: Context) {
-            onCurrentProfilesChanged()
-        }
-
-        override fun onProfilesChanged(profiles: List<UserInfo>) {
-            onCurrentProfilesChanged()
-        }
-    }
-
-    private val configCallback = object : PrivacyConfig.Callback {
-        override fun onFlagLocationChanged(flag: Boolean) {
-            onFlagChanged()
-        }
-
-        override fun onFlagMicCameraChanged(flag: Boolean) {
-            onFlagChanged()
-        }
-
-        private fun onFlagChanged() {
-            synchronized(lock) {
-                micCameraAvailable = privacyConfig.micCameraAvailable
-                locationAvailable = privacyConfig.locationAvailable
-                setListeningStateLocked()
+    internal val userTrackerCallback =
+        object : UserTracker.Callback {
+            override fun onUserChanged(newUser: Int, userContext: Context) {
+                onCurrentProfilesChanged()
             }
-            dispatchOnPrivacyItemsChanged()
+
+            override fun onProfilesChanged(profiles: List<UserInfo>) {
+                onCurrentProfilesChanged()
+            }
         }
-    }
+
+    private val configCallback =
+        object : PrivacyConfig.Callback {
+            override fun onFlagLocationChanged(flag: Boolean) {
+                onFlagChanged()
+            }
+
+            override fun onFlagMicCameraChanged(flag: Boolean) {
+                onFlagChanged()
+            }
+
+            private fun onFlagChanged() {
+                synchronized(lock) {
+                    micCameraAvailable = privacyConfig.micCameraAvailable
+                    locationAvailable = privacyConfig.locationAvailable
+                    setListeningStateLocked()
+                }
+                dispatchOnPrivacyItemsChanged()
+            }
+        }
 
     init {
         privacyConfig.addCallback(configCallback)
@@ -183,12 +194,20 @@ class AppOpsPrivacyItemMonitor @Inject constructor(
         val activeAppOps = appOpsController.getActiveAppOps(true)
         val currentUserProfiles = userTracker.userProfiles
 
+        // TODO(b/419834493): Consider refactoring this into a Flow that could be configured to run
+        // on a bg context.
+        Assert.isNotMainThread()
         return synchronized(lock) {
-            activeAppOps.filter {
-                currentUserProfiles.any { user -> user.id == UserHandle.getUserId(it.uid) } ||
-                        it.code in USER_INDEPENDENT_OPS
-            }.mapNotNull { toPrivacyItemLocked(it) }
-        }.distinct()
+                activeAppOps
+                    .filter {
+                        currentUserProfiles.any { user ->
+                            user.id == UserHandle.getUserId(it.uid)
+                        } || it.code in USER_INDEPENDENT_OPS
+                    }
+                    .filter { shouldDisplayLocationOp(it) }
+                    .mapNotNull { toPrivacyItemLocked(it) }
+            }
+            .distinct()
     }
 
     @GuardedBy("lock")
@@ -207,18 +226,19 @@ class AppOpsPrivacyItemMonitor @Inject constructor(
         if (!privacyItemForAppOpEnabledLocked(appOpItem.code)) {
             return null
         }
-        val type: PrivacyType = when (appOpItem.code) {
-            AppOpsManager.OP_PHONE_CALL_CAMERA,
-            AppOpsManager.OP_CAMERA -> PrivacyType.TYPE_CAMERA
-            AppOpsManager.OP_COARSE_LOCATION,
-            AppOpsManager.OP_FINE_LOCATION -> PrivacyType.TYPE_LOCATION
-            AppOpsManager.OP_PHONE_CALL_MICROPHONE,
-            AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO,
-            AppOpsManager.OP_RECEIVE_EXPLICIT_USER_INTERACTION_AUDIO,
-            AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
-            AppOpsManager.OP_RECORD_AUDIO -> PrivacyType.TYPE_MICROPHONE
-            else -> return null
-        }
+        val type: PrivacyType =
+            when (appOpItem.code) {
+                AppOpsManager.OP_PHONE_CALL_CAMERA,
+                AppOpsManager.OP_CAMERA -> PrivacyType.TYPE_CAMERA
+                AppOpsManager.OP_COARSE_LOCATION,
+                AppOpsManager.OP_FINE_LOCATION -> PrivacyType.TYPE_LOCATION
+                AppOpsManager.OP_PHONE_CALL_MICROPHONE,
+                AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO,
+                AppOpsManager.OP_RECEIVE_EXPLICIT_USER_INTERACTION_AUDIO,
+                AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
+                AppOpsManager.OP_RECORD_AUDIO -> PrivacyType.TYPE_MICROPHONE
+                else -> return null
+            }
         val app = PrivacyApplication(appOpItem.packageName, appOpItem.uid)
         return PrivacyItem(type, app, appOpItem.timeStartedElapsed, appOpItem.isDisabled)
     }
@@ -232,10 +252,61 @@ class AppOpsPrivacyItemMonitor @Inject constructor(
     private fun dispatchOnPrivacyItemsChanged() {
         val cb = synchronized(lock) { callback }
         if (cb != null) {
-            bgExecutor.execute {
-                cb.onPrivacyItemsChanged()
+            bgExecutor.execute { cb.onPrivacyItemsChanged() }
+        }
+    }
+
+    // Only display the location privacy item if a non-system, foreground client accessed location
+    private fun shouldDisplayLocationOp(item: AppOpItem): Boolean {
+        if (
+            item.code == AppOpsManager.OP_FINE_LOCATION ||
+                item.code == AppOpsManager.OP_COARSE_LOCATION
+        ) {
+            return !isSystemApp(item) && !isBackgroundApp(item)
+        }
+        return true
+    }
+
+    private fun isSystemApp(item: AppOpItem): Boolean {
+        val user = UserHandle.getUserHandleForUid(item.uid)
+
+        // Don't show apps belonging to background users except managed users.
+        var foundUser = false
+        for (profile in userTracker.userProfiles) {
+            if (profile.userHandle == user) {
+                foundUser = true
             }
         }
+        if (!foundUser) {
+            return true
+        }
+
+        val permission = AppOpsManager.opToPermission(item.code)
+        val permissionFlags: Int =
+            packageManager.getPermissionFlags(permission, item.packageName, user)
+        return if (
+            PermissionChecker.checkPermissionForPreflight(
+                context,
+                permission,
+                PermissionChecker.PID_UNKNOWN,
+                item.uid,
+                item.packageName,
+            ) == PermissionChecker.PERMISSION_GRANTED
+        ) {
+            ((permissionFlags and PackageManager.FLAG_PERMISSION_USER_SENSITIVE_WHEN_GRANTED) == 0)
+        } else {
+            (permissionFlags and PackageManager.FLAG_PERMISSION_USER_SENSITIVE_WHEN_DENIED) == 0
+        }
+    }
+
+    private fun isBackgroundApp(item: AppOpItem): Boolean {
+        for (processInfo in activityManager.runningAppProcesses) {
+            if (processInfo.uid == item.uid) {
+                return processInfo.importance >
+                    ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE
+            }
+        }
+        return false
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {

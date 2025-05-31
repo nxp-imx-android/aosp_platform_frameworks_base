@@ -655,6 +655,7 @@ constructor(
             DozeMachine.State.DOZE_AOD_PAUSED -> DozeStateModel.DOZE_AOD_PAUSED
             DozeMachine.State.DOZE_AOD_PAUSING -> DozeStateModel.DOZE_AOD_PAUSING
             DozeMachine.State.DOZE_AOD_DOCKED -> DozeStateModel.DOZE_AOD_DOCKED
+            DozeMachine.State.DOZE_AOD_MINMODE -> DozeStateModel.DOZE_AOD_MINMODE
             else -> throw IllegalArgumentException("Invalid DozeMachine.State: state")
         }
     }

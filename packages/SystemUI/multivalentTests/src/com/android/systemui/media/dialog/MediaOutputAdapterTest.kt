@@ -20,6 +20,7 @@ import android.graphics.drawable.Icon
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
+import android.text.BidiFormatter
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.LinearLayout
@@ -310,7 +311,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mDivider.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.contentDescription)
-                .isEqualTo(mContext.getString(R.string.accessibility_add_device_to_group))
+                .isEqualTo(mContext.getString(R.string.accessibility_add_device_to_group_with_name,
+                         BidiFormatter.getInstance().unicodeWrap(TEST_DEVICE_NAME_2)))
             assertThat(mTitleText.visibility).isEqualTo(VISIBLE)
             assertThat(mTitleText.text.toString()).isEqualTo(TEST_DEVICE_NAME_2)
 
@@ -332,7 +334,9 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         createAndBindDeviceViewHolder(position = 2).apply {
             assertThat(mGroupButton.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.contentDescription)
-                .isEqualTo(mContext.getString(R.string.accessibility_remove_device_from_group))
+                .isEqualTo(mContext.getString(
+                        R.string.accessibility_remove_device_from_group_with_name,
+                        BidiFormatter.getInstance().unicodeWrap(TEST_DEVICE_NAME_2)))
             mGroupButton.performClick()
         }
 

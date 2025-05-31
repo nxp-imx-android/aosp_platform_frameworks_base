@@ -20,7 +20,7 @@ package {
     // all of the 'license_kinds' from "frameworks_base_license"
     // to get the below license kinds:
     //   SPDX-license-identifier-Apache-2.0
-    default_team: "trendy_team_windowing_sdk",
+    default_team: "trendy_team_activity_embedding",
     default_applicable_licenses: ["frameworks_base_license"],
 }
 

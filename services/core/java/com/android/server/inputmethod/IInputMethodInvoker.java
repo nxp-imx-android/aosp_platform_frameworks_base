@@ -202,11 +202,11 @@ final class IInputMethodInvoker {
 
     // TODO(b/192412909): Convert this back to void method
     @AnyThread
-    boolean showSoftInput(IBinder showInputToken, @NonNull ImeTracker.Token statsToken,
-            @InputMethod.ShowFlags int flags, ResultReceiver resultReceiver) {
+    boolean showSoftInput(@NonNull ImeTracker.Token statsToken, @InputMethod.ShowFlags int flags,
+            ResultReceiver resultReceiver) {
         try {
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_IME_INVOKER);
-            mTarget.showSoftInput(showInputToken, statsToken, flags, resultReceiver);
+            mTarget.showSoftInput(statsToken, flags, resultReceiver);
         } catch (RemoteException e) {
             logRemoteException(e);
             ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_SERVER_IME_INVOKER);
@@ -217,11 +217,11 @@ final class IInputMethodInvoker {
 
     // TODO(b/192412909): Convert this back to void method
     @AnyThread
-    boolean hideSoftInput(IBinder hideInputToken, @NonNull ImeTracker.Token statsToken,
-            int flags, ResultReceiver resultReceiver) {
+    boolean hideSoftInput(@NonNull ImeTracker.Token statsToken, int flags,
+            ResultReceiver resultReceiver) {
         try {
             ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_IME_INVOKER);
-            mTarget.hideSoftInput(hideInputToken, statsToken, flags, resultReceiver);
+            mTarget.hideSoftInput(statsToken, flags, resultReceiver);
         } catch (RemoteException e) {
             logRemoteException(e);
             ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_SERVER_IME_INVOKER);

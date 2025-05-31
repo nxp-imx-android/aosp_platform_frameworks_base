@@ -29,6 +29,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsIntera
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.promptViewModel by Fixture {
@@ -45,6 +46,7 @@ val Kosmos.promptViewModel by Fixture {
         accessibilityInteractor = accessibilityInteractor,
         accessibilityManager = accessibilityManager,
         promptFallbackViewModelFactory = promptFallbackViewModelFactory,
+        shadeInteractor = shadeInteractor,
     )
 }
 

@@ -20,15 +20,19 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 import android.view.InputEvent;
+import android.view.InputEventCompatProcessor;
 import android.view.MotionEvent;
+
+import java.util.List;
 
 /**
  * This rewrites stylus button events for an application targeting older SDK.
  *
  * @hide
  */
-public class StylusButtonCompatibility {
+public class StylusButtonCompatibility extends InputEventCompatProcessor {
     private static final int STYLUS_BUTTONS_MASK =
             MotionEvent.BUTTON_STYLUS_PRIMARY | MotionEvent.BUTTON_STYLUS_SECONDARY;
 
@@ -39,12 +43,13 @@ public class StylusButtonCompatibility {
         return context.getApplicationInfo().targetSdkVersion < Build.VERSION_CODES.M;
     }
 
-    /**
-     * Returns a rewritten event if compatibility is applied.
-     * Returns a null if the event is not modified.
-     */
+    public StylusButtonCompatibility(Context context, Handler handler) {
+        super(context, handler);
+    }
+
     @Nullable
-    public InputEvent processInputEventForCompatibility(@NonNull InputEvent inputEvent) {
+    @Override
+    public List<InputEvent> processInputEventForCompatibility(@NonNull InputEvent inputEvent) {
         if (!(inputEvent instanceof MotionEvent motion)) {
             return null;
         }
@@ -57,6 +62,6 @@ public class StylusButtonCompatibility {
             return null;
         }
         motion.setButtonState(buttonState | compatButtonState);
-        return motion;
+        return List.of(motion);
     }
 }

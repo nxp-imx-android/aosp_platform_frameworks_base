@@ -100,6 +100,7 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
                                 action.onPerformAction()
                                 collapse()
                             },
+                            onLongClick = { action.onPerformLongClick() },
                             actionType =
                                 when (action.actionType) {
                                     "ma" -> ActionType.MA

@@ -74,6 +74,7 @@ import platform.test.runner.parameterized.Parameters
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class EditModeViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     init {

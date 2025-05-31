@@ -50,6 +50,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.StrictMode;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -1158,6 +1159,7 @@ public final class Icon implements Parcelable {
         if (bitmapWidth > maxWidth || bitmapHeight > maxHeight) {
             float scale = Math.min((float) maxWidth / bitmapWidth,
                     (float) maxHeight / bitmapHeight);
+            StrictMode.noteSlowCall("Downscaling oversized Icon Bitmap");
             bitmap = Bitmap.createScaledBitmap(bitmap,
                     Math.max(1, (int) (scale * bitmapWidth)),
                     Math.max(1, (int) (scale * bitmapHeight)),

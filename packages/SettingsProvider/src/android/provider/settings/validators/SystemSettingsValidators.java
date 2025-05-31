@@ -47,6 +47,9 @@ import java.util.Map;
  * Validators for System settings
  */
 public class SystemSettingsValidators {
+    private static final int CV_PREFERRED_INTENSITY_MIN = 0;
+    private static final int CV_PREFERRED_INTENSITY_MAX = 10;
+
     @UnsupportedAppUsage
     public static final Map<String, Validator> VALIDATORS = new ArrayMap<>();
 
@@ -272,7 +275,11 @@ public class SystemSettingsValidators {
         VALIDATORS.put(System.NOTIFICATION_COOLDOWN_ALL, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.NOTIFICATION_COOLDOWN_VIBRATE_UNLOCKED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(System.PREFERRED_REGION, ANY_STRING_VALIDATOR);
-        VALIDATORS.put(System.CV_ENABLED,
-                new InclusiveIntegerRangeValidator(0, 1));
+        VALIDATORS.put(System.CV_ENABLED, new InclusiveIntegerRangeValidator(0, 1));
+        VALIDATORS.put(System.CV_DYNAMIC_ENABLED, new InclusiveIntegerRangeValidator(0, 1));
+        VALIDATORS.put(
+                System.CV_PREFERRED_INTENSITY,
+                new InclusiveIntegerRangeValidator(
+                        CV_PREFERRED_INTENSITY_MIN, CV_PREFERRED_INTENSITY_MAX));
     }
 }

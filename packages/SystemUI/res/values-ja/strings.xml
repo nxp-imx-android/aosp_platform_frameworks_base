@@ -287,8 +287,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"クイック設定"</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"クイック設定と通知シェード。"</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"ロック画面"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"ロック画面: ロック画面をカスタマイズするには、ダブルタップして長押しします。"</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"仕事用プロファイルのロック画面"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"閉じる"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"サイレント"</string>
@@ -383,10 +382,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# 台のデバイス}other{# 台のデバイス}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"ライト"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"カメラを使用中"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"ライトの明るさ"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"モバイルデータ"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"データ使用量"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"残りのデータ"</string>
@@ -825,11 +822,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ONにする"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ON - 顔ベース"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ミュートしてまとめる"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"対象: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"セールス情報、新機能など"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"トップニュース、論説など"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"高評価、投稿など"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ニュースレター、おすすめのメディアなど"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"OFF にする"</string>

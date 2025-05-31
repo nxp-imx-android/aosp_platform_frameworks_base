@@ -27,11 +27,10 @@ import androidx.compose.ui.graphics.toArgb
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.CaptionState
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopMode
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.education.DesktopWindowingEducationPromoController
@@ -63,7 +62,7 @@ class AppToWebEducationController(
     private val context: Context,
     private val appToWebEducationFilter: AppToWebEducationFilter,
     private val appToWebEducationDatastoreRepository: AppToWebEducationDatastoreRepository,
-    private val windowDecorCaptionHandleRepository: WindowDecorCaptionHandleRepository,
+    private val windowDecorCaptionRepository: WindowDecorCaptionRepository,
     private val windowingEducationViewController: DesktopWindowingEducationPromoController,
     @ShellMainThread private val applicationCoroutineScope: CoroutineScope,
     @ShellBackgroundThread private val backgroundDispatcher: MainCoroutineDispatcher,
@@ -85,7 +84,7 @@ class AppToWebEducationController(
                             emptyFlow()
                         } else {
                             // Listen for changes to window decor's caption.
-                            windowDecorCaptionHandleRepository.captionStateFlow
+                            windowDecorCaptionRepository.captionStateFlow
                                 // Wait for few seconds before emitting the latest state.
                                 .debounce(APP_TO_WEB_EDUCATION_DELAY_MILLIS)
                                 .filter { captionState ->
@@ -107,7 +106,7 @@ class AppToWebEducationController(
 
             applicationCoroutineScope.launch {
                 if (isFeatureUsed()) return@launch
-                windowDecorCaptionHandleRepository.appToWebUsageFlow.collect {
+                windowDecorCaptionRepository.appToWebUsageFlow.collect {
                     // If user utilizes App-to-Web, mark user has used the feature
                     appToWebEducationDatastoreRepository.updateFeatureUsedTimestampMillis(
                         isViewed = true

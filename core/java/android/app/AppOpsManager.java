@@ -1506,15 +1506,6 @@ public class AppOpsManager {
     public static final int OP_USE_FULL_SCREEN_INTENT = AppOpEnums.APP_OP_USE_FULL_SCREEN_INTENT;
 
     /**
-     * Post promoted notifications in the notification shade and status bar chips.
-     *
-     * @hide
-     */
-    public static final int OP_POST_PROMOTED_NOTIFICATIONS =
-            AppOpEnums.APP_OP_POST_PROMOTED_NOTIFICATIONS;
-
-
-    /**
      * Hides camera indicator for sandboxed detection apps that directly access the service.
      *
      * @hide
@@ -1714,6 +1705,14 @@ public class AppOpsManager {
      */
     public static final int OP_SCENE_UNDERSTANDING_FINE =
             AppOpEnums.APP_OP_SCENE_UNDERSTANDING_FINE;
+
+    /**
+     * Post promoted notifications in the notification shade and status bar chips.
+     *
+     * @hide
+     */
+    public static final int OP_POST_PROMOTED_NOTIFICATIONS =
+            AppOpEnums.APP_OP_POST_PROMOTED_NOTIFICATIONS;
 
     /** @hide */
     public static final int OP_SYSTEM_APPLICATION_OVERLAY =
@@ -2533,14 +2532,6 @@ public class AppOpsManager {
     public static final String OPSTR_USE_FULL_SCREEN_INTENT = "android:use_full_screen_intent";
 
     /**
-     * Permission to post promoted notifications.
-     *
-     * @hide
-     */
-    public static final String OPSTR_POST_PROMOTED_NOTIFICATIONS =
-            "android:post_promoted_notifications";
-
-    /**
      * Allows the assistant app to be voice-triggered by detected hotwords from a trusted detection
      * service.
      *
@@ -2696,6 +2687,10 @@ public class AppOpsManager {
     public static final String OPSTR_SCENE_UNDERSTANDING_FINE =
             "android:scene_understanding_fine";
 
+    /** @hide Permission to post promoted notifications. */
+    public static final String OPSTR_POST_PROMOTED_NOTIFICATIONS =
+            "android:post_promoted_notifications";
+
     /** @hide Required to draw system application overlays. */
     public static final String OPSTR_SYSTEM_APPLICATION_OVERLAY =
             "android:system_application_overlay";
@@ -2825,7 +2820,7 @@ public class AppOpsManager {
             OP_MEDIA_ROUTING_CONTROL,
             OP_READ_SYSTEM_GRAMMATICAL_GENDER,
             OP_WRITE_SYSTEM_PREFERENCES,
-            android.app.Flags.apiRichOngoingPermission()
+            android.app.Flags.uiRichOngoing()
                     ? OP_POST_PROMOTED_NOTIFICATIONS : OP_NONE,
             com.android.media.projection.flags.Flags.recordingOverlay()
                     ? OP_SYSTEM_APPLICATION_OVERLAY : OP_NONE,
@@ -3362,7 +3357,7 @@ public class AppOpsManager {
                 .build(),
         new AppOpInfo.Builder(OP_POST_PROMOTED_NOTIFICATIONS, OPSTR_POST_PROMOTED_NOTIFICATIONS,
                 "POST_PROMOTED_NOTIFICATIONS")
-                .setPermission(android.app.Flags.apiRichOngoingPermission()
+                .setPermission(android.app.Flags.uiRichOngoing()
                         ? Manifest.permission.POST_PROMOTED_NOTIFICATIONS : null)
                 .build(),
         new AppOpInfo.Builder(OP_SYSTEM_APPLICATION_OVERLAY, OPSTR_SYSTEM_APPLICATION_OVERLAY,

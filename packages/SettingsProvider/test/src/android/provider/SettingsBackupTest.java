@@ -104,6 +104,7 @@ public class SettingsBackupTest {
                     Settings.Global.BATTERY_SAVER_DEVICE_SPECIFIC_CONSTANTS,
                     Settings.Global.BATTERY_STATS_CONSTANTS,
                     Settings.Global.BINDER_CALLS_STATS,
+                    Settings.Global.NATIVE_BINDER_STATS,
                     Settings.Global.BLE_SCAN_ALWAYS_AVAILABLE,
                     Settings.Global.BLE_SCAN_LOW_POWER_WINDOW_MS,
                     Settings.Global.BLE_SCAN_LOW_POWER_INTERVAL_MS,
@@ -813,7 +814,8 @@ public class SettingsBackupTest {
                  Settings.Secure.PACK_THEME_FEATURE_ENABLED,
                  Settings.Secure.SUGGESTED_THEME_FEATURE_ENABLED,
                  Settings.Secure.REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI,
-                 Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME);
+                 Settings.Secure.OTP_NOTIFICATION_REDACTION_LOCK_TIME,
+                 Settings.Secure.APP_FUNCTION_AGENT_ALLOWLIST_ENABLED);
 
     @Test
     public void systemSettingsBackedUpOrDenied() {

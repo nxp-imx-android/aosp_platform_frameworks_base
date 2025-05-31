@@ -721,9 +721,6 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         Assert.assertNull(child.getParent());
         Assert.assertNull(child.getNotificationParent());
         Assert.assertFalse(child.keepInParentForDismissAnimation());
-        verify(mKosmos.getExpandableNotificationRowLogger(), times(4))
-                .logCancelAppearDrawing(child.getLoggingKey(), false);
-        verifyNoMoreInteractions(mKosmos.getExpandableNotificationRowLogger());
     }
 
     @Test

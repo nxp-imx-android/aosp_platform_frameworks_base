@@ -4741,7 +4741,7 @@ public class NotificationManagerService extends SystemService {
 
             final boolean changed;
 
-            if (android.app.Flags.apiRichOngoingPermission()) {
+            if (android.app.Flags.uiRichOngoing()) {
                 // Use permission backend for allowing promotion per app
 
                 if (!fromUser) {
@@ -4750,8 +4750,7 @@ public class NotificationManagerService extends SystemService {
                     return;
                 }
 
-                boolean wasPromoted = checkPostPromotedNotificationPermission(
-                        pkg, uid);
+                boolean wasPromoted = checkPostPromotedNotificationPermission(pkg, uid);
 
                 int mode = promote ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED;
                 mAppOps.setUidMode(OP_POST_PROMOTED_NOTIFICATIONS, uid, mode);
@@ -7497,15 +7496,19 @@ public class NotificationManagerService extends SystemService {
         if (users != null) {
             for (UserInfo user : users) {
                 int userId = user.id;
+                ComponentName allowedAssistant = CollectionUtils.firstOrNull(
+                        mAssistants.getAllowedComponents(userId));
                 if (assistant == null) {
-                    ComponentName allowedAssistant = CollectionUtils.firstOrNull(
-                            mAssistants.getAllowedComponents(userId));
                     if (allowedAssistant != null) {
                         setNotificationAssistantAccessGrantedForUserInternal(
                                 allowedAssistant, userId, false, userSet);
                     }
                     continue;
                 }
+                if (granted && assistant.equals(allowedAssistant)) {
+                    continue;
+                }
+
                 if (!granted || mAllowedManagedServicePackages.test(assistant.getPackageName(),
                         userId, mAssistants.getRequiredPermission())) {
                     mConditionProviders.setPackageOrComponentEnabled(assistant.flattenToString(),
@@ -9017,7 +9020,7 @@ public class NotificationManagerService extends SystemService {
                 // Check permission last - after we make sure this is actually an attempted usage
                 // of promotion - since AppOps tracks usage attempts.
                 boolean canPostPromoted;
-                if (android.app.Flags.apiRichOngoingPermission()) {
+                if (android.app.Flags.uiRichOngoing()) {
                     final AttributionSource attributionSource =
                             new AttributionSource.Builder(notificationUid)
                                     .setPackageName(pkg).build();
@@ -9099,7 +9102,7 @@ public class NotificationManagerService extends SystemService {
 
     private boolean checkPostPromotedNotificationPermission(
             String pkg, int uid) {
-        if (!android.app.Flags.apiRichOngoingPermission()) {
+        if (!android.app.Flags.uiRichOngoing()) {
             return mPreferencesHelper.canBePromoted(pkg, uid);
         } else {
             final AttributionSource attributionSource =
@@ -9859,15 +9862,34 @@ public class NotificationManagerService extends SystemService {
                     return false;
                 }
 
-                mEnqueuedNotifications.add(r);
-                mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
-
                 final StatusBarNotification n = r.getSbn();
                 if (DBG) Slog.d(TAG, "EnqueueNotificationRunnable.run for: " + n.getKey());
                 NotificationRecord old = mNotificationsByKey.get(n.getKey());
                 if (old != null) {
                     // Retain ranking information from previous record
                     r.copyRankingInformation(old);
+                }
+
+                // If we don't have a previous record, before adding this record to enqueued list,
+                // see if we have a previously enqueued version of this notification so we can share
+                // instance ID if necessary.
+                NotificationRecord previouslyEnqueued = null;
+                if (old == null) {
+                    previouslyEnqueued = findNotificationByListLocked(mEnqueuedNotifications,
+                            n.getKey());
+                }
+
+                mEnqueuedNotifications.add(r);
+                mTtlHelper.scheduleTimeoutLocked(r, SystemClock.elapsedRealtime());
+
+                // Either initialize instance ID for statsd logging, or carry over from old SBN.
+                if (old != null && old.getSbn().getInstanceId() != null) {
+                    n.setInstanceId(old.getSbn().getInstanceId());
+                } else if (previouslyEnqueued != null
+                        && previouslyEnqueued.getSbn().getInstanceId() != null) {
+                    n.setInstanceId(previouslyEnqueued.getSbn().getInstanceId());
+                } else {
+                    n.setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
                 }
 
                 final int callingUid = n.getUid();
@@ -10023,13 +10045,6 @@ public class NotificationManagerService extends SystemService {
                         mUsageStats.registerSuspendedByAdmin(r);
                     }
                     NotificationRecord old = mNotificationsByKey.get(key);
-
-                    // Make sure the SBN has an instance ID for statsd logging.
-                    if (old == null || old.getSbn().getInstanceId() == null) {
-                        n.setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
-                    } else {
-                        n.setInstanceId(old.getSbn().getInstanceId());
-                    }
 
                     int index = indexOfNotificationLocked(n.getKey());
                     if (index < 0) {
@@ -12239,7 +12254,9 @@ public class NotificationManagerService extends SystemService {
         static final String TAG_ENABLED_NOTIFICATION_ASSISTANTS = "enabled_assistants";
 
         private static final String ATT_TYPES = "types";
-        private static final String TAG_DENIED = "user_denied_adjustments";
+        private static final String TAG_DENIED = android.app.Flags.nmSummarizationOnboardingUi()
+                ? "denied_adjustment_keys"
+                : "user_denied_adjustments";
         private static final String TAG_DENIED_KEY = "adjustment";
         private static final String ATT_DENIED_KEY = "key";
         private static final String ATT_DENIED_KEY_APPS = "denied_apps";
@@ -12440,6 +12457,7 @@ public class NotificationManagerService extends SystemService {
         // Convenience method to return the effective list of denied adjustments for the given user.
         // For full users, this is just the list of denied adjustments contained in
         // mDeniedAdjustments for that user.
+        // KEY_SUMMARIZATION is denied by default.
         // For profile users, this method checks additional criteria that may cause an adjustment to
         // be effectively denied for that user. In particular:
         // - if an adjustment is denied for that profile user's parent, then it is also effectively
@@ -12449,8 +12467,15 @@ public class NotificationManagerService extends SystemService {
         @GuardedBy("mLock")
         private @NonNull Set<String> deniedAdjustmentsForUser(@UserIdInt int userId) {
             Set<String> denied = new HashSet<>();
-            if (mDeniedAdjustments.containsKey(userId)) {
+            if (android.app.Flags.nmSummarizationOnboardingUi()) {
+                if (!mDeniedAdjustments.containsKey(userId)) {
+                    mDeniedAdjustments.put(userId, new ArraySet<>(List.of(KEY_SUMMARIZATION)));
+                }
                 denied.addAll(mDeniedAdjustments.get(userId));
+            } else {
+                if (mDeniedAdjustments.containsKey(userId)) {
+                    denied.addAll(mDeniedAdjustments.get(userId));
+                }
             }
             if (getUserProfiles().isProfileUser(userId, mContext)) {
                 final @UserIdInt int parentId = getUserProfiles().getProfileParentId(userId,
@@ -13049,7 +13074,7 @@ public class NotificationManagerService extends SystemService {
             return mNasUnsupported.getOrDefault(userId, new HashSet<>());
         }
 
-        private void setNasUnsupportedDefaults(@UserIdInt int userId) {
+        void setNasUnsupportedDefaults(@UserIdInt int userId) {
             if (mNasUnsupported != null) {
                 mNasUnsupported.put(userId, new HashSet(List.of(mDefaultUnsupportedAdjustments)));
                 handleSavePolicyFile();
@@ -13152,6 +13177,10 @@ public class NotificationManagerService extends SystemService {
                     if (!TextUtils.isEmpty(keys)) {
                         userDeniedAdjustments.addAll(Arrays.asList(keys.split(",")));
                         mDeniedAdjustments.put(user, userDeniedAdjustments);
+                    } else {
+                        if (android.app.Flags.nmSummarizationOnboardingUi()) {
+                            mDeniedAdjustments.put(user, new ArraySet<>());
+                        }
                     }
                 }
             } else if (TAG_ENABLED_TYPES.equals(tag)) {

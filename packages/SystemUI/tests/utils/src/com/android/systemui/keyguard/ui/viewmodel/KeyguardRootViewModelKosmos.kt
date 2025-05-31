@@ -24,6 +24,7 @@ import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.minModeManager
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationShadeWindowModel
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.notificationIconContainerAlwaysOnDisplayViewModel
@@ -31,6 +32,7 @@ import com.android.systemui.statusbar.notification.promoted.domain.interactor.ao
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationsKeyguardInteractor
 import com.android.systemui.statusbar.phone.dozeParameters
 import com.android.systemui.statusbar.phone.screenOffAnimationController
+import java.util.Optional
 
 val Kosmos.keyguardRootViewModel by Fixture {
     KeyguardRootViewModel(
@@ -95,5 +97,6 @@ val Kosmos.keyguardRootViewModel by Fixture {
         dumpManager = dumpManager,
         glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
         aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
+        minModeManager = Optional.of(minModeManager),
     )
 }

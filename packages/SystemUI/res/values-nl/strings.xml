@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Geverifieerd"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Verificatie annuleren"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Meer opties"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Meer opties"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Op een andere manier verifiëren"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Identiteitscontrole beheren"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Je kunt geen pincode gebruiken voor verificatie omdat Identiteitscontrole aanstaat en biometrische gegevens vereist. Meer informatie over Identiteitscontrole"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Pincode gebruiken"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Patroon gebruiken"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Wachtwoord gebruiken"</string>
@@ -289,8 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Snelle instellingen."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Snelle instellingen en meldingenpaneel."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Vergrendelscherm"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"Vergrendelscherm, dubbeltik en houd vast om het vergrendelscherm aan te passen."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Vergrendelscherm voor werk"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"Sluiten"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"totale stilte"</string>
@@ -385,10 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# apparaat}other{# apparaten}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Zaklamp"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Camera in gebruik"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"Zaklampsterkte"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Mobiele data"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Datagebruik"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Resterende gegevens"</string>
@@ -615,7 +608,7 @@
     <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Niet ondersteund door de app"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"App kiezen om te delen"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Je scherm casten?"</string>
-    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Een enkele app casten"</string>
+    <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Eén app casten"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"Hele scherm casten"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen_for_display" msgid="5524817761472941086">"Cast <xliff:g id="DISPLAY_NAME">%s</xliff:g>"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"Als je het hele scherm cast, is alles op je scherm zichtbaar. Wees daarom voorzichtig met bijvoorbeeld wachtwoorden, betalingsgegevens, berichten, foto\'s, en audio en video."</string>
@@ -827,11 +820,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aanzetten"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Aan: op basis van gezicht"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Op stil zetten en bundelen"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Voor <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Aanbiedingen, nieuwe functies en meer"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Topverhalen, redactionele artikelen en meer"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Likes, posts en meer"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nieuwsbrieven, aanbevolen media en meer"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Klaar"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Toepassen"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Uitzetten"</string>

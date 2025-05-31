@@ -446,7 +446,7 @@ class RecentTasks {
      * recents component.
      */
     boolean isRecentsComponent(ComponentName cn, int uid) {
-        return cn.equals(mRecentsComponent) && UserHandle.isSameApp(uid, mRecentsUid);
+        return UserHandle.isSameApp(uid, mRecentsUid) && cn.equals(mRecentsComponent);
     }
 
     /**

@@ -363,9 +363,8 @@ class InsetsSourceProvider {
             if (!(positionChanged || mHasPendingPosition)
                     // The insets hint would be updated while changing the position. Here updates it
                     // for the possible change of the bounds or the server visibility.
-                    && (updateInsetsHint()
-                            || (android.view.inputmethod.Flags.refactorInsetsController()))
-                                    && serverVisibleChanged) {
+                    && (updateInsetsHint() || serverVisibleChanged)) {
+
                 // Only call notifyControlChanged here when the position hasn't been or won't be
                 // changed. Otherwise, it has been called or scheduled to be called during
                 // updateInsetsControlPosition.
@@ -526,18 +525,16 @@ class InsetsSourceProvider {
         mPosition.set(surfacePosition);
         mAdapter = new ControlAdapter(surfacePosition);
         if (mSource.getType() == WindowInsets.Type.ime()) {
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                if (mClientVisible && mServerVisible) {
-                    WindowContainer imeParentWindow = mDisplayContent.getImeParentWindow();
-                    // If the IME is attached to an app window, only consider it initially visible
-                    // if the parent is visible and wasn't part of a transition.
-                    initiallyVisible =
-                            imeParentWindow != null && !imeParentWindow.inTransition()
-                                    && imeParentWindow.isVisible()
-                                    && imeParentWindow.isVisibleRequested();
-                } else {
-                    initiallyVisible = false;
-                }
+            if (mClientVisible && mServerVisible) {
+                WindowContainer imeParentWindow = mDisplayContent.getImeParentWindow();
+                // If the IME is attached to an app window, only consider it initially visible
+                // if the parent is visible and wasn't part of a transition.
+                initiallyVisible =
+                        imeParentWindow != null && !imeParentWindow.inTransition()
+                                && imeParentWindow.isVisible()
+                                && imeParentWindow.isVisibleRequested();
+            } else {
+                initiallyVisible = false;
             }
             setClientVisible(target.isRequestedVisible(WindowInsets.Type.ime()));
         }
@@ -552,17 +549,6 @@ class InsetsSourceProvider {
         final SurfaceControl leash = mAdapter.mCapturedLeash;
         mControlTarget = target;
         updateVisibility();
-        if (mSource.getType() == WindowInsets.Type.ime()) {
-            if (!android.view.inputmethod.Flags.refactorInsetsController()) {
-                // The IME cannot be initially visible, see ControlAdapter#startAnimation below.
-                // Also, the ImeInsetsSourceConsumer clears the client visibility upon losing
-                // control,  but this won't have reached here yet by the time the new control is
-                // created.
-                // Note: The DisplayImeController needs the correct previous client's visibility,
-                // so we only override the initiallyVisible here.
-                initiallyVisible = false;
-            }
-        }
         mControl = new InsetsSourceControl(mSource.getId(), mSource.getType(), leash,
                 initiallyVisible, surfacePosition, getInsetsHint());
         mStateController.notifySurfaceTransactionReady(this, getSurfaceTransactionId(leash), true);
@@ -822,14 +808,6 @@ class InsetsSourceProvider {
         @Override
         public void startAnimation(SurfaceControl animationLeash, Transaction t,
                 @AnimationType int type, @NonNull OnAnimationFinishedCallback finishCallback) {
-            // TODO(b/166736352): Check if we still need to control the IME visibility here.
-            if (mSource.getType() == WindowInsets.Type.ime()) {
-                if (!android.view.inputmethod.Flags.refactorInsetsController()) {
-                    // TODO: use 0 alpha and remove t.hide() once b/138459974 is fixed.
-                    t.setAlpha(animationLeash, 1 /* alpha */);
-                    t.hide(animationLeash);
-                }
-            }
             ProtoLog.i(WM_DEBUG_WINDOW_INSETS,
                     "ControlAdapter startAnimation mSource: %s controlTarget: %s", mSource,
                     mControlTarget);

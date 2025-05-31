@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Hitelesítve"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Hitelesítés megszakítása"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"További lehetőségek"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"További lehetőségek"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Igazolás más módon"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Személyazonosság-ellenőrzés kezelése"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"A PIN-kód nem használható az igazoláshoz, mert a Személyazonosság-ellenőrzés funkció be van kapcsolva, és biometrikus azonosítást igényel. További információ a Személyazonosság-ellenőrzésről."</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN-kód használata"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Minta használata"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Jelszó használata"</string>
@@ -289,8 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Gyorsbeállítások."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Gyorsbeállítások és értesítési terület"</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Lezárási képernyő"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"Lezárási képernyő, koppintson duplán, és tartsa nyomva a lezárási képernyő testreszabásához."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Munka lezárási képernyővel"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"Bezárás"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"teljes némítás"</string>
@@ -385,10 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# eszköz}other{# eszköz}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Zseblámpa"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"A kamera használatban van"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"Zseblámpa erőssége"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Mobiladatok"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Adathasználat"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Fennmaradó adatmennyiség"</string>
@@ -827,11 +820,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Bekapcsolás"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Be: Arcalapú"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Némítás és csomagolás"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> számára"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Értékesítés, új funkciók és egyebek"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Népszerű történetek, vezércikkek és egyebek"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Lájkok, bejegyzések és egyebek"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Hírlevelek, ajánlott médiatartalmak és egyebek"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Kész"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Alkalmaz"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Kikapcsolás"</string>
@@ -855,7 +856,7 @@
     <string name="no_shortcut" msgid="8257177117568230126">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> nem támogatja a beszélgetési funkciókat"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Visszajelzés"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Elvetés"</string>
-    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"Igen"</string>
+    <string name="notification_inline_disable_promotion" msgid="8434781064426043662">"Kikapcsolás"</string>
     <string name="notification_inline_disable_promotion_button" msgid="5115790786254916422">"App élő frissítéseinek letiltása"</string>
     <string name="live_notifications_title" msgid="5926318111951903878">"Friss hírek"</string>
     <string name="live_notifications_desc" msgid="2639662830862800119">"Ha ki van kapcsolva, az alkalmazásból származó folyamatban lévő értesítések nem jelennek meg a lezárási képernyőn és az állapotsoron"</string>

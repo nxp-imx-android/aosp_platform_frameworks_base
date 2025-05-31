@@ -203,14 +203,10 @@
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Se ha autenticado"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancelar autenticación"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Más opciones"</string>
-    <!-- no translation found for biometric_dialog_fallback_title (3643117146844541556) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_fallback_button (7808939083554391449) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_manage_identity_check (6283423571297422689) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_pin_footer (2943916725380489626) -->
-    <skip />
+    <string name="biometric_dialog_fallback_title" msgid="3643117146844541556">"Más opciones"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verificar de otra forma"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gestionar Verificación de identidad"</string>
+    <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"No se puede usar un PIN para la verificación porque Verificación de identidad está activada y requiere un método biométrico. Consulta más información sobre Verificación de identidad."</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Usar PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Usar patrón"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Usar contraseña"</string>
@@ -278,7 +274,7 @@
     <string name="accessibility_battery_level_charging" msgid="8892191177774027364">"Batería cargándose (<xliff:g id="BATTERY_PERCENTAGE">%d</xliff:g> %%)."</string>
     <string name="accessibility_battery_level_charging_paused" msgid="3560711496775146763">"Batería al <xliff:g id="PERCENTAGE">%d</xliff:g> por ciento, carga pausada para proteger la batería."</string>
     <string name="accessibility_battery_level_charging_paused_with_estimate" msgid="2223541217743647858">"Batería al <xliff:g id="PERCENTAGE">%1$d</xliff:g> por ciento, <xliff:g id="TIME">%2$s</xliff:g>, carga pausada para proteger la batería."</string>
-    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"<xliff:g id="NUMBER">%d</xliff:g> por ciento de batería. Ahorro de batería está activado."</string>
+    <string name="accessibility_battery_level_battery_saver_with_percent" msgid="4529897661660196093">"Batería al <xliff:g id="NUMBER">%d</xliff:g> por ciento. Ahorro de batería está activado."</string>
     <string name="accessibility_overflow_action" msgid="8555835828182509104">"Ver todas las notificaciones"</string>
     <string name="accessibility_tty_enabled" msgid="1123180388823381118">"Teletipo habilitado"</string>
     <string name="accessibility_ringer_vibrate" msgid="6261841170896561364">"Modo vibración"</string>
@@ -289,8 +285,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"Ajustes rápidos"</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"Ajustes rápidos y pantalla de notificaciones."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"Pantalla de bloqueo"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"Pantalla de bloqueo: toca dos veces y mantén pulsado para personalizar la pantalla de bloqueo."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"Pantalla de bloqueo para el perfil de trabajo"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"Cerrar"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"silencio total"</string>
@@ -385,10 +380,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# dispositivo}many{# dispositivos}other{# dispositivos}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Linterna"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Cámara en uso"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"Intensidad de la linterna"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Datos móviles"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Uso de datos"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Datos restantes"</string>
@@ -427,7 +420,7 @@
     <string name="performance" msgid="6552785217174378320">"Rendimiento"</string>
     <string name="user_interface" msgid="3712869377953950887">"Interfaz de usuario"</string>
     <string name="thermal" msgid="6758074791325414831">"Temperatura"</string>
-    <string name="custom" msgid="3337456985275158299">"Otro"</string>
+    <string name="custom" msgid="3337456985275158299">"Config. personalizada"</string>
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"Ajustes de traza personalizados"</string>
     <string name="restore_default" msgid="5259420807486239755">"Restaurar ajustes predeterminados"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Modo Una mano"</string>
@@ -827,11 +820,19 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Activar"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activado: basado en caras"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silenciar y agrupar"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Para <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Ofertas, nuevas funciones y más"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Noticias destacadas, editoriales y más"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Me gusta, publicaciones y más"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, contenido multimedia recomendado y más"</string>
+    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
+    <skip />
+    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Hecho"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desactivar"</string>

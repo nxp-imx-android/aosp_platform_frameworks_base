@@ -18,18 +18,20 @@ package com.android.systemui.ambientcue.ui.compose
 
 import android.graphics.RuntimeShader
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
@@ -53,7 +55,11 @@ fun BackgroundGlow(
     val turbulenceDisplacementPx = with(density) { Defaults.TURBULENCE_DISPLACEMENT_DP.dp.toPx() }
     val gradientRadiusPx = with(density) { Defaults.GRADIENT_RADIUS.dp.toPx() }
 
-    val alpha by animateFloatAsState(if (visible) 1f else 0f, animationSpec = tween(750))
+    val visibleState = remember { MutableTransitionState(false) }
+    visibleState.targetState = visible
+
+    val transition = rememberTransition(visibleState)
+    val alpha by transition.animateFloat(transitionSpec = { tween(750) }) { if (it) 1f else 0f }
     val verticalOffset by
         animateIntOffsetAsState(if (expanded) IntOffset.Zero else collapsedOffset, tween(350))
 

@@ -18,6 +18,8 @@ package com.android.systemui.accessibility;
 
 import static android.view.WindowManager.LayoutParams;
 
+import static com.android.window.flags.Flags.scvhSurfaceControlLifetimeFix;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
@@ -106,6 +108,7 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
     private final DisplayManager mDisplayManager;
     private final DisplayManager.DisplayListener mDisplayListener;
     private String mCurrentDisplayUniqueId;
+    private boolean mShouldAttachOverlay = true;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -309,6 +312,7 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
                 Log.w(TAG, "Failed to remove rotation watcher", e);
             }
         }
+        mShouldAttachOverlay = true; // After cleanup, a new creation will need to attach.
         setState(DISABLED);
     }
 
@@ -356,6 +360,8 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
             if (Flags.updateCornerRadiusOnDisplayChanged()) {
                 applyCornerRadiusToBorder();
             }
+            // A new SurfaceControl was created, so attachment is necessary.
+            mShouldAttachOverlay = true;
         }
 
         mTransaction
@@ -373,8 +379,14 @@ public class FullscreenMagnificationController implements ComponentCallbacks {
                 .show(mBorderSurfaceControl)
                 .apply();
 
-        mAccessibilityManager.attachAccessibilityOverlayToDisplay(
-                mDisplayId, mBorderSurfaceControl);
+        if (mShouldAttachOverlay) {
+            // Only attach if deemed necessary
+            mAccessibilityManager.attachAccessibilityOverlayToDisplay(mDisplayId,
+                    mBorderSurfaceControl);
+            if (scvhSurfaceControlLifetimeFix()) {
+                mShouldAttachOverlay = false;
+            }
+        }
         if (Flags.updateCornerRadiusOnDisplayChanged()) {
             mDisplayManager.registerDisplayListener(mDisplayListener, mHandler);
         }

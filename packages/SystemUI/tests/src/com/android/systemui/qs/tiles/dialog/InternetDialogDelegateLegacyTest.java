@@ -4,10 +4,12 @@ import static com.android.systemui.qs.tiles.dialog.InternetDetailsContentControl
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -810,32 +812,34 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
     }
 
     @Test
-    public void updateDialog_shareWifiIntentNull_hideButton() {
+    public void onAccessPointsChanged_shareWifiIntentNull_hideButton() {
+        doAnswer(answerVoid(Runnable::run)).when(mHandler).post(any(Runnable.class));
         when(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(any()))
                 .thenReturn(null);
-        mInternetDialogDelegateLegacy.updateDialog(false);
-        mBgExecutor.runAllReady();
 
-        mInternetDialogDelegateLegacy.mDataInternetContent.observe(
-                mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
-                    assertThat(
-                            mInternetDialogDelegateLegacy.mShareWifiButton.getVisibility())
-                            .isEqualTo(View.GONE);
-                });
+        mInternetDialogDelegateLegacy.onAccessPointsChanged(mWifiEntries,
+                null,
+                mInternetDialogDelegateLegacy.mHasMoreWifiEntries);
+
+        assertThat(
+                mInternetDialogDelegateLegacy.mShareWifiButton.getVisibility())
+                .isEqualTo(View.GONE);
     }
 
     @Test
-    public void updateDialog_shareWifiShareable_showButton() {
+    public void onAccessPointsChanged_shareWifiShareable_showButton() {
+        doAnswer(answerVoid(Runnable::run)).when(mHandler).post(any(Runnable.class));
         when(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(any()))
                 .thenReturn(new Intent());
-        mInternetDialogDelegateLegacy.updateDialog(false);
-        mBgExecutor.runAllReady();
+        mInternetDialogDelegateLegacy.mConnectedWifiEntry = null;
 
-        mInternetDialogDelegateLegacy.mDataInternetContent.observe(
-                mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
-                    assertThat(mInternetDialogDelegateLegacy.mShareWifiButton.getVisibility())
-                            .isEqualTo(View.VISIBLE);
-                });
+        mInternetDialogDelegateLegacy.onAccessPointsChanged(mWifiEntries,
+                mInternetWifiEntry,
+                mInternetDialogDelegateLegacy.mHasMoreWifiEntries);
+
+        assertThat(
+                mInternetDialogDelegateLegacy.mShareWifiButton.getVisibility())
+                .isEqualTo(View.VISIBLE);
     }
 
     @Test

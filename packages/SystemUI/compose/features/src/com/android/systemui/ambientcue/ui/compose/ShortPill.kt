@@ -16,8 +16,11 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
-import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -39,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,14 +72,16 @@ fun ShortPill(
     val backgroundColor = MaterialTheme.colorScheme.background
     val minSize = 48.dp
     val closeButtonSize = 28.dp
-    val transitionTween: AnimationSpec<Float> = tween(250, delayMillis = 200)
+    val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
 
+    val visibleState = remember { MutableTransitionState(false) }
+    visibleState.targetState = visible
+
+    val transition = rememberTransition(visibleState)
     val enterProgress by
-        animateFloatAsState(
-            if (visible) 1f else 0f,
-            animationSpec = transitionTween,
-            label = "enter",
-        )
+        transition.animateFloat(transitionSpec = { transitionTween }, label = "enter") {
+            if (it) 1f else 0f
+        }
     val expansionAlpha by
         animateFloatAsState(
             if (expanded) 0f else 1f,
@@ -94,12 +100,7 @@ fun ShortPill(
             Modifier.graphicsLayer { alpha = enterProgress * expansionAlpha }
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
-                .animatedActionBorder(
-                    strokeWidth = 2.dp,
-                    strokeColor = outlineColor,
-                    cornerRadius = 16.dp,
-                    visible = visible,
-                )
+                .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
                 .widthIn(0.dp, minSize * 2)
                 .clickable { onClick() }
                 .padding(4.dp)
@@ -195,7 +196,11 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
         modifier =
             modifier
                 .size(18.dp)
-                .border(1.dp, backgroundColor, CircleShape)
+                .border(
+                    width = 0.75.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = CircleShape,
+                )
                 .padding(1.dp)
                 .clip(CircleShape)
                 .background(backgroundColor),

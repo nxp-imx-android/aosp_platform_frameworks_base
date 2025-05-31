@@ -29,11 +29,13 @@ import com.android.systemui.cursorposition.data.model.CursorPosition
 import com.android.systemui.cursorposition.data.repository.MultiDisplayCursorPositionRepository
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
+import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -53,14 +55,21 @@ class ActionCornerRepositoryImpl
 constructor(
     cursorRepository: MultiDisplayCursorPositionRepository,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
+    pointerDeviceRepository: PointerDeviceRepository,
     @Background private val backgroundScope: CoroutineScope,
 ) : ActionCornerRepository {
 
     override val actionCornerState: StateFlow<ActionCornerState> =
-        cursorRepository.cursorPositions
-            .map(::mapToActionCornerState)
-            // Avoid emitting duplicate values when cursor moves within the same corner
-            .distinctUntilChanged()
+        pointerDeviceRepository.isAnyPointerDeviceConnected
+            .flatMapLatest { isConnected ->
+                if (isConnected) {
+                    cursorRepository.cursorPositions.map(::mapToActionCornerState)
+                } else {
+                    // When not connected, emit an InactiveActionCorner state and then complete this
+                    // inner flow.
+                    flowOf(InactiveActionCorner)
+                }
+            }
             .stateIn(backgroundScope, SharingStarted.WhileSubscribed(), InactiveActionCorner)
 
     private fun mapToActionCornerState(cursorPos: CursorPosition?): ActionCornerState {

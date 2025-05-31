@@ -84,7 +84,6 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @Presubmit
@@ -1533,8 +1532,7 @@ public class AppsFilterImplTest {
                 DUMMY_TARGET_APPID);
         final PackageSetting calling = simulateAddPackage(appsFilter,
                 pkg("com.some.other.package").addUsesPermission(
-                        new ParsedUsesPermissionImpl("com.some.custom_permission", 0,
-                                Collections.emptySet())),
+                        new ParsedUsesPermissionImpl("com.some.custom_permission", 0)),
                 DUMMY_CALLING_APPID);
 
         assertFalse(
@@ -1553,8 +1551,7 @@ public class AppsFilterImplTest {
 
         final PackageSetting calling = simulateAddPackage(appsFilter,
                 pkg("com.some.other.package").addUsesPermission(
-                        new ParsedUsesPermissionImpl("com.some.custom_permission", 0,
-                                Collections.emptySet())),
+                        new ParsedUsesPermissionImpl("com.some.custom_permission", 0)),
                 DUMMY_CALLING_APPID);
 
         final PackageSetting target = simulateAddPackage(appsFilter,
@@ -1583,8 +1580,7 @@ public class AppsFilterImplTest {
 
         final PackageSetting target = simulateAddPackage(appsFilter,
                 pkg("com.some.other.package").addUsesPermission(
-                        new ParsedUsesPermissionImpl("com.some.custom_permission", 0,
-                                Collections.emptySet())),
+                        new ParsedUsesPermissionImpl("com.some.custom_permission", 0)),
                 DUMMY_TARGET_APPID);
 
         assertTrue(
@@ -1608,15 +1604,15 @@ public class AppsFilterImplTest {
         final PackageSetting calling1 = simulateAddPackage(appsFilter,
                 pkg("com.some.other.package")
                         .addUsesPermission(new ParsedUsesPermissionImpl(
-                                "com.some.custom_permission1", 0, Collections.emptySet())),
+                                "com.some.custom_permission1", 0)),
                 DUMMY_CALLING_APPID);
 
         final PackageSetting calling2 = simulateAddPackage(appsFilter,
                 pkg("com.some.another.package")
                         .addUsesPermission(new ParsedUsesPermissionImpl(
-                                "com.some.custom_permission2", 0, Collections.emptySet()))
+                                "com.some.custom_permission2", 0))
                         .addUsesPermission(new ParsedUsesPermissionImpl(
-                                "com.some.custom_permission3", 0, Collections.emptySet())),
+                                "com.some.custom_permission3", 0)),
                 DUMMY_CALLING_APPID + 1);
 
         assertFalse(
@@ -1649,7 +1645,7 @@ public class AppsFilterImplTest {
         final PackageSetting calling = simulateAddPackage(appsFilter,
                 pkg("com.some.other.package")
                         .addUsesPermission(new ParsedUsesPermissionImpl(
-                                "com.some.custom_permission", 0, Collections.emptySet())),
+                                "com.some.custom_permission", 0)),
                 DUMMY_CALLING_APPID);
 
         assertFalse(

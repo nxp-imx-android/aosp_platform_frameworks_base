@@ -21,6 +21,7 @@ import static android.view.WindowManager.KEYGUARD_VISIBILITY_TRANSIT_FLAGS;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
 
 import android.animation.ValueAnimator;
 import android.app.ActivityManager;
@@ -233,7 +234,8 @@ public class UnfoldTransitionHandler implements TransitionHandler, UnfoldListene
             @NonNull SurfaceControl.Transaction finishT,
             @NonNull IBinder mergeTarget,
             @NonNull TransitionFinishCallback finishCallback) {
-        if (info.getType() != TRANSIT_CHANGE) {
+        if (info.getType() != TRANSIT_CHANGE
+                && info.getType() != TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR) {
             return;
         }
         if ((info.getFlags() & KEYGUARD_VISIBILITY_TRANSIT_FLAGS) != 0) {
@@ -254,7 +256,7 @@ public class UnfoldTransitionHandler implements TransitionHandler, UnfoldListene
                     boolean merged =
                             mBubbleTaskUnfoldTransitionMerger
                                     .get()
-                                    .mergeTaskWithUnfold(taskInfo, change, startT, finishT);
+                                    .mergeTaskWithUnfold(taskInfo, info, change, startT, finishT);
                     if (!merged) {
                         return;
                     }

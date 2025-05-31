@@ -359,10 +359,6 @@ object BiometricViewSizeBinder {
                                         R.id.auth_screen,
                                         View.VISIBLE,
                                     )
-                                    mediumConstraintSet.setVisibility(
-                                        iconHolderView.id,
-                                        View.VISIBLE,
-                                    )
                                     mediumConstraintSet.setVisibility(R.id.fallback_view, View.GONE)
                                 }
                             }

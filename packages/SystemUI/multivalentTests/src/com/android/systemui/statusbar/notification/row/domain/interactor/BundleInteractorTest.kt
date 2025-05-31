@@ -19,6 +19,7 @@
 package com.android.systemui.statusbar.notification.row.domain.interactor
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.platform.test.annotations.EnableFlags
@@ -49,10 +50,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import platform.test.motion.compose.runMonotonicClockTest
@@ -72,6 +75,10 @@ class BundleInteractorTest : SysuiTestCase() {
 
     private lateinit var underTest: BundleInteractor
 
+    private val drawable1: Drawable = ColorDrawable(Color.RED)
+    private val drawable2: Drawable = ColorDrawable(Color.GREEN)
+    private val drawable3: Drawable = ColorDrawable(Color.BLUE)
+
     @Before
     fun setUp() {
         kosmos.appIconProvider = kosmos.mockAppIconProvider
@@ -89,9 +96,6 @@ class BundleInteractorTest : SysuiTestCase() {
                     }
                 }
 
-            val drawable1: Drawable = ColorDrawable(android.graphics.Color.RED)
-            val drawable2: Drawable = ColorDrawable(android.graphics.Color.GREEN)
-            val drawable3: Drawable = ColorDrawable(android.graphics.Color.BLUE)
             val unusedDrawable: Drawable = ColorDrawable(android.graphics.Color.YELLOW)
 
             whenever(
@@ -119,6 +123,152 @@ class BundleInteractorTest : SysuiTestCase() {
 
             assertThat(result).hasSize(3)
             assertThat(result).containsExactly(drawable1, drawable2, drawable3).inOrder()
+        }
+
+    @Test
+    fun previewIcons_collapseTimeZero_fetchAll() =
+        testScope.runTest {
+            // Arrange
+            val app1Data =
+                mock<AppData> {
+                    on { packageName }.thenReturn("app1")
+                    on { timeAddedToBundle }.thenReturn(10L)
+                }
+            val app2Data =
+                mock<AppData> {
+                    on { packageName }.thenReturn("app2")
+                    on { timeAddedToBundle }.thenReturn(20L)
+                }
+            val appDataList = listOf(app1Data, app2Data)
+
+            whenever(
+                    kosmos.mockAppIconProvider.getOrFetchAppIcon(
+                        eq("app1"),
+                        anyOrNull<Context>(),
+                        eq(false),
+                        eq(false),
+                    )
+                )
+                .thenReturn(drawable1)
+            whenever(
+                    kosmos.mockAppIconProvider.getOrFetchAppIcon(
+                        eq("app2"),
+                        anyOrNull<Context>(),
+                        eq(false),
+                        eq(false),
+                    )
+                )
+                .thenReturn(drawable2)
+
+            testBundleRepository.lastCollapseTime = 0L
+            testBundleRepository.appDataList.value = appDataList
+            runCurrent()
+
+            // Act
+            val result = underTest.previewIcons.first()
+
+            // Assert
+            assertThat(result).containsExactly(drawable1, drawable2).inOrder()
+            verify(kosmos.mockAppIconProvider)
+                .getOrFetchAppIcon(eq("app1"), anyOrNull<Context>(), eq(false), eq(false))
+            verify(kosmos.mockAppIconProvider)
+                .getOrFetchAppIcon(eq("app2"), anyOrNull<Context>(), eq(false), eq(false))
+        }
+
+    @Test
+    fun previewIcons_collapseTimeNonZero_filterBytime() =
+        testScope.runTest {
+            // Arrange
+            val collapseTime = 100L
+            val appDataOld =
+                mock<AppData> {
+                    on { packageName }.thenReturn("old_app")
+                    on { timeAddedToBundle }.thenReturn(50L) // Older than collapseTime
+                }
+            val appDataNew =
+                mock<AppData> {
+                    on { packageName }.thenReturn("new_app")
+                    on { timeAddedToBundle }.thenReturn(150L) // Newer than collapseTime
+                }
+            val appDataAtCollapse =
+                mock<AppData> {
+                    on { packageName }.thenReturn("at_collapse_app")
+                    on { timeAddedToBundle }
+                        .thenReturn(collapseTime) // Equal to collapseTime (should be filtered out)
+                }
+            val appDataList = listOf(appDataOld, appDataNew, appDataAtCollapse)
+
+            whenever(
+                    kosmos.mockAppIconProvider.getOrFetchAppIcon(
+                        eq("new_app"),
+                        anyOrNull<Context>(),
+                        eq(false),
+                        eq(false),
+                    )
+                )
+                .thenReturn(drawable3)
+
+            testBundleRepository.lastCollapseTime = collapseTime
+            testBundleRepository.appDataList.value = appDataList
+            runCurrent()
+
+            // Act
+            val result = underTest.previewIcons.first()
+
+            // Assert
+            assertThat(result).containsExactly(drawable3)
+            verify(kosmos.mockAppIconProvider, times(0))
+                .getOrFetchAppIcon(eq("old_app"), anyOrNull<Context>(), eq(false), eq(false))
+            verify(kosmos.mockAppIconProvider, times(0))
+                .getOrFetchAppIcon(
+                    eq("at_collapse_app"),
+                    anyOrNull<Context>(),
+                    eq(false),
+                    eq(false),
+                )
+            verify(kosmos.mockAppIconProvider)
+                .getOrFetchAppIcon(eq("new_app"), anyOrNull<Context>(), eq(false), eq(false))
+        }
+
+    @Test
+    fun previewIcons_allAppDataOlderThanCollapseTime_emitsEmptyList() =
+        testScope.runTest {
+            // Arrange
+            val collapseTime = 200L
+            val appDataList =
+                List(3) { i ->
+                    mock<AppData> {
+                        on { packageName }.thenReturn("app$i")
+                        on { timeAddedToBundle }.thenReturn(i * 1L)
+                    }
+                }
+
+            testBundleRepository.lastCollapseTime = collapseTime
+            testBundleRepository.appDataList.value = appDataList
+            runCurrent()
+
+            // Act
+            val result = underTest.previewIcons.first()
+
+            // Assert
+            assertThat(result).isEmpty()
+            verify(kosmos.mockAppIconProvider, times(0))
+                .getOrFetchAppIcon(anyString(), anyOrNull<Context>(), eq(false), eq(false))
+        }
+
+    @Test
+    fun previewIcons_emptyAppDataList_emitsEmptyIconList() =
+        testScope.runTest {
+            // Arrange
+            testBundleRepository.appDataList.value = emptyList()
+            testBundleRepository.lastCollapseTime = 0L
+            runCurrent()
+
+            // Act
+            val result = underTest.previewIcons.first()
+
+            // Assert
+            assertThat(result).isEmpty()
         }
 
     @Test

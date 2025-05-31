@@ -126,6 +126,16 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     /**
+     * Whether this task view is temporarily marked for moving windows.
+     *
+     * @see #setIsMovingWindows(boolean)
+     */
+    @VisibleForTesting
+    public boolean isMovingWindows() {
+        return mIsMovingWindows;
+    }
+
+    /**
      * Launch a new activity.
      *
      * @param pendingIntent Intent used to launch an activity.
@@ -161,20 +171,6 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
      */
     public void moveToFullscreen() {
         mTaskViewController.moveTaskViewToFullscreen(mTaskViewTaskController);
-    }
-
-    @Override
-    public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
-        if (mTaskViewController.isUsingShellTransitions()) {
-            // No need for additional work as it is already taken care of during
-            // prepareOpenAnimation().
-            return;
-        }
-        onLocationChanged();
-        if (taskInfo.taskDescription != null) {
-            final int bgColor = taskInfo.taskDescription.getBackgroundColor();
-            runOnViewThread(() -> setResizeBackgroundColor(bgColor));
-        }
     }
 
     @Override

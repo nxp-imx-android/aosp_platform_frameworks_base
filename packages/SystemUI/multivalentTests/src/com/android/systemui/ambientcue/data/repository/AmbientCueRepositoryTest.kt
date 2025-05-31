@@ -39,6 +39,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.DEBOUNCE_DELAY_MS
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ACTIVITY_ID
+import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_AUTOFILL_ID
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.concurrency.fakeExecutor
@@ -249,6 +250,23 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun action_performLongClick_pendingIntentSent() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
+                listOf(attributionDialogPendingIntentTarget)
+            )
+
+            val action: ActionModel = actions!!.first()
+            action.onPerformLongClick()
+            runCurrent()
+            verify(attributionDialogPendingIntent).send(any<Bundle>())
+        }
+
+    @Test
     fun targetTaskId_updatedWithAction() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
@@ -363,6 +381,26 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                         SmartspaceAction.Builder("action1-id", "title 1")
                             .setSubtitle("subtitle 1")
                             .setPendingIntent(pendingIntent)
+                            .build()
+                    )
+            }
+
+        private val attributionDialogPendingIntent = mock<PendingIntent>()
+        private val attributionDialogPendingIntentTarget =
+            mock<SmartspaceTarget> {
+                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
+                on { actionChips } doReturn
+                    listOf(
+                        SmartspaceAction.Builder("action1-id", "title 1")
+                            .setSubtitle("subtitle 1")
+                            .setExtras(
+                                Bundle().apply {
+                                    putParcelable(
+                                        EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT,
+                                        attributionDialogPendingIntent,
+                                    )
+                                }
+                            )
                             .build()
                     )
             }

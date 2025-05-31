@@ -24,7 +24,6 @@ import static android.hardware.display.DisplayTopology.TreeNode.POSITION_TOP;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.Nullable;
-import android.annotation.TestApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Parcel;
@@ -42,7 +41,6 @@ import androidx.annotation.NonNull;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.display.feature.flags.Flags;
 
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -58,11 +56,8 @@ import java.util.Queue;
 /**
  * Represents the relative placement of extended displays.
  * Does not support concurrent calls, so a lock should be held when calling into this class.
- *
- * @hide
  */
-@TestApi
-@FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY)
+@FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
 public final class DisplayTopology implements Parcelable {
     private static final String TAG = "DisplayTopology";
     private static final float EPSILON = 0.0001f;
@@ -590,19 +585,18 @@ public final class DisplayTopology implements Parcelable {
      * @hide
      * @param pw The stream to dump information to.
      */
-    public void dump(PrintWriter pw) {
+    public void dump(IndentingPrintWriter pw) {
         pw.println("DisplayTopology:");
         pw.println("--------------------");
-        IndentingPrintWriter ipw = new IndentingPrintWriter(pw);
-        ipw.increaseIndent();
+        pw.increaseIndent();
 
-        ipw.println("mPrimaryDisplayId: " + mPrimaryDisplayId);
+        pw.println("mPrimaryDisplayId: " + mPrimaryDisplayId);
 
-        ipw.println("Topology tree:");
+        pw.println("Topology tree:");
         if (mRoot != null) {
-            ipw.increaseIndent();
-            mRoot.dump(ipw);
-            ipw.decreaseIndent();
+            pw.increaseIndent();
+            mRoot.dump(pw);
+            pw.decreaseIndent();
         }
     }
 
@@ -622,8 +616,7 @@ public final class DisplayTopology implements Parcelable {
     @Override
     public String toString() {
         StringWriter out = new StringWriter();
-        PrintWriter writer = new PrintWriter(out);
-        dump(writer);
+        dump(new IndentingPrintWriter(out));
         return out.toString();
     }
 

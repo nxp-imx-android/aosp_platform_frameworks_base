@@ -62,6 +62,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.RemoteInsets
 import static android.internal.perfetto.protos.Windowmanagerservice.RemoteInsetsControlTargetProto.REQUESTED_VISIBLE_TYPES;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowContainerChildProto.DISPLAY_CONTENT;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.os.UserHandle.USER_NULL;
 import static android.util.DisplayMetrics.DENSITY_DEFAULT;
@@ -193,6 +194,7 @@ import android.os.Debug;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.IBinder;
+import android.os.InputConfig;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.RemoteCallbackList;
@@ -225,8 +227,10 @@ import android.view.IDecorViewGestureListener;
 import android.view.IDisplayWindowInsetsController;
 import android.view.ISystemGestureExclusionListener;
 import android.view.IWindow;
+import android.view.InputApplicationHandle;
 import android.view.InputChannel;
 import android.view.InputDevice;
+import android.view.InputWindowHandle;
 import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.MagnificationSpec;
@@ -259,6 +263,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.internal.util.function.pooled.PooledPredicate;
+import com.android.server.input.InputManagerService;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.utils.RegionUtils;
@@ -341,6 +346,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * over the entire display.
      */
     private SurfaceControl mInputOverlayLayer;
+
+    /**
+     * A special input overlay layer that is always created for each display that receives all
+     * pointer input on the display.
+     */
+    private SurfaceControl mPointerEventDispatcherOverlayLayer;
 
     /** A surfaceControl specifically for accessibility overlays. */
     private SurfaceControl mA11yOverlayLayer;
@@ -1191,9 +1202,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mUnknownAppVisibilityController = new UnknownAppVisibilityController(mWmService, this);
         mRemoteDisplayChangeController = new RemoteDisplayChangeController(this);
 
-        final InputChannel inputChannel = mWmService.mInputManager.monitorInput(
-                "PointerEventDispatcher" + mDisplayId, mDisplayId);
-        mPointerEventDispatcher = new PointerEventDispatcher(inputChannel);
+        final InputChannel pointerSpyInputChannel =
+                mWmService.mInputManager.createInputChannel("PointerEventDispatcher" + mDisplayId);
+        mPointerEventDispatcher = new PointerEventDispatcher(pointerSpyInputChannel);
 
         if (mWmService.mAtmService.getRecentTasks() != null) {
             registerPointerEventListener(
@@ -1342,6 +1353,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             transaction.reparent(mInputOverlayLayer, mSurfaceControl);
         }
 
+        if (mPointerEventDispatcherOverlayLayer == null) {
+            final var name = "PointerEventDispatcherOverlay" + mDisplayId;
+            mPointerEventDispatcherOverlayLayer =
+                    b.setName(name).setParent(mInputOverlayLayer).build();
+            configurePointerEventDispatcherOverlayLayer(transaction, name);
+        }
+
         if (mA11yOverlayLayer == null) {
             mA11yOverlayLayer =
                     b.setName("Accessibility Overlays").setParent(mSurfaceControl).build();
@@ -1356,8 +1374,32 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .show(mOverlayLayer)
                 .setLayer(mInputOverlayLayer, Integer.MAX_VALUE - 1)
                 .show(mInputOverlayLayer)
+                .show(mPointerEventDispatcherOverlayLayer)
                 .setLayer(mA11yOverlayLayer, Integer.MAX_VALUE - 2)
                 .show(mA11yOverlayLayer);
+    }
+
+    private void configurePointerEventDispatcherOverlayLayer(SurfaceControl.Transaction transaction,
+            String name) {
+        final var handle = new InputWindowHandle(
+                new InputApplicationHandle(null, name, DEFAULT_DISPATCHING_TIMEOUT_MILLIS),
+                mDisplayId);
+        handle.name = name;
+        handle.token = mPointerEventDispatcher.getToken();
+        handle.layoutParamsType = WindowManager.LayoutParams.TYPE_SECURE_SYSTEM_OVERLAY;
+        handle.dispatchingTimeoutMillis = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
+        handle.ownerPid = WindowManagerService.MY_PID;
+        handle.ownerUid = WindowManagerService.MY_UID;
+        handle.scaleFactor = 1.0f;
+        handle.replaceTouchableRegionWithCrop(null /* use this surface's bounds */);
+        handle.inputConfig =
+                InputConfig.NOT_FOCUSABLE | InputConfig.SPY | InputConfig.DO_NOT_PILFER;
+        handle.setTrustedOverlay(transaction, mPointerEventDispatcherOverlayLayer, true);
+        transaction
+                .setInputWindowInfo(mPointerEventDispatcherOverlayLayer, handle)
+                .setLayer(mPointerEventDispatcherOverlayLayer,
+                        InputManagerService.INPUT_OVERLAY_POINTER_EVENT_DISPATCHER)
+                .setCrop(mPointerEventDispatcherOverlayLayer, null /* crop to parent surface */);
     }
 
     DisplayRotationReversionController getRotationReversionController() {
@@ -4232,25 +4274,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @param target current IME target.
      * @return {@link InsetsControlTarget} that can host IME.
      */
-    InsetsControlTarget getImeHostOrFallback(@Nullable WindowState target) {
+    InsetsControlTarget getImeHost(@Nullable WindowState target) {
         if (target != null
                 && target.getDisplayContent().getImePolicy() == DISPLAY_IME_POLICY_LOCAL) {
             return target;
         }
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            final DisplayContent defaultDc = getUserMainDisplayContent();
-            return defaultDc.mRemoteInsetsControlTarget;
-        } else {
-            return getImeFallback();
-        }
-    }
-
-    InsetsControlTarget getImeFallback() {
-        // host is in non-default display that doesn't support system decor, default to
-        // default display's StatusBar to control IME (when available), else let system control it.
         final DisplayContent defaultDc = getUserMainDisplayContent();
-        final WindowState statusBar = defaultDc.getDisplayPolicy().getStatusBar();
-        return statusBar != null ? statusBar : defaultDc.mRemoteInsetsControlTarget;
+        return defaultDc.mRemoteInsetsControlTarget;
     }
 
     private DisplayContent getUserMainDisplayContent() {
@@ -4714,9 +4744,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                                 mImeWindowsContainer.getParent().mSurfaceControl));
             updateImeControlTarget(forceUpdateImeParent);
 
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                mInsetsStateController.getImeSourceProvider().onImeInputTargetChanged(target);
-            }
+            mInsetsStateController.getImeSourceProvider().onImeInputTargetChanged(target);
         }
     }
 
@@ -4806,19 +4834,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // in case seeing unexpected IME surface visibility change when delivering the IME leash
             // to the remote insets target during the IME restarting, but the focus window is not in
             // multi-windowing mode, return null target until the next input target updated.
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // The control target could be the RemoteInsetsControlTarget if the focussed
-                // view is on a virtual display that can not show the IME (and therefore it will
-                // be shown on the default display)
-                if (android.view.inputmethod.Flags
-                        .fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
-                    if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
-                        return mRemoteInsetsControlTarget;
-                    }
-                } else {
-                    if (isDefaultDisplay && mRemoteInsetsControlTarget != null) {
-                        return mRemoteInsetsControlTarget;
-                    }
+            // The control target could be the RemoteInsetsControlTarget if the focussed
+            // view is on a virtual display that can not show the IME (and therefore it will
+            // be shown on the default display)
+            if (android.view.inputmethod.Flags
+                    .fallbackDisplayForSecondaryUserOnSecondaryDisplay()) {
+                if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
+                    return mRemoteInsetsControlTarget;
+                }
+            } else {
+                if (isDefaultDisplay && mRemoteInsetsControlTarget != null) {
+                    return mRemoteInsetsControlTarget;
                 }
             }
             return null;
@@ -4826,7 +4852,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         final WindowState imeInputTargetWindow = mImeInputTarget.getWindowState();
         if (!isImeControlledByApp() && mRemoteInsetsControlTarget != null
-                || getImeHostOrFallback(imeInputTargetWindow) == mRemoteInsetsControlTarget) {
+                || getImeHost(imeInputTargetWindow) == mRemoteInsetsControlTarget) {
             return mRemoteInsetsControlTarget;
         } else {
             return imeInputTargetWindow;
@@ -5063,12 +5089,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             forAllWindows(mApplySurfaceChangesTransaction, true /* traverseTopToBottom */);
         } finally {
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-        }
-
-        if (!android.view.inputmethod.Flags.refactorInsetsController()) {
-            // This should be called after the insets have been dispatched to clients and we have
-            // committed finish drawing windows.
-            mInsetsStateController.getImeSourceProvider().checkAndStartShowImePostLayout();
         }
 
         mLastHasContent = mTmpApplySurfaceChangesTransactionState.displayHasContent;
@@ -7047,12 +7067,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         @Override
-        public void showInsets(@WindowInsets.Type.InsetsType int types, boolean fromIme,
+        public void showInsets(@WindowInsets.Type.InsetsType int types,
                 @Nullable ImeTracker.Token statsToken) {
             try {
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_SHOW_INSETS);
-                mRemoteInsetsController.showInsets(types, fromIme, statsToken);
+                mRemoteInsetsController.showInsets(types, statsToken);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failed to deliver showInsets", e);
                 ImeTracker.forLogging().onFailed(statsToken,
@@ -7061,12 +7081,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         @Override
-        public void hideInsets(@InsetsType int types, boolean fromIme,
-                @Nullable ImeTracker.Token statsToken) {
+        public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
             try {
                 ImeTracker.forLogging().onProgress(statsToken,
                         ImeTracker.PHASE_WM_REMOTE_INSETS_CONTROL_TARGET_HIDE_INSETS);
-                mRemoteInsetsController.hideInsets(types, fromIme, statsToken);
+                mRemoteInsetsController.hideInsets(types, statsToken);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failed to deliver hideInsets", e);
                 ImeTracker.forLogging().onFailed(statsToken,
@@ -7081,13 +7100,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         @Override
         public boolean isRequestedVisible(@InsetsType int types) {
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                return (mRequestedVisibleTypes & types) != 0;
-            } else {
-                return ((types & ime()) != 0
-                        && getInsetsStateController().getImeSourceProvider().isImeShowing())
-                        || (mRequestedVisibleTypes & types) != 0;
-            }
+            return (mRequestedVisibleTypes & types) != 0;
         }
 
         @Override
@@ -7098,15 +7111,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         @Override
         public void setImeInputTargetRequestedVisibility(boolean visible,
                 @NonNull ImeTracker.Token statsToken) {
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // TODO(b/353463205) we won't have the statsToken in all cases, but should still log
-                try {
-                    mRemoteInsetsController.setImeInputTargetRequestedVisibility(visible,
-                            statsToken);
-                } catch (RemoteException e) {
-                    // TODO(b/353463205) fail statsToken
-                    Slog.w(TAG, "Failed to deliver setImeInputTargetRequestedVisibility", e);
-                }
+            // TODO(b/353463205) we won't have the statsToken in all cases, but should still log
+            try {
+                mRemoteInsetsController.setImeInputTargetRequestedVisibility(visible,
+                        statsToken);
+            } catch (RemoteException e) {
+                // TODO(b/353463205) fail statsToken
+                Slog.w(TAG, "Failed to deliver setImeInputTargetRequestedVisibility", e);
             }
         }
 

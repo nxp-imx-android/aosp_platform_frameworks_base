@@ -3310,10 +3310,6 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
-        if (getOptions() != null && getOptions().isLaunchIntoPip()) {
-            return true;
-        }
-
         boolean isCurrentAppLocked =
                 mAtmService.getLockTaskModeState() != LOCK_TASK_MODE_NONE;
         final TaskDisplayArea taskDisplayArea = getDisplayArea();
@@ -4590,6 +4586,7 @@ final class ActivityRecord extends WindowToken {
                 if (fromActivity.isVisible()) {
                     setVisible(true);
                     setVisibleRequested(true);
+                    mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
                     mVisibleSetFromTransferredStartingWindow = true;
                 }
                 setClientVisible(fromActivity.isClientVisible());
@@ -4695,6 +4692,10 @@ final class ActivityRecord extends WindowToken {
     }
 
     boolean containsDismissKeyguardWindow() {
+        if (inPinnedWindowingMode()) {
+            return false;
+        }
+
         // Window state is transient during relaunch. We are not guaranteed to be frozen during the
         // entirety of the relaunch.
         if (isRelaunching()) {
@@ -7090,6 +7091,7 @@ final class ActivityRecord extends WindowToken {
             // window. We now reset it back to false since the starting window was the last
             // window in the token.
             setVisible(false);
+            mWmService.mAnimator.addSurfaceVisibilityUpdate(this);
         }
     }
 

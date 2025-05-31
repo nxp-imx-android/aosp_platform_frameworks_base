@@ -18,9 +18,9 @@ package com.android.wm.shell.common.split;
 
 import static android.view.PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
 import static android.view.PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
-import static android.view.WindowManager.LayoutParams.FLAG_SLIPPERY;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CURSOR_HOVER_STATES_ENABLED;
+import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_HYBRID;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.snapPositionToUIString;
 
 import android.animation.Animator;
@@ -46,7 +46,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.FrameLayout;
@@ -153,10 +152,23 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
             super.onInitializeAccessibilityNodeInfo(host, info);
             final DividerSnapAlgorithm snapAlgorithm = mSplitLayout.mDividerSnapAlgorithm;
+            // TODO(b/415827083) remove all this and try to re-land ag/33667759
+            boolean showFlexSnapPoints = snapAlgorithm.areOffscreenRatiosSupported() &&
+                    snapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID;
             if (mSplitLayout.isLeftRightSplit()) {
                 info.addAction(new AccessibilityAction(R.id.action_move_tl_full,
                         mContext.getString(R.string.accessibility_action_divider_left_full)));
                 if (snapAlgorithm.isFirstSplitTargetAvailable()) {
+                    info.addAction(new AccessibilityAction(
+                            showFlexSnapPoints ? R.id.action_move_tl_90 : R.id.action_move_tl_70,
+                            showFlexSnapPoints ?
+                                    mContext.getString(
+                                            R.string.accessibility_action_divider_left_90)
+                                    : mContext.getString(
+                                            R.string.accessibility_action_divider_left_70)
+                            ));
+                }
+                if (showFlexSnapPoints && snapAlgorithm.isSecondSplitTargetAvailable()) {
                     info.addAction(new AccessibilityAction(R.id.action_move_tl_70,
                             mContext.getString(R.string.accessibility_action_divider_left_70)));
                 }
@@ -165,9 +177,19 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                     info.addAction(new AccessibilityAction(R.id.action_move_tl_50,
                             mContext.getString(R.string.accessibility_action_divider_left_50)));
                 }
-                if (snapAlgorithm.isLastSplitTargetAvailable()) {
+                if (showFlexSnapPoints && snapAlgorithm.isSecondLastSplitTargetAvailable()) {
                     info.addAction(new AccessibilityAction(R.id.action_move_tl_30,
                             mContext.getString(R.string.accessibility_action_divider_left_30)));
+                }
+                if (snapAlgorithm.isLastSplitTargetAvailable()) {
+                    info.addAction(new AccessibilityAction(
+                            showFlexSnapPoints ? R.id.action_move_tl_10 : R.id.action_move_tl_30,
+                            showFlexSnapPoints ?
+                                    mContext.getString(
+                                            R.string.accessibility_action_divider_left_10)
+                                    : mContext.getString(
+                                            R.string.accessibility_action_divider_left_30)
+                    ));
                 }
                 info.addAction(new AccessibilityAction(R.id.action_move_rb_full,
                         mContext.getString(R.string.accessibility_action_divider_right_full)));
@@ -177,6 +199,18 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 info.addAction(new AccessibilityAction(R.id.action_move_tl_full,
                         mContext.getString(R.string.accessibility_action_divider_top_full)));
                 if (snapAlgorithm.isFirstSplitTargetAvailable()) {
+                    info.addAction(new AccessibilityAction(
+                            showFlexSnapPoints ? R.id.action_move_tl_90 : R.id.action_move_tl_70,
+                            showFlexSnapPoints ?
+                                    mContext.getString(
+                                            R.string.accessibility_action_divider_top_90)
+                                    : mContext.getString(
+                                            R.string.accessibility_action_divider_top_70)
+                    ));
+                    info.addAction(new AccessibilityAction(R.id.action_move_tl_70,
+                            mContext.getString(R.string.accessibility_action_divider_top_70)));
+                }
+                if (showFlexSnapPoints && snapAlgorithm.isSecondSplitTargetAvailable()) {
                     info.addAction(new AccessibilityAction(R.id.action_move_tl_70,
                             mContext.getString(R.string.accessibility_action_divider_top_70)));
                 }
@@ -185,9 +219,19 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                     info.addAction(new AccessibilityAction(R.id.action_move_tl_50,
                             mContext.getString(R.string.accessibility_action_divider_top_50)));
                 }
-                if (snapAlgorithm.isLastSplitTargetAvailable()) {
+                if (showFlexSnapPoints && snapAlgorithm.isSecondLastSplitTargetAvailable()) {
                     info.addAction(new AccessibilityAction(R.id.action_move_tl_30,
                             mContext.getString(R.string.accessibility_action_divider_top_30)));
+                }
+                if (snapAlgorithm.isLastSplitTargetAvailable()) {
+                    info.addAction(new AccessibilityAction(
+                            showFlexSnapPoints ? R.id.action_move_tl_10 : R.id.action_move_tl_30,
+                            showFlexSnapPoints ?
+                                    mContext.getString(
+                                            R.string.accessibility_action_divider_top_10)
+                                    : mContext.getString(
+                                            R.string.accessibility_action_divider_top_30)
+                    ));
                 }
                 info.addAction(new AccessibilityAction(R.id.action_move_rb_full,
                         mContext.getString(R.string.accessibility_action_divider_bottom_full)));
@@ -206,13 +250,24 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
 
             SnapTarget nextTarget = null;
             DividerSnapAlgorithm snapAlgorithm = mSplitLayout.mDividerSnapAlgorithm;
+            // TODO(b/415827083) remove all this and try to re-land ag/33667759
+            boolean showFlexSnapPoints = snapAlgorithm.areOffscreenRatiosSupported() &&
+                    snapAlgorithm.getSnapMode() == SNAP_FLEXIBLE_HYBRID;
             if (action == R.id.action_move_tl_full) {
                 nextTarget = snapAlgorithm.getDismissEndTarget();
-            } else if (action == R.id.action_move_tl_70) {
+            } else if (action == R.id.action_move_tl_90) {
                 nextTarget = snapAlgorithm.getLastSplitTarget();
+            } else if (action == R.id.action_move_tl_70) {
+                nextTarget = showFlexSnapPoints ?
+                        snapAlgorithm.getSecondLastSplitTarget() :
+                        snapAlgorithm.getLastSplitTarget();
             } else if (action == R.id.action_move_tl_50) {
                 nextTarget = snapAlgorithm.getMiddleTarget();
             } else if (action == R.id.action_move_tl_30) {
+                nextTarget = showFlexSnapPoints ?
+                        snapAlgorithm.getSecondSplitTarget() :
+                        snapAlgorithm.getFirstSplitTarget();
+            } else if (action == R.id.action_move_tl_10) {
                 nextTarget = snapAlgorithm.getFirstSplitTarget();
             } else if (action == R.id.action_move_rb_full) {
                 nextTarget = snapAlgorithm.getDismissStartTarget();
@@ -357,9 +412,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
             return false;
         }
 
-        if (mDoubleTapDetector.onTouchEvent(event)) {
-            return true;
-        }
+        mDoubleTapDetector.onTouchEvent(event);
 
         // Convert to use screen-based coordinates to prevent lost track of motion events while
         // moving divider bar and calculating dragging velocity.
@@ -524,7 +577,6 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     private void setTouching() {
-        setSlippery(false);
         mHandle.setTouching(true, true);
         // Lift handle as well so it doesn't get behind the background, even though it doesn't
         // cast shadow.
@@ -536,32 +588,12 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     private void releaseTouching() {
-        setSlippery(true);
         mHandle.setTouching(false, true);
         mHandle.animate()
                 .setInterpolator(Interpolators.FAST_OUT_SLOW_IN)
                 .setDuration(TOUCH_RELEASE_ANIMATION_DURATION)
                 .translationZ(0)
                 .start();
-    }
-
-    private void setSlippery(boolean slippery) {
-        if (mViewHost == null) {
-            return;
-        }
-
-        final WindowManager.LayoutParams lp = (WindowManager.LayoutParams) getLayoutParams();
-        final boolean isSlippery = (lp.flags & FLAG_SLIPPERY) != 0;
-        if (isSlippery == slippery) {
-            return;
-        }
-
-        if (slippery) {
-            lp.flags |= FLAG_SLIPPERY;
-        } else {
-            lp.flags &= ~FLAG_SLIPPERY;
-        }
-        mViewHost.relayout(lp);
     }
 
     @Override
@@ -648,17 +680,18 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     private class DoubleTapListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            if (mSplitLayout != null) {
-                mSplitLayout.onDoubleTappedDivider();
-            }
-            return true;
-        }
 
         @Override
         public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
-            return true;
+            // User could have started double tap and then dragged before letting go. Skip the
+            // swap if so
+            if (!mMoving && e.getAction() == MotionEvent.ACTION_UP) {
+                if (mSplitLayout != null) {
+                    mSplitLayout.onDoubleTappedDivider();
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

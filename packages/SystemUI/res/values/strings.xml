@@ -616,6 +616,12 @@
     <!-- Content description of the button to remove a device from a group. [CHAR LIMIT=NONE] -->
     <string name="accessibility_remove_device_from_group">Remove device from group.</string>
 
+    <!-- Content description of the button to add a device to a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_add_device_to_group_with_name">Add <xliff:g id="device_name">%s</xliff:g> to group.</string>
+
+    <!-- Content description of the button to remove a device from a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_remove_device_from_group_with_name">Remove <xliff:g id="device_name">%s</xliff:g> from group.</string>
+
     <!-- Content description of the button to open the application . [CHAR LIMIT=NONE] -->
     <string name="accessibility_open_application">Open application.</string>
 
@@ -2108,8 +2114,11 @@
     <!-- [CHAR LIMIT=NONE] Notification camera based rotation enabled description -->
     <string name="rotation_lock_camera_rotation_on">On - Face-based</string>
 
-    <!-- [CHAR LIMIT=100] Notification bundle inline settings title -->
+    <!-- [CHAR LIMIT=100] Notification bundle header inline settings title -->
     <string name="notification_guts_bundle_title">Silence and bundle</string>
+
+    <!-- [CHAR LIMIT=100] Notification bundle individual notification inline settings title -->
+    <string name="notification_guts_single_bundle_notif_title">Use Notification Organizer</string>
 
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary for an individual notification -->
     <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
@@ -2122,6 +2131,15 @@
     <string name="notification_guts_social_summary">Likes, posts, and more</string>
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary -->
     <string name="notification_guts_recs_summary">Newsletters, recommended media, and more</string>
+
+    <!-- Notification summaries onboarding affordance turn on button [CHAR LIMIT=40]-->
+    <string name="notification_onboarding_summaries_turn_on">Turn on</string>
+
+    <!--  Notification summaries onboarding affordance message [CHAR LIMIT=NONE]-->
+    <string name="notification_onboarding_summaries_message">Your longer conversations can now be summarized to give you quick recaps</string>
+
+    <!--  Notification bundles onboarding affordance  [CHAR LIMIT=NONE]-->
+    <string name="notification_onboarding_bundles_message">Notification organizer bundles and silences lower priority notifications</string>
 
     <!-- Notification Inline controls: button to dismiss the blocking helper [CHAR_LIMIT=20] -->
     <string name="inline_done_button">Done</string>

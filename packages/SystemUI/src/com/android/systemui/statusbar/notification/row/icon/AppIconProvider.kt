@@ -39,6 +39,7 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.collection.NotifCollectionCache
 import com.android.systemui.util.asIndenting
+import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.withIncreasedIndent
 import dagger.Module
 import dagger.Provides
@@ -87,8 +88,11 @@ interface AppIconProvider {
 @SysUISingleton
 class AppIconProviderImpl
 @Inject
-constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: DumpManager) :
-    AppIconProvider, Dumpable {
+constructor(
+    @ShadeDisplayAware private val sysuiContext: Context,
+    dumpManager: DumpManager,
+    systemClock: SystemClock,
+) : AppIconProvider, Dumpable {
     init {
         dumpManager.registerNormalDumpable(TAG, this)
     }
@@ -151,9 +155,9 @@ constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: D
     private val skeletonIconFactory: BaseIconFactory
         get() = SkeletonNotificationIcons(sysuiContext, densityDpi, iconSize)
 
-    private val cache = NotifCollectionCache<Drawable>()
+    private val cache = NotifCollectionCache<Drawable>(systemClock = systemClock)
 
-    private val skeletonCache = NotifCollectionCache<Drawable>()
+    private val skeletonCache = NotifCollectionCache<Drawable>(systemClock = systemClock)
 
     override fun getOrFetchAppIcon(
         packageName: String,
@@ -202,7 +206,7 @@ constructor(@ShadeDisplayAware private val sysuiContext: Context, dumpManager: D
 
     private fun iconOptions(context: Context, withWorkProfileBadge: Boolean): IconOptions {
         return IconOptions().apply {
-            setUser(userIconInfo(context, withWorkProfileBadge = false))
+            setUser(userIconInfo(context, withWorkProfileBadge))
             setBitmapGenerationMode(BaseIconFactory.MODE_HARDWARE)
             // This color will not be used, but we're just setting it so that the icon factory
             // doesn't try to extract colors from our bitmap (since it won't work, given it's a

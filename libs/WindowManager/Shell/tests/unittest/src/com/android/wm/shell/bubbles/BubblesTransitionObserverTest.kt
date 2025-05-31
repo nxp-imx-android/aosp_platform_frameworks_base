@@ -33,10 +33,11 @@ import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+import com.android.wm.shell.Flags.FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.bubbles.util.verifyExitBubbleTransaction
+import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
@@ -230,7 +231,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
         verify(bubbleData, never()).setExpanded(false)
     }
 
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE)
     @Test
     fun testOnTransitionReady_bubbleMovingToSplit_removeBubble() {
         val taskOrganizer = mock<ShellTaskOrganizer>()
@@ -270,7 +271,7 @@ class BubblesTransitionObserverTest : ShellTestCase() {
         )
     }
 
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE)
     @Test
     fun testOnTransitionReady_noBubbles_doesNotCheckForSplitState() {
         bubbleData.stub {

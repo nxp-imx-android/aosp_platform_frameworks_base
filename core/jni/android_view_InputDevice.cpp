@@ -87,9 +87,8 @@ jobject android_view_InputDevice_create(JNIEnv* env, const InputDeviceInfo& devi
                                           deviceInfo.getKeyboardType(), kcmObj.get(),
                                           keyboardLanguageTagObj.get(), keyboardLayoutTypeObj.get(),
                                           deviceInfo.hasVibrator(), deviceInfo.hasMic(),
-                                          deviceInfo.hasButtonUnderPad(), deviceInfo.hasSensor(),
-                                          deviceInfo.hasBattery(), usiVersion.majorVersion,
-                                          usiVersion.minorVersion,
+                                          deviceInfo.hasSensor(), deviceInfo.hasBattery(),
+                                          usiVersion.majorVersion, usiVersion.minorVersion,
                                           deviceInfo.getAssociatedDisplayId(),
                                           deviceInfo.isEnabled()));
     // Note: We do not populate the Bluetooth address into the InputDevice object to avoid leaking
@@ -127,7 +126,7 @@ int register_android_view_InputDevice(JNIEnv* env)
     gInputDeviceClassInfo.ctor = GetMethodIDOrDie(env, gInputDeviceClassInfo.clazz, "<init>",
                                                   "(IIILjava/lang/String;IIILjava/lang/"
                                                   "String;ZIILandroid/view/KeyCharacterMap;Ljava/"
-                                                  "lang/String;Ljava/lang/String;ZZZZZIIIZ)V");
+                                                  "lang/String;Ljava/lang/String;ZZZZIIIZ)V");
 
     gInputDeviceClassInfo.addMotionRange =
             GetMethodIDOrDie(env, gInputDeviceClassInfo.clazz, "addMotionRange", "(IIFFFFF)V");

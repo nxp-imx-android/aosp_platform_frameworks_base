@@ -45,11 +45,9 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.util.Slog;
-import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -65,7 +63,6 @@ import com.android.internal.inputmethod.IRemoteAccessibilityInputConnection;
 import com.android.internal.inputmethod.IRemoteInputConnection;
 import com.android.internal.inputmethod.InputBindResult;
 import com.android.internal.inputmethod.InputMethodInfoSafeList;
-import com.android.internal.inputmethod.SoftInputShowHideReason;
 import com.android.internal.inputmethod.StartInputFlags;
 import com.android.internal.inputmethod.StartInputReason;
 import com.android.internal.util.FunctionalUtils.ThrowingRunnable;
@@ -77,7 +74,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A proxy that processes all {@link IInputMethodManager} calls asynchronously.
@@ -170,51 +166,6 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
     @Override
     public InputMethodSubtype getLastInputMethodSubtype(int userId) {
         return mInner.getLastInputMethodSubtype(userId);
-    }
-
-    @Override
-    public boolean showSoftInput(IInputMethodClient client, IBinder windowToken,
-            @Nullable ImeTracker.Token statsToken, @InputMethodManager.ShowFlags int flags,
-            @MotionEvent.ToolType int lastClickToolType, ResultReceiver resultReceiver,
-            @SoftInputShowHideReason int reason, boolean async) {
-
-        if (async) {
-            offload(() -> mInner.showSoftInput(
-                    client, windowToken, statsToken, flags, lastClickToolType, resultReceiver,
-                    reason, async));
-            return true;
-        } else {
-            final var future = CompletableFuture.supplyAsync(
-                    () -> mInner.showSoftInput(
-                            client,
-                            windowToken,
-                            statsToken,
-                            flags,
-                            lastClickToolType,
-                            resultReceiver,
-                            reason,
-                            async),
-                    this::offload);
-            return future.completeOnTimeout(false, 1, TimeUnit.SECONDS).join();
-        }
-    }
-
-    @Override
-    public boolean hideSoftInput(IInputMethodClient client, IBinder windowToken,
-            @Nullable ImeTracker.Token statsToken, @InputMethodManager.HideFlags int flags,
-            ResultReceiver resultReceiver, @SoftInputShowHideReason int reason, boolean async) {
-
-        if (async) {
-            offload(() -> mInner.hideSoftInput(
-                    client, windowToken, statsToken, flags, resultReceiver, reason, async));
-            return true;
-        } else {
-            final var future = CompletableFuture.supplyAsync(
-                    () -> mInner.hideSoftInput(
-                            client, windowToken, statsToken, flags, resultReceiver, reason, async),
-                    this::offload);
-            return future.completeOnTimeout(false, 1, TimeUnit.SECONDS).join();
-        }
     }
 
     @Override

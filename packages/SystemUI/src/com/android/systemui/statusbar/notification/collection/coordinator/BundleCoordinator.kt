@@ -23,6 +23,7 @@ import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.os.Build
 import android.os.SystemProperties
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -47,6 +48,7 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_NEWS
 import com.android.systemui.statusbar.notification.stack.BUCKET_PROMO
 import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
+import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 
 /** Coordinator for sections derived from NotificationAssistantService classification. */
@@ -59,6 +61,7 @@ constructor(
     @RecsHeader private val recsHeaderController: NodeController,
     @PromoHeader private val promoHeaderController: NodeController,
     private val bundleBarn: BundleBarn,
+    private val systemClock: SystemClock,
 ) : Coordinator {
 
     val newsSectioner =
@@ -173,58 +176,147 @@ constructor(
             }
         }
 
-    /** Updates the total count of [NotificationEntry]s within each bundle. */
+    /**
+     * Updates the total count of [NotificationEntry]s within each bundle. Group summaries are not
+     * counted.
+     */
     @get:VisibleForTesting
     val bundleCountUpdater = OnBeforeRenderListListener { entries ->
         entries.forEachBundleEntry { bundleEntry ->
-            var count = 0
-            for (child in bundleEntry.children) {
-                when (child) {
-                    is NotificationEntry -> {
-                        count++
+            val notifEntrySet = mutableSetOf<NotificationEntry>()
+            fun collectNotifEntry(listEntries: List<ListEntry>) {
+                for (entry in listEntries) {
+                    when (entry) {
+                        is NotificationEntry -> {
+                            notifEntrySet.add(entry)
+                        }
+                        is GroupEntry -> {
+                            // Do not count group summary NotifEntry
+                            collectNotifEntry(entry.children)
+                        }
+                        else -> {
+                            error(
+                                "bundleCountUpdater: Unexpected ListEntry type: " +
+                                    "${entry::class.simpleName} found in bundle " +
+                                    "(key: ${bundleEntry.key})"
+                            )
+                        }
                     }
-
-                    is GroupEntry -> {
-                        count += child.children.size
-                    }
-
-                    else -> error("Unexpected ListEntry type: ${child::class.simpleName}")
                 }
             }
-            bundleEntry.bundleRepository.numberOfChildren = count
+            collectNotifEntry(bundleEntry.children)
+            bundleEntry.bundleRepository.numberOfChildren = notifEntrySet.size
+        }
+    }
+
+    /** Updates each NotificationEntry's bundle membership time. */
+    @get:VisibleForTesting
+    val bundleMembershipUpdater = OnBeforeRenderListListener { entries ->
+        val currentTime = systemClock.uptimeMillis()
+        val processed = mutableSetOf<NotificationEntry>()
+
+        fun updateEntryList(entryList: List<PipelineEntry>, currentBundleKey: String?) {
+            entryList.forEach { entry ->
+                when (entry) {
+                    is NotificationEntry -> {
+                        if (processed.add(entry)) {
+                            entry.updateBundle(currentBundleKey, currentTime)
+                        }
+                    }
+                    is GroupEntry -> {
+                        // Process group summary in case we got new update from app or auto-grouping
+                        entry.representativeEntry?.let { summary ->
+                            if (processed.add(summary)) {
+                                summary.updateBundle(currentBundleKey, currentTime)
+                            }
+                        }
+                        updateEntryList(entry.children, currentBundleKey)
+                    }
+                    is BundleEntry -> {
+                        updateEntryList(entry.children, entry.key)
+                    }
+                    else -> {
+                        error(
+                            "Unexpected PipelineEntry type: " +
+                                "${entry::class.simpleName} with key ${entry.key}"
+                        )
+                    }
+                }
+            }
+        }
+        updateEntryList(entries, /* currentBundleKey */ null)
+    }
+
+    private fun getAppDataForListEntry(listEntry: ListEntry): AppData? {
+        if (listEntry.representativeEntry == null) {
+            error(
+                "getAppDataForListEntry BundleEntry child (key: ${listEntry.key})" +
+                    "has no representativeEntry"
+            )
+        }
+        val representative = listEntry.representativeEntry!!
+        val time = representative.timeAddedToBundle.second
+        return if (time > 0L) {
+            AppData(representative.sbn.packageName, representative.sbn.user, time)
+        } else {
+            error("getAppDataForListEntry not in bundle (key: ${listEntry.key})")
         }
     }
 
     /**
-     * For each BundleEntry, populate its bundleRepository.appDataList with AppData (package name,
-     * UserHandle) from its notif children
+     * For each BundleEntry, populate its bundleRepository.appDataList with unique AppData (package
+     * name, UserHandle, latest timeAddedToBundle) by recursively checking all NotificationEntry
+     * children, including those within groups.
      */
     @get:VisibleForTesting
     val bundleAppDataUpdater = OnBeforeRenderListListener { entries ->
         entries.forEachBundleEntry { bundleEntry ->
-            val newAppDataList: List<AppData> =
-                bundleEntry.children.flatMap { listEntry ->
-                    when (listEntry) {
-                        is NotificationEntry -> {
-                            listOf(AppData(listEntry.sbn.packageName, listEntry.sbn.user))
-                        }
+            if (bundleEntry.bundleRepository.state?.currentScene == BundleHeader.Scenes.Expanded) {
+                bundleEntry.bundleRepository.appDataList.value = emptyList()
+            } else {
+                val appDataList = mutableListOf<AppData>()
 
-                        is GroupEntry -> {
-                            val summary = listEntry.representativeEntry
-                            if (summary != null) {
-                                listOf(AppData(summary.sbn.packageName, summary.sbn.user))
-                            } else {
+                fun collectAppData(listEntries: List<ListEntry>) {
+                    for (listEntry in listEntries) {
+                        when (listEntry) {
+                            is NotificationEntry -> {
+                                val time = listEntry.timeAddedToBundle.second
+                                appDataList.add(
+                                    AppData(listEntry.sbn.packageName, listEntry.sbn.user, time)
+                                )
+                            }
+
+                            is GroupEntry -> {
+                                listEntry.representativeEntry?.let { summary ->
+                                    val time = summary.timeAddedToBundle.second
+                                    appDataList.add(
+                                        AppData(summary.sbn.packageName, summary.sbn.user, time)
+                                    )
+                                }
+                                collectAppData(listEntry.children)
+                            }
+                            else -> {
                                 error(
-                                    "BundleEntry (key: ${bundleEntry.key}) contains GroupEntry " +
-                                        "(key: ${listEntry.key}) with no summary."
+                                    "bundleAppDataUpdater: unexpected ListEntry type: " +
+                                        "${listEntry::class.simpleName} while collecting " +
+                                        "AppData for BundleEntry (key: ${bundleEntry.key})"
                                 )
                             }
                         }
-
-                        else -> error("Unexpected ListEntry type: ${listEntry::class.simpleName}")
                     }
                 }
-            bundleEntry.bundleRepository.appDataList.value = newAppDataList
+                collectAppData(bundleEntry.children)
+
+                // Group by package name and user, then for each group, pick the AppData
+                // with the maximum (latest) non-zero timeAddedToBundle.
+                bundleEntry.bundleRepository.appDataList.value =
+                    appDataList
+                        .filter { it.timeAddedToBundle > 0L }
+                        .groupBy { Pair(it.packageName, it.user) }
+                        .mapNotNull { (_, appDataListForSameApp) ->
+                            appDataListForSameApp.maxByOrNull { it.timeAddedToBundle }
+                        }
+            }
         }
     }
 
@@ -234,6 +326,7 @@ constructor(
             pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
             pipeline.addFinalizeFilter(bundleFilter)
             pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
+            pipeline.addOnBeforeRenderListListener(bundleMembershipUpdater)
             pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
         }
     }

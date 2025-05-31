@@ -60,8 +60,11 @@ import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
 import com.android.systemui.statusbar.notification.ConversationNotificationManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
+import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.buildSummaryNotificationEntry
 import com.android.systemui.statusbar.notification.collection.mockNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
@@ -101,6 +104,7 @@ import com.android.systemui.util.Assert.runWithCurrentThreadAsMainThread
 import com.android.systemui.util.DeviceConfigProxyFake
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
+import com.android.systemui.util.time.fakeSystemClock
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -331,31 +335,37 @@ class ExpandableNotificationRowBuilder(
             { Mockito.mock(NotificationViewFlipperFactory::class.java) },
             NotificationRowIconViewInflaterFactory(
                 kosmos.mockAppIconProvider,
-                NotificationIconStyleProviderImpl(mUserManager, kosmos.dumpManager),
+                NotificationIconStyleProviderImpl(
+                    mUserManager,
+                    kosmos.dumpManager,
+                    kosmos.fakeSystemClock,
+                ),
             ),
         )
     }
 
     fun createRowGroup(childCount: Int = 4): ExpandableNotificationRow {
         val summary =
-            Notification.Builder(context, "channel")
-                .setSmallIcon(R.drawable.ic_person)
-                .setGroupSummary(true)
-                .setGroup("group")
-                .build()
-        val row = createRow(summary)
+            kosmos.buildSummaryNotificationEntry {
+                Notification.Builder(context, "channel")
+                    .setSmallIcon(R.drawable.ic_person)
+                    .setGroupSummary(true)
+                    .setGroup("group")
+            }
+        summary.row = kosmos.createRowWithEntry(summary)
+        val groupBuilder = GroupEntryBuilder().setSummary(summary)
         for (i in 0..<childCount) {
-            val childRow: ExpandableNotificationRow =
-                createRow(
-                    Notification.Builder(context, "channel")
-                        .setSmallIcon(R.drawable.ic_person)
-                        .setGroup("group")
-                        .build()
-                )
-            row.addChildNotification(childRow)
+            val childEntry = kosmos.buildNotificationEntry {
+                Notification.Builder(context, "channel")
+                    .setSmallIcon(R.drawable.ic_person)
+                    .setGroup("group")
+            }
+            childEntry.row = kosmos.createRowWithEntry(childEntry)
+            groupBuilder.addChild(childEntry)
+            summary.row.addChildNotification(childEntry.row)
         }
-
-        return row
+        groupBuilder.build()
+        return summary.row
     }
 
     fun createRow(): ExpandableNotificationRow {

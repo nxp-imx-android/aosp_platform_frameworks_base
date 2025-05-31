@@ -37,6 +37,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 DoNotDirectlyConstructKosmosDetector.ISSUE,
                 DumpableNotRegisteredDetector.ISSUE,
                 FlowDetector.SHARED_FLOW_CREATION,
+                MainThreadCoroutineScopeDetector.ISSUE,
                 MissingApacheLicenseDetector.ISSUE,
                 NonInjectedMainThreadDetector.ISSUE,
                 NonInjectedServiceDetector.ISSUE,

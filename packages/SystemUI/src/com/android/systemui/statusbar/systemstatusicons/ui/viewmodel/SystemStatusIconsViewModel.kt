@@ -23,11 +23,15 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.airplane.ui.viewmodel.AirplaneModeIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.NextAlarmIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.bluetooth.ui.viewmodel.BluetoothIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.viewmodel.ConnectedDisplayIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.OrderedIconSlotNamesInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.MuteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.VibrateIconViewModel
+import com.android.systemui.statusbar.systemstatusicons.wifi.ui.viewmodel.WifiIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.ZenModeIconViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -50,9 +54,13 @@ constructor(
     orderedIconSlotNamesInteractor: OrderedIconSlotNamesInteractor,
     airplaneModeIconViewModelFactory: AirplaneModeIconViewModel.Factory,
     bluetoothIconViewModelFactory: BluetoothIconViewModel.Factory,
+    connectedDisplayIconViewModelFactory: ConnectedDisplayIconViewModel.Factory,
     ethernetIconViewModelFactory: EthernetIconViewModel.Factory,
+    hotspotIconViewModelFactory: HotspotIconViewModel.Factory,
     muteIconViewModelFactory: MuteIconViewModel.Factory,
+    nextAlarmIconViewModelFactory: NextAlarmIconViewModel.Factory,
     vibrateIconViewModelFactory: VibrateIconViewModel.Factory,
+    wifiIconViewModelFactory: WifiIconViewModel.Factory,
     zenModeIconViewModelFactory: ZenModeIconViewModel.Factory,
 ) : ExclusiveActivatable() {
 
@@ -64,13 +72,30 @@ constructor(
 
     private val airplaneModeIcon by lazy { airplaneModeIconViewModelFactory.create(context) }
     private val bluetoothIcon by lazy { bluetoothIconViewModelFactory.create(context) }
+    private val connectedDisplayIcon by lazy {
+        connectedDisplayIconViewModelFactory.create(context)
+    }
     private val ethernetIcon by lazy { ethernetIconViewModelFactory.create(context) }
+    private val hotspotIcon by lazy { hotspotIconViewModelFactory.create(context) }
     private val muteIcon by lazy { muteIconViewModelFactory.create(context) }
+    private val nextAlarmIcon by lazy { nextAlarmIconViewModelFactory.create(context) }
     private val vibrateIcon by lazy { vibrateIconViewModelFactory.create(context) }
+    private val wifiIcon by lazy { wifiIconViewModelFactory.create(context) }
     private val zenModeIcon by lazy { zenModeIconViewModelFactory.create(context) }
 
     private val unOrderedIconViewModels: List<SystemStatusIconViewModel> by lazy {
-        listOf(airplaneModeIcon, bluetoothIcon, ethernetIcon, muteIcon, vibrateIcon, zenModeIcon)
+        listOf(
+            airplaneModeIcon,
+            bluetoothIcon,
+            connectedDisplayIcon,
+            ethernetIcon,
+            hotspotIcon,
+            muteIcon,
+            nextAlarmIcon,
+            vibrateIcon,
+            wifiIcon,
+            zenModeIcon,
+        )
     }
 
     private val viewModelMap: Map<String, SystemStatusIconViewModel> by lazy {
@@ -93,12 +118,17 @@ constructor(
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
+            launch { hydrator.activate() }
+
             launch { airplaneModeIcon.activate() }
             launch { bluetoothIcon.activate() }
-            launch { hydrator.activate() }
+            launch { connectedDisplayIcon.activate() }
             launch { ethernetIcon.activate() }
+            launch { hotspotIcon.activate() }
             launch { muteIcon.activate() }
+            launch { nextAlarmIcon.activate() }
             launch { vibrateIcon.activate() }
+            launch { wifiIcon.activate() }
             launch { zenModeIcon.activate() }
         }
         awaitCancellation()

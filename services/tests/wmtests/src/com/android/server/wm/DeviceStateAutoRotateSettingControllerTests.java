@@ -16,6 +16,11 @@
 
 package com.android.server.wm;
 
+import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_FOLDED;
+import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_HALF_FOLDED;
+import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY;
+import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_UNFOLDED;
+import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_UNKNOWN;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED;
 import static android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_UNLOCKED;
 import static android.provider.Settings.System.ACCELEROMETER_ROTATION;
@@ -25,7 +30,10 @@ import static com.android.internal.view.RotationPolicy.NATURAL_ROTATION;
 import static com.android.server.wm.DisplayRotation.NO_UPDATE_USER_ROTATION;
 import static com.android.server.wm.DisplayRotation.USE_CURRENT_ROTATION;
 import static com.android.server.wm.utils.DeviceStateTestUtils.FOLDED;
+import static com.android.server.wm.utils.DeviceStateTestUtils.HALF_FOLDED;
 import static com.android.server.wm.utils.DeviceStateTestUtils.OPEN;
+import static com.android.server.wm.utils.DeviceStateTestUtils.REAR;
+import static com.android.server.wm.utils.DeviceStateTestUtils.UNKNOWN;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -59,6 +67,7 @@ import com.android.internal.util.test.FakeSettingsProviderRule;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSettingListener;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerImpl;
+import com.android.settingslib.devicestate.PostureDeviceStateConverter;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -85,24 +94,24 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
     static {
         FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING = new SparseIntArray();
-        FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING.put(FOLDED.getIdentifier(),
+        FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_FOLDED,
                 DEVICE_STATE_ROTATION_LOCK_UNLOCKED);
-        FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING.put(OPEN.getIdentifier(),
+        FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_UNFOLDED,
                 DEVICE_STATE_ROTATION_LOCK_UNLOCKED);
         FOLDED_LOCKED_OPEN_UNLOCKED_SETTING = new SparseIntArray();
-        FOLDED_LOCKED_OPEN_UNLOCKED_SETTING.put(FOLDED.getIdentifier(),
+        FOLDED_LOCKED_OPEN_UNLOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_FOLDED,
                 DEVICE_STATE_ROTATION_LOCK_LOCKED);
-        FOLDED_LOCKED_OPEN_UNLOCKED_SETTING.put(OPEN.getIdentifier(),
+        FOLDED_LOCKED_OPEN_UNLOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_UNFOLDED,
                 DEVICE_STATE_ROTATION_LOCK_UNLOCKED);
         FOLDED_LOCKED_OPEN_LOCKED_SETTING = new SparseIntArray();
-        FOLDED_LOCKED_OPEN_LOCKED_SETTING.put(FOLDED.getIdentifier(),
+        FOLDED_LOCKED_OPEN_LOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_FOLDED,
                 DEVICE_STATE_ROTATION_LOCK_LOCKED);
-        FOLDED_LOCKED_OPEN_LOCKED_SETTING.put(OPEN.getIdentifier(),
+        FOLDED_LOCKED_OPEN_LOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_UNFOLDED,
                 DEVICE_STATE_ROTATION_LOCK_LOCKED);
         FOLDED_UNLOCKED_OPEN_LOCKED_SETTING = new SparseIntArray();
-        FOLDED_UNLOCKED_OPEN_LOCKED_SETTING.put(FOLDED.getIdentifier(),
+        FOLDED_UNLOCKED_OPEN_LOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_FOLDED,
                 DEVICE_STATE_ROTATION_LOCK_UNLOCKED);
-        FOLDED_UNLOCKED_OPEN_LOCKED_SETTING.put(OPEN.getIdentifier(),
+        FOLDED_UNLOCKED_OPEN_LOCKED_SETTING.put(DEVICE_STATE_ROTATION_KEY_UNFOLDED,
                 DEVICE_STATE_ROTATION_LOCK_LOCKED);
     }
 
@@ -121,6 +130,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
     private DisplayRotation mMockDisplayRotation;
     @Mock
     private DeviceStateAutoRotateSettingManagerImpl mMockAutoRotateSettingManager;
+    @Mock
+    private PostureDeviceStateConverter mMockPostureDeviceStateConverter;
 
     @Captor
     private ArgumentCaptor<DeviceStateAutoRotateSettingListener> mSettingListenerArgumentCaptor;
@@ -168,9 +179,11 @@ public class DeviceStateAutoRotateSettingControllerTests {
                 }
 
         ).when(mMockAutoRotateSettingManager).updateSetting(any(), any());
+        setUpMockPostureHelper();
 
         mDeviceStateAutoRotateSettingController = new DeviceStateAutoRotateSettingController(
-                mMockDeviceStateController, mMockAutoRotateSettingManager, mMockWm) {
+                mMockDeviceStateController, mMockAutoRotateSettingManager, mMockWm,
+                mMockPostureDeviceStateConverter) {
             @Override
             Handler getHandler() {
                 return handler;
@@ -586,9 +599,9 @@ public class DeviceStateAutoRotateSettingControllerTests {
     private SparseIntArray createDeviceStateAutoRotateSettingMap(int foldedAutoRotateValue,
             int unfoldedAutoRotateValue) {
         final SparseIntArray deviceStateAutoRotateSetting = new SparseIntArray();
-        deviceStateAutoRotateSetting.put(FOLDED.getIdentifier(),
+        deviceStateAutoRotateSetting.put(DEVICE_STATE_ROTATION_KEY_FOLDED,
                 foldedAutoRotateValue);
-        deviceStateAutoRotateSetting.put(OPEN.getIdentifier(),
+        deviceStateAutoRotateSetting.put(DEVICE_STATE_ROTATION_KEY_UNFOLDED,
                 unfoldedAutoRotateValue);
         return deviceStateAutoRotateSetting;
     }
@@ -617,5 +630,27 @@ public class DeviceStateAutoRotateSettingControllerTests {
             assertThat(actualIntArray.indexOfKey(expectedKey)).isGreaterThan(-1);
             assertThat(actualIntArray.get(expectedKey)).isEqualTo(expectedValue);
         }
+    }
+
+    private void setUpMockPostureHelper() {
+        when(mMockPostureDeviceStateConverter.deviceStateToPosture(
+                eq(OPEN.getIdentifier()))).thenReturn(DEVICE_STATE_ROTATION_KEY_UNFOLDED);
+        when(mMockPostureDeviceStateConverter.deviceStateToPosture(
+                eq(FOLDED.getIdentifier()))).thenReturn(DEVICE_STATE_ROTATION_KEY_FOLDED);
+        when(mMockPostureDeviceStateConverter.deviceStateToPosture(
+                eq(HALF_FOLDED.getIdentifier()))).thenReturn(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED);
+        when(mMockPostureDeviceStateConverter.deviceStateToPosture(
+                eq(UNKNOWN.getIdentifier()))).thenReturn(DEVICE_STATE_ROTATION_KEY_UNKNOWN);
+        when(mMockPostureDeviceStateConverter.deviceStateToPosture(
+                eq(REAR.getIdentifier()))).thenReturn(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY);
+
+        when(mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(DEVICE_STATE_ROTATION_KEY_UNFOLDED))).thenReturn(OPEN.getIdentifier());
+        when(mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(DEVICE_STATE_ROTATION_KEY_FOLDED))).thenReturn(FOLDED.getIdentifier());
+        when(mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED))).thenReturn(HALF_FOLDED.getIdentifier());
+        when(mMockPostureDeviceStateConverter.postureToDeviceState(
+                eq(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY))).thenReturn(REAR.getIdentifier());
     }
 }

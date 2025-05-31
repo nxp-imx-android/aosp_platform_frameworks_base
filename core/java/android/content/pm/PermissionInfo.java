@@ -508,21 +508,6 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
     @SystemApi
     public @NonNull Set<String> knownCerts = Collections.emptySet();
 
-    /**
-     * A boolean to signify if purposes are required to be declared in order to use the permission.
-     *
-     * @hide
-     */
-    public boolean requiresPurpose;
-
-    /**
-     * A {@link Set} of valid purposes defined for using this permission. Apps that request this
-     * permission will be required to declare at least one permission from this set.
-     *
-     * @hide
-     */
-    public @NonNull Set<String> validPurposes = Collections.emptySet();
-
     /** @hide */
     public static int fixProtectionLevel(int level) {
         if (level == PROTECTION_SIGNATURE_OR_SYSTEM) {
@@ -694,8 +679,6 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         nonLocalizedDescription = orig.nonLocalizedDescription;
         // Note that knownCerts wasn't properly copied before Android U.
         knownCerts = orig.knownCerts;
-        requiresPurpose = orig.requiresPurpose;
-        validPurposes = orig.validPurposes;
     }
 
     /**
@@ -761,8 +744,6 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         dest.writeInt(requestRes);
         TextUtils.writeToParcel(nonLocalizedDescription, dest, parcelableFlags);
         sForStringSet.parcel(knownCerts, dest, parcelableFlags);
-        dest.writeBoolean(requiresPurpose);
-        sForStringSet.parcel(validPurposes, dest, parcelableFlags);
     }
 
     /** @hide */
@@ -824,7 +805,5 @@ public class PermissionInfo extends PackageItemInfo implements Parcelable {
         requestRes = source.readInt();
         nonLocalizedDescription = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(source);
         knownCerts = sForStringSet.unparcel(source);
-        requiresPurpose = source.readBoolean();
-        validPurposes = sForStringSet.unparcel(source);
     }
 }

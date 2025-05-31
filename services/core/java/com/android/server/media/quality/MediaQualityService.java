@@ -316,7 +316,7 @@ public class MediaQualityService extends SystemService {
                             value, pp, callingUid, callingPid);
                     if (isPackageDefaultPictureProfile(pp)) {
                         mPackageDefaultPictureProfileHandleMap.put(
-                                pp.getPackageName(), pp.getHandle().getId());
+                                pp.getPackageName(), id);
                     }
                 }
             });
@@ -744,7 +744,6 @@ public class MediaQualityService extends SystemService {
                     if (count == 0) {
                         return profiles;
                     }
-                    cursor.moveToFirst();
                     while (cursor.moveToNext()) {
                         profiles.add(MediaQualityUtils.convertCursorToPictureProfileWithTempId(
                                 cursor, mPictureProfileTempIdMap));

@@ -31,14 +31,12 @@ import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_FULLSCR
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_MULTI_WINDOW;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_PIP;
 import static com.android.wm.shell.ShellTaskOrganizer.isHomeTaskOnDefaultDisplay;
-import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
@@ -174,19 +172,6 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
-    public void testTaskLeashReleasedAfterVanished() throws RemoteException {
-        assumeFalse(ENABLE_SHELL_TRANSITIONS);
-        RunningTaskInfo taskInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
-        SurfaceControl taskLeash = new SurfaceControl.Builder()
-                .setName("task").build();
-        mOrganizer.registerOrganizer();
-        mOrganizer.onTaskAppeared(taskInfo, taskLeash);
-        assertTrue(taskLeash.isValid());
-        mOrganizer.onTaskVanished(taskInfo);
-        assertTrue(!taskLeash.isValid());
-    }
-
-    @Test
     public void testOneListenerPerType() {
         mOrganizer.addListenerForType(new TrackingTaskListener(), TASK_LISTENER_TYPE_MULTI_WINDOW);
         try {
@@ -309,6 +294,34 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
         // get called it again
         mOrganizer.addListenerForTaskId(task1Listener, 1);
         assertEquals(1, task1Listener.appeared.size());
+    }
+
+    @Test
+    public void testAddPendingListenerForTaskId() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        TrackingTaskListener listener = new TrackingTaskListener();
+
+        // Add the listener first, then report the task to the organizer
+        mOrganizer.addListenerForTaskId(listener, 1);
+        assertFalse(mOrganizer.hasTaskListener(1));
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        // Verify that the listener got notified anyways
+        assertTrue(listener.appeared.contains(task1));
+    }
+
+    @Test
+    public void testRemovePendingListenerForTaskId() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        TrackingTaskListener listener = new TrackingTaskListener();
+
+        // Add the listener, remove the listener, then report the task to the organizer
+        mOrganizer.addListenerForTaskId(listener, 1);
+        mOrganizer.removeListener(listener);
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        // Verify that the pending listener does not get notified
+        assertFalse(listener.appeared.contains(task1));
     }
 
     @Test

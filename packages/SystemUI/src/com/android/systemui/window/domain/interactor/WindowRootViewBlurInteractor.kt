@@ -98,6 +98,13 @@ constructor(
     val blurScaleRequestedByShade: StateFlow<Float> = repository.scaleRequestedByShade.asStateFlow()
 
     /**
+     * true when tracking shade motion that might lead to a shade expansion.
+     *
+     * This signal need not be implemented by all shade variants.
+     */
+    val isTrackingShadeMotion: StateFlow<Boolean> = repository.trackingShadeMotion.asStateFlow()
+
+    /**
      * Requests blur to be applied on the window root view. It is applied only when other blurs are
      * not applied.
      *
@@ -117,6 +124,14 @@ constructor(
         repository.blurRequestedByShade.value = blurRadius
         repository.scaleRequestedByShade.value = blurScale
         return true
+    }
+
+    /**
+     * Set to true when shade motion is being tracked. This signal is used to make sure
+     * surface-flinger is ready for expensive blur during shade expansion.
+     */
+    fun setTrackingShadeMotion(tracking: Boolean) {
+        repository.trackingShadeMotion.value = tracking
     }
 
     companion object {

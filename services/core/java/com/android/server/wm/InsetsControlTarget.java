@@ -18,7 +18,6 @@ package com.android.server.wm;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.inputmethodservice.InputMethodService;
 import android.os.IBinder;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
@@ -63,22 +62,18 @@ interface InsetsControlTarget extends InsetsTarget {
      * Instructs the control target to show inset sources.
      *
      * @param types to specify which types of insets source window should be shown.
-     * @param fromIme {@code true} if the IME request originated from {@link InputMethodService}.
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    default void showInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
+    default void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
     }
 
     /**
      * Instructs the control target to hide inset sources.
      *
      * @param types to specify which types of insets source window should be hidden.
-     * @param fromIme {@code true} if the IME request originated from {@link InputMethodService}.
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    default void hideInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
+    default void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
     }
 
     /**

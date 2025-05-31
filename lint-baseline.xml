@@ -7770,17 +7770,6 @@
     <issue
         id="FlaggedApi"
         message="@FlaggedApi should specify an actual flag constant; raw strings are discouraged (and more importantly, **not enforced**)"
-        errorLine1="    @android.annotation.FlaggedApi(&quot;android.security.asm_restrictions_enabled&quot;)"
-        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="out/soong/.intermediates/frameworks/base/core/res/framework-res/android_common/gen/android/R.srcjar!/android/R.java"
-            line="759"
-            column="36"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="@FlaggedApi should specify an actual flag constant; raw strings are discouraged (and more importantly, **not enforced**)"
         errorLine1="    @android.annotation.FlaggedApi(&quot;android.nfc.nfc_read_polling_loop&quot;)"
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -8193,28 +8182,6 @@
         <location
             file="out/soong/.intermediates/frameworks/base/core/res/framework-res/android_common/gen/android/R.srcjar!/android/R.java"
             line="25110"
-            column="36"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="@FlaggedApi should specify an actual flag constant; raw strings are discouraged (and more importantly, **not enforced**)"
-        errorLine1="    @android.annotation.FlaggedApi(&quot;android.security.asm_restrictions_enabled&quot;)"
-        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="out/soong/.intermediates/frameworks/base/core/res/framework-res/android_common/gen/android/R.srcjar!/android/R.java"
-            line="25837"
-            column="36"/>
-    </issue>
-
-    <issue
-        id="FlaggedApi"
-        message="@FlaggedApi should specify an actual flag constant; raw strings are discouraged (and more importantly, **not enforced**)"
-        errorLine1="    @android.annotation.FlaggedApi(&quot;android.security.asm_restrictions_enabled&quot;)"
-        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="out/soong/.intermediates/frameworks/base/core/res/framework-res/android_common/gen/android/R.srcjar!/android/R.java"
-            line="27173"
             column="36"/>
     </issue>
 

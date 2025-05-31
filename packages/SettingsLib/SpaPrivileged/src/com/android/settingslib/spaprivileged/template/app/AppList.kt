@@ -99,7 +99,7 @@ fun <T : AppRecord> AppListInput<T>.AppList(noAppInfo: NoAppInfo = NoAppInfo()) 
 @Composable
 internal fun <T : AppRecord> AppListInput<T>.AppListImpl(
     noAppInfo: NoAppInfo = NoAppInfo(),
-    viewModelSupplier: @Composable () -> IAppListViewModel<T>
+    viewModelSupplier: @Composable () -> IAppListViewModel<T>,
 ) {
     LogCompositions(TAG, config.userIds.toString())
     val viewModel = viewModelSupplier()
@@ -144,7 +144,7 @@ private fun <T : AppRecord> AppListModel<T>.AppListWidget(
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = rememberLazyListStateAndHideKeyboardWhenStartScroll(),
-                contentPadding = PaddingValues(bottom = bottomPadding)
+                contentPadding = PaddingValues(bottom = bottomPadding),
             ) {
                 item { header() }
                 item {
@@ -159,23 +159,17 @@ private fun <T : AppRecord> AppListModel<T>.AppListWidget(
         }
         if (isSpaExpressiveEnabled) {
             LazyCategory(
-                list = list,
-                entry = { index: Int ->
-                    @Composable {
-                        val appEntry = list[index]
-                        val summary = getSummary(option, appEntry.record) ?: { "" }
-                        remember(appEntry) {
-                                AppListItemModel(appEntry.record, appEntry.label, summary)
-                            }
-                            .AppItem()
-                    }
-                },
-                key = { index: Int -> list[index].record.itemKey(option) },
-                title = { index: Int -> getGroupTitle(option, list[index].record) },
+                count = list.size,
+                key = { index -> list[index].record.itemKey(option) },
                 bottomPadding = bottomPadding,
                 state = rememberLazyListStateAndHideKeyboardWhenStartScroll(),
-            ) {
-                header()
+                header = header,
+                groupTitle = { index -> getGroupTitle(option, list[index].record) },
+            ) { index: Int ->
+                val appEntry = list[index]
+                val summary = getSummary(option, appEntry.record) ?: { "" }
+                remember(appEntry) { AppListItemModel(appEntry.record, appEntry.label, summary) }
+                    .AppItem()
             }
         } else {
             LazyColumn(

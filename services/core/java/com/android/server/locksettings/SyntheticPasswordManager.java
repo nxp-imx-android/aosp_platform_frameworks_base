@@ -53,6 +53,7 @@ import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.Preconditions;
 import com.android.internal.widget.ICheckCredentialProgressCallback;
 import com.android.internal.widget.IWeakEscrowTokenRemovedListener;
@@ -567,7 +568,9 @@ class SyntheticPasswordManager {
         }
     }
 
-    private @Nullable IWeaver getWeaverAidlService() {
+    @VisibleForTesting
+    @Nullable
+    protected IWeaver getWeaverAidlService() {
         final IWeaver aidlWeaver;
         try {
             aidlWeaver =
@@ -723,7 +726,7 @@ class SyntheticPasswordManager {
                 }
                 break;
         }
-        return VerifyCredentialResponse.ERROR;
+        return VerifyCredentialResponse.OTHER_ERROR;
     }
 
     /**
@@ -1129,14 +1132,14 @@ class SyntheticPasswordManager {
                         stretchedLskfToGkPassword(stretchedLskf));
             } catch (RemoteException e) {
                 Slog.e(TAG, "Persistent data credential verifyChallenge failed", e);
-                return VerifyCredentialResponse.ERROR;
+                return VerifyCredentialResponse.OTHER_ERROR;
             }
             return VerifyCredentialResponse.fromGateKeeperResponse(response);
         } else if (persistentData.type == PersistentData.TYPE_SP_WEAVER) {
             final IWeaver weaver = getWeaverService();
             if (weaver == null) {
                 Slog.e(TAG, "No weaver service to verify SP-based persistent data credential");
-                return VerifyCredentialResponse.ERROR;
+                return VerifyCredentialResponse.OTHER_ERROR;
             }
             PasswordData pwd = PasswordData.fromBytes(persistentData.payload);
             byte[] stretchedLskf = stretchLskf(userCredential, pwd);
@@ -1148,7 +1151,7 @@ class SyntheticPasswordManager {
         } else {
             Slog.e(TAG, "persistentData.type must be TYPE_SP_GATEKEEPER or TYPE_SP_WEAVER, but is "
                     + persistentData.type);
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
     }
 
@@ -1403,7 +1406,7 @@ class SyntheticPasswordManager {
         if (protectorId == SyntheticPasswordManager.NULL_PROTECTOR_ID) {
             // This should never happen, due to the migration done in LSS.onThirdPartyAppsStarted().
             Slogf.wtf(TAG, "Synthetic password not found for user %d", userId);
-            result.response = VerifyCredentialResponse.ERROR;
+            result.response = VerifyCredentialResponse.OTHER_ERROR;
             return result;
         }
 
@@ -1422,12 +1425,13 @@ class SyntheticPasswordManager {
             Slogf.e(TAG, "Credential type mismatch: stored type is %s but provided type is %s",
                     LockPatternUtils.credentialTypeToString(storedType),
                     LockPatternUtils.credentialTypeToString(credential.getType()));
-            result.response = VerifyCredentialResponse.ERROR;
+            result.response = VerifyCredentialResponse.OTHER_ERROR;
             return result;
         }
 
         byte[] stretchedLskf = null;
         byte[] weaverKey = null;
+        byte[] weaverSecret = null;
         byte[] gkPassword = null;
         byte[] protectorSecret = null;
         try {
@@ -1440,16 +1444,17 @@ class SyntheticPasswordManager {
                 final IWeaver weaver = getWeaverService();
                 if (weaver == null) {
                     Slog.e(TAG, "Protector uses Weaver, but Weaver is unavailable");
-                    result.response = VerifyCredentialResponse.ERROR;
+                    result.response = VerifyCredentialResponse.OTHER_ERROR;
                     return result;
                 }
                 weaverKey = stretchedLskfToWeaverKey(stretchedLskf);
                 WeaverReadResponse weaverResponse = weaverVerify(weaver, weaverSlot, weaverKey);
+                weaverSecret = weaverResponse.value;
                 if (weaverResponse.status != WeaverReadStatus.OK) {
                     result.response = verifyCredentialResponseFromWeaverResponse(weaverResponse);
                     return result;
                 }
-                protectorSecret = transformUnderWeaverSecret(stretchedLskf, weaverResponse.value);
+                protectorSecret = transformUnderWeaverSecret(stretchedLskf, weaverSecret);
             } else {
                 // Weaver is unavailable, so the protector uses Gatekeeper to verify the LSKF,
                 // unless the LSKF is empty in which case Gatekeeper might not have been used at
@@ -1457,7 +1462,7 @@ class SyntheticPasswordManager {
                 if (pwd == null || pwd.passwordHandle == null) {
                     if (!credential.isNone()) {
                         Slog.e(TAG, "Missing Gatekeeper password handle for nonempty LSKF");
-                        result.response = VerifyCredentialResponse.ERROR;
+                        result.response = VerifyCredentialResponse.OTHER_ERROR;
                         return result;
                     }
                 } else {
@@ -1468,7 +1473,7 @@ class SyntheticPasswordManager {
                                 pwd.passwordHandle, gkPassword);
                     } catch (RemoteException e) {
                         Slog.e(TAG, "gatekeeper verify failed", e);
-                        result.response = VerifyCredentialResponse.ERROR;
+                        result.response = VerifyCredentialResponse.OTHER_ERROR;
                         return result;
                     }
                     int responseCode = response.getResponseCode();
@@ -1503,7 +1508,7 @@ class SyntheticPasswordManager {
                                 VerifyCredentialResponse.fromTimeout(response.getTimeout());
                         return result;
                     } else  {
-                        result.response = VerifyCredentialResponse.ERROR;
+                        result.response = VerifyCredentialResponse.OTHER_ERROR;
                         return result;
                     }
                     sid = sidFromPasswordHandle(pwd.passwordHandle);
@@ -1511,7 +1516,7 @@ class SyntheticPasswordManager {
                 byte[] secdiscardable = loadSecdiscardable(protectorId, userId);
                 if (secdiscardable == null) {
                     Slog.e(TAG, "secdiscardable file not found");
-                    result.response = VerifyCredentialResponse.ERROR;
+                    result.response = VerifyCredentialResponse.OTHER_ERROR;
                     return result;
                 }
                 protectorSecret = transformUnderSecdiscardable(stretchedLskf, secdiscardable);
@@ -1542,6 +1547,7 @@ class SyntheticPasswordManager {
         } finally {
             ArrayUtils.zeroize(stretchedLskf);
             ArrayUtils.zeroize(weaverKey);
+            ArrayUtils.zeroize(weaverSecret);
             ArrayUtils.zeroize(gkPassword);
             ArrayUtils.zeroize(protectorSecret);
         }
@@ -1583,7 +1589,7 @@ class SyntheticPasswordManager {
         byte[] data = loadState(SP_BLOB_NAME, protectorId, userId);
         if (data == null) {
             AuthenticationResult result = new AuthenticationResult();
-            result.response = VerifyCredentialResponse.ERROR;
+            result.response = VerifyCredentialResponse.OTHER_ERROR;
             Slogf.w(TAG, "spblob not found for protector %016x, user %d", protectorId, userId);
             return result;
         }
@@ -1619,7 +1625,7 @@ class SyntheticPasswordManager {
         byte[] secdiscardable = loadSecdiscardable(protectorId, userId);
         if (secdiscardable == null) {
             Slog.e(TAG, "secdiscardable file not found");
-            result.response = VerifyCredentialResponse.ERROR;
+            result.response = VerifyCredentialResponse.OTHER_ERROR;
             return result;
         }
         int slotId = loadWeaverSlot(protectorId, userId);
@@ -1627,7 +1633,7 @@ class SyntheticPasswordManager {
             final IWeaver weaver = getWeaverService();
             if (weaver == null) {
                 Slog.e(TAG, "Protector uses Weaver, but Weaver is unavailable");
-                result.response = VerifyCredentialResponse.ERROR;
+                result.response = VerifyCredentialResponse.OTHER_ERROR;
                 return result;
             }
             WeaverReadResponse weaverResponse = weaverVerify(weaver, slotId, null);
@@ -1636,7 +1642,7 @@ class SyntheticPasswordManager {
                     || secdiscardableEncryptionKey == null) {
                 Slog.e(TAG,
                         "Failed to retrieve Weaver secret when unlocking token-based protector");
-                result.response = VerifyCredentialResponse.ERROR;
+                result.response = VerifyCredentialResponse.OTHER_ERROR;
                 return result;
             }
             secdiscardable =
@@ -1656,7 +1662,7 @@ class SyntheticPasswordManager {
                 result.response = VerifyCredentialResponse.OK;
             }
         } else {
-            result.response = VerifyCredentialResponse.ERROR;
+            result.response = VerifyCredentialResponse.OTHER_ERROR;
         }
         return result;
     }
@@ -1736,7 +1742,7 @@ class SyntheticPasswordManager {
                     spHandle, gatekeeperPassword);
         } catch (RemoteException e) {
             Slog.e(TAG, "Fail to verify with gatekeeper " + userId, e);
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
         int responseCode = response.getResponseCode();
         if (responseCode == GateKeeperResponse.RESPONSE_OK) {
@@ -1767,7 +1773,7 @@ class SyntheticPasswordManager {
             return VerifyCredentialResponse.fromTimeout(response.getTimeout());
         } else {
             Slog.e(TAG, "Gatekeeper verification of synthetic password failed with RESPONSE_ERROR");
-            return VerifyCredentialResponse.ERROR;
+            return VerifyCredentialResponse.OTHER_ERROR;
         }
     }
 
@@ -2169,5 +2175,23 @@ class SyntheticPasswordManager {
         buffer.putInt(hashInt(count));
         saveState(WRONG_GUESS_COUNTER_NAME, buffer.array(), id.protectorId, id.userId);
         syncState(id.userId);
+    }
+
+    /** Retrieves the type of hardware rate-limiter used by a particular LSKF. */
+    public int getHardwareRateLimiter(LskfIdentifier id) {
+        if (id.isSpecialCredential()) {
+            return switch (getSpecialUserPersistentData(id.userId).type) {
+                case PersistentData.TYPE_SP_GATEKEEPER -> FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__GATEKEEPER;
+                case PersistentData.TYPE_SP_WEAVER -> FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
+                default -> FrameworkStatsLog
+                    .LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__UNSPECIFIED_RATELIMITER;
+            };
+        }
+        if (hasState(WEAVER_SLOT_NAME, id.protectorId, id.userId)) {
+            return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__WEAVER;
+        }
+        return FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED__HARDWARE_RATE_LIMITER__GATEKEEPER;
     }
 }

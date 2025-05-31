@@ -31,6 +31,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SPLIT_TOUCH;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY;
@@ -297,6 +298,24 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
+    public void testShouldMagnify_typeIsMagnificationAndNavBarPanel_shouldNotMagnify() {
+        final WindowState a11yMagWindow = newWindowBuilder("a11yMagWindow",
+                TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY).build();
+        final WindowState magWindow = newWindowBuilder("magWindow",
+                TYPE_MAGNIFICATION_OVERLAY).build();
+        final WindowState navPanelWindow = newWindowBuilder("navPanelWindow",
+                TYPE_NAVIGATION_BAR_PANEL).build();
+
+        a11yMagWindow.setHasSurface(true);
+        magWindow.setHasSurface(true);
+        navPanelWindow.setHasSurface(true);
+
+        assertFalse(a11yMagWindow.shouldMagnify());
+        assertFalse(magWindow.shouldMagnify());
+        assertFalse(navPanelWindow.shouldMagnify());
+    }
+
+    @Test
     @DisableFlags(com.android.server.accessibility
             .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
     public void testMagnifyIme_flagOffAndSettingsEnabled_typeIsIme_shouldNotMagnify() {
@@ -309,16 +328,18 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        final WindowState privateImeWindow = newWindowBuilder("appWindow",
+                TYPE_APPLICATION).build();
+        privateImeWindow.mAttrs.privateFlags |= PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
+        privateImeWindow.setHasSurface(true);
 
         assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
-        assertFalse(navWindow.shouldMagnify());
+        assertFalse(privateImeWindow.shouldMagnify());
     }
 
     @Test
@@ -334,37 +355,18 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        final WindowState privateImeWindow = newWindowBuilder("appWindow",
+                TYPE_APPLICATION).build();
+        privateImeWindow.mAttrs.privateFlags |= PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
+        privateImeWindow.setHasSurface(true);
 
         assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
-        assertFalse(navWindow.shouldMagnify());
-    }
-
-    @Test
-    public void testMagnifyIme_typeIsMagnification_shouldNotMagnify() {
-        final WindowState a11yMagWindow = newWindowBuilder("a11yMagWindow",
-                TYPE_ACCESSIBILITY_MAGNIFICATION_OVERLAY).build();
-        final WindowState magWindow = newWindowBuilder("magWindow",
-                TYPE_MAGNIFICATION_OVERLAY).build();
-        final WindowState navPanelWindow = newWindowBuilder("navPanelWindow",
-                TYPE_NAVIGATION_BAR_PANEL).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
-
-        a11yMagWindow.setHasSurface(true);
-        magWindow.setHasSurface(true);
-        navPanelWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
-
-        assertFalse(a11yMagWindow.shouldMagnify());
-        assertFalse(magWindow.shouldMagnify());
-        assertFalse(navPanelWindow.shouldMagnify());
-        assertFalse(navWindow.shouldMagnify());
+        assertFalse(privateImeWindow.shouldMagnify());
     }
 
     @Test
@@ -380,13 +382,18 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
+        final WindowState privateImeWindow = newWindowBuilder("appWindow",
+                TYPE_APPLICATION).build();
+        privateImeWindow.mAttrs.privateFlags |= PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
+        privateImeWindow.setHasSurface(true);
 
         assertTrue(mWm.isMagnifyImeEnabled());
         assertTrue(imeWindow.shouldMagnify());
         assertTrue(imeDialogWindow.shouldMagnify());
+        assertTrue(privateImeWindow.shouldMagnify());
     }
 
     @Test
@@ -401,15 +408,20 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
+        final WindowState privateImeWindow = newWindowBuilder("appWindow",
+                TYPE_APPLICATION).build();
+        privateImeWindow.mAttrs.privateFlags |= PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
+        privateImeWindow.setHasSurface(true);
 
         mWm.mSettingsObserver.loadSettings();
 
         assertTrue(mWm.isMagnifyImeEnabled());
         assertTrue(imeWindow.shouldMagnify());
         assertTrue(imeDialogWindow.shouldMagnify());
+        assertTrue(privateImeWindow.shouldMagnify());
     }
 
     @Test
@@ -424,18 +436,20 @@ public class WindowStateTests extends WindowTestsBase {
         final WindowState imeWindow = newWindowBuilder("imeWindow", TYPE_INPUT_METHOD).build();
         final WindowState imeDialogWindow =
                 newWindowBuilder("imeDialogWindow", TYPE_INPUT_METHOD_DIALOG).build();
-        final WindowState navWindow = newWindowBuilder("navWindow", TYPE_NAVIGATION_BAR).build();
+        final WindowState privateImeWindow = newWindowBuilder("appWindow",
+                TYPE_APPLICATION).build();
+        privateImeWindow.mAttrs.privateFlags |= PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 
         imeWindow.setHasSurface(true);
         imeDialogWindow.setHasSurface(true);
-        navWindow.setHasSurface(true);
+        privateImeWindow.setHasSurface(true);
 
         mWm.mSettingsObserver.loadSettings();
 
         assertFalse(mWm.isMagnifyImeEnabled());
         assertFalse(imeWindow.shouldMagnify());
         assertFalse(imeDialogWindow.shouldMagnify());
-        assertFalse(navWindow.shouldMagnify());
+        assertFalse(privateImeWindow.shouldMagnify());
     }
 
     @Test
@@ -1040,12 +1054,9 @@ public class WindowStateTests extends WindowTestsBase {
         mWm.mResizingWindows.remove(win);
         spyOn(win.mClient);
         try {
-            doThrow(new RemoteException("test")).when(win.mClient).resized(any() /* frames */,
-                    anyBoolean() /* reportDraw */, any() /* mergedConfig */,
-                    any() /* insetsState */, anyBoolean() /* forceLayout */,
-                    anyBoolean() /* alwaysConsumeSystemBars */, anyInt() /* displayId */,
-                    anyInt() /* seqId */, anyBoolean() /* dragResizing */,
-                    any() /* activityWindowInfo */);
+            doThrow(new RemoteException("test")).when(win.mClient).resized(any() /* layout */,
+                    anyBoolean() /* reportDraw */, anyBoolean() /* forceLayout */,
+                    anyInt() /* displayId */, anyBoolean() /* dragResizing */);
         } catch (RemoteException ignored) {
         }
         win.reportResized();
@@ -1709,7 +1720,7 @@ public class WindowStateTests extends WindowTestsBase {
         final InsetsState outInsetsState = new InsetsState();
         final InsetsSourceControl.Array outControls = new InsetsSourceControl.Array();
         final WindowRelayoutResult outRelayoutResult = new WindowRelayoutResult(outFrames,
-                outConfig, outSurfaceControl, outInsetsState, outControls);
+                outConfig, outInsetsState, outControls);
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 TYPE_APPLICATION_OVERLAY);
         params.setTitle("imeLayeringTargetOverlay");
@@ -1717,10 +1728,10 @@ public class WindowStateTests extends WindowTestsBase {
         params.flags = FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
 
         mWm.addWindow(session, client, params, View.VISIBLE, DEFAULT_DISPLAY,
-                0 /* userUd */, WindowInsets.Type.defaultVisible(), null, new InsetsState(),
-                new InsetsSourceControl.Array(), new Rect(), new float[1]);
+                0 /* userUd */, WindowInsets.Type.defaultVisible(), null,
+                new WindowRelayoutResult());
         mWm.relayoutWindow(session, client, params, 100, 200, View.VISIBLE, 0, 0, 0,
-                outRelayoutResult);
+                outRelayoutResult, outSurfaceControl);
         waitHandlerIdle(mWm.mH);
 
         final WindowState imeLayeringTargetOverlay = mDisplayContent.getWindow(
@@ -1733,7 +1744,7 @@ public class WindowStateTests extends WindowTestsBase {
 
         // Scenario 2: test relayoutWindow to let the Ime layering target overlay window invisible.
         mWm.relayoutWindow(session, client, params, 100, 200, View.GONE, 0, 0, 0,
-                outRelayoutResult);
+                outRelayoutResult, outSurfaceControl);
         waitHandlerIdle(mWm.mH);
 
         assertThat(imeLayeringTargetOverlay.isVisible()).isFalse();

@@ -53,7 +53,7 @@ import com.android.settingslib.spa.gallery.preference.TwoTargetSwitchPreferenceP
 import com.android.settingslib.spa.gallery.preference.ZeroStatePreferencePageProvider
 import com.android.settingslib.spa.gallery.scaffold.PagerMainPageProvider
 import com.android.settingslib.spa.gallery.scaffold.SearchScaffoldPageProvider
-import com.android.settingslib.spa.gallery.scaffold.SuwScaffoldPageProvider
+import com.android.settingslib.spa.gallery.scaffold.GlifScaffoldPageProvider
 import com.android.settingslib.spa.gallery.ui.CategoryPageProvider
 import com.android.settingslib.spa.gallery.ui.CopyablePageProvider
 import com.android.settingslib.spa.gallery.scaffold.ScrollablePagerPageProvider
@@ -103,7 +103,7 @@ class GallerySpaEnvironment(context: Context) : SpaEnvironment(context) {
                 SettingsDropdownCheckBoxProvider,
                 SettingsTextFieldPasswordPageProvider,
                 SearchScaffoldPageProvider,
-                SuwScaffoldPageProvider,
+                GlifScaffoldPageProvider,
                 BannerPageProvider,
                 CopyablePageProvider,
                 IntroPreferencePageProvider,

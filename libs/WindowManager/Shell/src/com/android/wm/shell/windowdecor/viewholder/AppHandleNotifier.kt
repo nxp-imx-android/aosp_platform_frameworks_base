@@ -17,10 +17,16 @@
 package com.android.wm.shell.windowdecor.viewholder
 
 import android.util.Log
+import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.ShellExecutor
+import com.android.wm.shell.desktopmode.CaptionState
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.annotations.ExternalThread
+import com.android.wm.shell.shared.annotations.ShellMainThread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.Objects
 import java.util.concurrent.Executor
 import javax.inject.Singleton
@@ -30,7 +36,11 @@ import javax.inject.Singleton
  * to appHandles as well as those who need to update said consumers.
  */
 @Singleton
-class AppHandleNotifier(val shellExecutor: ShellExecutor) {
+class AppHandleNotifier(
+    private val shellExecutor: ShellExecutor,
+    private val windowDecorCaptionRepository: WindowDecorCaptionRepository,
+    @ShellMainThread private val mainScope: CoroutineScope,
+) {
     private val TAG = ShellProtoLogGroup.WM_SHELL_APP_HANDLES.tag
 
     /** The key=callback must be invoked on its respective value=executor. */
@@ -39,6 +49,27 @@ class AppHandleNotifier(val shellExecutor: ShellExecutor) {
     private var currentHandles: MutableMap<Int, AppHandleIdentifier> = mutableMapOf()
     /** Instance returned to external sysui. */
     private val appHandleImpl = AppHandlesImpl()
+
+    init {
+        if (DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
+            mainScope.launch {
+                windowDecorCaptionRepository.captionStateFlow
+                    .collect { captionState ->
+                        when (captionState) {
+                            is CaptionState.NoCaption -> {
+                                removeHandle(captionState.taskId)
+                            }
+                            is CaptionState.AppHeader -> {
+                                removeHandle(captionState.runningTaskInfo.taskId)
+                            }
+                            is CaptionState.AppHandle -> {
+                                addHandle(captionState.appHandleIdentifier)
+                            }
+                        }
+                    }
+            }
+        }
+    }
 
     /** Will immediately invoke the [listener] on the provided [sysuiExecutor]. */
     fun addListener(sysuiExecutor: Executor, listener: AppHandlePositionCallback) {
@@ -50,7 +81,7 @@ class AppHandleNotifier(val shellExecutor: ShellExecutor) {
             sysuiExecutor.execute { listener.onAppHandlesUpdated(handlesToNotify) }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to execute initial notification for " +
-                    "listener on ${sysuiExecutor}", e)
+                    "listener on $sysuiExecutor", e)
         }
     }
 
@@ -64,7 +95,7 @@ class AppHandleNotifier(val shellExecutor: ShellExecutor) {
      *
      * @param handle The AppHandleIdentifier to add or update.
      */
-    fun addHandle(handle: AppHandleIdentifier) {
+    private fun addHandle(handle: AppHandleIdentifier) {
         val key = handle.taskId
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_APP_HANDLES,
             "Requesting add/update handle for taskId:%s", key)
@@ -82,7 +113,7 @@ class AppHandleNotifier(val shellExecutor: ShellExecutor) {
      *
      * @param taskId The Task ID of the handle to remove. // *** Parameter Renamed ***
      */
-    fun removeHandle(taskId: Int) {
+    private fun removeHandle(taskId: Int) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_APP_HANDLES,
             "Requesting remove handle for taskId:%s", taskId)
         // Use taskId to remove from the map
@@ -113,7 +144,7 @@ class AppHandleNotifier(val shellExecutor: ShellExecutor) {
                 }
             } catch (e: Exception) {
                 Log.e("AppHandleManagerImpl", "Failed to dispatch notification to " +
-                        "callback on ${executor}", e)
+                        "callback on $executor", e)
             }
         }
     }

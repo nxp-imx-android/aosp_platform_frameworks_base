@@ -22,7 +22,6 @@ import com.android.systemui.Dumpable
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.printCollection
 import com.android.systemui.util.time.SystemClock
-import com.android.systemui.util.time.SystemClockImpl
 import com.android.systemui.util.withIncreasedIndent
 import java.io.PrintWriter
 import java.util.concurrent.ConcurrentHashMap
@@ -43,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class NotifCollectionCache<V>(
     private val retainCount: Int = 1,
     private val purgeTimeoutMillis: Long = 1000L,
-    private val systemClock: SystemClock = SystemClockImpl(),
+    private val systemClock: SystemClock,
 ) : Dumpable {
     @get:VisibleForTesting val cache = ConcurrentHashMap<String, CacheEntry>()
 

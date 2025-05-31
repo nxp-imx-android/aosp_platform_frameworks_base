@@ -20,7 +20,7 @@
         parent="@android:style/TextAppearance.DeviceDefault.Headline">
         <item name="android:fontFamily">variable-display-large</item>
         <item name="android:textSize">57sp</item>
-        <item name="android:letterSpacing">-0.00438596</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">64sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -92,7 +92,7 @@
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-title-medium</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:letterSpacing">0.009375</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">24sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -102,7 +102,7 @@
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-title-small</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:letterSpacing">0.00714286</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">20sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -113,7 +113,7 @@
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-label-large</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:letterSpacing">0.00714286</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">20sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -123,7 +123,7 @@
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-label-medium</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:letterSpacing">0.04166667</item>
+        <item name="android:letterSpacing">0.00833333</item>
         <item name="android:lineHeight">16sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -133,7 +133,7 @@
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-label-small</item>
         <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.04545455</item>
+        <item name="android:letterSpacing">0.00909091</item>
         <item name="android:lineHeight">16sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -144,7 +144,7 @@
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-body-large</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:letterSpacing">0.03125</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">24sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -154,7 +154,7 @@
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-body-medium</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:letterSpacing">0.01785714</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">20sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -164,7 +164,7 @@
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-body-small</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:letterSpacing">0.03333333</item>
+        <item name="android:letterSpacing">0.00833333</item>
         <item name="android:lineHeight">16sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -246,9 +246,8 @@
     <style name="TextAppearance.SettingsLib.TitleMedium.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-title-medium-emphasized</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:letterSpacing">0.009375</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">24sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -257,9 +256,8 @@
     <style name="TextAppearance.SettingsLib.TitleSmall.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-title-small-emphasized</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:letterSpacing">0.00714286</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">20sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -269,9 +267,8 @@
     <style name="TextAppearance.SettingsLib.LabelLarge.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-label-large-emphasized</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:letterSpacing">0.00714286</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">20sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -280,9 +277,8 @@
     <style name="TextAppearance.SettingsLib.LabelMedium.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-label-medium-emphasized</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:letterSpacing">0.04166667</item>
+        <item name="android:letterSpacing">0.00833333</item>
         <item name="android:lineHeight">16sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -291,9 +287,8 @@
     <style name="TextAppearance.SettingsLib.LabelSmall.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault">
         <item name="android:fontFamily">variable-label-small-emphasized</item>
-        <item name="android:textStyle">bold</item>
         <item name="android:textSize">11sp</item>
-        <item name="android:letterSpacing">0.04545455</item>
+        <item name="android:letterSpacing">0.00909091</item>
         <item name="android:lineHeight">16sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -303,9 +298,8 @@
     <style name="TextAppearance.SettingsLib.BodyLarge.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-body-large-emphasized</item>
-        <item name="android:textStyle">normal</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:letterSpacing">0.009375</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">24sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -314,9 +308,8 @@
     <style name="TextAppearance.SettingsLib.BodyMedium.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-body-medium-emphasized</item>
-        <item name="android:textStyle">normal</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:letterSpacing">0.01785714</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">20sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>
@@ -325,9 +318,8 @@
     <style name="TextAppearance.SettingsLib.BodySmall.Emphasized"
         parent="@android:style/TextAppearance.DeviceDefault.Medium">
         <item name="android:fontFamily">variable-body-small-emphasized</item>
-        <item name="android:textStyle">normal</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:letterSpacing">0.03333333</item>
+        <item name="android:letterSpacing">0</item>
         <item name="android:lineHeight">16sp</item>
         <item name="android:hyphenationFrequency">normalFast</item>
         <item name="android:lineBreakWordStyle">phrase</item>

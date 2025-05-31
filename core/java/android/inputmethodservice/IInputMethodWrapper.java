@@ -225,12 +225,12 @@ class IInputMethodWrapper extends IInputMethod.Stub
                 return;
             case DO_SHOW_SOFT_INPUT: {
                 final SomeArgs args = (SomeArgs) msg.obj;
-                final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg3;
+                final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg2;
                 if (isValid(inputMethod, target, "DO_SHOW_SOFT_INPUT")) {
                     ImeTracker.forLogging().onProgress(
                             statsToken, ImeTracker.PHASE_IME_WRAPPER_DISPATCH);
-                    inputMethod.showSoftInputWithToken(
-                            msg.arg1, (ResultReceiver) args.arg2, (IBinder) args.arg1, statsToken);
+                    inputMethod.showSoftInputWithToken(msg.arg1, (ResultReceiver) args.arg1,
+                            statsToken);
                 } else {
                     ImeTracker.forLogging().onFailed(
                             statsToken, ImeTracker.PHASE_IME_WRAPPER_DISPATCH);
@@ -240,12 +240,12 @@ class IInputMethodWrapper extends IInputMethod.Stub
             }
             case DO_HIDE_SOFT_INPUT: {
                 final SomeArgs args = (SomeArgs) msg.obj;
-                final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg3;
+                final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg2;
                 if (isValid(inputMethod, target, "DO_HIDE_SOFT_INPUT")) {
                     ImeTracker.forLogging().onProgress(
                             statsToken, ImeTracker.PHASE_IME_WRAPPER_DISPATCH);
-                    inputMethod.hideSoftInputWithToken(msg.arg1, (ResultReceiver) args.arg2,
-                            (IBinder) args.arg1, statsToken);
+                    inputMethod.hideSoftInputWithToken(msg.arg1, (ResultReceiver) args.arg1,
+                            statsToken);
                 } else {
                     ImeTracker.forLogging().onFailed(
                             statsToken, ImeTracker.PHASE_IME_WRAPPER_DISPATCH);
@@ -453,20 +453,20 @@ class IInputMethodWrapper extends IInputMethod.Stub
 
     @BinderThread
     @Override
-    public void showSoftInput(IBinder showInputToken, @NonNull ImeTracker.Token statsToken,
+    public void showSoftInput(@NonNull ImeTracker.Token statsToken,
             @InputMethod.ShowFlags int flags, ResultReceiver resultReceiver) {
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_IME_WRAPPER);
-        mCaller.executeOrSendMessage(mCaller.obtainMessageIOOO(DO_SHOW_SOFT_INPUT,
-                flags, showInputToken, resultReceiver, statsToken));
+        mCaller.executeOrSendMessage(mCaller.obtainMessageIOO(DO_SHOW_SOFT_INPUT,
+                flags, resultReceiver, statsToken));
     }
 
     @BinderThread
     @Override
-    public void hideSoftInput(IBinder hideInputToken, @NonNull ImeTracker.Token statsToken,
-            int flags, ResultReceiver resultReceiver) {
+    public void hideSoftInput(@NonNull ImeTracker.Token statsToken, int flags,
+            ResultReceiver resultReceiver) {
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_IME_WRAPPER);
-        mCaller.executeOrSendMessage(mCaller.obtainMessageIOOO(DO_HIDE_SOFT_INPUT,
-                flags, hideInputToken, resultReceiver, statsToken));
+        mCaller.executeOrSendMessage(mCaller.obtainMessageIOO(DO_HIDE_SOFT_INPUT,
+                flags, resultReceiver, statsToken));
     }
 
     @BinderThread

@@ -22,6 +22,7 @@ import static android.content.res.Configuration.UI_MODE_TYPE_CAR;
 import static com.android.systemui.doze.DozeMachine.State.DOZE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_DOCKED;
+import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_MINMODE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_PULSE_DONE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_PULSING;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_PULSING_BRIGHT;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.when;
 import android.app.ActivityManager;
 import android.content.res.Configuration;
 import android.hardware.display.AmbientDisplayConfiguration;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.DisableFlags;
 import android.view.Display;
 
@@ -60,10 +62,12 @@ import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.minmode.MinModeManager;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.util.wakelock.WakeLockFake;
 
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,6 +96,9 @@ public class DozeMachineTest extends SysuiTestCase {
     private DozeMachine.Part mAnotherPartMock;
     @Mock
     private UserTracker mUserTracker;
+    @Mock
+    private MinModeManager mMinModeManager;
+
     private DozeServiceFake mServiceFake;
     private WakeLockFake mWakeLockFake;
     private AmbientDisplayConfiguration mAmbientDisplayConfigMock;
@@ -112,6 +119,7 @@ public class DozeMachineTest extends SysuiTestCase {
                 mWakefulnessLifecycle,
                 mDozeLog,
                 mDockManager,
+                Optional.of(mMinModeManager),
                 mHost,
                 new DozeMachine.Part[]{mPartMock, mAnotherPartMock},
                 mUserTracker);
@@ -152,6 +160,17 @@ public class DozeMachineTest extends SysuiTestCase {
 
         verify(mPartMock).transitionTo(INITIALIZED, DOZE_AOD_DOCKED);
         assertEquals(DOZE_AOD_DOCKED, mMachine.getState());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MINMODE)
+    public void testInitialize_minModeEnabled_goesToMinModeAod() {
+        when(mMinModeManager.isMinModeEnabled()).thenReturn(true);
+
+        mMachine.requestState(INITIALIZED);
+
+        verify(mPartMock).transitionTo(INITIALIZED, DOZE_AOD_MINMODE);
+        assertEquals(DOZE_AOD_MINMODE, mMachine.getState());
     }
 
     @Test

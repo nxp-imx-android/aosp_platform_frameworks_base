@@ -18,7 +18,6 @@
 package android.view;
 
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.MergedConfiguration;
@@ -30,8 +29,7 @@ import android.view.IScrollCaptureResponseListener;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.ImeTracker;
-import android.window.ActivityWindowInfo;
-import android.window.ClientWindowFrames;
+import android.view.WindowRelayoutResult;
 
 import com.android.internal.os.IResultReceiver;
 
@@ -59,11 +57,8 @@ oneway interface IWindow {
      * Please dispatch through WindowStateResizeItem instead of directly calling this method from
      * the system server.
      */
-    void resized(in ClientWindowFrames frames, boolean reportDraw,
-            in MergedConfiguration newMergedConfiguration, in InsetsState insetsState,
-            boolean forceLayout, boolean alwaysConsumeSystemBars, int displayId,
-            int syncSeqId, boolean dragResizing,
-            in @nullable ActivityWindowInfo activityWindowInfo);
+    void resized(in WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
+            int displayId, boolean dragResizing);
 
     /**
      * Called when this window retrieved control over a specified set of insets sources.
@@ -75,19 +70,17 @@ oneway interface IWindow {
      * Called when a set of insets source window should be shown by policy.
      *
      * @param types internal insets types (WindowInsets.Type.InsetsType) to show
-     * @param fromIme true if this request originated from IME (InputMethodService).
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    void showInsets(int types, boolean fromIme, in @nullable ImeTracker.Token statsToken);
+    void showInsets(int types, in @nullable ImeTracker.Token statsToken);
 
     /**
      * Called when a set of insets source window should be hidden by policy.
      *
      * @param types internal insets types (WindowInsets.Type.InsetsType) to hide
-     * @param fromIme true if this request originated from IME (InputMethodService).
      * @param statsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    void hideInsets(int types, boolean fromIme, in @nullable ImeTracker.Token statsToken);
+    void hideInsets(int types, in @nullable ImeTracker.Token statsToken);
 
     void moved(int newX, int newY);
     void dispatchAppVisibility(boolean visible);

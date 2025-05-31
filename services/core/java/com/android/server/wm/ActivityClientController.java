@@ -115,6 +115,7 @@ import com.android.server.utils.quota.Categorizer;
 import com.android.server.utils.quota.Category;
 import com.android.server.utils.quota.CountQuotaTracker;
 import com.android.server.vr.VrManagerInternal;
+import com.android.window.flags.Flags;
 
 /**
  * Server side implementation for the client activity to interact with system.
@@ -130,7 +131,8 @@ class ActivityClientController extends IActivityClientController.Stub {
     private final Context mContext;
 
     // Prevent malicious app abusing the Activity#setPictureInPictureParams API
-    @VisibleForTesting CountQuotaTracker mSetPipAspectRatioQuotaTracker;
+    @VisibleForTesting
+    CountQuotaTracker mSetPipAspectRatioQuotaTracker;
     // Limit to 60 times / minute
     private static final int SET_PIP_ASPECT_RATIO_LIMIT = 60;
     // The timeWindowMs here can not be smaller than QuotaTracker#MIN_WINDOW_SIZE_MS
@@ -686,7 +688,7 @@ class ActivityClientController extends IActivityClientController.Stub {
             }
             final Task task = r.getTask();
             if (onlyRoot) {
-                return task.getRootActivity() == r ? task.mTaskId : INVALID_TASK_ID;
+                return r.isRootOfTask() ? task.mTaskId : INVALID_TASK_ID;
             }
             return task.mTaskId;
         }
@@ -806,7 +808,7 @@ class ActivityClientController extends IActivityClientController.Stub {
     }
 
     /**
-     * @param uri This uri must NOT contain an embedded userId.
+     * @param uri    This uri must NOT contain an embedded userId.
      * @param userId The userId in which the uri is to be resolved.
      */
     @Override
@@ -867,6 +869,15 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     @Override
     public void setRequestedOrientation(IBinder token, int requestedOrientation) {
+        if (Flags.enableTransitionOnActivitySetRequestedOrientation()) {
+            setRequestedOrientationWithTransition(token, requestedOrientation);
+        } else {
+            setRequestedOrientationLegacy(token, requestedOrientation);
+        }
+    }
+
+    // TODO(b/375339716): Clean up and remove legacy code.
+    private void setRequestedOrientationLegacy(IBinder token, int requestedOrientation) {
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
@@ -875,6 +886,41 @@ class ActivityClientController extends IActivityClientController.Stub {
                     EventLogTags.writeWmSetRequestedOrientation(requestedOrientation,
                             r.shortComponentName);
                     r.setRequestedOrientation(requestedOrientation);
+                }
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    private void setRequestedOrientationWithTransition(IBinder token, int requestedOrientation) {
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
+                if (r == null) {
+                    return;
+                }
+                // A new Transition need to be started in case the orientation update
+                // won't make the Display to rotate.
+                Transition transition = null;
+                final int orientation = r.getRequestedConfigurationOrientation(false,
+                        requestedOrientation);
+                if (!r.handlesOrientationChangeFromDescendant(orientation)) {
+                    transition = r.mTransitionController.isShellTransitionsEnabled()
+                            && !r.mTransitionController.isCollecting()
+                            ? r.mTransitionController.createTransition(TRANSIT_CHANGE) : null;
+                }
+
+                r.mTransitionController.collect(r);
+
+                r.setRequestedOrientation(requestedOrientation);
+
+                if (transition != null) {
+                    r.mTransitionController.requestStartTransition(transition,
+                            null /*startTask */, null /* remoteTransition */,
+                            null /* displayChange */);
+                    r.mTransitionController.setReady(r.getDisplayContent());
                 }
             }
         } finally {
@@ -969,7 +1015,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                         r.mTransitionController.setReady(r.getDisplayContent());
                         if (under != null && under.returningOptions != null
                                 && under.returningOptions.getAnimationType()
-                                        == ANIM_SCENE_TRANSITION) {
+                                == ANIM_SCENE_TRANSITION) {
                             // Pass along the scene-transition animation-type
                             transition.setOverrideAnimation(TransitionInfo
                                             .AnimationOptions.makeSceneTransitionAnimOptions(), r,

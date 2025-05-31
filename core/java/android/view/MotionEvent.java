@@ -4150,6 +4150,8 @@ public final class MotionEvent extends InputEvent implements Parcelable {
                 return "TWO_FINGER_SWIPE";
             case CLASSIFICATION_MULTI_FINGER_SWIPE:
                 return "MULTI_FINGER_SWIPE";
+            case CLASSIFICATION_PINCH:
+                return "PINCH";
         }
         return "UNKNOWN";
     }

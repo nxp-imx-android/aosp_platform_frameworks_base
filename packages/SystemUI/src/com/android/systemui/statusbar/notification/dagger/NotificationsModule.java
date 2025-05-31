@@ -327,7 +327,7 @@ public interface NotificationsModule {
             return implProvider.get();
         } else {
             return (entry, recoveredBuilder, redactionType, imageModelProvider,
-                    packageContext) -> null;
+                    packageContext, sysUIContext) -> null;
         }
     }
 

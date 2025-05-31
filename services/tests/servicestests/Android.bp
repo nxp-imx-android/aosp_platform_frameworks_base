@@ -29,72 +29,72 @@ android_test {
         "src/**/*.java",
         "src/**/*.kt",
 
-        "test-apps/SuspendTestApp/src/**/*.java",
         "test-apps/DisplayManagerTestApp/src/**/*.java",
+        "test-apps/SuspendTestApp/src/**/*.java",
         "test-apps/TopologyTestApp/src/**/*.java",
     ],
 
     static_libs: [
+        "ActivityContext",
+        "CtsAccessibilityCommon",
+        "CtsVirtualDeviceCommonLib",
+        "ShortcutManagerTestUtils",
         "a11ychecker",
         "aatf",
         "accessibility_protos_lite",
+        "androidx.test.core",
+        "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "androidx.test.rules",
+        "androidx.test.runner",
+        "androidx.test.uiautomator_uiautomator",
+        "com.android.server.flags.services-aconfig-java",
+        "com_android_server_accessibility_flags_lib",
+        "coretests-aidl",
         "cts-input-lib",
+        "cts-wm-util",
+        "desktop-test-lib",
+        "flag-junit",
+        "flag-junit",
+        "framework-protos",
         "frameworks-base-testutils",
+        "guava",
+        "guava-android-testlib",
+        "hamcrest-library",
+        "junit",
+        "junit-params",
+        "mockito-kotlin2",
+        "mockito-target-minus-junit4",
+        "net-tests-utils",
+        "net_flags_lib",
+        "platform-compat-test-rules",
+        "platform-parametric-runner-lib",
+        "platform-test-annotations",
+        "platformprotosnano",
+        "ravenwood-junit",
+        "securebox",
+        "service-jobscheduler",
+        "service-permission.stubs.system_server",
         "services.accessibility",
         "services.appwidget",
         "services.autofill",
-        "services.contentcapture",
         "services.backup",
         "services.companion",
+        "services.contentcapture",
         "services.core",
         "services.credentials",
         "services.devicepolicy",
         "services.flags",
-        "com.android.server.flags.services-aconfig-java",
         "services.net",
         "services.people",
         "services.supervision",
         "services.usage",
-        "service-permission.stubs.system_server",
-        "guava",
-        "guava-android-testlib",
-        "androidx.test.core",
-        "androidx.test.ext.truth",
-        "androidx.test.runner",
-        "androidx.test.rules",
-        "androidx.test.ext.junit",
-        "CtsAccessibilityCommon",
-        "cts-wm-util",
-        "platform-compat-test-rules",
-        "platform-parametric-runner-lib",
-        "mockito-target-minus-junit4",
-        "mockito-kotlin2",
-        "platform-test-annotations",
-        "ShortcutManagerTestUtils",
-        "truth",
-        "testables",
-        "androidx.test.uiautomator_uiautomator",
-        "platformprotosnano",
-        "framework-protos",
-        "hamcrest-library",
         "servicestests-utils",
-        "service-jobscheduler",
+        "testables",
         // TODO: remove once Android migrates to JUnit 4.12,
         // which provides assertThrows
         "testng",
-        "flag-junit",
-        "junit",
-        "junit-params",
-        "ActivityContext",
-        "coretests-aidl",
-        "securebox",
-        "flag-junit",
-        "ravenwood-junit",
-        "net-tests-utils",
-        "net_flags_lib",
-        "CtsVirtualDeviceCommonLib",
-        "com_android_server_accessibility_flags_lib",
-        "desktop-test-lib",
+        "truth",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": ["service-crashrecovery-pre-jarjar"],
         default: [],
@@ -105,16 +105,16 @@ android_test {
         "android.hardware.tv.cec-V1.0-java",
         "android.hardware.vibrator-V3-java",
         "android.hidl.manager-V1.0-java",
-        "android.test.mock.stubs.system",
         "android.test.base.stubs.system",
+        "android.test.mock.stubs.system",
         "android.test.runner.stubs.system",
     ],
 
     platform_apis: true,
 
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     certificate: "platform",
@@ -143,12 +143,12 @@ android_test {
 
     data: [
         ":DisplayManagerTestApp",
-        ":TopologyTestApp",
+        ":MediaButtonReceiverHolderTestHelperApp",
         ":SimpleServiceTestApp1",
         ":SimpleServiceTestApp2",
         ":SimpleServiceTestApp3",
         ":SuspendTestApp",
-        ":MediaButtonReceiverHolderTestHelperApp",
+        ":TopologyTestApp",
         "data/broken_shortcut.xml",
     ],
 
@@ -213,8 +213,8 @@ java_library {
         "src/com/android/server/pm/parsing/TestPackageParser2.kt",
     ],
     static_libs: [
-        "services.core",
         "compatibility-device-util-axt",
+        "services.core",
     ],
 }
 
@@ -231,15 +231,15 @@ java_library {
         "src/com/android/server/devicepolicy/MockUtils.java",
     ],
     libs: [
-        "android.test.mock.stubs.system",
         "android.test.base.stubs.system",
+        "android.test.mock.stubs.system",
         "mockito-target-minus-junit4",
     ],
     static_libs: [
-        "frameworks-base-testutils",
         "androidx.test.core",
         "androidx.test.ext.truth",
         "androidx.test.rules",
+        "frameworks-base-testutils",
         "services.core",
         "services.devicepolicy",
     ],
@@ -248,9 +248,9 @@ java_library {
 java_library {
     name: "servicestests-utils",
     srcs: [
+        "utils-mockito/**/*.kt",
         "utils/**/*.java",
         "utils/**/*.kt",
-        "utils-mockito/**/*.kt",
     ],
     static_libs: [
         "junit",
@@ -264,9 +264,9 @@ java_library {
 java_library {
     name: "servicestests-utils-ravenwood",
     srcs: [
+        "utils-mockito/**/*.kt",
         "utils/**/*.java",
         "utils/**/*.kt",
-        "utils-mockito/**/*.kt",
     ],
     libs: [
         "android.test.runner.stubs.system",
@@ -288,9 +288,9 @@ java_library {
 java_library {
     name: "servicestests-utils-mockito-extended",
     srcs: [
+        "utils-mockito/**/*.kt",
         "utils/**/*.java",
         "utils/**/*.kt",
-        "utils-mockito/**/*.kt",
     ],
     static_libs: [
         "junit",
@@ -331,8 +331,8 @@ test_module_config {
     name: "FrameworksServicesTests_contentprotection",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.contentprotection"],
@@ -342,8 +342,8 @@ test_module_config {
     name: "FrameworksServicesTests_om",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.om."],
@@ -353,8 +353,8 @@ test_module_config {
     name: "FrameworksServicesTests_theme",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.theming."],
@@ -365,8 +365,8 @@ test_module_config {
     name: "FrameworksServicesTests_contexthub_presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.location.contexthub."],
@@ -378,8 +378,8 @@ test_module_config {
     name: "FrameworksServicesTests_contexthub_postsubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.location.contexthub."],
@@ -392,8 +392,8 @@ test_module_config {
     name: "FrameworksServicesTests_contentcapture",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.contentcapture"],
@@ -403,8 +403,8 @@ test_module_config {
     name: "FrameworksServicesTests_recoverysystem",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.recoverysystem."],
@@ -415,8 +415,8 @@ test_module_config {
     name: "FrameworksServicesTests_pm_presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_annotations: ["android.platform.test.annotations.Presubmit"],
@@ -427,8 +427,8 @@ test_module_config {
     name: "FrameworksServicesTests_pm_postsubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_annotations: ["android.platform.test.annotations.Postsubmit"],
@@ -440,8 +440,8 @@ test_module_config {
     name: "FrameworksServicesTests_os",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.os."],
@@ -451,8 +451,8 @@ test_module_config {
     name: "FrameworksServicesTests_presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_annotations: ["android.platform.test.annotations.Presubmit"],
@@ -462,14 +462,14 @@ test_module_config {
     name: "FrameworksServicesTests_com_android_server_job_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.job"],
     exclude_annotations: [
-        "androidx.test.filters.LargeTest",
         "androidx.test.filters.FlakyTest",
+        "androidx.test.filters.LargeTest",
     ],
 }
 
@@ -477,8 +477,8 @@ test_module_config {
     name: "FrameworksServicesTests_com_android_server_job",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.job"],
@@ -488,8 +488,8 @@ test_module_config {
     name: "FrameworksServicesTests_com_android_server_tare",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.tare"],
@@ -499,8 +499,8 @@ test_module_config {
     name: "FrameworksServicesTests_com_android_server_usage",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.usage"],
@@ -510,8 +510,8 @@ test_module_config {
     name: "FrameworksServicesTests_battery_stats",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.am.BatteryStatsServiceTest"],
@@ -521,8 +521,8 @@ test_module_config {
     name: "FrameworksServicesTests_accessibility",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.accessibility"],
@@ -532,8 +532,8 @@ test_module_config {
     name: "FrameworksServicesTests_binary_transparency",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.BinaryTransparencyServiceTest"],
@@ -543,8 +543,8 @@ test_module_config {
     name: "FrameworksServicesTests_pinner_service",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.PinnerServiceTest"],
@@ -555,8 +555,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_am_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.am."],
@@ -567,8 +567,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_am",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.am."],
@@ -578,8 +578,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_appop",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.appop"],
@@ -589,8 +589,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_appwindowlayout",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.appwindowlayout."],
@@ -600,8 +600,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_audio",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.audio"],
@@ -612,8 +612,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_compat",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.compat"],
@@ -623,8 +623,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_hdmi_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.hdmi"],
@@ -635,8 +635,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_hdmi",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.hdmi"],
@@ -646,8 +646,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_integrity",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.integrity."],
@@ -657,8 +657,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_lights",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.lights"],
@@ -668,8 +668,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_locales",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.locales."],
@@ -679,8 +679,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_location_contexthub_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.location.contexthub."],
@@ -691,8 +691,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_locksettings",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.locksettings."],
@@ -702,8 +702,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_logcat",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.logcat"],
@@ -713,8 +713,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_net_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.net."],
@@ -725,8 +725,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_om",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.om."],
@@ -736,8 +736,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_pdb",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.pdb.PersistentDataBlockServiceTest"],
@@ -747,8 +747,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_pm_dex",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.pm.dex"],
@@ -758,8 +758,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_policy_Presubmit",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.policy."],
@@ -770,8 +770,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_policy",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.policy."],
@@ -781,8 +781,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_power",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.power"],
@@ -792,8 +792,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_power_hint",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.power.hint"],
@@ -803,8 +803,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_powerstats",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.powerstats"],
@@ -814,8 +814,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_rollback",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.rollback"],
@@ -825,8 +825,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_uri",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.uri."],
@@ -836,8 +836,8 @@ test_module_config {
     name: "FrameworksServicesTests_com_android_server_location_contexthub",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.location.contexthub."],
@@ -848,8 +848,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_usage",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.usage"],
@@ -860,8 +860,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_soundtrigger_middleware",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.soundtrigger_middleware"],
@@ -871,8 +871,8 @@ test_module_config {
     name: "FrameworksServicesTests_android_server_input",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.input"],
@@ -1055,8 +1055,8 @@ test_module_config {
     name: "FrameworksServicesTests_devicepolicy",
     base: "FrameworksServicesTests",
     test_suites: [
-        "device-tests",
         "automotive-tests",
+        "device-tests",
     ],
 
     include_filters: ["com.android.server.devicepolicy"],

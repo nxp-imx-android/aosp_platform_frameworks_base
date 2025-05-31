@@ -3293,12 +3293,14 @@
   <java-symbol type="dimen" name="notification_content_margin_top" />
   <java-symbol type="dimen" name="notification_content_margin" />
   <java-symbol type="dimen" name="notification_2025_margin" />
+  <java-symbol type="dimen" name="notification_2025_content_margin_end" />
   <java-symbol type="dimen" name="notification_2025_content_margin_top" />
   <java-symbol type="dimen" name="notification_2025_content_margin_start" />
   <java-symbol type="dimen" name="notification_2025_expand_button_horizontal_icon_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_reduced_end_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_right_icon_spacing" />
-  <java-symbol type="dimen" name="notification_2025_right_icon_expanded_margin_end" />
+  <java-symbol type="dimen" name="notification_2025_right_icon_margin_end" />
+  <java-symbol type="dimen" name="notification_2025_extra_space_for_expander" />
   <java-symbol type="dimen" name="notification_2025_action_list_margin_bottom" />
   <java-symbol type="dimen" name="notification_2025_smart_reply_container_margin" />
   <java-symbol type="dimen" name="notification_progress_margin_horizontal" />
@@ -4194,7 +4196,6 @@
   <java-symbol type="integer" name="config_jumpTapTimeoutMillis" />
   <java-symbol type="integer" name="config_doubleTapTimeoutMillis" />
   <java-symbol type="integer" name="config_doubleTapMinTimeMillis" />
-  <java-symbol type="integer" name="config_hoverTapTimeoutMillis" />
   <java-symbol type="integer" name="config_zoomControlsTimeoutMillis" />
   <java-symbol type="integer" name="config_defaultActionModeHideDurationMillis" />
   <java-symbol type="dimen" name="config_hoverTapSlop" />
@@ -6228,4 +6229,9 @@
 
   <!-- Maximum number of devices that allows for audio sharing. -->
   <java-symbol type="integer" name="config_audio_sharing_maximum_sinks" />
+
+  <!-- Values for the user-configurable text cursor blink interval. -->
+  <java-symbol type="integer" name="def_accessibility_text_cursor_blink_interval_ms" />
+  <java-symbol type="integer" name="no_blink_accessibility_text_cursor_blink_interval_ms" />
+  <java-symbol type="array" name="accessibility_text_cursor_blink_intervals" />
 </resources>

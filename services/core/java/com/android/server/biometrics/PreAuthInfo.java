@@ -16,6 +16,7 @@
 
 package com.android.server.biometrics;
 
+import static android.hardware.biometrics.BiometricAuthenticator.TYPE_ANY_BIOMETRIC;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_CREDENTIAL;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FACE;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRINT;
@@ -35,7 +36,10 @@ import android.os.RemoteException;
 import android.os.UserManager;
 import android.util.Pair;
 import android.util.Slog;
+import android.view.Display;
+import android.window.DesktopExperienceFlags.DesktopExperienceFlag;
 
+import com.android.internal.R;
 import com.android.server.biometrics.sensors.LockoutTracker;
 
 import java.lang.annotation.Retention;
@@ -62,6 +66,11 @@ class PreAuthInfo {
     static final int BIOMETRIC_LOCKOUT_PERMANENT = 11;
     static final int BIOMETRIC_SENSOR_PRIVACY_ENABLED = 12;
     static final int MANDATORY_BIOMETRIC_UNAVAILABLE_ERROR = 13;
+    private static final DesktopExperienceFlag BIOMETRIC_PROMPT_EXTERNAL_DISPLAY_FLAG =
+            new DesktopExperienceFlag(
+                    com.android.server.biometrics.Flags::biometricPromptExternalDisplay,
+                    /* shouldOverrideByDevOption= */ false,
+                    com.android.server.biometrics.Flags.FLAG_BIOMETRIC_PROMPT_EXTERNAL_DISPLAY);
     private static final String TAG = "BiometricService/PreAuthInfo";
     final boolean credentialRequested;
     // Sensors that can be used for this request (e.g. strong enough, enrolled, enabled).
@@ -129,6 +138,11 @@ class PreAuthInfo {
                 updateAuthenticatorsIfIdentityCheckIsActive(promptInfo, effectiveUserId,
                         trustManager, settingObserver);
 
+        if (!Flags.bpFallbackOptions() && isMandatoryBiometricsAuthentication
+                && promptInfo.getNegativeButtonText() == null) {
+            promptInfo.setNegativeButtonText(context.getString(R.string.cancel));
+        }
+
         final boolean biometricRequested = Utils.isBiometricRequested(promptInfo);
         final int requestedStrength = Utils.getPublicBiometricStrength(promptInfo);
         final boolean credentialRequested = Utils.isCredentialRequested(promptInfo);
@@ -189,16 +203,14 @@ class PreAuthInfo {
                         effectiveUserId), trustManager)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-            return true;
         } else if (Flags.identityCheckTestApi()
                 && Utils.shouldApplyIdentityCheck(promptInfo.getAuthenticators())
                 && settingObserver.isIdentityCheckActive(effectiveUserId)) {
             promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
             promptInfo.setIdentityCheckActive(true);
-            return true;
         }
 
-        return false;
+        return promptInfo.isIdentityCheckActive();
     }
 
     private static boolean dropCredentialFallback(int authenticators,
@@ -393,7 +405,10 @@ class PreAuthInfo {
             cameraPrivacyEnabled = mBiometricCameraManager.isCameraPrivacyEnabled();
         }
 
-        if (mBiometricRequested && credentialRequested) {
+        if (BIOMETRIC_PROMPT_EXTERNAL_DISPLAY_FLAG.isTrue() && isExternalDisplay()) {
+            status = BIOMETRIC_HARDWARE_NOT_DETECTED;
+            modality = TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL;
+        } else if (mBiometricRequested && credentialRequested) {
             if (credentialAvailable || !eligibleSensors.isEmpty()) {
                 for (BiometricSensor sensor : eligibleSensors) {
                     modality |= sensor.modality;
@@ -474,6 +489,15 @@ class PreAuthInfo {
         return Utils.biometricConstantsToBiometricManager(
                 Utils.authenticatorStatusToBiometricConstant(
                         getInternalStatus().second));
+    }
+
+    private boolean isExternalDisplay() {
+        try {
+            return context.getDisplay().getType() == Display.TYPE_EXTERNAL;
+        } catch (UnsupportedOperationException e) {
+            Slog.d(TAG, "Exception thrown when checking display type " + e);
+            return false;
+        }
     }
 
     /** Returns if mandatory biometrics authentication is in effect */

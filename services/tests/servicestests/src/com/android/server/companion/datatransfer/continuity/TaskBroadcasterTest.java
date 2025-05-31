@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,15 @@ import static org.mockito.Mockito.never;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
+
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.companion.AssociationInfo;
 import android.companion.IOnTransportsChangedListener;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
@@ -38,17 +43,23 @@ import android.testing.TestableLooper;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.util.Arrays;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Presubmit
 @RunWith(AndroidTestingRunner.class)
@@ -64,6 +75,8 @@ public class TaskBroadcasterTest {
     private ICompanionDeviceManager mMockCompanionDeviceManagerService;
 
     private CompanionDeviceManager mCompanionDeviceManager;
+
+    @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
 
     private TaskBroadcaster mTaskBroadcaster;
 
@@ -88,7 +101,9 @@ public class TaskBroadcasterTest {
             .thenReturn(mCompanionDeviceManager);
 
         // Create TaskBroadcaster.
-        mTaskBroadcaster = new TaskBroadcaster(mMockContext);
+        mTaskBroadcaster = new TaskBroadcaster(
+            mMockContext,
+            mMockConnectedAssociationStore);
     }
 
     @Test
@@ -96,59 +111,50 @@ public class TaskBroadcasterTest {
         throws Exception {
 
         mTaskBroadcaster.stopBroadcasting();
-        verify(mMockCompanionDeviceManagerService, never())
-            .removeOnTransportsChangedListener(any());
+        verify(mMockConnectedAssociationStore, never())
+            .addObserver(mTaskBroadcaster);
     }
 
     @Test
     public void testStartAndStopBroadcasting_updatesTransportsListener()
         throws Exception {
 
-        // Start broadcasting, verifying a transport listener is added.
-        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor
-            = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
+        // Start broadcasting, verifying an association listener is added.
         mTaskBroadcaster.startBroadcasting();
-        verify(mMockCompanionDeviceManagerService, times(1))
-            .addOnTransportsChangedListener(
-                listenerCaptor.capture());
-        IOnTransportsChangedListener listener = listenerCaptor.getValue();
-        assertThat(listener).isNotNull();
+        verify(mMockConnectedAssociationStore, times(1))
+            .addObserver(mTaskBroadcaster);
+        verify(mMockConnectedAssociationStore, times(1))
+            .addObserver(mTaskBroadcaster);
+        verify(mMockActivityTaskManager, times(1))
+            .registerTaskStackListener(mTaskBroadcaster);
 
-        // Stop broadcasting, verifying the transport listener is removed.
+        // Stop broadcasting, verifying the association listener is removed.
         mTaskBroadcaster.stopBroadcasting();
-        verify(mMockCompanionDeviceManagerService, times(1))
-            .removeOnTransportsChangedListener(listener);
+        verify(mMockConnectedAssociationStore, times(1))
+            .removeObserver(mTaskBroadcaster);
+        verify(mMockActivityTaskManager, times(1))
+            .unregisterTaskStackListener(mTaskBroadcaster);
+        verify(mMockConnectedAssociationStore, times(1))
+            .removeObserver(mTaskBroadcaster);
     }
 
     @Test
     public void testStartBroadcasting_startsBroadcasting() throws Exception {
         // Start broadcasting, verifying a transport listener is added.
-        ArgumentCaptor<IOnTransportsChangedListener> listenerCaptor
-            = ArgumentCaptor.forClass(IOnTransportsChangedListener.class);
         mTaskBroadcaster.startBroadcasting();
-        verify(mMockCompanionDeviceManagerService, times(1))
-            .addOnTransportsChangedListener(
-                listenerCaptor.capture());
-        IOnTransportsChangedListener listener = listenerCaptor.getValue();
+        verify(mMockConnectedAssociationStore, times(1))
+            .addObserver(mTaskBroadcaster);
 
         // Setup a fake foreground task.
         String expectedLabel = "test";
-        ActivityManager.RunningTaskInfo taskInfo
-            = new ActivityManager.RunningTaskInfo();
-        taskInfo.taskId = 1;
-        taskInfo.taskDescription
-            = new ActivityManager.TaskDescription(expectedLabel);
+        ActivityManager.RunningTaskInfo taskInfo = createRunningTaskInfo(1, expectedLabel, 0);
 
         when(mMockActivityTaskManager.getTasks(Integer.MAX_VALUE, true))
             .thenReturn(Arrays.asList(taskInfo));
 
         // Add a new transport
-        AssociationInfo associationInfo = new AssociationInfo.Builder(1, 0, "")
-            .setDisplayName("test")
-            .build();
-
-        listener.onTransportsChanged(Arrays.asList(associationInfo));
-        TestableLooper.get(this).processAllMessages();
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        mTaskBroadcaster.onTransportConnected(associationInfo);
 
         // Verify the message is sent.
         ArgumentCaptor<byte[]> messageCaptor
@@ -170,5 +176,40 @@ public class TaskBroadcasterTest {
             .isEqualTo(taskInfo.taskId);
         assertThat(continuityDeviceConnected.getRemoteTasks().get(0).getLabel())
             .isEqualTo(expectedLabel);
+    }
+
+    @Test
+    public void testOnTaskCreated_sendsMessageToAllAssociations() throws Exception {
+        // Start broadcasting.
+        mTaskBroadcaster.startBroadcasting();
+        verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
+        AssociationInfo associationInfo = createAssociationInfo(1, "name1");
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+            .thenReturn(Arrays.asList(associationInfo));
+
+        // Define a new task.
+        String taskLabel = "newTask";
+        int taskId = 123;
+        ActivityManager.RunningTaskInfo taskInfo = createRunningTaskInfo(taskId, taskLabel, 0);
+
+        // Mock ActivityTaskManager to return the new task.
+        when(mMockActivityTaskManager.getTasks(Integer.MAX_VALUE, true))
+                .thenReturn(List.of(taskInfo));
+
+        // Notify TaskBroadcaster of the new task.
+        mTaskBroadcaster.onTaskCreated(taskId, null);
+
+        // Verify sendMessage is called
+        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+                eq(CompanionDeviceManager.MESSAGE_TASK_CONTINUITY),
+                messageCaptor.capture(),
+                any(int[].class));
+        byte[] capturedMessage = messageCaptor.getValue();
+        TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(capturedMessage);
+        assertThat(taskContinuityMessage.getData()).isInstanceOf(RemoteTaskAddedMessage.class);
+        RemoteTaskAddedMessage remoteTaskAddedMessage =
+                (RemoteTaskAddedMessage) taskContinuityMessage.getData();
+        assertThat(remoteTaskAddedMessage.getTask().getId()).isEqualTo(taskId);
     }
 }

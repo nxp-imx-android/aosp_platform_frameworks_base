@@ -3334,12 +3334,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // TODO (b/283241997): Add the remaining keyboard shortcut logging after refactoring
     /** {@inheritDoc} */
     @Override
-    public long interceptKeyBeforeDispatching(IBinder focusedToken, KeyEvent event,
-            int policyFlags) {
+    public boolean interceptKeyBeforeDispatching(IBinder focusedToken, KeyEvent event) {
         final int keyCode = event.getKeyCode();
-        final int flags = event.getFlags();
-        final long keyConsumed = -1;
-        final long keyNotConsumed = 0;
         final int deviceId = event.getDeviceId();
 
         if (DEBUG_INPUT) {
@@ -3358,7 +3354,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (interceptSystemKeysAndShortcuts(focusedToken, event)
                 && event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
             consumedKeys.add(keyCode);
-            return keyConsumed;
+            return true;
         }
 
         boolean needToConsumeKey = consumedKeys.contains(keyCode);
@@ -3369,7 +3365,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
         }
 
-        return needToConsumeKey ? keyConsumed : keyNotConsumed;
+        return needToConsumeKey;
     }
 
     // You can only start consuming the key gesture if ACTION_DOWN and repeat count

@@ -298,7 +298,7 @@
     <string name="notification_channel_car_mode" msgid="2123919247040988436">"Modo automóvel"</string>
     <string name="notification_channel_account" msgid="6436294521740148173">"Estado da conta"</string>
     <string name="notification_channel_developer" msgid="1691059964407549150">"Mensagens do programador"</string>
-    <string name="notification_channel_developer_important" msgid="7197281908918789589">"Mensagens importantes relativas a programadores"</string>
+    <string name="notification_channel_developer_important" msgid="7197281908918789589">"Mensagens importantes para programadores"</string>
     <string name="notification_channel_updates" msgid="7907863984825495278">"Atualizações"</string>
     <string name="notification_channel_network_status" msgid="2127687368725272809">"Estado da rede"</string>
     <string name="notification_channel_network_alerts" msgid="6312366315654526528">"Alertas da rede"</string>
@@ -2554,10 +2554,28 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplicações"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Já não é possível reconhecer as suas impressões digitais. Configure o Desbloqueio por impressão digital novamente."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Dispositivo USB ligado quando bloqueado"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"O dispositivo USB está ligado quando o Android está bloqueado. Para usar o dispositivo, desbloqueie primeiro o Android."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"O dispositivo USB está ligado quando o Android está bloqueado. Para usar o dispositivo, desbloqueie primeiro o Android e, de seguida, volte a inserir o dispositivo USB para o usar."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"A capacidade de carregamento pode ser reduzida ou ficar indisponível quando o dispositivo está bloqueado."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Atividade USB suspeita"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"O sinal de dados USB foi desativado."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Está a ter problemas com o Desbloqueio por impressão digital?"</string>

@@ -6602,6 +6602,7 @@ android.os.Looper
 android.os.MemoryFile
 android.os.Message$1
 android.os.Message
+android.os.MessageQueue$EnqueueOrder
 android.os.MessageQueue$FileDescriptorRecord
 android.os.MessageQueue$IdleHandler
 android.os.MessageQueue$MatchAllFutureMessages

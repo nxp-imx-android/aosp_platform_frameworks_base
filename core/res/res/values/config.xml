@@ -3152,10 +3152,6 @@
          down event for an interaction to be considered a double-tap. -->
     <integer name="config_doubleTapMinTimeMillis">40</integer>
 
-    <!-- Maximum duration in milliseconds between a touch pad touch and release for a given touch
-         to be considered a tap (click) as opposed to a hover movement gesture. -->
-    <integer name="config_hoverTapTimeoutMillis">150</integer>
-
     <!-- The amount of time in milliseconds that the zoom controls should be displayed on the
          screen. -->
     <integer name="config_zoomControlsTimeoutMillis">3000</integer>
@@ -6004,8 +6000,13 @@
     only. The component must be part of a system app. -->
     <string name="config_defaultSupervisionProfileOwnerComponent" translatable="false"></string>
 
-    <!-- The package name of the default supervision package. -->
+    <!-- The package name of the default system supervision package. -->
     <string name="config_systemSupervision" translatable="false"></string>
+
+    <!-- Semicolon separated list of packages allowed to hold the supervision role. If the package
+         is not a system app, the signing certificate digest must be included (separated by a colon
+         from the package name). -->
+    <string name="config_allowedSupervisionRolePackages" translatable="false"></string>
 
     <!-- Trigger a warning for notifications with RemoteView objects that are larger in bytes than
     this value (default 1MB)-->
@@ -7566,4 +7567,11 @@
 
     <!-- Maximum number of devices that allows for audio sharing. -->
     <integer name="config_audio_sharing_maximum_sinks">2</integer>
+
+    <!--For App Functions, this configuration lists package names grouped as "Device Settings".
+        Packages in this list share the same App Function access settings. In the UI, they are
+        presented as a single "Device Settings" item rather than individually. -->
+    <string-array name="config_appFunctionsDeviceSettingsPackages" translatable="false">
+    </string-array>
+
 </resources>

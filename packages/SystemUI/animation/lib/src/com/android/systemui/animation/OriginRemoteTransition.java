@@ -454,6 +454,7 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
     private static void applyWindowAnimationStates(
             TransitionInfo info,
             @Nullable WindowAnimationState[] states,
+            UIComponent.Transaction transactions,
             UIComponent closingApp,
             UIComponent openingApp) {
         if (states == null) {
@@ -477,20 +478,14 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             }
         }
 
-        // Intentionally use a new transaction instead of reusing the existing transaction since we
-        // want to apply window animation states first without committing any other pending changes
-        // in the existing transaction. The existing transaction is expected to be committed by the
-        // onStart() client callback together with client's custom transformation.
-        UIComponent.Transaction transaction = closingApp.newTransaction();
         if (!maxClosingBounds.isEmpty()) {
             logD("Applying closing window bounds: " + maxClosingBounds);
-            transaction.setBounds(closingApp, maxClosingBounds);
+            transactions.setBounds(closingApp, maxClosingBounds);
         }
         if (!maxOpeningBounds.isEmpty()) {
             logD("Applying opening window bounds: " + maxOpeningBounds);
-            transaction.setBounds(openingApp, maxOpeningBounds);
+            transactions.setBounds(openingApp, maxOpeningBounds);
         }
-        transaction.commit();
     }
 
     @Nullable
@@ -554,7 +549,12 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             UIComponent openingApp = wrapSurfaces(transitionInfo, /* isOpening= */ true);
 
             // Restore the pending animation states coming from predictive back transition.
-            applyWindowAnimationStates(transitionInfo, states, closingApp, openingApp);
+            applyWindowAnimationStates(
+                    transitionInfo, states, transactions, closingApp, openingApp);
+
+            // ensure that we apply any transactions (e.g. bounds/cropping/corners etc) that might
+            // be required prior to starting the actual animation.
+            transactions.commit();
 
             // Start.
             onStart(animationController, transactions, origin, closingApp, openingApp);

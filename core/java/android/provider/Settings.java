@@ -6586,6 +6586,23 @@ public final class Settings {
                 "cv_enabled";
 
         /**
+         * Setting to set enable/disable CV dynamic mode.
+         * Setting should be boolean (0 or 1)
+         *
+         * @hide
+         */
+        public static final String CV_DYNAMIC_ENABLED =
+                "cv_dynamic_enabled";
+
+        /**
+         * Setting to set CV preferred intensity
+         * Setting should be integer (0-10)
+         *
+         * @hide
+         */
+        public static final String CV_PREFERRED_INTENSITY = "cv_preferred_intensity";
+
+        /**
          * Integer property that specifes the color for screen flash notification as a
          * packed 32-bit color.
          *
@@ -8818,6 +8835,19 @@ public final class Settings {
                 "suggested_theme_feature_enabled";
 
         /**
+         * Setting to indicate whether the AppFunction agent allowlist should be enabled.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Enabled (Default)
+         * </ul>
+         *
+         * @hide
+         */
+        public static final String APP_FUNCTION_AGENT_ALLOWLIST_ENABLED =
+                "app_function_agent_allowlist_enabled";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide
@@ -9630,6 +9660,17 @@ public final class Settings {
          */
         public static final String REDUCE_BRIGHT_COLORS_PERSIST_ACROSS_REBOOTS =
                 "reduce_bright_colors_persist_across_reboots";
+
+        /**
+         * Integer setting that specifies the duration in ms required to invert the text cursor's
+         * pixels.
+         *
+         * @see ViewConfiguration#getTextCursorBlinkIntervalMillis()
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS =
+                "accessibility_text_cursor_blink_interval_ms";
 
         /**
          * Setting that holds EM_VALUE (proprietary)
@@ -13256,6 +13297,60 @@ public final class Settings {
          */
         public static final String DEVICE_STATE_ROTATION_LOCK =
                 "device_state_rotation_lock";
+
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_NONE = 0;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_HOME = 1;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_OVERVIEW = 2;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_NOTIFICATIONS = 3;
+        /** @hide */
+        public static final int ACTION_CORNER_ACTION_QUICK_SETTINGS = 4;
+
+        /**
+         * The different actions that can be used for action corners
+         * @hide
+         */
+        @IntDef(prefix = {"ACTION_CORNER_ACTION_"}, value = {
+                ACTION_CORNER_ACTION_NONE,
+                ACTION_CORNER_ACTION_HOME,
+                ACTION_CORNER_ACTION_OVERVIEW,
+                ACTION_CORNER_ACTION_NOTIFICATIONS,
+                ACTION_CORNER_ACTION_QUICK_SETTINGS,
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface ActionCornerActionType {
+        }
+
+        /**
+         * Action Corner type configured for top left corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_TOP_LEFT_ACTION =
+                "action_corner_top_left_action";
+
+        /**
+         * Action Corner type configured for top right corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_TOP_RIGHT_ACTION =
+                "action_corner_top_right_action";
+
+        /**
+         * Action Corner type configured for bottom left corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_BOTTOM_LEFT_ACTION =
+                "action_corner_bottom_left_action";
+
+        /**
+         * Action Corner type configured for bottom right corner of display.
+         * @hide
+         */
+        public static final String ACTION_CORNER_BOTTOM_RIGHT_ACTION =
+                "action_corner_bottom_right_action";
 
         /**
          * Control whether communal mode is allowed on this device.
@@ -19782,6 +19877,26 @@ public final class Settings {
          */
         @Readable
         public static final String BINDER_CALLS_STATS = "binder_calls_stats";
+
+        /**
+         * Native binder stats settings.
+         *
+         * These parameters are represented by a comma-delimited key-value list.
+         *
+         * The following strings are supported as keys:
+         * <pre>
+         *     enabled                      (boolean)
+         *     process_sharding             (int)
+         *     spam_sharding                (int)
+         *     call_sharding                (int)
+         *     system_process_sharding      (int)
+         *     system_spam_sharding         (int)
+         *     system_call_sharding         (int)
+         * </pre>
+         *
+         * @hide
+         */
+        public static final String NATIVE_BINDER_STATS = "native_binder_stats";
 
         /**
          * Looper stats settings.

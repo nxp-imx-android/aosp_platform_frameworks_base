@@ -2554,10 +2554,28 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Applicazioni"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Non è più possibile riconoscere le tue impronte. Riconfigura lo Sblocco con l\'Impronta."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Dispositivo USB collegato quando bloccato"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Il dispositivo USB è collegato quando Android è bloccato. Per usare il dispositivo, sblocca prima Android."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Il dispositivo USB è collegato quando Android è bloccato. Per usare il dispositivo, sblocca prima Android e poi reinserisci il dispositivo USB."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"La funzionalità di ricarica potrebbe essere ridotta o non disponibile quando il dispositivo è bloccato."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Attività USB sospetta"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"L\'indicatore di dati USB è stato disattivato."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Hai problemi con lo Sblocco con l\'Impronta?"</string>

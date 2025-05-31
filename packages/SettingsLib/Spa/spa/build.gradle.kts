@@ -30,17 +30,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    sourceSets {
-        sourceSets.getByName("main") {
-            kotlin.setSrcDirs(listOf("src"))
-            res.setSrcDirs(listOf("res"))
-            manifest.srcFile("AndroidManifest.xml")
-        }
-        sourceSets.getByName("androidTest") {
-            kotlin.setSrcDirs(listOf("../tests/src"))
-            res.setSrcDirs(listOf("../tests/res"))
-            manifest.srcFile("../tests/AndroidManifest.xml")
-        }
+    sourceSets.getByName("main") {
+        kotlin.setSrcDirs(listOf("src"))
+        res.setSrcDirs(listOf("res"))
+        manifest.srcFile("AndroidManifest.xml")
+    }
+    sourceSets.getByName("androidTest") {
+        kotlin.setSrcDirs(listOf("../tests/src"))
+        res.setSrcDirs(listOf("../tests/res"))
+        manifest.srcFile("../tests/AndroidManifest.xml")
     }
     buildTypes {
         getByName("debug") {
@@ -52,7 +50,7 @@ android {
 dependencies {
     api(project(":SettingsLib:Color"))
     api("androidx.appcompat:appcompat:1.7.0")
-    api("androidx.compose.material3:material3:1.4.0-alpha14")
+    api("androidx.compose.material3:material3:1.4.0-alpha15")
     api("androidx.compose.material:material-icons-extended:1.7.8")
     api("androidx.compose.runtime:runtime-livedata:$jetpackComposeVersion")
     api("androidx.compose.ui:ui-tooling-preview:$jetpackComposeVersion")

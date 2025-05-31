@@ -31,28 +31,20 @@
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"Laat &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; toe om &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; te bestuur?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"toestel"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Hierdie app sal toegang tot hierdie toestemmings op jou <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> hê"</string>
-    <!-- no translation found for title_app_streaming (237666000400427614) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming (8346968726357732862) -->
-    <skip />
-    <!-- no translation found for summary_app_streaming_legacy (8994180646987541606) -->
-    <skip />
-    <!-- no translation found for helper_summary_app_streaming (160149899100957545) -->
-    <skip />
+    <string name="title_app_streaming" msgid="237666000400427614">"Laat &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; toe om apps en stelselkenmerke tussen jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; te stroom?"</string>
+    <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> sal die volgende toestemmings kry:"</string>
+    <string name="summary_app_streaming_legacy" msgid="8994180646987541606">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> sal toegang hê tot enigiets wat sigbaar is of gespeel word op jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>, insluitend oudio, foto’s, betaalinligting, wagwoorde en boodskappe.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_1">%1$s</xliff:g> sal apps na <xliff:g id="DEVICE_NAME">%3$s</xliff:g> kan stroom totdat jy toegang tot hierdie toestemming verwyder."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> versoek toestemming namens <xliff:g id="DEVICE_NAME">%2$s</xliff:g> om apps en stelselkenmerke tussen jou toestelle te stroom"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Gee &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; toegang tot hierdie inligting op jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> versoek tans namens jou <xliff:g id="DEVICE_NAME">%2$s</xliff:g> toegang tot jou <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> se foto’s, media en kennisgewings"</string>
-    <!-- no translation found for title_nearby_device_streaming (5342768208699657581) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming (7940640272770197219) -->
-    <skip />
-    <!-- no translation found for summary_nearby_device_streaming_legacy (4306665203887990326) -->
-    <skip />
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Laat &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; toe om apps en stelselkenmerke tussen jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; te stroom?"</string>
+    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> sal die volgende toestemmings kry:"</string>
+    <string name="summary_nearby_device_streaming_legacy" msgid="4306665203887990326">"<xliff:g id="APP_NAME_0">%1$s</xliff:g> sal toegang hê tot enigiets wat sigbaar is of gespeel word op <xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>, insluitend oudio, foto’s, wagwoorde en boodskappe.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME_2">%1$s</xliff:g> sal apps na <xliff:g id="DEVICE_NAME_3">%3$s</xliff:g> kan stroom totdat jy toegang tot hierdie toestemming verwyder."</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> versoek namens <xliff:g id="DEVICE_NAME">%2$s</xliff:g> toestemming om apps vanaf jou <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> te stroom"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Laat &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; toe om oudio- en stelselkenmerke te stroom tussen jou <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> en &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <!-- no translation found for summary_virtual_device (1062189396947962635) -->
-    <skip />
+    <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> sal die volgende toestemmings kry:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"toestel"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Hierdie app sal inligting kan sinkroniseer, soos die naam van iemand wat bel, tussen jou foon en die gekose toestel"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Laat toe"</string>
@@ -92,8 +84,7 @@
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Stuur vir jou kennisgewings"</string>
     <string name="permission_create_virtual_device_summary" msgid="3570256456647725172">"Stroom mikrofoon, kamera, en ander sensordata vanaf &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; na jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> toe."</string>
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Neem op, saai uit of deel jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se skerm na &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe."</string>
-    <!-- no translation found for permission_add_trusted_display_summary (7399955172055281447) -->
-    <skip />
+    <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Stroom jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se apps na &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe, selfs wanneer jou <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesluit is."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Kry toegang tot ’n lys beskikbare toestelle en beheer watter een oudio of video van ander apps af stroom of uitsaai"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"foon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>

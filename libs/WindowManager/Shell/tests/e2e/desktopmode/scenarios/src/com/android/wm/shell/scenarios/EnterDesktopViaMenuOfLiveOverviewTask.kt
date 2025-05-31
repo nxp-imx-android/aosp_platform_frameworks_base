@@ -20,6 +20,7 @@ import android.app.Instrumentation
 import android.tools.NavBar
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
+import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -53,10 +54,7 @@ abstract class EnterDesktopViaMenuOfLiveOverviewTask : TestScenarioBase() {
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
         // Clear all tasks
-        val overview = tapl.goHome().switchToOverview()
-        if (overview.hasTasks()) {
-            overview.dismissAllTasks()
-        }
+        RemoveAllTasksButHomeRule.removeAllTasksButHome()
         mailApp.open()
     }
 

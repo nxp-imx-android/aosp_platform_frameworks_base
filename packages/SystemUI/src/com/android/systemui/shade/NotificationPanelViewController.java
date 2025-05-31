@@ -196,10 +196,10 @@ import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
-import com.android.systemui.util.Compile;
 import com.android.systemui.util.Utils;
 import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperFocalAreaViewModel;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -330,6 +330,7 @@ public final class NotificationPanelViewController implements
     private final QuickSettingsControllerImpl mQsController;
     private final TouchHandler mTouchHandler = new TouchHandler();
     private final BlurConfig mBlurConfig;
+    private final WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
 
     private long mDownTime;
     private long mStatusBarLongPressDowntime = -1L;
@@ -649,8 +650,10 @@ public final class NotificationPanelViewController implements
             MSDLPlayer msdlPlayer,
             BrightnessMirrorShowingRepository brightnessMirrorShowingRepository,
             BlurConfig blurConfig,
-            Lazy<ShadeDisplaysRepository> shadeDisplaysRepository) {
+            Lazy<ShadeDisplaysRepository> shadeDisplaysRepository,
+            WindowRootViewBlurInteractor windowRootViewBlurInteractor) {
         mBlurConfig = blurConfig;
+        mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
         SceneContainerFlag.assertInLegacyMode();
         keyguardStateController.addCallback(new KeyguardStateController.Callback() {
             @Override
@@ -1355,6 +1358,11 @@ public final class NotificationPanelViewController implements
         if (mQsController.getExpanded()) {
             mQsController.flingQs(0, FLING_COLLAPSE);
         } else {
+            if (!SceneContainerFlag.isEnabled() && Flags.bouncerUiRevamp()) {
+                // Mark the bit that indicates that shade is going to expand when shade is opened
+                // through AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS
+                mWindowRootViewBlurInteractor.setTrackingShadeMotion(true);
+            }
             expand(true /* animate */);
         }
     }
@@ -1954,6 +1962,9 @@ public final class NotificationPanelViewController implements
     }
 
     private void onExpandingFinished() {
+        if (Flags.bouncerUiRevamp()) {
+            mWindowRootViewBlurInteractor.setTrackingShadeMotion(false);
+        }
         if (!SceneContainerFlag.isEnabled()) {
             mNotificationStackScrollLayoutController.onExpansionStopped();
         }
@@ -2237,6 +2248,9 @@ public final class NotificationPanelViewController implements
     }
 
     private void onClosingFinished() {
+        if (Flags.bouncerUiRevamp()) {
+            mWindowRootViewBlurInteractor.setTrackingShadeMotion(false);
+        }
         if (mOpenCloseListener != null) {
             mOpenCloseListener.onClosingFinished();
         }
@@ -2875,6 +2889,9 @@ public final class NotificationPanelViewController implements
     /** Called when a MotionEvent is about to trigger Shade expansion. */
     private void startExpandMotion(float newX, float newY, boolean startTracking,
             float expandedHeight) {
+        if (Flags.bouncerUiRevamp()) {
+            mWindowRootViewBlurInteractor.setTrackingShadeMotion(true);
+        }
         if (!mHandlingPointerUp && !mStatusBarStateController.isDozing()) {
             mQsController.beginJankMonitoring(isFullyCollapsed());
         }
@@ -4100,8 +4117,7 @@ public final class NotificationPanelViewController implements
             }
 
             final boolean isTrackpadThreeFingerSwipe = isTrackpadThreeFingerSwipe(event);
-            if (com.android.systemui.Flags.disableShadeTrackpadTwoFingerSwipe()
-                    && !isTrackpadThreeFingerSwipe && isTwoFingerSwipeTrackpadEvent(event)
+            if (!isTrackpadThreeFingerSwipe && isTwoFingerSwipeTrackpadEvent(event)
                     && !isPanelExpanded()) {
                 if (isDown) {
                     mShadeLog.d("ignoring down event for two finger trackpad swipe");

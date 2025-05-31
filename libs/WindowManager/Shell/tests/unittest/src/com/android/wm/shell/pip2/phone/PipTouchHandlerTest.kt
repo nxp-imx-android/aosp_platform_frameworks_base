@@ -20,6 +20,10 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.InputDevice.SOURCE_MOUSE
+import android.view.InputDevice.SOURCE_TOUCHSCREEN
+import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_CANCEL
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
@@ -47,8 +51,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -85,6 +91,9 @@ class PipTouchHandlerTest : ShellTestCase() {
     private val mockDisplayLayout = mock<DisplayLayout>()
     private val mockTouchPosition = PointF()
     private val mockPipSurfaceTransactionHelper = mock<PipSurfaceTransactionHelper>()
+    private val mockMotionEvent = mock<MotionEvent>()
+    private val mockPipDismissTargetHandler = mock<PipDismissTargetHandler>()
+    private val mockPipResizeGestureHandler = mock<PipResizeGestureHandler>()
 
     private lateinit var pipTouchHandler: PipTouchHandler
     private lateinit var pipTouchGesture: PipTouchGesture
@@ -108,12 +117,17 @@ class PipTouchHandlerTest : ShellTestCase() {
         )
         pipTouchGesture = pipTouchHandler.touchGesture
         pipTouchHandler.setPipTouchState(pipTouchState)
+        pipTouchHandler.setPipDismissTargetHandler(mockPipDismissTargetHandler)
+        pipTouchHandler.pipResizeGestureHandler = mockPipResizeGestureHandler
 
         whenever(pipTouchState.downTouchPosition).thenReturn(mockTouchPosition)
         whenever(pipTouchState.velocity).thenReturn(mockTouchPosition)
         whenever(pipTouchState.lastTouchPosition).thenReturn(mockTouchPosition)
         whenever(pipTouchState.lastTouchDisplayId).thenReturn(ORIGIN_DISPLAY_ID)
         whenever(pipTouchState.lastTouchDelta).thenReturn(mockTouchPosition)
+        whenever(pipTouchState.isUserInteracting).thenReturn(true)
+        whenever(pipTouchState.allowInputEvents).thenReturn(true)
+        whenever(pipTouchState.latestMotionEvent).thenReturn(mockMotionEvent)
         whenever(pipTransitionState.pinnedTaskLeash).thenReturn(mockLeash)
         whenever(mockPipBoundsState.movementBounds).thenReturn(PIP_BOUNDS)
         whenever(mockPipBoundsState.motionBoundsState).thenReturn(mockMotionBoundsState)
@@ -133,11 +147,11 @@ class PipTouchHandlerTest : ShellTestCase() {
     @Test
     fun pipTouchGesture_crossDisplayDragFlagEnabled_onMove_showsMirrors() {
         whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
-        whenever(pipTouchState.isUserInteracting).thenReturn(true)
         whenever(pipTouchState.isDragging).thenReturn(true)
         // Initialize variables that are set on down
         pipTouchGesture.onDown(pipTouchState)
 
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
         pipTouchGesture.onMove(pipTouchState)
 
         ExtendedMockito.verify {
@@ -152,14 +166,14 @@ class PipTouchHandlerTest : ShellTestCase() {
             )
         }
         verify(mockPipDisplayTransferHandler).showDragMirrorOnConnectedDisplays(
-             eq(GLOBAL_BOUNDS), eq(ORIGIN_DISPLAY_ID))
+            eq(GLOBAL_BOUNDS), eq(ORIGIN_DISPLAY_ID)
+        )
         verify(mockPipMotionHelper).movePip(eq(PIP_BOUNDS), eq(true), eq(ORIGIN_DISPLAY_ID))
     }
 
     @Test
     fun pipTouchGesture_crossDisplayDragFlagEnabled_onUpOnADifferentDisplay_schedulesMovePip() {
         whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
-        whenever(pipTouchState.isUserInteracting).thenReturn(true)
         pipTouchGesture.onDown(pipTouchState)
 
         pipTouchHandler.mEnableStash = false
@@ -181,6 +195,103 @@ class PipTouchHandlerTest : ShellTestCase() {
         pipTouchGesture.onUp(pipTouchState)
 
         verify(mockPipDisplayTransferHandler).removeMirrors()
+    }
+
+    @Test
+    fun handleTouchEvent_crossDisplayFlagDisabled_shouldAllowDismissTargetHandler() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(false)
+        whenever(mockMotionEvent.source).thenReturn(SOURCE_MOUSE)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockPipDismissTargetHandler).maybeConsumeMotionEvent(any())
+    }
+
+    @Test
+    fun handleTouchEvent_crossDisplayFlagEnabled_touchScreenInput_shouldAllowDismissTargetHandler() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        whenever(mockMotionEvent.source).thenReturn(SOURCE_TOUCHSCREEN)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockPipDismissTargetHandler).maybeConsumeMotionEvent(any())
+    }
+
+    @Test
+    fun handleTouchEvent_crossDisplayFlagEnabled_mouseInput_shouldNotAllowDismissTargetHandler() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        whenever(mockMotionEvent.source).thenReturn(SOURCE_MOUSE)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockPipDismissTargetHandler, never()).maybeConsumeMotionEvent(any())
+    }
+
+    @Test
+    fun onMove_crossDisplayFlagDisabled_shouldShowDismissTarget() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(false)
+        whenever(pipTouchState.startedDragging()).thenReturn(true)
+        whenever(mockMotionEvent.source).thenReturn(SOURCE_MOUSE)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+        pipTouchGesture.onMove(pipTouchState)
+
+        verify(mockPipDismissTargetHandler).showDismissTargetMaybe()
+    }
+
+    @Test
+    fun onMove_crossDisplayFlagEnabled_touchScreenInput_shouldShowDismissTarget() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        whenever(pipTouchState.startedDragging()).thenReturn(true)
+        whenever(mockMotionEvent.source).thenReturn(SOURCE_TOUCHSCREEN)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+        pipTouchGesture.onMove(pipTouchState)
+
+        verify(mockPipDismissTargetHandler).showDismissTargetMaybe()
+    }
+
+    @Test
+    fun onMove_crossDisplayFlagEnabled_mouseInput_shouldShowDismissTarget() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        whenever(pipTouchState.startedDragging()).thenReturn(true)
+        whenever(mockMotionEvent.source).thenReturn(SOURCE_MOUSE)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+        pipTouchGesture.onMove(pipTouchState)
+
+        verify(mockPipDismissTargetHandler, never()).showDismissTargetMaybe()
+    }
+
+
+    @Test
+    fun handleTouchEvent_crossDisplayDragFlagEnabled_actionCancel_removesMirrors() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        whenever(pipTouchState.startedDragging()).thenReturn(true)
+        whenever(mockPipResizeGestureHandler.willStartResizeGesture(any())).thenReturn(false)
+        whenever(mockPipResizeGestureHandler.hasOngoingGesture()).thenReturn(false)
+        doNothing().`when`(pipTouchState).onTouchEvent(any())
+        doNothing().`when`(pipTouchState).reset()
+        whenever(mockMotionEvent.action).thenReturn(ACTION_CANCEL)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockPipDisplayTransferHandler).removeMirrors()
+    }
+
+    @Test
+    fun handleTouchEvent_crossDisplayDragFlagDisabled_actionCancel_doesNotRemoveMirrors() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(false)
+        whenever(pipTouchState.startedDragging()).thenReturn(true)
+        whenever(mockPipResizeGestureHandler.willStartResizeGesture(any())).thenReturn(false)
+        whenever(mockPipResizeGestureHandler.hasOngoingGesture()).thenReturn(false)
+        doNothing().`when`(pipTouchState).onTouchEvent(any())
+        doNothing().`when`(pipTouchState).reset()
+        whenever(mockMotionEvent.action).thenReturn(ACTION_CANCEL)
+
+        pipTouchHandler.handleTouchEvent(mockMotionEvent)
+
+        verify(mockPipDisplayTransferHandler, never()).removeMirrors()
     }
 
     private companion object {

@@ -836,6 +836,13 @@ flag {
 }
 
 flag {
+    name: "enable_close_lid_interaction"
+    namespace: "lse_desktop_experience"
+    description: "Enables new interaction that occurs when device lid is closed."
+    bug: "382689704"
+}
+
+flag {
     name: "show_desktop_experience_dev_option"
     namespace: "lse_desktop_experience"
     description: "Replace the freeform windowing dev options with a desktop experience one."
@@ -1262,6 +1269,16 @@ flag {
 }
 
 flag {
+    name: "enable_app_handle_position_reporting"
+    namespace: "lse_desktop_experience"
+    description: "Report app handle position to the SysUi."
+    bug: "412444130"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_app_launch_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enabling an umbrella flag for various bugfixes related to app launch transitions."
@@ -1344,6 +1361,26 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Block window drag to a non-desktop-mode display."
     bug: "383069176"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_request_fullscreen_refactor"
+    namespace: "lse_desktop_experience"
+    description: "Refactors Activity#requestFullscreenMode internal implementation."
+    bug: "296268915"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_first_listener"
+    namespace: "lse_desktop_experience"
+    description: "Enables DesktopFirstListener for Shell/SysUI."
+    bug: "415120289"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

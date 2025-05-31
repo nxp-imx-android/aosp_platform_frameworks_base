@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Notification
 import android.content.applicationContext
+import android.content.testableContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -49,6 +50,7 @@ fun Kosmos.setPromotedContent(entry: NotificationEntry) {
                 RowImageInflater.newInstance(previousIndex = null, reinflating = false)
                     .useForContentModel(),
             packageContext = applicationContext, // using the app context for simplicity
+            systemUiContext = testableContext, //  sysUiContext
         )
     entry.promotedNotificationContentModels =
         requireNotNull(extractedContent) { "extractContent returned null" }

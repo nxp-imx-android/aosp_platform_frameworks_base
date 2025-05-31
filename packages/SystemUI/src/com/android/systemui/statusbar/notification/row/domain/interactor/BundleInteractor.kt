@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.snapshotFlow
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.qualifiers.Background
@@ -30,11 +31,13 @@ import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
+import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
 /** Provides functionality for UI to interact with a Notification Bundle. */
@@ -46,6 +49,7 @@ constructor(
     private val appIconProvider: AppIconProvider,
     private val context: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    private val systemClock: SystemClock,
 ) {
     @get:StringRes
     val titleText: Int
@@ -58,17 +62,44 @@ constructor(
     val bundleIcon: Int
         get() = repository.bundleIcon
 
-    val previewIcons: Flow<List<Drawable>> =
-        repository.appDataList.mapLatestConflated { appList ->
-            withContext(backgroundDispatcher) {
-                appList
-                    .asSequence()
-                    .distinct()
-                    .mapNotNull(::fetchAppIcon)
-                    .take(3)
-                    .toList()
+    /** Filters the list of AppData based on time of last collapse by user. */
+    private fun filterByCollapseTime(
+        rawAppDataList: List<AppData>,
+        collapseTime: Long,
+    ): List<AppData> {
+        return if (collapseTime == 0L) {
+            rawAppDataList
+        } else {
+            rawAppDataList.filter { appData ->
+                val addedTime = appData.timeAddedToBundle
+                val shouldKeep = addedTime > collapseTime
+                shouldKeep
             }
         }
+    }
+
+    /** Converts a list of AppData to a list of Drawables by fetching icons */
+    private suspend fun convertAppDataToDrawables(
+        filteredAppDataList: List<AppData>
+    ): List<Drawable> {
+        return withContext(backgroundDispatcher) {
+            filteredAppDataList.asSequence().distinct().mapNotNull(::fetchAppIcon).take(3).toList()
+        }
+    }
+
+    /**
+     * A cold flow of app icon [Drawable]s. It filters AppData based on the bundle's last expansion
+     * time and then fetches icons. Takes up to 3 distinct app icons for preview.
+     */
+    val previewIcons: Flow<List<Drawable>> =
+        combine(repository.appDataList, snapshotFlow { repository.lastCollapseTime }) {
+                appList: List<AppData>,
+                collapseTime: Long ->
+                filterByCollapseTime(appList, collapseTime)
+            }
+            .mapLatestConflated { filteredList: List<AppData> ->
+                convertAppDataToDrawables(filteredList)
+            }
 
     var state: MutableSceneTransitionLayoutState? by repository::state
 
@@ -81,7 +112,12 @@ constructor(
         )
     }
 
-    fun setTargetScene(scene: SceneKey) = state?.setTargetScene(scene, composeScope!!)
+    fun setTargetScene(scene: SceneKey) {
+        state?.setTargetScene(scene, composeScope!!)
+        if (state?.currentScene == BundleHeader.Scenes.Collapsed) {
+            repository.lastCollapseTime = systemClock.uptimeMillis()
+        }
+    }
 
     private fun fetchAppIcon(appData: AppData): Drawable? {
         return try {

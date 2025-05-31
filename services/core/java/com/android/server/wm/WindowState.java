@@ -91,6 +91,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON;
 import static android.view.WindowManager.LayoutParams.LAST_SUB_WINDOW;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.MATCH_PARENT;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INPUT_METHOD_WINDOW;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NOT_MAGNIFIABLE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPT_OUT_EDGE_TO_EDGE;
@@ -3650,8 +3651,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final boolean isDragResizeChanged = isDragResizeChanged();
         final boolean forceRelayout = syncWithBuffers || isDragResizeChanged;
         final DisplayContent displayContent = getDisplayContent();
-        final boolean alwaysConsumeSystemBars =
-                displayContent.getDisplayPolicy().areSystemBarsForcedConsumedLw();
         final int displayId = displayContent.getDisplayId();
 
         if (isDragResizeChanged) {
@@ -3663,8 +3662,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         getProcess().scheduleClientTransactionItem(
                 new WindowStateResizeItem(mClient, mLastReportedFrames, reportDraw,
                         mLastReportedConfiguration, mLastReportedInsetsState, forceRelayout,
-                        alwaysConsumeSystemBars, displayId,
-                        syncWithBuffers ? mSyncSeqId : -1, isDragResizing,
+                        displayId, syncWithBuffers ? mSyncSeqId : -1, isDragResizing,
                         mLastReportedActivityWindowInfo));
         onResizePostDispatched(drawPending, prevRotation, displayId);
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -3740,12 +3738,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     @Override
-    public void showInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
+    public void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
         try {
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_SHOW_INSETS);
-            mClient.showInsets(types, fromIme, statsToken);
+            mClient.showInsets(types, statsToken);
         } catch (RemoteException e) {
             Slog.w(TAG, "Failed to deliver showInsets", e);
             ImeTracker.forLogging().onFailed(statsToken,
@@ -3754,12 +3751,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     @Override
-    public void hideInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
+    public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
         try {
             ImeTracker.forLogging().onProgress(statsToken,
                     ImeTracker.PHASE_WM_WINDOW_INSETS_CONTROL_TARGET_HIDE_INSETS);
-            mClient.hideInsets(types, fromIme, statsToken);
+            mClient.hideInsets(types, statsToken);
         } catch (RemoteException e) {
             Slog.w(TAG, "Failed to deliver hideInsets", e);
             ImeTracker.forLogging().onFailed(statsToken,
@@ -4949,7 +4945,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mAttrs.type == TYPE_NAVIGATION_BAR_PANEL) {
             return false;
         }
-        if (mAttrs.type == TYPE_INPUT_METHOD
+        if ((mAttrs.privateFlags & PRIVATE_FLAG_INPUT_METHOD_WINDOW) != 0
+                || mAttrs.type == TYPE_INPUT_METHOD
                 || mAttrs.type == TYPE_INPUT_METHOD_DIALOG) {
             return mWmService.isMagnifyImeEnabled();
         }
@@ -5283,7 +5280,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     @Override
     public InsetsControlTarget getImeControlTarget() {
-        return getDisplayContent().getImeHostOrFallback(this);
+        return getDisplayContent().getImeHost(this);
     }
 
     @Override

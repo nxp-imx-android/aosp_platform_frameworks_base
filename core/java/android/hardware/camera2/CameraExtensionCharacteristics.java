@@ -291,7 +291,8 @@ public final class CameraExtensionCharacteristics {
         }
 
         private void connectToProxyLocked(Context ctx, int extension, boolean useFallback) {
-            if (mConnectionManager.getConnection(extension) == null) {
+            if ((mConnectionManager.getConnection(extension) == null) ||
+                    (mConnectionManager.getProxy(extension) == null)) {
                 Intent intent = new Intent();
                 intent.setClassName(PROXY_PACKAGE_NAME, PROXY_SERVICE_NAME);
                 String vendorProxyPackage = SystemProperties.get(
@@ -829,10 +830,11 @@ public final class CameraExtensionCharacteristics {
                 final IBinder token = new Binder(TAG + "#getSupportedExtensions:" + mCameraId);
                 boolean success = registerClient(mContext, token, extensionType, mCameraId,
                         mCharacteristicsMapNative);
-                if (success && isExtensionSupported(mCameraId, extensionType,
-                        mCharacteristicsMapNative)) {
-                    ret.add(extensionType);
+                if (success) {
                     tokens.put(extensionType, token);
+                    if (isExtensionSupported(mCameraId, extensionType, mCharacteristicsMapNative)) {
+                        ret.add(extensionType);
+                    }
                 }
             }
         } finally {

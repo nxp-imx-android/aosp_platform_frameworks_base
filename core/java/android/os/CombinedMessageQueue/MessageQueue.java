@@ -42,6 +42,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -65,7 +66,6 @@ public final class MessageQueue {
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
-    private static final boolean TRACE = false;
 
     // True if the message queue can be quit.
     @UnsupportedAppUsage
@@ -114,14 +114,15 @@ public final class MessageQueue {
     /**
      * Select between two implementations of message queue. The legacy implementation is used
      * by default as it provides maximum compatibility with applications and tests that
-     * reach into MessageQueue via the mMessages field. The concurrent implemmentation is used for
+     * reach into MessageQueue via the mMessages field. The concurrent implementation is used for
      * system processes and provides a higher level of concurrency and higher enqueue throughput
      * than the legacy implementation.
      */
-    private final boolean mUseConcurrent;
+    private static boolean sUseConcurrentInitialized = false;
+    private static boolean sUseConcurrent;
 
     /**
-     * Caches process-level checks that determine `mUseConcurrent`.
+     * Caches process-level checks that determine `sUseConcurrent`.
      * This is to avoid redoing checks that shouldn't change during the process's lifetime.
      */
     private static Boolean sIsProcessAllowedToUseConcurrent = null;
@@ -142,8 +143,7 @@ public final class MessageQueue {
     private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
 
     MessageQueue(boolean quitAllowed) {
-        initIsProcessAllowedToUseConcurrent();
-        mUseConcurrent = sIsProcessAllowedToUseConcurrent;
+        getUseConcurrent();
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
         mLooperThread = Thread.currentThread();
@@ -151,57 +151,64 @@ public final class MessageQueue {
         mTid = Process.myTid();
     }
 
-    private static void initIsProcessAllowedToUseConcurrent() {
-        if (sIsProcessAllowedToUseConcurrent != null) {
-            return;
+    static boolean getUseConcurrent() {
+        if (!sUseConcurrentInitialized) {
+            // We may race and compute the underlying value more than once.
+            // This is fine because computeUseConcurrent is idempotent.
+            final boolean useConcurrent = computeUseConcurrent();
+            sUseConcurrent = useConcurrent;
+            sUseConcurrentInitialized = true;
+            return useConcurrent;
         }
+        return sUseConcurrent;
+    }
 
+    private static boolean computeUseConcurrent() {
         if (Flags.useConcurrentMessageQueueInApps()) {
             // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
             // This is a hack to allow Robolectric tests to use the legacy implementation.
             try {
                 Class.forName("org.robolectric.Robolectric");
                 // This is a Robolectric test. Concurrent MessageQueue is not supported yet.
-                sIsProcessAllowedToUseConcurrent = false;
-                return;
+                return false;
             } catch (ClassNotFoundException e) {
                 // This is not a Robolectric test.
-                sIsProcessAllowedToUseConcurrent = true;
-                return;
+                return true;
             }
         }
 
         final String processName = Process.myProcessName();
         if (processName == null) {
             // Assume that this is a host-side test and avoid concurrent mode for now.
-            sIsProcessAllowedToUseConcurrent = false;
-            return;
+            return false;
         }
 
         // Concurrent mode modifies behavior that is observable via reflection and is commonly
         // used by tests.
         // For now, we limit it to system processes to avoid breaking apps and their tests.
-        sIsProcessAllowedToUseConcurrent = UserHandle.isCore(Process.myUid());
-
-        if (sIsProcessAllowedToUseConcurrent) {
+        if (UserHandle.isCore(Process.myUid())) {
             // Some platform tests run in core UIDs.
             // Use this awful heuristic to detect them.
             if (processName.contains("test") || processName.contains("Test")) {
-                sIsProcessAllowedToUseConcurrent = false;
+                return false;
+            } else {
+                return true;
             }
-        } else {
-            // Also explicitly allow SystemUI processes.
-            // SystemUI doesn't run in a core UID, but we want to give it the performance boost,
-            // and we know that it's safe to use the concurrent implementation in SystemUI.
-            sIsProcessAllowedToUseConcurrent =
-                    processName.equals("com.android.systemui")
-                            || processName.startsWith("com.android.systemui:");
-            // On Android distributions where SystemUI has a different process name,
-            // the above condition may need to be adjusted accordingly.
         }
+
+        // Also explicitly allow SystemUI processes.
+        // SystemUI doesn't run in a core UID, but we want to give it the performance boost,
+        // and we know that it's safe to use the concurrent implementation in SystemUI.
+        if (processName.equals("com.android.systemui")
+                || processName.startsWith("com.android.systemui:")) {
+            return true;
+        }
+        // On Android distributions where SystemUI has a different process name,
+        // the above condition may need to be adjusted accordingly.
 
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
+        return false;
     }
 
     @RavenwoodReplace
@@ -263,7 +270,6 @@ public final class MessageQueue {
         }
     }
 
-    /** @hide */
     private void traceMessageCount() {
         PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
                 .usingThreadCounterTrack(mTid, mThreadName)
@@ -279,30 +285,60 @@ public final class MessageQueue {
         }
     }
 
-    static final class MatchDeliverableMessages extends MessageCompare {
+    static final class EnqueueOrder implements Comparator<Message> {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
-                long when) {
-            return n.mMessage.when <= when;
+        public int compare(Message m1, Message m2) {
+            return compareMessages(m1, m2);
         }
     }
-    private final MatchDeliverableMessages mMatchDeliverableMessages =
+
+    private static final EnqueueOrder sEnqueueOrder = new EnqueueOrder();
+
+    static int compareMessages(@NonNull Message m1, @NonNull Message m2) {
+        // Primary queue order is by when.
+        // Messages with an earlier when should come first in the queue.
+        final long whenDiff = m1.when - m2.when;
+        if (whenDiff > 0) return 1;
+        if (whenDiff < 0) return -1;
+
+        // Secondary queue order is by insert sequence.
+        // If two messages were inserted with the same `when`, the one inserted
+        // first should come first in the queue.
+        final long insertSeqDiff = m1.insertSeq - m2.insertSeq;
+        if (insertSeqDiff > 0) return 1;
+        if (insertSeqDiff < 0) return -1;
+
+        return 0;
+    }
+
+    private static boolean isBarrier(Message msg) {
+        return msg != null && msg.target == null;
+    }
+
+    static final class MatchDeliverableMessages extends MessageCompare {
+        @Override
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
+                long when) {
+            return m.when <= when;
+        }
+    }
+    private static final MatchDeliverableMessages sMatchDeliverableMessages =
             new MatchDeliverableMessages();
 
     private boolean isIdleConcurrent() {
         final long now = SystemClock.uptimeMillis();
 
-        if (stackHasMessages(null, 0, null, null, now, mMatchDeliverableMessages, false)) {
+        if (stackHasMessages(null, 0, null, null, now, sMatchDeliverableMessages, false)) {
             return false;
         }
 
-        final MessageNode msgNode = first(mPriorityQueue);
-        if (msgNode != null && msgNode.getWhen() <= now) {
+        final Message msg = first(mPriorityQueue);
+        if (msg != null && msg.when <= now) {
             return false;
         }
 
-        final MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
-        if (asyncMsgNode != null && asyncMsgNode.getWhen() <= now) {
+        final Message asyncMsg = first(mAsyncPriorityQueue);
+        if (asyncMsg != null && asyncMsg.when <= now) {
             return false;
         }
 
@@ -324,7 +360,7 @@ public final class MessageQueue {
      * @return True if the looper is idle.
      */
     public boolean isIdle() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return isIdleConcurrent();
         } else {
             return isIdleLegacy();
@@ -357,7 +393,7 @@ public final class MessageQueue {
         if (handler == null) {
             throw new NullPointerException("Can't add a null IdleHandler");
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             addIdleHandlerConcurrent(handler);
         } else {
             addIdleHandlerLegacy(handler);
@@ -384,7 +420,7 @@ public final class MessageQueue {
      * @param handler The IdleHandler to be removed.
      */
     public void removeIdleHandler(@NonNull IdleHandler handler) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeIdleHandlerConcurrent(handler);
         } else {
             removeIdleHandlerLegacy(handler);
@@ -421,7 +457,7 @@ public final class MessageQueue {
      * @hide
      */
     public boolean isPolling() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return isPollingConcurrent();
         } else {
             return isPollingLegacy();
@@ -483,7 +519,7 @@ public final class MessageQueue {
             throw new IllegalArgumentException("listener must not be null");
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             addOnFileDescriptorEventListenerConcurrent(fd, events, listener);
         } else {
             addOnFileDescriptorEventListenerLegacy(fd, events, listener);
@@ -519,7 +555,7 @@ public final class MessageQueue {
         if (fd == null) {
             throw new IllegalArgumentException("fd must not be null");
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeOnFileDescriptorEventListenerConcurrent(fd);
         } else {
             removeOnFileDescriptorEventListenerLegacy(fd);
@@ -573,7 +609,7 @@ public final class MessageQueue {
         final int oldWatchedEvents;
         final OnFileDescriptorEventListener listener;
         final int seq;
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             synchronized (mFileDescriptorRecordsLock) {
                 record = mFileDescriptorRecords.get(fd);
                 if (record == null) {
@@ -616,7 +652,7 @@ public final class MessageQueue {
         // Update the file descriptor record if the listener changed the set of
         // events to watch and the listener itself hasn't been updated since.
         if (newWatchedEvents != oldWatchedEvents) {
-            if (mUseConcurrent) {
+            if (sUseConcurrent) {
                 synchronized (mFileDescriptorRecordsLock) {
                     int index = mFileDescriptorRecords.indexOfKey(fd);
                     if (index >= 0 && mFileDescriptorRecords.valueAt(index) == record
@@ -656,8 +692,7 @@ public final class MessageQueue {
 
         while (true) {
             if (DEBUG) {
-                Log.d(TAG_C, "nextMessage loop #" + i);
-                i++;
+                Log.d(TAG_C, "nextMessage loop #" + i++);
             }
 
             mDrainingLock.lock();
@@ -720,57 +755,63 @@ public final class MessageQueue {
              */
 
             /* Get the first node from each queue */
-            MessageNode msgNode = first(mPriorityQueue);
-            MessageNode asyncMsgNode = first(mAsyncPriorityQueue);
+            Message msg = first(mPriorityQueue);
+            Message asyncMsg = first(mAsyncPriorityQueue);
+            final long now = SystemClock.uptimeMillis();
 
             if (DEBUG) {
-                if (msgNode != null) {
-                    Message msg = msgNode.mMessage;
-                    Log.d(TAG_C, "Next found node what: " + msg.what + " when: " + msg.when
-                            + " seq: " + msgNode.mInsertSeq + "barrier: "
-                            + msgNode.isBarrier() + " now: " + SystemClock.uptimeMillis());
+                if (msg != null) {
+                    Log.d(TAG_C, "Next found node"
+                            + " what: " + msg.what
+                            + " when: " + msg.when
+                            + " seq: " + msg.insertSeq
+                            + " barrier: " + isBarrier(msg)
+                            + " now: " + now);
                 }
-                if (asyncMsgNode != null) {
-                    Message msg = asyncMsgNode.mMessage;
-                    Log.d(TAG_C, "Next found async node what: " + msg.what + " when: " + msg.when
-                            + " seq: " + asyncMsgNode.mInsertSeq + "barrier: "
-                            + asyncMsgNode.isBarrier() + " now: "
-                            + SystemClock.uptimeMillis());
+                if (asyncMsg != null) {
+                    Log.d(TAG_C, "Next found async node"
+                            + " what: " + asyncMsg.what
+                            + " when: " + asyncMsg.when
+                            + " seq: " + asyncMsg.insertSeq
+                            + " barrier: " + isBarrier(asyncMsg)
+                            + " now: " + now);
                 }
             }
 
             /*
              * the node which we will return, null if none are ready
              */
-            MessageNode found = null;
+            Message found = null;
             /*
              * The node from which we will determine our next wakeup time.
              * Null indicates there is no next message ready. If we found a node,
              * we can leave this null as Looper will call us again after delivering
              * the message.
              */
-            MessageNode next = null;
+            Message next = null;
 
-            long now = SystemClock.uptimeMillis();
             /*
              * If we have a barrier we should return the async node (if it exists and is ready)
              */
-            if (msgNode != null && msgNode.isBarrier()) {
-                if (asyncMsgNode != null && (returnEarliest || now >= asyncMsgNode.getWhen())) {
-                    found = asyncMsgNode;
+            if (isBarrier(msg)) {
+                if (asyncMsg != null && (returnEarliest || now >= asyncMsg.when)) {
+                    found = asyncMsg;
                 } else {
-                    next = asyncMsgNode;
+                    next = asyncMsg;
                 }
             } else { /* No barrier. */
-                MessageNode earliest;
-                /*
-                 * If we have two messages, pick the earliest option from either queue.
-                 * Otherwise grab whichever node is non-null. If both are null we'll fall through.
-                 */
-                earliest = pickEarliestNode(msgNode, asyncMsgNode);
+                // Pick the earliest of the next sync and async messages, if any.
+                Message earliest = msg;
+                if (msg == null) {
+                    earliest = asyncMsg;
+                } else if (asyncMsg != null) {
+                    if (compareMessages(msg, asyncMsg) > 0) {
+                        earliest = asyncMsg;
+                    }
+                }
 
                 if (earliest != null) {
-                    if (returnEarliest || now >= earliest.getWhen()) {
+                    if (returnEarliest || now >= earliest.when) {
                         found = earliest;
                     } else {
                         next = earliest;
@@ -780,20 +821,24 @@ public final class MessageQueue {
 
             if (DEBUG) {
                 if (found != null) {
-                    Message msg = found.mMessage;
-                    Log.d(TAG_C, " Will deliver node what: " + msg.what + " when: " + msg.when
-                            + " seq: " + found.mInsertSeq + " barrier: " + found.isBarrier()
-                            + " async: " + found.isAsync() + " now: "
-                            + SystemClock.uptimeMillis());
+                    Log.d(TAG_C, "Will deliver node"
+                            + " what: " + found.what
+                            + " when: " + found.when
+                            + " seq: " + found.insertSeq
+                            + " barrier: " + isBarrier(found)
+                            + " async: " + found.isAsynchronous()
+                            + " now: " + now);
                 } else {
                     Log.d(TAG_C, "No node to deliver");
                 }
                 if (next != null) {
-                    Message msg = next.mMessage;
-                    Log.d(TAG_C, "Next node what: " + msg.what + " when: " + msg.when + " seq: "
-                            + next.mInsertSeq + " barrier: " + next.isBarrier() + " async: "
-                            + next.isAsync()
-                            + " now: " + SystemClock.uptimeMillis());
+                    Log.d(TAG_C, "Next node"
+                            + " what: " + next.what
+                            + " when: " + next.when
+                            + " seq: " + next.insertSeq
+                            + " barrier: " + isBarrier(next)
+                            + " async: " + next.isAsynchronous()
+                            + " now: " + now);
                 } else {
                     Log.d(TAG_C, "No next node");
                 }
@@ -819,7 +864,7 @@ public final class MessageQueue {
                     }
                 } else {
                     /* Message not ready, or we found one to deliver already, set a timeout */
-                    long nextMessageWhen = next.getWhen();
+                    long nextMessageWhen = next.when;
                     if (nextMessageWhen > now) {
                         mNextPollTimeoutMillis = (int) Math.min(nextMessageWhen - now,
                                 Integer.MAX_VALUE);
@@ -830,9 +875,10 @@ public final class MessageQueue {
                     mStackStateTimedPark.mWhenToWake = now + mNextPollTimeoutMillis;
                     nextOp = mStackStateTimedPark;
                     if (DEBUG) {
-                        Log.d(TAG_C, "nextMessage next state is StackStateTimedParked timeout ms "
-                                + mNextPollTimeoutMillis + " mWhenToWake: "
-                                + mStackStateTimedPark.mWhenToWake + " now " + now);
+                        Log.d(TAG_C, "nextMessage next state is StackStateTimedParked"
+                                + " timeout ms " + mNextPollTimeoutMillis
+                                + " mWhenToWake: " + mStackStateTimedPark.mWhenToWake
+                                + " now: " + now);
                     }
                 }
             }
@@ -852,10 +898,7 @@ public final class MessageQueue {
                         continue;
                     }
 
-                    if (TRACE) {
-                        Trace.setCounter("MQ.Delivered", mMessagesDelivered.incrementAndGet());
-                    }
-                    return found.mMessage;
+                    return found;
                 }
                 return null;
             }
@@ -995,9 +1038,6 @@ public final class MessageQueue {
                             mAsyncMessageCount--;
                         }
                         decAndTraceMessageCount();
-                        if (TRACE) {
-                            Trace.setCounter("MQ.Delivered", mMessagesDelivered.incrementAndGet());
-                        }
                         return msg;
                     }
                 } else {
@@ -1065,7 +1105,7 @@ public final class MessageQueue {
                     "To manipulate the queue in Instrumentation tests, use {@link"
                         + " android.os.TestLooperManager}")
     Message next() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return nextConcurrent();
         } else {
             return nextLegacy();
@@ -1077,7 +1117,7 @@ public final class MessageQueue {
             throw new IllegalStateException("Main thread not allowed to quit.");
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             QuittingNode quittingNode = new QuittingNode(safe);
             while (true) {
                 StackNode old = (StackNode) sState.getVolatile(this);
@@ -1156,7 +1196,7 @@ public final class MessageQueue {
     @UnsupportedAppUsage
     @TestApi
     public int postSyncBarrier() {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return postSyncBarrierConcurrent();
         } else {
             return postSyncBarrierLegacy();
@@ -1166,7 +1206,7 @@ public final class MessageQueue {
     private int postSyncBarrier(long when) {
         // Enqueue a new sync barrier token.
         // We don't need to wake the queue because the purpose of a barrier is to stall it.
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             final int token = mNextBarrierTokenAtomic.getAndIncrement();
 
             // b/376573804: apps and tests may expect to be able to use reflection
@@ -1236,9 +1276,8 @@ public final class MessageQueue {
         }
 
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == null && m.arg1 == mBarrierToken) {
                 return true;
             }
@@ -1251,11 +1290,10 @@ public final class MessageQueue {
         final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
 
         // Retain the first element to see if we are currently stuck on a barrier.
-        final MessageNode first = first(mPriorityQueue);
+        final Message m = first(mPriorityQueue);
 
         removed = findOrRemoveMessages(null, 0, null, null, 0, matchBarrierToken, true);
-        if (removed && first != null) {
-            Message m = first.mMessage;
+        if (removed && m != null) {
             if (m.target == null && m.arg1 == token) {
                 /* Wake up next() in case it was sleeping on this barrier. */
                 concurrentWake();
@@ -1318,7 +1356,7 @@ public final class MessageQueue {
     public void removeSyncBarrier(int token) {
         // Remove a sync barrier token from the queue.
         // If the queue is no longer stalled by a barrier then wake it.
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeSyncBarrierConcurrent(token);
         } else {
             removeSyncBarrierLegacy(token);
@@ -1415,7 +1453,7 @@ public final class MessageQueue {
             throw new IllegalArgumentException("Message must have a target.");
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return enqueueMessageConcurrent(msg, when);
         } else {
             return enqueueMessageLegacy(msg, when);
@@ -1460,9 +1498,6 @@ public final class MessageQueue {
                     mAsyncMessageCount--;
                 }
                 decAndTraceMessageCount();
-                if (TRACE) {
-                    Trace.setCounter("MQ.Delivered", mMessagesDelivered.incrementAndGet());
-                }
                 return msg;
             }
         }
@@ -1479,7 +1514,7 @@ public final class MessageQueue {
     Long peekWhenForTest() {
         throwIfNotTest();
         Message ret;
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             ret = nextMessage(true, true);
         } else {
             ret = legacyPeekOrPoll(true);
@@ -1497,7 +1532,7 @@ public final class MessageQueue {
     @Nullable
     Message pollForTest() {
         throwIfNotTest();
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return nextMessage(false, true);
         } else {
             return legacyPeekOrPoll(false);
@@ -1513,13 +1548,10 @@ public final class MessageQueue {
      */
     boolean isBlockedOnSyncBarrier() {
         throwIfNotTest();
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             // Call nextMessage to get the stack drained into our priority queues
             nextMessage(true, false);
-
-            MessageNode queueNode = first(mPriorityQueue);
-
-            return (queueNode != null && queueNode.isBarrier());
+            return (isBarrier(first(mPriorityQueue)));
         } else {
             Message msg = mMessages;
             return msg != null && msg.target == null;
@@ -1528,20 +1560,19 @@ public final class MessageQueue {
 
     static final class MatchHandlerWhatAndObject extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == h && m.what == what && (object == null || m.obj == object)) {
                 return true;
             }
             return false;
         }
     }
-    private final MatchHandlerWhatAndObject mMatchHandlerWhatAndObject =
+    private static final MatchHandlerWhatAndObject sMatchHandlerWhatAndObject =
             new MatchHandlerWhatAndObject();
 
     private boolean hasMessagesConcurrent(Handler h, int what, Object object) {
-        return findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObject,
+        return findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObject,
                 false);
     }
 
@@ -1562,7 +1593,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasMessagesConcurrent(h, what, object);
         } else {
             return hasMessagesLegacy(h, what, object);
@@ -1571,20 +1602,19 @@ public final class MessageQueue {
 
     static final class MatchHandlerWhatAndObjectEquals extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == h && m.what == what && (object == null || object.equals(m.obj))) {
                 return true;
             }
             return false;
         }
     }
-    private final MatchHandlerWhatAndObjectEquals mMatchHandlerWhatAndObjectEquals =
+    private static final MatchHandlerWhatAndObjectEquals sMatchHandlerWhatAndObjectEquals =
             new MatchHandlerWhatAndObjectEquals();
 
     private boolean hasEqualMessagesConcurrent(Handler h, int what, Object object) {
-        return findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObjectEquals,
+        return findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObjectEquals,
                 false);
     }
 
@@ -1605,7 +1635,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasEqualMessagesConcurrent(h, what, object);
         } else {
             return hasEqualMessagesLegacy(h, what, object);
@@ -1614,20 +1644,19 @@ public final class MessageQueue {
 
     static final class MatchHandlerRunnableAndObject extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == h && m.callback == r && (object == null || m.obj == object)) {
                 return true;
             }
             return false;
         }
     }
-    private final MatchHandlerRunnableAndObject mMatchHandlerRunnableAndObject =
+    private static final MatchHandlerRunnableAndObject sMatchHandlerRunnableAndObject =
             new MatchHandlerRunnableAndObject();
 
     private boolean hasMessagesConcurrent(Handler h, Runnable r, Object object) {
-        return findOrRemoveMessages(h, -1, object, r, 0, mMatchHandlerRunnableAndObject,
+        return findOrRemoveMessages(h, -1, object, r, 0, sMatchHandlerRunnableAndObject,
                 false);
     }
 
@@ -1649,7 +1678,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasMessagesConcurrent(h, r, object);
         } else {
             return hasMessagesLegacy(h, r, object);
@@ -1658,15 +1687,15 @@ public final class MessageQueue {
 
     static final class MatchHandler extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            return n.mMessage.target == h;
+            return m.target == h;
         }
     }
-    private final MatchHandler mMatchHandler = new MatchHandler();
+    private static final MatchHandler sMatchHandler = new MatchHandler();
 
     private boolean hasMessagesConcurrent(Handler h) {
-        return findOrRemoveMessages(h, -1, null, null, 0, mMatchHandler, false);
+        return findOrRemoveMessages(h, -1, null, null, 0, sMatchHandler, false);
     }
 
     private boolean hasMessagesLegacy(Handler h) {
@@ -1686,7 +1715,7 @@ public final class MessageQueue {
         if (h == null) {
             return false;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             return hasMessagesConcurrent(h);
         } else {
             return hasMessagesLegacy(h);
@@ -1694,7 +1723,7 @@ public final class MessageQueue {
     }
 
     private void removeMessagesConcurrent(Handler h, int what, Object object) {
-        findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObject, true);
+        findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObject, true);
     }
 
     private void removeMessagesLegacy(Handler h, int what, Object object) {
@@ -1746,7 +1775,7 @@ public final class MessageQueue {
         if (h == null) {
             return;
         }
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeMessagesConcurrent(h, what, object);
         } else {
             removeMessagesLegacy(h, what, object);
@@ -1754,7 +1783,7 @@ public final class MessageQueue {
     }
 
     private void removeEqualMessagesConcurrent(Handler h, int what, Object object) {
-            findOrRemoveMessages(h, what, object, null, 0, mMatchHandlerWhatAndObjectEquals, true);
+            findOrRemoveMessages(h, what, object, null, 0, sMatchHandlerWhatAndObjectEquals, true);
     }
 
     private void removeEqualMessagesLegacy(Handler h, int what, Object object) {
@@ -1770,6 +1799,7 @@ public final class MessageQueue {
                     mAsyncMessageCount--;
                 }
                 p.recycleUnchecked();
+                decAndTraceMessageCount();
                 p = n;
             }
 
@@ -1806,7 +1836,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeEqualMessagesConcurrent(h, what, object);
         } else {
             removeEqualMessagesLegacy(h, what, object);
@@ -1814,7 +1844,7 @@ public final class MessageQueue {
     }
 
     private void removeMessagesConcurrent(Handler h, Runnable r, Object object) {
-        findOrRemoveMessages(h, -1, object, r, 0, mMatchHandlerRunnableAndObject, true);
+        findOrRemoveMessages(h, -1, object, r, 0, sMatchHandlerRunnableAndObject, true);
     }
 
     private void removeMessagesLegacy(Handler h, Runnable r, Object object) {
@@ -1867,7 +1897,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeMessagesConcurrent(h, r, object);
         } else {
             removeMessagesLegacy(h, r, object);
@@ -1876,20 +1906,19 @@ public final class MessageQueue {
 
     static final class MatchHandlerRunnableAndObjectEquals extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == h && m.callback == r && (object == null || object.equals(m.obj))) {
                 return true;
             }
             return false;
         }
     }
-    private final MatchHandlerRunnableAndObjectEquals mMatchHandlerRunnableAndObjectEquals =
+    private static final MatchHandlerRunnableAndObjectEquals sMatchHandlerRunnableAndObjectEquals =
             new MatchHandlerRunnableAndObjectEquals();
 
     private void removeEqualMessagesConcurrent(Handler h, Runnable r, Object object) {
-        findOrRemoveMessages(h, -1, object, r, 0, mMatchHandlerRunnableAndObjectEquals, true);
+        findOrRemoveMessages(h, -1, object, r, 0, sMatchHandlerRunnableAndObjectEquals, true);
     }
 
     private void removeEqualMessagesLegacy(Handler h, Runnable r, Object object) {
@@ -1942,7 +1971,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeEqualMessagesConcurrent(h, r, object);
         } else {
             removeEqualMessagesLegacy(h, r, object);
@@ -1951,19 +1980,18 @@ public final class MessageQueue {
 
     static final class MatchHandlerAndObject extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == h && (object == null || m.obj == object)) {
                 return true;
             }
             return false;
         }
     }
-    private final MatchHandlerAndObject mMatchHandlerAndObject = new MatchHandlerAndObject();
+    private static final MatchHandlerAndObject sMatchHandlerAndObject = new MatchHandlerAndObject();
 
     private void removeCallbacksAndMessagesConcurrent(Handler h, Object object) {
-            findOrRemoveMessages(h, -1, object, null, 0, mMatchHandlerAndObject, true);
+            findOrRemoveMessages(h, -1, object, null, 0, sMatchHandlerAndObject, true);
     }
 
     private void removeCallbacksAndMessagesLegacy(Handler h, Object object) {
@@ -2015,7 +2043,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeCallbacksAndMessagesConcurrent(h, object);
         } else {
             removeCallbacksAndMessagesLegacy(h, object);
@@ -2024,20 +2052,19 @@ public final class MessageQueue {
 
     static final class MatchHandlerAndObjectEquals extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
             if (m.target == h && (object == null || object.equals(m.obj))) {
                 return true;
             }
             return false;
         }
     }
-    private final MatchHandlerAndObjectEquals mMatchHandlerAndObjectEquals =
+    private static final MatchHandlerAndObjectEquals sMatchHandlerAndObjectEquals =
             new MatchHandlerAndObjectEquals();
 
     void removeCallbacksAndEqualMessagesConcurrent(Handler h, Object object) {
-        findOrRemoveMessages(h, -1, object, null, 0, mMatchHandlerAndObjectEquals, true);
+        findOrRemoveMessages(h, -1, object, null, 0, sMatchHandlerAndObjectEquals, true);
     }
 
     void removeCallbacksAndEqualMessagesLegacy(Handler h, Object object) {
@@ -2089,7 +2116,7 @@ public final class MessageQueue {
             return;
         }
 
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             removeCallbacksAndEqualMessagesConcurrent(h, object);
         } else {
             removeCallbacksAndEqualMessagesLegacy(h, object);
@@ -2146,7 +2173,7 @@ public final class MessageQueue {
 
     static final class MatchAllMessages extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
             return true;
         }
@@ -2158,11 +2185,9 @@ public final class MessageQueue {
 
     static final class MatchAllFutureMessages extends MessageCompare {
         @Override
-        public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+        public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
-            final Message m = n.mMessage;
-
-            return n.mMessage.when > when;
+            return m.when > when;
         }
     }
     private static final MatchAllFutureMessages sMatchAllFutureMessages =
@@ -2174,24 +2199,22 @@ public final class MessageQueue {
 
     @NeverCompile
     private void printPriorityQueueNodes() {
-        Iterator<MessageNode> iterator = mPriorityQueue.iterator();
-
         Log.d(TAG_C, "* Dump priority queue");
-        while (iterator.hasNext()) {
-            MessageNode msgNode = iterator.next();
-            Log.d(TAG_C, "** MessageNode what: " + msgNode.mMessage.what + " when "
-                    + msgNode.mMessage.when + " seq: " + msgNode.mInsertSeq);
+        for (Message msg : mPriorityQueue) {
+            Log.d(TAG_C,
+                    "** Message what: " + msg.what
+                    + " when " + msg.when
+                    + " seq: " + msg.insertSeq);
         }
     }
 
     @NeverCompile
-    private int dumpPriorityQueue(ConcurrentSkipListSet<MessageNode> queue, Printer pw,
+    private int dumpPriorityQueue(ConcurrentSkipListSet<Message> queue, Printer pw,
             String prefix, Handler h, int n) {
         int count = 0;
         long now = SystemClock.uptimeMillis();
 
-        for (MessageNode msgNode : queue) {
-            Message msg = msgNode.mMessage;
+        for (Message msg : queue) {
             if (h == null || h == msg.target) {
                 pw.println(prefix + "Message " + (n + count) + ": " + msg.toString(now));
             }
@@ -2202,7 +2225,7 @@ public final class MessageQueue {
 
     @NeverCompile
     void dump(Printer pw, String prefix, Handler h) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             long now = SystemClock.uptimeMillis();
             int n = 0;
 
@@ -2249,12 +2272,10 @@ public final class MessageQueue {
     }
 
     @NeverCompile
-    private int dumpPriorityQueue(ConcurrentSkipListSet<MessageNode> queue,
+    private int dumpPriorityQueue(ConcurrentSkipListSet<Message> queue,
             ProtoOutputStream proto) {
         int count = 0;
-
-        for (MessageNode msgNode : queue) {
-            Message msg = msgNode.mMessage;
+        for (Message msg : queue) {
             msg.dumpDebug(proto, MessageQueueProto.MESSAGES);
             count++;
         }
@@ -2263,7 +2284,7 @@ public final class MessageQueue {
 
     @NeverCompile
     void dumpDebug(ProtoOutputStream proto, long fieldId) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             final long messageQueueToken = proto.start(fieldId);
 
             StackNode node = (StackNode) sState.getVolatile(this);
@@ -2401,34 +2422,30 @@ public final class MessageQueue {
      * ConcurrentMessageQueue specific classes methods and variables
      */
     /* Helper to choose the correct queue to insert into. */
-    private void insertIntoPriorityQueue(MessageNode msgNode) {
-        if (msgNode.isAsync()) {
-            mAsyncPriorityQueue.add(msgNode);
+    private void insertIntoPriorityQueue(Message msg) {
+        if (msg.isAsynchronous()) {
+            mAsyncPriorityQueue.add(msg);
         } else {
-            mPriorityQueue.add(msgNode);
+            mPriorityQueue.add(msg);
         }
     }
 
-    private boolean removeFromPriorityQueue(MessageNode msgNode) {
-        if (msgNode.isAsync()) {
-            return mAsyncPriorityQueue.remove(msgNode);
+    private boolean removeFromPriorityQueue(Message msg) {
+        if (msg.isAsynchronous()) {
+            return mAsyncPriorityQueue.remove(msg);
         } else {
-            return mPriorityQueue.remove(msgNode);
+            return mPriorityQueue.remove(msg);
         }
     }
 
-    private MessageNode pickEarliestNode(MessageNode nodeA, MessageNode nodeB) {
-        if (nodeA != null && nodeB != null) {
-            if (nodeA.compareTo(nodeB) < 0) {
-                return nodeA;
-            }
-            return nodeB;
+    private static Message first(ConcurrentSkipListSet<Message> queue) {
+        // If the queue is empty, avoid calling queue.first() which will allocate
+        // an exception that we'll immediately ignore.
+        // We might race with another thread that's removing from the queue and
+        // end up with the exception anyway, but at least we tried.
+        if (queue.isEmpty()) {
+            return null;
         }
-
-        return nodeA != null ? nodeA : nodeB;
-    }
-
-    private static MessageNode first(ConcurrentSkipListSet<MessageNode> queue) {
         try {
             return queue.first();
         } catch (NoSuchElementException e) {
@@ -2453,7 +2470,7 @@ public final class MessageQueue {
         while (oldTop.isMessageNode()) {
             MessageNode oldTopMessageNode = (MessageNode) oldTop;
             if (oldTopMessageNode.removeFromStack()) {
-                insertIntoPriorityQueue(oldTopMessageNode);
+                insertIntoPriorityQueue(oldTopMessageNode.mMessage);
             }
             MessageNode inserted = oldTopMessageNode;
             oldTop = oldTopMessageNode.mNext;
@@ -2577,12 +2594,11 @@ public final class MessageQueue {
         }
     }
 
-    static final class MessageNode extends StackNode implements Comparable<MessageNode> {
-        private final Message mMessage;
+    static final class MessageNode extends StackNode {
+        final Message mMessage;
         volatile StackNode mNext;
         StateNode mBottomOfStack;
         boolean mWokeUp;
-        final long mInsertSeq;
         private static final VarHandle sRemovedFromStack;
         private volatile boolean mRemovedFromStackValue;
         static {
@@ -2596,37 +2612,13 @@ public final class MessageQueue {
             }
         }
 
-        MessageNode(@NonNull Message message, long insertSeq) {
+        MessageNode(@NonNull Message message) {
             super(STACK_NODE_MESSAGE);
             mMessage = message;
-            mInsertSeq = insertSeq;
-        }
-
-        long getWhen() {
-            return mMessage.when;
         }
 
         boolean removeFromStack() {
             return sRemovedFromStack.compareAndSet(this, false, true);
-        }
-
-        boolean isAsync() {
-            return mMessage.isAsynchronous();
-        }
-
-        boolean isBarrier() {
-            return mMessage.target == null;
-        }
-
-        @Override
-        public int compareTo(@NonNull MessageNode messageNode) {
-            Message other = messageNode.mMessage;
-
-            int compared = Long.compare(mMessage.when, other.when);
-            if (compared == 0) {
-                compared = Long.compare(mInsertSeq, messageNode.mInsertSeq);
-            }
-            return compared;
         }
     }
 
@@ -2652,10 +2644,10 @@ public final class MessageQueue {
     private static final VarHandle sState;
 
     private volatile StackNode mStateValue = sStackStateParked;
-    private final ConcurrentSkipListSet<MessageNode> mPriorityQueue =
-            new ConcurrentSkipListSet<MessageNode>();
-    private final ConcurrentSkipListSet<MessageNode> mAsyncPriorityQueue =
-            new ConcurrentSkipListSet<MessageNode>();
+    private final ConcurrentSkipListSet<Message> mPriorityQueue =
+            new ConcurrentSkipListSet<Message>(sEnqueueOrder);
+    private final ConcurrentSkipListSet<Message> mAsyncPriorityQueue =
+            new ConcurrentSkipListSet<Message>(sEnqueueOrder);
 
     /*
      * This helps us ensure that messages with the same timestamp are inserted in FIFO order.
@@ -2755,7 +2747,7 @@ public final class MessageQueue {
     }
 
     private void setFileDescriptorEvents(int fdNum, int events) {
-        if (mUseConcurrent) {
+        if (sUseConcurrent) {
             if (incrementMptrRefs()) {
                 try {
                     nativeSetFileDescriptorEvents(mPtr, fdNum, events);
@@ -2900,16 +2892,18 @@ public final class MessageQueue {
     private boolean enqueueMessageUnchecked(@NonNull Message msg, long when) {
         long seq = when != 0 ? ((long) sNextInsertSeq.getAndAdd(this, 1L) + 1L)
                 : ((long) sNextFrontInsertSeq.getAndAdd(this, -1L) - 1L);
-        /* TODO: Add a MessageNode member to Message so we can avoid this allocation */
-        MessageNode node = new MessageNode(msg, seq);
         msg.when = when;
+        msg.insertSeq = seq;
         msg.markInUse();
-        incAndTraceMessageCount(msg, when);
 
         if (DEBUG) {
-            Log.d(TAG_C, "Insert message what: " + msg.what + " when: " + msg.when + " seq: "
-                    + node.mInsertSeq + " barrier: " + node.isBarrier() + " async: "
-                    + node.isAsync() + " now: " + SystemClock.uptimeMillis());
+            Log.d(TAG_C, "Insert message"
+                    + " what: " + msg.what
+                    + " when: " + msg.when
+                    + " seq: " + msg.insertSeq
+                    + " barrier: " + isBarrier(msg)
+                    + " async: " + msg.isAsynchronous()
+                    + " now: " + SystemClock.uptimeMillis());
         }
 
         final Looper myLooper = Looper.myLooper();
@@ -2920,11 +2914,12 @@ public final class MessageQueue {
                         msg.target + " sending message to a Handler on a dead thread");
                 Log.w(TAG_C, e.getMessage(), e);
                 msg.recycleUnchecked();
+                decAndTraceMessageCount();
                 return false;
             }
 
-            node.removeFromStack();
-            insertIntoPriorityQueue(node);
+            insertIntoPriorityQueue(msg);
+            incAndTraceMessageCount(msg, when);
             /*
              * We still need to do this even though we are the current thread,
              * otherwise next() may sleep indefinitely.
@@ -2936,6 +2931,7 @@ public final class MessageQueue {
             return true;
         }
 
+        MessageNode node = new MessageNode(msg);
         while (true) {
             StackNode old = (StackNode) sState.getVolatile(this);
             boolean wakeNeeded;
@@ -2964,7 +2960,7 @@ public final class MessageQueue {
                 case STACK_NODE_TIMEDPARK:
                     node.mBottomOfStack = (StateNode) old;
                     inactive = true;
-                    wakeNeeded = mStackStateTimedPark.mWhenToWake >= node.getWhen();
+                    wakeNeeded = mStackStateTimedPark.mWhenToWake >= msg.when;
                     node.mWokeUp = wakeNeeded;
                     break;
 
@@ -2982,7 +2978,7 @@ public final class MessageQueue {
                     int bottomType = node.mBottomOfStack.getNodeType();
                     inactive = bottomType >= STACK_NODE_PARKED;
                     wakeNeeded = (bottomType == STACK_NODE_TIMEDPARK
-                            && mStackStateTimedPark.mWhenToWake >= node.getWhen()
+                            && mStackStateTimedPark.mWhenToWake >= node.mMessage.when
                             && !oldMessage.mWokeUp);
                     node.mWokeUp = oldMessage.mWokeUp || wakeNeeded;
                     break;
@@ -2995,6 +2991,7 @@ public final class MessageQueue {
                         mMessageCounts.incrementQueued();
                     }
                 }
+                incAndTraceMessageCount(msg, when);
                 return true;
             }
         }
@@ -3004,7 +3001,7 @@ public final class MessageQueue {
      * This class is used to find matches for hasMessages() and removeMessages()
      */
     abstract static class MessageCompare {
-        public abstract boolean compareMessage(MessageNode n, Handler h, int what, Object object,
+        public abstract boolean compareMessage(Message m, Handler h, int what, Object object,
                 Runnable r, long when);
     }
 
@@ -3043,14 +3040,15 @@ public final class MessageQueue {
         MessageNode p = (MessageNode) top;
 
         while (true) {
-            if (compare.compareMessage(p, h, what, object, r, when)) {
+            final Message msg = p.mMessage;
+            if (compare.compareMessage(msg, h, what, object, r, when)) {
                 found = true;
                 if (DEBUG) {
                     Log.d(TAG_C, "stackHasMessages node matches");
                 }
                 if (removeMatches) {
                     if (p.removeFromStack()) {
-                        p.mMessage.recycleUnchecked();
+                        msg.recycleUnchecked();
                         decAndTraceMessageCount();
                         if (mMessageCounts.incrementCancelled()) {
                             concurrentWake();
@@ -3081,21 +3079,17 @@ public final class MessageQueue {
         return found;
     }
 
-    private boolean priorityQueueHasMessage(ConcurrentSkipListSet<MessageNode> queue, Handler h,
+    private boolean priorityQueueHasMessage(ConcurrentSkipListSet<Message> queue, Handler h,
             int what, Object object, Runnable r, long when, MessageCompare compare,
             boolean removeMatches) {
-        Iterator<MessageNode> iterator = queue.iterator();
         boolean found = false;
-
-        while (iterator.hasNext()) {
-            MessageNode msg = iterator.next();
-
+        for (Message msg : queue) {
             if (compare.compareMessage(msg, h, what, object, r, when)) {
                 if (removeMatches) {
-                    found = true;
                     if (queue.remove(msg)) {
-                        msg.mMessage.recycleUnchecked();
+                        msg.recycleUnchecked();
                         decAndTraceMessageCount();
+                        found = true;
                     }
                 } else {
                     return true;

@@ -185,12 +185,11 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
 
     /** Dumps information about this {@link VirtualCameraController} for debugging purposes. */
     public void dump(PrintWriter fout, String indent) {
-        fout.println(indent + "VirtualCameraController:");
-        indent += indent;
         synchronized (mCameras) {
-            fout.println(indent + "Registered cameras: " + mCameras.size());
+            fout.println(indent + "VirtualCameraController: " + mCameras.size()
+                    + " registered cameras");
             for (CameraDescriptor descriptor : mCameras.values()) {
-                fout.println(indent + " token: " +  descriptor.mConfig);
+                fout.println(indent + indent + descriptor.mConfig);
             }
         }
     }

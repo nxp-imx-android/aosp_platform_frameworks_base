@@ -1219,11 +1219,36 @@ public final class DisplayManagerGlobal {
 
     /**
      * Sets the default display mode, according to the refresh rate and the resolution chosen by the
-     * user.
+     * user. Persists selected mode.
+     * @hide
      */
+    @RequiresPermission("android.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE")
     public void setUserPreferredDisplayMode(int displayId, Display.Mode mode) {
+        setUserPreferredDisplayMode(displayId, mode, true);
+    }
+
+    /**
+     * Sets the default display mode, according to the refresh rate and the resolution chosen by the
+     * user. Allows to set display mode without persisting.
+     * @hide
+     */
+    @RequiresPermission("android.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE")
+    public void setUserPreferredDisplayMode(int displayId, Display.Mode mode, boolean storeMode) {
         try {
-            mDm.setUserPreferredDisplayMode(displayId, mode);
+            mDm.setUserPreferredDisplayMode(displayId, mode, storeMode);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Resets the default display mode from persistence
+     * @hide
+     */
+    @RequiresPermission("android.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE")
+    public void resetUserPreferredDisplayMode(int displayId) {
+        try {
+            mDm.resetUserPreferredDisplayMode(displayId);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }

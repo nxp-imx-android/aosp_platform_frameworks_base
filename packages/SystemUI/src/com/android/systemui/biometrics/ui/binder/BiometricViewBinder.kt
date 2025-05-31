@@ -301,6 +301,14 @@ object BiometricViewBinder {
                         }
                 }
 
+                launch {
+                    viewModel.isShadeExpanded.collect { isShadeExpanded ->
+                        if (isShadeExpanded) {
+                            legacyCallback.onUserCanceled()
+                        }
+                    }
+                }
+
                 // set messages
                 launch {
                     viewModel.isIndicatorMessageVisible.collect { show ->

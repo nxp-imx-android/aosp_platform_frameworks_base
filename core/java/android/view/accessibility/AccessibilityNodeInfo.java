@@ -6090,7 +6090,7 @@ public class AccessibilityNodeInfo implements Parcelable {
 
     /**
      * A class defining an action that can be performed on an {@link AccessibilityNodeInfo}.
-     * Each action has a unique id that is mandatory and optional data.
+     * Each action has a mandatory unique id and optional data.
      * <p>
      * There are three categories of actions:
      * <ul>

@@ -120,6 +120,7 @@ import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.DragToDesktopStateListener
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
@@ -143,6 +144,7 @@ import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
+import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -237,6 +239,7 @@ class DesktopTasksController(
     private val desktopState: DesktopState,
     private val desktopConfig: DesktopConfig,
     private val visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler,
+    private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -797,13 +800,34 @@ class DesktopTasksController(
         return runOnTransitStart
     }
 
-    private fun getDisplayIdForTaskOrDefault(task: TaskInfo): Int {
-        return when {
-            task.displayId != INVALID_DISPLAY -> task.displayId
-            focusTransitionObserver.globallyFocusedDisplayId != INVALID_DISPLAY ->
-                focusTransitionObserver.globallyFocusedDisplayId
-            else -> DEFAULT_DISPLAY
+    private fun getDisplayIdForTaskOrDefault(task: TaskInfo?): Int {
+        // First, try to get the display already associated with the task.
+        if (
+            task != null &&
+                task.displayId != INVALID_DISPLAY &&
+                desktopState.isDesktopModeSupportedOnDisplay(displayId = task.displayId)
+        ) {
+            return task.displayId
         }
+        // Second, try to use the globally focused display.
+        val globallyFocusedDisplayId = focusTransitionObserver.globallyFocusedDisplayId
+        if (
+            globallyFocusedDisplayId != INVALID_DISPLAY &&
+                desktopState.isDesktopModeSupportedOnDisplay(displayId = globallyFocusedDisplayId)
+        ) {
+            return globallyFocusedDisplayId
+        }
+        // Fallback to any display that supports desktop.
+        val supportedDisplayId =
+            rootTaskDisplayAreaOrganizer.displayIds.firstOrNull { displayId ->
+                desktopState.isDesktopModeSupportedOnDisplay(displayId)
+            }
+        if (supportedDisplayId != null) {
+            return supportedDisplayId
+        }
+        // Use the default display as the last option even if it does not support desktop. Callers
+        // should handle this case.
+        return DEFAULT_DISPLAY
     }
 
     /** Moves task to desktop mode if task is running, else launches it in desktop mode. */
@@ -1466,13 +1490,23 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition?,
         unminimizeReason: UnminimizeReason,
     ) {
-        logV("moveBackgroundTaskToFront taskId=%s", taskId)
+        logV("moveBackgroundTaskToFront taskId=%s unminimizeReason=%s", taskId, unminimizeReason)
         val wct = WindowContainerTransaction()
-
+        val deskIdForTask = taskRepository.getDeskIdForTask(taskId)
         val deskId =
-            taskRepository.getDeskIdForTask(taskId)
-                ?: getOrCreateDefaultDeskId(DEFAULT_DISPLAY)
-                ?: return
+            if (deskIdForTask != null) {
+                deskIdForTask
+            } else {
+                val task = recentTasksController?.findTaskInBackground(taskId)
+                val displayId = getDisplayIdForTaskOrDefault(task)
+                logV(
+                    "background taskId=%s did not have desk associated, " +
+                        "using default desk of displayId=%d",
+                    taskId,
+                    displayId,
+                )
+                getOrCreateDefaultDeskId(displayId) ?: return
+            }
         val displayId =
             if (ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue)
                 taskRepository.getDisplayForDesk(deskId)
@@ -4734,6 +4768,26 @@ class DesktopTasksController(
         override fun moveFocusedTaskToStageSplit(displayId: Int, leftOrTop: Boolean) {
             logV("moveFocusedTaskToStageSplit")
             mainExecutor.execute { this@DesktopTasksController.enterSplit(displayId, leftOrTop) }
+        }
+
+        override fun registerDesktopFirstListener(listener: DesktopFirstListener) {
+            logV("registerDesktopFirstListener")
+            if (desktopFirstListenerManager.isEmpty) {
+                throw UnsupportedOperationException(
+                    "DesktopFirstListenerManager is not available on this device"
+                )
+            }
+            mainExecutor.execute { desktopFirstListenerManager.get().registerListener(listener) }
+        }
+
+        override fun unregisterDesktopFirstListener(listener: DesktopFirstListener) {
+            logV("unregisterDesktopFirstListener")
+            if (desktopFirstListenerManager.isEmpty) {
+                throw UnsupportedOperationException(
+                    "DesktopFirstListenerManager is not available on this device"
+                )
+            }
+            mainExecutor.execute { desktopFirstListenerManager.get().unregisterListener(listener) }
         }
     }
 

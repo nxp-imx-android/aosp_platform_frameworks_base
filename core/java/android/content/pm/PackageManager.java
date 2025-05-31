@@ -11723,12 +11723,6 @@ public abstract class PackageManager {
                     return getApplicationInfoAsUserUncached(
                             query.packageName, query.flags, query.userId);
                 }
-                @Override
-                public boolean resultEquals(ApplicationInfo cached, ApplicationInfo fetched) {
-                    // Implementing this debug check for ApplicationInfo would require a
-                    // complicated deep comparison, so just bypass it for now.
-                    return true;
-                }
             };
 
     /** @hide */
@@ -11812,12 +11806,6 @@ public abstract class PackageManager {
                 public PackageInfo recompute(PackageInfoQuery query) {
                     return getPackageInfoAsUserUncached(
                             query.packageName, query.flags, query.userId);
-                }
-                @Override
-                public boolean resultEquals(PackageInfo cached, PackageInfo fetched) {
-                    // Implementing this debug check for PackageInfo would require a
-                    // complicated deep comparison, so just bypass it for now.
-                    return true;
                 }
             };
 

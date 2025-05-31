@@ -382,28 +382,25 @@ Lab fromXyz(const float3& v) {
 
 };
 
-Lab sRGBToLab(SkColor color) {
+Lab sRGBToLab(SkColor4f color) {
     auto colorSpace = ColorSpace::sRGB();
     float3 rgb;
-    rgb.r = SkColorGetR(color) / 255.0f;
-    rgb.g = SkColorGetG(color) / 255.0f;
-    rgb.b = SkColorGetB(color) / 255.0f;
+    rgb.r = color.fR;
+    rgb.g = color.fG;
+    rgb.b = color.fB;
     float3 xyz = colorSpace.rgbToXYZ(rgb);
     float3 srcXYZ = ColorSpace::XYZ(float3{colorSpace.getWhitePoint(), 1});
     xyz = adaptation(BRADFORD, srcXYZ, ILLUMINANT_D50_XYZ) * xyz;
     return LabColorSpace::fromXyz(xyz);
 }
 
-SkColor LabToSRGB(const Lab& lab, SkAlpha alpha) {
+SkColor4f LabToSRGB(const Lab& lab, float alpha) {
     auto colorSpace = ColorSpace::sRGB();
     float3 xyz = LabColorSpace::toXyz(lab);
     float3 dstXYZ = ColorSpace::XYZ(float3{colorSpace.getWhitePoint(), 1});
     xyz = adaptation(BRADFORD, ILLUMINANT_D50_XYZ, dstXYZ) * xyz;
     float3 rgb = colorSpace.xyzToRGB(xyz);
-    return SkColorSetARGB(alpha,
-            static_cast<uint8_t>(rgb.r * 255),
-            static_cast<uint8_t>(rgb.g * 255),
-            static_cast<uint8_t>(rgb.b * 255));
+    return SkColor4f(rgb.r, rgb.g, rgb.b, alpha);
 }
 
 skcms_TransferFunction GetPQSkTransferFunction(float sdr_white_level) {

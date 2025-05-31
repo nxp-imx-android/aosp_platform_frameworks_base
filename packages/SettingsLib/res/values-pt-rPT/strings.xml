@@ -259,7 +259,7 @@
     <string name="apn_settings_not_available" msgid="1147111671403342300">"As definições de Nome do Ponto de Acesso não estão disponíveis para este utilizador"</string>
     <string name="enable_adb" msgid="8072776357237289039">"Depuração USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Modo de depuração com USB ligado"</string>
-    <string name="clear_adb_keys" msgid="3010148733140369917">"Revogar autorizações de depur. USB"</string>
+    <string name="clear_adb_keys" msgid="3010148733140369917">"Revogar autorizações de depuração USB"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Depuração sem fios"</string>
     <string name="enable_adb_wireless_summary" msgid="7344391423657093011">"Modo de depuração com Wi-Fi ligado"</string>
     <string name="adb_wireless_error" msgid="721958772149779856">"Erro."</string>

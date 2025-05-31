@@ -735,13 +735,9 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * @param focusedToken Client window token that currently has focus. This is where the key
      *            event will normally go.
      * @param event The key event.
-     * @param policyFlags The policy flags associated with the key.
-     * @return 0 if the key should be dispatched immediately, -1 if the key should
-     * not be dispatched ever, or a positive value indicating the number of
-     * milliseconds by which the key dispatch should be delayed before trying
-     * again.
+     * @return {@code true} if consumed, and {@code false} otherwise.
      */
-    long interceptKeyBeforeDispatching(IBinder focusedToken, KeyEvent event, int policyFlags);
+    boolean interceptKeyBeforeDispatching(IBinder focusedToken, KeyEvent event);
 
     /**
      * Called from the input dispatcher thread when an application did not handle

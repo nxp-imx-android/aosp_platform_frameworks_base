@@ -442,12 +442,9 @@ class EmbeddedWindowController {
 
         @Override
         public boolean shouldControlIme() {
-            if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                // EmbeddedWindow should never be able to control the IME directly, but only the
-                // RemoteInsetsControlTarget.
-                return false;
-            }
-            return mHostWindowState != null;
+            // EmbeddedWindow should never be able to control the IME directly, but only the
+            // RemoteInsetsControlTarget.
+            return false;
         }
 
         @Override

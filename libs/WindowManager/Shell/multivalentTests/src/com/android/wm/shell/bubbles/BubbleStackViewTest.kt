@@ -711,6 +711,112 @@ class BubbleStackViewTest {
         verify(bubbleStackView).stopMonitoringSwipeUpGesture()
     }
 
+    @Test
+    fun animateExpand_expandRunsRunnable() {
+        bubbleStackView = spy(bubbleStackView)
+        val bubble = createAndInflateChatBubble(key = "bubble")
+
+        assertThat(bubble.expandedView).isNotNull()
+
+        var afterTransitionRan = false
+        val semaphore = Semaphore(0)
+
+        // Expand animation runs on a delay so wait for it.
+        val runnable = Runnable {
+            afterTransitionRan = true
+            semaphore.release()
+         }
+
+        assertThat(bubbleStackView.isExpanded).isFalse()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleStackView.animateExpand(null, runnable)
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+
+        assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(afterTransitionRan).isTrue()
+    }
+
+    @Test
+    fun animateExpand_switchRunsRunnable() {
+        bubbleStackView = spy(bubbleStackView)
+        val bubble = createAndInflateChatBubble(key = "bubble")
+        val bubble2 = createAndInflateChatBubble(key = "bubble2")
+
+        var afterTransitionRan = false
+        val semaphore = Semaphore(0)
+
+        // Expand animation runs on a delay so wait for it.
+        val runnable = Runnable {
+            afterTransitionRan = true
+            semaphore.release()
+        }
+        assertThat(bubbleStackView.isExpanded).isFalse()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+            bubbleStackView.addBubble(bubble2)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.expandedBubble!!.key).isEqualTo(bubble.key)
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.animateExpand(null, runnable)
+            bubbleStackView.setSelectedBubble(bubble2)
+            shellExecutor.flushAll()
+        }
+
+        assertThat(semaphore.tryAcquire(5, TimeUnit.SECONDS)).isTrue()
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.expandedBubble!!.key).isEqualTo(bubble2.key)
+        assertThat(afterTransitionRan).isTrue()
+    }
+
+    @Test
+    fun canExpandView_true_triggersContinueExpand() {
+        bubbleStackView = spy(bubbleStackView)
+        val bubble = createAndInflateChatBubble(key = "bubble")
+        val bubbleTransition = mock<BubbleTransitions.BubbleTransition>()
+        bubble.preparingTransition = bubbleTransition
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+        }
+
+        assertThat(bubbleStackView.isExpanded).isFalse()
+        assertThat(bubbleStackView.canExpandView(bubble)).isTrue()
+        verify(bubbleTransition).continueExpand()
+    }
+
+    @Test
+    fun canExpandView_false() {
+        bubbleStackView = spy(bubbleStackView)
+        val bubble = createAndInflateChatBubble(key = "bubble")
+        val bubbleTransition = mock<BubbleTransitions.BubbleTransition>()
+        bubble.preparingTransition = bubbleTransition
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+
+        assertThat(bubbleStackView.isExpanded).isTrue()
+        assertThat(bubbleStackView.expandedBubble!!.key).isEqualTo(bubble.key)
+        assertThat(bubbleStackView.canExpandView(bubble)).isFalse()
+        verify(bubbleTransition, never()).continueExpand()
+    }
+
     private fun createAndInflateChatBubble(key: String): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()

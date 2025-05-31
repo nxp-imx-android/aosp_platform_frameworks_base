@@ -16,11 +16,14 @@
 
 package com.android.server.permission.access
 
+import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PackageManagerInternal
+import android.content.pm.SignedPackage
 import android.os.SystemProperties
 import android.os.UserHandle
+import android.permission.flags.Flags
 import com.android.internal.annotations.Keep
 import com.android.server.LocalManagerRegistry
 import com.android.server.LocalServices
@@ -28,6 +31,7 @@ import com.android.server.SystemConfig
 import com.android.server.SystemService
 import com.android.server.appop.AppOpsCheckingServiceInterface
 import com.android.server.permission.PermissionManagerLocal
+import com.android.server.permission.access.appfunction.AppFunctionAccessService
 import com.android.server.permission.access.appop.AppOpService
 import com.android.server.permission.access.collection.* // ktlint-disable no-wildcard-imports
 import com.android.server.permission.access.immutable.* // ktlint-disable no-wildcard-imports
@@ -53,6 +57,7 @@ class AccessCheckingService(context: Context) : SystemService(context) {
 
     private lateinit var appOpService: AppOpService
     private lateinit var permissionService: PermissionService
+    private lateinit var appFunctionAccessService: AppFunctionAccessService
 
     private lateinit var packageManagerInternal: PackageManagerInternal
     private lateinit var packageManagerLocal: PackageManagerLocal
@@ -62,9 +67,14 @@ class AccessCheckingService(context: Context) : SystemService(context) {
     override fun onStart() {
         appOpService = AppOpService(this)
         permissionService = PermissionService(this)
+        appFunctionAccessService = AppFunctionAccessService(this)
 
         LocalServices.addService(AppOpsCheckingServiceInterface::class.java, appOpService)
         LocalServices.addService(PermissionManagerServiceInterface::class.java, permissionService)
+        LocalServices.addService(
+            AppFunctionAccessServiceInterface::class.java,
+            appFunctionAccessService,
+        )
 
         LocalManagerRegistry.addManager(
             PermissionManagerLocal::class.java,
@@ -108,6 +118,9 @@ class AccessCheckingService(context: Context) : SystemService(context) {
 
         appOpService.initialize()
         permissionService.initialize()
+        if (Flags.appFunctionAccessServiceEnabled()) {
+            appFunctionAccessService.initialize()
+        }
     }
 
     private val SystemConfig.isLeanback: Boolean
@@ -233,6 +246,10 @@ class AccessCheckingService(context: Context) : SystemService(context) {
                 )
             }
         }
+    }
+
+    internal fun onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {
+        mutateState { with(policy) { onAgentAllowlistChanged(agentAllowlist) } }
     }
 
     internal fun onSystemReady() {

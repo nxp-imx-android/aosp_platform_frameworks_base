@@ -78,6 +78,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -492,6 +493,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
+    @Ignore("b/419321603")
     @Test
     @DisableSceneContainer
     fun updateViewState_panelExpandedHeightZero_viewHidden() {

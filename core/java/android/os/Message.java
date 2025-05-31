@@ -145,9 +145,7 @@ public final class Message implements Parcelable {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public long when;
 
-    /** @hide */
-    @SuppressWarnings("unused")
-    public long mInsertSeq;
+    /*package*/ long insertSeq;
 
     /*package*/ Bundle data;
 
@@ -169,21 +167,21 @@ public final class Message implements Parcelable {
 
     private static final int MAX_POOL_SIZE = 50;
 
-    private static boolean gCheckRecycle = true;
-
     /**
      * Return a new Message instance from the global pool. Allows us to
      * avoid allocating new objects in many cases.
      */
     public static Message obtain() {
-        synchronized (sPoolSync) {
-            if (sPool != null) {
-                Message m = sPool;
-                sPool = m.next;
-                m.next = null;
-                m.flags = 0; // clear in-use flag
-                sPoolSize--;
-                return m;
+        if (!MessageQueue.getUseConcurrent()) {
+            synchronized (sPoolSync) {
+                if (sPool != null) {
+                    Message m = sPool;
+                    sPool = m.next;
+                    m.next = null;
+                    m.flags = 0; // clear in-use flag
+                    sPoolSize--;
+                    return m;
+                }
             }
         }
         return new Message();
@@ -315,13 +313,6 @@ public final class Message implements Parcelable {
         return m;
     }
 
-    /** @hide */
-    public static void updateCheckRecycle(int targetSdkVersion) {
-        if (targetSdkVersion < Build.VERSION_CODES.LOLLIPOP) {
-            gCheckRecycle = false;
-        }
-    }
-
     /**
      * Return a Message instance to the global pool.
      * <p>
@@ -332,11 +323,8 @@ public final class Message implements Parcelable {
      */
     public void recycle() {
         if (isInUse()) {
-            if (gCheckRecycle) {
-                throw new IllegalStateException("This message cannot be recycled because it "
-                        + "is still in use.");
-            }
-            return;
+            throw new IllegalStateException("This message cannot be recycled because it "
+                    + "is still in use.");
         }
         recycleUnchecked();
     }
@@ -362,11 +350,13 @@ public final class Message implements Parcelable {
         callback = null;
         data = null;
 
-        synchronized (sPoolSync) {
-            if (sPoolSize < MAX_POOL_SIZE) {
-                next = sPool;
-                sPool = this;
-                sPoolSize++;
+        if (!MessageQueue.getUseConcurrent()) {
+            synchronized (sPoolSync) {
+                if (sPoolSize < MAX_POOL_SIZE) {
+                    next = sPool;
+                    sPool = this;
+                    sPoolSize++;
+                }
             }
         }
     }

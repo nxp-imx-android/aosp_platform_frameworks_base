@@ -49,9 +49,9 @@ import android.util.SparseArray;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.media.BluetoothRouteController.NoOpBluetoothRouteController;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +60,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Maintains a list of all available routes and supports transfers to any of them.
- *
- * <p>This implementation is intended for use in conjunction with {@link
- * NoOpBluetoothRouteController}, as it manages bluetooth devices directly.
  *
  * <p>This implementation obtains and manages all routes via {@link AudioManager}, with the
  * exception of {@link AudioManager#handleBluetoothActiveDeviceChanged inactive bluetooth} routes
@@ -121,8 +118,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
             new HashMap<>();
 
     @GuardedBy("this")
-    @NonNull
-    private MediaRoute2Info mSelectedRoute;
+    private List<MediaRoute2Info> mSelectedRoutes = Collections.emptyList();
 
     // A singleton AudioManagerRouteController.
     private static AudioManagerRouteController mInstance;
@@ -181,7 +177,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
         mBluetoothRouteController =
                 new BluetoothDeviceRoutesManager(
-                        mContext, mHandler, btAdapter, this::rebuildAvailableRoutesAndNotify);
+                        mContext,
+                        mHandler,
+                        looper,
+                        btAdapter,
+                        this::rebuildAvailableRoutesAndNotify);
         // Just build routes but don't notify. The caller may not expect the listener to be invoked
         // before this constructor has finished executing.
         rebuildAvailableRoutes();
@@ -255,8 +255,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @Override
     @NonNull
-    public synchronized MediaRoute2Info getSelectedRoute() {
-        return mSelectedRoute;
+    public synchronized List<MediaRoute2Info> getSelectedRoutes() {
+        if (mSelectedRoutes.isEmpty()) {
+            // mSelectedRoutes should non-empty from initialization.
+            throw new IllegalStateException("Selected routes should not be empty");
+        }
+        return mSelectedRoutes;
     }
 
     @Override
@@ -421,6 +425,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
      *
      * @param selectedDeviceAttributesType The {@link AudioDeviceInfo#getType() type} that
      *     corresponds to the currently selected route.
+     * @param selectedDeviceAttributesAddr The {@link AudioDeviceInfo#getAddress() address} that
+     *     corresponds to the currently selected route.
      * @param audioDeviceInfos The available audio outputs as obtained from {@link
      *     AudioManager#getDevices}.
      * @param availableBluetoothRoutes The available bluetooth routes as obtained from {@link
@@ -497,7 +503,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mRouteIdToAvailableDeviceRoutes.put(
                 newSelectedRouteHolder.mMediaRoute2Info.getId(),
                 selectedRouteHolderWithUpdatedVolumeInfo);
-        mSelectedRoute = selectedRouteHolderWithUpdatedVolumeInfo.mMediaRoute2Info;
+        mSelectedRoutes =
+                Collections.singletonList(
+                        selectedRouteHolderWithUpdatedVolumeInfo.mMediaRoute2Info);
 
         // We only add those BT routes that we have not already obtained from audio manager (which
         // are active).

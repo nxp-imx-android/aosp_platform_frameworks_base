@@ -16,12 +16,9 @@
 
 package android.view;
 
-import android.annotation.NonNull;
-import android.view.inputmethod.Flags;
+import android.view.inputmethod.ImeTracker;
 
 import com.android.internal.protolog.ProtoLogGroup;
-
-import java.util.UUID;
 
 /**
  * Defines logging groups for ProtoLog.
@@ -31,12 +28,15 @@ import java.util.UUID;
  *
  * @hide
  */
-final class ViewProtoLogGroups {
-    final static ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
-        "IME_INSETS_CONTROLLER", "InsetsController", Flags.refactorInsetsController());
+public final class ViewProtoLogGroups {
+    static final ProtoLogGroup IME_INSETS_CONTROLLER = new ProtoLogGroup(
+            "IME_INSETS_CONTROLLER", "InsetsController", true /* enabled */);
+    public static final ProtoLogGroup IME_TRACKER = new ProtoLogGroup(
+            "IME_TRACKER", ImeTracker.TAG, true);
 
-    final static ProtoLogGroup[] ALL_GROUPS = {
-        IME_INSETS_CONTROLLER
+    static final ProtoLogGroup[] ALL_GROUPS = {
+            IME_INSETS_CONTROLLER,
+            IME_TRACKER,
     };
 }
 

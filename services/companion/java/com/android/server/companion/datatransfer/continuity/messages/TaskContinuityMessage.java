@@ -18,7 +18,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import java.io.IOException;
 
@@ -34,8 +33,7 @@ public final class TaskContinuityMessage {
         mData = builder.mData;
     }
 
-    public TaskContinuityMessage(byte[] data)
-        throws IOException, ProtoParseException {
+    public TaskContinuityMessage(byte[] data) throws IOException {
 
         ProtoInputStream pis = new ProtoInputStream(data);
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
@@ -47,6 +45,21 @@ public final class TaskContinuityMessage {
 
                     mData = new ContinuityDeviceConnected(pis);
                     pis.end(deviceConnectedToken);
+                    break;
+                case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE:
+                    final long remoteTaskAddedMessageToken = pis.start(
+                        android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE
+                    );
+
+                    mData = new RemoteTaskAddedMessage(pis);
+                    pis.end(remoteTaskAddedMessageToken);
+                    break;
+                case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
+                    final long remoteTaskRemovedToken = pis.start(
+                        android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED
+                    );
+                    mData = RemoteTaskRemovedMessage.readFromProto(pis);
+                    pis.end(remoteTaskRemovedToken);
                     break;
             }
         }
@@ -66,12 +79,27 @@ public final class TaskContinuityMessage {
         ProtoOutputStream pos = new ProtoOutputStream();
         switch (mData) {
             case ContinuityDeviceConnected continuityDeviceConnected:
-                long token = pos.start(
+                long continutyDeviceConnectedToken = pos.start(
                     android.companion.TaskContinuityMessage.DEVICE_CONNECTED
                 );
 
                 continuityDeviceConnected.writeToProto(pos);
-                pos.end(token);
+                pos.end(continutyDeviceConnectedToken);
+                break;
+            case RemoteTaskAddedMessage remoteTaskAddedMessage:
+                long remoteTaskAddedMessageToken = pos.start(
+                    android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE
+                );
+
+                remoteTaskAddedMessage.writeToProto(pos);
+                pos.end(remoteTaskAddedMessageToken);
+                break;
+            case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
+                long remoteTaskRemovedToken = pos.start(
+                    android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED
+                );
+                remoteTaskRemovedMessage.writeToProto(pos);
+                pos.end(remoteTaskRemovedToken);
                 break;
             default:
                 break;

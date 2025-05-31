@@ -78,18 +78,15 @@ public class ContinuityDeviceConnectedTest {
     }
 
     @Test
-    public void testConstructor_fromProto_missingCurrentForegroundTaskId_throwsException(){
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        pos.flush();
+    public void testConstructor_fromProto_setsToDefaultIfNoFieldsSet() throws Exception {
+        final ProtoInputStream pis = new ProtoInputStream(new byte[0]);
+        final ContinuityDeviceConnected continuityDeviceConnected
+            = new ContinuityDeviceConnected(pis);
 
-        final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        ProtoParseException e = expectThrows(
-            ProtoParseException.class,
-            () -> new ContinuityDeviceConnected(pis));
-
-        assertThat(e)
-            .hasMessageThat()
-            .isEqualTo("Missing required field: current_foreground_task_id");
+        assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
+            .isEqualTo(0);
+        assertThat(continuityDeviceConnected.getRemoteTasks())
+            .isEmpty();
     }
 
     @Test

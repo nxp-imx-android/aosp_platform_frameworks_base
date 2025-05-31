@@ -716,12 +716,6 @@ class BroadcastController {
             // Permission regimes around sender-supplied broadcast options.
             enforceBroadcastOptionPermissionsInternal(bOptions, callingUid);
 
-            final ComponentName cn = intent.getComponent();
-
-            Trace.traceBegin(
-                    Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                    "broadcastIntent:" + (cn != null ? cn.toString() : intent.getAction()));
-
             final long origId = Binder.clearCallingIdentity();
             try {
                 result = broadcastIntentLocked(callerApp,
@@ -732,7 +726,6 @@ class BroadcastController {
                         callingPid, userId, BackgroundStartPrivileges.NONE, null, null);
             } finally {
                 Binder.restoreCallingIdentity(origId);
-                Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
             }
         }
 
@@ -823,6 +816,10 @@ class BroadcastController {
                 sb.append('/');
                 sb.append("sender="); sb.append(realCallingUid);
             }
+            final String target = intent.getComponent() != null
+                    ? intent.getComponent().flattenToShortString()
+                    : intent.getPackage();
+            Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "broadcastIntentTarget:" + target);
             return BroadcastQueue.traceBegin(sb.toString());
         }
         return 0;

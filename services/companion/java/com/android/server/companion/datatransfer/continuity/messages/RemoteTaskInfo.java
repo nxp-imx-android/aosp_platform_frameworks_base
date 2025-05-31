@@ -19,7 +19,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import android.app.TaskInfo;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import java.io.IOException;
 
@@ -32,12 +31,17 @@ public class RemoteTaskInfo {
 
     public RemoteTaskInfo(TaskInfo taskInfo) {
         mId = taskInfo.taskId;
-        mLabel = taskInfo.taskDescription.getLabel().toString();
+
+        // TODO: joeantonetti - Proper fallback if task description is null.
+        if (taskInfo.taskDescription != null && taskInfo.taskDescription.getLabel() != null) {
+            mLabel = taskInfo.taskDescription.getLabel().toString();
+        }
+
         mLastUsedTimeMillis = taskInfo.lastActiveTime;
     }
 
     public RemoteTaskInfo(ProtoInputStream protoInputStream)
-        throws IOException, ProtoParseException {
+        throws IOException {
 
         while (protoInputStream.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (protoInputStream.getFieldNumber()) {

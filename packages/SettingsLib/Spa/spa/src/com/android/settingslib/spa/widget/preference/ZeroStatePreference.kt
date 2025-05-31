@@ -17,11 +17,11 @@
 package com.android.settingslib.spa.widget.preference
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
@@ -49,7 +50,9 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.star
 import androidx.graphics.shapes.toPath
+import com.android.settingslib.spa.framework.theme.SettingsSize
 import com.android.settingslib.spa.framework.theme.SettingsSpace
+import com.android.settingslib.spa.framework.theme.SettingsTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -58,66 +61,66 @@ fun ZeroStatePreference(icon: ImageVector, text: String = "", description: Strin
         RoundedPolygon.star(
             numVerticesPerRadius = 6,
             innerRadius = 0.8f,
-            rounding = CornerRounding(0.3f)
+            rounding = CornerRounding(0.3f),
         )
     }
-    val clip = remember(zeroStateShape) {
-        RoundedPolygonShape(polygon = zeroStateShape)
-    }
+    val clip = remember(zeroStateShape) { RoundedPolygonShape(polygon = zeroStateShape) }
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
-            modifier = Modifier
-                .clip(clip)
-                .background(MaterialTheme.colorScheme.surfaceBright)
-                .size(160.dp),
+            modifier =
+                Modifier.clip(clip)
+                    .background(MaterialTheme.colorScheme.surfaceBright)
+                    .size(160.dp),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(SettingsSize.large2),
                 tint = MaterialTheme.colorScheme.onSurface,
             )
         }
-        Spacer(Modifier.height(SettingsSpace.small4))
-        if (text.isNotEmpty()) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMediumEmphasized,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+        Column(
+            modifier =
+                Modifier.padding(
+                    start = SettingsSpace.medium5,
+                    top = SettingsSpace.small4,
+                    end = SettingsSpace.medium5,
+                    bottom = SettingsSpace.small1,
+                ),
+            verticalArrangement = Arrangement.spacedBy(SettingsSpace.extraSmall2),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            if (text.isNotEmpty()) {
+                Text(
+                    text = text,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                )
+            }
+            if (description.isNotEmpty()) {
+                Text(
+                    text = description,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
-        Spacer(Modifier.height(SettingsSpace.extraSmall2))
-        if (description.isNotEmpty()) {
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        Spacer(Modifier.height(SettingsSpace.small1))
     }
-}
-
-@Preview
-@Composable
-private fun ZeroStatePreferencePreview() {
-    ZeroStatePreference(
-        Icons.Filled.History,
-        "No recent search history",
-        "Description"
-    )
 }
 
 private class RoundedPolygonShape(
     private val polygon: RoundedPolygon,
-    private var matrix: Matrix = Matrix()
+    private var matrix: Matrix = Matrix(),
 ) : Shape {
     private var path = Path()
+
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
-        density: Density
+        density: Density,
     ): Outline {
         path.rewind()
         path = polygon.toPath().asComposePath()
@@ -129,5 +132,29 @@ private class RoundedPolygonShape(
 
         path.transform(matrix)
         return Outline.Generic(path)
+    }
+}
+
+@Preview
+@Composable
+private fun ZeroStatePreferencePreview() {
+    SettingsTheme {
+        ZeroStatePreference(
+            icon = Icons.Filled.History,
+            text = "No recent search history",
+            description = "Description",
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ZeroStatePreferenceMultiLinesPreview() {
+    SettingsTheme {
+        ZeroStatePreference(
+            icon = Icons.Filled.History,
+            text = "No recent search history No recent search history",
+            description = "Description Description Description Description Description",
+        )
     }
 }

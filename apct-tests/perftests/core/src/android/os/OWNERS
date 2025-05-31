@@ -4,3 +4,5 @@ per-file PackageParsingPerfTest.kt = file:/services/core/java/com/android/server
 per-file VibratorPerfTest.java = file:/services/core/java/com/android/server/vibrator/OWNERS
 
 per-file MessageQueuePerfTest.java = file:/MESSAGE_QUEUE_OWNERS
+
+per-file TracePerfTest.java = file:/PERFETTO_OWNERS

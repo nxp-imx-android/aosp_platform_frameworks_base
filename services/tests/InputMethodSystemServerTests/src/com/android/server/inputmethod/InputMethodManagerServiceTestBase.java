@@ -345,7 +345,7 @@ public class InputMethodManagerServiceTestBase {
                     .setCurrentMethodVisible();
         }
         verify(mMockInputMethod, times(showSoftInput ? 1 : 0))
-                .showSoftInput(any() /* showInputToken */ , notNull() /* statsToken */,
+                .showSoftInput(notNull() /* statsToken */,
                         showFlags != NO_VERIFY_SHOW_FLAGS ? eq(showFlags) : anyInt() /* flags*/,
                         any() /* resultReceiver */);
     }
@@ -357,7 +357,7 @@ public class InputMethodManagerServiceTestBase {
                     .setCurrentMethodNotVisible();
         }
         verify(mMockInputMethod, times(hideSoftInput ? 1 : 0))
-                .hideSoftInput(any() /* hideInputToken */, notNull() /* statsToken */,
+                .hideSoftInput(notNull() /* statsToken */,
                         anyInt() /* flags */, any() /* resultReceiver */);
     }
 

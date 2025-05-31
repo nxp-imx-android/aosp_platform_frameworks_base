@@ -44,6 +44,7 @@ import static org.mockito.Mockito.verify;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
@@ -314,6 +315,38 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         dispatchBuild();
 
         // THEN only most recent summary is used
+        verifyBuiltList(
+                notif(0),
+                group(
+                        summary(4),
+                        child(1),
+                        child(2),
+                        child(7)
+                ),
+                notif(5)
+        );
+
+        // THEN the extra summaries have their parents set to null
+        assertNull(mEntrySet.get(3).getParent());
+        assertNull(mEntrySet.get(6).getParent());
+    }
+
+    @Test
+    public void testDuplicateGroupSummaries_prioritizeAutogroupSummary() {
+        // GIVEN a simple pipeline
+
+        // WHEN a group with multiple summaries is added & one of them is FLAG_AUTOGROUP_SUMMARY
+        addNotif(0, PACKAGE_3);
+        addGroupChild(1, PACKAGE_1, GROUP_1);
+        addGroupChild(2, PACKAGE_1, GROUP_1);
+        addGroupSummary(3, PACKAGE_1, GROUP_1).setPostTime(22);
+        addAutoGroupSummary(4, PACKAGE_1, GROUP_1).setPostTime(13);
+        addNotif(5, PACKAGE_2);
+        addGroupSummary(6, PACKAGE_1, GROUP_1).setPostTime(11);
+        addGroupChild(7, PACKAGE_1, GROUP_1);
+        dispatchBuild();
+
+        // THEN only the autogroup summary is used
         verifyBuiltList(
                 notif(0),
                 group(
@@ -2718,6 +2751,19 @@ public class ShadeListBuilderTest extends SysuiTestCase {
     /** Same behavior as {@link #addNotif(int, String)}. */
     private NotificationEntryBuilder addGroupSummary(int index, String packageId, String groupId) {
         return addGroupSummary(index, packageId, groupId, "test_channel");
+    }
+
+    private NotificationEntryBuilder addAutoGroupSummary(int index, String packageId,
+            String groupId) {
+        final NotificationEntryBuilder builder = addGroupSummary(index, packageId, groupId);
+        mPendingSet.remove(builder);
+
+        builder.modifyNotification(mContext)
+                .setFlag(Notification.FLAG_AUTOGROUP_SUMMARY, true);
+
+        assertEquals(mEntrySet.size() + mPendingSet.size(), index);
+        mPendingSet.add(builder);
+        return builder;
     }
 
     private NotificationEntryBuilder addGroupChildWithTag(int index, String packageId,

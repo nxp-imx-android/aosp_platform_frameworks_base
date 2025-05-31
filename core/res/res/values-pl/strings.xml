@@ -1699,18 +1699,12 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"Urządzenie zewnętrzne"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"Słuchawki"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
-    <!-- no translation found for default_audio_route_name_hdmi_tv (1629608564121895625) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_arc (5117738492549798911) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_earc (5869527419074773683) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_analog (7781645558035374980) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_digital (6959855552809654826) -->
-    <skip />
-    <!-- no translation found for default_audio_route_name_aux (7432808125413299672) -->
-    <skip />
+    <string name="default_audio_route_name_hdmi_tv" msgid="1629608564121895625">"Audio z telewizora"</string>
+    <string name="default_audio_route_name_arc" msgid="5117738492549798911">"ARC"</string>
+    <string name="default_audio_route_name_earc" msgid="5869527419074773683">"eARC"</string>
+    <string name="default_audio_route_name_analog" msgid="7781645558035374980">"Analogowe"</string>
+    <string name="default_audio_route_name_digital" msgid="6959855552809654826">"Cyfrowe"</string>
+    <string name="default_audio_route_name_aux" msgid="7432808125413299672">"AUX"</string>
     <string name="default_audio_route_category_name" msgid="5241740395748134483">"System"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"Dźwięk Bluetooth"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Wyświetlacz bezprzewodowy"</string>
@@ -2561,10 +2555,28 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapy"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacje"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Nie można już rozpoznać Twoich odcisków palców. Skonfiguruj ponownie odblokowywanie odciskiem palca."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="468577168569874967">"Podłączono urządzenie USB przy zablokowanym urządzeniu"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="5561957202444135984">"Urządzenie USB zostało podłączone, gdy Android był zablokowany. Aby używać urządzenia, najpierw odblokuj Androida."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_no_replug_notification_text" msgid="3844834116914726455">"Urządzenie USB zostało podłączone, gdy Android był zablokowany. Aby używać urządzenia USB, najpierw odblokuj Androida, a potem podłącz je ponownie."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1264294871764444170">"Gdy urządzenie jest zablokowane, ładowanie może być ograniczone lub niedostępne."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podejrzana aktywność przez USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sygnał danych z urządzenia USB został wyłączony."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Masz problem z odblokowywaniem odciskiem palca?"</string>

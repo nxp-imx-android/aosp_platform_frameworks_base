@@ -112,7 +112,6 @@ import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.BatteryStatsHistory;
 import com.android.internal.os.BatteryStatsHistoryIterator;
 import com.android.internal.os.Clock;
@@ -1212,6 +1211,10 @@ public class BatteryStatsImpl extends BatteryStats {
          * Per display screen brightness bins.
          */
         public int screenBrightnessBin = -1;
+        /**
+         * Per display screen brightness.
+         */
+        public int screenBrightness = -1;
         /**
          * Per display screen brightness timers.
          */
@@ -5645,6 +5648,7 @@ public class BatteryStatsImpl extends BatteryStats {
                     state = Display.STATE_OFF;
                 }
             }
+            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
         }
 
         final boolean batteryRunning = mOnBatteryTimeBase.isRunning();
@@ -5760,7 +5764,6 @@ public class BatteryStatsImpl extends BatteryStats {
         else if (bin >= NUM_SCREEN_BRIGHTNESS_BINS) bin = NUM_SCREEN_BRIGHTNESS_BINS-1;
 
         final int overallBin;
-
         final int numDisplays = mPerDisplayBatteryStats.length;
         if (display < 0 || display >= numDisplays) {
             Slog.wtf(TAG, "Unexpected note screen brightness for display " + display + " (only "
@@ -5785,8 +5788,33 @@ public class BatteryStatsImpl extends BatteryStats {
             }
             overallBin = evaluateOverallScreenBrightnessBinLocked();
         }
-
         maybeUpdateOverallScreenBrightness(overallBin, elapsedRealtimeMs, uptimeMs);
+
+        // Calulcating overall brightness among all display
+        final int oldBrightness = displayStats.screenBrightness;
+        if (brightness != oldBrightness) {
+            displayStats.screenBrightness = brightness;
+            int overallBrightness = evaluateOverallScreenBrightnessLocked();
+            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_BRIGHTNESS_CHANGED, overallBrightness);
+        }
+    }
+
+    @GuardedBy("this")
+    private int evaluateOverallScreenBrightnessLocked() {
+        int overallBrightness = -1;
+        final int numDisplays = getDisplayCount();
+        for (int display = 0; display < numDisplays; display++) {
+            final int displayBrightness;
+            if (mPerDisplayBatteryStats[display].screenState == Display.STATE_ON) {
+                displayBrightness = mPerDisplayBatteryStats[display].screenBrightness;
+            } else {
+                displayBrightness = -1;
+            }
+            if (displayBrightness > overallBrightness) {
+                overallBrightness = displayBrightness;
+            }
+        }
+        return overallBrightness;
     }
 
     @GuardedBy("this")
@@ -11026,14 +11054,14 @@ public class BatteryStatsImpl extends BatteryStats {
         if (mDailyDischargeStepTracker.mNumStepDurations > 0) {
             hasData = true;
             item.mDischargeSteps = new LevelStepTracker(
-                    mDailyDischargeStepTracker.mNumStepDurations,
-                    mDailyDischargeStepTracker.mStepDurations);
+                mDailyDischargeStepTracker.mNumStepDurations,
+                mDailyDischargeStepTracker.mStepDurations);
         }
         if (mDailyChargeStepTracker.mNumStepDurations > 0) {
             hasData = true;
             item.mChargeSteps = new LevelStepTracker(
-                    mDailyChargeStepTracker.mNumStepDurations,
-                    mDailyChargeStepTracker.mStepDurations);
+                mDailyChargeStepTracker.mNumStepDurations,
+                mDailyChargeStepTracker.mStepDurations);
         }
         if (mDailyPackageChanges != null) {
             hasData = true;
@@ -11055,24 +11083,21 @@ public class BatteryStatsImpl extends BatteryStats {
                 TypedXmlSerializer out = Xml.resolveSerializer(memStream);
                 writeDailyItemsLocked(out);
                 final long initialTimeMs = SystemClock.uptimeMillis() - startTimeMs;
-                BackgroundThread.getHandler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (mCheckinFile) {
-                            final long startTimeMs2 = SystemClock.uptimeMillis();
-                            FileOutputStream stream = null;
-                            try {
-                                stream = mDailyFile.startWrite();
-                                memStream.writeTo(stream);
-                                stream.flush();
-                                mDailyFile.finishWrite(stream);
-                                mFrameworkStatsLogger.writeCommitSysConfigFile("batterystats-daily",
-                                        initialTimeMs + SystemClock.uptimeMillis() - startTimeMs2);
-                            } catch (IOException e) {
-                                Slog.w("BatteryStats",
-                                        "Error writing battery daily items", e);
-                                mDailyFile.failWrite(stream);
-                            }
+                mHandler.post(() -> {
+                    synchronized (mCheckinFile) {
+                        final long startTimeMs2 = SystemClock.uptimeMillis();
+                        FileOutputStream stream = null;
+                        try {
+                            stream = mDailyFile.startWrite();
+                            memStream.writeTo(stream);
+                            stream.flush();
+                            mDailyFile.finishWrite(stream);
+                            mFrameworkStatsLogger.writeCommitSysConfigFile("batterystats-daily",
+                                    initialTimeMs + SystemClock.uptimeMillis() - startTimeMs2);
+                        } catch (IOException e) {
+                            Slog.w("BatteryStats",
+                                    "Error writing battery daily items", e);
+                            mDailyFile.failWrite(stream);
                         }
                     }
                 });
@@ -13545,27 +13570,25 @@ public class BatteryStatsImpl extends BatteryStats {
                     final Parcel parcel = Parcel.obtain();
                     writeSummaryToParcel(parcel, true);
                     final long initialTimeMs = SystemClock.uptimeMillis() - startTimeMs;
-                    BackgroundThread.getHandler().post(new Runnable() {
-                        @Override public void run() {
-                            synchronized (mCheckinFile) {
-                                final long startTimeMs2 = SystemClock.uptimeMillis();
-                                FileOutputStream stream = null;
-                                try {
-                                    stream = mCheckinFile.startWrite();
-                                    stream.write(parcel.marshall());
-                                    stream.flush();
-                                    mCheckinFile.finishWrite(stream);
-                                    mFrameworkStatsLogger.writeCommitSysConfigFile(
-                                            "batterystats-checkin",
-                                            initialTimeMs + SystemClock.uptimeMillis()
-                                                    - startTimeMs2);
-                                } catch (IOException e) {
-                                    Slog.w("BatteryStats",
-                                            "Error writing checkin battery statistics", e);
-                                    mCheckinFile.failWrite(stream);
-                                } finally {
-                                    parcel.recycle();
-                                }
+                    mHandler.post(() -> {
+                        synchronized (mCheckinFile) {
+                            final long startTimeMs2 = SystemClock.uptimeMillis();
+                            FileOutputStream stream = null;
+                            try {
+                                stream = mCheckinFile.startWrite();
+                                stream.write(parcel.marshall());
+                                stream.flush();
+                                mCheckinFile.finishWrite(stream);
+                                mFrameworkStatsLogger.writeCommitSysConfigFile(
+                                        "batterystats-checkin",
+                                        initialTimeMs + SystemClock.uptimeMillis()
+                                            - startTimeMs2);
+                            } catch (IOException e) {
+                                Slog.w("BatteryStats",
+                                        "Error writing checkin battery statistics", e);
+                                mCheckinFile.failWrite(stream);
+                            } finally {
+                                parcel.recycle();
                             }
                         }
                     });
@@ -14901,13 +14924,13 @@ public class BatteryStatsImpl extends BatteryStats {
 
     @GuardedBy("this")
     public void writeAsyncLocked() {
-        BackgroundThread.getHandler().removeCallbacks(mWriteAsyncRunnable);
-        BackgroundThread.getHandler().post(mWriteAsyncRunnable);
+        mHandler.removeCallbacks(mWriteAsyncRunnable);
+        mHandler.post(mWriteAsyncRunnable);
     }
 
     @GuardedBy("this")
     public void writeSyncLocked() {
-        BackgroundThread.getHandler().removeCallbacks(mWriteAsyncRunnable);
+        mHandler.removeCallbacks(mWriteAsyncRunnable);
         writeStatsLocked();
         writeHistoryLocked();
     }

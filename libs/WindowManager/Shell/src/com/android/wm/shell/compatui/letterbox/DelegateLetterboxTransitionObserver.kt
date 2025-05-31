@@ -22,7 +22,7 @@ import android.window.TransitionInfo
 import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.appCompatRefactoring
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController
-import com.android.wm.shell.compatui.letterbox.lifecycle.toLetterboxLifecycleEvent
+import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -35,6 +35,7 @@ class DelegateLetterboxTransitionObserver(
     shellInit: ShellInit,
     private val transitions: Transitions,
     private val letterboxLifecycleController: LetterboxLifecycleController,
+    private val letterboxLifecycleEventFactory: LetterboxLifecycleEventFactory
 ) : Transitions.TransitionObserver {
 
     companion object {
@@ -57,12 +58,16 @@ class DelegateLetterboxTransitionObserver(
         startTransaction: SurfaceControl.Transaction,
         finishTransaction: SurfaceControl.Transaction
     ) {
-        info.changes.forEach {
-            letterboxLifecycleController.onLetterboxLifecycleEvent(
-                it.toLetterboxLifecycleEvent(),
-                startTransaction,
-                finishTransaction
-            )
+        info.changes.forEach { change ->
+            if (letterboxLifecycleEventFactory.canHandle(change)) {
+                letterboxLifecycleEventFactory.createLifecycleEvent(change)?.let { event ->
+                    letterboxLifecycleController.onLetterboxLifecycleEvent(
+                        event,
+                        startTransaction,
+                        finishTransaction
+                    )
+                }
+            }
         }
     }
 

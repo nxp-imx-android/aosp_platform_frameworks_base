@@ -60,14 +60,17 @@ interface PreferenceIconProvider {
     fun getIcon(context: Context): Int
 }
 
-/**
- * Interface to provide the state of preference availability.
- *
- * UI framework normally does not show the preference widget if it is unavailable.
- */
+/** Interface to provide the state of preference availability. */
 interface PreferenceAvailabilityProvider {
 
-    /** Returns if the preference is available. */
+    /**
+     * Returns if the preference is available.
+     *
+     * When unavailable (i.e. `false` returned),
+     * - UI framework normally does not show the preference widget.
+     * - If it is a preference screen, all children may be disabled (depends on UI framework
+     *   implementation).
+     */
     fun isAvailable(context: Context): Boolean
 }
 
@@ -84,9 +87,11 @@ interface PreferenceRestrictionProvider {
 }
 
 /**
- * Preference lifecycle to deal with preference state.
+ * Preference lifecycle to deal with preference UI state.
  *
- * Implement this interface when preference depends on runtime conditions.
+ * Implement this interface when preference depends on runtime conditions for UI update. Note that
+ * [PreferenceMetadata] could be created for UI (shown in UI widget) or background (e.g. external
+ * Get/Set), callbacks in this interface will ONLY be invoked when it is for UI.
  */
 interface PreferenceLifecycleProvider {
 

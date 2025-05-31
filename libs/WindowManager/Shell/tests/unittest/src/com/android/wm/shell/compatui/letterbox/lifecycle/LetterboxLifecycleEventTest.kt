@@ -250,11 +250,11 @@ class LetterboxLifecycleEventTest : ShellTestCase() {
         }
 
         fun checkLetterboxActivityToken(expected: WindowContainerToken?) {
-            assertEquals(expected, event?.letterboxActivityToken)
+            assertEquals(expected, event?.containerToken)
         }
 
         fun checkLetterboxActivityLeash(expected: SurfaceControl?) {
-            assertEquals(expected, event?.letterboxActivityLeash)
+            assertEquals(expected, event?.leash)
         }
 
         fun checkLetterboxKey(expected: LetterboxKey) {

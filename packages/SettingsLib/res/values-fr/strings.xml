@@ -335,7 +335,7 @@
     <string name="private_dns_mode_provider_hostname_hint" msgid="6564868953748514595">"Entrez le nom d\'hôte du fournisseur DNS"</string>
     <string name="private_dns_mode_provider_failure" msgid="8356259467861515108">"Impossible de se connecter"</string>
     <string name="wifi_display_certification_summary" msgid="8111151348106907513">"Afficher les options pour la certification de l\'affichage sans fil"</string>
-    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Détailler les infos Wi-Fi, afficher par RSSI de SSID dans l\'outil de sélection Wi-Fi"</string>
+    <string name="wifi_verbose_logging_summary" msgid="4993823188807767892">"Détailler les infos Wi-Fi, afficher par RSSI de SSID dans le sélecteur Wi-Fi"</string>
     <string name="wifi_scan_throttling_summary" msgid="2577105472017362814">"Réduit la décharge de la batterie et améliore les performances du réseau"</string>
     <string name="wifi_non_persistent_mac_randomization_summary" msgid="2159794543105053930">"Quand ce mode est activé, l\'adresse MAC de cet appareil peut changer chaque fois qu\'il se connecte à un réseau où le changement aléatoire d\'adresse MAC est activé."</string>
     <string name="wifi_metered_label" msgid="8737187690304098638">"Facturé à l\'usage"</string>

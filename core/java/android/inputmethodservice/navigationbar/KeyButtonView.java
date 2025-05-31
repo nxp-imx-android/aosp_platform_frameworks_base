@@ -74,6 +74,7 @@ public class KeyButtonView extends ImageView implements ButtonInterface {
     private final Paint mOvalBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private float mDarkIntensity;
     private boolean mHasOvalBg = false;
+    private final int mLongPressTimeoutMillis;
 
     /** Runnable for checking whether the long click action should be performed. */
     private final Runnable mCheckLongPress = new Runnable() {
@@ -107,6 +108,11 @@ public class KeyButtonView extends ImageView implements ButtonInterface {
         setBackground(mRipple);
         setWillNotDraw(false);
         forceHasOverlappingRendering(false);
+
+        mLongPressTimeoutMillis =
+                android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
+                        ? ViewConfiguration.get(context).getLongPressTimeoutMillis()
+                        : ViewConfiguration.getLongPressTimeout();
     }
 
     @Override
@@ -210,7 +216,7 @@ public class KeyButtonView extends ImageView implements ButtonInterface {
                 }
                 if (Flags.imeSwitcherRevamp() && isLongClickable()) {
                     removeCallbacks(mCheckLongPress);
-                    postDelayed(mCheckLongPress, ViewConfiguration.getLongPressTimeout());
+                    postDelayed(mCheckLongPress, mLongPressTimeoutMillis);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:

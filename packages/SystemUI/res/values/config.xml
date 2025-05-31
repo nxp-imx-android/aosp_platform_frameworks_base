@@ -1135,6 +1135,16 @@
     <!-- If AOD can show an ambient version of the wallpaper (-1 means ignore) -->
     <integer name="config_dozeSupportsAodWallpaperOverride">-1</integer>
 
+    <!-- Whether to enable the desktop screen capture. -->
+    <bool name="config_enableDesktopScreenCapture">false</bool>
+
     <!-- Whether to enable features improving large screen interaction -->
     <bool name="config_improveLargeScreenInteractionOnLockscreen">false</bool>
+
+    <!-- Package name for the growth app. -->
+    <string name="config_growthAppPackageName" translatable="false" />
+    <!-- Class name for the growth app's receiver. -->
+    <string name="config_growthReceiverClassName" translatable="false" />
+    <!-- Permission to send a broadcast to the growth app receiver. -->
+    <string name="config_growthReceiverPermission" translatable="false" />
 </resources>

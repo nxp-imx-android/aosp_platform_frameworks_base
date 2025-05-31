@@ -59,7 +59,7 @@ import com.android.window.flags.Flags;
  * R.bool.config_isWindowManagerCameraCompatTreatmentEnabled} is {@code true}.
  */
  // TODO(b/261444714): Consider moving Camera-specific logic outside of the WM Core path
-final class DisplayRotationCompatPolicy implements CameraStateMonitorImpl.CameraCompatStateListener,
+final class DisplayRotationCompatPolicy implements CameraStateMonitor.CameraCompatStateListener,
         ActivityRefresher.Evaluator {
 
     @NonNull
@@ -67,11 +67,11 @@ final class DisplayRotationCompatPolicy implements CameraStateMonitorImpl.Camera
     @NonNull
     private final WindowManagerService mWmService;
     @NonNull
-    private final CameraStateMonitorImpl mCameraStateMonitor;
+    private final CameraStateMonitor mCameraStateMonitor;
     @NonNull
     private final ActivityRefresher mActivityRefresher;
 
-    // TODO(b/380840084): Consider moving this to the CameraStateMonitorImpl, and keeping track of
+    // TODO(b/380840084): Consider moving this to the CameraStateMonitor, and keeping track of
     // all current camera activities, especially when the camera access is switching from one app to
     // another.
     @Nullable
@@ -86,7 +86,7 @@ final class DisplayRotationCompatPolicy implements CameraStateMonitorImpl.Camera
     private boolean mIsRunning;
 
     DisplayRotationCompatPolicy(@NonNull DisplayContent displayContent,
-            @NonNull CameraStateMonitorImpl cameraStateMonitor,
+            @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull ActivityRefresher activityRefresher) {
         // This constructor is called from DisplayContent constructor. Don't use any fields in
         // DisplayContent here since they aren't guaranteed to be set.
@@ -385,8 +385,7 @@ final class DisplayRotationCompatPolicy implements CameraStateMonitorImpl.Camera
 
         synchronized (this) {
             // TODO(b/336474959): Once refresh is implemented in `CameraCompatFreeformPolicy`,
-            // consider checking this in CameraStateMonitorImpl before notifying the listeners
-            // (this).
+            // consider checking this in CameraStateMonitor before notifying the listeners (this).
             if (isActivityForCameraIdRefreshing(topActivity, cameraId)) {
                 ProtoLog.v(WM_DEBUG_ORIENTATION,
                         "Display id=%d is notified that camera is closed but activity is"

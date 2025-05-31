@@ -113,7 +113,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
+import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
@@ -247,7 +247,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private MultiInstanceHelper mMockMultiInstanceHelper;
     @Mock
-    private WindowDecorCaptionHandleRepository mMockCaptionHandleRepository;
+    private WindowDecorCaptionRepository mMockCaptionHandleRepository;
     @Mock
     private DesktopModeEventLogger mDesktopModeEventLogger;
     @Mock
@@ -356,7 +356,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags({Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS})
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -369,7 +370,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags({Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS})
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -381,7 +383,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags({Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS})
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
@@ -463,6 +466,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -475,6 +479,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -487,6 +492,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
     public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
@@ -499,6 +505,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
     public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersSetForFreeform() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
@@ -507,6 +514,51 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         updateRelayoutParams(relayoutParams, taskInfo);
 
         assertThat(relayoutParams.mShadowRadiusId).isNotEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    public void updateRelayoutParams_windowBoxShadowsAreSetForFreeform() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mBoxShadowSettingsIds.length).isGreaterThan(0);
+        for (int i = 0; i < relayoutParams.mBoxShadowSettingsIds.length; i++) {
+            assertThat(relayoutParams.mBoxShadowSettingsIds[i]).isNotEqualTo(Resources.ID_NULL);
+        }
+        assertThat(relayoutParams.mBorderSettingsId).isNotEqualTo(Resources.ID_NULL);
+    }
+
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS})
+    public void updateRelayoutParams_noSysPropFlagsSet_windowBoxShadowsAreNotSetForFullscreen() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mBoxShadowSettingsIds).isEqualTo(null);
+        assertThat(relayoutParams.mBorderSettingsId).isEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX,
+            Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS})
+    public void updateRelayoutParams_noSysPropFlagsSet_windowBoxShadowsAreNotSetForSplit() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mBoxShadowSettingsIds).isEqualTo(null);
+        assertThat(relayoutParams.mBorderSettingsId).isEqualTo(Resources.ID_NULL);
     }
 
     @Test
@@ -560,22 +612,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IN_SYNC_WITH_TRANSITION);
 
         assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
-    public void updateRelayoutParams_boxShadowsAndOutlineSetForFreeform() {
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
-        RelayoutParams relayoutParams = new RelayoutParams();
-
-        updateRelayoutParams(relayoutParams, taskInfo);
-
-        assertThat(relayoutParams.mBoxShadowSettingsIds.length).isGreaterThan(0);
-        for (int i = 0; i < relayoutParams.mBoxShadowSettingsIds.length; i++) {
-            assertThat(relayoutParams.mBoxShadowSettingsIds[i]).isNotEqualTo(Resources.ID_NULL);
-        }
-        assertThat(relayoutParams.mBorderSettingsId).isNotEqualTo(Resources.ID_NULL);
     }
 
     @Test

@@ -2543,10 +2543,15 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(keyguardShowing.getAsBoolean());
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
-        if (Flags.aodTransition()) {
-            assertThat(transitions.mLastTransit).flags().contains(TRANSIT_FLAG_AOD_APPEARING);
+        if (Flags.ensureKeyguardDoesTransitionStarting()) {
+            assertThat(transitions.mLastTransit).isNull();
         } else {
-            assertThat(transitions.mLastTransit).flags().doesNotContain(TRANSIT_FLAG_AOD_APPEARING);
+            if (Flags.aodTransition()) {
+                assertThat(transitions.mLastTransit).flags().contains(TRANSIT_FLAG_AOD_APPEARING);
+            } else {
+                assertThat(transitions.mLastTransit).flags().doesNotContain(
+                        TRANSIT_FLAG_AOD_APPEARING);
+            }
         }
         transitions.flush();
 
@@ -2556,7 +2561,10 @@ public class DisplayContentTests extends WindowTestsBase {
         assertTrue(appVisible.getAsBoolean());
 
         if (Flags.ensureKeyguardDoesTransitionStarting()) {
-            assertThat(transitions.mLastTransit).isNull();
+            // Transition will be created due to sleep token updates. But no keyguard transition
+            // should be there when the transition is not initiated from the system UI.
+            assertThat(transitions.mLastTransit).flags()
+                    .doesNotContain(TRANSIT_FLAG_KEYGUARD_GOING_AWAY);
         } else {
             assertThat(transitions.mLastTransit).flags()
                     .containsExactly(TRANSIT_FLAG_KEYGUARD_GOING_AWAY);
@@ -2598,10 +2606,15 @@ public class DisplayContentTests extends WindowTestsBase {
         keyguard.setKeyguardShown(displayId, true /* keyguard */, true /* aod */);
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
-        if (Flags.aodTransition()) {
-            assertThat(transitions.mLastTransit).flags().contains(TRANSIT_FLAG_AOD_APPEARING);
+        if (!Flags.ensureKeyguardDoesTransitionStarting()) {
+            if (Flags.aodTransition()) {
+                assertThat(transitions.mLastTransit).flags().contains(TRANSIT_FLAG_AOD_APPEARING);
+            } else {
+                assertThat(transitions.mLastTransit).flags().doesNotContain(
+                        TRANSIT_FLAG_AOD_APPEARING);
+            }
         } else {
-            assertThat(transitions.mLastTransit).flags().doesNotContain(TRANSIT_FLAG_AOD_APPEARING);
+            assertThat(transitions.mLastTransit).isNull();
         }
         transitions.flush();
 

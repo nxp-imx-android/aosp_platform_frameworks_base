@@ -6003,9 +6003,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 return false;
             }
 
-            // Do not allow "android" is being disabled
-            if ("android".equals(packageName)) {
-                Slog.w(TAG, "Cannot hide package: android");
+            // Don't allow hiding "android" or SysUI as it makes device unusable.
+            if ("android".equals(packageName)
+                    || LocalServices.getService(PackageManagerInternal.class)
+                            .getSystemUiServiceComponent().getPackageName().equals(packageName)) {
+                Slog.w(TAG, "Cannot hide package: " + packageName);
                 return false;
             }
 
@@ -8329,14 +8331,19 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     public Set<String> getAllPlatformRestrictedPermissions() {
         if (sRestrictedPermissions == null) {
             sRestrictedPermissions = new HashSet<>();
-            PackageInfo pi = snapshotComputer().getPackageInfo(
-                    PLATFORM_PACKAGE_NAME, GET_PERMISSIONS, UserHandle.USER_SYSTEM);
-            if (pi.permissions != null) {
-                for (int i = 0; i < pi.permissions.length; i++) {
-                    if (pi.permissions[i].isRestricted()) {
-                        sRestrictedPermissions.add(pi.permissions[i].name);
+            final long token = Binder.clearCallingIdentity();
+            try {
+                PackageInfo pi = snapshotComputer().getPackageInfo(
+                        PLATFORM_PACKAGE_NAME, GET_PERMISSIONS, UserHandle.USER_SYSTEM);
+                if (pi.permissions != null) {
+                    for (int i = 0; i < pi.permissions.length; i++) {
+                        if (pi.permissions[i].isRestricted()) {
+                            sRestrictedPermissions.add(pi.permissions[i].name);
+                        }
                     }
                 }
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
         }
         return sRestrictedPermissions;

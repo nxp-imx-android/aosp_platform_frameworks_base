@@ -1369,12 +1369,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             setUserExpanded(true);
         }
 
-        // With row transparency, when the shade is expanded while a HUN is pinned,
-        // that HUN will become unpinned, so it must update its bg (opaque --> transparent)
-        if (notificationRowTransparency() && !isPinned()) {
-            updateBackgroundColors();
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
         }
-
         setChronometerRunning(mLastChronometerRunning);
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
@@ -1932,6 +1929,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
+    public float getChildRenderingStartPosition() {
+        if (!isSummaryWithChildren()) {
+            return 0;
+        }
+        return getChildrenContainerNonNull().getChildRenderingStartPosition();
+    }
+
     public void setHeadsUpAnimatingAway(boolean headsUpAnimatingAway) {
         boolean wasAboveShelf = isAboveShelf();
         boolean changed = headsUpAnimatingAway != mHeadsupDisappearRunning;
@@ -1942,6 +1946,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
+        }
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
         }
     }
 
@@ -2516,6 +2523,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mGutsStub.setOnInflateListener((stub, inflated) -> {
             mGuts = (NotificationGuts) inflated;
             mGuts.setClipTopAmount(getClipTopAmount());
+            mGuts.setClipBottomAmount(getClipBottomAmount());
+            mGuts.setTopOverlap(mTopOverlap);
+            mGuts.setBottomOverlap(mBottomOverlap);
             mGuts.setActualHeight(getActualHeight());
             mGutsStub = null;
         });
@@ -4057,6 +4067,35 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     @Override
+    public void setTopOverlap(int topOverlap) {
+        if (mTopOverlap != topOverlap) {
+            super.setTopOverlap(topOverlap);
+            for (NotificationContentView l : mLayouts) {
+                l.setTopOverlap(topOverlap);
+            }
+            if (mGuts != null) {
+                mGuts.setTopOverlap(topOverlap);
+            }
+        }
+    }
+
+    @Override
+    public void setBottomOverlap(int bottomOverlap) {
+        if (mExpandAnimationRunning) {
+            return;
+        }
+        if (bottomOverlap != mBottomOverlap) {
+            super.setBottomOverlap(bottomOverlap);
+            for (NotificationContentView l : mLayouts) {
+                l.setBottomOverlap(bottomOverlap);
+            }
+            if (mGuts != null) {
+                mGuts.setBottomOverlap(bottomOverlap);
+            }
+        }
+    }
+
+    @Override
     public void setClipBottomAmount(int clipBottomAmount) {
         if (mExpandAnimationRunning) {
             return;
@@ -4839,6 +4878,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Row background should be opaque when it's displayed as a heads-up notification or
         // displayed on keyguard.
         // Also, for an unpinned HUN on the unlocked shade, the row bg should be transparent.
-        return (super.usesTransparentBackground() && !isPinned() && !mOnKeyguard);
+        return super.usesTransparentBackground()
+                && !mustStayOnScreen()
+                && !mHeadsupDisappearRunning
+                && !mOnKeyguard;
     }
 }

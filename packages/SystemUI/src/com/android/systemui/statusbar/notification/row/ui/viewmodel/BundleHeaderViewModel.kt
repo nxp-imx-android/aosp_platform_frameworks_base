@@ -23,8 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
@@ -33,9 +32,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 
 class BundleHeaderViewModel @AssistedInject constructor(private val interactor: BundleInteractor) :
-    ExclusiveActivatable() {
-
-    private val hydrator = Hydrator("BundleHeaderViewModel.hydrator")
+    HydratedActivatable() {
 
     val titleText: Int
         get() = interactor.titleText
@@ -47,10 +44,9 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
         get() = interactor.bundleIcon
 
     val previewIcons: List<Drawable> by
-        hydrator.hydratedStateOf(
+        interactor.previewIcons.hydratedStateOf(
             traceName = "previewIcons",
             initialValue = emptyList(),
-            source = interactor.previewIcons,
         )
 
     var state: MutableSceneTransitionLayoutState? by interactor::state
@@ -78,10 +74,6 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
     }
 
     fun setExpansionState(isExpanded: Boolean) = interactor.setExpansionState(isExpanded)
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
-    }
 
     @AssistedFactory
     @BundleRowScope

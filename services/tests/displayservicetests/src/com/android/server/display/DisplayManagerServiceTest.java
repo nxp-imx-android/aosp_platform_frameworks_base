@@ -136,6 +136,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.test.mock.MockContentResolver;
+import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Spline;
@@ -150,10 +151,10 @@ import android.view.SurfaceControl;
 import android.window.DisplayWindowPolicyController;
 
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
 import com.android.internal.app.IBatteryStats;
@@ -388,6 +389,11 @@ public class DisplayManagerServiceTest {
         @Override
         boolean canInternalDisplayHostDesktops(Context context) {
             return false;
+        }
+
+        @Override
+        PersistentDataStore getPersistentDataStore() {
+            return TestUtilsKt.createInMemoryPersistentDataStore();
         }
     }
 
@@ -3550,7 +3556,8 @@ public class DisplayManagerServiceTest {
 
         DisplayManagerService.BinderService bs = displayManager.new BinderService();
 
-        bs.setUserPreferredDisplayMode(Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 0));
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 0), true);
         try {
             Settings.Secure.getInt(mContext.getContentResolver(),
                     Settings.Secure.SCREEN_RESOLUTION_MODE);
@@ -3645,15 +3652,83 @@ public class DisplayManagerServiceTest {
 
         DisplayManagerService.BinderService bs = displayManager.new BinderService();
 
-        bs.setUserPreferredDisplayMode(Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 0));
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 0), true);
         assertEquals(Settings.Secure.RESOLUTION_MODE_HIGH,
                 Settings.Secure.getInt(mContext.getContentResolver(),
                         Settings.Secure.SCREEN_RESOLUTION_MODE));
 
-        bs.setUserPreferredDisplayMode(Display.DEFAULT_DISPLAY, new Display.Mode(200, 400, 0));
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(200, 400, 0), true);
         assertEquals(Settings.Secure.RESOLUTION_MODE_FULL,
                 Settings.Secure.getInt(mContext.getContentResolver(),
                         Settings.Secure.SCREEN_RESOLUTION_MODE));
+    }
+
+    @Test
+    public void testResolutionChangeDoesNotGetBackedUp() throws Exception {
+        mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
+        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(true);
+        when(mMockFlags.isModeSwitchWithoutSavingEnabled()).thenReturn(true);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+
+        Display.Mode[] modes = new Display.Mode[2];
+        modes[0] = new Display.Mode(/*id=*/ 101, /*width=*/ 100, /*height=*/ 200, /*rr=*/ 60);
+        modes[1] = new Display.Mode(/*id=*/ 101, /*width=*/ 200, /*height=*/ 400, /*rr=*/ 60);
+        createFakeDisplayDevice(
+                displayManager, modes, Display.TYPE_EXTERNAL, "testDevice");
+        flushHandlers();
+
+        displayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
+
+        DisplayManagerService.BinderService bs = displayManager.new BinderService();
+
+        // storeMode = true
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 60), true);
+        assertEquals(Settings.Secure.RESOLUTION_MODE_HIGH,
+                Settings.Secure.getInt(mContext.getContentResolver(),
+                        Settings.Secure.SCREEN_RESOLUTION_MODE));
+        // storeMode = false, SCREEN_RESOLUTION_MODE should not change
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(200, 400, 60), false);
+        assertEquals(Settings.Secure.RESOLUTION_MODE_HIGH,
+                Settings.Secure.getInt(mContext.getContentResolver(),
+                        Settings.Secure.SCREEN_RESOLUTION_MODE));
+    }
+
+    @Test
+    public void testResolutionRestFromSettings() throws Exception {
+        mPermissionEnforcer.grant(MODIFY_USER_PREFERRED_DISPLAY_MODE);
+        when(mMockFlags.isResolutionBackupRestoreEnabled()).thenReturn(true);
+        when(mMockFlags.isModeSwitchWithoutSavingEnabled()).thenReturn(true);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+
+        Display.Mode[] modes = new Display.Mode[2];
+        modes[0] = new Display.Mode(/*id=*/ 101, /*width=*/ 100, /*height=*/ 200, /*rr=*/ 60);
+        modes[1] = new Display.Mode(/*id=*/ 101, /*width=*/ 200, /*height=*/ 400, /*rr=*/ 60);
+        FakeDisplayDevice displayDevice = createFakeDisplayDevice(
+                displayManager, modes, Display.TYPE_EXTERNAL, "testDevice");
+        flushHandlers();
+
+        displayManager.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
+
+        DisplayManagerService.BinderService bs = displayManager.new BinderService();
+
+        // storeMode = true, preferredMode changed and persisted
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(100, 200, 60), true);
+        assertEquals(modes[0], displayDevice.mPreferredMode);
+        // storeMode = false, preferredMode changed and not persisted
+        bs.setUserPreferredDisplayMode(
+                Display.DEFAULT_DISPLAY, new Display.Mode(200, 400, 60), false);
+        assertEquals(modes[1], displayDevice.mPreferredMode);
+
+        // reset, preferredMode restored from persistence
+        bs.resetUserPreferredDisplayMode(Display.DEFAULT_DISPLAY);
+        assertEquals(modes[0], displayDevice.mPreferredMode);
     }
 
     @Test
@@ -4262,7 +4337,7 @@ public class DisplayManagerServiceTest {
                 displayManager.new BinderService();
         assertThrows(SecurityException.class, () -> displayManagerBinderService
                 .setUserPreferredDisplayMode(Display.DEFAULT_DISPLAY, new Display.Mode(
-                        /* width= */ 800, /* height= */ 600, /* refreshRate= */ 60)));
+                        /* width= */ 800, /* height= */ 600, /* refreshRate= */ 60), true));
     }
 
     @Test
@@ -4681,11 +4756,16 @@ public class DisplayManagerServiceTest {
 
     private FakeDisplayDevice createFakeDisplayDevice(DisplayManagerService displayManager,
             Display.Mode[] modes) {
-        FakeDisplayDevice displayDevice = new FakeDisplayDevice();
+        return createFakeDisplayDevice(displayManager, modes, Display.TYPE_INTERNAL, "");
+    }
+
+    private FakeDisplayDevice createFakeDisplayDevice(DisplayManagerService displayManager,
+            Display.Mode[] modes, int type, String uniqueId) {
+        FakeDisplayDevice displayDevice = new FakeDisplayDevice(uniqueId);
         DisplayDeviceInfo displayDeviceInfo = new DisplayDeviceInfo();
         displayDeviceInfo.supportedModes = modes;
         displayDeviceInfo.modeId = 101;
-        displayDeviceInfo.type = Display.TYPE_INTERNAL;
+        displayDeviceInfo.type = type;
         displayDeviceInfo.renderFrameRate = displayDeviceInfo.supportedModes[0].getRefreshRate();
         displayDeviceInfo.width = displayDeviceInfo.supportedModes[0].getPhysicalWidth();
         displayDeviceInfo.height = displayDeviceInfo.supportedModes[0].getPhysicalHeight();
@@ -4990,7 +5070,11 @@ public class DisplayManagerServiceTest {
         private FakeDisplayManagerCallback mCallback;
 
         FakeDisplayDevice() {
-            super(mMockDisplayAdapter, /* displayToken= */ null, /* uniqueId= */ "", mContext);
+            this("");
+        }
+
+        FakeDisplayDevice(String uniqueId) {
+            super(mMockDisplayAdapter, /* displayToken= */ null, uniqueId, mContext);
         }
 
         public void setDisplayDeviceInfo(DisplayDeviceInfo displayDeviceInfo) {
@@ -5000,7 +5084,7 @@ public class DisplayManagerServiceTest {
 
         @Override
         public boolean hasStableUniqueId() {
-            return false;
+            return !TextUtils.isEmpty(getUniqueId());
         }
 
         @Override

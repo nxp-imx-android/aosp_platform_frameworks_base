@@ -611,6 +611,7 @@ public class ZenModeDiff {
         public static final String FIELD_MINIMIZE_RADIO_USAGE = "mMinimizeRadioUsage";
         public static final String FIELD_MAXIMIZE_DOZE = "mMaximizeDoze";
         public static final String FIELD_NIGHT_LIGHT = "mNightLight";
+        public static final String FIELD_BRIGHTNESS_CAP = "mBrightnessCap";
         public static final String FIELD_EXTRA_EFFECTS = "mExtraEffects";
         // NOTE: new field strings must match the variable names in ZenDeviceEffects
 
@@ -682,6 +683,15 @@ public class ZenModeDiff {
                 addField(
                         FIELD_NIGHT_LIGHT,
                         new FieldDiff<>(from.shouldUseNightLight(), to.shouldUseNightLight()));
+            }
+            if (Flags.applyBrightnessClampingForModes()
+                    && !Objects.equals(
+                            from.getBrightnessPercentageCap(), to.getBrightnessPercentageCap())) {
+                addField(
+                        FIELD_BRIGHTNESS_CAP,
+                        new FieldDiff<>(
+                                from.getBrightnessPercentageCap(),
+                                to.getBrightnessPercentageCap()));
             }
             if (!Objects.equals(from.getExtraEffects(), to.getExtraEffects())) {
                 addField(FIELD_EXTRA_EFFECTS, new FieldDiff<>(from.getExtraEffects(),

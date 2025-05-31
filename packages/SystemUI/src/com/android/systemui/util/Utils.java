@@ -133,4 +133,12 @@ public class Utils {
                 .getDimensionPixelSize(R.dimen.status_bar_header_height_keyguard);
         return Math.max(statusBarHeight, statusBarHeaderHeightKeyguard + waterfallInsetTop);
     }
+
+    /**
+     * Returns {@code true} if screen capture is enabled and the device is a desktop.
+     */
+    public static boolean isDesktopScreenCaptureEnabled(Context context) {
+        return com.android.systemui.Flags.desktopScreenCapture()
+                && context.getResources().getBoolean(R.bool.config_enableDesktopScreenCapture);
+    }
 }

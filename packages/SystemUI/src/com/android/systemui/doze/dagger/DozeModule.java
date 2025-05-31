@@ -25,6 +25,7 @@ import com.android.systemui.doze.DozeDockHandler;
 import com.android.systemui.doze.DozeFalsingManagerAdapter;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.doze.DozeMachine;
+import com.android.systemui.doze.DozeMinMode;
 import com.android.systemui.doze.DozePauser;
 import com.android.systemui.doze.DozeScreenBrightness;
 import com.android.systemui.doze.DozeScreenState;
@@ -42,6 +43,9 @@ import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.util.sensors.AsyncSensorManager;
 import com.android.systemui.util.wakelock.DelayedWakeLock;
 import com.android.systemui.util.wakelock.WakeLock;
+import java.util.List;
+import java.util.ArrayList;
+import com.android.systemui.Flags;
 
 import dagger.Module;
 import dagger.Provides;
@@ -80,21 +84,27 @@ public abstract class DozeModule {
             DozeFalsingManagerAdapter dozeFalsingManagerAdapter, DozeTriggers dozeTriggers,
             DozeUi dozeUi, DozeScreenState dozeScreenState,
             DozeScreenBrightness dozeScreenBrightness, DozeWallpaperState dozeWallpaperState,
-            DozeDockHandler dozeDockHandler, DozeAuthRemover dozeAuthRemover,
+            DozeDockHandler dozeDockHandler, DozeMinMode dozeMinMode,
+            DozeAuthRemover dozeAuthRemover,
             DozeSuppressor dozeSuppressor, DozeTransitionListener dozeTransitionListener) {
-        return new DozeMachine.Part[]{
-                dozePauser,
-                dozeFalsingManagerAdapter,
-                dozeTriggers,
-                dozeUi,
-                dozeScreenBrightness,
-                dozeScreenState,
-                dozeWallpaperState,
-                dozeDockHandler,
-                dozeAuthRemover,
-                dozeSuppressor,
-                dozeTransitionListener
-        };
+        List<DozeMachine.Part> parts = new ArrayList<>();
+        parts.add(dozePauser);
+        parts.add(dozeFalsingManagerAdapter);
+        parts.add(dozeTriggers);
+        parts.add(dozeUi);
+        parts.add(dozeScreenBrightness);
+        parts.add(dozeScreenState);
+        parts.add(dozeWallpaperState);
+        parts.add(dozeDockHandler);
+        parts.add(dozeAuthRemover);
+        parts.add(dozeSuppressor);
+        parts.add(dozeTransitionListener);
+
+        if (Flags.enableMinmode()) {
+            parts.add(dozeMinMode);
+        }
+
+        return parts.toArray(new DozeMachine.Part[0]);
     }
 
     @Provides

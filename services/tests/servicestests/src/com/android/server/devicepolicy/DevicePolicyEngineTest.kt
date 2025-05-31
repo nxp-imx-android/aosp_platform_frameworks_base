@@ -18,6 +18,7 @@ package com.android.server.devicepolicy
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.IntegerPolicyValue
+import com.android.server.devicepolicy.PolicyPathProvider
 import android.app.admin.PolicyUpdateResult
 import android.content.ComponentName
 import android.os.UserHandle
@@ -41,6 +42,7 @@ class DevicePolicyEngineTest {
 
     private val deviceAdminServiceController = mock<DeviceAdminServiceController>()
     private val userManager = mock<UserManager>()
+    private val policyPathProvider = object : PolicyPathProvider {}
 
     private val lock = Any()
     private lateinit var devicePolicyEngine: DevicePolicyEngine
@@ -49,7 +51,8 @@ class DevicePolicyEngineTest {
     fun setUp() {
         LocalServices.removeServiceForTest(UserManager::class.java)
         LocalServices.addService(UserManager::class.java, userManager)
-        devicePolicyEngine = DevicePolicyEngine(context, deviceAdminServiceController, lock)
+        devicePolicyEngine = DevicePolicyEngine(context, deviceAdminServiceController, lock,
+            policyPathProvider)
 
         if (LocalManagerRegistry.getManager(RoleManagerLocal::class.java) == null) {
             LocalManagerRegistry.addManager(RoleManagerLocal::class.java, mock<RoleManagerLocal>())

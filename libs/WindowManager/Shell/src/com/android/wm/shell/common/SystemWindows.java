@@ -27,7 +27,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.util.MergedConfiguration;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
@@ -45,10 +44,9 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.WindowRelayoutResult;
 import android.view.WindowlessWindowManager;
 import android.view.inputmethod.ImeTracker;
-import android.window.ActivityWindowInfo;
-import android.window.ClientWindowFrames;
 import android.window.InputTransferToken;
 
 import com.android.internal.os.IResultReceiver;
@@ -345,20 +343,18 @@ public class SystemWindows {
         ContainerWindow() {}
 
         @Override
-        public void resized(ClientWindowFrames frames, boolean reportDraw,
-                MergedConfiguration newMergedConfiguration, InsetsState insetsState,
-                boolean forceLayout, boolean alwaysConsumeSystemBars, int displayId, int syncSeqId,
-                boolean dragResizing, @Nullable ActivityWindowInfo activityWindowInfo) {}
+        public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
+                int displayId, boolean dragResizing) {}
 
         @Override
         public void insetsControlChanged(InsetsState insetsState,
                 InsetsSourceControl.Array activeControls) {}
 
         @Override
-        public void showInsets(int types, boolean fromIme, @Nullable ImeTracker.Token statsToken) {}
+        public void showInsets(int types, @Nullable ImeTracker.Token statsToken) {}
 
         @Override
-        public void hideInsets(int types, boolean fromIme, @Nullable ImeTracker.Token statsToken) {}
+        public void hideInsets(int types, @Nullable ImeTracker.Token statsToken) {}
 
         @Override
         public void moved(int newX, int newY) {}

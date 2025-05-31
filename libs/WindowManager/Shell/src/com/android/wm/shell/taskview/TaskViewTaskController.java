@@ -258,46 +258,13 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
             SurfaceControl leash) {
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.onTaskAppeared(): taskView=%d task=%s",
                 hashCode(), taskInfo);
-        if (mTaskViewController.isUsingShellTransitions()) {
-            mPendingInfo = taskInfo;
-            if (mTaskNotFound) {
-                // If we were already notified by shell transit that we don't have the
-                // the task, clean it up now.
-                cleanUpPendingTask();
-            }
-            // Everything else handled by enter transition.
-            return;
+        mPendingInfo = taskInfo;
+        if (mTaskNotFound) {
+            // If we were already notified by shell transit that we don't have the
+            // the task, clean it up now.
+            cleanUpPendingTask();
         }
-        mTaskInfo = taskInfo;
-        mTaskToken = taskInfo.token;
-        mTaskLeash = new SurfaceControl(leash, "TaskController.onTaskAppeared");
-
-        if (mSurfaceCreated) {
-            // Surface is ready, so just reparent the task to this surface control
-            mTransaction.reparent(mTaskLeash, mSurfaceControl)
-                    .show(mTaskLeash)
-                    .apply();
-        } else {
-            // The surface has already been destroyed before the task has appeared,
-            // so go ahead and hide the task entirely
-            updateTaskVisibility();
-        }
-
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setInterceptBackPressedOnTaskRoot(mTaskToken, true);
-        mTaskOrganizer.applyTransaction(wct);
-
-        mSyncQueue.runInSync((t) -> {
-            mTaskViewBase.onTaskAppeared(taskInfo, leash);
-        });
-
-        if (mListener != null) {
-            final int taskId = taskInfo.taskId;
-            final ComponentName baseActivity = taskInfo.baseActivity;
-            mListenerExecutor.execute(() -> {
-                mListener.onTaskCreated(taskId, baseActivity);
-            });
-        }
+        // Everything else handled by enter transition.
     }
 
     @Override
@@ -413,15 +380,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
                 // Nothing to update, task is not yet available
                 return;
             }
-            if (mTaskViewController.isUsingShellTransitions()) {
-                mTaskViewController.setTaskViewVisible(this, true /* visible */);
-                return;
-            }
-            // Reparent the task when this surface is created
-            mTransaction.reparent(mTaskLeash, mSurfaceControl)
-                    .show(mTaskLeash)
-                    .apply();
-            updateTaskVisibility();
+            mTaskViewController.setTaskViewVisible(this, true /* visible */);
         });
     }
 
@@ -482,14 +441,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
                 return;
             }
 
-            if (mTaskViewController.isUsingShellTransitions()) {
-                mTaskViewController.setTaskViewVisible(this, false /* visible */);
-                return;
-            }
-
-            // Unparent the task when this surface is destroyed
-            mTransaction.reparent(mTaskLeash, null).apply();
-            updateTaskVisibility();
+            mTaskViewController.setTaskViewVisible(this, false /* visible */);
         });
     }
 

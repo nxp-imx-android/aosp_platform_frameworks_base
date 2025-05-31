@@ -1099,7 +1099,7 @@ static std::string getAppDataDirName(std::string_view parent_path, std::string_v
   } else {
     if (errno != ENOENT) {
       fail_fn(CREATE_ERROR("Unexpected error in getAppDataDirName: %s", strerror(errno)));
-      return nullptr;
+      return "";
     }
     {
       // Directory doesn't exist, try to search the name from inode

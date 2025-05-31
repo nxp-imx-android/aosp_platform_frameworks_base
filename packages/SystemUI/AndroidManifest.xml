@@ -534,6 +534,8 @@
             android:singleUser="true"
             android:permission="android.permission.LAUNCH_CAPTURE_CONTENT_ACTIVITY_FOR_NOTE" />
 
+        <service android:name=".screenrecord.service.ScreenRecordingService" />
+
         <service android:name=".screenrecord.RecordingService"
                  android:foregroundServiceType="systemExempted"/>
 

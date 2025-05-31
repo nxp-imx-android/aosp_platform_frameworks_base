@@ -22,6 +22,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.content.pm.ActivityInfo.OVERRIDE_SANDBOX_VIEW_BOUNDS_APIS;
 import static android.graphics.HardwareRenderer.SYNC_CONTEXT_IS_STOPPED;
 import static android.graphics.HardwareRenderer.SYNC_LOST_SURFACE_REWARD_IF_FOUND;
+import static android.os.IInputConstants.INVALID_INPUT_EVENT_ID;
 import static android.os.Trace.TRACE_TAG_VIEW;
 import static android.util.SequenceUtils.getInitSeq;
 import static android.util.SequenceUtils.isIncomingSeqStale;
@@ -36,8 +37,8 @@ import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_LOW;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NORMAL;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NO_PREFERENCE;
-import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
+import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_BOOST;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_CONFLICTED;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_INTERMITTENT;
@@ -263,6 +264,7 @@ import android.view.autofill.AutofillManager;
 import android.view.contentcapture.ContentCaptureManager;
 import android.view.contentcapture.ContentCaptureSession;
 import android.view.flags.Flags;
+import android.view.input.InputEventCompatHandler;
 import android.view.inputmethod.ImeTracker;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Scroller;
@@ -367,6 +369,13 @@ public final class ViewRootImpl implements ViewParent,
      * this, WindowCallbacks will not fire.
      */
     private static final boolean MT_RENDERER_AVAILABLE = true;
+
+    /**
+     * Whether or not to report end-to-end input latency. Can be disabled temporarily as a
+     * risk mitigation against potential jank caused by acquiring a weak reference
+     * per frame.
+     */
+    private static final boolean ENABLE_INPUT_LATENCY_TRACKING = true;
 
     /**
      * Whether the client (system UI) is handling the transient gesture and the corresponding
@@ -671,6 +680,7 @@ public final class ViewRootImpl implements ViewParent,
     private boolean mInvalidationIdleMessagePosted = false;
     // VRR: List of all Views that are animating with the threaded render
     private ArrayList<View> mThreadedRendererViews = new ArrayList();
+    private ArrayList<View> mThreadedRendererViewsCache = new ArrayList();
 
     /**
      * Update the Choreographer's FrameInfo object with the timing information for the current
@@ -978,7 +988,7 @@ public final class ViewRootImpl implements ViewParent,
 
     private boolean mNeedsRendererSetup;
 
-    private final InputEventCompatProcessor mInputCompatProcessor;
+    private final InputEventCompatHandler mInputCompatHandler;
 
     /**
      * Consistency verifier for debugging purposes.
@@ -1164,7 +1174,7 @@ public final class ViewRootImpl implements ViewParent,
      * integer back over relayout.
      */
     private final WindowRelayoutResult mRelayoutResult = new WindowRelayoutResult(
-            mTmpFrames, mPendingMergedConfiguration, mSurfaceControl, mTempInsets, mTempControls);
+            mTmpFrames, mPendingMergedConfiguration, mTempInsets, mTempControls);
 
     private static volatile boolean sAnrReported = false;
     static BLASTBufferQueue.TransactionHangCallback sTransactionHangCallback =
@@ -1282,24 +1292,7 @@ public final class ViewRootImpl implements ViewParent,
 
         initializeProtoLogInProcess();
 
-        String processorOverrideName = context.getResources().getString(
-                                    R.string.config_inputEventCompatProcessorOverrideClassName);
-        if (processorOverrideName.isEmpty()) {
-            // No compatibility processor override, using default.
-            mInputCompatProcessor = new InputEventCompatProcessor(context, mHandler);
-        } else {
-            InputEventCompatProcessor compatProcessor = null;
-            try {
-                final Class<? extends InputEventCompatProcessor> klass =
-                        (Class<? extends InputEventCompatProcessor>) Class.forName(
-                                processorOverrideName);
-                compatProcessor = klass.getConstructor(Context.class).newInstance(context);
-            } catch (Exception e) {
-                Log.e(TAG, "Unable to create the InputEventCompatProcessor. ", e);
-            } finally {
-                mInputCompatProcessor = compatProcessor;
-            }
-        }
+        mInputCompatHandler = InputEventCompatHandler.buildChain(context, mHandler);
 
         if (!sCompatibilityDone) {
             sAlwaysAssignFocus = mTargetSdkVersion < Build.VERSION_CODES.P;
@@ -1615,21 +1608,19 @@ public final class ViewRootImpl implements ViewParent,
                             mInsetsController.isBehaviorControlled());
                     controlInsetsForCompatibility(mWindowAttributes);
 
-                    Rect attachedFrame = new Rect();
-                    final float[] compatScale = { 1f };
+                    final WindowRelayoutResult addResult = new WindowRelayoutResult(
+                            new ClientWindowFrames(), new MergedConfiguration(), mTempInsets,
+                            mTempControls);
                     res = mWindowSession.addToDisplayAsUser(mWindow, mWindowAttributes,
                             getHostVisibility(), mDisplay.getDisplayId(), userId,
-                            mInsetsController.getRequestedVisibleTypes(), inputChannel, mTempInsets,
-                            mTempControls, attachedFrame, compatScale);
-                    if (!attachedFrame.isValid()) {
-                        attachedFrame = null;
-                    }
+                            mInsetsController.getRequestedVisibleTypes(), inputChannel, addResult);
                     if (mTranslator != null) {
-                        mTranslator.translateRectInScreenToAppWindow(attachedFrame);
+                        mTranslator.translateRectInScreenToAppWindow(
+                                addResult.frames.attachedFrame);
                     }
-                    mTmpFrames.attachedFrame = attachedFrame;
-                    mTmpFrames.compatScale = compatScale[0];
-                    mInvCompatScale = 1f / compatScale[0];
+                    mTmpFrames.attachedFrame = addResult.frames.attachedFrame;
+                    mTmpFrames.compatScale = addResult.frames.compatScale;
+                    mInvCompatScale = 1f / addResult.frames.compatScale;
                 } catch (RemoteException | RuntimeException e) {
                     if (!fixViewRootCallTrace()) {
                         mAdded = false;
@@ -1734,8 +1725,14 @@ public final class ViewRootImpl implements ViewParent,
                         mInputQueueCallback.onInputQueueCreated(mInputQueue);
                     }
                     mInputEventReceiver = new WindowInputEventReceiver(inputChannel,
-                            Looper.myLooper(), mAttachInfo.mThreadedRenderer);
+                            Looper.myLooper());
 
+                    if (ENABLE_INPUT_LATENCY_TRACKING && mAttachInfo.mThreadedRenderer != null) {
+                        InputMetricsListener listener = new InputMetricsListener();
+                        mHardwareRendererObserver = new HardwareRendererObserver(
+                                listener, listener.data, mHandler, true /*waitForPresentTime*/);
+                        mAttachInfo.mThreadedRenderer.addObserver(mHardwareRendererObserver);
+                    }
                     // Update unbuffered request when set the root view.
                     mUnbufferedInputSource = mView.mUnbufferedInputSource;
                 }
@@ -2301,7 +2298,7 @@ public final class ViewRootImpl implements ViewParent,
     /** Handles messages {@link #MSG_RESIZED} and {@link #MSG_RESIZED_REPORT}. */
     private void handleResized(ClientWindowFrames frames, boolean reportDraw,
             MergedConfiguration mergedConfiguration, InsetsState insetsState, boolean forceLayout,
-            boolean alwaysConsumeSystemBars, int displayId, int syncSeqId, boolean dragResizing,
+            int displayId, int syncSeqId, boolean dragResizing,
             @Nullable ActivityWindowInfo activityWindowInfo) {
         if (!mAdded) {
             return;
@@ -2369,7 +2366,7 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         mForceNextWindowRelayout |= forceLayout;
-        mPendingAlwaysConsumeSystemBars = alwaysConsumeSystemBars;
+        mPendingAlwaysConsumeSystemBars = false;
         mSyncSeqId = syncSeqId > mSyncSeqId ? syncSeqId : mSyncSeqId;
 
         if (reportDraw) {
@@ -3190,11 +3187,10 @@ public final class ViewRootImpl implements ViewParent,
      * cleared for compatibility.
      *
      * @param showTypes {@link InsetsType types} shown by the system.
-     * @param fromIme {@code true} if the invocation is from IME.
      */
-    private void clearLowProfileModeIfNeeded(@InsetsType int showTypes, boolean fromIme) {
+    private void clearLowProfileModeIfNeeded(@InsetsType int showTypes) {
         final SystemUiVisibilityInfo info = mCompatibleVisibilityInfo;
-        if ((showTypes & Type.systemBars()) != 0 && !fromIme
+        if ((showTypes & Type.systemBars()) != 0
                 && (info.globalVisibility & SYSTEM_UI_FLAG_LOW_PROFILE) != 0) {
             info.globalVisibility &= ~SYSTEM_UI_FLAG_LOW_PROFILE;
             info.localChanges |= SYSTEM_UI_FLAG_LOW_PROFILE;
@@ -4548,10 +4544,7 @@ public final class ViewRootImpl implements ViewParent,
             }
 
             mDrawnThisFrame = false;
-            if (!mInvalidationIdleMessagePosted) {
-                mInvalidationIdleMessagePosted = true;
-                mHandler.sendEmptyMessageDelayed(MSG_CHECK_INVALIDATION_IDLE, IDLE_TIME_MILLIS);
-            }
+            sendCheckInvalidationIdle();
             setCategoryFromCategoryCounts();
             updateInfrequentCount();
             updateFrameRateFromThreadedRendererViews();
@@ -4581,6 +4574,19 @@ public final class ViewRootImpl implements ViewParent,
             // From MSG_FRAME_RATE_SETTING, where mPreferredFrameRate is set to 0
             setPreferredFrameRate(0);
             mPreferredFrameRate = -1;
+        }
+    }
+
+    private void sendCheckInvalidationIdle() {
+        if (shouldEnableDvrr()) {
+            boolean wasPosted;
+            synchronized (mThreadedRendererViews) {
+                wasPosted = mInvalidationIdleMessagePosted;
+                mInvalidationIdleMessagePosted = true;
+            }
+            if (!wasPosted) {
+                mHandler.sendEmptyMessageDelayed(MSG_CHECK_INVALIDATION_IDLE, IDLE_TIME_MILLIS);
+            }
         }
     }
 
@@ -6984,19 +6990,14 @@ public final class ViewRootImpl implements ViewParent,
                 case MSG_RESIZED:
                 case MSG_RESIZED_REPORT: {
                     final SomeArgs args = (SomeArgs) msg.obj;
-                    final ClientWindowFrames frames = (ClientWindowFrames) args.arg1;
+                    final WindowRelayoutResult layout = (WindowRelayoutResult) args.arg1;
                     final boolean reportDraw = msg.what == MSG_RESIZED_REPORT;
-                    final MergedConfiguration mergedConfiguration = (MergedConfiguration) args.arg2;
-                    final InsetsState insetsState = (InsetsState) args.arg3;
-                    final ActivityWindowInfo activityWindowInfo = (ActivityWindowInfo) args.arg4;
                     final boolean forceLayout = args.argi1 != 0;
-                    final boolean alwaysConsumeSystemBars = args.argi2 != 0;
-                    final int displayId = args.argi3;
-                    final int syncSeqId = args.argi4;
-                    final boolean dragResizing = args.argi5 != 0;
-                    handleResized(frames, reportDraw, mergedConfiguration, insetsState, forceLayout,
-                            alwaysConsumeSystemBars, displayId, syncSeqId, dragResizing,
-                            activityWindowInfo);
+                    final int displayId = args.argi2;
+                    final boolean dragResizing = args.argi3 != 0;
+                    handleResized(layout.frames, reportDraw, layout.mergedConfiguration,
+                            layout.insetsState, forceLayout, displayId, layout.syncSeqId,
+                            dragResizing, layout.activityWindowInfo);
                     args.recycle();
                     break;
                 }
@@ -7010,23 +7011,29 @@ public final class ViewRootImpl implements ViewParent,
                     break;
                 }
                 case MSG_SHOW_INSETS: {
-                    final ImeTracker.Token statsToken = (ImeTracker.Token) msg.obj;
+                    final SomeArgs args = (SomeArgs) msg.obj;
+                    @InsetsType final int types = (int) args.arg1;
+                    final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg2;
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_CLIENT_HANDLE_SHOW_INSETS);
                     if (mView == null) {
                         Log.e(TAG,
-                                String.format("Calling showInsets(%d,%b) on window that no longer"
-                                        + " has views.", msg.arg1, msg.arg2 == 1));
+                                String.format("Calling showInsets(%d) on window that no longer"
+                                        + " has views.", types));
                     }
-                    clearLowProfileModeIfNeeded(msg.arg1, msg.arg2 == 1);
-                    mInsetsController.show(msg.arg1, msg.arg2 == 1, statsToken);
+                    clearLowProfileModeIfNeeded(types);
+                    mInsetsController.show(types, statsToken);
+                    args.recycle();
                     break;
                 }
                 case MSG_HIDE_INSETS: {
-                    final ImeTracker.Token statsToken = (ImeTracker.Token) msg.obj;
+                    final SomeArgs args = (SomeArgs) msg.obj;
+                    @InsetsType final int types = (int) args.arg1;
+                    final ImeTracker.Token statsToken = (ImeTracker.Token) args.arg2;
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_CLIENT_HANDLE_HIDE_INSETS);
-                    mInsetsController.hide(msg.arg1, msg.arg2 == 1, statsToken);
+                    mInsetsController.hide(types, statsToken);
+                    args.recycle();
                     break;
                 }
                 case MSG_WINDOW_MOVED:
@@ -9601,7 +9608,7 @@ public final class ViewRootImpl implements ViewParent,
             relayoutResult = mWindowSession.relayout(mWindow, params,
                     requestedWidth, requestedHeight, viewVisibility,
                     insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
-                    mRelayoutSeq, mLastSyncSeqId, mRelayoutResult);
+                    mRelayoutSeq, mLastSyncSeqId, mRelayoutResult, mSurfaceControl);
             mRelayoutRequested = true;
 
             onClientWindowFramesChanged(mTmpFrames);
@@ -10264,21 +10271,14 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    private void dispatchResized(ClientWindowFrames frames, boolean reportDraw,
-            MergedConfiguration mergedConfiguration, InsetsState insetsState, boolean forceLayout,
-            boolean alwaysConsumeSystemBars, int displayId, int syncSeqId, boolean dragResizing,
-            @Nullable ActivityWindowInfo activityWindowInfo) {
+    private void dispatchResized(WindowRelayoutResult layout, boolean reportDraw,
+            boolean forceLayout, int displayId, boolean dragResizing) {
         Message msg = mHandler.obtainMessage(reportDraw ? MSG_RESIZED_REPORT : MSG_RESIZED);
         SomeArgs args = SomeArgs.obtain();
-        args.arg1 = frames;
-        args.arg2 = mergedConfiguration;
-        args.arg3 = insetsState;
-        args.arg4 = activityWindowInfo;
+        args.arg1 = layout;
         args.argi1 = forceLayout ? 1 : 0;
-        args.argi2 = alwaysConsumeSystemBars ? 1 : 0;
-        args.argi3 = displayId;
-        args.argi4 = syncSeqId;
-        args.argi5 = dragResizing ? 1 : 0;
+        args.argi2 = displayId;
+        args.argi3 = dragResizing ? 1 : 0;
 
         msg.obj = args;
         mHandler.sendMessage(msg);
@@ -10292,14 +10292,18 @@ public final class ViewRootImpl implements ViewParent,
         mHandler.obtainMessage(MSG_INSETS_CONTROL_CHANGED, args).sendToTarget();
     }
 
-    private void showInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
-        mHandler.obtainMessage(MSG_SHOW_INSETS, types, fromIme ? 1 : 0, statsToken).sendToTarget();
+    private void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
+        final SomeArgs args = SomeArgs.obtain();
+        args.arg1 = types;
+        args.arg2 = statsToken;
+        mHandler.obtainMessage(MSG_SHOW_INSETS, args).sendToTarget();
     }
 
-    private void hideInsets(@InsetsType int types, boolean fromIme,
-            @Nullable ImeTracker.Token statsToken) {
-        mHandler.obtainMessage(MSG_HIDE_INSETS, types, fromIme ? 1 : 0, statsToken).sendToTarget();
+    private void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
+        final SomeArgs args = SomeArgs.obtain();
+        args.arg1 = types;
+        args.arg2 = statsToken;
+        mHandler.obtainMessage(MSG_HIDE_INSETS, args).sendToTarget();
     }
 
     public void dispatchMoved(int newX, int newY) {
@@ -10584,12 +10588,12 @@ public final class ViewRootImpl implements ViewParent,
         if (q.mReceiver != null) {
             boolean handled = (q.mFlags & QueuedInputEvent.FLAG_FINISHED_HANDLED) != 0;
             boolean modified = (q.mFlags & QueuedInputEvent.FLAG_MODIFIED_FOR_COMPATIBILITY) != 0;
-            if (modified) {
+            if (modified && mInputCompatHandler != null) {
                 Trace.traceBegin(Trace.TRACE_TAG_VIEW, "processInputEventBeforeFinish");
                 InputEvent processedEvent;
                 try {
                     processedEvent =
-                            mInputCompatProcessor.processInputEventBeforeFinish(q.mEvent);
+                            mInputCompatHandler.processInputEventBeforeFinish(q.mEvent);
                 } finally {
                     Trace.traceEnd(Trace.TRACE_TAG_VIEW);
                 }
@@ -10684,14 +10688,8 @@ public final class ViewRootImpl implements ViewParent,
     final TraversalRunnable mTraversalRunnable = new TraversalRunnable();
 
     final class WindowInputEventReceiver extends InputEventReceiver {
-        private final HardwareRenderer mRenderer;
-        WindowInputEventReceiver(InputChannel inputChannel, Looper looper,
-                HardwareRenderer renderer) {
+        public WindowInputEventReceiver(InputChannel inputChannel, Looper looper) {
             super(inputChannel, looper);
-            mRenderer = renderer;
-            if (mRenderer != null) {
-                mRenderer.addObserver(getNativeFrameMetricsObserver());
-            }
         }
 
         @Override
@@ -10743,14 +10741,43 @@ public final class ViewRootImpl implements ViewParent,
         @Override
         public void dispose() {
             unscheduleConsumeBatchedInput();
-            if (mRenderer != null) {
-                mRenderer.removeObserver(getNativeFrameMetricsObserver());
-            }
             super.dispose();
         }
     }
     private WindowInputEventReceiver mInputEventReceiver;
 
+    final class InputMetricsListener
+            implements HardwareRendererObserver.OnFrameMetricsAvailableListener {
+        public long[] data = new long[FrameMetrics.Index.FRAME_STATS_COUNT];
+
+        @Override
+        public void onFrameMetricsAvailable(int dropCountSinceLastInvocation) {
+            final int inputEventId = (int) data[FrameMetrics.Index.INPUT_EVENT_ID];
+            if (inputEventId == INVALID_INPUT_EVENT_ID) {
+                return;
+            }
+            final long presentTime = data[FrameMetrics.Index.DISPLAY_PRESENT_TIME];
+            if (presentTime <= 0) {
+                // Present time is not available for this frame. If the present time is not
+                // available, we cannot compute end-to-end input latency metrics.
+                return;
+            }
+            final long gpuCompletedTime = data[FrameMetrics.Index.GPU_COMPLETED];
+            if (mInputEventReceiver == null) {
+                return;
+            }
+            if (gpuCompletedTime >= presentTime) {
+                final double discrepancyMs = (gpuCompletedTime - presentTime) * 1E-6;
+                final long vsyncId = data[FrameMetrics.Index.FRAME_TIMELINE_VSYNC_ID];
+                Log.w(TAG, "Not reporting timeline because gpuCompletedTime is " + discrepancyMs
+                        + "ms ahead of presentTime. FRAME_TIMELINE_VSYNC_ID=" + vsyncId
+                        + ", INPUT_EVENT_ID=" + inputEventId);
+                // TODO(b/186664409): figure out why this sometimes happens
+                return;
+            }
+            mInputEventReceiver.reportTimeline(inputEventId, gpuCompletedTime, presentTime);
+        }
+    }
     HardwareRendererObserver mHardwareRendererObserver;
 
     final class ConsumeBatchedInputRunnable implements Runnable {
@@ -10889,17 +10916,18 @@ public final class ViewRootImpl implements ViewParent,
      */
     @VisibleForTesting
     public void processRawInputEvent(InputEvent event) {
-        Trace.traceBegin(Trace.TRACE_TAG_VIEW, "processInputEventForCompatibility");
-        List<InputEvent> processedEvents;
-        try {
-            processedEvents =
-                    mInputCompatProcessor.processInputEventForCompatibility(event);
-        } finally {
-            Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+        List<InputEvent> processedEvents = null;
+        if (mInputCompatHandler != null) {
+            Trace.traceBegin(Trace.TRACE_TAG_VIEW, "processInputEventForCompatibility");
+            try {
+                processedEvents = mInputCompatHandler.processInputEvent(event);
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_VIEW);
+            }
         }
         if (processedEvents != null) {
             if (processedEvents.isEmpty()) {
-                // InputEvent consumed by mInputCompatProcessor
+                // InputEvent consumed by mInputCompatHandler
                 mInputEventReceiver.finishInputEvent(event, true);
             } else {
                 for (int i = 0; i < processedEvents.size(); i++) {
@@ -11749,10 +11777,8 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         @Override
-        public void resized(ClientWindowFrames frames, boolean reportDraw,
-                MergedConfiguration mergedConfiguration, InsetsState insetsState,
-                boolean forceLayout, boolean alwaysConsumeSystemBars, int displayId, int syncSeqId,
-                boolean dragResizing, @Nullable ActivityWindowInfo activityWindowInfo) {
+        public void resized(WindowRelayoutResult layout, boolean reportDraw,
+                boolean forceLayout, int displayId, boolean dragResizing) {
             final boolean isFromResizeItem = mIsFromTransactionItem;
             mIsFromTransactionItem = false;
             // Although this is a AIDL method, it will only be triggered in local process through
@@ -11761,7 +11787,7 @@ public final class ViewRootImpl implements ViewParent,
             if (viewAncestor == null) {
                 return;
             }
-            if (insetsState.isSourceOrDefaultVisible(ID_IME, Type.ime())) {
+            if (layout.insetsState.isSourceOrDefaultVisible(ID_IME, Type.ime())) {
                 ImeTracing.getInstance().triggerClientDump("ViewRootImpl.W#resized",
                         viewAncestor.getInsetsController().getHost().getInputMethodManager(),
                         null /* icProto */);
@@ -11770,22 +11796,18 @@ public final class ViewRootImpl implements ViewParent,
             // WindowStateResizeItem, then it can run directly.
             if (isFromResizeItem && viewAncestor.mHandler.getLooper()
                     == ActivityThread.currentActivityThread().getLooper()) {
-                viewAncestor.handleResized(frames, reportDraw, mergedConfiguration, insetsState,
-                        forceLayout, alwaysConsumeSystemBars, displayId, syncSeqId, dragResizing,
-                        activityWindowInfo);
+                viewAncestor.handleResized(layout.frames, reportDraw, layout.mergedConfiguration,
+                        layout.insetsState, forceLayout, displayId, layout.syncSeqId, dragResizing,
+                        layout.activityWindowInfo);
                 return;
             }
             // The the parameters from WindowStateResizeItem are already copied.
             final boolean needsCopy =
                     !isFromResizeItem && (Binder.getCallingPid() == Process.myPid());
             if (needsCopy) {
-                insetsState = new InsetsState(insetsState, true /* copySource */);
-                frames = new ClientWindowFrames(frames);
-                mergedConfiguration = new MergedConfiguration(mergedConfiguration);
+                layout = new WindowRelayoutResult(layout);
             }
-            viewAncestor.dispatchResized(frames, reportDraw, mergedConfiguration, insetsState,
-                    forceLayout, alwaysConsumeSystemBars, displayId, syncSeqId, dragResizing,
-                    activityWindowInfo);
+            viewAncestor.dispatchResized(layout, reportDraw, forceLayout, displayId, dragResizing);
         }
 
         @Override
@@ -11827,34 +11849,22 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         @Override
-        public void showInsets(@InsetsType int types, boolean fromIme,
-                @Nullable ImeTracker.Token statsToken) {
+        public void showInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
             final ViewRootImpl viewAncestor = mViewAncestor.get();
-            if (fromIme) {
-                ImeTracing.getInstance().triggerClientDump("ViewRootImpl.W#showInsets",
-                        viewAncestor.getInsetsController().getHost().getInputMethodManager(),
-                        null /* icProto */);
-            }
             if (viewAncestor != null) {
                 ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_SHOW_INSETS);
-                viewAncestor.showInsets(types, fromIme, statsToken);
+                viewAncestor.showInsets(types, statsToken);
             } else {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_SHOW_INSETS);
             }
         }
 
         @Override
-        public void hideInsets(@InsetsType int types, boolean fromIme,
-                @Nullable ImeTracker.Token statsToken) {
+        public void hideInsets(@InsetsType int types, @Nullable ImeTracker.Token statsToken) {
             final ViewRootImpl viewAncestor = mViewAncestor.get();
-            if (fromIme) {
-                ImeTracing.getInstance().triggerClientDump("ViewRootImpl.W#hideInsets",
-                        viewAncestor.getInsetsController().getHost().getInputMethodManager(),
-                        null /* icProto */);
-            }
             if (viewAncestor != null) {
                 ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_HIDE_INSETS);
-                viewAncestor.hideInsets(types, fromIme, statsToken);
+                viewAncestor.hideInsets(types, statsToken);
             } else {
                 ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_CLIENT_HIDE_INSETS);
             }
@@ -13182,16 +13192,22 @@ public final class ViewRootImpl implements ViewParent,
      * from those views.
      */
     private void updateFrameRateFromThreadedRendererViews() {
-        ArrayList<View> views = mThreadedRendererViews;
+        ArrayList<View> views = mThreadedRendererViewsCache;
+        synchronized (mThreadedRendererViews) {
+            views.addAll(mThreadedRendererViews);
+        }
         for (int i = views.size() - 1; i >= 0; i--) {
             View view = views.get(i);
             View.AttachInfo attachInfo = view.mAttachInfo;
             if (attachInfo == null || attachInfo.mViewRootImpl != this) {
-                views.remove(i);
+                synchronized (mThreadedRendererViews) {
+                    mThreadedRendererViews.remove(view);
+                }
             } else {
                 view.votePreferredFrameRate();
             }
         }
+        views.clear();
     }
 
     /**
@@ -13400,8 +13416,12 @@ public final class ViewRootImpl implements ViewParent,
      * @param view The View with the ThreadedRenderer animation that started.
      */
     public void addThreadedRendererView(View view) {
-        if (shouldEnableDvrr() && !mThreadedRendererViews.contains(view)) {
-            mThreadedRendererViews.add(view);
+        if (shouldEnableDvrr()) {
+            synchronized (mThreadedRendererViews) {
+                if (!mThreadedRendererViews.contains(view)) {
+                    mThreadedRendererViews.add(view);
+                }
+            }
         }
     }
 
@@ -13411,10 +13431,11 @@ public final class ViewRootImpl implements ViewParent,
      * @param view The View whose ThreadedRender animation has stopped.
      */
     public void removeThreadedRendererView(View view) {
-        mThreadedRendererViews.remove(view);
-        if (shouldEnableDvrr() && !mInvalidationIdleMessagePosted) {
-            mInvalidationIdleMessagePosted = true;
-            mHandler.sendEmptyMessageDelayed(MSG_CHECK_INVALIDATION_IDLE, IDLE_TIME_MILLIS);
+        if (shouldEnableDvrr()) {
+            synchronized (mThreadedRendererViews) {
+                mThreadedRendererViews.remove(view);
+            }
+            sendCheckInvalidationIdle();
         }
     }
 
@@ -13633,10 +13654,10 @@ public final class ViewRootImpl implements ViewParent,
         mHandler.removeMessages(MSG_TOUCH_BOOST_TIMEOUT);
         mHandler.removeMessages(MSG_FRAME_RATE_SETTING);
         mHandler.removeMessages(MSG_SURFACE_REPLACED_TIMEOUT);
-        if (mInvalidationIdleMessagePosted) {
+        synchronized (mThreadedRendererViews) {
             mInvalidationIdleMessagePosted = false;
-            mHandler.removeMessages(MSG_CHECK_INVALIDATION_IDLE);
         }
+        mHandler.removeMessages(MSG_CHECK_INVALIDATION_IDLE);
     }
 
     /**
@@ -13655,7 +13676,11 @@ public final class ViewRootImpl implements ViewParent,
         mMinusOneFrameIntervalMillis = timeIntervalMillis;
 
         mLastUpdateTimeMillis = currentTimeMillis;
-        if (mThreadedRendererViews.isEmpty() && timeIntervalMillis + mMinusTwoFrameIntervalMillis
+        boolean isThreadedRendererViewsEmpty;
+        synchronized (mThreadedRendererViews) {
+            isThreadedRendererViewsEmpty = mThreadedRendererViews.isEmpty();
+        }
+        if (isThreadedRendererViewsEmpty && timeIntervalMillis + mMinusTwoFrameIntervalMillis
                 >= INFREQUENT_UPDATE_INTERVAL_MILLIS) {
             int infrequentUpdateCount = mInfrequentUpdateCount;
             mInfrequentUpdateCount = infrequentUpdateCount == INFREQUENT_UPDATE_COUNTS

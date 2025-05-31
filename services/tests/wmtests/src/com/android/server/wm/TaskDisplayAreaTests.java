@@ -172,7 +172,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
     @Test
     public void getOrCreateLaunchRootUsesActivityOptionsWindowingMode() {
         final Task rootTask = createTask(
-                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+                mDisplayContent, WINDOWING_MODE_FREEFORM, ACTIVITY_TYPE_STANDARD);
         rootTask.mCreatedByOrganizer = true;
         final TaskDisplayArea taskDisplayArea = rootTask.getDisplayArea();
         taskDisplayArea.setLaunchRootTask(
@@ -189,6 +189,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
                 null /* launchParams */, 0 /* launchFlags */, ACTIVITY_TYPE_STANDARD,
                 true /* onTop */);
         assertSame(rootTask, actualRootTask.getRootTask());
+        assertEquals(WINDOWING_MODE_FREEFORM, candidateRootTask.getWindowingMode());
     }
 
     @Test

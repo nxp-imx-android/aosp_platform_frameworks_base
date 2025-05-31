@@ -126,6 +126,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSplitScreenTask
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
@@ -161,7 +162,6 @@ import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.OneShotRemoteHandler
 import com.android.wm.shell.transition.TestRemoteTransition
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS
 import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTestsBase.Companion.HOME_LAUNCHER_PACKAGE_NAME
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
@@ -281,6 +281,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler
     @Mock private lateinit var mockAppOpsManager: AppOpsManager
     @Mock private lateinit var visualIndicatorUpdateScheduler: VisualIndicatorUpdateScheduler
+    @Mock private lateinit var desktopFirstListenerManager: DesktopFirstListenerManager
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -418,6 +419,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
         whenever(userProfileContexts.getOrCreate(anyInt())).thenReturn(context)
         whenever(freeformTaskTransitionStarter.startPipTransition(any())).thenReturn(Binder())
+        whenever(rootTaskDisplayAreaOrganizer.displayIds).thenReturn(intArrayOf(DEFAULT_DISPLAY))
 
         controller = createController()
         controller.setSplitScreenController(splitScreenController)
@@ -432,8 +434,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.taskbarDesktopTaskListener = taskbarDesktopTaskListener
         controller.setSnapEventHandler(snapEventHandler)
-
-        assumeTrue(ENABLE_SHELL_TRANSITIONS)
 
         taskRepository = userRepositories.current
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
@@ -491,6 +491,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             desktopState,
             desktopConfig,
             visualIndicatorUpdateScheduler,
+            Optional.of(desktopFirstListenerManager),
         )
 
     @After
@@ -3196,6 +3197,115 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
         wct.assertLaunchTaskOnDisplay(SECOND_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun moveTaskToFront_backgroundTask_notInDesk_launchesInAssociatedDisplay() {
+        val deskId = 2
+        val taskId = 1
+        val task = createRecentTaskInfo(taskId, displayId = SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(taskId)).thenReturn(null)
+        whenever(recentTasksController.findTaskInBackground(taskId)).thenReturn(task)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = true
+
+        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        wct.assertLaunchTaskOnDisplay(SECOND_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun moveTaskToFront_backgroundTask_notInDesk_unsupportedAssociatedDisplay_launchesInFocused() {
+        val focusedDisplayId = 10
+        val deskId = 2
+        val taskId = 1
+        val task = createRecentTaskInfo(taskId, displayId = SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        taskRepository.addDesk(displayId = focusedDisplayId, deskId = focusedDisplayId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(taskId)).thenReturn(null)
+        whenever(recentTasksController.findTaskInBackground(taskId)).thenReturn(task)
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(focusedDisplayId)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[focusedDisplayId] = true
+
+        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        wct.assertLaunchTaskOnDisplay(focusedDisplayId)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY,
+    )
+    fun moveTaskToFront_backgroundTask_notInDesk_unsupportedAssociatedAndFocusedDisplay_launchesInSupported() {
+        val supportedDisplayId = 11
+        val focusedDisplayId = 10
+        val deskId = 2
+        val taskId = 1
+        val task = createRecentTaskInfo(taskId, displayId = SECOND_DISPLAY)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = deskId)
+        taskRepository.addDesk(displayId = focusedDisplayId, deskId = focusedDisplayId)
+        taskRepository.addDesk(displayId = supportedDisplayId, deskId = supportedDisplayId)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(taskId)).thenReturn(null)
+        whenever(recentTasksController.findTaskInBackground(taskId)).thenReturn(task)
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(focusedDisplayId)
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(SECOND_DISPLAY, focusedDisplayId, supportedDisplayId))
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+        desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[focusedDisplayId] = false
+        desktopState.overrideDesktopModeSupportPerDisplay[supportedDisplayId] = true
+
+        controller.moveTaskToFront(task.taskId, unminimizeReason = UnminimizeReason.UNKNOWN)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        wct.assertLaunchTaskOnDisplay(supportedDisplayId)
     }
 
     @Test

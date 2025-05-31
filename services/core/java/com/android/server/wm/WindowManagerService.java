@@ -115,7 +115,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STARTING_WINDOW;
@@ -1606,10 +1605,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     public int addWindow(Session session, IWindow client, LayoutParams attrs, int viewVisibility,
             int displayId, int requestUserId, @InsetsType int requestedVisibleTypes,
-            InputChannel outInputChannel, InsetsState outInsetsState,
-            InsetsSourceControl.Array outActiveControls, Rect outAttachedFrame,
-            float[] outSizeCompatScale) {
-        outActiveControls.set(null, false /* copyControls */);
+            InputChannel outInputChannel, WindowRelayoutResult result) {
+        result.activeControls.set(null, false /* copyControls */);
         int[] appOp = new int[1];
         final boolean isRoundedCornerOverlay = (attrs.privateFlags
                 & PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY) != 0;
@@ -1925,9 +1922,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     newlyCreatedTransition = chain.getTransition();
                 }
                 chain.collect(win.mToken);
-                res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
-                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
-                        callingUid);
+                res |= addWindowInner(win, displayPolicy, activity, displayContent, client, attrs,
+                        callingUid, result);
                 // A presentation hides all activities behind on the same display.
                 win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
@@ -1942,9 +1938,8 @@ public class WindowManagerService extends IWindowManager.Stub
                             null /* remoteTransition */, null /* displayChange */);
                 }
             } else {
-                res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
-                        outAttachedFrame, outActiveControls, client, outSizeCompatScale, attrs,
-                        callingUid);
+                res |= addWindowInner(win, displayPolicy, activity, displayContent, client, attrs,
+                        callingUid, result);
             }
         }
 
@@ -1955,9 +1950,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private int addWindowInner(@NonNull WindowState win, @NonNull DisplayPolicy displayPolicy,
             @NonNull ActivityRecord activity, @NonNull DisplayContent displayContent,
-            @NonNull InsetsState outInsetsState, @NonNull Rect outAttachedFrame,
-            @NonNull InsetsSourceControl.Array outActiveControls, @NonNull IWindow client,
-            @NonNull float[] outSizeCompatScale, @NonNull LayoutParams attrs, int uid) {
+            @NonNull IWindow client, @NonNull LayoutParams attrs, int uid,
+            @NonNull WindowRelayoutResult result) {
         int res = 0;
         final int type = attrs.type;
         boolean imMayMove = true;
@@ -2059,19 +2053,18 @@ public class WindowManagerService extends IWindowManager.Stub
         displayContent.getInsetsStateController().updateAboveInsetsState(
                 false /* notifyInsetsChanged */);
 
-        win.fillInsetsState(outInsetsState, true /* copySources */);
-        getInsetsSourceControls(win, outActiveControls);
+        win.fillInsetsState(result.insetsState, true /* copySources */);
+        getInsetsSourceControls(win, result.activeControls);
 
         if (win.mLayoutAttached) {
-            outAttachedFrame.set(win.getParentWindow().getFrame());
+            result.frames.attachedFrame = new Rect(win.getParentWindow().getFrame());
             if (win.mInvGlobalScale != 1f) {
-                outAttachedFrame.scale(win.mInvGlobalScale);
+                result.frames.attachedFrame.scale(win.mInvGlobalScale);
             }
         } else {
-            // Make this invalid which indicates a null attached frame.
-            outAttachedFrame.set(0, 0, -1, -1);
+            result.frames.attachedFrame = null;
         }
-        outSizeCompatScale[0] = win.getCompatScaleForClient();
+        result.frames.compatScale = win.getCompatScaleForClient();
 
         if (res >= ADD_OKAY && win.isPresentation()) {
             mPresentationController.onPresentationAdded(win, uid);
@@ -2424,22 +2417,20 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Relayouts window. */
     public int relayoutWindow(Session session, IWindow client, LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewVisibility, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult) {
+            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult,
+            SurfaceControl outSurfaceControl) {
         final ClientWindowFrames outFrames;
         final MergedConfiguration outMergedConfiguration;
-        final SurfaceControl outSurfaceControl;
         final InsetsState outInsetsState;
         final InsetsSourceControl.Array outActiveControls;
         if (outRelayoutResult != null) {
             outFrames = outRelayoutResult.frames;
             outMergedConfiguration = outRelayoutResult.mergedConfiguration;
-            outSurfaceControl = outRelayoutResult.surfaceControl;
             outInsetsState = outRelayoutResult.insetsState;
             outActiveControls = outRelayoutResult.activeControls;
         } else {
             outFrames = null;
             outMergedConfiguration = null;
-            outSurfaceControl = null;
             outInsetsState = null;
             outActiveControls = null;
         }
@@ -8259,24 +8250,22 @@ public class WindowManagerService extends IWindowManager.Stub
                     imeInputTarget.getDisplayContent()
                             .updateImeInputAndControlTarget(imeInputTarget);
 
-                    if (android.view.inputmethod.Flags.refactorInsetsController()) {
-                        // In case of a virtual display that may not show the IME, reset the
-                        // inputTarget of all other displays
-                        WindowState imeInputTargetWindow = imeInputTarget.getWindowState();
-                        if (imeInputTargetWindow != null) {
-                            final InsetsControlTarget fallback = imeInputTarget.getDisplayContent()
-                                    .getImeHostOrFallback(imeInputTargetWindow);
-                            if (imeInputTargetWindow != fallback) {
-                                // fallback should be the RemoteInsetsControlTarget of the
-                                // default display
-                                final int currentDisplayId = imeInputTarget.getDisplayContent()
-                                        .getDisplayId();
-                                mRoot.forAllDisplays(display -> {
-                                    if (display.getDisplayId() != currentDisplayId) {
-                                        display.setImeInputTarget(null /* target */);
-                                    }
-                                });
-                            }
+                    // In case of a virtual display that may not show the IME, reset the
+                    // inputTarget of all other displays
+                    WindowState imeInputTargetWindow = imeInputTarget.getWindowState();
+                    if (imeInputTargetWindow != null) {
+                        final InsetsControlTarget fallback = imeInputTarget.getDisplayContent()
+                                .getImeHost(imeInputTargetWindow);
+                        if (imeInputTargetWindow != fallback) {
+                            // fallback should be the RemoteInsetsControlTarget of the
+                            // default display
+                            final int currentDisplayId = imeInputTarget.getDisplayContent()
+                                    .getDisplayId();
+                            mRoot.forAllDisplays(display -> {
+                                if (display.getDisplayId() != currentDisplayId) {
+                                    display.setImeInputTarget(null /* target */);
+                                }
+                            });
                         }
                     }
                 }
@@ -8427,68 +8416,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
             return ImeClientFocusResult.NOT_IME_TARGET_WINDOW;
-        }
-
-        @Override
-        public void showImePostLayout(IBinder imeTargetWindowToken,
-                @NonNull ImeTracker.Token statsToken) {
-            synchronized (mGlobalLock) {
-                final InputTarget imeInputTarget =
-                        getInputTargetFromWindowTokenLocked(imeTargetWindowToken);
-                if (imeInputTarget == null) {
-                    ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                    return;
-                }
-                ImeTracker.forLogging().onProgress(statsToken,
-                        ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-
-                final InsetsControlTarget imeControlTarget = imeInputTarget.getImeControlTarget();
-                final WindowState imeControlTargetWindow = imeControlTarget.getWindow();
-                // If imeControlTarget doesn't have a window, it's using remoteControlTarget
-                // which is controlled by default display
-                final DisplayContent dc = imeControlTargetWindow != null
-                        ? imeControlTargetWindow.getDisplayContent()
-                        : getDefaultDisplayContentLocked();
-                dc.getInsetsStateController().getImeSourceProvider()
-                        .scheduleShowImePostLayout(imeControlTarget, statsToken);
-            }
-        }
-
-        @Override
-        public void hideIme(IBinder imeTargetWindowToken, int displayId,
-                @NonNull ImeTracker.Token statsToken) {
-            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "WMS.hideIme");
-            synchronized (mGlobalLock) {
-                WindowState imeTarget = mWindowMap.get(imeTargetWindowToken);
-                ProtoLog.d(WM_DEBUG_IME, "hideIme target: %s", imeTarget);
-                DisplayContent dc = mRoot.getDisplayContent(displayId);
-                if (imeTarget != null) {
-                    final WindowState imeControlTargetWindow = imeTarget.getImeControlTarget()
-                            .getWindow();
-                    if (imeControlTargetWindow != null) {
-                        dc = imeControlTargetWindow.getDisplayContent();
-                    }
-                    // If there was a pending IME show(), reset it as IME has been
-                    // requested to be hidden.
-                    dc.getInsetsStateController().getImeSourceProvider().abortShowImePostLayout();
-                }
-                if (dc != null && dc.getImeControlTarget() != null) {
-                    ImeTracker.forLogging().onProgress(statsToken,
-                            ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                    ProtoLog.d(WM_DEBUG_IME, "hideIme imeControlTarget: %s",
-                            dc.getImeControlTarget());
-                    dc.getImeControlTarget().hideInsets(WindowInsets.Type.ime(),
-                            true /* fromIme */, statsToken);
-                } else {
-                    ImeTracker.forLogging().onFailed(statsToken,
-                            ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
-                }
-                if (dc != null) {
-                    dc.getInsetsStateController().getImeSourceProvider().setImeShowing(false);
-                }
-            }
-            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         }
 
         @Override

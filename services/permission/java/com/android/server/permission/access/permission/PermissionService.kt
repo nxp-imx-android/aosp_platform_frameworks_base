@@ -41,7 +41,6 @@ import android.os.RemoteCallbackList
 import android.os.RemoteException
 import android.os.ServiceManager
 import android.os.UserHandle
-import android.os.UserManager
 import android.permission.IOnPermissionsChangeListener
 import android.permission.PermissionControllerManager
 import android.permission.PermissionManager
@@ -79,6 +78,7 @@ import com.android.server.permission.access.UidUri
 import com.android.server.permission.access.appop.AppIdAppOpPolicy
 import com.android.server.permission.access.collection.* // ktlint-disable no-wildcard-imports
 import com.android.server.permission.access.immutable.* // ktlint-disable no-wildcard-imports
+import com.android.server.permission.access.util.PermissionEnforcer
 import com.android.server.permission.access.util.andInv
 import com.android.server.permission.access.util.hasAnyBit
 import com.android.server.permission.access.util.hasBits
@@ -126,6 +126,7 @@ class PermissionService(private val service: AccessCheckingService) :
     private lateinit var handler: Handler
     private lateinit var onPermissionsChangeListeners: OnPermissionsChangeListeners
     private lateinit var onPermissionFlagsChangedListener: OnPermissionFlagsChangedListener
+    private lateinit var permissionEnforcer: PermissionEnforcer
 
     private val storageVolumeLock = Any()
     @GuardedBy("storageVolumeLock") private val mountedStorageVolumes = ArraySet<String?>()
@@ -156,6 +157,7 @@ class PermissionService(private val service: AccessCheckingService) :
             )
         systemConfig = SystemConfig.getInstance()
         userManagerInternal = LocalServices.getService(UserManagerInternal::class.java)
+        permissionEnforcer = PermissionEnforcer(context)
         userManagerService = UserManagerService.getInstance()
         // The package info cache is the cache for package and permission information.
         // Disable the package info and package permission caches locally but leave the
@@ -827,7 +829,7 @@ class PermissionService(private val service: AccessCheckingService) :
             return
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = true,
@@ -1137,13 +1139,13 @@ class PermissionService(private val service: AccessCheckingService) :
             return 0
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = false,
             "getPermissionFlags",
         )
-        enforceCallingOrSelfAnyPermission(
+        permissionEnforcer.enforceCallingOrSelfAnyPermission(
             "getPermissionFlags",
             Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
             Manifest.permission.REVOKE_RUNTIME_PERMISSIONS,
@@ -1180,13 +1182,13 @@ class PermissionService(private val service: AccessCheckingService) :
             Slog.w(LOG_TAG, "getAllPermissionStates: Unknown user $userId")
             return emptyMap()
         }
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = false,
             "getAllPermissionStates",
         )
-        enforceCallingOrSelfAnyPermission(
+        permissionEnforcer.enforceCallingOrSelfAnyPermission(
             "getAllPermissionStates",
             Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
             Manifest.permission.REVOKE_RUNTIME_PERMISSIONS,
@@ -1230,7 +1232,7 @@ class PermissionService(private val service: AccessCheckingService) :
             return false
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = false,
@@ -1280,7 +1282,7 @@ class PermissionService(private val service: AccessCheckingService) :
             return false
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = false,
@@ -1379,13 +1381,13 @@ class PermissionService(private val service: AccessCheckingService) :
             return
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = true,
             "updatePermissionFlags",
         )
-        enforceCallingOrSelfAnyPermission(
+        permissionEnforcer.enforceCallingOrSelfAnyPermission(
             "updatePermissionFlags",
             Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
             Manifest.permission.REVOKE_RUNTIME_PERMISSIONS,
@@ -1500,13 +1502,13 @@ class PermissionService(private val service: AccessCheckingService) :
             return
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = true,
             enforceShellRestriction = true,
             "updatePermissionFlagsForAllApps",
         )
-        enforceCallingOrSelfAnyPermission(
+        permissionEnforcer.enforceCallingOrSelfAnyPermission(
             "updatePermissionFlagsForAllApps",
             Manifest.permission.GRANT_RUNTIME_PERMISSIONS,
             Manifest.permission.REVOKE_RUNTIME_PERMISSIONS,
@@ -1609,7 +1611,7 @@ class PermissionService(private val service: AccessCheckingService) :
             return null
         }
 
-        enforceCallingOrSelfCrossUserPermission(
+        permissionEnforcer.enforceCallingOrSelfCrossUserPermission(
             userId,
             enforceFullPermission = false,
             enforceShellRestriction = false,
@@ -2603,98 +2605,6 @@ class PermissionService(private val service: AccessCheckingService) :
         callingUid: Int,
         userId: Int,
     ): PackageManagerLocal.FilteredSnapshot = filtered(callingUid, UserHandle.of(userId))
-
-    /**
-     * If neither you nor the calling process of an IPC you are handling has been granted the
-     * permission for accessing a particular [userId], throw a [SecurityException].
-     *
-     * @see Context.enforceCallingOrSelfPermission
-     * @see UserManager.DISALLOW_DEBUGGING_FEATURES
-     */
-    private fun enforceCallingOrSelfCrossUserPermission(
-        userId: Int,
-        enforceFullPermission: Boolean,
-        enforceShellRestriction: Boolean,
-        message: String?,
-    ) {
-        require(userId >= 0) { "userId $userId is invalid" }
-        val callingUid = Binder.getCallingUid()
-        val callingUserId = UserHandle.getUserId(callingUid)
-        if (userId != callingUserId) {
-            val permissionName =
-                if (enforceFullPermission) {
-                    Manifest.permission.INTERACT_ACROSS_USERS_FULL
-                } else {
-                    Manifest.permission.INTERACT_ACROSS_USERS
-                }
-            if (
-                context.checkCallingOrSelfPermission(permissionName) !=
-                    PackageManager.PERMISSION_GRANTED
-            ) {
-                val exceptionMessage = buildString {
-                    if (message != null) {
-                        append(message)
-                        append(": ")
-                    }
-                    append("Neither user ")
-                    append(callingUid)
-                    append(" nor current process has ")
-                    append(permissionName)
-                    append(" to access user ")
-                    append(userId)
-                }
-                throw SecurityException(exceptionMessage)
-            }
-        }
-        if (enforceShellRestriction && isShellUid(callingUid)) {
-            val isShellRestricted =
-                userManagerInternal.hasUserRestriction(
-                    UserManager.DISALLOW_DEBUGGING_FEATURES,
-                    userId,
-                )
-            if (isShellRestricted) {
-                val exceptionMessage = buildString {
-                    if (message != null) {
-                        append(message)
-                        append(": ")
-                    }
-                    append("Shell is disallowed to access user ")
-                    append(userId)
-                }
-                throw SecurityException(exceptionMessage)
-            }
-        }
-    }
-
-    /**
-     * If neither you nor the calling process of an IPC you are handling has been granted any of the
-     * permissions, throw a [SecurityException].
-     *
-     * @see Context.enforceCallingOrSelfPermission
-     */
-    private fun enforceCallingOrSelfAnyPermission(
-        message: String?,
-        vararg permissionNames: String,
-    ) {
-        val hasAnyPermission =
-            permissionNames.any { permissionName ->
-                context.checkCallingOrSelfPermission(permissionName) ==
-                    PackageManager.PERMISSION_GRANTED
-            }
-        if (!hasAnyPermission) {
-            val exceptionMessage = buildString {
-                if (message != null) {
-                    append(message)
-                    append(": ")
-                }
-                append("Neither user ")
-                append(Binder.getCallingUid())
-                append(" nor current process has any of ")
-                permissionNames.joinTo(this, ", ")
-            }
-            throw SecurityException(exceptionMessage)
-        }
-    }
 
     /** Callback invoked when interesting actions have been taken on a permission. */
     private inner class OnPermissionFlagsChangedListener :

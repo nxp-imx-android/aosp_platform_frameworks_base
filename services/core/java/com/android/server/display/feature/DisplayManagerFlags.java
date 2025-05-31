@@ -63,6 +63,10 @@ public class DisplayManagerFlags {
             Flags.FLAG_DISPLAY_TOPOLOGY,
             DesktopExperienceFlags.DISPLAY_TOPOLOGY::isTrue);
 
+    private final FlagState mDisplayTopologyApi = new FlagState(
+            Flags.FLAG_DISPLAY_TOPOLOGY_API,
+            Flags::displayTopologyApi);
+
     private final FlagState mConnectedDisplayErrorHandlingFlagState = new FlagState(
             Flags.FLAG_ENABLE_CONNECTED_DISPLAY_ERROR_HANDLING,
             Flags::enableConnectedDisplayErrorHandling);
@@ -294,6 +298,11 @@ public class DisplayManagerFlags {
     private final FlagState mEnableDefaultDisplayInTopologySwitch = new FlagState(
             Flags.FLAG_ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH,
             DesktopExperienceFlags.ENABLE_DEFAULT_DISPLAY_IN_TOPOLOGY_SWITCH::isTrue
+    );
+
+    private final FlagState mModeSwitchWithoutSaving = new FlagState(
+            Flags.FLAG_MODE_SWITCH_WITHOUT_SAVING,
+            Flags::modeSwitchWithoutSaving
     );
 
     /**
@@ -633,6 +642,10 @@ public class DisplayManagerFlags {
         return mEnableDefaultDisplayInTopologySwitch.isEnabled();
     }
 
+    public boolean isModeSwitchWithoutSavingEnabled() {
+        return mModeSwitchWithoutSaving.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -647,6 +660,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mExternalDisplayLimitModeState);
         pw.println(" " + mDisplayTopology);
+        pw.println(" " + mDisplayTopologyApi);
         pw.println(" " + mPowerThrottlingClamperFlagState);
         pw.println(" " + mEvenDimmerFlagState);
         pw.println(" " + mSmallAreaDetectionFlagState);
@@ -693,6 +707,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
+        pw.println(" " + mModeSwitchWithoutSaving);
     }
 
     private static class FlagState {

@@ -16,10 +16,7 @@
 
 package com.android.wm.shell.pip2.phone;
 
-import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
-
 import android.app.PictureInPictureParams;
-import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -131,36 +128,15 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.setBounds(pipTaskToken, null);
         wct.setWindowingMode(pipTaskToken, mPipDesktopState.getOutPipWindowingMode());
 
-        final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
         mDesktopPipTransitionController.ifPresent(c -> {
             // In multi-activity case, windowing mode change will reparent to original host task, so
             // we have to update the parent windowing mode to what is expected.
             c.maybeUpdateParentInWct(wct,
-                    pipTaskInfo.lastParentTaskIdBeforePip);
+                    mPipTransitionState.getPipTaskInfo().lastParentTaskIdBeforePip);
             // In multi-desks case, we have to reparent the task to the root desk.
-            c.maybeReparentTaskToDesk(wct, pipTaskInfo.taskId);
+            c.maybeReparentTaskToDesk(wct, mPipTransitionState.getPipTaskInfo().taskId);
         });
 
-        return wct;
-    }
-
-    @Nullable
-    private WindowContainerTransaction getRemovePipTransaction() {
-        WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
-        if (pipTaskToken == null) {
-            return null;
-        }
-        WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setBounds(pipTaskToken, null);
-        wct.setWindowingMode(pipTaskToken, WINDOWING_MODE_UNDEFINED);
-        wct.reorder(pipTaskToken, false);
-
-        final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
-        if (pipTaskInfo.launchIntoPipHostTaskId != -1) {
-            // If the current PiP session was entered through content-PiP,
-            // then relaunch the original host task too.
-            wct.startTask(pipTaskInfo.launchIntoPipHostTaskId, null /* ActivityOptions */);
-        }
         return wct;
     }
 
@@ -183,6 +159,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
                             null /* taskInfo */, SplitScreenConstants.SPLIT_POSITION_UNDEFINED);
                 }
             });
+
             boolean toSplit = !wct.isEmpty();
             wct.merge(expandWct, true /* transfer */);
             mPipTransitionController.startExpandTransition(wct, toSplit);
@@ -193,7 +170,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
     public void scheduleRemovePip(boolean withFadeout) {
         mMainExecutor.execute(() -> {
             if (!mPipTransitionState.isInPip()) return;
-            mPipTransitionController.startRemoveTransition(getRemovePipTransaction(), withFadeout);
+            mPipTransitionController.startRemoveTransition(withFadeout);
         });
     }
 

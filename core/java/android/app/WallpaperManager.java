@@ -2144,17 +2144,92 @@ public class WallpaperManager {
     @RequiresPermission(READ_WALLPAPER_INTERNAL)
     @SystemApi
     public WallpaperInstance getWallpaperInstance(@SetWallpaperFlags int which) {
+        return getWallpaperInstance(which, false);
+    }
+
+    /**
+     * Returns the description of the designated wallpaper. Returns null if the lock screen
+     * wallpaper is requested and lock screen wallpaper is not set.
+     *
+     * @param which           Specifies wallpaper to request (home or lock).
+     * @param createMissingId If an image wallpaper has no id and this is true, block to
+     *                        calculate a new id and update the stored WallpaperInfo with it
+     * @throws IllegalArgumentException if {@code which} is not exactly one of
+     *                                  {{@link #FLAG_SYSTEM},{@link #FLAG_LOCK}}.
+     * @hide
+     */
+    @Nullable
+    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    @RequiresPermission(READ_WALLPAPER_INTERNAL)
+    public WallpaperInstance getWallpaperInstance(@SetWallpaperFlags int which,
+            boolean createMissingId) {
         checkExactlyOneWallpaperFlagSet(which);
         try {
             if (sGlobals.mService == null) {
                 Log.w(TAG, "WallpaperService not running");
                 throw new RuntimeException(new DeadSystemException());
             } else {
-                return sGlobals.mService.getWallpaperInstance(which, mContext.getUserId());
+                WallpaperInstance instance = sGlobals.mService.getWallpaperInstance(which,
+                        mContext.getUserId());
+                boolean isStaticWithoutId =
+                        (instance != null && instance.getInfo() == null && instance.getId().equals(
+                                WallpaperInstance.DEFAULT_ID));
+                if (isStaticWithoutId && createMissingId) {
+                    Bitmap bitmap = null;
+                    ParcelFileDescriptor fd = getWallpaperFile(which, false);
+                    if (fd != null) {
+                        try (FileInputStream fileStream = new FileInputStream(
+                                fd.getFileDescriptor())) {
+                            bitmap = BitmapFactory.decodeStream(fileStream);
+                        } catch (IOException e) {
+                            Log.e(TAG, "Error closing file stream when calculating hash", e);
+                        } finally {
+                            try {
+                                fd.close();
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error closing file description when calculating hash",
+                                        e);
+                            }
+                        }
+                    } else {
+                        Drawable drawable = peekDrawable(which);
+                        if (drawable instanceof BitmapDrawable bd && bd.getBitmap() != null) {
+                            bitmap = bd.getBitmap();
+                        }
+                    }
+                    if (bitmap != null) {
+                        String newId = String.valueOf(generateHashCode(bitmap));
+                        sGlobals.mService.setWallpaperDescriptionId(newId, which,
+                                mContext.getUserId());
+                        instance = sGlobals.mService.getWallpaperInstance(which,
+                                mContext.getUserId());
+                    }
+                }
+                return instance;
             }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
+    }
+
+    // TODO(b/421366650) Find a better place for this method.
+    static long generateHashCode(Bitmap bitmap) {
+        long result = 17;
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        result = 31 * result + width;
+        result = 31 * result + height;
+
+        // Traverse pixels exponentially so that hash code generation scales well with large images.
+        for (int x = 0; x < width; x = x * 2 + 1) {
+            for (int y = 0; y < height; y = y * 2 + 1) {
+                result = 31 * result + bitmap.getPixel(x, y);
+            }
+        }
+
+        return result;
     }
 
     /**

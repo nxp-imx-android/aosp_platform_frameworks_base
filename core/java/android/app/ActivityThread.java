@@ -2948,6 +2948,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodRedirect
     public static Application currentApplication() {
         ActivityThread am = currentActivityThread();
         return am != null ? am.mInitialApplication : null;
@@ -7656,8 +7657,6 @@ public final class ActivityThread extends ClientTransactionHandler
         // Let the util.*Array classes maintain "undefined" for apps targeting Pie or earlier.
         UtilConfig.setThrowExceptionForUpperArrayOutOfBounds(
                 data.appInfo.targetSdkVersion >= Build.VERSION_CODES.Q);
-
-        Message.updateCheckRecycle(data.appInfo.targetSdkVersion);
 
         // Supply the targetSdkVersion to the UI rendering module, which may
         // need it in cases where it does not have access to the appInfo.

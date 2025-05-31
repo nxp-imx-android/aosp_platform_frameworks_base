@@ -99,6 +99,7 @@ fun Kosmos.buildNotificationEntry(
         .apply {
             setTag(tag)
             setFlag(context, Notification.FLAG_PROMOTED_ONGOING, promoted)
+            setChannel(NotificationChannel("messages", "messages", IMPORTANCE_DEFAULT))
             modifyNotification(context)
                 .setSmallIcon(Icon.createWithResource(context, R.drawable.ic_device_fan))
                 .setStyle(style)

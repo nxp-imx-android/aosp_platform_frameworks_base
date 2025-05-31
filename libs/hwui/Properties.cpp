@@ -54,9 +54,6 @@ constexpr bool resample_gainmap_regions() {
 constexpr bool early_preload_gl_context() {
     return false;
 }
-constexpr bool calc_workload_orig_deadline() {
-    return false;
-}
 }  // namespace hwui_flags
 #endif // __linux__
 
@@ -296,12 +293,6 @@ bool Properties::resampleGainmapRegions() {
 bool Properties::earlyPreloadGlContext() {
     return base::GetBoolProperty(PROPERTY_EARLY_PRELOAD_GL_CONTEXT,
                                  hwui_flags::early_preload_gl_context());
-}
-
-bool Properties::calcWorkloadOrigDeadline() {
-    static bool sCalcWorkloadOrigDeadline = base::GetBoolProperty(
-            "debug.hwui.calc_workload_orig_deadline", hwui_flags::calc_workload_orig_deadline());
-    return sCalcWorkloadOrigDeadline;
 }
 }  // namespace uirenderer
 }  // namespace android

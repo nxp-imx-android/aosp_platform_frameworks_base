@@ -18,7 +18,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,8 +39,7 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
         mRemoteTasks = remoteTasks;
     }
 
-    ContinuityDeviceConnected(ProtoInputStream pis)
-        throws IOException, ProtoParseException {
+    ContinuityDeviceConnected(ProtoInputStream pis) throws IOException {
 
         boolean hasReadForegroundTaskId = false;
         List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
@@ -52,7 +50,6 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
                         android.companion.ContinuityDeviceConnected.CURRENT_FOREGROUND_TASK_ID
                     );
 
-                    hasReadForegroundTaskId = true;
                     break;
 
                 case (int) android.companion.ContinuityDeviceConnected.REMOTE_TASKS:
@@ -62,11 +59,6 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
                     pis.end(remoteTasksToken);
                     break;
             }
-        }
-
-        if (!hasReadForegroundTaskId) {
-            throw new ProtoParseException(
-                "Missing required field: current_foreground_task_id");
         }
 
         mRemoteTasks = remoteTasks;

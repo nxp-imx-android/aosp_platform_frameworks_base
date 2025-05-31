@@ -21,6 +21,7 @@ import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
 import static android.hardware.flags.Flags.FLAG_OVERLAYPROPERTIES_CLASS_API;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY_API;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_GET_SUPPORTED_REFRESH_RATES;
 import static com.android.server.display.feature.flags.Flags.FLAG_HIGHEST_HDR_SDR_RATIO_API;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_HAS_ARR_SUPPORT;
@@ -840,6 +841,15 @@ public final class Display {
     public int getType() {
         return mType;
     }
+
+    /**
+     * Check if this is a built-in display.
+     */
+    @FlaggedApi(FLAG_DISPLAY_TOPOLOGY_API)
+    public boolean isInternal() {
+        return mType == TYPE_INTERNAL;
+    }
+
 
     /**
      * Gets the display address, or null if none.
@@ -1665,11 +1675,37 @@ public final class Display {
     @TestApi
     @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
     public void setUserPreferredDisplayMode(@NonNull Display.Mode mode) {
+        setUserPreferredDisplayMode(mode, true);
+    }
+
+    /**
+     * Sets the default {@link Display.Mode} to use for the display.  The display mode includes
+     * preference for resolution and refresh rate.
+     * If the mode specified is not supported by the display, then no mode change occurs.
+     *
+     * @param mode The {@link Display.Mode} to set, which can include resolution and/or
+     * refresh-rate. It is created using {@link Display.Mode.Builder}.
+     * @param storeMode controls if the mode should be persisted or not.
+     *`
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
+    public void setUserPreferredDisplayMode(@NonNull Display.Mode mode, boolean storeMode) {
         // Create a new object containing default values for the unused fields like mode ID and
         // alternative refresh rates.
         Display.Mode preferredMode = new Display.Mode(mode.getPhysicalWidth(),
                 mode.getPhysicalHeight(), mode.getRefreshRate());
-        mGlobal.setUserPreferredDisplayMode(mDisplayId, preferredMode);
+        mGlobal.setUserPreferredDisplayMode(mDisplayId, preferredMode, storeMode);
+    }
+
+    /**
+     * Resets the default {@link Display.Mode} to use for the display from persistence.
+     *`
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
+    public void resetUserPreferredDisplayMode() {
+        mGlobal.resetUserPreferredDisplayMode(mDisplayId);
     }
 
     /**

@@ -18,8 +18,10 @@ package android.app;
 
 import static android.app.Flags.FLAG_PIC_ISOLATE_CACHE_BY_UID;
 import static android.app.PropertyInvalidatedCache.NONCE_UNSET;
+import static android.app.PropertyInvalidatedCache.MODULE_ADSERVICES;
 import static android.app.PropertyInvalidatedCache.MODULE_BLUETOOTH;
 import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
+import static android.app.PropertyInvalidatedCache.MODULE_TELEPHONY;
 import static android.app.PropertyInvalidatedCache.MODULE_TEST;
 import static android.app.PropertyInvalidatedCache.NonceStore.INVALID_NONCE_INDEX;
 
@@ -28,8 +30,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -340,47 +340,6 @@ public class PropertyInvalidatedCacheTests {
     }
 
     @Test
-    public void testRefreshSameObject() {
-        int[] refreshCount = new int[1];
-        TestCache cache = new TestCache() {
-            @Override
-            public String refresh(String oldResult, Integer query) {
-                refreshCount[0] += 1;
-                return oldResult;
-            }
-        };
-        cache.invalidateCache();
-        String result1 = cache.query(5);
-        assertEquals("foo5", result1);
-        String result2 = cache.query(5);
-        assertSame(result1, result2);
-        assertEquals(1, cache.getRecomputeCount());
-        assertEquals(1, refreshCount[0]);
-        assertEquals("foo5", cache.query(5));
-        assertEquals(2, refreshCount[0]);
-    }
-
-    @Test
-    public void testRefreshInvalidateRace() {
-        int[] refreshCount = new int[1];
-        TestCache cache = new TestCache() {
-            @Override
-            public String refresh(String oldResult, Integer query) {
-                refreshCount[0] += 1;
-                invalidateCache();
-                return new String(oldResult);
-            }
-        };
-        cache.invalidateCache();
-        String result1 = cache.query(5);
-        assertEquals("foo5", result1);
-        String result2 = cache.query(5);
-        assertEquals(result1, result2);
-        assertNotSame(result1, result2);
-        assertEquals(2, cache.getRecomputeCount());
-    }
-
-    @Test
     public void testLocalProcessDisable() {
         TestCache cache = new TestCache();
         assertFalse(cache.isDisabled());
@@ -402,10 +361,30 @@ public class PropertyInvalidatedCacheTests {
         String n1;
         n1 = PropertyInvalidatedCache.createPropertyName(MODULE_SYSTEM, "getPackageInfo");
         assertEquals(n1, "cache_key.system_server.get_package_info");
+        assertEquals("get_package_info", PropertyInvalidatedCache.apiFromProperty(n1));
         n1 = PropertyInvalidatedCache.createPropertyName(MODULE_SYSTEM, "get_package_info");
         assertEquals(n1, "cache_key.system_server.get_package_info");
+        assertEquals("get_package_info", PropertyInvalidatedCache.apiFromProperty(n1));
         n1 = PropertyInvalidatedCache.createPropertyName(MODULE_BLUETOOTH, "getState");
         assertEquals(n1, "cache_key.bluetooth.get_state");
+        assertEquals("get_state", PropertyInvalidatedCache.apiFromProperty(n1));
+        n1 = PropertyInvalidatedCache.createPropertyName(MODULE_TELEPHONY, "get_subscriber");
+        assertEquals(n1, "cache_key.telephony.get_subscriber");
+        assertEquals("get_subscriber", PropertyInvalidatedCache.apiFromProperty(n1));
+        n1 = PropertyInvalidatedCache.createPropertyName(MODULE_ADSERVICES, "getAdId");
+        assertEquals(n1, "cache_key.adservices.get_ad_id");
+        assertEquals("get_ad_id", PropertyInvalidatedCache.apiFromProperty(n1));
+        n1 = PropertyInvalidatedCache.createPropertyName(MODULE_TEST, "myTestCache");
+        assertEquals(n1, "cache_key.test.my_test_cache");
+        assertEquals("my_test_cache", PropertyInvalidatedCache.apiFromProperty(n1));
+
+        // Verify that an unknown module fails.
+        try {
+            n1 = PropertyInvalidatedCache.createPropertyName("UNKNOWN", "myTestCache");
+            fail("failed to throw an error");
+        } catch (IllegalArgumentException e) {
+            // The expected exception.
+        }
     }
 
     // Verify that invalidating the cache from an app process would fail due to lack of permissions.

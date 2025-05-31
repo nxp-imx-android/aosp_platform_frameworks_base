@@ -68,7 +68,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.graphics.drawable.IconCompat;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.media.flags.Flags;
 import com.android.settingslib.RestrictedLockUtilsInternal;
 import com.android.settingslib.Utils;
@@ -89,7 +88,6 @@ import com.android.systemui.broadcast.BroadcastSender;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.flags.FeatureFlags;
-import com.android.systemui.media.dialog.MediaItem.MediaItemType;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.plugins.ActivityStarter;
@@ -108,14 +106,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -626,115 +622,22 @@ public class MediaSwitchingController
                     Collections.sort(devices, Comparator.naturalOrder());
                 }
             }
-            if (Flags.fixOutputMediaItemListIndexOutOfBoundsException()) {
-                // For the first time building list, to make sure the top device is the connected
-                // device.
-                boolean hasMutingExpectedDevice =
-                        avoidBinderCallsForMutingExpectedDevice() ? containsMutingExpectedDevice(
-                                devices) : hasMutingExpectedDevice();
-                boolean needToHandleMutingExpectedDevice =
-                        hasMutingExpectedDevice && !isCurrentConnectedDeviceRemote();
-                final MediaDevice connectedMediaDevice =
-                        needToHandleMutingExpectedDevice ? null : getCurrentConnectedMediaDevice();
-                mOutputMediaItemListProxy.updateMediaDevices(
-                        devices,
-                        getSelectedMediaDevice(),
-                        connectedMediaDevice,
-                        needToHandleMutingExpectedDevice);
-            } else {
-                List<MediaItem> updatedMediaItems =
-                        buildMediaItems(
-                                mOutputMediaItemListProxy.getOutputMediaItemList(), devices);
-                mOutputMediaItemListProxy.clearAndAddAll(updatedMediaItems);
-            }
-        }
-    }
 
-    protected List<MediaItem> buildMediaItems(
-            List<MediaItem> oldMediaItems, List<MediaDevice> devices) {
-        synchronized (mMediaDevicesLock) {
             // For the first time building list, to make sure the top device is the connected
             // device.
             boolean hasMutingExpectedDevice =
-                    avoidBinderCallsForMutingExpectedDevice() ? containsMutingExpectedDevice(
-                            devices) : hasMutingExpectedDevice();
+                    avoidBinderCallsForMutingExpectedDevice()
+                            ? containsMutingExpectedDevice(devices)
+                            : hasMutingExpectedDevice();
             boolean needToHandleMutingExpectedDevice =
                     hasMutingExpectedDevice && !isCurrentConnectedDeviceRemote();
             final MediaDevice connectedMediaDevice =
-                    needToHandleMutingExpectedDevice ? null
-                            : getCurrentConnectedMediaDevice();
-            if (oldMediaItems.isEmpty()) {
-                if (connectedMediaDevice == null) {
-                    if (DEBUG) {
-                        Log.d(TAG, "No connected media device or muting expected device exist.");
-                    }
-                    return categorizeMediaItemsLocked(
-                            /* connectedMediaDevice */ null,
-                            devices,
-                            needToHandleMutingExpectedDevice);
-                } else {
-                    // selected device exist
-                    return categorizeMediaItemsLocked(
-                            connectedMediaDevice,
-                            devices,
-                            /* needToHandleMutingExpectedDevice */ false);
-                }
-            }
-            // To keep the same list order
-            final List<MediaDevice> targetMediaDevices = new ArrayList<>();
-            final Map<Integer, MediaItem> dividerItems = new HashMap<>();
-
-            Map<String, MediaDevice> idToMediaDeviceMap =
-                    devices.stream()
-                            .collect(Collectors.toMap(MediaDevice::getId, Function.identity()));
-
-            for (MediaItem originalMediaItem : oldMediaItems) {
-                switch (originalMediaItem.getMediaItemType()) {
-                    case MediaItemType.TYPE_GROUP_DIVIDER -> {
-                        dividerItems.put(
-                                oldMediaItems.indexOf(originalMediaItem), originalMediaItem);
-                    }
-                    case MediaItemType.TYPE_DEVICE -> {
-                        String originalMediaItemId =
-                                originalMediaItem.getMediaDevice().orElseThrow().getId();
-                        if (idToMediaDeviceMap.containsKey(originalMediaItemId)) {
-                            targetMediaDevices.add(idToMediaDeviceMap.get(originalMediaItemId));
-                        }
-                    }
-                    case MediaItemType.TYPE_PAIR_NEW_DEVICE -> {
-                        // Do nothing.
-                    }
-                }
-            }
-            if (targetMediaDevices.size() != devices.size()) {
-                devices.removeAll(targetMediaDevices);
-                targetMediaDevices.addAll(devices);
-            }
-            List<MediaItem> finalMediaItems = targetMediaDevices.stream()
-                    .map(MediaItem::createDeviceMediaItem)
-                    .collect(Collectors.toList());
-
-            boolean shouldAddFirstSeenSelectedDevice = Flags.enableOutputSwitcherDeviceGrouping();
-
-            if (shouldAddFirstSeenSelectedDevice) {
-                finalMediaItems.clear();
-                Set<String> selectedDevicesIds = getSelectedMediaDevice().stream()
-                        .map(MediaDevice::getId)
-                        .collect(Collectors.toSet());
-                for (MediaDevice targetMediaDevice : targetMediaDevices) {
-                    if (shouldAddFirstSeenSelectedDevice
-                            && selectedDevicesIds.contains(targetMediaDevice.getId())) {
-                        finalMediaItems.add(MediaItem.createDeviceMediaItem(
-                                targetMediaDevice, /* isFirstDeviceInGroup */ true));
-                        shouldAddFirstSeenSelectedDevice = false;
-                    } else {
-                        finalMediaItems.add(MediaItem.createDeviceMediaItem(
-                                targetMediaDevice, /* isFirstDeviceInGroup */ false));
-                    }
-                }
-            }
-            dividerItems.forEach(finalMediaItems::add);
-            return finalMediaItems;
+                    needToHandleMutingExpectedDevice ? null : getCurrentConnectedMediaDevice();
+            mOutputMediaItemListProxy.updateMediaDevices(
+                    devices,
+                    getSelectedMediaDevice(),
+                    connectedMediaDevice,
+                    needToHandleMutingExpectedDevice);
         }
     }
 
@@ -749,55 +652,6 @@ public class MediaSwitchingController
             mInputMediaItemList.clear();
             mInputMediaItemList.addAll(updatedInputMediaItems);
         }
-    }
-
-    /**
-     * Initial categorization of current devices, will not be called for updates to the devices
-     * list.
-     */
-    @GuardedBy("mMediaDevicesLock")
-    private List<MediaItem> categorizeMediaItemsLocked(
-            MediaDevice connectedMediaDevice,
-            List<MediaDevice> devices,
-            boolean needToHandleMutingExpectedDevice) {
-        List<MediaItem> finalMediaItems = new ArrayList<>();
-        Set<String> selectedDevicesIds = getSelectedMediaDevice().stream()
-                .map(MediaDevice::getId)
-                .collect(Collectors.toSet());
-        if (connectedMediaDevice != null) {
-            selectedDevicesIds.add(connectedMediaDevice.getId());
-        }
-        boolean groupSelectedDevices = Flags.enableOutputSwitcherDeviceGrouping();
-        int nextSelectedItemIndex = 0;
-        boolean suggestedDeviceAdded = false;
-        boolean displayGroupAdded = false;
-        boolean selectedDeviceAdded = false;
-        for (MediaDevice device : devices) {
-            if (needToHandleMutingExpectedDevice && device.isMutingExpectedDevice()) {
-                finalMediaItems.add(0, MediaItem.createDeviceMediaItem(device));
-                nextSelectedItemIndex++;
-            } else if (!needToHandleMutingExpectedDevice && selectedDevicesIds.contains(
-                    device.getId())) {
-                if (groupSelectedDevices) {
-                    finalMediaItems.add(
-                            nextSelectedItemIndex++,
-                            MediaItem.createDeviceMediaItem(device, !selectedDeviceAdded));
-                    selectedDeviceAdded = true;
-                } else {
-                    finalMediaItems.add(0, MediaItem.createDeviceMediaItem(device));
-                }
-            } else {
-                if (device.isSuggestedDevice() && !suggestedDeviceAdded) {
-                    addSuggestedDeviceGroupDivider(finalMediaItems);
-                    suggestedDeviceAdded = true;
-                } else if (!device.isSuggestedDevice() && !displayGroupAdded) {
-                    addSpeakersAndDisplaysGroupDivider(finalMediaItems);
-                    displayGroupAdded = true;
-                }
-                finalMediaItems.add(MediaItem.createDeviceMediaItem(device));
-            }
-        }
-        return finalMediaItems;
     }
 
     private void addSuggestedDeviceGroupDivider(List<MediaItem> mediaItems) {

@@ -480,7 +480,7 @@ package android {
     field public static final int allowBackup = 16843392; // 0x1010280
     field public static final int allowClearUserData = 16842757; // 0x1010005
     field public static final int allowClickWhenDisabled = 16844312; // 0x1010618
-    field @FlaggedApi("android.security.asm_restrictions_enabled") public static final int allowCrossUidActivitySwitchFromBelow = 16844449; // 0x10106a1
+    field public static final int allowCrossUidActivitySwitchFromBelow = 16844449; // 0x10106a1
     field public static final int allowEmbedded = 16843765; // 0x10103f5
     field public static final int allowGameAngleDriver = 16844376; // 0x1010658
     field public static final int allowGameDownscaling = 16844377; // 0x1010659
@@ -4684,7 +4684,7 @@ package android.app {
     method @NonNull public final <T extends android.view.View> T requireViewById(@IdRes int);
     method public final void runOnUiThread(Runnable);
     method public void setActionBar(@Nullable android.widget.Toolbar);
-    method @FlaggedApi("android.security.asm_restrictions_enabled") public void setAllowCrossUidActivitySwitchFromBelow(boolean);
+    method public void setAllowCrossUidActivitySwitchFromBelow(boolean);
     method public void setContentTransitionManager(android.transition.TransitionManager);
     method public void setContentView(@LayoutRes int);
     method public void setContentView(android.view.View);
@@ -8954,6 +8954,9 @@ package android.app.appfunctions {
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_DENIED = 1; // 0x1
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_GRANTED = 0; // 0x0
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_UNREQUESTABLE = 2; // 0x2
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_AGENT_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_AGENT_APP_FUNCTION_ACCESS";
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_APP_FUNCTION_ACCESS";
     field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_MANAGE_TARGET_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.MANAGE_TARGET_APP_FUNCTION_ACCESS";
@@ -11688,6 +11691,7 @@ package android.content {
     field public static final String ACTION_SHOW_APP_INFO = "android.intent.action.SHOW_APP_INFO";
     field public static final String ACTION_SHOW_WORK_APPS = "android.intent.action.SHOW_WORK_APPS";
     field public static final String ACTION_SHUTDOWN = "android.intent.action.ACTION_SHUTDOWN";
+    field @FlaggedApi("android.content.flags.stop_voice_command") public static final String ACTION_STOP_VOICE_COMMAND = "android.intent.action.STOP_VOICE_COMMAND";
     field public static final String ACTION_SYNC = "android.intent.action.SYNC";
     field public static final String ACTION_SYSTEM_TUTORIAL = "android.intent.action.SYSTEM_TUTORIAL";
     field public static final String ACTION_TIMEZONE_CHANGED = "android.intent.action.TIMEZONE_CHANGED";
@@ -14419,7 +14423,7 @@ package android.content.res {
     method public android.content.res.AssetFileDescriptor openRawResourceFd(@RawRes int) throws android.content.res.Resources.NotFoundException;
     method public void parseBundleExtra(String, android.util.AttributeSet, android.os.Bundle) throws org.xmlpull.v1.XmlPullParserException;
     method public void parseBundleExtras(android.content.res.XmlResourceParser, android.os.Bundle) throws java.io.IOException, org.xmlpull.v1.XmlPullParserException;
-    method @FlaggedApi("android.content.res.register_resource_paths") public static void registerResourcePaths(@NonNull String, @NonNull android.content.pm.ApplicationInfo);
+    method public static void registerResourcePaths(@NonNull String, @NonNull android.content.pm.ApplicationInfo);
     method public void removeLoaders(@NonNull android.content.res.loader.ResourcesLoader...);
     method @Deprecated public void updateConfiguration(android.content.res.Configuration, android.util.DisplayMetrics);
     field @AnyRes public static final int ID_NULL = 0; // 0x0
@@ -20878,13 +20882,16 @@ package android.hardware.display {
     method @Nullable public android.hardware.display.VirtualDisplay createVirtualDisplay(@NonNull android.hardware.display.VirtualDisplayConfig);
     method @Nullable public android.hardware.display.VirtualDisplay createVirtualDisplay(@NonNull android.hardware.display.VirtualDisplayConfig, @Nullable android.os.Handler, @Nullable android.hardware.display.VirtualDisplay.Callback);
     method public android.view.Display getDisplay(int);
+    method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") @Nullable @RequiresPermission("android.permission.MANAGE_DISPLAYS") public android.hardware.display.DisplayTopology getDisplayTopology();
     method public android.view.Display[] getDisplays();
     method public android.view.Display[] getDisplays(String);
     method @NonNull public android.hardware.display.HdrConversionMode getHdrConversionMode();
     method public int getMatchContentFrameRateUserPreference();
     method public void registerDisplayListener(android.hardware.display.DisplayManager.DisplayListener, android.os.Handler);
     method @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public void registerDisplayListener(@NonNull java.util.concurrent.Executor, long, @NonNull android.hardware.display.DisplayManager.DisplayListener);
+    method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public void registerTopologyListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.hardware.display.DisplayTopology>);
     method public void unregisterDisplayListener(android.hardware.display.DisplayManager.DisplayListener);
+    method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public void unregisterTopologyListener(@NonNull java.util.function.Consumer<android.hardware.display.DisplayTopology>);
     field @FlaggedApi("com.android.server.display.feature.flags.display_category_built_in") public static final String DISPLAY_CATEGORY_BUILT_IN_DISPLAYS = "android.hardware.display.category.BUILT_IN_DISPLAYS";
     field public static final String DISPLAY_CATEGORY_PRESENTATION = "android.hardware.display.category.PRESENTATION";
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_ADDED = 1L; // 0x1L
@@ -20907,6 +20914,13 @@ package android.hardware.display {
     method public void onDisplayAdded(int);
     method public void onDisplayChanged(int);
     method public void onDisplayRemoved(int);
+  }
+
+  @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public final class DisplayTopology implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.util.SparseArray<android.graphics.RectF> getAbsoluteBounds();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.display.DisplayTopology> CREATOR;
   }
 
   public final class HdrConversionMode implements android.os.Parcelable {
@@ -33900,6 +33914,10 @@ package android.os {
     method @Deprecated public static int getGlobalFreedCount();
     method @Deprecated public static int getGlobalFreedSize();
     method @Deprecated public static int getGlobalGcInvocationCount();
+    method @FlaggedApi("android.os.count_class_instances_api") public static long getInstanceCount(@NonNull Class);
+    method @FlaggedApi("android.os.count_class_instances_api") public static long getInstanceCount(@NonNull Class, boolean);
+    method @FlaggedApi("android.os.count_class_instances_api") @NonNull public static long[] getInstanceCounts(@NonNull java.util.List<java.lang.Class>);
+    method @FlaggedApi("android.os.count_class_instances_api") @NonNull public static long[] getInstanceCounts(@NonNull java.util.List<java.lang.Class>, boolean);
     method public static int getLoadedClassCount();
     method public static void getMemoryInfo(android.os.Debug.MemoryInfo);
     method public static long getNativeHeapAllocatedSize();
@@ -43004,6 +43022,7 @@ package android.service.voice {
     method public void onShowSessionFailed(@NonNull android.os.Bundle);
     method public void onShutdown();
     method public void setDisabledShowContext(int);
+    method @FlaggedApi("android.service.voice.flags.set_invocation_effect_enabled_api") public final void setInvocationEffectEnabled(boolean);
     method public final void setUiHints(@NonNull android.os.Bundle);
     method public void showSession(android.os.Bundle, int);
     field public static final String SERVICE_INTERFACE = "android.service.voice.VoiceInteractionService";
@@ -44478,7 +44497,7 @@ package android.telecom {
     field public static final String EXTRA_ALWAYS_USE_VOIP_AUDIO_MODE = "android.telecom.extra.ALWAYS_USE_VOIP_AUDIO_MODE";
     field public static final String EXTRA_CALL_SUBJECT_CHARACTER_ENCODING = "android.telecom.extra.CALL_SUBJECT_CHARACTER_ENCODING";
     field public static final String EXTRA_CALL_SUBJECT_MAX_LENGTH = "android.telecom.extra.CALL_SUBJECT_MAX_LENGTH";
-    field public static final String EXTRA_LOG_SELF_MANAGED_CALLS = "android.telecom.extra.LOG_SELF_MANAGED_CALLS";
+    field @Deprecated @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String EXTRA_LOG_SELF_MANAGED_CALLS = "android.telecom.extra.LOG_SELF_MANAGED_CALLS";
     field public static final String EXTRA_SUPPORTS_HANDOVER_FROM = "android.telecom.extra.SUPPORTS_HANDOVER_FROM";
     field public static final String EXTRA_SUPPORTS_HANDOVER_TO = "android.telecom.extra.SUPPORTS_HANDOVER_TO";
     field public static final int NO_HIGHLIGHT_COLOR = 0; // 0x0
@@ -44714,6 +44733,7 @@ package android.telecom {
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void silenceRinger();
     method @RequiresPermission(android.Manifest.permission.CALL_PHONE) public void startConference(@NonNull java.util.List<android.net.Uri>, @NonNull android.os.Bundle);
     method public void unregisterPhoneAccount(android.telecom.PhoneAccountHandle);
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String ACTION_CALL_BACK = "android.telecom.action.CALL_BACK";
     field public static final String ACTION_CHANGE_DEFAULT_DIALER = "android.telecom.action.CHANGE_DEFAULT_DIALER";
     field public static final String ACTION_CHANGE_PHONE_ACCOUNTS = "android.telecom.action.CHANGE_PHONE_ACCOUNTS";
     field public static final String ACTION_CONFIGURE_PHONE_ACCOUNT = "android.telecom.action.CONFIGURE_PHONE_ACCOUNT";
@@ -44761,6 +44781,7 @@ package android.telecom {
     field public static final String EXTRA_START_CALL_WITH_SPEAKERPHONE = "android.telecom.extra.START_CALL_WITH_SPEAKERPHONE";
     field public static final String EXTRA_START_CALL_WITH_VIDEO_STATE = "android.telecom.extra.START_CALL_WITH_VIDEO_STATE";
     field public static final String EXTRA_USE_ASSISTED_DIALING = "android.telecom.extra.USE_ASSISTED_DIALING";
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String EXTRA_UUID = "android.telecom.extra.UUID";
     field public static final String GATEWAY_ORIGINAL_ADDRESS = "android.telecom.extra.GATEWAY_ORIGINAL_ADDRESS";
     field public static final String GATEWAY_PROVIDER_PACKAGE = "android.telecom.extra.GATEWAY_PROVIDER_PACKAGE";
     field public static final String METADATA_INCLUDE_EXTERNAL_CALLS = "android.telecom.INCLUDE_EXTERNAL_CALLS";
@@ -52238,6 +52259,7 @@ package android.view {
     method @FlaggedApi("com.android.server.display.feature.flags.enable_has_arr_support") public boolean hasArrSupport();
     method public boolean isHdr();
     method public boolean isHdrSdrRatioAvailable();
+    method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public boolean isInternal();
     method public boolean isMinimalPostProcessingSupported();
     method public boolean isValid();
     method public boolean isWideColorGamut();
@@ -55113,6 +55135,7 @@ package android.view {
     method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public float getScrollFrictionAmount();
     method public static int getTapTimeout();
     method @FlaggedApi("android.companion.virtualdevice.flags.viewconfiguration_apis") public int getTapTimeoutMillis();
+    method @FlaggedApi("android.view.accessibility.text_cursor_blink_interval") public int getTextCursorBlinkIntervalMillis();
     method @Deprecated public static int getTouchSlop();
     method @Deprecated public static int getWindowTouchSlop();
     method public static long getZoomControlsTimeout();

@@ -708,6 +708,11 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         public void onSetUiHints(Bundle hints) {
             // Do nothing
         }
+
+        @Override
+        public void onSetInvocationEffectEnabled(boolean enabled) {
+            // Do nothing
+        }
     };
 
     private final UserTracker.Callback mUserChangedCallback =

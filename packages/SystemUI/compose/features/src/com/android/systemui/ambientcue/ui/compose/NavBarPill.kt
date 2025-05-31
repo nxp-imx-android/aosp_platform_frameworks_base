@@ -16,10 +16,14 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,15 +48,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.lerp
 import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
@@ -70,19 +76,25 @@ fun NavBarPill(
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
 ) {
-    val maxPillWidth = 247.dp
+    val configuration = LocalConfiguration.current
+    val maxPillWidth = (configuration.screenWidthDp * 0.65f).dp
     val outlineColor = MaterialTheme.colorScheme.onBackground
     val backgroundColor = MaterialTheme.colorScheme.background
 
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
     var expandedSize by remember { mutableStateOf(IntSize.Zero) }
+    val visibleState = remember { MutableTransitionState(false) }
+    visibleState.targetState = visible
+
+    val transition = rememberTransition(visibleState)
     val enterProgress by
-        animateFloatAsState(
-            if (visible) 1f else 0f,
-            animationSpec = tween(250, delayMillis = 200),
+        transition.animateFloat(
+            transitionSpec = { tween(250, delayMillis = 200) },
             label = "enter",
-        )
+        ) {
+            if (it) 1f else 0f
+        }
     val expansionAlpha by
         animateFloatAsState(
             if (expanded) 0f else 1f,
@@ -112,60 +124,104 @@ fun NavBarPill(
             Spacer(modifier = Modifier.size(closeButtonSize))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier.clip(RoundedCornerShape(16.dp))
                         .widthIn(min = navBarWidth, max = maxPillWidth)
                         .background(backgroundColor)
                         .animatedActionBorder(
-                            strokeWidth = 2.dp,
-                            strokeColor = outlineColor,
+                            strokeWidth = 1.dp,
                             cornerRadius = 16.dp,
                             visible = visible,
                         )
-                        .clickable { onClick() }
-                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                        .then(if (expanded) Modifier else Modifier.clickable { onClick() })
+                        .padding(3.dp)
                         .onGloballyPositioned { expandedSize = it.size },
             ) {
                 // Should have at most 1 expanded chip
                 var expandedChip = false
-                actions.fastForEach { action ->
+                actions.fastForEachIndexed { index, action ->
                     val hasAttribution = action.attribution != null
                     Row(
                         horizontalArrangement =
-                            Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                            Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
                             if (hasAttribution) Modifier.weight(1f, false)
                             else Modifier.width(IntrinsicSize.Max),
                     ) {
-                        Image(
-                            painter = rememberDrawablePainter(action.icon),
-                            contentDescription = action.label,
-                            modifier = Modifier.size(16.dp).clip(CircleShape),
-                        )
-
                         if ((actions.size == 1 || hasAttribution) && !expandedChip) {
                             expandedChip = true
-                            Text(
-                                text = action.label,
-                                style = MaterialTheme.typography.labelSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = outlineColor,
-                                modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
-                            )
-                            if (hasAttribution) {
+                            val hasBackground = actions.size > 1
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier =
+                                    Modifier.padding(end = 3.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(
+                                            if (hasBackground) {
+                                                MaterialTheme.colorScheme.onSecondary
+                                            } else {
+                                                Color.Transparent
+                                            }
+                                        )
+                                        .padding(6.dp),
+                            ) {
+                                Image(
+                                    painter = rememberDrawablePainter(action.icon),
+                                    contentDescription = action.label,
+                                    modifier =
+                                        Modifier.size(16.dp)
+                                            .border(
+                                                width = 0.75.dp,
+                                                color = MaterialTheme.colorScheme.outline,
+                                                shape = CircleShape,
+                                            )
+                                            .clip(CircleShape),
+                                )
                                 Text(
-                                    text = action.attribution!!,
-                                    style = MaterialTheme.typography.labelSmall,
+                                    text = action.label,
+                                    style = MaterialTheme.typography.labelMedium,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     color = outlineColor,
-                                    modifier = Modifier.padding(start = 4.dp).alpha(0.4f),
+                                    modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
                                 )
+                                if (hasAttribution) {
+                                    Text(
+                                        text = action.attribution!!,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = outlineColor,
+                                        modifier = Modifier.alpha(0.4f),
+                                    )
+                                }
                             }
+                        } else {
+                            Image(
+                                painter = rememberDrawablePainter(action.icon),
+                                contentDescription = action.label,
+                                modifier =
+                                    Modifier.then(
+                                            if (index == 0) {
+                                                Modifier.padding(start = 5.dp)
+                                            } else if (index == actions.size - 1) {
+                                                Modifier.padding(end = 5.dp)
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
+                                        .padding(3.dp)
+                                        .size(16.dp)
+                                        .border(
+                                            width = 0.75.dp,
+                                            color = MaterialTheme.colorScheme.outline,
+                                            shape = CircleShape,
+                                        )
+                                        .clip(CircleShape),
+                            )
                         }
                     }
                 }
@@ -175,14 +231,14 @@ fun NavBarPill(
                 modifier =
                     Modifier.size(closeButtonSize)
                         .clip(CircleShape)
-                        .background(backgroundColor)
-                        .padding(8.dp),
+                        .background(backgroundColor.copy(alpha = 0.7f))
+                        .padding(6.dp),
                 iconResource = R.drawable.ic_close_white_rounded,
                 colors =
                     IconButtonColors(
-                        containerColor = backgroundColor,
+                        containerColor = Color.Transparent,
                         contentColor = outlineColor,
-                        disabledContainerColor = backgroundColor,
+                        disabledContainerColor = Color.Transparent,
                         disabledContentColor = outlineColor,
                     ),
                 contentDescription =

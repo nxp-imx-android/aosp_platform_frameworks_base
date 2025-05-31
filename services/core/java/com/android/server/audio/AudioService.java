@@ -74,11 +74,13 @@ import static com.android.media.audio.Flags.asDeviceConnectionFailure;
 import static com.android.media.audio.Flags.audioserverPermissions;
 import static com.android.media.audio.Flags.deferWearPermissionUpdates;
 import static com.android.media.audio.Flags.disablePrescaleAbsoluteVolume;
+import static com.android.media.audio.Flags.equalScoHaVcIndexRange;
 import static com.android.media.audio.Flags.equalScoLeaVcIndexRange;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 import static com.android.media.audio.Flags.replaceStreamBtSco;
 import static com.android.media.audio.Flags.ringMyCar;
 import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
+import static com.android.media.audio.Flags.updatePreferredDevicesForStrategy;
 import static com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl;
 import static com.android.server.audio.SoundDoseHelper.ACTION_CHECK_MUSIC_ACTIVE;
 import static com.android.server.utils.EventLogger.Event.ALOGE;
@@ -769,6 +771,10 @@ public class AudioService extends IAudioService.Stub
         public void onError(int error) {
             switch (error) {
                 case AudioSystem.AUDIO_STATUS_SERVER_DIED:
+                    // do not handle device connections right now, tell AudioDeviceBroker
+                    // to just make note of connections, and wait for the device restoration
+                    // to complete after audioserver is back online
+                    mDeviceBroker.setWaitingForDeviceRestore(true);
                     // check for null in case error callback is called during instance creation
                     if (mRecordMonitor != null) {
                         mRecordMonitor.onAudioServerDied();
@@ -821,9 +827,11 @@ public class AudioService extends IAudioService.Stub
     /*package*/ static final int BT_COMM_DEVICE_ACTIVE_BLE_HEADSET = 1 << 1;
     /** The active bluetooth device type used for communication is ble speaker. */
     /*package*/ static final int BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER = 1 << 2;
+    /** The active bluetooth device type used for communication is hearing aid. */
+    /*package*/ static final int BT_COMM_DEVICE_ACTIVE_HA = 1 << 3;
     @IntDef({
             BT_COMM_DEVICE_ACTIVE_SCO, BT_COMM_DEVICE_ACTIVE_BLE_HEADSET,
-            BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER
+            BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER, BT_COMM_DEVICE_ACTIVE_HA
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BtCommDeviceActiveType {
@@ -2077,10 +2085,25 @@ public class AudioService extends IAudioService.Stub
                 INDICATE_SYSTEM_READY_RETRY_DELAY_MS);
     }
 
+    /**
+     * Returns whether there are pending audioserver death messages
+     * @return true if
+     */
+    protected boolean isHandlingAudioServerDeath() {
+        if (mAudioHandler.hasMessages(MSG_AUDIO_SERVER_DIED)) {
+            return true;
+        }
+        if (AudioSystem.checkAudioFlinger() != AudioSystem.AUDIO_STATUS_OK) {
+            return true;
+        }
+        return false;
+    }
+
     public void onAudioServerDied() {
         if (!mSystemReady ||
                 (AudioSystem.checkAudioFlinger() != AudioSystem.AUDIO_STATUS_OK)) {
-            Log.e(TAG, "Audioserver died.");
+            sDeviceLogger.enqueueAndSlog("AudioService.onAudioServerDied",
+                    EventLogger.Event.ALOGE, TAG);
             sLifecycleLogger.enqueue(new EventLogger.StringEvent(
                     "onAudioServerDied() audioserver died"));
             sendMsg(mAudioHandler, MSG_AUDIO_SERVER_DIED, SENDMSG_NOOP, 0, 0,
@@ -3553,22 +3576,10 @@ public class AudioService extends IAudioService.Stub
     public List<AudioDeviceAttributes> getPreferredDevicesForStrategy(int strategy) {
         super.getPreferredDevicesForStrategy_enforcePermission();
 
-        List<AudioDeviceAttributes> devices = new ArrayList<>();
-        int status = AudioSystem.SUCCESS;
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            status = AudioSystem.getDevicesForRoleAndStrategy(
-                    strategy, AudioSystem.DEVICE_ROLE_PREFERRED, devices);
-        } finally {
-            Binder.restoreCallingIdentity(identity);
-        }
-        if (status != AudioSystem.SUCCESS) {
-            Log.e(TAG, String.format("Error %d in getPreferredDeviceForStrategy(%d)",
-                    status, strategy));
-            return new ArrayList<AudioDeviceAttributes>();
-        } else {
-            return anonymizeAudioDeviceAttributesList(devices);
-        }
+        List<AudioDeviceAttributes> devices =
+                mDeviceBroker.getPreferredDevicesForStrategy(strategy);
+
+        return anonymizeAudioDeviceAttributesList(devices);
     }
 
     /**
@@ -5269,6 +5280,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tcom.android.media.audio.vgsVssSyncMuteOrder - EOL");
         pw.println("\tcom.android.media.audio.replaceStreamBtSco:"
                 + replaceStreamBtSco());
+        pw.println("\tcom.android.media.audio.equalScoHaVcIndexRange:"
+                + equalScoHaVcIndexRange());
         pw.println("\tcom.android.media.audio.equalScoLeaVcIndexRange:"
                 + equalScoLeaVcIndexRange());
         pw.println("\tcom.android.media.audio.ringMyCar:"
@@ -5285,6 +5298,8 @@ public class AudioService extends IAudioService.Stub
                 + unifyAbsoluteVolumeManagement());
         pw.println("\tandroid.media.audio.Flags.registerVolumeCallbackApiHardening:"
                 + registerVolumeCallbackApiHardening());
+        pw.println("\tcom.android.media.audio.Flags.updatePreferredDevicesForStrategy:"
+                + updatePreferredDevicesForStrategy());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
@@ -9743,7 +9758,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         public void updateIndexFactors() {
-            if (!replaceStreamBtSco() && !equalScoLeaVcIndexRange()) {
+            if (!replaceStreamBtSco() && !equalScoLeaVcIndexRange() && !equalScoHaVcIndexRange()) {
                 return;
             }
 
@@ -9757,17 +9772,23 @@ public class AudioService extends IAudioService.Stub
                         mIndexMax = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                     }
 
-                    if (!equalScoLeaVcIndexRange() && isStreamBluetoothSco(mStreamType)) {
+                    if (!equalScoLeaVcIndexRange() && !equalScoHaVcIndexRange()
+                            && isStreamBluetoothSco(mStreamType)) {
                         // SCO devices have a different min index
                         mIndexMin = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                         indexMinVolCurve = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                         indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                         mIndexStepFactor = 1.f;
-                    } else if (equalScoLeaVcIndexRange() && isStreamBluetoothComm(mStreamType)) {
+                    } else if ((equalScoLeaVcIndexRange() || equalScoHaVcIndexRange())
+                            && isStreamBluetoothComm(mStreamType)) {
                         // For non SCO devices the stream state does not change the min index
                         if (mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_SCO) {
                             mIndexMin = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO] * 10;
                             indexMinVolCurve = MIN_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
+                            indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
+                        } else if (equalScoHaVcIndexRange()
+                                && mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_HA) {
+                            mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;
                             indexMaxVolCurve = MAX_STREAM_VOLUME[AudioSystem.STREAM_BLUETOOTH_SCO];
                         } else {
                             mIndexMin = MIN_STREAM_VOLUME[mStreamType] * 10;
@@ -9781,7 +9802,7 @@ public class AudioService extends IAudioService.Stub
                     }
 
                     if (mVolumeGroupState != null) {
-                        mVolumeGroupState.mIndexMin = mIndexMin;
+                        mVolumeGroupState.mIndexMin = mIndexMin / 10;
                     }
 
                     mIndexMinNoPerm = mIndexMin;

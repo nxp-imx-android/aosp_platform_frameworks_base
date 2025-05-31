@@ -538,8 +538,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
 
     /** Returns whether split shade is enabled and an x coordinate is outside of the QS frame. */
     private boolean isSplitShadeAndTouchXOutsideQs(float touchX) {
-        return mSplitShadeEnabled && touchX < mQsFrame.getX()
-                || touchX > mQsFrame.getX() + mQsFrame.getWidth();
+        return mSplitShadeEnabled
+                && (touchX < mQsFrame.getX() || touchX > mQsFrame.getX() + mQsFrame.getWidth());
     }
 
     /**
@@ -872,6 +872,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             mMaxExpansionHeight = mQs.getDesiredHeight();
             mNotificationStackScrollLayoutController.setMaxTopPadding(
                     getMaxExpansionHeight());
+            mMediaHierarchyManager.onQsHeightUpdated();
         }
         return oldMaxHeight;
     }
@@ -1049,6 +1050,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
             squishiness = 1;
         } else if (mTransitioningToFullShadeProgress > 0.0f) {
             squishiness = mLockscreenShadeTransitionController.getQsSquishTransitionFraction();
+        } else if (getFullyExpanded() || mPanelViewControllerLazy.get().isFullyExpanded()) {
+            squishiness = 1;
         } else {
             squishiness = mNotificationStackScrollLayoutController
                     .getNotificationSquishinessFraction();

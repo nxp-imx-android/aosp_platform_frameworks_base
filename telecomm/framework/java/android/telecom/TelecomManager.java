@@ -25,6 +25,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SuppressAutoDoc;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
@@ -201,6 +203,19 @@ public class TelecomManager {
             "android.telecom.action.DEFAULT_DIALER_CHANGED";
 
     /**
+     * Activity action: Triggers the calling UI and initiates a call back to a previous call
+     * made by the application. The specific call to be re-called is identified by the UUID,
+     * which must be included as an extra in the intent using {@link #EXTRA_UUID}
+     * <p>
+     * Note: VoIP apps should register the intent if they need to integrate the call history
+     * into the system call logs.
+     * <p>
+     */
+    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_CALL_BACK = "android.telecom.action.CALL_BACK";
+
+    /**
      * Extra value used to provide the package name for {@link #ACTION_CHANGE_DEFAULT_DIALER}.
      */
     public static final String EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME =
@@ -293,6 +308,25 @@ public class TelecomManager {
      * or {@link PhoneAccount#CAPABILITY_CALL_COMPOSER}.
      */
     public static final String EXTRA_CALL_SUBJECT = "android.telecom.extra.CALL_SUBJECT";
+
+    /**
+     * Extra used with {@link #ACTION_CALL_BACK} to specify the UUID value representing
+     * the call ID returned by {@link android.telecom.CallControl#getCallId()}.
+     *
+     * <p>This extra is required when using {@link #ACTION_CALL_BACK} to initiate a callback
+     * to a specific call.</p>
+     *
+     * <p>Type: String</p>
+     *
+     * <p>Applications that support the {@link #ACTION_CALL_BACK} intent should obtain
+     * the UUID value by calling {@link android.telecom.CallControl#getCallId()} during
+     * the initial call and persist this UUID along with other call-related information.
+     * When receiving the UUID via the {@link #ACTION_CALL_BACK} intent, the application
+     * should retrieve the corresponding call information using the provided UUID and
+     * initiate a new call using the stored details.</p>
+     */
+    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
+    public static final String EXTRA_UUID = "android.telecom.extra.UUID";
 
     // Values for EXTRA_PRIORITY
     /**
@@ -2528,6 +2562,13 @@ public class TelecomManager {
      * call forwarding MMI code is placed by an application that is not in one of these roles, the
      * dialer will be launched with a UI showing the MMI code already populated so that the user can
      * confirm the action before the call is placed.
+     * <p><b>Note</b>: The dialer application may set the URI parameter of address to specify
+     * a call log record. This allows the dialer to launch a related application to initiate
+     * a callback for a specific call log entry. The dialer must have the READ_CALL_LOGS permission
+     * to access call log records. The ContentUri for a specific call log record can be obtained
+     * by {@link android.content.ContentUri#withAppendedId(CallLog.Calls.CONTENT_URI, callLogId)},
+     * where callLogId is the {@link android.provider.BaseColumns#_ID} of the call log record.
+
      * @param address The address to make the call to.
      * @param extras Bundle of extras to use with the call.
      */

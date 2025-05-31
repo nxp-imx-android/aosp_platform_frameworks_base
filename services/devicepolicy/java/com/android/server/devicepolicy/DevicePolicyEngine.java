@@ -123,6 +123,7 @@ final class DevicePolicyEngine {
 
     private final Context mContext;
     private final UserManager mUserManager;
+    private final PolicyPathProvider mPolicyPathProvider;
 
     // TODO(b/256849338): add more granular locks
     private final Object mLock;
@@ -153,11 +154,12 @@ final class DevicePolicyEngine {
     DevicePolicyEngine(
             @NonNull Context context,
             @NonNull DeviceAdminServiceController deviceAdminServiceController,
-            @NonNull Object lock) {
+            @NonNull Object lock, @NonNull PolicyPathProvider policyPathProvider) {
         mContext = Objects.requireNonNull(context);
         mDeviceAdminServiceController = Objects.requireNonNull(deviceAdminServiceController);
         mLock = Objects.requireNonNull(lock);
         mUserManager = mContext.getSystemService(UserManager.class);
+        mPolicyPathProvider = Objects.requireNonNull(policyPathProvider);
         mLocalPolicies = new HashMap<>();
         mGlobalPolicies = new HashMap<>();
         mEnforcingAdmins = new SparseArray<>();
@@ -2424,7 +2426,8 @@ final class DevicePolicyEngine {
     private void write() {
         synchronized (mLock) {
             Log.d(TAG, "Writing device policies to file.");
-            new DevicePoliciesReaderWriter().writeToFileLocked();
+            new DevicePoliciesReaderWriter(mPolicyPathProvider.getDataSystemDirectory())
+                .writeToFileLocked();
         }
     }
 
@@ -2434,7 +2437,8 @@ final class DevicePolicyEngine {
         Log.d(TAG, "Reading device policies from file.");
         synchronized (mLock) {
             clear();
-            new DevicePoliciesReaderWriter().readFromFileLocked();
+            new DevicePoliciesReaderWriter(mPolicyPathProvider.getDataSystemDirectory())
+                .readFromFileLocked();
         }
     }
 
@@ -2446,7 +2450,8 @@ final class DevicePolicyEngine {
      */
     void createBackup(String backupId) {
         synchronized (mLock) {
-            DevicePoliciesReaderWriter.createBackup(backupId);
+            DevicePoliciesReaderWriter.createBackup(backupId,
+                mPolicyPathProvider.getDataSystemDirectory());
         }
     }
 
@@ -2558,17 +2563,17 @@ final class DevicePolicyEngine {
 
         private final File mFile;
 
-        private static File getFileName() {
-            return new File(Environment.getDataSystemDirectory(), DEVICE_POLICIES_XML);
+        private static File getFileName(File dataSystemDirectory) {
+            return new File(dataSystemDirectory, DEVICE_POLICIES_XML);
         }
 
-        private DevicePoliciesReaderWriter() {
-            mFile = getFileName();
+        private DevicePoliciesReaderWriter(File dataSystemDirectory) {
+            mFile = getFileName(dataSystemDirectory);
         }
 
-        public static void createBackup(String backupId) {
+        public static void createBackup(String backupId, File dataSystemDirectory) {
             try {
-                File backupDirectory = new File(Environment.getDataSystemDirectory(),
+                File backupDirectory = new File(dataSystemDirectory,
                         BACKUP_DIRECTORY);
                 backupDirectory.mkdir();
                 Path backupPath = Path.of(backupDirectory.getPath(),
@@ -2576,7 +2581,7 @@ final class DevicePolicyEngine {
                 if (backupPath.toFile().exists()) {
                     Log.w(TAG, "Backup already exist: " + backupPath);
                 } else {
-                    Files.copy(getFileName().toPath(), backupPath,
+                    Files.copy(getFileName(dataSystemDirectory).toPath(), backupPath,
                             StandardCopyOption.REPLACE_EXISTING);
                     Log.i(TAG, "Backup created at " + backupPath);
                 }

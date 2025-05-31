@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import com.android.systemui.Dumpable;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
@@ -34,8 +35,10 @@ import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -81,17 +84,13 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
             }
         }
 
-        final Set<NotificationEntry> renderingSummaries = new HashSet<>();
-        for (PipelineEntry entry : entries) {
-            if (entry instanceof GroupEntry groupEntry) {
-                renderingSummaries.add(groupEntry.getRepresentativeEntry());
-            }
-        }
-
         if (NotificationBundleUi.isEnabled()) {
+            final Set<PipelineEntry> renderingSummaries = new HashSet<>();
+            findRenderingSummariesRecursive(entries, renderingSummaries);
+
             for (EntryAdapter entryAdapter : mExpandedCollections) {
                 boolean isInPipeline = false;
-                for (NotificationEntry entry : renderingSummaries) {
+                for (PipelineEntry entry : renderingSummaries) {
                     if (entry.getKey().equals(entryAdapter.getKey())) {
                         isInPipeline = true;
                         break;
@@ -102,6 +101,13 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
                 }
             }
         } else {
+            final Set<NotificationEntry> renderingSummaries = new HashSet<>();
+            for (PipelineEntry entry : entries) {
+                if (entry instanceof GroupEntry groupEntry) {
+                    renderingSummaries.add(groupEntry.getRepresentativeEntry());
+                }
+            }
+
             // If a group is in mExpandedGroups but not in the pipeline entries, collapse it.
             final var groupsToRemove = setDifference(mExpandedGroups, renderingSummaries);
             for (NotificationEntry entry : groupsToRemove) {
@@ -109,6 +115,25 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
             }
         }
     };
+
+    private void findRenderingSummariesRecursive(List<PipelineEntry> entries,
+            Set<PipelineEntry> renderingSummaries) {
+        for (PipelineEntry entry : entries) {
+            if (entry instanceof BundleEntry bundleEntry) {
+                renderingSummaries.add(entry);
+                List<PipelineEntry> children = bundleEntry.getChildren().stream().map(
+                        child -> (PipelineEntry) child).collect(
+                        Collectors.toList());
+                findRenderingSummariesRecursive(children, renderingSummaries);
+            } else if (entry instanceof GroupEntry groupEntry) {
+                renderingSummaries.add(groupEntry.getRepresentativeEntry());
+                List<PipelineEntry> children = groupEntry.getChildren().stream().map(
+                        child -> (PipelineEntry) child).collect(
+                        Collectors.toList());
+                findRenderingSummariesRecursive(children, renderingSummaries);
+            }
+        }
+    }
 
     public void attach(NotifPipeline pipeline) {
         mDumpManager.registerDumpable(this);

@@ -41,6 +41,7 @@ import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
+import android.view.ViewConfiguration;
 
 import java.util.Map;
 
@@ -137,6 +138,20 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.KEY_REPEAT_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.KEY_REPEAT_TIMEOUT_MS, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Secure.KEY_REPEAT_DELAY_MS, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS, value -> {
+            if (!NON_NEGATIVE_INTEGER_VALIDATOR.validate(value)) {
+                return false;
+            }
+
+            try {
+                int intValue = Integer.parseInt(value);
+                return intValue == ViewConfiguration.NO_BLINK_TEXT_CURSOR_BLINK_INTERVAL_MS
+                        || intValue >= ViewConfiguration.MIN_TEXT_CURSOR_BLINK_INTERVAL_MS;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+
+        });
         VALIDATORS.put(Secure.CAMERA_GESTURE_DISABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(
                 Secure.ACCESSIBILITY_AUTOCLICK_CURSOR_AREA_SIZE, NON_NEGATIVE_INTEGER_VALIDATOR);
@@ -355,6 +370,10 @@ public class SecureSettingsValidators {
                 Secure.ACCESSIBILITY_KEY_GESTURE_TARGETS,
                 ACCESSIBILITY_SHORTCUT_TARGET_LIST_VALIDATOR);
         VALIDATORS.put(Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Secure.ACTION_CORNER_TOP_LEFT_ACTION, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(Secure.ACTION_CORNER_TOP_RIGHT_ACTION, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(Secure.ACTION_CORNER_BOTTOM_LEFT_ACTION, NON_NEGATIVE_INTEGER_VALIDATOR);
+        VALIDATORS.put(Secure.ACTION_CORNER_BOTTOM_RIGHT_ACTION, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Secure.ONE_HANDED_MODE_ACTIVATED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.ONE_HANDED_MODE_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.ONE_HANDED_MODE_TIMEOUT, ANY_INTEGER_VALIDATOR);
@@ -493,5 +512,6 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.SUGGESTED_THEME_FEATURE_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.HDR_BRIGHTNESS_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.HDR_BRIGHTNESS_BOOST_LEVEL, new InclusiveFloatRangeValidator(0, 1));
+        VALIDATORS.put(Secure.APP_FUNCTION_AGENT_ALLOWLIST_ENABLED, BOOLEAN_VALIDATOR);
     }
 }

@@ -38,6 +38,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.modules.expresslog.Counter;
 import com.android.server.biometrics.BiometricSchedulerProto;
 import com.android.server.biometrics.BiometricsProto;
+import com.android.server.biometrics.Flags;
 import com.android.server.biometrics.sensors.fingerprint.GestureAvailabilityDispatcher;
 
 import java.io.PrintWriter;
@@ -314,8 +315,11 @@ public class BiometricScheduler<T, U> {
 
         final int currentUserId = mCurrentUserRetriever.get();
         final int nextUserId = mPendingOperations.getFirst().getTargetUserId();
+        final boolean shouldStartNextOperationIfMarkedCancelling =
+                Flags.biometricSchedulerFix() && mPendingOperations.getFirst().isMarkedCanceling();
 
-        if (nextUserId == currentUserId || mPendingOperations.getFirst().isStartUserOperation()) {
+        if (nextUserId == currentUserId || mPendingOperations.getFirst().isStartUserOperation()
+                || shouldStartNextOperationIfMarkedCancelling) {
             startNextOperationIfIdle();
         } else if (currentUserId == UserHandle.USER_NULL && mUserSwitchProvider != null) {
             final BaseClientMonitor startClient =

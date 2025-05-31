@@ -493,7 +493,7 @@ public final class DisplayManagerService extends SystemService {
     private final ArrayList<DisplayViewport> mViewports = new ArrayList<>();
 
     // Persistent data store for all internal settings maintained by the display manager service.
-    private final PersistentDataStore mPersistentDataStore = new PersistentDataStore();
+    private final PersistentDataStore mPersistentDataStore;
 
     // Temporary callback list, used when sending display events to applications.
     // May be used outside of the lock but only on the handler thread.
@@ -649,6 +649,7 @@ public final class DisplayManagerService extends SystemService {
         mHandler = new DisplayManagerHandler(displayThreadLooper);
         mHandlerExecutor = new HandlerExecutor(mHandler);
         mUiHandler = UiThread.getHandler();
+        mPersistentDataStore = mInjector.getPersistentDataStore();
         mDisplayDeviceRepo = new DisplayDeviceRepository(mSyncRoot, mPersistentDataStore);
         mLogicalDisplayMapper = new LogicalDisplayMapper(mContext,
                 foldSettingProvider,
@@ -2740,12 +2741,20 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void configurePreferredDisplayModeLocked(LogicalDisplay display) {
-        final DisplayDevice device = display.getPrimaryDisplayDeviceLocked();
-        final Point userPreferredResolution =
+        DisplayDevice device = display.getPrimaryDisplayDeviceLocked();
+        Display.Mode mode = getStoredUserPreferredModeLocked(device);
+        if (mode != null) {
+            device.setUserPreferredDisplayModeLocked(mode);
+        }
+    }
+
+    @Nullable
+    private Display.Mode getStoredUserPreferredModeLocked(@Nullable DisplayDevice device) {
+        Point userPreferredResolution =
                 mPersistentDataStore.getUserPreferredResolution(device);
-        final float refreshRate = mPersistentDataStore.getUserPreferredRefreshRate(device);
+        float refreshRate = mPersistentDataStore.getUserPreferredRefreshRate(device);
         if (userPreferredResolution == null && Float.isNaN(refreshRate)) {
-            return;
+            return null;
         }
         Display.Mode.Builder modeBuilder = new Display.Mode.Builder();
         if (userPreferredResolution != null) {
@@ -2754,7 +2763,7 @@ public final class DisplayManagerService extends SystemService {
         if (!Float.isNaN(refreshRate)) {
             modeBuilder.setRefreshRate(refreshRate);
         }
-        device.setUserPreferredDisplayModeLocked(modeBuilder.build());
+        return modeBuilder.build();
     }
 
     @GuardedBy("mSyncRoot")
@@ -2837,30 +2846,77 @@ public final class DisplayManagerService extends SystemService {
         return mOverlayProperties;
     }
 
-    void setUserPreferredDisplayModeInternal(int displayId, Display.Mode mode) {
+    void resetUserPreferredDisplayModeInternal(int displayId) {
+        if (!mFlags.isModeSwitchWithoutSavingEnabled()) {
+            return;
+        }
+        synchronized (mSyncRoot) {
+            Display.Mode mode;
+            if (displayId == Display.INVALID_DISPLAY) {
+                float refreshRate = Settings.Global.getFloat(mContext.getContentResolver(),
+                        Settings.Global.USER_PREFERRED_REFRESH_RATE,
+                        Display.INVALID_DISPLAY_REFRESH_RATE);
+                int height = Settings.Global.getInt(mContext.getContentResolver(),
+                        Settings.Global.USER_PREFERRED_RESOLUTION_HEIGHT,
+                        Display.INVALID_DISPLAY_HEIGHT);
+                int width = Settings.Global.getInt(mContext.getContentResolver(),
+                        Settings.Global.USER_PREFERRED_RESOLUTION_WIDTH,
+                        Display.INVALID_DISPLAY_WIDTH);
+                mode = new Display.Mode(width, height, refreshRate);
+            } else {
+                DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
+                mode = getStoredUserPreferredModeLocked(displayDevice);
+            }
+            setUserPreferredDisplayModeInternal(displayId, mode, false);
+        }
+    }
+
+    void setUserPreferredDisplayModeInternal(int displayId, @Nullable Display.Mode mode) {
+        setUserPreferredDisplayModeInternal(displayId, mode, true);
+    }
+
+    void setUserPreferredDisplayModeInternal(
+            int displayId, @Nullable Display.Mode mode, boolean storeMode) {
         synchronized (mSyncRoot) {
             if (mode != null && !isResolutionAndRefreshRateValid(mode)
                     && displayId == Display.INVALID_DISPLAY) {
                 throw new IllegalArgumentException("width, height and refresh rate of mode should "
                         + "be greater than 0 when setting the global user preferred display mode.");
             }
-
-            final int resolutionHeight = mode == null ? Display.INVALID_DISPLAY_HEIGHT
-                    : mode.getPhysicalHeight();
-            final int resolutionWidth = mode == null ? Display.INVALID_DISPLAY_WIDTH
-                    : mode.getPhysicalWidth();
-            final float refreshRate = mode == null ? Display.INVALID_DISPLAY_REFRESH_RATE
-                    : mode.getRefreshRate();
-
-            storeModeInPersistentDataStoreLocked(
-                    displayId, resolutionWidth, resolutionHeight, refreshRate);
+            DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
+            if (displayDevice == null) {
+                return;
+            }
+            if (!mFlags.isModeSwitchWithoutSavingEnabled()) {
+                storeMode = true;
+            }
+            if (storeMode) {
+                storeModeLocked(displayId, mode);
+            }
             if (displayId != Display.INVALID_DISPLAY) {
                 setUserPreferredModeForDisplayLocked(displayId, mode);
             } else {
                 mUserPreferredMode = mode;
-                storeModeInGlobalSettingsLocked(
-                        resolutionWidth, resolutionHeight, refreshRate, mode);
+                mDisplayDeviceRepo.forEachLocked((DisplayDevice device) -> {
+                    device.setUserPreferredDisplayModeLocked(mode);
+                });
             }
+        }
+    }
+
+    void  storeModeLocked(int displayId, @Nullable Display.Mode mode) {
+        int resolutionHeight = mode == null ? Display.INVALID_DISPLAY_HEIGHT
+                : mode.getPhysicalHeight();
+        int resolutionWidth = mode == null ? Display.INVALID_DISPLAY_WIDTH
+                : mode.getPhysicalWidth();
+        float refreshRate = mode == null ? Display.INVALID_DISPLAY_REFRESH_RATE
+                : mode.getRefreshRate();
+        if (displayId == Display.INVALID_DISPLAY) {
+            storeModeInGlobalSettingsLocked(
+                    resolutionWidth, resolutionHeight, refreshRate);
+        } else {
+            storeModeInPersistentDataStoreLocked(displayId,
+                    resolutionWidth, resolutionHeight, refreshRate);
         }
     }
 
@@ -2877,13 +2933,6 @@ public final class DisplayManagerService extends SystemService {
         } finally {
             mPersistentDataStore.saveIfNeeded();
         }
-    }
-
-    private void setUserPreferredModeForDisplayLocked(int displayId, Display.Mode mode) {
-        DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
-        if (displayDevice == null) {
-            return;
-        }
 
         // We do not yet support backup and restore for our PersistentDataStore, however, we want to
         // preserve the user's choice for HIGH/FULL resolution setting, so we when we are given a
@@ -2896,30 +2945,32 @@ public final class DisplayManagerService extends SystemService {
             //     more than two resolutions using explicit mode enums long-term.
             Point[] resolutions = displayDevice.getSupportedResolutionsLocked();
             if (resolutions.length == 2) {
-                Point newMode = new Point(mode.getPhysicalWidth(), mode.getPhysicalHeight());
+                Point newMode = new Point(resolutionWidth, resolutionHeight);
                 int resolutionMode = newMode.equals(resolutions[0]) ? RESOLUTION_MODE_HIGH
                         : newMode.equals(resolutions[1]) ? RESOLUTION_MODE_FULL
-                        : RESOLUTION_MODE_UNKNOWN;
+                                : RESOLUTION_MODE_UNKNOWN;
                 Settings.Secure.putIntForUser(mContext.getContentResolver(),
                         Settings.Secure.SCREEN_RESOLUTION_MODE, resolutionMode,
                         UserHandle.USER_CURRENT);
             }
         }
+    }
 
-        displayDevice.setUserPreferredDisplayModeLocked(mode);
+    private void setUserPreferredModeForDisplayLocked(int displayId, Display.Mode mode) {
+        DisplayDevice displayDevice = getDeviceForDisplayLocked(displayId);
+        if (displayDevice != null) {
+            displayDevice.setUserPreferredDisplayModeLocked(mode);
+        }
     }
 
     private void storeModeInGlobalSettingsLocked(
-            int resolutionWidth, int resolutionHeight, float refreshRate, Display.Mode mode) {
+            int resolutionWidth, int resolutionHeight, float refreshRate) {
         Settings.Global.putFloat(mContext.getContentResolver(),
                 Settings.Global.USER_PREFERRED_REFRESH_RATE, refreshRate);
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.USER_PREFERRED_RESOLUTION_HEIGHT, resolutionHeight);
         Settings.Global.putInt(mContext.getContentResolver(),
                 Settings.Global.USER_PREFERRED_RESOLUTION_WIDTH, resolutionWidth);
-        mDisplayDeviceRepo.forEachLocked((DisplayDevice device) -> {
-            device.setUserPreferredDisplayModeLocked(mode);
-        });
     }
 
     /**
@@ -4059,6 +4110,10 @@ public final class DisplayManagerService extends SystemService {
 
         boolean canInternalDisplayHostDesktops(Context context) {
             return DesktopModeHelper.canInternalDisplayHostDesktops(context);
+        }
+
+        PersistentDataStore getPersistentDataStore() {
+            return new PersistentDataStore();
         }
     }
 
@@ -5400,11 +5455,24 @@ public final class DisplayManagerService extends SystemService {
 
         @EnforcePermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
         @Override // Binder call
-        public void setUserPreferredDisplayMode(int displayId, Display.Mode mode) {
+        public void setUserPreferredDisplayMode(int displayId, Display.Mode mode,
+                boolean storeMode) {
             setUserPreferredDisplayMode_enforcePermission();
             final long token = Binder.clearCallingIdentity();
             try {
-                setUserPreferredDisplayModeInternal(displayId, mode);
+                setUserPreferredDisplayModeInternal(displayId, mode, storeMode);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
+        @EnforcePermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE)
+        @Override // Binder call
+        public void resetUserPreferredDisplayMode(int displayId) {
+            resetUserPreferredDisplayMode_enforcePermission();
+            final long token = Binder.clearCallingIdentity();
+            try {
+                resetUserPreferredDisplayModeInternal(displayId);
             } finally {
                 Binder.restoreCallingIdentity(token);
             }

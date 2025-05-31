@@ -36,11 +36,9 @@ import android.hardware.display.DisplayManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.view.Display;
-import android.view.SurfaceControl;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TransitionInfo;
 
@@ -49,6 +47,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.util.function.TriConsumer;
 import com.android.launcher3.icons.IconProvider;
+import com.android.server.testutils.StubTransaction;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -144,13 +143,13 @@ public class StartingWindowControllerTests extends ShellTestCase {
                 .addChange(TRANSIT_OPEN).build();
         final StartingWindowRemovalInfo removalInfo = new StartingWindowRemovalInfo();
         removalInfo.taskId = taskId;
-        final SurfaceControl.Transaction st = new SurfaceControl.Transaction();
+        final StubTransaction st = new StubTransaction();
         final StartingWindowController.RemoveStartingObserver observer =
                 mController.mRemoveStartingObserver;
 
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
-        waitTransactionCommit(st);
+        notifyTransactionCommitted(st);
         assertTrue(observer.hasPendingRemoval());
         observer.requestRemoval(taskId, removalInfo);
         assertFalse(observer.hasPendingRemoval());
@@ -160,7 +159,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         observer.requestRemoval(taskId, removalInfo);
         observer.onTransitionReady(token, info, st, st);
         assertTrue(observer.hasPendingRemoval());
-        waitTransactionCommit(st);
+        notifyTransactionCommitted(st);
         assertFalse(observer.hasPendingRemoval());
 
         // Received second transition with FLAG_IS_BEHIND_STARTING_WINDOW
@@ -171,9 +170,9 @@ public class StartingWindowControllerTests extends ShellTestCase {
                 .addChange(TRANSIT_OPEN, FLAG_IS_BEHIND_STARTING_WINDOW).build();
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
-        waitTransactionCommit(st);
+        notifyTransactionCommitted(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
-        waitTransactionCommit(st);
+        notifyTransactionCommitted(st);
         assertTrue(observer.hasPendingRemoval());
         observer.requestRemoval(taskId, removalInfo);
         assertFalse(observer.hasPendingRemoval());
@@ -181,21 +180,16 @@ public class StartingWindowControllerTests extends ShellTestCase {
         st.clear();
         observer.onAddingWindow(taskId, token, appToken);
         observer.onTransitionReady(token, info, st, st);
-        waitTransactionCommit(st);
+        notifyTransactionCommitted(st);
         observer.onTransitionReady(secondToken, secondInfo, st, st);
         observer.requestRemoval(taskId, removalInfo);
         assertTrue(observer.hasPendingRemoval());
-        waitTransactionCommit(st);
+        notifyTransactionCommitted(st);
         assertFalse(observer.hasPendingRemoval());
     }
 
-    private void waitTransactionCommit(SurfaceControl.Transaction st) {
+    private void notifyTransactionCommitted(StubTransaction st) {
         st.apply();
-        final long timeout = SystemClock.currentTimeMicro() + 500L;
-        while (mMainExecutor.getCallbacks().isEmpty()
-                && SystemClock.currentTimeMicro() < timeout) {
-            SystemClock.sleep(50);
-        }
         mMainExecutor.flushAll();
     }
 }

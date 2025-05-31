@@ -17,6 +17,7 @@
 package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
+import android.app.appfunctions.AppFunctionAccessServiceInterface;
 import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
@@ -32,7 +33,8 @@ public class AppFunctionManagerService extends SystemService {
         super(context);
         mServiceImpl =
                 new AppFunctionManagerServiceImpl(
-                        context, LocalServices.getService(PackageManagerInternal.class));
+                        context, LocalServices.getService(PackageManagerInternal.class),
+                        LocalServices.getService(AppFunctionAccessServiceInterface.class));
     }
 
     @Override

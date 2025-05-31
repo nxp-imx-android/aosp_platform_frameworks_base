@@ -25,6 +25,7 @@ import static android.app.Flags.fixWallpaperChanged;
 import static android.app.Flags.liveWallpaperContentHandling;
 import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.Flags.removeNextWallpaperComponent;
+import static android.app.Flags.updateRecentsFromSystem;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
@@ -288,7 +289,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             final boolean isAppliedToLock = (wallpaper.mWhich & FLAG_LOCK) != 0;
             final boolean needsUpdate = wallpaper.getComponent() == null
                     || event != CLOSE_WRITE // includes the MOVED_TO case
-                    || wallpaper.imageWallpaperPending;
+                    || wallpaper.imageWallpaperPending();
 
             if (isMigration) {
                 // When separate lock screen engine is supported, migration will be handled by
@@ -304,7 +305,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                         + " path=" + path
                         + " sys=" + sysWallpaperChanged
                         + " lock=" + lockWallpaperChanged
-                        + " imagePending=" + wallpaper.imageWallpaperPending
+                        + " imagePending=" + wallpaper.imageWallpaperPending()
                         + " mWhich=0x" + Integer.toHexString(wallpaper.mWhich)
                         + " written=" + written
                         + " isMigration=" + isMigration
@@ -347,7 +348,15 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 if (DEBUG) {
                     Slog.v(TAG, "Crop done; invoking completion callback");
                 }
-                wallpaper.imageWallpaperPending = false;
+                WallpaperDescription description;
+                if (wallpaper.mPendingStaticDescription != null) {
+                    description = wallpaper.mPendingStaticDescription.toBuilder()
+                            .setComponent(mImageWallpaper).build();
+                } else {
+                    description = new WallpaperDescription.Builder().setComponent(
+                            mImageWallpaper).build();
+                }
+                wallpaper.mPendingStaticDescription = null;
 
                 if (sysWallpaperChanged) {
                     if (DEBUG) {
@@ -368,7 +377,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
                     // If this was the system wallpaper, rebind...
                     wallpaper.mBindSource = BindSource.SET_STATIC;
-                    bindWallpaperComponentLocked(mImageWallpaper, true, false, wallpaper, callback);
+                    if (updateRecentsFromSystem()) {
+                        bindWallpaperDescriptionLocked(description, /* force= */ true,
+                                /* fromUser= */ false, wallpaper, callback);
+                    } else {
+                        bindWallpaperComponentLocked(mImageWallpaper, /* force= */ true,
+                                /* fromUser= */ false, wallpaper, callback);
+                    }
                 }
 
                 if (lockWallpaperChanged) {
@@ -390,8 +405,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     };
 
                     wallpaper.mBindSource = BindSource.SET_STATIC;
-                    bindWallpaperComponentLocked(mImageWallpaper, true /* force */,
-                            false /* fromUser */, wallpaper, callback);
+                    if (updateRecentsFromSystem()) {
+                        bindWallpaperDescriptionLocked(description, /* force= */ true,
+                                /* fromUser= */ false, wallpaper, callback);
+                    } else {
+                        bindWallpaperComponentLocked(mImageWallpaper, /* force= */ true,
+                                /* fromUser= */ false, wallpaper, callback);
+                    }
                 } else if (isAppliedToLock) {
                     // This is system-plus-lock: we need to wipe the lock bookkeeping since
                     // we're falling back to displaying the system wallpaper there.
@@ -2713,6 +2733,20 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     }
 
     @Override
+    public void setWallpaperDescriptionId(String newId, int which, int userId) {
+        if (!updateRecentsFromSystem()) return;
+        synchronized (mLock) {
+            WallpaperData wallpaper = (which == FLAG_LOCK) ? mLockWallpaperMap.get(userId)
+                    : mWallpaperMap.get(userId);
+            if (wallpaper != null) {
+                wallpaper.setDescription(
+                        wallpaper.getDescription().toBuilder().setId(newId).build());
+                Slog.i(TAG, "Set description id for " + which + ": " + newId);
+            }
+        }
+    }
+
+    @Override
     public ParcelFileDescriptor getWallpaperInfoFile(int userId) {
         synchronized (mLock) {
             try {
@@ -3346,7 +3380,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             try {
                 ParcelFileDescriptor pfd = updateWallpaperBitmapLocked(name, wallpaper, extras);
                 if (pfd != null) {
-                    wallpaper.imageWallpaperPending = true;
+                    wallpaper.mPendingStaticDescription = description;
                     wallpaper.mSystemWasBoth = systemIsBoth;
                     wallpaper.mWhich = which;
                     wallpaper.setComplete = completion;
@@ -3551,7 +3585,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             final long ident = Binder.clearCallingIdentity();
 
             try {
-                newWallpaper.imageWallpaperPending = false;
+                newWallpaper.mPendingStaticDescription = null;
                 newWallpaper.mWhich = which;
                 newWallpaper.mSystemWasBoth = systemIsBoth;
                 newWallpaper.fromForegroundApp = fromForeground;

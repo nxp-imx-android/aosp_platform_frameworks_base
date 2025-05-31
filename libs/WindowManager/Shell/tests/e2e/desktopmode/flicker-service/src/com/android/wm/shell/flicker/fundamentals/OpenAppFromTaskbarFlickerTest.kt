@@ -39,10 +39,12 @@ import com.android.wm.shell.flicker.utils.cascadingEffectAppliedAtEnd
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class OpenAppFromTaskbarFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
+    inner class OpenAppFromTaskbarScenario : OpenAppFromTaskbar(flicker.scenario.startRotation)
+
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
-    val scenario = OpenAppFromTaskbar()
+    val scenario = OpenAppFromTaskbarScenario()
     private val openedApp = scenario.browserApp
 
     override val transition: FlickerBuilder.() -> Unit

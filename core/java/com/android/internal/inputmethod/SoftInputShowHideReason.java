@@ -83,8 +83,6 @@ import java.lang.annotation.Retention;
         SoftInputShowHideReason.DISPLAY_CONFIGURATION_CHANGED,
         SoftInputShowHideReason.DISPLAY_INSETS_CHANGED,
         SoftInputShowHideReason.DISPLAY_CONTROLS_CHANGED,
-        SoftInputShowHideReason.UNBIND_CURRENT_METHOD,
-        SoftInputShowHideReason.HIDE_SOFT_INPUT_ON_ANIMATION_STATE_CHANGED,
         SoftInputShowHideReason.HIDE_SOFT_INPUT_REQUEST_HIDE_WITH_CONTROL,
         SoftInputShowHideReason.SHOW_SOFT_INPUT_IME_TOGGLE_SOFT_INPUT,
         SoftInputShowHideReason.SHOW_SOFT_INPUT_IMM_DEPRECATION,
@@ -375,15 +373,6 @@ public @interface SoftInputShowHideReason {
      * {@link com.android.wm.shell.common.DisplayImeController.PerDisplay#insetsControlChanged}.
      */
     int DISPLAY_CONTROLS_CHANGED = ImeProtoEnums.REASON_DISPLAY_CONTROLS_CHANGED;
-
-    /** Hide soft input by
-     * {@link com.android.server.inputmethod.InputMethodManagerService#onUnbindCurrentMethodByReset}.
-     */
-    int UNBIND_CURRENT_METHOD = ImeProtoEnums.REASON_UNBIND_CURRENT_METHOD;
-
-    /** Hide soft input by {@link android.view.ImeInsetsSourceConsumer#onAnimationStateChanged}. */
-    int HIDE_SOFT_INPUT_ON_ANIMATION_STATE_CHANGED =
-            ImeProtoEnums.REASON_HIDE_SOFT_INPUT_ON_ANIMATION_STATE_CHANGED;
 
     /** Hide soft input when we already have a {@link android.view.InsetsSourceControl} by
      * {@link android.view.ImeInsetsSourceConsumer#requestHide}.

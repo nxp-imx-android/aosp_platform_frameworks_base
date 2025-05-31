@@ -20,11 +20,13 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
@@ -33,15 +35,15 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.smartspace.SmartspaceInteractionHandler
-import com.android.systemui.communal.ui.compose.section.AmbientStatusBarSection
 import com.android.systemui.communal.ui.compose.section.CommunalLockSection
 import com.android.systemui.communal.ui.compose.section.CommunalPopupSection
 import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
-import com.android.systemui.keyguard.ui.composable.blueprint.BlueprintAlignmentLines
-import com.android.systemui.keyguard.ui.composable.section.BottomAreaSection
-import com.android.systemui.keyguard.ui.composable.section.LockSection
+import com.android.systemui.keyguard.ui.composable.element.IndicationAreaElement
+import com.android.systemui.keyguard.ui.composable.element.LockElement
+import com.android.systemui.keyguard.ui.composable.layout.LockIconAlignmentLines
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import javax.inject.Inject
 import kotlin.math.min
@@ -55,10 +57,9 @@ constructor(
     private val interactionHandler: SmartspaceInteractionHandler,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val dialogFactory: SystemUIDialogFactory,
-    private val lockSection: LockSection,
+    private val lockElement: LockElement,
     private val communalLockSection: CommunalLockSection,
-    private val bottomAreaSection: BottomAreaSection,
-    private val ambientStatusBarSection: AmbientStatusBarSection,
+    private val indicationAreaElement: IndicationAreaElement,
     private val communalPopupSection: CommunalPopupSection,
     private val widgetSection: CommunalAppWidgetSection,
     private val hubOnboardingSection: HubOnboardingSection,
@@ -88,16 +89,21 @@ constructor(
                             LockIcon(modifier = Modifier.element(Communal.Elements.LockIcon))
                         }
                     } else {
-                        with(lockSection) {
+                        with(lockElement) {
                             LockIcon(
                                 overrideColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.element(Communal.Elements.LockIcon),
                             )
                         }
                     }
-                    with(bottomAreaSection) {
+                    with(indicationAreaElement) {
                         IndicationArea(
-                            Modifier.element(Communal.Elements.IndicationArea).fillMaxWidth()
+                            Modifier.element(Communal.Elements.IndicationArea)
+                                .fillMaxWidth()
+                                .padding(
+                                    bottom =
+                                        dimensionResource(R.dimen.keyguard_indication_margin_bottom)
+                                )
                         )
                     }
                 },
@@ -138,10 +144,10 @@ constructor(
                         )
                     } else {
                         IntRect(
-                            left = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Left],
-                            top = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Top],
-                            right = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Right],
-                            bottom = lockIconPlaceable[BlueprintAlignmentLines.LockIcon.Bottom],
+                            left = lockIconPlaceable[LockIconAlignmentLines.Left],
+                            top = lockIconPlaceable[LockIconAlignmentLines.Top],
+                            right = lockIconPlaceable[LockIconAlignmentLines.Right],
+                            bottom = lockIconPlaceable[LockIconAlignmentLines.Bottom],
                         )
                     }
 

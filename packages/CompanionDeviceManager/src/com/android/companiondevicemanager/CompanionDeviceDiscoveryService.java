@@ -77,7 +77,7 @@ public class CompanionDeviceDiscoveryService extends Service {
 
     private static final String SYS_PROP_DEBUG_TIMEOUT = "debug.cdm.discovery_timeout";
     private static final long TIMEOUT_SOFT = 20_000L; // 20 seconds
-    private static final long TIMEOUT_HARD = 180_000L; // 3 minutes
+    private static final long TIMEOUT_HARD = 300_000L; // 5 minutes
     private static final long TIMEOUT_MIN = 1_000L; // 1 sec
     private static final long TIMEOUT_MAX = 60_000L; // 1 min
 

@@ -17,6 +17,8 @@
 package com.android.server.biometrics;
 
 import static android.app.admin.DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE;
+import static android.hardware.biometrics.BiometricAuthenticator.TYPE_ANY_BIOMETRIC;
+import static android.hardware.biometrics.BiometricAuthenticator.TYPE_CREDENTIAL;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FACE;
 import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRINT;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;
@@ -40,12 +42,18 @@ import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricAuthenticator;
 import android.hardware.biometrics.PromptInfo;
+import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.IDisplayManager;
 import android.os.RemoteException;
 import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.util.Pair;
+import android.view.Display;
+import android.view.DisplayInfo;
 
 import androidx.test.filters.SmallTest;
 
@@ -91,6 +99,8 @@ public class PreAuthInfoTest {
     BiometricCameraManager mBiometricCameraManager;
     @Mock
     UserManager mUserManager;
+    @Mock
+    IDisplayManager mDisplayManager;
 
     @Before
     public void setup() throws RemoteException {
@@ -113,6 +123,35 @@ public class PreAuthInfoTest {
         when(mBiometricCameraManager.isAnyCameraUnavailable()).thenReturn(false);
         when(mContext.getResources()).thenReturn(mResources);
         when(mResources.getString(anyInt())).thenReturn(TEST_PACKAGE_NAME);
+        setContextDisplayWithType(Display.TYPE_INTERNAL);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+            com.android.server.biometrics.Flags.FLAG_BIOMETRIC_PROMPT_EXTERNAL_DISPLAY)
+    public void testAuthentication_whenExternalDisplay() throws RemoteException {
+        setContextDisplayWithType(Display.TYPE_EXTERNAL);
+
+        final BiometricSensor faceSensor = getFaceSensor();
+        final BiometricSensor fingerprintSensor = getFingerprintSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+
+        promptInfo.setConfirmationRequested(false /* requireConfirmation */);
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG);
+        promptInfo.setDisallowBiometricsIfPolicyExists(false /* checkDevicePolicy */);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(faceSensor, fingerprintSensor), USER_ID, promptInfo,
+                TEST_PACKAGE_NAME, false /* checkDevicePolicyManager */, mContext,
+                mBiometricCameraManager, mUserManager);
+        final Pair<Integer, Integer> preAuthenticateStatus = preAuthInfo.getPreAuthenticateStatus();
+
+        //Should return hardware unavailable even if there are eligible sensors
+        assertThat(preAuthInfo.eligibleSensors).hasSize(2);
+        assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(
+                BIOMETRIC_ERROR_HW_UNAVAILABLE);
+        assertThat(preAuthenticateStatus.first).isEqualTo(
+                TYPE_ANY_BIOMETRIC | TYPE_CREDENTIAL);
+        assertThat(preAuthenticateStatus.second).isEqualTo(BIOMETRIC_ERROR_HW_UNAVAILABLE);
     }
 
     @Test
@@ -363,8 +402,8 @@ public class PreAuthInfoTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
-    public void testMandatoryBiometricsNegativeButtonText_whenNotSet()
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_TEST_API, Flags.FLAG_BP_FALLBACK_OPTIONS})
+    public void testMandatoryBiometricsNegativeButtonText_shouldNotBeSet()
             throws Exception {
         when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
 
@@ -376,7 +415,25 @@ public class PreAuthInfoTest {
                 false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
                 mUserManager);
         assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isTrue();
-        assertThat(promptInfo.getNegativeButtonText()).isEqualTo(null);
+        assertThat(promptInfo.getNegativeButtonText()).isNull();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_TEST_API)
+    @RequiresFlagsDisabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    public void testMandatoryBiometricsNegativeButtonText_shouldBeSet()
+            throws Exception {
+        when(mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+
+        final BiometricSensor sensor = getFaceSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.IDENTITY_CHECK);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(sensor), USER_ID, promptInfo, TEST_PACKAGE_NAME,
+                false /* checkDevicePolicyManager */, mContext, mBiometricCameraManager,
+                mUserManager);
+        assertThat(preAuthInfo.getIsMandatoryBiometricsAuthentication()).isTrue();
+        assertThat(promptInfo.getNegativeButtonText()).isNotNull();
     }
 
     @Test
@@ -484,6 +541,15 @@ public class PreAuthInfoTest {
         assertThat(preAuthInfo.ineligibleSensors.get(0).first.modality).isEqualTo(TYPE_FINGERPRINT);
         assertThat(preAuthInfo.ineligibleSensors.get(0).second)
                 .isEqualTo(BIOMETRIC_NOT_ENABLED_FOR_APPS);
+    }
+
+    private void setContextDisplayWithType(int type) {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.type = type;
+        final Display display = new Display(new DisplayManagerGlobal(mDisplayManager),
+                0 /* displayId */, displayInfo, mResources);
+
+        when(mContext.getDisplay()).thenReturn(display);
     }
 
     private BiometricSensor getFingerprintSensor() {

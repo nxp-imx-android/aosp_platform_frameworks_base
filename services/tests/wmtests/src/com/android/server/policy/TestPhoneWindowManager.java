@@ -432,9 +432,8 @@ class TestPhoneWindowManager {
         return mPhoneWindowManager.interceptKeyBeforeQueueing(event, mKeyEventPolicyFlags);
     }
 
-    long interceptKeyBeforeDispatching(KeyEvent event) {
-        return mPhoneWindowManager.interceptKeyBeforeDispatching(mInputToken, event,
-                mKeyEventPolicyFlags);
+    boolean interceptKeyBeforeDispatching(KeyEvent event) {
+        return mPhoneWindowManager.interceptKeyBeforeDispatching(mInputToken, event);
     }
 
     void interceptUnhandledKey(KeyEvent event) {

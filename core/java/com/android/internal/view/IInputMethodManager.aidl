@@ -74,13 +74,6 @@ interface IInputMethodManager {
             + "android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional = true)")
     InputMethodSubtype getLastInputMethodSubtype(int userId);
 
-    boolean showSoftInput(in IInputMethodClient client, @nullable IBinder windowToken,
-            in ImeTracker.Token statsToken, int flags, int lastClickToolType,
-            in @nullable ResultReceiver resultReceiver, int reason, boolean async);
-    boolean hideSoftInput(in IInputMethodClient client, @nullable IBinder windowToken,
-            in ImeTracker.Token statsToken, int flags,
-            in @nullable ResultReceiver resultReceiver, int reason, boolean async);
-
     /**
      * A test API for CTS to request hiding the current soft input window, with the request origin
      * on the server side.

@@ -36,10 +36,7 @@ import static org.mockito.Mockito.verify;
 import android.graphics.PixelFormat;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.WindowInsets;
-import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 
 import androidx.test.filters.SmallTest;
@@ -78,129 +75,13 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         final WindowState popup = newWindowBuilder("popup", TYPE_APPLICATION).setParent(
                 appWin).build();
         popup.mAttrs.format = PixelFormat.TRANSPARENT;
+        appWin.setRequestedVisibleTypes(
+                WindowInsets.Type.defaultVisible() | WindowInsets.Type.ime());
         mDisplayContent.setImeLayeringTarget(appWin);
         mDisplayContent.updateImeInputAndControlTarget(popup);
         performSurfacePlacementAndWaitForWindowAnimator();
 
-        mImeProvider.scheduleShowImePostLayout(appWin, ImeTracker.Token.empty());
-        assertTrue(mImeProvider.isScheduledAndReadyToShowIme());
-    }
-
-    /**
-     * Checks that scheduling with all the state set and manually triggering the show does succeed.
-     */
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
-    public void testScheduleShowIme() {
-        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
-        makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindow(ime, null, null);
-
-        final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
-        mDisplayContent.setImeLayeringTarget(target);
-        mDisplayContent.updateImeInputAndControlTarget(target);
-        performSurfacePlacementAndWaitForWindowAnimator();
-
-        // Schedule (without triggering) after everything is ready.
-        mImeProvider.scheduleShowImePostLayout(target, ImeTracker.Token.empty());
-        assertTrue(mImeProvider.isScheduledAndReadyToShowIme());
-        assertFalse(mImeProvider.isImeShowing());
-
-        // Manually trigger the show.
-        mImeProvider.checkAndStartShowImePostLayout();
-        // No longer scheduled as it was already shown.
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertTrue(mImeProvider.isImeShowing());
-    }
-
-    /**
-     * Checks that scheduling to show before any state is set does succeed when
-     * all the state becomes available.
-     */
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
-    public void testScheduleShowIme_noInitialState() {
-        final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
-
-        // Schedule before anything is ready.
-        mImeProvider.scheduleShowImePostLayout(target, ImeTracker.Token.empty());
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertFalse(mImeProvider.isImeShowing());
-
-        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
-        makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindow(ime, null, null);
-
-        mDisplayContent.setImeLayeringTarget(target);
-        mDisplayContent.updateImeInputAndControlTarget(target);
-        // Performing surface placement picks up the show scheduled above.
-        performSurfacePlacementAndWaitForWindowAnimator();
-        // No longer scheduled as it was already shown.
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertTrue(mImeProvider.isImeShowing());
-    }
-
-    /**
-     * Checks that scheduling to show before starting the {@code afterPrepareSurfacesRunnable}
-     * from {@link InsetsStateController#notifyPendingInsetsControlChanged}
-     * does continue and succeed when the runnable is started.
-     */
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
-    public void testScheduleShowIme_delayedAfterPrepareSurfaces() {
-        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
-        makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindow(ime, null, null);
-
-        final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
-        mDisplayContent.setImeLayeringTarget(target);
-        mDisplayContent.updateImeInputAndControlTarget(target);
-
-        // Schedule before starting the afterPrepareSurfacesRunnable.
-        mImeProvider.scheduleShowImePostLayout(target, ImeTracker.Token.empty());
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertFalse(mImeProvider.isImeShowing());
-
-        // This tries to pick up the show scheduled above, but must fail as the
-        // afterPrepareSurfacesRunnable was not started yet.
-        mDisplayContent.applySurfaceChangesTransaction();
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertFalse(mImeProvider.isImeShowing());
-
-        // Waiting for the afterPrepareSurfacesRunnable picks up the show scheduled above.
-        waitUntilWindowAnimatorIdle();
-        // No longer scheduled as it was already shown.
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertTrue(mImeProvider.isImeShowing());
-    }
-
-    /**
-     * Checks that scheduling to show before the surface placement does continue and succeed
-     * when the surface placement happens.
-     */
-    @Test
-    @RequiresFlagsDisabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
-    public void testScheduleShowIme_delayedSurfacePlacement() {
-        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
-        makeWindowVisibleAndDrawn(ime);
-        mImeProvider.setWindow(ime, null, null);
-
-        final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
-        mDisplayContent.setImeLayeringTarget(target);
-        mDisplayContent.updateImeInputAndControlTarget(target);
-
-        // Schedule before surface placement.
-        mImeProvider.scheduleShowImePostLayout(target, ImeTracker.Token.empty());
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
-        assertFalse(mImeProvider.isImeShowing());
-
-        // Performing surface placement picks up the show scheduled above, and succeeds.
-        // This first executes the afterPrepareSurfacesRunnable, and then
-        // applySurfaceChangesTransaction. Both of them try to trigger the show,
-        // but only the second one can succeed, as it comes after onPostLayout.
-        performSurfacePlacementAndWaitForWindowAnimator();
-        // No longer scheduled as it was already shown.
-        assertFalse(mImeProvider.isScheduledAndReadyToShowIme());
+        mImeProvider.onPostLayout();
         assertTrue(mImeProvider.isImeShowing());
     }
 
@@ -227,7 +108,6 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testUpdateControlForTarget_remoteInsetsControlTarget() throws RemoteException {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         makeWindowVisibleAndDrawn(ime);
@@ -253,7 +133,6 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testUpdateControlForTarget_remoteInsetsControlTargetUnchanged()
             throws RemoteException {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
@@ -289,7 +168,6 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testOnPostLayout_resetServerVisibilityWhenImeIsNotDrawn() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
@@ -323,7 +201,6 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
      * was already set to false before the call.
      */
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testOnPostLayout_resetImeShowingWhenAlreadyNotServerVisible() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         final WindowState target = newWindowBuilder("app", TYPE_APPLICATION).build();
@@ -351,7 +228,6 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
     public void testUpdateControlForTarget_differentControlTarget() {
         final WindowState oldTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
         final WindowState newTarget = newWindowBuilder("newApp", TYPE_APPLICATION).build();

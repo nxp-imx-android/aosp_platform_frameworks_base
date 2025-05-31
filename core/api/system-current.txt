@@ -203,6 +203,7 @@ package android {
     field @Deprecated public static final String MANAGE_ACTIVITY_STACKS = "android.permission.MANAGE_ACTIVITY_STACKS";
     field public static final String MANAGE_ACTIVITY_TASKS = "android.permission.MANAGE_ACTIVITY_TASKS";
     field @FlaggedApi("android.security.aapm_api") public static final String MANAGE_ADVANCED_PROTECTION_MODE = "android.permission.MANAGE_ADVANCED_PROTECTION_MODE";
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final String MANAGE_APP_FUNCTION_ACCESS = "android.permission.MANAGE_APP_FUNCTION_ACCESS";
     field public static final String MANAGE_APP_HIBERNATION = "android.permission.MANAGE_APP_HIBERNATION";
     field public static final String MANAGE_APP_OPS_RESTRICTIONS = "android.permission.MANAGE_APP_OPS_RESTRICTIONS";
     field public static final String MANAGE_APP_PREDICTIONS = "android.permission.MANAGE_APP_PREDICTIONS";
@@ -1761,6 +1762,19 @@ package android.app.ambientcontext {
 
 }
 
+package android.app.appfunctions {
+
+  @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_OTHER_DENIED = 4; // 0x4
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_OTHER_GRANTED = 2; // 0x2
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_PREGRANTED = 1; // 0x1
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_USER_DENIED = 16; // 0x10
+    field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_FLAG_USER_GRANTED = 8; // 0x8
+    field @FlaggedApi("android.permission.flags.app_function_access_ui_enabled") public static final String ACTION_REQUEST_APP_FUNCTION_ACCESS = "android.app.appfunctions.action.REQUEST_APP_FUNCTION_ACCESS";
+  }
+
+}
+
 package android.app.assist {
 
   public final class ActivityId implements android.os.Parcelable {
@@ -2948,8 +2962,8 @@ package android.app.supervision {
   @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public class SupervisionAppService extends android.app.Service {
     ctor public SupervisionAppService();
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
-    method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onDisabled();
-    method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onEnabled();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onSupervisionDisabled();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_app_service") public void onSupervisionEnabled();
   }
 
   @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
@@ -3427,6 +3441,44 @@ package android.companion {
 
 }
 
+package android.companion.datatransfer.continuity {
+
+  @FlaggedApi("android.companion.enable_task_continuity") public final class RemoteTask implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getDeviceId();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method public int getId();
+    method @NonNull public String getLabel();
+    method public int getLastUsedTimestampMillis();
+    method @NonNull public String getSourceDeviceName();
+    method public boolean isHandoffEnabled();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.datatransfer.continuity.RemoteTask> CREATOR;
+  }
+
+  public static final class RemoteTask.Builder {
+    ctor public RemoteTask.Builder(int);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask build();
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setDeviceId(int);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setHandoffEnabled(boolean);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setIcon(@Nullable android.graphics.drawable.Icon);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLabel(@NonNull String);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLastUsedTimestampMillis(int);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setSourceDeviceName(@NonNull String);
+  }
+
+  @FlaggedApi("android.companion.enable_task_continuity") public class TaskContinuityManager {
+    method @NonNull public java.util.List<android.companion.datatransfer.continuity.RemoteTask> getRemoteTasks();
+    method public void registerRemoteTaskListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.datatransfer.continuity.TaskContinuityManager.RemoteTaskListener);
+    method public void unregisterRemoteTaskListener(@NonNull android.companion.datatransfer.continuity.TaskContinuityManager.RemoteTaskListener);
+  }
+
+  public static interface TaskContinuityManager.RemoteTaskListener {
+    method public void onRemoteTasksChanged(@NonNull java.util.List<android.companion.datatransfer.continuity.RemoteTask>);
+  }
+
+}
+
 package android.companion.virtual {
 
   @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public final class ActivityPolicyExemption implements android.os.Parcelable {
@@ -3657,6 +3709,13 @@ package android.companion.virtual.audio {
 }
 
 package android.companion.virtual.camera {
+
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public final class CameraCharacteristicsBuilder {
+    ctor public CameraCharacteristicsBuilder();
+    ctor public CameraCharacteristicsBuilder(@NonNull android.hardware.camera2.CameraCharacteristics);
+    method @NonNull public android.hardware.camera2.CameraCharacteristics build();
+    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder set(@NonNull android.hardware.camera2.CameraCharacteristics.Key<T>, T);
+  }
 
   public final class VirtualCamera implements java.io.Closeable {
     method public void close();
@@ -12312,6 +12371,10 @@ package android.provider {
     field public static final int ERROR_REMOTE_END_CLOSED = 1; // 0x1
     field public static final int ERROR_STORAGE_FULL = 2; // 0x2
     field public static final int ERROR_UNKNOWN = 0; // 0x0
+  }
+
+  public static class CallLog.Calls implements android.provider.BaseColumns {
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String UUID = "uuid";
   }
 
   @Deprecated public static final class ContactsContract.MetadataSync implements android.provider.BaseColumns android.provider.ContactsContract.MetadataSyncColumns {

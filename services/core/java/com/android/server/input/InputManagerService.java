@@ -16,16 +16,13 @@
 
 package com.android.server.input;
 
-import static android.Manifest.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW;
-import static android.content.PermissionChecker.PERMISSION_GRANTED;
-import static android.content.PermissionChecker.PID_UNKNOWN;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.provider.DeviceConfig.NAMESPACE_INPUT_NATIVE_BOOT;
 import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
-import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
+import static com.android.hardware.input.Flags.fixKeyboardInterceptorPolicyCall;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
@@ -43,7 +40,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
@@ -54,7 +50,6 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.DisplayTopologyGraph;
 import android.hardware.display.DisplayViewport;
 import android.hardware.input.AidlInputGestureData;
-import android.hardware.input.AppLaunchData;
 import android.hardware.input.HostUsiVersion;
 import android.hardware.input.IInputDeviceBatteryListener;
 import android.hardware.input.IInputDeviceBatteryState;
@@ -67,6 +62,7 @@ import android.hardware.input.IKeyGestureHandler;
 import android.hardware.input.IKeyboardBacklightListener;
 import android.hardware.input.IStickyModifierStateListener;
 import android.hardware.input.ITabletModeChangedListener;
+import android.hardware.input.IVirtualInputDevice;
 import android.hardware.input.InputDeviceIdentifier;
 import android.hardware.input.InputGestureData;
 import android.hardware.input.InputManager;
@@ -77,6 +73,13 @@ import android.hardware.input.KeyGlyphMap;
 import android.hardware.input.KeyboardLayout;
 import android.hardware.input.KeyboardLayoutSelectionResult;
 import android.hardware.input.TouchCalibration;
+import android.hardware.input.VirtualDpadConfig;
+import android.hardware.input.VirtualKeyboardConfig;
+import android.hardware.input.VirtualMouseConfig;
+import android.hardware.input.VirtualNavigationTouchpadConfig;
+import android.hardware.input.VirtualRotaryEncoderConfig;
+import android.hardware.input.VirtualStylusConfig;
+import android.hardware.input.VirtualTouchscreenConfig;
 import android.hardware.lights.Light;
 import android.hardware.lights.LightState;
 import android.media.AudioManager;
@@ -125,7 +128,6 @@ import android.view.PointerIcon;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.VerifiedInputEvent;
-import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.WindowManagerPolicyConstants;
 import android.view.inputmethod.InputMethodInfo;
@@ -137,7 +139,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.InputMethodSubtypeHandle;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.policy.IShortcutService;
-import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.ProtoLogGroup;
 import com.android.internal.protolog.common.IProtoLogGroup;
@@ -152,7 +153,6 @@ import com.android.server.input.InputManagerInternal.LidSwitchCallback;
 import com.android.server.input.debug.FocusEventDebugView;
 import com.android.server.input.debug.TouchpadDebugViewController;
 import com.android.server.policy.WindowManagerPolicy;
-import com.android.server.wm.WindowManagerInternal;
 
 import libcore.io.IoUtils;
 
@@ -204,8 +204,6 @@ public class InputManagerService extends IInputManager.Stub
     private final Context mContext;
     private final InputManagerHandler mHandler;
     private DisplayManagerInternal mDisplayManagerInternal;
-
-    private WindowManagerInternal mWindowManagerInternal;
 
     private final File mDoubleTouchGestureEnableFile;
 
@@ -366,6 +364,9 @@ public class InputManagerService extends IInputManager.Stub
     // Manages Keyboard microphone mute led
     private final KeyboardLedController mKeyboardLedController;
 
+    // Manages virtual input devices
+    private final VirtualInputDeviceController mVirtualInputDeviceController;
+
     // Manages Keyboard modifier keys remapping
     private final KeyRemapper mKeyRemapper;
 
@@ -423,6 +424,9 @@ public class InputManagerService extends IInputManager.Stub
     /** Switch code: Headphone/Microphone Jack.  When set, something is inserted. */
     public static final int SW_JACK_PHYSICAL_INSERT = 0x07;
 
+    /** Switch code: Video Jack.  When set, something is inserted. */
+    public static final int SW_VIDEOOUT_INSERT = 0x08;
+
     /** Switch code: Camera lens cover. When set the lens is covered. */
     public static final int SW_CAMERA_LENS_COVER = 0x09;
 
@@ -436,8 +440,10 @@ public class InputManagerService extends IInputManager.Stub
     public static final int SW_MICROPHONE_INSERT_BIT = 1 << SW_MICROPHONE_INSERT;
     public static final int SW_LINEOUT_INSERT_BIT = 1 << SW_LINEOUT_INSERT;
     public static final int SW_JACK_PHYSICAL_INSERT_BIT = 1 << SW_JACK_PHYSICAL_INSERT;
-    public static final int SW_JACK_BITS =
-            SW_HEADPHONE_INSERT_BIT | SW_MICROPHONE_INSERT_BIT | SW_JACK_PHYSICAL_INSERT_BIT | SW_LINEOUT_INSERT_BIT;
+    public static final int SW_VIDEOOUT_INSERT_BIT = 1 << SW_VIDEOOUT_INSERT;
+    public static final int SW_JACK_BITS = SW_HEADPHONE_INSERT_BIT | SW_MICROPHONE_INSERT_BIT
+                                           | SW_JACK_PHYSICAL_INSERT_BIT | SW_LINEOUT_INSERT_BIT
+                                           | SW_VIDEOOUT_INSERT_BIT;
     public static final int SW_CAMERA_LENS_COVER_BIT = 1 << SW_CAMERA_LENS_COVER;
     public static final int SW_MUTE_DEVICE_BIT = 1 << SW_MUTE_DEVICE;
 
@@ -450,6 +456,9 @@ public class InputManagerService extends IInputManager.Stub
     // system gestures (e.g. navigation bar, edge-back, etc) while there is an active
     // handwriting session.
     public static final int INPUT_OVERLAY_LAYER_HANDWRITING_SURFACE = 2;
+    // The layer where the pointer event dispatcher is added by WindowManager to get an
+    // uninterrupted stream of all pointer events on each display.
+    public static final int INPUT_OVERLAY_POINTER_EVENT_DISPATCHER = Integer.MAX_VALUE;
 
 
     private final String mVelocityTrackerStrategy;
@@ -550,6 +559,8 @@ public class InputManagerService extends IInputManager.Stub
                 injector.getIoLooper(), mInputDataStore);
         mKeyboardLedController = new KeyboardLedController(mContext, injector.getLooper(),
                 mNative);
+        mVirtualInputDeviceController = new VirtualInputDeviceController(
+                mContext.getMainThreadHandler(), this);
         mKeyRemapper = new KeyRemapper(mContext, mNative, mDataStore, injector.getLooper());
         mKeyboardGlyphManager = new KeyboardGlyphManager(mContext, injector.getLooper());
         mPointerIconCache = new PointerIconCache(mContext, mNative);
@@ -627,7 +638,6 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
-        mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
 
         mSettingsObserver.registerAndUpdate();
 
@@ -807,19 +817,23 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     /**
-     * Creates an input channel that will receive all input from the input dispatcher.
+     * Creates an input channel that will receive all non-pointer input going to focused windows
+     * from the input dispatcher.
+     *
+     * This API is intended to be used only for creating debugging tools to visualize focus input.
+     *
      * @param inputChannelName The input channel name.
      * @param displayId Target display id.
      * @return The input channel.
      */
-    public InputChannel monitorInput(@NonNull String inputChannelName, int displayId) {
+    public InputChannel monitorFocusInput(@NonNull String inputChannelName, int displayId) {
         Objects.requireNonNull(inputChannelName, "inputChannelName not be null");
 
         if (displayId < Display.DEFAULT_DISPLAY) {
             throw new IllegalArgumentException("displayId must >= 0.");
         }
 
-        return mNative.createInputMonitor(displayId, inputChannelName, Binder.getCallingPid());
+        return mNative.createFocusInputMonitor(displayId, inputChannelName, Binder.getCallingPid());
     }
 
     @NonNull
@@ -838,10 +852,7 @@ public class InputManagerService extends IInputManager.Stub
                     new GestureMonitorSpyWindow(monitorToken, name, displayId, pid, uid, sc,
                             channel));
         }
-
-        final InputChannel outInputChannel = new InputChannel();
-        channel.copyTo(outInputChannel);
-        return outInputChannel;
+        return channel;
     }
 
     private void removeSpyWindowGestureMonitor(@NonNull IBinder inputChannelToken) {
@@ -1873,7 +1884,7 @@ public class InputManagerService extends IInputManager.Stub
         mNative.changeTypeAssociation();
     }
 
-    private void addKeyboardLayoutAssociation(@NonNull String inputPort,
+    void addKeyboardLayoutAssociation(@NonNull String inputPort,
             @NonNull String languageTag, @NonNull String layoutType) {
         Objects.requireNonNull(inputPort);
         Objects.requireNonNull(languageTag);
@@ -1886,7 +1897,7 @@ public class InputManagerService extends IInputManager.Stub
         mNative.changeKeyboardLayoutAssociation();
     }
 
-    private void removeKeyboardLayoutAssociation(@NonNull String inputPort) {
+    void removeKeyboardLayoutAssociation(@NonNull String inputPort) {
         Objects.requireNonNull(inputPort);
         synchronized (mAssociationsLock) {
             mKeyboardLayoutAssociations.remove(inputPort);
@@ -2229,6 +2240,7 @@ public class InputManagerService extends IInputManager.Stub
         mKeyboardLedController.dump(ipw);
         mKeyboardGlyphManager.dump(ipw);
         mKeyGestureController.dump(ipw);
+        mVirtualInputDeviceController.dump(ipw);
     }
 
     private void dumpAssociations(IndentingPrintWriter pw) {
@@ -2673,46 +2685,8 @@ public class InputManagerService extends IInputManager.Stub
 
     // Native callback.
     @SuppressWarnings("unused")
-    @VisibleForTesting
     long interceptKeyBeforeDispatching(IBinder focus, KeyEvent event, int policyFlags) {
-        final long keyNotConsumedGoFallback = -2;
-        final long keyConsumed = -1;
-        final long keyNotConsumed = 0;
-        long value = keyNotConsumed;
-        // TODO(b/358569822) Remove below once we have nicer API for listening to shortcuts
-        if ((event.isMetaPressed() || KeyEvent.isMetaKey(event.getKeyCode()))
-                && shouldInterceptShortcuts(focus)) {
-            return keyNotConsumed;
-        }
-        value = mKeyGestureController.interceptKeyBeforeDispatching(focus, event, policyFlags);
-        if (value == keyNotConsumed) {
-            value = mWindowManagerCallbacks.interceptKeyBeforeDispatching(focus, event,
-                    policyFlags);
-        }
-        if (value == keyNotConsumed && event.isMetaPressed()) {
-            if (fixSearchModifierFallbacks() ) {
-                // If the key has not been consumed and includes the meta key, do not send the event
-                // to the app and attempt to generate a fallback.
-                final KeyCharacterMap kcm = event.getKeyCharacterMap();
-                final KeyCharacterMap.FallbackAction fallbackAction =
-                        kcm.getFallbackAction(event.getKeyCode(), event.getMetaState());
-                if (fallbackAction != null) {
-                    return keyNotConsumedGoFallback;
-                }
-            }
-            return keyConsumed;
-        }
-        return value;
-    }
-
-    private boolean shouldInterceptShortcuts(IBinder focusedToken) {
-        KeyInterceptionInfo info =
-                mWindowManagerInternal.getKeyInterceptionInfoFromToken(focusedToken);
-        boolean hasInterceptWindowFlag = info != null && (info.layoutParamsPrivateFlags
-                & WindowManager.LayoutParams.PRIVATE_FLAG_ALLOW_ACTION_KEY_EVENTS) != 0;
-        return hasInterceptWindowFlag && PermissionChecker.checkPermissionForDataDelivery(mContext,
-                OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW, PID_UNKNOWN, info.windowOwnerUid,
-                null, null, null) == PERMISSION_GRANTED;
+        return mKeyGestureController.interceptKeyBeforeDispatching(focus, event, policyFlags);
     }
 
     // Native callback.
@@ -3022,30 +2996,6 @@ public class InputManagerService extends IInputManager.Stub
 
     // Native callback.
     @SuppressWarnings("unused")
-    private int getHoverTapTimeout() {
-        return ViewConfiguration.getHoverTapTimeout();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getHoverTapSlop() {
-        return ViewConfiguration.getHoverTapSlop();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getDoubleTapTimeout() {
-        return ViewConfiguration.getDoubleTapTimeout();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
-    private int getLongPressTimeout() {
-        return ViewConfiguration.getLongPressTimeout();
-    }
-
-    // Native callback.
-    @SuppressWarnings("unused")
     private int getPointerLayer() {
         return mWindowManagerCallbacks.getPointerLayer();
     }
@@ -3346,13 +3296,9 @@ public class InputManagerService extends IInputManager.Stub
          * key.
          * @param token the window token that's about to receive this event
          * @param event the key event that's being dispatched
-         * @param policyFlags the policy flags
-         * @return -1 if the key should be skipped (not sent to the app). -2 if the key should not
-         * be sent to the app, but it should still generate a fallback.
-         * 0 if the key should proceed getting dispatched to the app. positive value to indicate the
-         * additional time delay, in nanoseconds, to wait before sending this key to the app.
+         * @return {@code true} if consumed, and {@code false} otherwise.
          */
-        long interceptKeyBeforeDispatching(IBinder token, KeyEvent event, int policyFlags);
+        boolean interceptKeyBeforeDispatching(IBinder token, KeyEvent event);
 
         /**
          * Intercept unhandled key
@@ -3467,7 +3413,8 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
-        public void sendInputEvent(@NonNull InputEvent event, int policyFlags) {
+        public void sendInputEvent(@NonNull InputEvent event, int policyFlags)
+                throws RemoteException {
             if (!checkCallingPermission(android.Manifest.permission.INJECT_EVENTS,
                     "sendInputEvent()")) {
                 throw new SecurityException(
@@ -3477,9 +3424,14 @@ public class InputManagerService extends IInputManager.Stub
 
             synchronized (mInputFilterLock) {
                 if (!mDisconnected) {
-                    mNative.injectInputEvent(event, false /* injectIntoUid */, -1 /* uid */,
+                    @InputEventInjectionResult int result = mNative.injectInputEvent(
+                            event, false /* injectIntoUid */, -1 /* uid */,
                             InputManager.INJECT_INPUT_EVENT_MODE_ASYNC, 0 /* timeout */,
                             policyFlags | WindowManagerPolicy.FLAG_FILTERED);
+                    if (result != InputEventInjectionResult.SUCCEEDED) {
+                        throw new RemoteException(
+                                "Injection did not succeed, result= " + result + ".");
+                    }
                 }
             }
         }
@@ -3869,6 +3821,102 @@ public class InputManagerService extends IInputManager.Stub
         public void registerAccessibilityPointerMotionFilter(
                 AccessibilityPointerMotionFilter filter) {
             InputManagerService.this.registerAccessibilityPointerMotionFilter(filter);
+        }
+
+        @Override
+        public long interceptKeyCombinationBeforeAccessibility(@NonNull KeyEvent event) {
+            if (fixKeyboardInterceptorPolicyCall()) {
+                return mKeyGestureController.interceptKeyBeforeDispatching(/* focusedToken= */null,
+                        event, /* policyFlags= */0);
+            } else {
+                return mWindowManagerCallbacks.interceptKeyBeforeDispatching(
+                        /* focusedToken= */null, event)
+                        ? KeyGestureController.KEY_INTERCEPT_RESULT_CONSUMED
+                        : KeyGestureController.KEY_INTERCEPT_RESULT_NOT_CONSUMED;
+            }
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualKeyboard(@NonNull IBinder token,
+                @NonNull VirtualKeyboardConfig config) {
+            return mVirtualInputDeviceController.createKeyboard(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), token,
+                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
+                    config.getLanguageTag(), config.getLayoutType());
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualMouse(@NonNull IBinder token,
+                @NonNull VirtualMouseConfig config) {
+            return mVirtualInputDeviceController.createMouse(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), token,
+                    config.getAssociatedDisplayId());
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualTouchscreen(@NonNull IBinder token,
+                @NonNull VirtualTouchscreenConfig config) {
+            return mVirtualInputDeviceController.createTouchscreen(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), token,
+                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth());
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualNavigationTouchpad(@NonNull IBinder token,
+                @NonNull VirtualNavigationTouchpadConfig config) {
+            return mVirtualInputDeviceController.createNavigationTouchpad(
+                    config.getInputDeviceName(), config.getVendorId(),
+                    config.getProductId(), token,
+                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()),
+                    config.getHeight(), config.getWidth());
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualDpad(@NonNull IBinder token,
+                @NonNull VirtualDpadConfig config) {
+            return mVirtualInputDeviceController.createDpad(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), token,
+                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualStylus(@NonNull IBinder token,
+                @NonNull VirtualStylusConfig config) {
+            return mVirtualInputDeviceController.createStylus(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), token,
+                    config.getAssociatedDisplayId(), config.getHeight(), config.getWidth());
+        }
+
+        @NonNull
+        @Override
+        public IVirtualInputDevice createVirtualRotaryEncoder(
+                @NonNull IBinder token,
+                @NonNull VirtualRotaryEncoderConfig config) {
+            return mVirtualInputDeviceController.createRotaryEncoder(config.getInputDeviceName(),
+                    config.getVendorId(), config.getProductId(), token,
+                    getTargetDisplayIdForInput(config.getAssociatedDisplayId()));
+        }
+
+        @Override
+        public void closeVirtualInputDevice(IBinder token) {
+            mVirtualInputDeviceController.unregisterInputDevice(token);
+        }
+
+        // For display mirroring, we want to dispatch all key events to the source (default)
+        // display, as the virtual display doesn't have any focused windows. Hence, call this for
+        // associating any input device to the source display if the input device emits any key
+        // events.
+        private int getTargetDisplayIdForInput(int displayId) {
+            DisplayManagerInternal displayManager = LocalServices.getService(
+                    DisplayManagerInternal.class);
+            int mirroredDisplayId = displayManager.getDisplayIdToMirror(displayId);
+            return mirroredDisplayId == Display.INVALID_DISPLAY ? displayId : mirroredDisplayId;
         }
     }
 

@@ -53,3 +53,11 @@ flag {
   description: "Flag for reading avoid bad Wi-Fi customization from carrier config"
   bug: "410976315"
 }
+
+flag {
+  name: "connectivity_service_destroy_socket"
+  is_exported: true
+  namespace: "android_core_networking"
+  description: "Flag for moving the socket destroy logic in Netd to the Connectivity service"
+  bug: "314961091"
+}

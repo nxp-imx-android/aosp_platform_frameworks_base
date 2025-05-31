@@ -38,3 +38,61 @@ fun LegacyFlickerTest.cascadingEffectAppliedAtEnd(component: IComponentMatcher) 
         check { "window corner must meet display corner" }.that(alignedOnCorners).isEqual(true)
     }
 }
+
+fun LegacyFlickerTest.appLayerHasMaxDisplayHeightAtEnd(component: IComponentMatcher) {
+    assertLayersEnd {
+        val displayBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
+        visibleRegion(component)
+            .hasSameTopPosition(displayBounds)
+            .hasSameBottomPosition(displayBounds)
+    }
+}
+
+fun LegacyFlickerTest.appLayerHasMaxDisplayWidthAtEnd(component: IComponentMatcher) {
+    assertLayersEnd {
+        val displayBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
+        visibleRegion(component)
+            .hasSameLeftPosition(displayBounds)
+            .hasSameRightPosition(displayBounds)
+    }
+}
+
+fun LegacyFlickerTest.resizeVeilKeepsIncreasingInSize(component: IComponentMatcher) {
+    assertLayers {
+        val layerList = layers {
+            component.layerMatchesAnyOf(it) &&
+                    it.isVisible &&
+                    it.name.contains("Resize veil")
+        }
+
+        layerList.zipWithNext { previous, current ->
+            current.visibleRegion.isStrictlyLargerThan(previous.visibleRegion.region)
+        }
+    }
+}
+
+fun LegacyFlickerTest.resizeVeilKeepsDecreasingInSize(component: IComponentMatcher) {
+    assertLayers {
+        val layerList = layers {
+            component.layerMatchesAnyOf(it) &&
+                    it.isVisible &&
+                    it.name.contains("Resize veil")
+        }
+
+        layerList.zipWithNext { previous, current ->
+            current.visibleRegion.isStrictlySmallerThan(previous.visibleRegion.region)
+        }
+    }
+}
+
+fun LegacyFlickerTest.appLayerHasSizeAtEnd(
+    component: IComponentMatcher,
+    width: Int,
+    height: Int
+) {
+    assertLayersEnd {
+        visibleRegion(component).hasSameSize(width, height, diffThreshold = 50)
+    }
+}
+
+

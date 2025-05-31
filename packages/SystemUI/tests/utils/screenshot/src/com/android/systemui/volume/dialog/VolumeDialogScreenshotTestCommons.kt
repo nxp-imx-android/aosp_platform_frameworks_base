@@ -88,7 +88,7 @@ object VolumeDialogScreenshotTestCommons {
 
         with(fakeVolumeDialogController) {
             setHasVibrator(true)
-            setActiveStream(AudioManager.STREAM_MUSIC)
+            setActiveStream(AudioManager.STREAM_MUSIC, true)
             updateState {
                 states[AudioManager.STREAM_MUSIC] =
                     VolumeDialogController.StreamState().also {

@@ -16,10 +16,17 @@
 
 package android.companion.datatransfer.continuity;
 
+import android.companion.datatransfer.continuity.IRemoteTaskListener;
+import android.companion.datatransfer.continuity.RemoteTask;
+
 /**
  * Interface for communication with the task continuity service.
  * {@hide}
  */
 interface ITaskContinuityManager {
+
+    List<RemoteTask> getRemoteTasks();
+    void registerRemoteTaskListener(IRemoteTaskListener listener);
+    void unregisterRemoteTaskListener(IRemoteTaskListener listener);
 
 }

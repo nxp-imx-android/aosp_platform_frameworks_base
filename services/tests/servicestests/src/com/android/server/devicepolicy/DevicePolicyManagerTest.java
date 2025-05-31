@@ -322,6 +322,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         setUpUserManager();
 
         when(getServices().lockPatternUtils.hasSecureLockScreen()).thenReturn(true);
+        when(getServices().storageManager.isFileBasedEncryptionEnabled()).thenReturn(true);
 
         mIsAutomotive = mContext.getPackageManager()
                 .hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE);
@@ -7421,7 +7422,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     @Test
     public void testCanProfileOwnerResetPasswordWhenLocked_nonDirectBootAwarePo()
             throws Exception {
-        setDeviceEncryptionPerUser();
         setupProfileOwner();
         setupPasswordResetToken();
 
@@ -7432,7 +7432,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
     @Test
     public void testCanProfileOwnerResetPasswordWhenLocked_noActiveToken() throws Exception {
-        setDeviceEncryptionPerUser();
         setupProfileOwner();
         makeAdmin1DirectBootAware();
 
@@ -7442,20 +7441,8 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    public void testCanProfileOwnerResetPasswordWhenLocked_nonFbeDevice() throws Exception {
-        setupProfileOwner();
-        makeAdmin1DirectBootAware();
-        setupPasswordResetToken();
-
-        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
-        assertWithMessage("device is not FBE")
-                .that(dpm.canProfileOwnerResetPasswordWhenLocked(CALLER_USER_HANDLE)).isFalse();
-    }
-
-    @Test
     @Ignore("b/277916462")
     public void testCanProfileOwnerResetPasswordWhenLocked() throws Exception {
-        setDeviceEncryptionPerUser();
         setupProfileOwner();
         makeAdmin1DirectBootAware();
         setupPasswordResetToken();
@@ -7498,10 +7485,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
                 eq(admin1.getPackageName()),
                 anyLong(),
                 eq(CALLER_USER_HANDLE));
-    }
-
-    private void setDeviceEncryptionPerUser() {
-        when(getServices().storageManager.isFileBasedEncryptionEnabled()).thenReturn(true);
     }
 
     private void setCrossProfileAppsList(String... packages) {
