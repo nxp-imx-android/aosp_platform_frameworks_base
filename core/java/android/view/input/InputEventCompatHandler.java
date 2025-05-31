@@ -18,8 +18,14 @@ package android.view.input;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityThread;
+import android.app.compat.CompatChanges;
 import android.content.Context;
+import android.content.pm.FeatureInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.InputEvent;
 import android.view.InputEventCompatProcessor;
@@ -128,6 +134,11 @@ public class InputEventCompatHandler {
             }
         }
 
+        if (MouseToTouchProcessor.isCompatibilityNeeded(context)) {
+            chainHead = new InputEventCompatHandler(
+                    new MouseToTouchProcessor(context, handler), chainHead);
+        }
+
         if (LetterboxScrollProcessor.isCompatibilityNeeded()) {
             chainHead = new InputEventCompatHandler(
                     new LetterboxScrollProcessor(context, handler), chainHead);
@@ -139,5 +150,36 @@ public class InputEventCompatHandler {
         }
 
         return chainHead;
+    }
+
+    /**
+     * Return whether the compatibility of given change ID is required for the given context.
+     * If the application declares {@link PackageManager.FEATURE_PC} in the manifest, the
+     * compatibility is not required.
+     */
+    static boolean isPcInputCompatibilityNeeded(Context context, long changeId) {
+        if (ActivityThread.isSystem() || !CompatChanges.isChangeEnabled(changeId)) {
+            return false;
+        }
+
+        // Enabled by the device manufacturer. Check if the app opts out.
+        try {
+            final PackageInfo pkgInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), PackageManager.GET_CONFIGURATIONS);
+            if (pkgInfo.reqFeatures != null) {
+                for (FeatureInfo feature : pkgInfo.reqFeatures) {
+                    if (TextUtils.equals(feature.name, PackageManager.FEATURE_PC)) {
+                        return false;
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Cannot obtain package info.", e);
+            // pass through.
+        }
+
+        Log.i(TAG,
+                "Input compatibility " + changeId + " is enabled for " + context.getPackageName());
+        return true;
     }
 }
