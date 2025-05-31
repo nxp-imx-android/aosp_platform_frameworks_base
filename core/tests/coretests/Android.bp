@@ -257,6 +257,7 @@ android_ravenwood_test {
         "android.view.flags-aconfig-java",
         "ext",
         "framework",
+        "frameworks-base-testutils",
         "framework-res",
         "libprotobuf-java-lite",
         "org.apache.http.legacy.stubs",
