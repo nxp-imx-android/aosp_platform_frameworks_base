@@ -41,11 +41,11 @@ class LetterboxLifecycleControllerImpl(
             if (event.letterboxBounds != null) {
                 // In this case the top Activity is letterboxed.
                 letterboxModeStrategy.configureLetterboxMode()
-                event.leash?.let { leash ->
+                event.taskLeash?.let { taskLeash ->
                     createLetterboxSurface(
                         key,
                         startTransaction,
-                        leash,
+                        taskLeash,
                         event.containerToken
                     )
                 }
