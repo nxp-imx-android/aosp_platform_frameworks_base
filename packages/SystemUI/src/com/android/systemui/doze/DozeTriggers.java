@@ -163,7 +163,10 @@ public class DozeTriggers implements DozeMachine.Part {
         DOZING_UPDATE_QUICK_PICKUP(708),
 
         @UiEvent(doc = "Dozing updated - sensor wakeup timed out (from quick pickup or presence)")
-        DOZING_UPDATE_WAKE_TIMEOUT(794);
+        DOZING_UPDATE_WAKE_TIMEOUT(794),
+
+        @UiEvent(doc = "Dozing updated due to minmode.")
+        DOZING_UPDATE_MINMODE(2221);
 
         private final int mId;
 
@@ -189,6 +192,7 @@ public class DozeTriggers implements DozeMachine.Part {
                 case 9: return DOZING_UPDATE_SENSOR_TAP;
                 case 10, 13: return DOZING_UPDATE_AUTH_TRIGGERED;
                 case 11: return DOZING_UPDATE_QUICK_PICKUP;
+                case 14: return DOZING_UPDATE_MINMODE;
                 default: return null;
             }
         }
@@ -516,6 +520,10 @@ public class DozeTriggers implements DozeMachine.Part {
                 mWantProxSensor = false;
                 mWantTouchScreenSensors = false;
                 break;
+            case DOZE_AOD_MINMODE:
+                mWantProxSensor = false;
+                mWantTouchScreenSensors = false;
+                break;
             case DOZE_PULSE_DONE:
                 mDozeSensors.requestTemporaryDisable();
                 break;
@@ -645,6 +653,7 @@ public class DozeTriggers implements DozeMachine.Part {
         return dozeState == DozeMachine.State.DOZE
                 || dozeState == DozeMachine.State.DOZE_AOD
                 || dozeState == DozeMachine.State.DOZE_AOD_DOCKED
+                || dozeState == DozeMachine.State.DOZE_AOD_MINMODE
                 || (dozePausedOrPausing && pulsePerformedProximityCheck);
     }
 
