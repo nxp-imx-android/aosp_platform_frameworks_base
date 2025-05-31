@@ -22,6 +22,7 @@ import android.os.Bundle
 import androidx.annotation.AnyThread
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -83,8 +84,25 @@ interface PreferenceScreenMetadata : PreferenceMetadata {
      * If the screen has different [PreferenceHierarchy] based on additional information (e.g. app
      * filter, profile), implements [PreferenceHierarchyGenerator]. The UI framework will support
      * switching [PreferenceHierarchy] on current screen with given type.
+     *
+     * Notes:
+     * - Do not assume the [context] is UI context.
+     * - Do not run heavy operation with the [coroutineScope], which will cause ANR.
+     * - Always launch new coroutine as child of given [coroutineScope] (structured concurrency), so
+     *   that the task will be cancelled automatically when the given [coroutineScope] is cancelled.
+     *   This mitigates potential memory leaks.
+     *
+     * @param context Context to build the hierarchy, please DO NOT assume it is UI context. This
+     *   could be activity context when it is to display UI, or application context for background
+     *   service to retrieve preference metadata.
+     * @param coroutineScope CoroutineScope to create async preference metadata elements. This could
+     *   be main thread scoped when display UI or background thread scoped for external request via
+     *   Android Service. Never run heavy operation inside the [coroutineScope] to avoid ANR.
      */
-    fun getPreferenceHierarchy(context: Context): PreferenceHierarchy
+    fun getPreferenceHierarchy(
+        context: Context,
+        coroutineScope: CoroutineScope,
+    ): PreferenceHierarchy
 
     /**
      * Returns the [Intent] to show current preference screen.

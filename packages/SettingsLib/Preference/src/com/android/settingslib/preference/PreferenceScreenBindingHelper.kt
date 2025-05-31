@@ -47,6 +47,7 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableMultimap
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Helper to bind preferences on given [preferenceScreen].
@@ -272,7 +273,7 @@ class PreferenceScreenBindingHelper(
 
         /** Updates preference screen that has incomplete hierarchy. */
         @JvmStatic
-        fun bind(preferenceScreen: PreferenceScreen) {
+        fun bind(preferenceScreen: PreferenceScreen, coroutineScope: CoroutineScope) {
             val context = preferenceScreen.context
             val args = preferenceScreen.peekExtras()?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
             PreferenceScreenRegistry.create(context, preferenceScreen.key, args)?.run {
@@ -282,7 +283,7 @@ class PreferenceScreenBindingHelper(
                     bindRecursively(
                         preferenceScreen,
                         preferenceBindingFactory,
-                        getPreferenceHierarchy(context),
+                        getPreferenceHierarchy(context, coroutineScope),
                     )
                 }
             }

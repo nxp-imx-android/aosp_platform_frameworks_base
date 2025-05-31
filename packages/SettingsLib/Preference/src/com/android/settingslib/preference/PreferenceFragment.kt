@@ -22,6 +22,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.annotation.XmlRes
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceScreen
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_KEY
@@ -29,6 +30,7 @@ import com.android.settingslib.metadata.PreferenceScreenBindingKeyProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.preference.PreferenceScreenBindingHelper.Companion.bindRecursively
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
+import kotlinx.coroutines.CoroutineScope
 
 /** Fragment to display a preference screen. */
 open class PreferenceFragment :
@@ -49,9 +51,12 @@ open class PreferenceFragment :
     }
 
     fun createPreferenceScreen(): PreferenceScreen? =
-        createPreferenceScreen(PreferenceScreenFactory(this))
+        createPreferenceScreen(PreferenceScreenFactory(this), lifecycleScope)
 
-    override fun createPreferenceScreen(factory: PreferenceScreenFactory): PreferenceScreen? {
+    override fun createPreferenceScreen(
+        factory: PreferenceScreenFactory,
+        coroutineScope: CoroutineScope,
+    ): PreferenceScreen? {
         preferenceScreenBindingHelper?.onDestroy()
         preferenceScreenBindingHelper = null
 
@@ -64,7 +69,7 @@ open class PreferenceFragment :
         val screenCreator =
             getPreferenceScreenCreator(context) ?: return createPreferenceScreenFromResource()
         val preferenceBindingFactory = screenCreator.preferenceBindingFactory
-        val preferenceHierarchy = screenCreator.getPreferenceHierarchy(context)
+        val preferenceHierarchy = screenCreator.getPreferenceHierarchy(context, coroutineScope)
         val preferenceScreen =
             if (screenCreator.hasCompleteHierarchy()) {
                 Log.i(TAG, "Load screen " + screenCreator.key + " from hierarchy")

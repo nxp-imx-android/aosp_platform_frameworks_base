@@ -209,11 +209,10 @@ internal constructor(private val context: Context, metadata: PreferenceMetadata)
  * Builder function to create [PreferenceHierarchy] in
  * [DSL](https://kotlinlang.org/docs/type-safe-builders.html) manner.
  */
-fun preferenceHierarchy(
+fun PreferenceScreenMetadata.preferenceHierarchy(
     context: Context,
-    metadata: PreferenceMetadata,
     init: PreferenceHierarchy.() -> Unit,
-) = PreferenceHierarchy(context, metadata).also(init)
+) = PreferenceHierarchy(context, this).also(init)
 
 /**
  * Builder function to create [PreferenceHierarchy] with coroutine in

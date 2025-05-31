@@ -27,6 +27,7 @@ import com.android.settingslib.ipc.MessageCodec
 import com.android.settingslib.metadata.PreferenceRemoteOpMetricsLogger
 import com.android.settingslib.metadata.PreferenceScreenCoordinate
 import com.android.settingslib.metadata.PreferenceScreenRegistry
+import com.android.settingslib.metadata.usePreferenceHierarchyScope
 import com.android.settingslib.preference.PreferenceScreenProvider
 import java.util.Locale
 
@@ -54,11 +55,12 @@ class GetPreferenceGraphApiHandler(
         callingPid: Int,
         callingUid: Int,
         request: GetPreferenceGraphRequest,
-    ): PreferenceGraphProto {
+    ): PreferenceGraphProto = usePreferenceHierarchyScope {
         val elapsedRealtime = SystemClock.elapsedRealtime()
         var success = false
         try {
-            val builder = PreferenceGraphBuilder.of(application, callingPid, callingUid, request)
+            val builder =
+                PreferenceGraphBuilder.of(application, callingPid, callingUid, request, this)
             if (request.screens.isEmpty()) {
                 val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
                 factories.forEachAsync { _, factory -> builder.addPreferenceScreen(factory) }
@@ -68,7 +70,7 @@ class GetPreferenceGraphApiHandler(
             }
             val result = builder.build()
             success = true
-            return result
+            result
         } finally {
             metricsLogger?.logGraphApi(
                 application,

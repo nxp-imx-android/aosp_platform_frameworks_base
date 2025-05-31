@@ -22,6 +22,8 @@ import android.os.SystemClock
 import android.provider.SearchIndexablesContract
 import android.provider.SearchIndexablesProvider
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 
 /**
  * [SearchIndexablesProvider] to generate indexing data consistently for preference screens that are
@@ -63,7 +65,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         if (!isCatalystSearchEnabled) return cursor
         val start = SystemClock.elapsedRealtime()
         val context = requireContext()
-        context.visitPreferenceScreen { preferenceScreenMetadata ->
+        visitPreferenceScreen(context) { preferenceScreenMetadata, coroutineScope ->
             val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
             fun PreferenceHierarchyNode.visitRecursively(isParentAvailableOnCondition: Boolean) {
                 if (!metadata.isAvailable(context)) return
@@ -82,7 +84,9 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                     it.visitRecursively(isAvailableOnCondition)
                 }
             }
-            preferenceScreenMetadata.getPreferenceHierarchy(context).visitRecursively(false)
+            preferenceScreenMetadata
+                .getPreferenceHierarchy(context, coroutineScope)
+                .visitRecursively(false)
         }
         Log.d(TAG, "dynamicRawData: ${cursor.count} in ${SystemClock.elapsedRealtime() - start}ms")
         return cursor
@@ -93,7 +97,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         if (!isCatalystSearchEnabled) return cursor
         val start = SystemClock.elapsedRealtime()
         val context = requireContext()
-        context.visitPreferenceScreen { preferenceScreenMetadata ->
+        visitPreferenceScreen(context) { preferenceScreenMetadata, coroutineScope ->
             val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
             fun PreferenceHierarchyNode.visitRecursively() {
                 if (metadata.isAvailableOnCondition) return
@@ -108,7 +112,9 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                 }
                 (this as? PreferenceHierarchy)?.forEach { it.visitRecursively() }
             }
-            preferenceScreenMetadata.getPreferenceHierarchy(context).visitRecursively()
+            preferenceScreenMetadata
+                .getPreferenceHierarchy(context, coroutineScope)
+                .visitRecursively()
         }
         Log.d(TAG, "rawData: ${cursor.count} in ${SystemClock.elapsedRealtime() - start}ms")
         return cursor
@@ -118,17 +124,22 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         // Just return empty as queryRawData ignores conditional available preferences recursively
         MatrixCursor(SearchIndexablesContract.NON_INDEXABLES_KEYS_COLUMNS)
 
-    private fun Context.visitPreferenceScreen(action: (PreferenceScreenMetadata) -> Unit) {
-        PreferenceScreenRegistry.preferenceScreenMetadataFactories.forEach { _, factory ->
-            // parameterized screen is not supported because there is no way to provide arguments
-            if (factory is PreferenceScreenMetadataParameterizedFactory) return@forEach
-            val preferenceScreenMetadata = factory.create(this)
-            if (
-                preferenceScreenMetadata.hasCompleteHierarchy() &&
-                    preferenceScreenMetadata.isIndexable(this) &&
-                    preferenceScreenMetadata.isFlagEnabled(this)
-            ) {
-                action(preferenceScreenMetadata)
+    private fun visitPreferenceScreen(
+        context: Context,
+        action: (PreferenceScreenMetadata, CoroutineScope) -> Unit,
+    ) = runBlocking {
+        usePreferenceHierarchyScope {
+            PreferenceScreenRegistry.preferenceScreenMetadataFactories.forEach { _, factory ->
+                // parameterized screen is not supported as there is no way to provide arguments
+                if (factory is PreferenceScreenMetadataParameterizedFactory) return@forEach
+                val preferenceScreenMetadata = factory.create(context)
+                if (
+                    preferenceScreenMetadata.hasCompleteHierarchy() &&
+                        preferenceScreenMetadata.isIndexable(context) &&
+                        preferenceScreenMetadata.isFlagEnabled(context)
+                ) {
+                    action(preferenceScreenMetadata, this)
+                }
             }
         }
     }
