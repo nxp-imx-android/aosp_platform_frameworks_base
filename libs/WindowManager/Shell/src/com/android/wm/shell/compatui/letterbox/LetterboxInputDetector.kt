@@ -135,7 +135,7 @@ class LetterboxInputDetector(
                     inputSurfaceBuilder.createInputSurface(
                         tx,
                         source,
-                        "Sink for $source",
+                        "ShellLetterboxInputSurface $source",
                         "$TAG creation"
                     )
                 windowSession.grantInputChannel(
