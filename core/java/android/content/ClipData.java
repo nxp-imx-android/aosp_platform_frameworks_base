@@ -499,7 +499,7 @@ public class ClipData implements Parcelable {
             try {
                 resolver = context.getContentResolver();
             } catch (Exception e) {
-                Log.w(TAG, "Failed to obtain ContentResolver: " + e);
+                Log.w(TAG, "Failed to obtain ContentResolver", e);
             }
 
             // If this Item has a URI value, try using that.

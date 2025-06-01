@@ -185,7 +185,7 @@ public final class FileUtils {
         try {
             Os.chmod(path, mode);
         } catch (ErrnoException e) {
-            Slog.w(TAG, "Failed to chmod(" + path + "): " + e);
+            Slog.w(TAG, "Failed to chmod(" + path + ")", e);
             return e.errno;
         }
 
@@ -193,7 +193,7 @@ public final class FileUtils {
             try {
                 Os.chown(path, uid, gid);
             } catch (ErrnoException e) {
-                Slog.w(TAG, "Failed to chown(" + path + "): " + e);
+                Slog.w(TAG, "Failed to chown(" + path + ")", e);
                 return e.errno;
             }
         }
@@ -216,7 +216,7 @@ public final class FileUtils {
         try {
             Os.fchmod(fd, mode);
         } catch (ErrnoException e) {
-            Slog.w(TAG, "Failed to fchmod(): " + e);
+            Slog.w(TAG, "Failed to fchmod()", e);
             return e.errno;
         }
 
@@ -224,7 +224,7 @@ public final class FileUtils {
             try {
                 Os.fchown(fd, uid, gid);
             } catch (ErrnoException e) {
-                Slog.w(TAG, "Failed to fchown(): " + e);
+                Slog.w(TAG, "Failed to fchown()", e);
                 return e.errno;
             }
         }

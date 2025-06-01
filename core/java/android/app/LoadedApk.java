@@ -1488,7 +1488,7 @@ public final class LoadedApk {
                 if (!mActivityThread.mInstrumentation.onException(app, e)) {
                     throw new RuntimeException(
                         "Unable to instantiate application " + appClass
-                        + " package " + mPackageName + ": " + e.toString(), e);
+                        + " package " + mPackageName, e);
                 }
             }
             mActivityThread.addApplication(app);
@@ -1505,8 +1505,7 @@ public final class LoadedApk {
                 } catch (Exception e) {
                     if (!instrumentation.onException(app, e)) {
                         throw new RuntimeException(
-                            "Unable to create application " + app.getClass().getName()
-                            + ": " + e.toString(), e);
+                            "Unable to create application " + app.getClass().getName(), e);
                     }
                 }
             }

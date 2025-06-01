@@ -5092,7 +5092,7 @@ public class MediaPlayer extends PlayerBase
                 // nothing else to do;
                 // if blocking or non-blocking, HandleProvisioninig does the re-attempt & cleanup
             } catch (Exception e) {
-                Log.e(TAG, "prepareDrm: Exception " + e);
+                Log.e(TAG, "prepareDrm Exception", e);
                 earlyExit = true;
                 throw e;
             } finally {
@@ -5235,7 +5235,7 @@ public class MediaPlayer extends PlayerBase
                         "Unexpected. Shouldn't have reached here.");
                 throw new IllegalStateException("getKeyRequest: Unexpected provisioning error.");
             } catch (Exception e) {
-                Log.w(TAG, "getKeyRequest Exception " + e);
+                Log.w(TAG, "getKeyRequest Exception", e);
                 throw e;
             }
 
@@ -5295,7 +5295,7 @@ public class MediaPlayer extends PlayerBase
                 throw new IllegalStateException("provideKeyResponse: " +
                         "Unexpected provisioning error.");
             } catch (Exception e) {
-                Log.w(TAG, "provideKeyResponse Exception " + e);
+                Log.w(TAG, "provideKeyResponse Exception", e);
                 throw e;
             }
         }   // synchronized
@@ -5323,7 +5323,7 @@ public class MediaPlayer extends PlayerBase
             try {
                 mDrmObj.restoreKeys(mDrmSessionId, keySetId);
             } catch (Exception e) {
-                Log.w(TAG, "restoreKeys Exception " + e);
+                Log.w(TAG, "restoreKeys Exception", e);
                 throw e;
             }
 
@@ -5357,7 +5357,7 @@ public class MediaPlayer extends PlayerBase
             try {
                 value = mDrmObj.getPropertyString(propertyName);
             } catch (Exception e) {
-                Log.w(TAG, "getDrmPropertyString Exception " + e);
+                Log.w(TAG, "getDrmPropertyString Exception", e);
                 throw e;
             }
         }   // synchronized
@@ -5394,7 +5394,7 @@ public class MediaPlayer extends PlayerBase
             try {
                 mDrmObj.setPropertyString(propertyName, value);
             } catch ( Exception e ) {
-                Log.w(TAG, "setDrmPropertyString Exception " + e);
+                Log.w(TAG, "setDrmPropertyString Exception", e);
                 throw e;
             }
         }   // synchronized
@@ -5584,7 +5584,7 @@ public class MediaPlayer extends PlayerBase
             mDrmObj = new MediaDrm(uuid);
             Log.v(TAG, "prepareDrm_createDrmStep: Created mDrmObj=" + mDrmObj);
         } catch (Exception e) { // UnsupportedSchemeException
-            Log.e(TAG, "prepareDrm_createDrmStep: MediaDrm failed with " + e);
+            Log.e(TAG, "prepareDrm_createDrmStep: MediaDrm failed", e);
             throw e;
         }
     }
@@ -5607,7 +5607,7 @@ public class MediaPlayer extends PlayerBase
             Log.v(TAG, "prepareDrm_openSessionStep: _prepareDrm/Crypto succeeded");
 
         } catch (Exception e) { //ResourceBusyException, NotProvisionedException
-            Log.e(TAG, "prepareDrm_openSessionStep: open/crypto failed with " + e);
+            Log.e(TAG, "prepareDrm_openSessionStep: open/crypto failed", e);
             throw e;
         }
 
@@ -5665,13 +5665,13 @@ public class MediaPlayer extends PlayerBase
                             response.length + " " + Arrays.toString(response));
                 } catch (Exception e) {
                     status = PREPARE_DRM_STATUS_PROVISIONING_NETWORK_ERROR;
-                    Log.w(TAG, "HandleProvisioninig: Thread run: connect " + e + " url: " + url);
+                    Log.w(TAG, "HandleProvisioninig: Thread run: connect url: " + url, e);
                 } finally {
                     connection.disconnect();
                 }
             } catch (Exception e)   {
                 status = PREPARE_DRM_STATUS_PROVISIONING_NETWORK_ERROR;
-                Log.w(TAG, "HandleProvisioninig: Thread run: openConnection " + e);
+                Log.w(TAG, "HandleProvisioninig: Thread run: openConnection", e);
             }
 
             if (response != null) {
@@ -5683,8 +5683,7 @@ public class MediaPlayer extends PlayerBase
                     provisioningSucceeded = true;
                 } catch (Exception e) {
                     status = PREPARE_DRM_STATUS_PROVISIONING_SERVER_ERROR;
-                    Log.w(TAG, "HandleProvisioninig: Thread run: " +
-                            "provideProvisionResponse " + e);
+                    Log.w(TAG, "HandleProvisioninig: Thread run: provideProvisionResponse", e);
                 }
             }
 
@@ -5766,7 +5765,7 @@ public class MediaPlayer extends PlayerBase
             try {
                 mDrmProvisioningThread.join();
             } catch (Exception e) {
-                Log.w(TAG, "HandleProvisioninig: Thread.join Exception " + e);
+                Log.w(TAG, "HandleProvisioninig: Thread.join Exception", e);
             }
             result = mDrmProvisioningThread.status();
             // no longer need the thread
@@ -5791,7 +5790,7 @@ public class MediaPlayer extends PlayerBase
 
             success = true;
         } catch (Exception e) {
-            Log.w(TAG, "HandleProvisioninig: Thread run _prepareDrm resume failed with " + e);
+            Log.w(TAG, "HandleProvisioninig: Thread run _prepareDrm resume failed", e);
             // mDrmObj clean up is done by the caller
         }
 
@@ -5816,7 +5815,7 @@ public class MediaPlayer extends PlayerBase
                     mDrmProvisioningThread.join();
                 }
                 catch (InterruptedException e) {
-                    Log.w(TAG, "resetDrmState: ProvThread.join Exception " + e);
+                    Log.w(TAG, "resetDrmState: ProvThread.join Exception", e);
                 }
                 mDrmProvisioningThread = null;
             }

@@ -1316,7 +1316,7 @@ class AccountsDb implements AutoCloseable {
                     + " LIMIT 1";
             return DatabaseUtils.longForQuery(db, queryCountDebugDbRows, null);
         } catch (SQLiteException e) {
-            Log.e(TAG, "Failed to open debug table" + e);
+            Log.e(TAG, "Failed to open debug table", e);
             return -1;
         }
     }
@@ -1340,7 +1340,7 @@ class AccountsDb implements AutoCloseable {
             mDebugStatementForLogging =  compileSqlStatementForLogging();
             return mDebugStatementForLogging;
         } catch (SQLiteException e) {
-            Log.e(TAG, "Failed to open debug table" + e);
+            Log.e(TAG, "Failed to open debug table", e);
             return null;
         }
     }
