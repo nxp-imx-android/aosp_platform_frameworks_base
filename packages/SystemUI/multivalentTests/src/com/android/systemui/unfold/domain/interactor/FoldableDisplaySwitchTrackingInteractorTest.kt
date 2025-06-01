@@ -43,6 +43,7 @@ import com.android.systemui.unfold.data.repository.UnfoldTransitionRepositoryImp
 import com.android.systemui.unfold.domain.interactor.DisplaySwitchState.Corrupted
 import com.android.systemui.unfold.domain.interactor.DisplaySwitchState.Idle
 import com.android.systemui.unfold.domain.interactor.DisplaySwitchState.Switching
+import com.android.systemui.unfold.domain.interactor.DisplaySwitchState.Unknown
 import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor.Companion.COOL_DOWN_DURATION
 import com.android.systemui.unfold.domain.interactor.FoldableDisplaySwitchTrackingInteractor.Companion.SCREEN_EVENT_TIMEOUT
 import com.android.systemui.util.animation.data.repository.fakeAnimationStatusRepository
@@ -201,6 +202,42 @@ class FoldableDisplaySwitchTrackingInteractorTest : SysuiTestCase() {
             startFolding()
 
             assertThat(displaySwitchState()).isEqualTo(Switching(FOLDED))
+        }
+    }
+
+    @Test
+    fun switchingToNonFoldingRelatedStates_isIgnored() {
+        testScope.runTest {
+            val emittedStates by collectValues(displaySwitchInteractor.displaySwitchState)
+            val startingStates = listOf(UNFOLDED, FOLDED, HALF_FOLDED)
+            val targetStates = DeviceState.entries - startingStates
+
+            startingStates.forEach { startingState ->
+                targetStates.forEach { targetState ->
+                    setDeviceState(startingState)
+                    setDeviceState(targetState)
+                }
+            }
+
+            assertThat(emittedStates).containsExactly(Unknown, Idle(UNFOLDED))
+        }
+    }
+
+    @Test
+    fun switchingFromNonFoldingRelatedStates_isIgnored() {
+        testScope.runTest {
+            val emittedStates by collectValues(displaySwitchInteractor.displaySwitchState)
+
+            val targetStates = listOf(UNFOLDED, FOLDED, HALF_FOLDED)
+            val startingStates = DeviceState.entries - targetStates
+            startingStates.forEach { startingState ->
+                targetStates.forEach { targetState ->
+                    setDeviceState(startingState)
+                    setDeviceState(targetState)
+                }
+            }
+
+            assertThat(emittedStates).containsExactly(Unknown, Idle(UNFOLDED))
         }
     }
 

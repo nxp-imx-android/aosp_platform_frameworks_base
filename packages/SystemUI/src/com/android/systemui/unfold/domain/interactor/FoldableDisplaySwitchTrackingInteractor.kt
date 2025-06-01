@@ -25,6 +25,9 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState
+import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.FOLDED
+import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.HALF_FOLDED
+import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.UNFOLDED
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.ScreenPowerState
@@ -118,13 +121,14 @@ constructor(
     override val displaySwitchState: StateFlow<DisplaySwitchState> = _displaySwitchState
 
     private val displaySwitchStarted =
-        deviceStateRepository.state.pairwise().filter {
+        deviceStateRepository.state.pairwise().filter { (previousState, newState) ->
             // React only when the foldable device is
             // folding(UNFOLDED/HALF_FOLDED -> FOLDED) or unfolding(FOLDED -> HALF_FOLD/UNFOLDED)
-            foldableDeviceState ->
-            foldableDeviceState.previousValue == DeviceState.FOLDED ||
-                foldableDeviceState.newValue == DeviceState.FOLDED
+            (previousState == FOLDED && newState.isUnfoldingState()) ||
+                (newState == FOLDED && previousState.isUnfoldingState())
         }
+
+    private fun DeviceState.isUnfoldingState() = this == HALF_FOLDED || this == UNFOLDED
 
     private val startOrEndEvent: Flow<Any> = merge(displaySwitchStarted, anyEndEventFlow())
 
@@ -133,7 +137,7 @@ constructor(
     override fun start() {
         scope.launch {
             _displaySwitchState.value =
-                Idle(deviceStateRepository.state.first { it != DeviceState.UNKNOWN })
+                Idle(deviceStateRepository.state.first { it == FOLDED || it.isUnfoldingState() })
             displaySwitchStarted.collectLatest { (previousState, newState) ->
                 if (isCoolingDown) return@collectLatest
                 log { "received previousState=$previousState, newState=$newState" }
@@ -203,7 +207,7 @@ constructor(
     private fun shouldWaitForTransitionStart(
         toFoldableDeviceState: DeviceState,
         isTransitionEnabled: Boolean,
-    ): Boolean = (toFoldableDeviceState != DeviceState.FOLDED && isTransitionEnabled)
+    ): Boolean = (toFoldableDeviceState != FOLDED && isTransitionEnabled)
 
     private suspend fun waitForScreenTurnedOn() {
         traceAsync(TAG, "waitForScreenTurnedOn()") {
