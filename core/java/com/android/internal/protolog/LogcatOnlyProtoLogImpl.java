@@ -19,6 +19,7 @@ package com.android.internal.protolog;
 import static com.android.internal.protolog.ProtoLog.REQUIRE_PROTOLOGTOOL;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.TextUtils;
 import android.util.Log;
@@ -36,7 +37,7 @@ import java.util.List;
  * the ProtoLog tool, when the tracing to Perfetto flag is off, and the static REQUIRE_PROTOLOGTOOL
  * boolean is false. In which case we simply want to log protolog message to logcat. Note, that this
  * means that in such cases there is no real advantage of using protolog over logcat.
- *
+ * <p>
  * NOTE: Should not be used in real products as this mostly removes the benefits of protolog. This
  * is just a temporary class to support a legacy behavior and tests running on the host-side.
  */
@@ -45,13 +46,14 @@ public class LogcatOnlyProtoLogImpl implements IProtoLog {
     private static final String LOG_TAG = LogcatOnlyProtoLogImpl.class.getName();
 
     @Override
-    public void log(LogLevel logLevel, IProtoLogGroup group, long messageHash, int paramsMask,
-            Object[] args) {
-        throw new RuntimeException("Not supported when using LogcatOnlyProtoLogImpl");
+    public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group, long messageHash,
+            int paramsMask, @Nullable Object[] args) {
+        throw new UnsupportedOperationException("Not supported when using LogcatOnlyProtoLogImpl");
     }
 
     @Override
-    public void log(LogLevel logLevel, IProtoLogGroup group, String messageString, Object[] args) {
+    public void log(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
+            @NonNull String messageString, @NonNull Object[] args) {
         if (REQUIRE_PROTOLOGTOOL && group.isLogToProto()) {
             Log.w(LOG_TAG, "ProtoLog message not processed. Failed to log it to proto. "
                     + "Logging it below to logcat instead.");
@@ -76,17 +78,17 @@ public class LogcatOnlyProtoLogImpl implements IProtoLog {
     }
 
     @Override
-    public int startLoggingToLogcat(String[] groups, ILogger logger) {
+    public int startLoggingToLogcat(@NonNull String[] groups, @NonNull ILogger logger) {
         return 0;
     }
 
     @Override
-    public int stopLoggingToLogcat(String[] groups, ILogger logger) {
+    public int stopLoggingToLogcat(@NonNull String[] groups, @NonNull ILogger logger) {
         return 0;
     }
 
     @Override
-    public boolean isEnabled(IProtoLogGroup group, LogLevel level) {
+    public boolean isEnabled(@NonNull IProtoLogGroup group, @NonNull LogLevel level) {
         return true;
     }
 
@@ -97,7 +99,7 @@ public class LogcatOnlyProtoLogImpl implements IProtoLog {
     }
 
     @Override
-    public void registerGroups(IProtoLogGroup... groups) {
+    public void registerGroups(@NonNull IProtoLogGroup... groups) {
         // No-op
     }
 }
