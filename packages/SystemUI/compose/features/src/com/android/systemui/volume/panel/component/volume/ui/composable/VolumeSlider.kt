@@ -196,9 +196,8 @@ fun VolumeSlider(
                             Haptics.Enabled(
                                 hapticsViewModelFactory = it,
                                 hapticConfigs =
-                                    VolumeHapticsConfigsProvider.discreteConfigs(
-                                        state.valueRange.stepSize(),
-                                        state.hapticFilter,
+                                    VolumeHapticsConfigsProvider.continuousConfigs(
+                                        state.hapticFilter
                                     ),
                                 orientation = Orientation.Horizontal,
                             )

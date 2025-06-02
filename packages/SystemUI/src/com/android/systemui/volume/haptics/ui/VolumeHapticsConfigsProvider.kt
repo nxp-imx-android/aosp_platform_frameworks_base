@@ -38,8 +38,8 @@ object VolumeHapticsConfigsProvider {
             // Create a set of continuous configs
             hapticFeedbackConfig =
                 SliderHapticFeedbackConfig(
-                    additionalVelocityMaxBump = 0.1f,
-                    deltaProgressForDragThreshold = 0.05f,
+                    additionalVelocityMaxBump = 0.2f,
+                    deltaProgressForDragThreshold = 0.01f,
                     numberOfLowTicks = 4,
                     maxVelocityToScale = 0.5f, /* slider progress(from 0 to 1) per sec */
                     filter = filter,
