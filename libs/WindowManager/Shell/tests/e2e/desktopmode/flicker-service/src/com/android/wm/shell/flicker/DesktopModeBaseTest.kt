@@ -31,6 +31,7 @@ import com.android.server.wm.flicker.statusBarLayerPositionAtStartAndEnd
 import com.android.server.wm.flicker.statusBarWindowIsAlwaysVisible
 import com.android.server.wm.flicker.taskBarLayerIsVisibleAtStartAndEnd
 import com.android.server.wm.flicker.taskBarWindowIsAlwaysVisible
+import org.junit.ClassRule
 
 /**
  * The base class that all Desktop Mode Flicker tests should inherit from.
@@ -42,8 +43,10 @@ abstract class DesktopModeBaseTest(flicker: LegacyFlickerTest) : BaseBenchmarkTe
     @get:Rule
     val testName = TestName()
 
-    @get:Rule
-    val screenRecordRule = ScreenRecordRule(keepTestLevelRecordingOnSuccess = false)
+    companion object {
+        @get:ClassRule
+        val screenRecordRule = ScreenRecordRule()
+    }
 
     // Override this set with the test method names that you want to exclude from the test
     open val excludedTests: Set<String> = emptySet()
