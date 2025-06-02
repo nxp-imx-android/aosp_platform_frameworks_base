@@ -1043,6 +1043,7 @@ public class AudioDeviceInventory {
 
         int deviceType = BtHelper.getTypeFromProfile(btInfo.mProfile, btInfo.mIsLeOutput);
 
+        boolean disconnectDevice = false;
         synchronized (mDevicesLock) {
             if (mDeviceBroker.hasScheduledA2dpConnection(btDevice, btInfo.mProfile)) {
                 AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
@@ -1084,8 +1085,7 @@ public class AudioDeviceInventory {
 
                             // force A2DP device disconnection in case of error so that AudioService
                             // state is consistent with audio policy manager state
-                            setBluetoothActiveDevice(new AudioDeviceBroker.BtDeviceInfo(btInfo,
-                                    BluetoothProfile.STATE_DISCONNECTED));
+                            disconnectDevice = true;
                         } else {
                             AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
                                     "APM handleDeviceConfigChange success for device addr="
@@ -1100,6 +1100,10 @@ public class AudioDeviceInventory {
                     updateBluetoothPreferredModes_l(btDevice /*connectedDevice*/);
                 }
             }
+        }
+        if (disconnectDevice) {
+            setBluetoothActiveDevice(new AudioDeviceBroker.BtDeviceInfo(btInfo,
+                    BluetoothProfile.STATE_DISCONNECTED));
         }
         mmi.record();
         return delayMs;
@@ -2171,12 +2175,11 @@ public class AudioDeviceInventory {
             } else {
                 delay = 0;
             }
-
             if (AudioService.DEBUG_DEVICES) {
                 Log.i(TAG, "setBluetoothActiveDevice " + info.toString() + " delay(ms): " + delay);
             }
-            mDeviceBroker.postBluetoothActiveDevice(info, delay);
         }
+        mDeviceBroker.postBluetoothActiveDevice(info, delay);
         return delay;
     }
 
