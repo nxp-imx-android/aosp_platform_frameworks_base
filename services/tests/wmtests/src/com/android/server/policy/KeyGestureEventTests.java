@@ -35,8 +35,6 @@ import android.content.Intent;
 import android.hardware.input.AppLaunchData;
 import android.hardware.input.KeyGestureEvent;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.Settings;
 import android.util.SparseArray;
@@ -275,17 +273,9 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_DELEGATE_BACK_GESTURE_TO_SHELL)
     public void testKeyGestureBack_notHandled() {
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
         mPhoneWindowManager.assertBackEventNotInjected();
-    }
-
-    @Test
-    @DisableFlags(com.android.window.flags.Flags.FLAG_DELEGATE_BACK_GESTURE_TO_SHELL)
-    public void testKeyGestureBackHandled() {
-        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
-        mPhoneWindowManager.assertBackEventInjected();
     }
 
     @Test

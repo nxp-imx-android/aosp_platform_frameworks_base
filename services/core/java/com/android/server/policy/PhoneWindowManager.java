@@ -108,7 +108,6 @@ import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.L
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationHapticEffect;
-import static com.android.window.flags.Flags.delegateBackGestureToShell;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.NonNull;
@@ -3452,9 +3451,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT
         ));
-        if (!delegateBackGestureToShell()) {
-            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
-        }
         if (!com.android.window.flags.Flags.grantManageKeyGesturesToRecents()) {
             // When grantManageKeyGesturesToRecents is enabled, the event is handled in the
             // recents app.
@@ -3543,12 +3539,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     } catch (RemoteException e) {
                         Slog.d(TAG, "Error taking bugreport", e);
                     }
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_BACK:
-                if (!delegateBackGestureToShell() && complete) {
-                    injectBackGesture(SystemClock.uptimeMillis(),
-                            getTargetDisplayIdForKeyGestureEvent(event));
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION:
