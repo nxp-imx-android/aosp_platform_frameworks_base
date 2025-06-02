@@ -17,8 +17,6 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
-import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.tools.NavBar
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
@@ -81,7 +79,7 @@ abstract class MinimizeWindowOnAppOpen : TestScenarioBase() {
 
     @Test
     open fun openAppFromAllApps() {
-        openMailApps(maxNum - 1)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
         // Launch a new task, which ends up opening [maxNum]+1 tasks in total. This should
         // result in the first app we opened to be minimized.
         tapl.launchedAppState.taskbar
@@ -93,7 +91,7 @@ abstract class MinimizeWindowOnAppOpen : TestScenarioBase() {
 
     @Test
     open fun openAppFromTaskbar() {
-        openMailApps(maxNum - 1)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
         // Launch a new task, which ends up opening [maxNum]+1 tasks in total. This should
         // result in the first app we opened to be minimized.
         tapl.launchedAppState.taskbar
@@ -104,26 +102,15 @@ abstract class MinimizeWindowOnAppOpen : TestScenarioBase() {
 
     @Test
     open fun unminimizeApp() {
-        openMailApps(maxNum - 2)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 2)
         browserAppHelper.launchViaIntent(wmHelper)
         browserAppHelper.closePopupsIfNeeded(device)
         browserAppDesktopHelper.minimizeDesktopApp(wmHelper, device)
-        openMailApps(1)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = 1)
         tapl.launchedAppState.taskbar
             .getAppIcon(browserAppHelper.appName)
             .launch(browserAppHelper.packageName)
         assertWindowManagerState(appShouldBeMinimized = testAppHelper, appShouldBeOnTop = browserAppHelper)
-    }
-
-    private fun openMailApps(limit: Int) {
-        for (i in 0..<limit) {
-            mailAppDesktopHelper.launchViaIntent(
-                wmHelper,
-                mailAppHelper.openAppIntent.apply {
-                    addFlags(FLAG_ACTIVITY_MULTIPLE_TASK or FLAG_ACTIVITY_NEW_TASK)
-                }
-            )
-        }
     }
 
     private fun assertWindowManagerState(

@@ -20,10 +20,10 @@ import android.tools.NavBar
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import android.tools.Rotation
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
-import com.android.server.wm.flicker.helpers.ImeAppHelper
-import com.android.server.wm.flicker.helpers.NewTasksAppHelper
-import com.android.window.flags.Flags
+import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.wm.shell.Utils
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
@@ -43,8 +43,12 @@ constructor(
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
-    private val imeApp = ImeAppHelper(instrumentation)
-    private val newTaskApp = NewTasksAppHelper(instrumentation)
+
+    private val mailAppHelper = MailAppHelper(instrumentation)
+    private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
+
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
+    private val maxNum = desktopConfig.maxTaskLimit
 
     @Before
     fun setup() {
@@ -57,23 +61,19 @@ constructor(
         ChangeDisplayOrientationRule.setRotation(rotation)
         tapl.enableTransientTaskbar(false)
 
-        testApp.enterDesktopMode(wmHelper, device)
-        imeApp.launchViaIntent(wmHelper)
-        newTaskApp.launchViaIntent(wmHelper)
-        testApp.launchViaIntent(wmHelper)
-        testApp.exitDesktopWithDragToTopDragZone(wmHelper, device)
+        mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
+        mailAppDesktopHelper.exitDesktopWithDragToTopDragZone(wmHelper, device)
     }
 
     @Test
     open fun reenterDesktopWithDrag() {
         // By default this method uses drag to desktop
-        testApp.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
+        mailAppDesktopHelper.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
     }
 
     @After
     fun teardown() {
-        testApp.exit(wmHelper)
-        newTaskApp.exit(wmHelper)
-        imeApp.exit(wmHelper)
+        mailAppDesktopHelper.exit(wmHelper)
     }
 }
