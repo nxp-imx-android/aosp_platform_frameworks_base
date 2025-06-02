@@ -1324,6 +1324,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             if (entry instanceof GroupEntry parent) {
                 allSorted &= sortGroupChildren(parent.getRawChildren());
             } else if (entry instanceof BundleEntry bundleEntry) {
+                allSorted &= sortBundleChildren(bundleEntry.getRawChildren());
                 // Sort children of groups within bundles
                 for (ListEntry le : bundleEntry.getChildren()) {
                     if (le instanceof GroupEntry ge) {
@@ -1357,6 +1358,15 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             return true;
         } else {
             return mSemiStableSort.sort(entries, mStableOrder, mGroupChildrenComparator);
+        }
+    }
+
+    private boolean sortBundleChildren(List<ListEntry> entries) {
+        if (getStabilityManager().isEveryChangeAllowed()) {
+            entries.sort(mBundleChildrenComparator);
+            return true;
+        } else {
+            return mSemiStableSort.sort(entries, mStableOrder, mBundleChildrenComparator);
         }
     }
 
@@ -1600,6 +1610,18 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     }
 
     private final Comparator<NotificationEntry> mGroupChildrenComparator = (o1, o2) -> {
+        int cmp = Integer.compare(
+                o1.getRepresentativeEntry().getRanking().getRank(),
+                o2.getRepresentativeEntry().getRanking().getRank());
+        if (cmp != 0) return cmp;
+
+        cmp = -1 * Long.compare(
+                o1.getRepresentativeEntry().getSbn().getNotification().getWhen(),
+                o2.getRepresentativeEntry().getSbn().getNotification().getWhen());
+        return cmp;
+    };
+
+    private final Comparator<ListEntry> mBundleChildrenComparator = (o1, o2) -> {
         int cmp = Integer.compare(
                 o1.getRepresentativeEntry().getRanking().getRank(),
                 o2.getRepresentativeEntry().getRanking().getRank());
