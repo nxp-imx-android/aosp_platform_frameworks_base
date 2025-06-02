@@ -421,6 +421,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private final HearingDevicePhoneCallNotificationController mHearingDeviceNotificationController;
     private final UserManagerInternal mUmi;
 
+    private AccessibilityContentObserver mAccessibilityContentObserver;
+
     @NonNull
     private AccessibilityUserState getCurrentUserStateLocked() {
         return getUserStateLocked(mCurrentUserId);
@@ -654,8 +656,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void init() {
         mSecurityPolicy.setAccessibilityWindowManager(mA11yWindowManager);
         registerBroadcastReceivers();
-        new AccessibilityContentObserver(mMainHandler).register(
-                mContext.getContentResolver());
+        mAccessibilityContentObserver = new AccessibilityContentObserver(mMainHandler);
+        mAccessibilityContentObserver.register(mContext.getContentResolver());
+
         List<Integer> supportedGestures = new ArrayList<>();
         if (enableTalkbackAndMagnifierKeyGestures()) {
             supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION);
@@ -675,6 +678,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
         }
         disableAccessibilityMenuToMigrateIfNeeded();
+    }
+
+    @VisibleForTesting
+    void unregisterObservers() {
+        mAccessibilityContentObserver.unregister(mContext.getContentResolver());
     }
 
     /**
@@ -5907,6 +5915,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 contentResolver.registerContentObserver(
                         mRepeatKeysTimeoutMsUri, false, this, UserHandle.USER_ALL);
             }
+        }
+
+        public void unregister(ContentResolver contentResolver) {
+            contentResolver.unregisterContentObserver(this);
         }
 
         @Override
