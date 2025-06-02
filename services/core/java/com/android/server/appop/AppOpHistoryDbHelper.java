@@ -21,6 +21,7 @@ import static com.android.server.appop.HistoricalRegistry.AggregationTimeWindow;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManager;
+import android.companion.virtual.VirtualDeviceManager;
 import android.content.Context;
 import android.database.DatabaseErrorHandler;
 import android.database.DefaultDatabaseErrorHandler;
@@ -38,6 +39,7 @@ import com.android.internal.util.FrameworkStatsLog;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Sqlite database helper to read/write app op events.
@@ -100,7 +102,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                         bindTextOrNull(statement, AppOpHistoryTable.PACKAGE_NAME_INDEX,
                                 event.packageName());
                         bindTextOrNull(statement, AppOpHistoryTable.DEVICE_ID_INDEX,
-                                event.deviceId());
+                                getDeviceIdForDatabaseWrite(event.deviceId()));
                         statement.bindInt(AppOpHistoryTable.OP_CODE_INDEX, event.opCode());
                         bindTextOrNull(statement, AppOpHistoryTable.ATTRIBUTION_TAG_INDEX,
                                 event.attributionTag());
@@ -150,6 +152,18 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                     -1, writeTimeMillis,
                     mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow), writeSource);
         }
+    }
+
+    // Save disk space, use null as almost all entries would be for default device only.
+    private @Nullable String getDeviceIdForDatabaseWrite(@NonNull String deviceId) {
+        Objects.requireNonNull(deviceId);
+        return Objects.equals(VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, deviceId)
+                ? null : deviceId;
+    }
+
+    // Convert null back to default device.
+    private @NonNull String getDeviceIdForDatabaseRead(@Nullable String deviceId) {
+        return deviceId == null ? VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT : deviceId;
     }
 
     private int getDatabaseType(AggregationTimeWindow aggregationTimeWindow) {
@@ -273,7 +287,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
     private AggregatedAppOpAccessEvent readFromStatement(SQLiteRawStatement statement) {
         int uid = statement.getColumnInt(0);
         String packageName = statement.getColumnText(1);
-        String deviceId = statement.getColumnText(2);
+        String deviceId = getDeviceIdForDatabaseRead(statement.getColumnText(2));
         int opCode = statement.getColumnInt(3);
         String attributionTag = statement.getColumnText(4);
         int uidState = statement.getColumnInt(5);
