@@ -154,6 +154,10 @@ class ResourceEntry {
                                          android::StringPiece product);
   std::vector<ResourceConfigValue*> FindAllValues(const android::ConfigDescription& config);
 
+  ResourceConfigValue* FindFlagDisabledValue(const FeatureFlagAttribute& flag,
+                                             const android::ConfigDescription& config,
+                                             android::StringPiece product = {});
+
   // Either returns the existing ResourceConfigValue in the disabled list with the given flag,
   // config, and product or creates a new one and returns that. In either case the returned value
   // does not have the flag set on the value so it must be set by the caller.

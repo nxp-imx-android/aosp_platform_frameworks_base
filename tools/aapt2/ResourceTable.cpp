@@ -247,6 +247,21 @@ ResourceConfigValue* ResourceEntry::FindOrCreateFlagDisabledValue(
   return newValue;
 }
 
+ResourceConfigValue* ResourceEntry::FindFlagDisabledValue(const FeatureFlagAttribute& flag,
+                                                          const android::ConfigDescription& config,
+                                                          android::StringPiece product) {
+  auto iter = std::lower_bound(flag_disabled_values.begin(), flag_disabled_values.end(),
+                               ConfigFlagKey{&config, product, flag}, lt_config_flag_key_ref());
+  if (iter != flag_disabled_values.end()) {
+    ResourceConfigValue* value = iter->get();
+    const auto& value_flag = value->value->GetFlag().value();
+    if (value_flag == flag && value->config == config && value->product == product) {
+      return value;
+    }
+  }
+  return nullptr;
+}
+
 bool ResourceEntry::HasDefaultValue() const {
   // The default config should be at the top of the list, since the list is sorted.
   return !values.empty() && values.front()->config == ConfigDescription::DefaultConfig();
@@ -271,7 +286,7 @@ ResourceTable::CollisionResult ResourceTable::ResolveFlagCollision(FlagStatus ex
         case FlagStatus::NoFlag:
           return CollisionResult::kTakeNew;
         case FlagStatus::Disabled:
-          return CollisionResult::kKeepOriginal;
+          return CollisionResult::kConflict;
         case FlagStatus::Enabled:
           return CollisionResult::kTakeNew;
         default:
