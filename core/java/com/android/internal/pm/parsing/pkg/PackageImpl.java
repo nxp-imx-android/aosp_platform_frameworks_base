@@ -41,6 +41,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
+import android.permission.flags.Flags;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -282,6 +283,8 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
     private byte[] restrictUpdateHash;
     @NonNull
     private List<ParsedUsesPermission> usesPermissions = emptyList();
+    @NonNull
+    private Map<String, ParsedUsesPermission> usesPermissionMapping = emptyMap();
     @NonNull
     @DataClass.ParcelWith(Parcelling.BuiltIn.ForInternedStringSet.class)
     private Set<String> implicitPermissions = emptySet();
@@ -545,7 +548,9 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
 
     @Override
     public PackageImpl addImplicitPermission(String permission) {
-        addUsesPermission(new ParsedUsesPermissionImpl(permission, 0 /*usesPermissionFlags*/));
+        addUsesPermission(
+                new ParsedUsesPermissionImpl(
+                        permission, /* usesPermissionFlags= */ 0, /* purposes= */ emptySet()));
         this.implicitPermissions = CollectionUtils.add(this.implicitPermissions,
                 TextUtils.safeIntern(permission));
         return this;
@@ -722,14 +727,23 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         return this;
     }
 
+    // TODO(419394776) - Use single source of truth for storing uses permission metadata.
     @Override
     public PackageImpl addUsesPermission(ParsedUsesPermission permission) {
         this.usesPermissions = CollectionUtils.add(this.usesPermissions, permission);
 
         // Continue populating legacy data structures to avoid performance
         // issues until all that code can be migrated
-        this.requestedPermissions = CollectionUtils.add(this.requestedPermissions,
-                permission.getName());
+        this.requestedPermissions =
+                CollectionUtils.add(this.requestedPermissions, permission.getName());
+
+        if (Flags.purposeDeclarationEnabled()) {
+            // During manifest parsing, we ignore duplicate permission requests. Therefore, it's
+            // safe to directly add to the mapping.
+            this.usesPermissionMapping =
+                    CollectionUtils.add(
+                            this.usesPermissionMapping, permission.getName(), permission);
+        }
 
         return this;
     }
@@ -1493,7 +1507,15 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
 
     @NonNull
     @Override
-    public List<String> getUsesSdkLibraries() { return usesSdkLibraries; }
+    public Map<String, ParsedUsesPermission> getUsesPermissionMapping() {
+        return usesPermissionMapping;
+    }
+
+    @NonNull
+    @Override
+    public List<String> getUsesSdkLibraries() {
+        return usesSdkLibraries;
+    }
 
     @NonNull
     @Override
@@ -2857,6 +2879,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         reqFeatures = Collections.unmodifiableList(reqFeatures);
         featureGroups = Collections.unmodifiableList(featureGroups);
         usesPermissions = Collections.unmodifiableList(usesPermissions);
+        usesPermissionMapping = Collections.unmodifiableMap(usesPermissionMapping);
         usesSdkLibraries = Collections.unmodifiableList(usesSdkLibraries);
         implicitPermissions = Collections.unmodifiableSet(implicitPermissions);
         upgradeKeySets = Collections.unmodifiableSet(upgradeKeySets);
@@ -3237,6 +3260,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         sForInternedStringList.parcel(this.adoptPermissions, dest, flags);
         sForInternedStringSet.parcel(this.requestedPermissions, dest, flags);
         ParsingUtils.writeParcelableList(dest, this.usesPermissions);
+        writeUsesPermissionMapping(dest);
         sForInternedStringSet.parcel(this.implicitPermissions, dest, flags);
         sForStringSet.parcel(this.upgradeKeySets, dest, flags);
         ParsingPackageUtils.writeKeySetMapping(dest, this.keySetMapping);
@@ -3323,6 +3347,15 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         dest.writeIntArray(this.mAlternateLauncherIconResIds);
         dest.writeIntArray(this.mAlternateLauncherLabelResIds);
         dest.writeInt(this.mPageSizeAppCompatFlags);
+    }
+
+    private void writeUsesPermissionMapping(@NonNull Parcel dest) {
+        // No need to deal with null case because the mapping is already instantiated to be empty.
+        final Bundle bundle = new Bundle();
+        for (Map.Entry<String, ParsedUsesPermission> entry : usesPermissionMapping.entrySet()) {
+            bundle.putParcelable(entry.getKey(), (ParsedUsesPermissionImpl) entry.getValue());
+        }
+        dest.writeBundle(bundle);
     }
 
     private void writeFeatureFlagState(@NonNull Parcel dest) {
@@ -3426,6 +3459,7 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
         this.requestedPermissions = sForInternedStringSet.unparcel(in);
         this.usesPermissions = ParsingUtils.createTypedInterfaceList(in,
                 ParsedUsesPermissionImpl.CREATOR);
+        readUsesPermissionMapping(in);
         this.implicitPermissions = sForInternedStringSet.unparcel(in);
         this.upgradeKeySets = sForStringSet.unparcel(in);
         this.keySetMapping = ParsingPackageUtils.readKeySetMapping(in);
@@ -3524,6 +3558,17 @@ public class PackageImpl implements ParsedPackage, AndroidPackageInternal,
 
         // Do not call makeImmutable here as cached parsing will need
         // to mutate this instance before it's finalized.
+    }
+
+    private void readUsesPermissionMapping(@NonNull Parcel in) {
+        final Bundle bundle = in.readBundle(ParsedUsesPermissionImpl.class.getClassLoader());
+        final Map<String, ParsedUsesPermission> mapping = new ArrayMap<>();
+        if (bundle != null) {
+            for (String key : bundle.keySet()) {
+                mapping.put(key, bundle.getParcelable(key, ParsedUsesPermissionImpl.class));
+            }
+        }
+        usesPermissionMapping = mapping;
     }
 
     private void readFeatureFlagState(@NonNull Parcel in) {

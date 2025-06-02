@@ -1419,9 +1419,15 @@ public class ParsingPackageUtils {
                 requiredNotFeatures.add(feature);
             }
 
-            final int usesPermissionFlags = sa.getInt(
-                com.android.internal.R.styleable.AndroidManifestUsesPermission_usesPermissionFlags,
-                0);
+            final int usesPermissionFlags =
+                    sa.getInt(
+                            com.android.internal.R.styleable
+                                    .AndroidManifestUsesPermission_usesPermissionFlags,
+                            0);
+
+            final Set<String> purposes = new ArraySet<>();
+            final boolean isPurposesEnabled =
+                    android.permission.flags.Flags.purposeDeclarationEnabled();
 
             final int outerDepth = parser.getDepth();
             int type;
@@ -1447,7 +1453,15 @@ public class ParsingPackageUtils {
                             requiredNotFeatures.add((String) result.getResult());
                         }
                         break;
-
+                    case "purpose":
+                        result =
+                                isPurposesEnabled
+                                        ? parsePurpose(input, res, parser)
+                                        : input.success(null);
+                        if (result.isSuccess() && result.getResult() != null) {
+                            purposes.add((String) result.getResult());
+                        }
+                        break;
                     default:
                         result = ParsingUtils.unknownTag("<uses-permission>", pkg, parser, input);
                         break;
@@ -1489,7 +1503,7 @@ public class ParsingPackageUtils {
             }
 
             // Quietly ignore duplicate permission requests, but fail loudly if
-            // the two requests have conflicting flags
+            // the two requests have conflicting flags or purposes.
             boolean found = false;
             final List<ParsedUsesPermission> usesPermissions = pkg.getUsesPermissions();
             final int size = usesPermissions.size();
@@ -1500,6 +1514,15 @@ public class ParsingPackageUtils {
                         return input.error("Conflicting uses-permissions flags: "
                                 + name + " in package: " + pkg.getPackageName() + " at: "
                                 + parser.getPositionDescription());
+                    } else if (isPurposesEnabled
+                            && !Objects.equals(usesPermission.getPurposes(), purposes)) {
+                        return input.error(
+                                "Conflicting uses-permissions purposes: "
+                                        + name
+                                        + " in package: "
+                                        + pkg.getPackageName()
+                                        + " at: "
+                                        + parser.getPositionDescription());
                     } else {
                         Slog.w(TAG, "Ignoring duplicate uses-permissions/uses-permissions-sdk-m: "
                                 + name + " in package: " + pkg.getPackageName() + " at: "
@@ -1511,12 +1534,46 @@ public class ParsingPackageUtils {
             }
 
             if (!found) {
-                pkg.addUsesPermission(new ParsedUsesPermissionImpl(name, usesPermissionFlags));
+                pkg.addUsesPermission(
+                        new ParsedUsesPermissionImpl(name, usesPermissionFlags, purposes));
             }
             return success;
         } finally {
             sa.recycle();
         }
+    }
+
+    private ParseResult<String> parsePurpose(ParseInput input, Resources res, AttributeSet attrs) {
+        final TypedArray sa =
+                res.obtainAttributes(
+                        attrs, com.android.internal.R.styleable.AndroidManifestPurpose);
+        try {
+            final String purpose = sa.getString(R.styleable.AndroidManifestPurpose_name);
+            final int minSdkVersion =
+                    parseMinOrMaxSdkVersion(
+                            sa,
+                            R.styleable.AndroidManifestPurpose_minSdkVersion,
+                            Integer.MIN_VALUE);
+            final int maxSdkVersion =
+                    parseMinOrMaxSdkVersion(
+                            sa,
+                            R.styleable.AndroidManifestPurpose_maxSdkVersion,
+                            Integer.MAX_VALUE);
+
+            return input.success(
+                    isValidPurpose(purpose, minSdkVersion, maxSdkVersion) ? purpose : null);
+        } finally {
+            sa.recycle();
+        }
+    }
+
+    private boolean isValidPurpose(String purpose, int minSdkVersion, int maxSdkVersion) {
+        // To handle backward and forward compatibility cases, only process relevant purposes for
+        // the SDK version so the install-time enforcement logic doesn't have to do anything
+        // but verify the purposes are valid for the supported SDK.
+        return !TextUtils.isEmpty(purpose)
+                && SDK_VERSION >= minSdkVersion
+                && SDK_VERSION <= maxSdkVersion;
     }
 
     private ParseResult<String> parseRequiredFeature(ParseInput input, Resources res,
