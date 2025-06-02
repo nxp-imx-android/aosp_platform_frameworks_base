@@ -42,13 +42,5 @@ object NotificationViewFlipperBinder {
     suspend fun bind(
         viewFlipper: ViewFlipper,
         viewModel: NotificationViewFlipperViewModel,
-    ) = coroutineScope { launch { viewModel.isPaused.collect { viewFlipper.setPaused(it) } } }
-
-    private fun ViewFlipper.setPaused(paused: Boolean) {
-        if (paused) {
-            stopFlipping()
-        } else if (isAutoStart) {
-            startFlipping()
-        }
-    }
+    ) = coroutineScope { launch { viewModel.isPaused.collect { viewFlipper.setInhibited(it) } } }
 }

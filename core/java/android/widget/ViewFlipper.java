@@ -49,6 +49,9 @@ public class ViewFlipper extends ViewAnimator {
     private boolean mStarted = false;
     private boolean mVisible = false;
 
+    // Inhibiting prevents the view from actually animating, even if started or auto-started.
+    private boolean mInhibited = false;
+
     public ViewFlipper(Context context) {
         super(context);
     }
@@ -127,6 +130,22 @@ public class ViewFlipper extends ViewAnimator {
         updateRunning();
     }
 
+    /**
+     * Inhibits the view from actually animating, even if it is started or auto-started.
+     *
+     * <p>NOTE: This state is NOT reflected in the {@link #isFlipping()} method. That method
+     * returns true if the view is started or auto-started, even if inhibited. There is no way to
+     * inspect the inhibited state, and it is only intended to be a override to prevent the
+     * ViewFlipper from updating in cases where the system knows the view is not visible, but the
+     * view does not.
+     *
+     * @hide
+     */
+    public void setInhibited(boolean inhibited) {
+        mInhibited = inhibited;
+        updateRunning();
+    }
+
     @Override
     public CharSequence getAccessibilityClassName() {
         return ViewFlipper.class.getName();
@@ -150,7 +169,7 @@ public class ViewFlipper extends ViewAnimator {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private void updateRunning(boolean flipNow) {
-        boolean running = mVisible && mStarted;
+        boolean running = mVisible && mStarted && !mInhibited;
         if (running != mRunning) {
             if (running) {
                 showOnly(mWhichChild, flipNow);
@@ -162,7 +181,7 @@ public class ViewFlipper extends ViewAnimator {
         }
         if (LOGD) {
             Log.d(TAG, "updateRunning() mVisible=" + mVisible + ", mStarted=" + mStarted
-                    + ", mRunning=" + mRunning);
+                    + ", mInhibited=" + mInhibited + ", mRunning=" + mRunning);
         }
     }
 
