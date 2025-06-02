@@ -41,7 +41,7 @@ typealias BlurAppliedListener = Consumer<Int>
 
 /** Repository that maintains state for the window blur effect. */
 interface WindowRootViewBlurRepository {
-    val blurRequestedByShade: MutableStateFlow<Int>
+    val blurRequestedByShade: MutableStateFlow<Float>
 
     val scaleRequestedByShade: MutableStateFlow<Float>
 
@@ -76,7 +76,7 @@ constructor(
 
     override val trackingShadeMotion = MutableStateFlow(false)
 
-    override val blurRequestedByShade = MutableStateFlow(0)
+    override val blurRequestedByShade = MutableStateFlow(0.0f)
 
     override val scaleRequestedByShade = MutableStateFlow(1.0f)
 
