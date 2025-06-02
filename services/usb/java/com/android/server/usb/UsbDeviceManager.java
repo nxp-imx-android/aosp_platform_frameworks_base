@@ -2728,6 +2728,32 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         mHandler.updateState(state);
     }
 
+    /** Update accessory control state (Called by native code). */
+    @Keep
+    private void updateAccessoryState(String state) {
+        if (!android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            Slog.w(TAG, "Accessory state update from userspace is not supported!");
+            return;
+        }
+
+        Slog.d(TAG, "Accessory state update " + state);
+
+        if ("GETPROTOCOL".equals(state)) {
+            if (DEBUG) Slog.d(TAG, "got accessory get protocol");
+            mHandler.setAccessoryUEventTime(SystemClock.elapsedRealtime());
+            resetAccessoryHandshakeTimeoutHandler();
+        } else if ("SENDSTRING".equals(state)) {
+            if (DEBUG) Slog.d(TAG, "got accessory send string");
+            mHandler.sendEmptyMessage(MSG_INCREASE_SENDSTRING_COUNT);
+            resetAccessoryHandshakeTimeoutHandler();
+        } else if ("START".equals(state)) {
+            if (DEBUG) Slog.d(TAG, "got accessory start");
+            mHandler.removeMessages(MSG_ACCESSORY_HANDSHAKE_TIMEOUT);
+            mHandler.setStartAccessoryTrue();
+            startAccessoryMode();
+        }
+    }
+
     private native String[] nativeGetAccessoryStrings();
 
     private native ParcelFileDescriptor nativeOpenAccessory();

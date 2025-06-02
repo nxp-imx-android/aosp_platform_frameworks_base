@@ -208,6 +208,7 @@ namespace android
 
 static JavaVM *gvm = nullptr;
 static jmethodID gUpdateGadgetStateMethod;
+static jmethodID gUpdateAccessoryStateMethod;
 
 static struct parcel_file_descriptor_offsets_t
 {
@@ -822,6 +823,9 @@ int register_android_server_UsbDeviceManager(JavaVM *vm, JNIEnv *env) {
 
     gUpdateGadgetStateMethod =
             GetMethodIDOrDie(env, clazz, "updateGadgetState", "(Ljava/lang/String;)V");
+
+    gUpdateAccessoryStateMethod =
+            GetMethodIDOrDie(env, clazz, "updateAccessoryState", "(Ljava/lang/String;)V");
 
     clazz = env->FindClass("android/os/ParcelFileDescriptor");
     LOG_FATAL_IF(clazz == NULL, "Unable to find class android.os.ParcelFileDescriptor");
