@@ -2992,6 +2992,9 @@ public class Vpn {
             // The update on VPN and the IPsec tunnel will be done when migration is fully complete
             // in onChildMigrated
             mIkeConnectionInfo = ikeConnectionInfo;
+            if (mVpnConnectivityMetrics != null) {
+                mVpnConnectivityMetrics.setServerIpProtocol(ikeConnectionInfo.getRemoteAddress());
+            }
         }
 
         /**
@@ -3061,6 +3064,9 @@ public class Vpn {
 
                     mConfig.addresses.clear();
                     mConfig.addresses.addAll(internalAddresses);
+                    if (mVpnConnectivityMetrics != null) {
+                        mVpnConnectivityMetrics.setVpnNetworkIpProtocol(mConfig.addresses);
+                    }
 
                     mConfig.routes.clear();
                     mConfig.routes.addAll(newRoutes);
