@@ -56376,6 +56376,7 @@ package android.view {
     method public int getFitInsetsTypes();
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public boolean getFrameRateBoostOnTouchEnabled();
     method public final CharSequence getTitle();
+    method @FlaggedApi("com.android.hardware.input.request_key_capture_api") public boolean hasKeyboardCapture();
     method public boolean isFitInsetsIgnoringVisibility();
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public boolean isFrameRatePowerSavingsBalanced();
     method public boolean isHdrConversionEnabled();
@@ -56389,6 +56390,7 @@ package android.view {
     method public void setFitInsetsTypes(int);
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public void setFrameRateBoostOnTouchEnabled(boolean);
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public void setFrameRatePowerSavingsBalanced(boolean);
+    method @FlaggedApi("com.android.hardware.input.request_key_capture_api") @RequiresPermission(android.Manifest.permission.CAPTURE_KEYBOARD) public void setHasKeyboardCapture(boolean);
     method public void setHdrConversionEnabled(boolean);
     method public final void setTitle(CharSequence);
     method public void setWallpaperTouchEventsEnabled(boolean);
