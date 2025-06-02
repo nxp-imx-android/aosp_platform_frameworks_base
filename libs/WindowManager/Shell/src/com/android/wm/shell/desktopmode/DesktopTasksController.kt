@@ -2646,7 +2646,8 @@ class DesktopTasksController(
                 isIncompatibleTask(triggerTask) ->
                     handleIncompatibleTaskLaunch(triggerTask, transition)
                 // Check if fullscreen task should be updated
-                triggerTask.isFullscreen -> handleFullscreenTaskLaunch(triggerTask, transition)
+                triggerTask.isFullscreen ->
+                    handleFullscreenTaskLaunch(triggerTask, transition, request.type)
                 // Check if freeform task should be updated
                 triggerTask.isFreeform -> handleFreeformTaskLaunch(triggerTask, transition)
                 else -> {
@@ -2685,7 +2686,7 @@ class DesktopTasksController(
             triggerTask.isFullscreen -> {
                 // Trigger fullscreen task will enter desktop, so any existing immersive task
                 // should exit.
-                shouldFullscreenTaskLaunchSwitchToDesktop(triggerTask)
+                shouldFullscreenTaskLaunchSwitchToDesktop(triggerTask, info.type)
             }
             triggerTask.isFreeform -> {
                 // Trigger freeform task will enter desktop, so any existing immersive task should
@@ -2744,6 +2745,22 @@ class DesktopTasksController(
         (triggerTask.windowingMode == WINDOWING_MODE_FREEFORM &&
             TransitionUtil.isOpeningType(request.type) &&
             taskRepository.isActiveTask(triggerTask.taskId))
+
+    /** Returns whether a visible fullscreen task is being relaunched on the same display or not. */
+    private fun isFullscreenRelaunch(
+        triggerTask: RunningTaskInfo,
+        @WindowManager.TransitionType requestType: Int,
+    ): Boolean {
+        // Do not treat fullscreen-in-desktop as fullscreen.
+        if (taskRepository.isActiveTask(triggerTask.taskId)) return false
+
+        val existingTask = shellTaskOrganizer.getRunningTaskInfo(triggerTask.taskId) ?: return false
+        return triggerTask.isFullscreen &&
+            TransitionUtil.isOpeningType(requestType) &&
+            existingTask.isFullscreen &&
+            existingTask.isVisible &&
+            existingTask.displayId == triggerTask.displayId
+    }
 
     private fun isIncompatibleTask(task: RunningTaskInfo) =
         desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(task)
@@ -3086,9 +3103,10 @@ class DesktopTasksController(
     private fun handleFullscreenTaskLaunch(
         task: RunningTaskInfo,
         transition: IBinder,
+        @WindowManager.TransitionType requestType: Int,
     ): WindowContainerTransaction? {
         logV("handleFullscreenTaskLaunch")
-        if (shouldFullscreenTaskLaunchSwitchToDesktop(task)) {
+        if (shouldFullscreenTaskLaunchSwitchToDesktop(task, requestType)) {
             logD("Switch fullscreen task to freeform on transition: taskId=%d", task.taskId)
             return WindowContainerTransaction().also { wct ->
                 val deskId = getOrCreateDefaultDeskId(task.displayId) ?: return@also
@@ -3173,7 +3191,17 @@ class DesktopTasksController(
     private fun shouldFreeformTaskLaunchSwitchToFullscreen(task: RunningTaskInfo): Boolean =
         !isAnyDeskActive(task.displayId)
 
-    private fun shouldFullscreenTaskLaunchSwitchToDesktop(task: RunningTaskInfo): Boolean {
+    private fun shouldFullscreenTaskLaunchSwitchToDesktop(
+        task: RunningTaskInfo,
+        @WindowManager.TransitionType requestType: Int,
+    ): Boolean {
+        if (
+            DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
+                isFullscreenRelaunch(task, requestType)
+        ) {
+            logV("shouldFullscreenTaskLaunchSwitchToDesktop: no switch as fullscreen relaunch")
+            return false
+        }
         val isAnyDeskActive = isAnyDeskActive(task.displayId)
         val forceEnterDesktop = forceEnterDesktop(task.displayId)
         logV(
