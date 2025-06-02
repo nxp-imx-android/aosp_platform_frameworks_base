@@ -21,6 +21,8 @@ import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
+import android.companion.datatransfer.continuity.RemoteTask;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,11 +72,11 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
      * @return A list of the most recent tasks from all devices in the task
      * store.
      */
-    public List<RemoteTaskInfo> getMostRecentTasks() {
+    public List<RemoteTask> getMostRecentTasks() {
         synchronized (mRemoteDeviceTaskLists) {
-            List<RemoteTaskInfo> mostRecentTasks = new ArrayList<>();
+            List<RemoteTask> mostRecentTasks = new ArrayList<>();
             for (RemoteDeviceTaskList taskList : mRemoteDeviceTaskLists.values()) {
-                RemoteTaskInfo mostRecentTask = taskList.getMostRecentTask();
+                RemoteTask mostRecentTask = taskList.getMostRecentTask();
                 if (mostRecentTask != null) {
                     mostRecentTasks.add(mostRecentTask);
                 }

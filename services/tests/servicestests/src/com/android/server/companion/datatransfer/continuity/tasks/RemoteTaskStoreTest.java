@@ -80,7 +80,7 @@ public class RemoteTaskStoreTest {
 
         // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks())
-            .containsExactly(remoteTaskInfo);
+            .containsExactly(remoteTaskInfo.toRemoteTask(associationInfo.getId(), "name"));
     }
 
     @Test

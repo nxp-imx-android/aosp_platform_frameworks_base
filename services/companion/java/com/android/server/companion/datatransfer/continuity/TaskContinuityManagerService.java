@@ -73,7 +73,7 @@ public final class TaskContinuityManagerService extends SystemService {
     private final class TaskContinuityManagerServiceImpl extends ITaskContinuityManager.Stub {
         @Override
         public List<RemoteTask> getRemoteTasks() {
-            return new ArrayList<>();
+            return mRemoteTaskStore.getMostRecentTasks();
         }
 
         @Override
