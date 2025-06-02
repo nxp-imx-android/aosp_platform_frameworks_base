@@ -144,6 +144,7 @@ import static android.service.notification.NotificationListenerService.NOTIFICAT
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL_ALL;
 import static android.service.notification.NotificationListenerService.REASON_ASSISTANT_CANCEL;
+import static android.service.notification.NotificationListenerService.REASON_BUNDLE_DISMISSED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL_ALL;
 import static android.service.notification.NotificationListenerService.REASON_CHANNEL_BANNED;
@@ -1490,7 +1491,7 @@ public class NotificationManagerService extends SystemService {
                 String pkg, int userId, String key,
                 @NotificationStats.DismissalSurface int dismissalSurface,
                 @NotificationStats.DismissalSentiment int dismissalSentiment,
-                NotificationVisibility nv) {
+                NotificationVisibility nv, boolean fromBundle) {
             String tag = null;
             int id = 0;
             synchronized (mNotificationLock) {
@@ -1508,7 +1509,8 @@ public class NotificationManagerService extends SystemService {
                     /* mustHaveFlags= */ 0,
                     /* mustNotHaveFlags= */ mustNotHaveFlags,
                     /* sendDelete= */ true,
-                    userId, REASON_CANCEL, nv.rank, nv.count, /* listener= */ null);
+                    userId, fromBundle ? REASON_BUNDLE_DISMISSED : REASON_CANCEL, nv.rank, nv.count,
+                    /* listener= */ null);
             nv.recycle();
         }
 
@@ -3288,8 +3290,9 @@ public class NotificationManagerService extends SystemService {
                     }
                     FlagChecker childrenFlagChecker = (flags) -> {
                             if (cancelReason == REASON_CANCEL
-                                || cancelReason == REASON_CLICK
-                                || cancelReason == REASON_CANCEL_ALL) {
+                                    || cancelReason == REASON_CLICK
+                                    || cancelReason == REASON_CANCEL_ALL
+                                    || cancelReason == REASON_BUNDLE_DISMISSED) {
                                 if ((flags & FLAG_BUBBLE) != 0) {
                                     return false;
                                 }
@@ -9709,7 +9712,8 @@ public class NotificationManagerService extends SystemService {
                     FlagChecker childrenFlagChecker = (flags) -> {
                             if (mReason == REASON_CANCEL
                                     || mReason == REASON_CLICK
-                                    || mReason == REASON_CANCEL_ALL) {
+                                    || mReason == REASON_CANCEL_ALL
+                                    || mReason == REASON_BUNDLE_DISMISSED) {
                                 // Bubbled children get to stick around if the summary was manually
                                 // cancelled (user removed) from systemui.
                                 if ((flags & FLAG_BUBBLE) != 0) {
@@ -11107,6 +11111,7 @@ public class NotificationManagerService extends SystemService {
             case REASON_CANCEL_ALL:
             case REASON_LISTENER_CANCEL:
             case REASON_LISTENER_CANCEL_ALL:
+            case REASON_BUNDLE_DISMISSED:
                 mUsageStats.registerDismissedByUser(r);
                 break;
             case REASON_APP_CANCEL:

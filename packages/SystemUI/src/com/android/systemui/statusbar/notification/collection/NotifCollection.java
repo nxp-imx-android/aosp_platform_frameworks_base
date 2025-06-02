@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection;
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL_ALL;
 import static android.service.notification.NotificationListenerService.REASON_ASSISTANT_CANCEL;
+import static android.service.notification.NotificationListenerService.REASON_BUNDLE_DISMISSED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL_ALL;
 import static android.service.notification.NotificationListenerService.REASON_CHANNEL_BANNED;
@@ -331,7 +332,8 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
                                 storedEntry.getSbn().getKey(),
                                 stats.dismissalSurface,
                                 stats.dismissalSentiment,
-                                stats.notificationVisibility);
+                                stats.notificationVisibility,
+                                fromBundle);
                     } catch (RemoteException e) {
                         // system process is dead if we're here.
                         mLogger.logRemoteExceptionOnNotificationClear(
@@ -1123,8 +1125,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         // For Bundles, we don't need to go through a FutureDismissal because there is no need for
         // coordination with the system server. We just return a Runnable that, when invoked, will
         // perform the dismissals.
-        // TODO(b/389839319): replace with REASON_BUNDLE_CANCELED constant, when it exists
-        @CancellationReason final int cancellationReason = REASON_CANCEL;
+        @CancellationReason final int cancellationReason = REASON_BUNDLE_DISMISSED;
         BundleDismissalRunnable runnable = new BundleDismissalRunnable(bundleEntry,
                 cancellationReason, statsCreator);
         mLogger.logBundleDismissalRegistered(runnable);

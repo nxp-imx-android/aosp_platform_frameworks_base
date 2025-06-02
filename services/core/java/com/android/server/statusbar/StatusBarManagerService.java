@@ -2063,7 +2063,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     public void onNotificationClear(String pkg, int userId, String key,
             @NotificationStats.DismissalSurface int dismissalSurface,
             @NotificationStats.DismissalSentiment int dismissalSentiment,
-            NotificationVisibility nv) {
+            NotificationVisibility nv, boolean fromBundle) {
         // enforceValidCallingUser is not required here as the NotificationManagerService
         // will handle multi-user scenarios
         enforceStatusBarService();
@@ -2072,7 +2072,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         final long identity = Binder.clearCallingIdentity();
         try {
             mNotificationDelegate.onNotificationClear(callingUid, callingPid, pkg, userId,
-                    key, dismissalSurface, dismissalSentiment, nv);
+                    key, dismissalSurface, dismissalSentiment, nv, fromBundle);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }

@@ -7493,7 +7493,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         final NotificationVisibility nv = NotificationVisibility.obtain(r.getKey(), 0, 1, true);
         mService.mNotificationDelegate.onNotificationClear(mUid, 0, mPkg, r.getUserId(),
                 r.getKey(), NotificationStats.DISMISSAL_AOD,
-                NotificationStats.DISMISS_SENTIMENT_POSITIVE, nv);
+                NotificationStats.DISMISS_SENTIMENT_POSITIVE, nv, false);
         waitForIdle();
 
         assertEquals(NotificationStats.DISMISSAL_AOD, r.getStats().getDismissalSurface());
@@ -7509,6 +7509,30 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void testStats_dismissalReason_bundle() throws Exception {
+        final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        r.getSbn().setInstanceId(mNotificationInstanceIdSequence.newInstanceId());
+        mService.addNotification(r);
+
+        final NotificationVisibility nv = NotificationVisibility.obtain(r.getKey(), 0, 1, true);
+        mService.mNotificationDelegate.onNotificationClear(mUid, 0, mPkg, r.getUserId(),
+                r.getKey(), NotificationStats.DISMISSAL_SHADE,
+                NotificationStats.DISMISS_SENTIMENT_POSITIVE, nv, true);
+        waitForIdle();
+
+        assertEquals(NotificationStats.DISMISSAL_SHADE, r.getStats().getDismissalSurface());
+
+        // Using mService.addNotification() does not generate a NotificationRecordLogger log,
+        // so we only get the cancel notification.
+        assertEquals(1, mNotificationRecordLogger.numCalls());
+
+        assertEquals(
+                NotificationRecordLogger.NotificationCancelledEvent.NOTIFICATION_CANCEL_BUNDLE,
+                mNotificationRecordLogger.event(0));
+        assertEquals(1, mNotificationRecordLogger.get(0).getInstanceId());
+    }
+
+    @Test
     public void testStats_dismissalSentiment() throws Exception {
         final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
         mService.addNotification(r);
@@ -7516,7 +7540,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         final NotificationVisibility nv = NotificationVisibility.obtain(r.getKey(), 0, 1, true);
         mService.mNotificationDelegate.onNotificationClear(mUid, 0, mPkg, r.getUserId(),
                 r.getKey(), NotificationStats.DISMISSAL_AOD,
-                NotificationStats.DISMISS_SENTIMENT_NEGATIVE, nv);
+                NotificationStats.DISMISS_SENTIMENT_NEGATIVE, nv, false);
         waitForIdle();
 
         assertEquals(NotificationStats.DISMISS_SENTIMENT_NEGATIVE,
@@ -12523,7 +12547,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         mService.mNotificationDelegate.onNotificationClear(mUid, 0, mPkg,
                 nrSummary.getUserId(), nrSummary.getKey(),
                 NotificationStats.DISMISSAL_SHADE,
-                NotificationStats.DISMISS_SENTIMENT_NEUTRAL, nv);
+                NotificationStats.DISMISS_SENTIMENT_NEUTRAL, nv, false);
         waitForIdle();
 
         // The bubble should still exist
