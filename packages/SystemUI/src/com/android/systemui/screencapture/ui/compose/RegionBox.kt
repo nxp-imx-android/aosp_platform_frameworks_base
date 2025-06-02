@@ -16,10 +16,12 @@
 
 package com.android.systemui.screencapture.ui.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,4 +40,15 @@ fun RegionBox(width: Dp, height: Dp, modifier: Modifier = Modifier) {
                     .border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant)
         )
     }
+}
+
+/** The circular knob on each corner of the box used for dragging each corner. */
+@Composable
+private fun Knob(diameter: Dp, modifier: Modifier = Modifier) {
+    Box(
+        modifier =
+            modifier
+                .size(diameter)
+                .background(color = MaterialTheme.colorScheme.onSurface, shape = CircleShape)
+    )
 }
