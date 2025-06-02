@@ -100,6 +100,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     @Nullable
     private volatile SessionCreationOrTransferRequest mPendingTransferRequest;
 
+    private final EventListener mOnDeviceRouteEventListener = new EventListener();
+
     public static SystemMediaRoute2Provider create(
             Context context, UserHandle user, Looper looper) {
         var instance = new SystemMediaRoute2Provider(context, COMPONENT_NAME, user, looper);
@@ -117,17 +119,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mDeviceRouteController =
-                DeviceRouteController.createInstance(
-                        context,
-                        looper,
-                        () ->
-                                mHandler.post(
-                                        () -> {
-                                            publishProviderState();
-                                            if (updateSessionInfosIfNeeded()) {
-                                                notifyGlobalSessionInfoUpdated();
-                                            }
-                                        }));
+                DeviceRouteController.createInstance(context, looper, mOnDeviceRouteEventListener);
     }
 
     public void start() {
@@ -266,7 +258,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                                 transferInitiatorPackageName);
             }
         }
-        mDeviceRouteController.transferTo(routeOriginalId);
+        mDeviceRouteController.transferTo(requestId, routeOriginalId);
 
         if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()
                 && updateSessionInfosIfNeeded()) {
@@ -647,6 +639,25 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         }
         mDeviceRouteController.updateVolume(volume);
         publishProviderState();
+    }
+
+    private class EventListener implements DeviceRouteController.EventListener {
+
+        @Override
+        public void onDeviceRouteChanged() {
+            mHandler.post(
+                    () -> {
+                        publishProviderState();
+                        if (updateSessionInfosIfNeeded()) {
+                            notifyGlobalSessionInfoUpdated();
+                        }
+                    });
+        }
+
+        @Override
+        public void onDeviceRouteRequestFailed(long requestId, int reason) {
+            notifyRequestFailed(requestId, reason);
+        }
     }
 
     private class AudioManagerBroadcastReceiver extends BroadcastReceiver {
