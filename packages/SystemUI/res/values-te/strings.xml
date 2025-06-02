@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"గ్రూప్‌ను కుదించండి."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"గ్రూప్‌కి పరికరాన్ని జోడించండి."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"గ్రూప్ నుండి పరికరాన్ని తీసివేయండి."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"యాప్‌ను తెరవండి."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"కనెక్ట్ చేయబడలేదు."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"రోమింగ్"</string>
@@ -820,19 +824,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ఆన్ చేయి"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"\'ముఖం ఆధారం\'ను - ఆన్ చేయండి"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"నిశ్శబ్దం, బండిల్"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"నోటిఫికేషన్ ఆర్గనైజర్‌ను ఉపయోగించండి"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> కోసం"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"సేల్స్, కొత్త ఫీచర్‌లు, మరెన్నో"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"టాప్ కథనాలు, ఎడిటోరియల్స్, మరెన్నో"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"లైక్‌లు, పోస్ట్‌లు, మరెన్నో"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"న్యూస్ లెటర్‌లు, సిఫార్సు చేసిన మీడియా, మరెన్నో"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ఆన్ చేయండి"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"మీ సుదీర్ఘ సంభాషణలను ఇప్పుడు సమ్మరైజ్ చేసి, మీకు క్విక్ రీక్యాప్‌లను అందిస్తాయి"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"నోటిఫికేషన్ ఆర్గనైజర్, తక్కువ ప్రాధాన్యత ఉన్న నోటిఫికేషన్‌లను బండిల్ చేసి, మ్యూట్ చేస్తుంది"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"పూర్తయింది"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"అప్లయి చేయి"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ఆఫ్ చేయండి"</string>

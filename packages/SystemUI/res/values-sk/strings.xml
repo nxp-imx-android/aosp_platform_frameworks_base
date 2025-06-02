@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Zbaliť skupinu"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Pridať zariadenie do skupiny"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Odstrániť zariadenie zo skupiny"</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Otvoriť aplikáciu"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Nepripojené."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -500,7 +504,7 @@
     <string name="zen_silence_introduction" msgid="6117517737057344014">"Zablokujú sa tým VŠETKY zvuky a vibrácie vrátane zvukov budíkov, hudby, videí a hier."</string>
     <string name="notification_tap_again" msgid="4477318164947497249">"Upozornenie otvoríte opätovným klepnutím"</string>
     <string name="tap_again" msgid="1315420114387908655">"Klepnite znova"</string>
-    <string name="keyguard_unlock" msgid="8031975796351361601">"Otvorte potiahnutím prstom nahor"</string>
+    <string name="keyguard_unlock" msgid="8031975796351361601">"Otvorte potiahnutím nahor"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Otvorte klepnutím na ikonu odomknutia"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Odomknuté tvárou. Otvoríte potiahnutím nahor."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Odomknuté tvárou. Otvorte klepnutím na ikonu odomknutia."</string>
@@ -1593,7 +1597,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Podsvietenie klávesnice"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"%1$d. úroveň z %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"Ovládanie domácnosti"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"Rýchle ovládanie domácnosti z šetriča obrazovky"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"Rýchle ovládanie domácnosti zo šetriča obrazovky"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Vrátiť späť"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"Ak chcete prejsť späť, potiahnite po touchpade troma prstami doľava alebo doprava"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Ak sa chcete vrátiť na plochu, potiahnite po touchpade troma prstami nahor."</string>

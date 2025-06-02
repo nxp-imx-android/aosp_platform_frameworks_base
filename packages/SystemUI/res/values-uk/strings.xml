@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Згорнути групу."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Додати пристрій у групу."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Вилучити пристрій із групи."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Відкрити додаток"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Не з’єднано."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Роумінг"</string>

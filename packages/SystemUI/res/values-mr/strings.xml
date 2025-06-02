@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"गट कोलॅप्स करा."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"डिव्हाइस गटामध्ये जोडा."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"डिव्हाइस गटामधून काढून टाका."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"अ‍ॅप उघडा."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"कनेक्ट केले नाही."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"रोमिंग"</string>
@@ -285,8 +289,7 @@
     <string name="accessibility_desc_quick_settings" msgid="4374766941484719179">"क्विक सेटिंग्ज."</string>
     <string name="accessibility_desc_qs_notification_shade" msgid="8327226953072700376">"क्विक सेटिंग्ज आणि सूचना शेड."</string>
     <string name="accessibility_desc_lock_screen" msgid="409034672704273634">"लॉक स्क्रीन"</string>
-    <!-- no translation found for accessibility_desc_customize_lock_screen (4550916007565771199) -->
-    <skip />
+    <string name="accessibility_desc_customize_lock_screen" msgid="4550916007565771199">"लॉक स्‍क्रीन, लॉक स्‍क्रीन कस्टमाइझ करण्यासाठी दोनदा टॅप करा आणि धरून ठेवा."</string>
     <string name="accessibility_desc_work_lock" msgid="4355620395354680575">"कार्य लॉक स्क्रीन"</string>
     <string name="accessibility_desc_close" msgid="8293708213442107755">"बंद करा"</string>
     <string name="accessibility_quick_settings_dnd_none_on" msgid="3235552940146035383">"संपूर्ण शांतता"</string>
@@ -381,10 +384,8 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# डिव्हाइस}other{# डिव्हाइस}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"फ्लॅशलाइट"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"कॅमेरा वापरात आहे"</string>
-    <!-- no translation found for flashlight_dialog_title (4232742718579701241) -->
-    <skip />
-    <!-- no translation found for quick_settings_flashlight_tile_level_percentage (2071942013174794819) -->
-    <skip />
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"फ्लॅशलाइटची क्षमता"</string>
+    <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"मोबाइल डेटा"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"डेटा वापर"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"शिल्लक डेटा"</string>

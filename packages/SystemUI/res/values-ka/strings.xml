@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ჯგუფის ჩაკეცვა."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"მოწყობილობის ჯგუფში დამატება."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"მოწყობილობის ჯგუფიდან ამოშლა."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"აპლიკაციის გახსნა."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"არ არის დაკავშირებული."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"როუმინგი"</string>
@@ -820,19 +824,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ჩართვა"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ჩართული — სახის მიხედვით"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"დადუმება და დაჯგუფება"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"შეტყობინების ორგანიზატორის გამოყენება"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>-ისთვის"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"გაყიდვები, ახალი ფუნქციები და სხვა"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"მთავარი ამბები, სარედაქციო სტატიები და სხვა"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"მოწონებები, პოსტები და სხვა"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ნიუსლეთერები, რეკომენდებული მედია და სხვა"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ჩართვა"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ახლა უკვე შესაძლებელია თქვენი უფრო გრძელი საუბრების შეჯამება სწრაფი მიმოხილვების მისაღებად"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"შეტყობინებების ორგანიზატორის ნაკრებები და დადუმება ამცირებს პრიორიტეტულ შეტყობინებებს"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"მზადაა"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"მისადაგება"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"გამორთვა"</string>
@@ -1438,7 +1438,7 @@
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"აუდიოს გამოსასვლელის შეცვლა"</string>
     <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"უცნობი"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"სთ:წთ"</string>
-    <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"სთ:წთ"</string>
+    <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"გსურთ <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g>-ს მიანიჭოთ მოწყობილობის ყველა ჟურნალზე წვდომა?"</string>
     <string name="log_access_confirmation_allow" msgid="752147861593202968">"ერთჯერადი წვდომის დაშვება"</string>
     <string name="log_access_confirmation_deny" msgid="2389461495803585795">"არ დაიშვას"</string>

@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Groep samenvouwen"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Voeg het apparaat aan de groep toe."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Verwijder het apparaat uit de groep."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"App openen."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Niet verbonden."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -820,19 +824,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aanzetten"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Aan: op basis van gezicht"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Op stil zetten en bundelen"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Meldingsorganisator gebruiken"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Voor <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Aanbiedingen, nieuwe functies en meer"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Topverhalen, redactionele artikelen en meer"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Likes, posts en meer"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Nieuwsbrieven, aanbevolen media en meer"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Aanzetten"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Je langere gesprekken kunnen nu worden samengevat om je een snelle samenvatting te geven"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Meldingsorganisator bundelt meldingen met lagere prioriteit en zet ze op stil"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Klaar"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Toepassen"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Uitzetten"</string>

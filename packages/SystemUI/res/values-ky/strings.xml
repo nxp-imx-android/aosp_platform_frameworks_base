@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Топту жыйыштырыңыз."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Түзмөктү топко кошуңуз."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Түзмөктү топтон алып салыңыз."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Колдонмону ачуу."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Интернет жок."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Роуминг"</string>
@@ -820,19 +824,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Күйгүзүү"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Күйүк – Жүздүн негизинде"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Үнүн өчүрүү жана топтоштуруу"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Билдирмелерди иреттегичти колдонуу"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> үчүн"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Арзандатуулар, жаңы функциялар жана башкалар"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Мыкты окуялар, редакциялык макалалар жана башкалар"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Жактыруулар, посттор жана башкалар"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Маалыматтык бюллетендер, сунушталган медиа жана башкалар"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Күйгүзүү"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Узун сүйлөшүүлөрүңүздүн ыкчам корутундуларын ала аласыз."</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Билдирмелерди иреттегич маанилүү эмес билдирмелерди топтоштуруп, үнүн басат"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Бүттү"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Колдонуу"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Өчүрүү"</string>

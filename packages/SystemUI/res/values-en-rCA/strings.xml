@@ -263,6 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Collapse group."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Add device to group."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Remove device from group."</string>
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"Add <xliff:g id="DEVICE_NAME">%s</xliff:g> to group."</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"Remove <xliff:g id="DEVICE_NAME">%s</xliff:g> from group."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Open application."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Not connected."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>

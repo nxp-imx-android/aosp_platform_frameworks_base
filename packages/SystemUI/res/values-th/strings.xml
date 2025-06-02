@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ยุบกลุ่ม"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"เพิ่มอุปกรณ์ลงในกลุ่ม"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"นำอุปกรณ์ออกจากกลุ่ม"</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"เปิดแอปพลิเคชัน"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"ไม่ได้เชื่อมต่อ"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"โรมมิ่ง"</string>
@@ -1593,7 +1597,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"ไฟแบ็กไลต์ของแป้นพิมพ์"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"ระดับที่ %1$d จาก %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"ระบบควบคุมอุปกรณ์สมาร์ทโฮม"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"เข้าถึงระบบควบคุม​อุปกรณ์สมาร์ทโฮมได้อย่างรวดเร็วผ่านภาพพักหน้าจอ"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"ควบคุม​อุปกรณ์สมาร์ทโฮมได้รวดเร็วผ่านภาพพักหน้าจอ"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"เลิกทำ"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"หากต้องการย้อนกลับ ให้ใช้ 3 นิ้วปัดไปทางซ้ายหรือขวาบนทัชแพด"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"หากต้องการไปที่หน้าแรก ให้ใช้ 3 นิ้วปัดขึ้นบนทัชแพด"</string>
