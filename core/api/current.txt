@@ -47606,7 +47606,7 @@ package android.telephony {
     method public boolean isHearingAidCompatibilitySupported();
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_PRECISE_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE"}) public boolean isManualNetworkSelectionAllowed();
     method @RequiresPermission(anyOf={android.Manifest.permission.READ_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE"}) public boolean isModemEnabledForSlot(int);
-    method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public int isMultiSimSupported();
+    method @FlaggedApi("com.android.internal.telephony.flags.macro_based_opportunistic_networks") @RequiresPermission(anyOf={android.Manifest.permission.READ_PHONE_STATE, android.Manifest.permission.READ_BASIC_PHONE_STATE}) public int isMultiSimSupported();
     method public boolean isNetworkRoaming();
     method @RequiresPermission(android.Manifest.permission.READ_BASIC_PHONE_STATE) public boolean isPremiumCapabilityAvailableForPurchase(int);
     method public boolean isRadioInterfaceCapabilitySupported(@NonNull String);

@@ -16199,7 +16199,8 @@ public class TelephonyManager {
      * Returns if the usage of multiple SIM cards at the same time to register on the network
      * (e.g. Dual Standby or Dual Active) is supported by the device and by the carrier.
      *
-     * <p>Requires Permission: {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+     * <p>Requires Permission:{@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE},
+     * {@link android.Manifest.permission#READ_BASIC_PHONE_STATE READ_BASIC_PHONE_STATE}
      * or that the calling app has carrier privileges (see {@link #hasCarrierPrivileges}).
      *
      * @return {@link #MULTISIM_ALLOWED} if the device supports multiple SIMs.
@@ -16210,8 +16211,10 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      */
+    @FlaggedApi(Flags.FLAG_MACRO_BASED_OPPORTUNISTIC_NETWORKS)
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
-    @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
+    @RequiresPermission(anyOf = {android.Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_BASIC_PHONE_STATE})
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     @IsMultiSimSupportedResult
     public int isMultiSimSupported() {
