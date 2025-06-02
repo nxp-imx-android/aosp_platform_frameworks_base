@@ -120,6 +120,8 @@ import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator;
+import com.android.wm.shell.desktopmode.ShellDesktopState;
+import com.android.wm.shell.desktopmode.ShellDesktopStateImpl;
 import com.android.wm.shell.desktopmode.SpringDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
@@ -1171,10 +1173,10 @@ public abstract class WMShellModule {
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
             Optional<CompatUIHandler> compatUI,
             DesksOrganizer desksOrganizer,
-            DesktopState desktopState,
+            ShellDesktopState shelldesktopState,
             DesktopConfig desktopConfig
     ) {
-        if (!desktopState.canEnterDesktopModeOrShowAppHandle()) {
+        if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
         }
         return Optional.of(new DesktopModeWindowDecorViewModel(context, shellExecutor, mainHandler,
@@ -1191,7 +1193,7 @@ public abstract class WMShellModule {
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
-                desksOrganizer, desktopState, desktopConfig));
+                desksOrganizer, shelldesktopState, desktopConfig));
     }
 
     @WMSingleton
@@ -1215,6 +1217,17 @@ public abstract class WMShellModule {
     static MultiDisplayDragMoveIndicatorSurface.Factory
             providesMultiDisplayDragMoveIndicatorSurfaceFactory() {
         return new MultiDisplayDragMoveIndicatorSurface.Factory();
+    }
+
+    @WMSingleton
+    @Provides
+    static ShellDesktopState provideShellDesktopState(
+            DesktopState desktopState,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            FocusTransitionObserver focusTransitionObserver,
+            ShellController shellController) {
+        return new ShellDesktopStateImpl(desktopState, desktopUserRepositories,
+                focusTransitionObserver, shellController);
     }
 
     @WMSingleton

@@ -1340,8 +1340,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val touchListener = onTouchListenerCaptor.firstValue
         if (touchListener is DesktopModeWindowDecorViewModel.DesktopModeTouchEventListener) {
             val taskInfo = decor.mTaskInfo
-            mockDesktopTasksController.stub { on { getActiveDeskId(DEFAULT_DISPLAY) } doReturn 1 }
-            mockDesktopTasksController.stub { on { getActiveDeskId(SECOND_DISPLAY) } doReturn 2 }
+            shellDesktopState.overrideWindowDropTargetEligibility[DEFAULT_DISPLAY] = true
+            shellDesktopState.overrideWindowDropTargetEligibility[SECOND_DISPLAY] = true
             val mockInputToken = mock<IBinder>()
             val mockViewRootImpl = mock<ViewRootImpl> { on { inputToken } doReturn mockInputToken }
             val view = mock<View> { on { getViewRootImpl() } doReturn mockViewRootImpl }
@@ -1417,8 +1417,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val touchListener = onTouchListenerCaptor.firstValue
         if (touchListener is DesktopModeWindowDecorViewModel.DesktopModeTouchEventListener) {
             val taskInfo = decor.mTaskInfo
-            mockDesktopTasksController.stub { on { getActiveDeskId(DEFAULT_DISPLAY) } doReturn 1 }
-            mockDesktopTasksController.stub { on { getActiveDeskId(SECOND_DISPLAY) } doReturn null }
+            shellDesktopState.overrideWindowDropTargetEligibility[DEFAULT_DISPLAY] = true
+            shellDesktopState.overrideWindowDropTargetEligibility[SECOND_DISPLAY] = false
             val mockInputToken = mock<IBinder>()
             val mockViewRootImpl = mock<ViewRootImpl> { on { inputToken } doReturn mockInputToken }
             val view = mock<View> { on { getViewRootImpl() } doReturn mockViewRootImpl }
