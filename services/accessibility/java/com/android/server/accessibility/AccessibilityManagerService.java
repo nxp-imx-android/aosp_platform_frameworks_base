@@ -423,6 +423,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private final UserManagerInternal mUmi;
 
     private AccessibilityContentObserver mAccessibilityContentObserver;
+    private List<BroadcastReceiver> mRegisteredBroadcaseReveivers = new ArrayList<>();
 
     @NonNull
     private AccessibilityUserState getCurrentUserStateLocked() {
@@ -681,9 +682,21 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         disableAccessibilityMenuToMigrateIfNeeded();
     }
 
+    /** The test only method to clean up registered observers / listeners. */
     @VisibleForTesting
     void unregisterObservers() {
+        // Unregister in the reverse order of the registration.
+        if (com.android.settingslib.flags.Flags.hearingDevicesInputRoutingControl()) {
+            if (mHearingDeviceNotificationController != null) {
+                mHearingDeviceNotificationController.stopListenForCallState();
+            }
+        }
+        mInputManager.unregisterKeyGestureEventHandler(mKeyGestureEventHandler);
         mAccessibilityContentObserver.unregister(mContext.getContentResolver());
+        for (final BroadcastReceiver receiver : mRegisteredBroadcaseReveivers) {
+            mContext.unregisterReceiver(receiver);
+        }
+        mPackageMonitor.unregister();
     }
 
     /**
@@ -1097,7 +1110,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         intentFilter.addAction(Intent.ACTION_SETTING_RESTORED);
 
         Handler receiverHandler = BackgroundThread.getHandler();
-        mContext.registerReceiverAsUser(new BroadcastReceiver() {
+        final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (mTraceManager.isA11yTracingEnabledForTypes(FLAGS_USER_BROADCAST_RECEIVER)) {
@@ -1153,19 +1166,23 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     }
                 }
             }
-        }, UserHandle.ALL, intentFilter, null, receiverHandler);
+        };
+        mContext.registerReceiverAsUser(broadcastReceiver, UserHandle.ALL, intentFilter, null,
+                receiverHandler);
+        mRegisteredBroadcaseReveivers.add(broadcastReceiver);
 
-        final IntentFilter filter = new IntentFilter();
-        filter.addAction(SafetyCenterManager.ACTION_SAFETY_CENTER_ENABLED_CHANGED);
-        final BroadcastReceiver receiver = new BroadcastReceiver() {
+        final IntentFilter safetyCenterFilter = new IntentFilter();
+        safetyCenterFilter.addAction(SafetyCenterManager.ACTION_SAFETY_CENTER_ENABLED_CHANGED);
+        final BroadcastReceiver safetyCenterReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 setNonA11yToolNotificationToMatchSafetyCenter();
             }
         };
         mContext.registerReceiverAsUser(
-                receiver, UserHandle.ALL, filter, null, mMainHandler,
+                safetyCenterReceiver, UserHandle.ALL, safetyCenterFilter, null, mMainHandler,
                 Context.RECEIVER_EXPORTED);
+        mRegisteredBroadcaseReveivers.add(safetyCenterReceiver);
     }
 
     /**
