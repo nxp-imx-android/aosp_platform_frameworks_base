@@ -701,19 +701,20 @@ public class MediaControlPanel {
     }
 
     private void setSuggestionClickListener(SuggestedMediaDeviceData suggestionData) {
+        ViewGroup deviceSuggestionContainer = mMediaViewHolder.getDeviceSuggestionContainer();
         int connectionState = suggestionData.getConnectionState();
         if (connectionState == MediaDeviceState.STATE_DISCONNECTED
                 || connectionState == MediaDeviceState.STATE_CONNECTING_FAILED) {
-            mMediaViewHolder.getDeviceSuggestionButton().setClickable(true);
-            mMediaViewHolder
-                    .getDeviceSuggestionButton()
+
+            deviceSuggestionContainer.setClickable(true);
+            deviceSuggestionContainer
                     .setOnClickListener(
                             v -> {
                                 suggestionData.getConnect().invoke();
                             });
         } else {
-            mMediaViewHolder.getDeviceSuggestionButton().setOnClickListener(null);
-            mMediaViewHolder.getDeviceSuggestionButton().setClickable(false);
+            deviceSuggestionContainer.setOnClickListener(null);
+            deviceSuggestionContainer.setClickable(false);
         }
     }
 
