@@ -2555,28 +2555,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapy"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikácie"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše odtlačky prstov sa už nedajú rozpoznať. Znova nastavte odomknutie odtlačkom prsta."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Zabezpečenie a ochrana súkromia"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Rozšírená ochrana pre zariadenia USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Odomknite zariadenie, aby sa mohli preniesť údaje"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Ak chcete preniesť údaje, zrejme budete musieť zariadenie odomknúť a znova pripojiť"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Odomknite zariadenie, aby sa nabíjalo rýchlejšie a mohli sa preniesť údaje"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Ak chcete, aby sa zariadenie nabíjalo rýchlejšie a mohli sa preniesť údaje, zrejme ho budete musieť odomknúť a znova pripojiť"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Ak chcete rýchlo nabíjať, odomknite zariadenie"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Ak chcete rýchlo nabíjať, možno budete musieť zariadenie odomknúť a znova pripojiť"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Vypnúť zvuk"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Zvuk upozornení je vypnutý"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Zvuk bude vypnutý, kým nereštartujete zariadenie"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podozrivá aktivita cez USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Dátový signál cez USB bol deaktivovaný."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte problémy s odomknutím odtlačkom prsta?"</string>

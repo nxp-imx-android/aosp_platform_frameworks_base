@@ -2553,28 +2553,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"అప్లికేషన్‌లు"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"మీ వేలిముద్రలను ఇకపై గుర్తించడం సాధ్యం కాదు. వేలిముద్ర అన్‌లాక్‌ను మళ్లీ సెటప్ చేయండి."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"సెక్యూరిటీ &amp; గోప్యత"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USBకి అడ్వాన్స్‌డ్ ప్రొటెక్షన్"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"డేటా బదిలీ కోసం డివైజ్‌ను అన్‌లాక్ చేయండి"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"డేటా బదిలీ కోసం మీ డివైజ్‌ను మీరు అన్‌లాక్ చేసి, మళ్ళీ కనెక్ట్ చేయాల్సి రావచ్చు"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"ఫాస్ట్‌ ఛార్జింగ్, డేటా బదిలీ కోసం డివైజ్‌ను అన్‌లాక్ చేయండి"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"ఫాస్ట్‌ ఛార్జింగ్, డేటా బదిలీ కోసం మీ డివైజ్‌ను మీరు అన్‌లాక్ చేసి, మళ్ళీ కనెక్ట్ చేయాల్సి రావచ్చు"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"ఫాస్ట్‌ ఛార్జింగ్ కోసం డివైజ్‌ను అన్‌లాక్ చేయండి"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"ఫాస్ట్‌ ఛార్జింగ్ కోసం మీ డివైజ్‌ను మీరు అన్‌లాక్ చేసి, మళ్ళీ కనెక్ట్ చేయాల్సి రావచ్చు"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"మ్యూట్ చేయండి"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"నోటిఫికేషన్‌ను మ్యూట్ చేయడం జరిగింది"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"మీ డివైజ్‌ను రీస్టార్ట్ చేసే వరకు మ్యూట్ చేయడం జరిగింది"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB యాక్టివిటీ అనుమానాస్పదంగా ఉంది"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB డేటా సిగ్నల్ డిజేబుల్ అయింది."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"వేలిముద్ర అన్‌లాక్‌తో సమస్య ఉందా?"</string>

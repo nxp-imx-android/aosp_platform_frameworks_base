@@ -1798,7 +1798,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Einhent stilling"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Mjög dökkt"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Heyrnartæki"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Sjálfvirkur smellur (aðgerð eftir kyrrstöðu)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Sjálfvirkur smellur (kyrrstöðutími)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Músarhnappar"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Aftengt"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Tengt"</string>

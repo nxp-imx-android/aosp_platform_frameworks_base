@@ -1441,7 +1441,7 @@
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"Tuvastati analoogne helitarvik"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"Ühendatud seade ei ühildu selle telefoniga. Puudutage lisateabe saamiseks."</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"USB-silumine on ühendatud"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"Puudutage USB-silumise väljalülitamiseks"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"Puudutage USB-silumise väljalülitamiseks."</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"Valige USB silumise keelamiseks"</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"Juhtmevaba silumine on ühendatud"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"Puudutage juhtmevaba silumise väljalülitamiseks"</string>
@@ -2553,28 +2553,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Rakendused"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Teie sõrmejälgi ei saa enam tuvastada. Seadistage sõrmejäljega avamine uuesti."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Turvalisus ja privaatsus"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB täiustatud kaitse"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Andmeedastuseks avage seade"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Andmeedastuseks peate võib-olla oma seadme avama ja uuesti ühendama"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Kiirlaadimiseks ja andmeedastuseks avage seade"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Kiirlaadimiseks ja andmeedastuseks peate võib-olla oma seadme avama ja uuesti ühendama"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Kiirlaadimiseks avage seade"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Kiirlaadimiseks peate võib-olla oma seadme avama ja uuesti ühendama"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Vaigista"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Märguanne on vaigistatud"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Vaigistatud, kuni oma seadme taaskäivitate"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Kahtlane tegevus USB-ga"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB andmesignaal on keelatud."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Kas teil on sõrmejäljega avamisega probleeme?"</string>

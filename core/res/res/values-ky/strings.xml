@@ -2553,28 +2553,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Карталар"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Колдонмолор"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Манжаңыздын изи мындан ары таанылбайт. Манжа изи менен ачуу функциясын кайрадан тууралаңыз."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Коопсуздук жана купуялык"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB үчүн Күчөтүлгөн коргоо"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Маалымат өткөрүү үчүн түзмөктүн кулпусун ачыңыз"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Маалымат өткөрүү үчүн түзмөгүңүздүн кулпусун ачып, кайра туташтырыңыз керек болушу мүмкүн"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Тез кубаттоо жана маалымат өткөрүү үчүн түзмөктүн кулпусун ачыңыз"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Тез кубаттоо жана маалымат өткөрүү үчүн түзмөгүңүздүн кулпусун ачып, кайра туташтырыңыз керек болушу мүмкүн"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Тез кубаттоо үчүн түзмөктүн кулпусун ачыңыз"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Тез кубаттоо үчүн түзмөгүңүздүн кулпусун ачып, кайра туташтырыңыз керек болушу мүмкүн"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Үнүн өчүрүү"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Билдирменин үнү өчүрүлдү"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Түзмөгүңүз өчүрүлүп күйгүзүлгөнгө чейин үнү өчүрүлдү"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"USB\'ге байланыштуу шектүү аракет"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB сигналы өчүрүлдү."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Манжа изи менен ачылбай жатабы?"</string>

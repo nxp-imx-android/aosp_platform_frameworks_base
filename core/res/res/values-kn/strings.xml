@@ -1453,7 +1453,7 @@
     <string name="console_running_notification_title" msgid="6087888939261635904">"ಸರಣಿ ಕನ್ಸೋಲ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="console_running_notification_message" msgid="7892751888125174039">"ಕಾರ್ಯಕ್ಷಮತೆಯ ಮೇಲೆ ಪರಿಣಾಮ ಬೀರುತ್ತದೆ. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು, ಬೂಟ್‌ಲೋಡರ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ."</string>
     <string name="mte_override_notification_title" msgid="4731115381962792944">"ಪ್ರಾಯೋಗಿಕ MTE ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"</string>
-    <string name="mte_override_notification_message" msgid="2441170442725738942">"ಕಾರ್ಯಕ್ಷಮತೆ ಮತ್ತು ಸ್ಥಿರತೆಯ ಮೇಲೆ ಪ್ರಭಾವ ಬೀರಬಹುದು. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ರೀಬೂಟ್ ಮಾಡಿ. arm64.memtag.bootctl ಬಳಸಿ ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ, ಅದಕ್ಕೂ ಮೊದಲು ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು \"ಯಾವುದೂ ಅಲ್ಲ\" ಎಂದು ಸೆಟ್ ಮಾಡಿ."</string>
+    <string name="mte_override_notification_message" msgid="2441170442725738942">"ಪರ್ಫಾರ್ಮೆನ್ಸ್ ಮತ್ತು ಸ್ಥಿರತೆಯ ಮೇಲೆ ಪ್ರಭಾವ ಬೀರಬಹುದು. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ರೀಬೂಟ್ ಮಾಡಿ. arm64.memtag.bootctl ಬಳಸಿ ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ, ಅದಕ್ಕೂ ಮೊದಲು ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು \"ಯಾವುದೂ ಅಲ್ಲ\" ಎಂದು ಸೆಟ್ ಮಾಡಿ."</string>
     <string name="usb_contaminant_detected_title" msgid="4359048603069159678">"USB ಪೋರ್ಟ್‌ನಲ್ಲಿ ದ್ರವ ಅಥವಾ ಧೂಳಿನ ಕಣಗಳಿವೆ"</string>
     <string name="usb_contaminant_detected_message" msgid="7346100585390795743">"USB ಪೋರ್ಟ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನಿಷ್ಕ್ರಿಯಗೊಂಡಿದೆ. ಇನ್ನಷ್ಟು ತಿಳಿಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
     <string name="usb_contaminant_not_detected_title" msgid="2651167729563264053">"USB ಪೋರ್ಟ್ ಬಳಸಲು ಸರಿ ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಿ"</string>
@@ -2553,28 +2553,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ಆ್ಯಪ್‌ಗಳು"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‌ಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ಗುರುತಿಸಲಾಗುವುದಿಲ್ಲ. ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್ ಮಾಡಿ."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"ಭದ್ರತೆ ಮತ್ತು ಗೌಪ್ಯತೆ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB ಗಾಗಿ ಸುಧಾರಿತ ಸಂರಕ್ಷಣೆ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ಡೇಟಾ ವರ್ಗಾವಣೆಗಾಗಿ ಸಾಧನವನ್ನು ಆನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"ಡೇಟಾ ವರ್ಗಾವಣೆಗಾಗಿ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ, ಪುನಃ ಕನೆಕ್ಟ್ ಮಾಡಬೇಕಾಗಬಹುದು"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"ಫಾಸ್ಟ್ ಚಾರ್ಜಿಂಗ್‌ಗಾಗಿ ಮತ್ತು ಡೇಟಾ ವರ್ಗಾವಣೆಗಾಗಿ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"ಫಾಸ್ಟ್ ಚಾರ್ಜಿಂಗ್‌ಗಾಗಿ ಮತ್ತು ಡೇಟಾ ವರ್ಗಾವಣೆಗಾಗಿ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ, ಅದನ್ನು ಪುನಃ ಕನೆಕ್ಟ್ ಮಾಡಬೇಕಾಗಬಹುದು"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"ಫಾಸ್ಟ್ ಚಾರ್ಜಿಂಗ್‌ಗಾಗಿ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"ಫಾಸ್ಟ್ ಚಾರ್ಜಿಂಗ್‌ಗಾಗಿ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ, ಪುನಃ ಕನೆಕ್ಟ್ ಮಾಡಬೇಕಾಗಬಹುದು"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ನಿಶ್ಯಬ್ದಗೊಳಿಸಿ"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"ನೋಟಿಫಿಕೇಶನ್ ಅನ್ನು ನಿಶ್ಯಬ್ದಗೊಳಿಸಲಾಗಿದೆ"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"ನೀವು ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸುವವರೆಗೆ ನಿಶ್ಯಬ್ದಗೊಳಿಸಲಾಗುತ್ತದೆ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ಅನುಮಾನಾಸ್ಪದ USB ಚಟುವಟಿಕೆ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ಡೇಟಾ ಸಿಗ್ನಲ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್‌ಲಾಕ್‌ನಲ್ಲಿ ತೊಂದರೆ ಇದೆಯೇ?"</string>
