@@ -51,6 +51,7 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.HOME
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.OVERVIEW
+import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.google.common.truth.Truth.assertThat
@@ -58,6 +59,7 @@ import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
 @SmallTest
@@ -81,12 +83,14 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             shadeModeInteractor,
             shadeInteractor,
             actionCornerSettingRepository,
+            fakeUserSetupRepository,
         )
     }
 
     @Before
     fun setUp() {
         kosmos.enableDualShade()
+        kosmos.fakeUserSetupRepository.setUserSetUp(true)
         kosmos.underTest.activateIn(kosmos.testScope)
     }
 
@@ -175,5 +179,17 @@ class ActionCornerInteractorTest : SysuiTestCase() {
 
             assertThat(sceneInteractor.currentOverlays.value)
                 .doesNotContain(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun userNotSetUp_overviewActionConfigured_actionCornerActivated_actionNotTriggered() =
+        kosmos.runTest {
+            settingsRepository.setInt(
+                ACTION_CORNER_BOTTOM_LEFT_ACTION,
+                ACTION_CORNER_ACTION_OVERVIEW,
+            )
+            fakeUserSetupRepository.setUserSetUp(false)
+            actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+            verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
         }
 }

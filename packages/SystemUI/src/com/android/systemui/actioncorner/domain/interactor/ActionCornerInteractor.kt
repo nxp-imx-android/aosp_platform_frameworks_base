@@ -22,7 +22,7 @@ import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_LE
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RIGHT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_LEFT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_RIGHT
-import com.android.systemui.actioncorner.data.model.ActionCornerState
+import com.android.systemui.actioncorner.data.model.ActionCornerState.ActiveActionCorner
 import com.android.systemui.actioncorner.data.model.ActionType
 import com.android.systemui.actioncorner.data.model.ActionType.HOME
 import com.android.systemui.actioncorner.data.model.ActionType.NONE
@@ -39,10 +39,13 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode.Dual
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
+import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
 @SysUISingleton
@@ -55,11 +58,18 @@ constructor(
     private val shadeModeInteractor: ShadeModeInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val actionCornerSettingRepository: ActionCornerSettingRepository,
+    private val userSetupRepository: UserSetupRepository,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
-        repository.actionCornerState
-            .filterIsInstance<ActionCornerState.ActiveActionCorner>()
+        userSetupRepository.isUserSetUp
+            .flatMapLatest {
+                if (it) {
+                    repository.actionCornerState.filterIsInstance<ActiveActionCorner>()
+                } else {
+                    emptyFlow()
+                }
+            }
             .collect {
                 val action = getAction(it.region)
                 when (action) {
