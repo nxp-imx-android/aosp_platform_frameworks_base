@@ -1039,7 +1039,8 @@ public class AudioDeviceBroker {
 
     /*package*/ static BtDeviceInfo createBtDeviceInfo(@NonNull BtDeviceChangedData d,
             @NonNull BluetoothDevice device, int state) {
-        int audioDevice = BtHelper.getTypeFromProfile(d.mInfo.getProfile(), d.mInfo.isLeOutput());
+        int audioDevice = BtHelper.getTypeFromProfile(
+                d.mInfo.getProfile(), d.mInfo.isLeOutput(), device);
         return new BtDeviceInfo(d, device, state, audioDevice, AudioSystem.AUDIO_FORMAT_DEFAULT);
     }
 

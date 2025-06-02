@@ -991,7 +991,8 @@ public class AudioDeviceInventory {
                 "onBluetoothDeviceConfigChange addr=" + address
                     + " event=" + BtHelper.deviceEventToString(event)));
 
-        int deviceType = BtHelper.getTypeFromProfile(btInfo.mProfile, btInfo.mIsLeOutput);
+        int deviceType = BtHelper.getTypeFromProfile(
+                btInfo.mProfile, btInfo.mIsLeOutput, btDevice);
 
         synchronized (mDevicesLock) {
             if (mDeviceBroker.hasScheduledA2dpConnection(btDevice, btInfo.mProfile)) {
