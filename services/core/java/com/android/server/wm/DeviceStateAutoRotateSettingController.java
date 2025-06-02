@@ -331,7 +331,7 @@ public class DeviceStateAutoRotateSettingController {
         }
 
         if (!equals(mDeviceStateAutoRotateSetting, persistedDeviceStateAutoRotateSetting)) {
-            mDeviceStateAutoRotateSettingManager.updateSetting(
+            mDeviceStateAutoRotateSetting = mDeviceStateAutoRotateSettingManager.updateSetting(
                     mDeviceStateAutoRotateSetting.clone(),
                     persistedDeviceStateAutoRotateSetting == null
                             ? getDefaultDeviceStateAutoRotateSetting()
@@ -437,7 +437,8 @@ public class DeviceStateAutoRotateSettingController {
          * setting(DEVICE_STATE_ROTATION_LOCK) for a specific device posture.
          */
         static final class UpdateDeviceStateAutoRotateSetting extends Event {
-            @DeviceStateRotationLockKey final int mDevicePosture;
+            @DeviceStateRotationLockKey
+            final int mDevicePosture;
             final boolean mAutoRotate;
 
             /**
@@ -455,7 +456,8 @@ public class DeviceStateAutoRotateSettingController {
          * Event sent when the device posture changes.
          */
         static final class UpdateDevicePosture extends Event {
-            @DeviceStateRotationLockKey final int mDevicePosture;
+            @DeviceStateRotationLockKey
+            final int mDevicePosture;
 
             /**
              * @param devicePosture New device posture.
