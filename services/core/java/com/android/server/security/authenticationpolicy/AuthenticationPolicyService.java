@@ -20,6 +20,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.security.Flags.disableAdaptiveAuthCounterLock;
+import static android.security.Flags.failedAuthLockToggle;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 
@@ -81,6 +82,7 @@ public class AuthenticationPolicyService extends SystemService {
 
     @VisibleForTesting
     static final int MAX_ALLOWED_FAILED_AUTH_ATTEMPTS = 5;
+    private static final boolean DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK = false;
     private static final int MSG_REPORT_PRIMARY_AUTH_ATTEMPT = 1;
     private static final int MSG_REPORT_BIOMETRIC_AUTH_ATTEMPT = 2;
     private static final int AUTH_SUCCESS = 1;
@@ -264,13 +266,21 @@ public class AuthenticationPolicyService extends SystemService {
             return;
         }
 
-        if (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE) {
+        //TODO(b/421051706): Remove the condition Build.IS_DEBUGGABLE after flags are ramped up
+        if (failedAuthLockToggle()
+                || (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE)) {
+            // If userId is a profile, use its parent's settings to determine whether failed auth
+            // lock is enabled or disabled for the profile, irrespective of the profile's own
+            // settings. If userId is a main user (i.e. parentUserId equals to userId), use its own
+            // settings
+            final int parentUserId = mUserManager.getProfileParentId(userId);
             final boolean disabled = Settings.Secure.getIntForUser(
                     getContext().getContentResolver(),
                     Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK,
-                    0 /* default */, userId) != 0;
+                    DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK ? 1 : 0, parentUserId) != 0;
             if (disabled) {
-                Slog.d(TAG, "not locking (disabled by user)");
+                Slog.i(TAG, "userId=" + userId + ", parentUserId=" + parentUserId
+                        + ", failed auth lock is disabled by user in settings");
                 return;
             }
         }
