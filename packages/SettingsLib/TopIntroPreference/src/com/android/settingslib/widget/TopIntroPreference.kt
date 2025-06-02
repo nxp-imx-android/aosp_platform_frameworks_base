@@ -69,11 +69,9 @@ constructor(
             setMinLines(minLines)
             visibility = if (title.isNullOrEmpty()) View.GONE else View.VISIBLE
             title?.let { setText(it.toString()) }
-            hyperlinkListener?.let { setHyperlinkListener(it) }
-            learnMoreListener?.let {
-                setLearnMoreText(learnMoreText)
-                setLearnMoreAction(it)
-            }
+            setHyperlinkListener(hyperlinkListener)
+            setLearnMoreText(learnMoreText)
+            setLearnMoreAction(learnMoreListener)
         }
     }
 
