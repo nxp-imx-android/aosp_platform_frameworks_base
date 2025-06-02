@@ -401,7 +401,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 updateSliderIconsVisibility(
                     deviceDrawable = deviceDrawable,
                     muteDrawable = muteDrawable,
-                    isMuted = currentVolume == 0,
+                    sliderVolume = currentVolume,
                 )
                 mSlider.stateDescription = getSliderStateDescription()
             }
@@ -463,7 +463,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     updateSliderIconsVisibility(
                         deviceDrawable = deviceDrawable,
                         muteDrawable = muteDrawable,
-                        isMuted = seekBarVolume == 0,
+                        sliderVolume = seekBarVolume,
                     )
                     if (seekBarVolume != currentVolume) {
                         setLatestVolumeRequest(seekBarVolume)
@@ -503,12 +503,11 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         private fun updateSliderIconsVisibility(
             deviceDrawable: Drawable?,
             muteDrawable: Drawable?,
-            isMuted: Boolean,
+            sliderVolume: Int,
         ) {
-            mSlider.trackIconInactiveStart = if (isMuted) muteDrawable else null
-            // A workaround for the slider glitch that sometimes shows the active icon in inactive
-            // state.
-            mSlider.trackIconActiveStart = if (isMuted) null else deviceDrawable
+            mSlider.trackIconInactiveEnd = if (sliderVolume == 0) muteDrawable else deviceDrawable
+            mSlider.trackIconActiveEnd =
+                if (sliderVolume == mSlider.valueTo.toInt()) deviceDrawable else null
         }
 
         private fun updateTitleIcon(
