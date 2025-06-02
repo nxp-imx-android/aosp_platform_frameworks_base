@@ -1203,7 +1203,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             return true;
         }
 
-        if (Flags.enableLimitedVdmRole()
+        if (Flags.vdmMirrorDisplayPermission()
                 && CompatChanges.isChangeEnabled(CHECK_ADD_MIRROR_DISPLAY_PERMISSION,
                     mOwnerPackageName, UserHandle.getUserHandleForUid(mOwnerUid))) {
             return mContext.checkCallingOrSelfPermission(ADD_MIRROR_DISPLAY)
