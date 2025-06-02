@@ -1061,8 +1061,9 @@ public class InputMethodServiceTest {
                             .and(WindowManagerStateHelper::activityWindowFocused),
                     "Language settings activity should have the focused window");
 
-            assertWithMessage("Input Method Switcher Menu should no longer be shown")
-                    .that(isInputMethodPickerShown(mImm)).isFalse();
+            eventually(() ->
+                    assertWithMessage("Input Method Switcher Menu should no longer be shown")
+                            .that(isInputMethodPickerShown(mImm)).isFalse());
         }
     }
 
