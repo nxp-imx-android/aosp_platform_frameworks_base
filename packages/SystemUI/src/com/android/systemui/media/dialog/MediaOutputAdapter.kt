@@ -238,7 +238,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             mLoadingIndicator.visibility = GONE
             mDivider.visibility = GONE
             mSubTitleText.visibility = GONE
-            mMainContent.setOnClickListener(null)
+            updateContentClickListener(null)
         }
 
         override fun renderDeviceItem(
