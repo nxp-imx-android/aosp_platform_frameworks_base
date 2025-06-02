@@ -49,7 +49,7 @@ java_binary_host {
 
 genrule {
     name: "systemfeatures-lookup-srcs",
-    cmd: "$(location systemfeatures-lookup-gen-tool) $(in) > $(out)",
+    cmd: "$(location systemfeatures-lookup-gen-tool) $(in) $(out)",
     out: ["SystemFeaturesLookup.java"],
     srcs: [
         ":non-updatable-current.txt",
