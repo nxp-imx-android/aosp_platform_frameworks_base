@@ -25347,6 +25347,7 @@ package android.media {
     method public void setRouteListingPreference(@Nullable android.media.RouteListingPreference);
     method @FlaggedApi("com.android.media.flags.enable_privileged_routing_for_media_routing_control") @RequiresPermission(anyOf={android.Manifest.permission.MEDIA_CONTENT_CONTROL, android.Manifest.permission.MEDIA_ROUTING_CONTROL}) public void setRouteVolume(@NonNull android.media.MediaRoute2Info, int);
     method public boolean showSystemOutputSwitcher();
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") public boolean showSystemOutputSwitcher(@NonNull android.media.session.MediaSession.Token);
     method public void stop();
     method public void transferTo(@NonNull android.media.MediaRoute2Info);
     method public void unregisterControllerCallback(@NonNull android.media.MediaRouter2.ControllerCallback);

@@ -68,6 +68,7 @@ import android.inputmethodservice.InputMethodService.BackDispositionMode;
 import android.inputmethodservice.InputMethodService.ImeWindowVisibility;
 import android.media.INearbyMediaDevicesProvider;
 import android.media.MediaRoute2Info;
+import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
@@ -997,11 +998,12 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
         }
 
         @Override
-        public void showMediaOutputSwitcher(String targetPackageName, UserHandle targetUserHandle) {
+        public void showMediaOutputSwitcher(String targetPackageName, UserHandle targetUserHandle,
+                @Nullable MediaSession.Token sessionToken) {
             IStatusBar bar = mBar;
             if (bar != null) {
                 try {
-                    bar.showMediaOutputSwitcher(targetPackageName, targetUserHandle);
+                    bar.showMediaOutputSwitcher(targetPackageName, targetUserHandle, sessionToken);
                 } catch (RemoteException ex) {
                 }
             }
