@@ -160,7 +160,7 @@ public class TaskBroadcasterTest {
         ArgumentCaptor<byte[]> messageCaptor
             = ArgumentCaptor.forClass(byte[].class);
         verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-            eq(CompanionDeviceManager.MESSAGE_TASK_CONTINUITY),
+            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
             messageCaptor.capture(),
             eq(new int[] {1}));
         TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(
@@ -202,7 +202,7 @@ public class TaskBroadcasterTest {
         // Verify sendMessage is called
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-                eq(CompanionDeviceManager.MESSAGE_TASK_CONTINUITY),
+                eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
                 messageCaptor.capture(),
                 any(int[].class));
         byte[] capturedMessage = messageCaptor.getValue();
