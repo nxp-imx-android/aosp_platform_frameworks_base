@@ -39,6 +39,169 @@
 #define EPOLL_MAX_EVENTS 4
 #define FFS_NUM_EVENTS 5
 #define USB_STATE_MAX_LEN 20
+#define FFS_VENDOR_CTRL_REQUEST_EP0 "/dev/usb-ffs/ctrl/ep0"
+
+
+namespace {
+struct func_desc {
+    struct usb_interface_descriptor intf;
+    struct usb_endpoint_descriptor_no_audio source;
+    struct usb_endpoint_descriptor_no_audio sink;
+} __attribute__((packed));
+
+struct func_desc_ss {
+    struct usb_interface_descriptor intf;
+    struct usb_endpoint_descriptor_no_audio source;
+    struct usb_ss_ep_comp_descriptor source_comp;
+    struct usb_endpoint_descriptor_no_audio sink;
+    struct usb_ss_ep_comp_descriptor sink_comp;
+} __attribute__((packed));
+
+struct desc_v2 {
+    struct usb_functionfs_descs_head_v2 header;
+    // The rest of the structure depends on the flags in the header.
+    __le32 fs_count;
+    __le32 hs_count;
+    __le32 ss_count;
+    struct func_desc fs_descs, hs_descs;
+    struct func_desc_ss ss_descs;
+} __attribute__((packed));
+
+const struct usb_interface_descriptor interface_desc = {
+        .bLength = USB_DT_INTERFACE_SIZE,
+        .bDescriptorType = USB_DT_INTERFACE,
+        .bInterfaceNumber = 0,
+        .bNumEndpoints = 2,
+        .bInterfaceClass = USB_CLASS_VENDOR_SPEC,
+        .bInterfaceSubClass = USB_SUBCLASS_VENDOR_SPEC,
+        .bInterfaceProtocol = 0,
+        .iInterface = 1,
+};
+
+const struct usb_endpoint_descriptor_no_audio fs_sink = {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = 1 | USB_DIR_IN,
+        .bmAttributes = USB_ENDPOINT_XFER_BULK,
+        .wMaxPacketSize = htole16(64),
+};
+
+const struct usb_endpoint_descriptor_no_audio fs_source = {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = 2 | USB_DIR_OUT,
+        .bmAttributes = USB_ENDPOINT_XFER_BULK,
+        .wMaxPacketSize = htole16(64),
+};
+
+const struct usb_endpoint_descriptor_no_audio hs_sink = {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = 1 | USB_DIR_IN,
+        .bmAttributes = USB_ENDPOINT_XFER_BULK,
+        .wMaxPacketSize = htole16(512),
+};
+
+const struct usb_endpoint_descriptor_no_audio hs_source = {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = 2 | USB_DIR_OUT,
+        .bmAttributes = USB_ENDPOINT_XFER_BULK,
+        .wMaxPacketSize = htole16(512),
+};
+
+const struct usb_endpoint_descriptor_no_audio ss_sink = {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = 1 | USB_DIR_IN,
+        .bmAttributes = USB_ENDPOINT_XFER_BULK,
+        .wMaxPacketSize = htole16(1024),
+};
+
+const struct usb_endpoint_descriptor_no_audio ss_source = {
+        .bLength = USB_DT_ENDPOINT_SIZE,
+        .bDescriptorType = USB_DT_ENDPOINT,
+        .bEndpointAddress = 2 | USB_DIR_OUT,
+        .bmAttributes = USB_ENDPOINT_XFER_BULK,
+        .wMaxPacketSize = htole16(1024),
+};
+
+const struct usb_ss_ep_comp_descriptor ss_sink_comp = {
+        .bLength = sizeof(ss_sink_comp),
+        .bDescriptorType = USB_DT_SS_ENDPOINT_COMP,
+        .bMaxBurst = 6,
+};
+
+const struct usb_ss_ep_comp_descriptor ss_source_comp = {
+        .bLength = sizeof(ss_source_comp),
+        .bDescriptorType = USB_DT_SS_ENDPOINT_COMP,
+        .bMaxBurst = 6,
+};
+
+const struct func_desc fs_descriptors = {
+        .intf = interface_desc,
+        .source = fs_source,
+        .sink = fs_sink,
+};
+
+const struct func_desc hs_descriptors = {
+        .intf = interface_desc,
+        .source = hs_source,
+        .sink = hs_sink,
+};
+
+const struct func_desc_ss ss_descriptors = {
+        .intf = interface_desc,
+        .source = ss_source,
+        .source_comp = ss_source_comp,
+        .sink = ss_sink,
+        .sink_comp = ss_sink_comp,
+};
+
+const struct desc_v2 ctrl_desc = {
+        .header =
+                {
+                        .magic = htole32(FUNCTIONFS_DESCRIPTORS_MAGIC_V2),
+                        .length = htole32(sizeof(ctrl_desc)),
+                        .flags = FUNCTIONFS_ALL_CTRL_RECIP | FUNCTIONFS_CONFIG0_SETUP |
+                                FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
+                                FUNCTIONFS_HAS_SS_DESC,
+                },
+        .fs_count = 3,
+        .hs_count = 3,
+        .ss_count = 5,
+        .fs_descs = fs_descriptors,
+        .hs_descs = hs_descriptors,
+        .ss_descs = ss_descriptors,
+};
+
+#define CTRL_INTERFACE_STR "Android Control Interface"
+
+struct ctrl_functionfs_lang {
+    __le16 code;
+    char str1[sizeof(CTRL_INTERFACE_STR)];
+} __attribute__((packed));
+
+struct ctrl_functionfs_strings {
+    struct usb_functionfs_strings_head header;
+    struct ctrl_functionfs_lang lang0;
+} __attribute__((packed));
+
+const struct ctrl_functionfs_strings ctrl_strings = {
+        .header =
+                {
+                        .magic = htole32(FUNCTIONFS_STRINGS_MAGIC),
+                        .length = htole32(sizeof(ctrl_strings)),
+                        .str_count = htole32(1),
+                        .lang_count = htole32(1),
+                },
+        .lang0 =
+                {
+                        .code = htole16(0x0409),
+                        .str1 = CTRL_INTERFACE_STR,
+                },
+};
+} // namespace
 
 namespace android
 {
@@ -587,6 +750,38 @@ static void android_server_UsbDeviceManager_stopGadgetMonitor(JNIEnv *env, jobje
     return;
 }
 
+static jboolean android_server_UsbDeviceManager_startVendorControlRequestMonitor(JNIEnv * /* env */,
+                                                                                 jobject thiz) {
+    android::base::unique_fd ufd(open(FFS_VENDOR_CTRL_REQUEST_EP0, O_RDWR));
+
+    int fd = ufd.get();
+
+    if (fd < 0) {
+        ALOGE("Cannot open %s: %s", FFS_VENDOR_CTRL_REQUEST_EP0, strerror(errno));
+        return JNI_FALSE;
+    }
+
+    ssize_t ret = TEMP_FAILURE_RETRY(write(fd, &ctrl_desc, sizeof(ctrl_desc)));
+    if (ret != sizeof(ctrl_desc)) {
+        ALOGE("Writing ctrl desc failed: %zd - %s", ret, strerror(errno));
+        ufd.reset(-1);
+        return JNI_FALSE;
+    }
+
+    ret = TEMP_FAILURE_RETRY(write(fd, &ctrl_strings, sizeof(ctrl_strings)));
+    if (ret != sizeof(ctrl_strings)) {
+        ALOGE("Writing ctrl strings failed: %zd - %s", ret, strerror(errno));
+        ufd.reset(-1);
+        return JNI_FALSE;
+    }
+
+    ALOGI("Start monitoring %s...", FFS_VENDOR_CTRL_REQUEST_EP0);
+    sVendorControlRequestMonitorThread.reset(
+            new NativeVendorControlRequestMonitorThread(thiz, std::move(ufd)));
+
+    return JNI_TRUE;
+}
+
 static jstring android_server_UsbDeviceManager_waitAndGetProperty(JNIEnv *env, jobject thiz,
                                                                   jstring jPropName) {
     ScopedUtfChars propName(env, jPropName);
@@ -610,6 +805,8 @@ static const JNINativeMethod method_table[] = {
          (void *)android_server_UsbDeviceManager_startGadgetMonitor},
         {"nativeStopGadgetMonitor", "()V",
          (void *)android_server_UsbDeviceManager_stopGadgetMonitor},
+        {"nativeStartVendorControlRequestMonitor", "()Z",
+         (void *)android_server_UsbDeviceManager_startVendorControlRequestMonitor},
         {"nativeWaitAndGetProperty", "(Ljava/lang/String;)Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_waitAndGetProperty},
 };
