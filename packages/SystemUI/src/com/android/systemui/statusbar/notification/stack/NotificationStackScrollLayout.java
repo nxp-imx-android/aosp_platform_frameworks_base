@@ -25,7 +25,11 @@ import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_CLEAR_ALL;
 import static com.android.systemui.Flags.magneticNotificationSwipes;
 import static com.android.systemui.Flags.physicalNotificationMovement;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PROMO;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_RECS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SILENT;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SOCIAL;
 import static com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_SWIPE;
 import static com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent.SCROLL_DOWN;
 import static com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent.SCROLL_UP;
@@ -6649,7 +6653,15 @@ public class NotificationStackScrollLayout
             case ROWS_HIGH_PRIORITY:
                 return bucket < BUCKET_SILENT;
             case ROWS_GENTLE:
-                return bucket == BUCKET_SILENT;
+                if (NotificationBundleUi.isEnabled()) {
+                    return bucket == BUCKET_SILENT
+                            || bucket == BUCKET_PROMO
+                            || bucket == BUCKET_RECS
+                            || bucket == BUCKET_SOCIAL
+                            || bucket == BUCKET_NEWS;
+                } else {
+                    return bucket == BUCKET_SILENT;
+                }
             default:
                 throw new IllegalArgumentException("Unknown selection: " + selection);
         }
