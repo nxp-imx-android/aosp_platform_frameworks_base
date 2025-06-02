@@ -101,6 +101,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DESKTOP_FIRST_LISTENER),
     ENABLE_DESKTOP_IME_BUGFIX(Flags::enableDesktopImeBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX),
+    ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX(
+            Flags::enableDesktopSplitscreenTransitionBugfix,false,
+            Flags.FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX),
     ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION(
             Flags::enableDesktopTabTearingLaunchAnimation, true,
             Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION),

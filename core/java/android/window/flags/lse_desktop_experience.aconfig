@@ -1385,3 +1385,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_splitscreen_transition_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables Desktop > Splitscreen transition bugfix."
+    bug: "394074421"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
