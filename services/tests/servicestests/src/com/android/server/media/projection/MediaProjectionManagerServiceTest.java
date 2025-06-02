@@ -74,6 +74,7 @@ import android.media.projection.StopReason;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
@@ -123,7 +124,7 @@ import java.util.concurrent.TimeUnit;
 @RunWith(AndroidJUnit4.class)
 @SuppressLint({"UseCheckPermission", "VisibleForTests", "MissingPermission"})
 public class MediaProjectionManagerServiceTest {
-    private static final int UID = 10;
+    private static final int UID = Process.myUid();
     private static final String PACKAGE_NAME = "test.package";
     private final ApplicationInfo mAppInfo = new ApplicationInfo();
     private final PackageInfo mPackageInfo = new PackageInfo();
@@ -1345,6 +1346,27 @@ public class MediaProjectionManagerServiceTest {
         projection.stop(StopReason.STOP_HOST_APP);
         verify(mAppOpsManager, never()).setUidMode(eq(AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY),
                 eq(projection.uid), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_START_UID_CHECK)
+    public void createProjection_cannotBeStartedFromDifferentUid() throws Exception {
+        doReturn(mAppInfo).when(mPackageManager).getApplicationInfoAsUser(anyString(),
+                any(ApplicationInfoFlags.class), any(UserHandle.class));
+        doReturn(mPackageInfo).when(mPackageManager).getPackageInfoAsUser(anyString(), anyInt(),
+                anyInt());
+        int uid = 10;
+        MediaProjectionManagerService.MediaProjection projection =
+                mService.createProjectionInternal(
+                        uid,
+                        PACKAGE_NAME,
+                        TYPE_SCREEN_CAPTURE,
+                        /* isPermanentGrant= */ false,
+                        UserHandle.CURRENT,
+                        DEFAULT_DISPLAY);
+
+        // Start MediaProjection from a different UID
+        assertThrows(SecurityException.class, () -> projection.start(mIMediaProjectionCallback));
     }
 
     private void verifySetSessionWithContent(@RecordContent int content) {
