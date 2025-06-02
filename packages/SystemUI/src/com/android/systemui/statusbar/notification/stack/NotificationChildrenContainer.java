@@ -572,6 +572,7 @@ public class NotificationChildrenContainer extends ViewGroup
 
         mGroupHeaderWrapper.setExpanded(mChildrenExpanded);
         mGroupHeaderWrapper.onContentUpdated(mContainingNotification);
+        updateGroupOverflow();
         resetHeaderVisibilityIfNeeded(mGroupHeader, calculateDesiredHeader());
         updateHeaderVisibility(false /* animate */);
         updateChildrenAppearance();
@@ -1631,6 +1632,11 @@ public class NotificationChildrenContainer extends ViewGroup
                 mMinimizedGroupHeader = null;
             }
             recreateNotificationHeader(listener, mIsConversation);
+
+            removeView(mOverflowNumber);
+            mOverflowNumber = null;
+            mGroupOverFlowState = null;
+            updateGroupOverflow();
         }
         initDimens();
         for (int i = 0; i < mDividers.size(); i++) {
@@ -1641,10 +1647,6 @@ public class NotificationChildrenContainer extends ViewGroup
             addView(divider, index);
             mDividers.set(i, divider);
         }
-        removeView(mOverflowNumber);
-        mOverflowNumber = null;
-        mGroupOverFlowState = null;
-        updateGroupOverflow();
     }
 
     public void setUserLocked(boolean userLocked) {
