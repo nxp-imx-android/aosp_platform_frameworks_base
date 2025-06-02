@@ -1106,6 +1106,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void markHeadsUpSeen() {
         super.markHeadsUpSeen();
         mMustStayOnScreen = false;
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
+        }
     }
 
     /**
@@ -4135,6 +4138,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     mChildrenContainer.getAttachedChildren();
             for (int i = 0; i < notificationChildren.size(); i++) {
                 ExpandableNotificationRow child = notificationChildren.get(i);
+                if (notificationRowTransparency()) {
+                    child.updateBackgroundTint();
+                }
                 child.updateBackgroundForGroupState();
             }
         }
@@ -4160,13 +4166,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mShowNoBackground = true;
             mChildrenContainer.updateHeaderForExpansion(mShowNoBackground);
         } else if (mIsSummaryWithChildren) {
-            // With row transparency, a pinned notification should not hide its background.
-            if (notificationRowTransparency() && isPinned()) {
-                mShowNoBackground = false;
-            } else {
-                mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
-                        && !isGroupExpansionChanging() && !isUserLocked();
-            }
+            mShowNoBackground = !mShowGroupBackgroundWhenExpanded && isGroupExpanded()
+                    && !isGroupExpansionChanging() && !isUserLocked();
             mChildrenContainer.updateHeaderForExpansion(mShowNoBackground);
             List<ExpandableNotificationRow> children = mChildrenContainer.getAttachedChildren();
             for (int i = 0; i < children.size(); i++) {
@@ -4880,6 +4881,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Also, for an unpinned HUN on the unlocked shade, the row bg should be transparent.
         return super.usesTransparentBackground()
                 && !mustStayOnScreen()
+                && !(isChildInGroup() && !mNotificationParent.usesTransparentBackground())
                 && !mHeadsupDisappearRunning
                 && !mOnKeyguard;
     }
