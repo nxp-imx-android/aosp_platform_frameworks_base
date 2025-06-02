@@ -1,0 +1,59 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.wm;
+
+import androidx.annotation.NonNull;
+
+/** Fake {@link CameraStateMonitor.CameraCompatStateListener} for testing. */
+class FakeCameraCompatStateListener implements CameraStateMonitor.CameraCompatStateListener {
+    int mOnCameraOpenedCounter = 0;
+    int mCheckCanCloseCounter = 0;
+    int mOnCameraClosedCounter = 0;
+
+    private boolean mCheckCanCloseReturnValue;
+
+    /**
+     * @param simulateCannotCloseOnce When false, returns `true` on every
+     *                                      `checkCanClose`. When true, returns `false` on the
+     *                                      first `checkCanClose` callback, and `true on the
+     *                                      subsequent calls. This fake implementation tests the
+     *                                      retry mechanism in {@link CameraStateMonitor}.
+     */
+    FakeCameraCompatStateListener(boolean simulateCannotCloseOnce) {
+        mCheckCanCloseReturnValue = !simulateCannotCloseOnce;
+    }
+
+    @Override
+    public void onCameraOpened(@NonNull ActivityRecord cameraActivity) {
+        mOnCameraOpenedCounter++;
+    }
+
+    @Override
+    public boolean canCameraBeClosed(@NonNull String cameraId) {
+        mCheckCanCloseCounter++;
+        final boolean returnValue = mCheckCanCloseReturnValue;
+        // If false, return false only the first time, so it doesn't fall in the infinite retry
+        // loop.
+        mCheckCanCloseReturnValue = true;
+        return returnValue;
+    }
+
+    @Override
+    public void onCameraClosed() {
+        mOnCameraClosedCounter++;
+    }
+}
