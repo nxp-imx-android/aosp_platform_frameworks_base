@@ -257,6 +257,11 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
                     + buffer.getHeight());
             return null;
         }
+        if (snapshot.getDensityDpi() <= 0) {
+            buffer.close();
+            Slog.e(TAG, "Invalid snapshot density " + snapshot.getDensityDpi());
+            return null;
+        }
         return snapshot;
     }
 
@@ -380,6 +385,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         }
         outCrop.offsetTo(0, 0);
         builder.setTaskSize(taskSize);
+        builder.setDensityDpi(taskConfig.densityDpi);
         return outCrop;
     }
 
@@ -482,6 +488,7 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         builder.setWindowingMode(source.getWindowingMode());
         builder.setAppearance(attrs.insetsFlags.appearance);
         builder.setUiMode(topActivity.getConfiguration().uiMode);
+        builder.setDensityDpi(topActivity.getConfiguration().densityDpi);
 
         builder.setRotation(mainWindow.getWindowConfiguration().getRotation());
         builder.setOrientation(mainWindow.getConfiguration().orientation);

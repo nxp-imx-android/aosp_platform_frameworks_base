@@ -29,6 +29,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.HardwareBuffer;
 import android.os.SystemClock;
+import android.util.DisplayMetrics;
 import android.util.Slog;
 import android.window.TaskSnapshot;
 
@@ -195,6 +196,11 @@ class AppSnapshotLoader {
             } else {
                 taskSize = new Point(proto.taskWidth, proto.taskHeight);
             }
+            int densityDpi = proto.densityDpi;
+            if (densityDpi <= 0) {
+                Slog.w(TAG, "Loaded snapshot density is invalid. Using default device density.");
+                densityDpi = DisplayMetrics.DENSITY_DEVICE_STABLE;
+            }
 
             return new TaskSnapshot(proto.id, SystemClock.elapsedRealtimeNanos(),
                     topActivityComponent, buffer, hwBitmap.getColorSpace(),
@@ -203,7 +209,8 @@ class AppSnapshotLoader {
                     new Rect(proto.letterboxInsetLeft, proto.letterboxInsetTop,
                             proto.letterboxInsetRight, proto.letterboxInsetBottom),
                     loadLowResolutionBitmap, proto.isRealSnapshot, proto.windowingMode,
-                    proto.appearance, proto.isTranslucent, false /* hasImeSurface */, proto.uiMode);
+                    proto.appearance, proto.isTranslucent, false /* hasImeSurface */, proto.uiMode,
+                    densityDpi);
         } catch (IOException e) {
             Slog.w(TAG, "Unable to load task snapshot data for Id=" + id);
             return null;
