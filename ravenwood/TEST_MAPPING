@@ -10,6 +10,7 @@
     { "name": "RavenwoodBivalentTest_device_ravenizer" },
     { "name": "RavenwoodBivalentInstTest_nonself_inst" },
     { "name": "RavenwoodBivalentInstTest_self_inst_device" },
+    { "name": "RavenwoodUiTest_device" },
 
     // The sysui tests should match vendor/unbundled_google/packages/SystemUIGoogle/TEST_MAPPING
     {
@@ -137,6 +138,10 @@
       "host": true
     },
     {
+      "name": "InternalArrayUtilsTest",
+      "host": true
+    },
+    {
       "name": "InternalTestsRavenwood",
       "host": true
     },
@@ -182,6 +187,10 @@
     },
     {
       "name": "RavenwoodServicesTest",
+      "host": true
+    },
+    {
+      "name": "RavenwoodUiTest",
       "host": true
     },
     {
