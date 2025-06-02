@@ -31,6 +31,7 @@ import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.annotation.VisibleForTesting
 import androidx.tracing.trace
+import com.android.systemui.Dumpable
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.ambientcue.shared.model.ActionModel
@@ -38,11 +39,13 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -95,11 +98,12 @@ constructor(
     private val autofillManager: AutofillManager?,
     private val activityStarter: ActivityStarter,
     private val navigationModeController: NavigationModeController,
+    dumpManager: DumpManager,
     @Background executor: Executor,
     @Application applicationContext: Context,
     focusdDisplayRepository: FocusedDisplayRepository,
     launcherProxyService: LauncherProxyService,
-) : AmbientCueRepository {
+) : AmbientCueRepository, Dumpable {
 
     init {
         val callback =
@@ -113,6 +117,7 @@ constructor(
                 }
             }
         launcherProxyService.addCallback(callback)
+        dumpManager.registerNormalDumpable(this)
     }
 
     override val actions: StateFlow<List<ActionModel>> =
@@ -287,6 +292,18 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        pw.println("isRootViewAttached: ${isRootViewAttached.value}")
+        pw.println("targetTaskId: ${targetTaskId.value}")
+        pw.println("globallyFocusedTaskId: ${globallyFocusedTaskId.value}")
+        pw.println("isDeactivated: ${isDeactivated.value}")
+        pw.println("isImeVisible: ${isImeVisible.value}")
+        pw.println("recentsButtonPosition: ${recentsButtonPosition.value}")
+        pw.println("isTaskBarVisible: ${isTaskBarVisible.value}")
+        pw.println("isGestureNav: ${isGestureNav.value}")
+        pw.println("actions: ${actions.value}")
+    }
 
     companion object {
         // Surface that PCC wants to push cards into

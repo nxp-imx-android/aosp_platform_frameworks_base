@@ -43,6 +43,7 @@ import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_AUTOFILL_ID
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.concurrency.fakeExecutor
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.backgroundScope
@@ -72,6 +73,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     private val autofillManager = mock<AutofillManager>()
     private val activityStarter = mock<ActivityStarter>()
     private val launcherProxyService = mock<LauncherProxyService>()
+    private val dumpManager = mock<DumpManager>()
     private val navigationModeController = mock<NavigationModeController>()
     private val smartSpaceManager =
         mock<SmartspaceManager>() {
@@ -88,6 +90,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             activityStarter = activityStarter,
             launcherProxyService = launcherProxyService,
             navigationModeController = navigationModeController,
+            dumpManager = dumpManager,
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
             focusdDisplayRepository = kosmos.fakeFocusedDisplayRepository,
