@@ -22,6 +22,7 @@ import static android.app.Notification.Metric.MEANING_CELESTIAL_TIDE;
 import static android.app.Notification.Metric.MEANING_CHRONOMETER;
 import static android.app.Notification.Metric.MEANING_CHRONOMETER_STOPWATCH;
 import static android.app.Notification.Metric.MEANING_CHRONOMETER_TIMER;
+import static android.app.Notification.Metric.MEANING_EVENT_DATE;
 import static android.app.Notification.Metric.MEANING_EVENT_TIME;
 import static android.app.Notification.Metric.MEANING_HEALTH;
 import static android.app.Notification.Metric.MEANING_HEALTH_ACTIVE_TIME;
@@ -35,10 +36,11 @@ import static android.app.Notification.Metric.MEANING_WEATHER_TEMPERATURE_OUTDOO
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Notification.Metric;
+import android.app.Notification.Metric.FixedDate;
 import android.app.Notification.Metric.FixedFloat;
-import android.app.Notification.Metric.FixedInstant;
 import android.app.Notification.Metric.FixedInt;
 import android.app.Notification.Metric.FixedString;
+import android.app.Notification.Metric.FixedTime;
 import android.app.Notification.Metric.TimeDifference;
 import android.app.Notification.MetricStyle;
 import android.os.Bundle;
@@ -54,8 +56,9 @@ import org.junit.runner.RunWith;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.TimeZone;
 
 @RunWith(AndroidJUnit4.class)
 @Presubmit
@@ -94,12 +97,13 @@ public class NotificationMetricStyleTest {
                         "Time:", MEANING_CHRONOMETER_TIMER))
                 .addMetric(new Metric(
                         TimeDifference.forPausedStopwatch(Duration.ofHours(4),
-                                TimeDifference.FORMAT_CHRONOMETER_MINUTES),
+                                TimeDifference.FORMAT_CHRONOMETER),
                         "Stopwatch:", MEANING_CHRONOMETER_STOPWATCH))
                 .addMetric(new Metric(
-                        new FixedInstant(Instant.ofEpochMilli(55),
-                                FixedInstant.FORMAT_SHORT_DATE,
-                                TimeZone.getTimeZone("America/Montevideo")),
+                        new FixedDate(LocalDate.of(2025, 6, 2), FixedDate.FORMAT_SHORT_DATE),
+                        "Event date:", MEANING_EVENT_DATE))
+                .addMetric(new Metric(
+                        new FixedTime(LocalTime.of(10, 30)),
                         "Event time:", MEANING_EVENT_TIME))
                 .addMetric(new Metric(
                         new FixedInt(12, "drummers"), "Label", MEANING_UNKNOWN))

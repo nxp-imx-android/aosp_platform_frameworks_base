@@ -77,6 +77,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -84,7 +86,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -687,7 +688,8 @@ public class NotificationVisitUrisTest extends UiServiceTestCase {
                         .put(char.class, 'N')
                         .put(Instant.class, Instant.ofEpochMilli(1747306630000L))
                         .put(Duration.class, Duration.ofSeconds(10))
-                        .put(TimeZone.class, TimeZone.getDefault())
+                        .put(LocalDate.class, LocalDate.of(1789, 7, 14))
+                        .put(LocalTime.class, LocalTime.of(17, 0))
                         .build();
 
         private final Context mContext;
