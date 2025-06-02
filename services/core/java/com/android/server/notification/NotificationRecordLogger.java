@@ -23,6 +23,8 @@ import static android.service.notification.NotificationListenerService.REASON_CA
 import static android.service.notification.NotificationListenerService.REASON_CLEAR_DATA;
 import static android.service.notification.NotificationListenerService.REASON_CLICK;
 
+import static com.android.server.notification.Flags.logVisuallyChangedUpdates;
+
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -420,6 +422,10 @@ interface NotificationRecordLogger {
                 return false;
             }
             if ((old == null) || (buzzBeepBlink > 0)) {
+                return true;
+            }
+
+            if (logVisuallyChangedUpdates() && r.isTextChanged()) {
                 return true;
             }
 
