@@ -1,0 +1,100 @@
+# TODO(b/446221090): Need first-principles review by Perfetto expert
+
+# Do not use this config for debugging why frames get dropped or other problems.
+# Use the tracing instructions at
+# https://developer.android.com/topic/performance/tracing/on-device
+
+
+
+# This is the trace file used by automated testing.  We provide this
+# configuration here for transparency of how the automated tests are run.
+
+# This config is designed to minimize the size of the trace file and the amount
+# of data gathered, to make the automated testing as lightweight as possible.
+# As a result, this does a poor job of helping debug why frames were dropped;
+# it only detects that they have.
+
+# At a high level, the only info we care about collecting is:
+# - Enough process stats into to map the BouncyBall app's PID to its name
+# - Enough frametimeline data to detect frame drops and know frame durations
+# - The "relevant_frames" counter from the BouncyBall app
+
+
+# Buffer 0: For process_stats
+buffers: {
+    size_kb: 2048
+    fill_policy: RING_BUFFER
+}
+# Buffer 1: For frametimeline data
+buffers: {
+    size_kb: 260096
+    fill_policy: RING_BUFFER
+}
+# Buffer 2: TODO(b/446221090): This in particular seems like overkill
+buffers: {
+    size_kb: 16384
+    fill_policy: RING_BUFFER
+}
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        target_buffer: 0
+        process_stats_config {
+            # We launch perfetto before we launch BouncyBall, which is the
+            # process we really care about.  So there's no point scanning
+            # everything on start, since it won't get BouncyBall.
+            scan_all_processes_on_start: false
+            # We don't care about memory information, just process ids.
+            scan_smaps_rollup: false
+            # We don't care about stats; we just want to record the process id
+            # for the bouncyball app.
+            proc_stats_poll_ms: 0
+        }
+    }
+}
+data_sources: {
+    config {
+        # Unfortunately, it's not possible to only collect this info for the
+        # BouncyBall, so we need to collect it generally.
+        name: "android.surfaceflinger.frametimeline"
+        target_buffer: 1
+    }
+}
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        target_buffer: 2
+        ftrace_config {
+            # We only care about BouncyBall's custom "relevant_frame" counter,
+            # so we disable generic events.  But there's no way to collect only
+            # this one counter.
+            atrace_apps: "com.android.test.bouncyball"
+            buffer_size_kb: 8196
+            buffer_size_lower_bound: true
+            disable_generic_events: true
+        }
+    }
+}
+# The test ignores the first 0.1 seconds, then tests for 2 minutes.  (See
+# APK code for INITIAL_TIME_TO_IGNORE_IN_SECONDS and
+# AUTOMATED_TEST_DURATION_IN_SECONDS).
+# We want to give additional buffer for:
+# - Time between perfetto being launched and the app starting
+# - Extra time taken by dropped frames (although this isn't critical, since
+#   the test will be a failure, but it helps to have a consistent number of
+#   frames analyzed if we're dropping a small number of frames).
+# So we run for 2min10sec.
+
+# LINT.IfChange
+duration_ms: 130000
+# LINT.ThenChange(/tests/BouncyBall/app/src/main/java/com/android/test/bouncyball/BouncyBallActivity.java)
+
+write_into_file: true
+# TODO(b/446221090): In particular, these are total guesses, and we need to
+#     also make sure this doesn't impact I/O on the device (although other
+#     I/O should be minimal).
+# We want this to be frequent to make sure we don't miss any data
+file_write_period_ms: 1000
+# We similarly want this to be frequent
+flush_period_ms: 1000
+

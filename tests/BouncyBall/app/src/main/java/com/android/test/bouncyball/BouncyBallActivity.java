@@ -58,13 +58,17 @@ public class BouncyBallActivity extends Activity {
     // ramped up yet.
     // This value must not be too high as to miss jank due to clocks ramping
     // down.
+    // LINT.IfChange
     private static final float INITIAL_TIME_TO_IGNORE_IN_SECONDS = 0.1f;
+    // LINT.ThenChange(/tests/BouncyBall/automation_config.pbtx)
 
     // The app itself can run "forever".  But for automated testing, we want
     // a consistent testing time.  We don't want to take too long, but we want
     // to wait sufficiently for CPUs/GPU to clock down to save power under our
     // basic load.
+    // LINT.IfChange
     private static final int AUTOMATED_TEST_DURATION_IN_SECONDS = 120;
+    // LINT.ThenChange(/tests/BouncyBall/automation_config.pbtx)
 
     // We use a trace counter to let trace analysis know if a frame is relevant.
     private static final String TRACE_COUNTER_RELEVANT_FRAME = "relevant_frame";
@@ -73,7 +77,9 @@ public class BouncyBallActivity extends Activity {
     private static final int TRACE_STATE_TOO_EARLY = 1;
 
     // These are the relevant frames for automated testing.
+    // LINT.IfChange
     private static final int TRACE_STATE_IN_TEST_TIME = 2;
+    // LINT.ThenChange(/tests/BouncyBall/trace_metrics_v2_spec.pbtx)
 
     // This is after the time span for automated testing.
     private static final int TRACE_STATE_POST_TEST_TIME = 3;
