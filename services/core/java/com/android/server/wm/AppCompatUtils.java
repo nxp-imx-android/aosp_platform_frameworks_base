@@ -18,8 +18,6 @@ package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_VR_HEADSET;
 
@@ -82,14 +80,6 @@ final class AppCompatUtils {
             return 0;
         }
         return Math.max(width, height) / (float) Math.min(width, height);
-    }
-
-    /**
-     * Returns the orientation of the given {@code rect}.
-     */
-    static @Configuration.Orientation int computeConfigOrientation(@NonNull Rect rect) {
-        return rect.height() >= rect.width()
-                ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
     }
 
     /**

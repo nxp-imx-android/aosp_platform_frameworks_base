@@ -75,6 +75,7 @@ import android.view.Gravity;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.policy.DesktopModeCompatUtils;
 import com.android.window.flags.Flags;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
@@ -325,7 +326,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 .setActivity(activity).setOptions(options).calculate());
         // Original orientation and aspect ratio of activity is maintained.
         assertEquals(ORIENTATION_PORTRAIT,
-                AppCompatUtils.computeConfigOrientation(mResult.mBounds));
+                DesktopModeCompatUtils.computeConfigOrientation(mResult.mBounds));
         assertEquals(expectedAspectRatio,
                 AppCompatUtils.computeAspectRatio(mResult.mAppBounds), /* delta */ 0.05);
     }

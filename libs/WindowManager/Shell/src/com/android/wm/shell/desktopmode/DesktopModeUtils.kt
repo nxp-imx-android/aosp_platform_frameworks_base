@@ -35,6 +35,7 @@ import android.graphics.Rect
 import android.os.SystemProperties
 import android.util.Size
 import android.window.DesktopModeFlags
+import com.android.internal.policy.DesktopModeCompatUtils
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
@@ -86,9 +87,10 @@ fun calculateInitialBounds(
     val topActivityInfo =
         taskInfo.topActivityInfo ?: return positionInScreen(idealSize, stableBounds)
     val screenOrientation = requestedScreenOrientation ?: topActivityInfo.screenOrientation
+    val stableBoundsOrientation = DesktopModeCompatUtils.computeConfigOrientation(stableBounds)
 
     val initialSize: Size =
-        when (taskInfo.configuration.orientation) {
+        when (stableBoundsOrientation) {
             ORIENTATION_LANDSCAPE -> {
                 if (taskInfo.canChangeAspectRatio) {
                     if (isFixedOrientationPortrait(screenOrientation)) {
