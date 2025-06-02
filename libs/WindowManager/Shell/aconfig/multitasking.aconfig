@@ -172,16 +172,6 @@ flag {
 }
 
 flag {
-    name: "enable_task_view_controller_cleanup"
-    namespace: "multitasking"
-    description: "Fix memory leak with task view controllers"
-    bug: "369995920"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "task_view_repository"
     namespace: "multitasking"
     description: "Factor task-view state tracking out of taskviewtransitions"
