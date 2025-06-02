@@ -674,7 +674,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     else R.drawable.ic_expand_less_rounded,
                 )
             )
-            mExpandButtonIcon.contentDescription =
+            mExpandButton.contentDescription =
                 mContext.getString(
                     if (isCollapsed) R.string.accessibility_expand_group
                     else R.string.accessibility_collapse_group

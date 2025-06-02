@@ -52,7 +52,6 @@
             android:layout_width="@dimen/media_output_item_icon_size"
             android:layout_height="@dimen/media_output_item_icon_size"
             android:layout_marginStart="@dimen/media_output_item_horizontal_gap"
-            android:contentDescription="@string/accessibility_open_application"
             android:focusable="true"
             android:visibility="gone">
 
