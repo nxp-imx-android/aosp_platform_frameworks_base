@@ -81,15 +81,14 @@ fun BackgroundGlow(
     val color2 = Color(boostChroma(MaterialTheme.colorScheme.primary.toArgb()))
     val color3 = Color(boostChroma(MaterialTheme.colorScheme.tertiary.toArgb()))
 
-    val shader = RuntimeShader(BackgroundGlowShader.FRAG_SHADER)
-    val shaderBrush = ShaderBrush(shader)
+    val shader = remember { RuntimeShader(BackgroundGlowShader.FRAG_SHADER) }
+    val shaderBrush = remember { ShaderBrush(shader) }
 
     Box(
         modifier.size(400.dp, 200.dp).alpha(alpha).drawWithCache {
             onDrawWithContent {
                 val offsetX = with(density) { verticalOffset.x.dp.toPx() }
                 val offsetY = with(density) { verticalOffset.y.dp.toPx() }
-                shader.setFloatUniform("alpha", alpha)
                 shader.setFloatUniform("resolution", size.width, size.height)
                 shader.setColorUniform("color1", color1.toArgb())
                 shader.setColorUniform("color2", color2.toArgb())
