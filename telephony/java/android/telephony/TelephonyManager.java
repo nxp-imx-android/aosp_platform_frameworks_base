@@ -16074,6 +16074,7 @@ public class TelephonyManager {
      * Indicates whether or not there is a modem stack enabled for the given SIM slot.
      *
      * <p>Requires Permission:
+     * {@link android.Manifest.permission#READ_BASIC_PHONE_STATE READ_BASIC_PHONE_STATE},
      * {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE},
      * READ_PRIVILEGED_PHONE_STATE or that the calling app has carrier privileges (see
      * {@link #hasCarrierPrivileges()}).
@@ -16083,8 +16084,10 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY}.
      */
+    @FlaggedApi(Flags.FLAG_MACRO_BASED_OPPORTUNISTIC_NETWORKS)
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
     @RequiresPermission(anyOf = {android.Manifest.permission.READ_PHONE_STATE,
+            android.Manifest.permission.READ_BASIC_PHONE_STATE,
             android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE})
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
     public boolean isModemEnabledForSlot(int slotIndex) {
