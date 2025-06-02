@@ -10276,6 +10276,7 @@ package android.companion {
     method @Nullable public android.os.ParcelUuid getUuid();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.DevicePresenceEvent> CREATOR;
+    field @FlaggedApi("android.companion.notify_association_removed") public static final int EVENT_ASSOCIATION_REMOVED = 6; // 0x6
     field public static final int EVENT_BLE_APPEARED = 0; // 0x0
     field public static final int EVENT_BLE_DISAPPEARED = 1; // 0x1
     field public static final int EVENT_BT_CONNECTED = 2; // 0x2
