@@ -203,6 +203,7 @@ public class AccessibilityInputFilterTest {
     public void tearDown() {
         mA11yInputFilter.onUninstalled();
         mInputManagerGlobalSession.close();
+        mAms.unregisterObservers();
     }
 
     @Test
