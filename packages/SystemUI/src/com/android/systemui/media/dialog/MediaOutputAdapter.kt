@@ -208,9 +208,6 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 R.dimen.media_output_item_content_vertical_margin_active
             )
 
-        private val mSubtitleAlpha =
-            mContext.resources.getFloat(R.dimen.media_output_item_subtitle_alpha)
-
         private val mButtonRippleBackground =
             AppCompatResources.getDrawable(
                 mContext,
@@ -374,7 +371,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             } else {
                 mSubTitleText.text = subtitle
                 mSubTitleText.setTextColor(colorTheme.subtitleColor)
-                mSubTitleText.alpha = mSubtitleAlpha * colorTheme.contentAlpha
+                mSubTitleText.alpha = colorTheme.contentAlpha
                 mSubTitleText.visibility = VISIBLE
             }
         }
@@ -603,8 +600,8 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 } else {
                     R.string.accessibility_add_device_to_group_with_name
                 }
-            mGroupButton.contentDescription = mContext.getString(
-                    resId, BidiFormatter.getInstance().unicodeWrap(device.name))
+            mGroupButton.contentDescription =
+                mContext.getString(resId, BidiFormatter.getInstance().unicodeWrap(device.name))
             mGroupButton.setImageResource(
                 if (groupStatus.selected) {
                     R.drawable.ic_check_circle_filled
