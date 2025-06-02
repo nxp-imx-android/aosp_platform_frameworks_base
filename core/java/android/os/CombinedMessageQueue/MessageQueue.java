@@ -2607,7 +2607,7 @@ public final class MessageQueue {
                 sRemovedFromStack = l.findVarHandle(MessageQueue.MessageNode.class,
                         "mRemovedFromStackValue", boolean.class);
             } catch (Exception e) {
-                Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+                Log.wtf(TAG_C, "VarHandle lookup failed", e);
                 throw new ExceptionInInitializerError(e);
             }
         }
@@ -2686,7 +2686,7 @@ public final class MessageQueue {
             sMptrRefCount = l.findVarHandle(MessageQueue.class, "mMptrRefCountValue",
                     long.class);
         } catch (Exception e) {
-            Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+            Log.wtf(TAG_C, "VarHandle lookup failed", e);
             throw new ExceptionInInitializerError(e);
         }
     }
@@ -2802,7 +2802,7 @@ public final class MessageQueue {
                 sCounts = l.findVarHandle(MessageQueue.MessageCounts.class, "mCountsValue",
                         long.class);
             } catch (Exception e) {
-                Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+                Log.wtf(TAG_C, "VarHandle lookup failed", e);
                 throw new ExceptionInInitializerError(e);
             }
         }
