@@ -232,6 +232,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         stopContinuousScroll();
                     }
                 }
+
+                @Override
+                public void onExitScrollMode() {
+                    exitScrollMode();
+                }
             };
 
     public AutoclickController(Context context, int userId, AccessibilityTraceManager trace) {
