@@ -45,6 +45,8 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -615,8 +617,33 @@ open class ClockRegistry(
         return availableClocks[clockId]?.provider?.getClockPickerConfig(clockSettings)
     }
 
-    fun createExampleClock(ctx: Context, clockId: ClockId): ClockController? =
-        createClock(ctx, clockId)
+    fun createExampleClock(ctx: Context, clockId: ClockId): ClockController? {
+        return createClock(ctx, clockId)
+    }
+
+    suspend fun createPreviewClockAsync(
+        ctx: Context,
+        settings: ClockSettings,
+    ): Deferred<ClockController> {
+        return withContext(bgDispatcher) {
+            async {
+                synchronized(availableClocks) {
+                    availableClocks[settings.clockId]?.manager?.loadPlugin()
+                    val result = createClock(ctx, settings)
+                    verifyLoadedProviders()
+
+                    if (result != null) {
+                        return@async result
+                    }
+
+                    logger.e({ "Failed to create preview clock: '$str1'; using default" }) {
+                        str1 = settings.clockId
+                    }
+                    return@async createDefaultClock(ctx)
+                }
+            }
+        }
+    }
 
     /**
      * Adds [listener] to receive future clock changes.
@@ -638,21 +665,24 @@ open class ClockRegistry(
         clockChangeListeners.remove(listener)
     }
 
-    fun createCurrentClock(ctx: Context): ClockController {
-        fun createDefault(func: (ClockController) -> Unit = {}): ClockController {
-            val clock = createClock(ctx, DEFAULT_CLOCK_ID)!!
-            func(clock)
-            return clock
-        }
+    private fun createDefaultClock(
+        ctx: Context,
+        func: ClockController.() -> Unit = {},
+    ): ClockController {
+        val clock = createClock(ctx, DEFAULT_CLOCK_ID)!!
+        func(clock)
+        return clock
+    }
 
+    fun createCurrentClock(ctx: Context): ClockController {
         val clockId = currentClockId
         if (clockId.isEmpty()) {
-            return createDefault { attachEndChangeTrace(it) }
+            return createDefaultClock(ctx) { attachEndChangeTrace(this) }
         }
 
         if (!isEnabled) {
             logger.i("Customized clocks disabled")
-            return createDefault { attachEndChangeTrace(it) }
+            return createDefaultClock(ctx) { attachEndChangeTrace(this) }
         }
 
         val clock = createClock(ctx, clockId)
@@ -664,11 +694,11 @@ open class ClockRegistry(
 
         if (availableClocks.containsKey(clockId)) {
             logger.w({ "Clock $str1 not loaded; using default" }) { str1 = clockId }
-            return createDefault { verifyLoadedProviders() }
+            return createDefaultClock(ctx) { verifyLoadedProviders() }
         }
 
         logger.e({ "Clock $str1 not found; using default" }) { str1 = clockId }
-        return createDefault { attachEndChangeTrace(it) }
+        return createDefaultClock(ctx) { attachEndChangeTrace(this) }
     }
 
     private fun createClock(ctx: Context, targetClockId: ClockId): ClockController? {
@@ -676,7 +706,11 @@ open class ClockRegistry(
         if (targetClockId != settings.clockId) {
             settings = settings.copy(clockId = targetClockId)
         }
-        return availableClocks[targetClockId]?.provider?.createClock(ctx, settings)
+        return createClock(ctx, settings)
+    }
+
+    private fun createClock(ctx: Context, settings: ClockSettings): ClockController? {
+        return availableClocks[settings.clockId]?.provider?.createClock(ctx, settings)
     }
 
     fun dump(pw: PrintWriter, args: Array<out String>) {
