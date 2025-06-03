@@ -2389,6 +2389,18 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mStartTransaction.apply();
         }
         if (mFinishTransaction != null) {
+            Slog.i(TAG, "cleanUpOnFailure for #" + mSyncId);
+            // In case this is called from DeathRecipient of ITransitionPlayer, which usually means
+            // that the organizers are also dead. And when deposing the organizers, it will call
+            // WindowContainer#migrateToNewSurfaceControl to reset the containers which were
+            // organized. So make sure the finish transaction uses the new surface of parents.
+            for (int i = mTargets.size() - 1; i >= 0; --i) {
+                final WindowContainer<?> target = mTargets.get(i).mContainer;
+                if (target.getParent() == null) continue;
+                final SurfaceControl targetLeash = getLeashSurface(target, null /* t */);
+                final SurfaceControl origParent = getOrigParentSurface(target);
+                mFinishTransaction.reparent(targetLeash, origParent);
+            }
             mFinishTransaction.apply();
         }
         mController.finishTransition(mController.mAtm.mChainTracker.startFinish("clean-up", this));
