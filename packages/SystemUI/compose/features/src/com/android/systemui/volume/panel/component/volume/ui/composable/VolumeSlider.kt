@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -83,6 +84,7 @@ import com.android.systemui.volume.ui.compose.slider.AccessibilityParams
 import com.android.systemui.volume.ui.compose.slider.Haptics
 import com.android.systemui.volume.ui.compose.slider.Slider
 import com.android.systemui.volume.ui.compose.slider.SliderIcon
+import com.google.common.annotations.VisibleForTesting
 import kotlin.math.round
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -163,7 +165,15 @@ fun VolumeSlider(
                                     { iconsState ->
                                         SliderIcon(
                                             icon = {
-                                                Icon(icon = icon, modifier = Modifier.size(24.dp))
+                                                Icon(
+                                                    icon = icon,
+                                                    modifier =
+                                                        Modifier.size(24.dp)
+                                                            .testTag(
+                                                                VolumeSlidersMotionTestKeys
+                                                                    .ACTIVE_ICON_TAG
+                                                            ),
+                                                )
                                             },
                                             isVisible = !iconsState.isInactiveTrackEndIconVisible,
                                         )
@@ -174,7 +184,15 @@ fun VolumeSlider(
                                     { iconsState ->
                                         SliderIcon(
                                             icon = {
-                                                Icon(icon = icon, modifier = Modifier.size(24.dp))
+                                                Icon(
+                                                    icon = icon,
+                                                    modifier =
+                                                        Modifier.size(24.dp)
+                                                            .testTag(
+                                                                VolumeSlidersMotionTestKeys
+                                                                    .INACTIVE_ICON_TAG
+                                                            ),
+                                                )
                                             },
                                             isVisible = iconsState.isInactiveTrackEndIconVisible,
                                         )
@@ -210,7 +228,9 @@ fun VolumeSlider(
         state.disabledMessage?.let { disabledMessage ->
             AnimatedVisibility(visible = !state.isEnabled) {
                 Row(
-                    modifier = Modifier.padding(bottom = 12.dp),
+                    modifier =
+                        Modifier.padding(bottom = 12.dp)
+                            .testTag(VolumeSlidersMotionTestKeys.DISABLED_MESSAGE_TAG),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -406,3 +426,10 @@ private fun setUpHapticsViewModel(
 }
 
 private fun ClosedFloatingPointRange<Float>.stepSize(): Float = 1f / (endInclusive - start)
+
+@VisibleForTesting
+object VolumeSlidersMotionTestKeys {
+    const val ACTIVE_ICON_TAG = "Volume_Slider_activeStartIcon"
+    const val INACTIVE_ICON_TAG = "Volume_Slider_inactiveStartIcon"
+    const val DISABLED_MESSAGE_TAG = "disabledMessage"
+}
