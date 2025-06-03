@@ -552,6 +552,13 @@ public final class SystemServer implements Dumpable {
     private static final String SYSPROP_FDTRACK_INTERVAL =
             "persist.sys.debug.fdtrack_interval";
 
+    /**
+     * Property used to override (for development purposes, on debuggable builds) the resource
+     * configs used by {@link #designateMainUserOnBoot()}
+     */
+    private static final String SYSPROP_DESIGNATE_MAIN_USER = "fw.designate_main_user_on_boot";
+
+
     private static int getMaxFd() {
         FileDescriptor fd = null;
         try {
@@ -721,6 +728,33 @@ public final class SystemServer implements Dumpable {
         TimeUtils.formatDuration(mRuntimeStartUptime, pw); pw.println();
         pw.print("Runtime start-elapsed time: ");
         TimeUtils.formatDuration(mRuntimeStartElapsedTime, pw); pw.println();
+
+        var res = mSystemContext.getResources();
+        pw.print("Designate main user on boot: ");
+        pw.println(designateMainUserOnBoot());
+        pw.print("  config_designateMainUser: ");
+        pw.print(res.getBoolean(R.bool.config_designateMainUser));
+        pw.print(" config_isMainUserPermanentAdmin: ");
+        pw.print(res.getBoolean(R.bool.config_isMainUserPermanentAdmin));
+        pw.print(" " + SYSPROP_DESIGNATE_MAIN_USER + ": ");
+        pw.println(SystemProperties.get(SYSPROP_DESIGNATE_MAIN_USER, "N/A"));
+
+        pw.print("Create initial user on boot: ");
+        pw.println(createInitialUserOnBoot());
+    }
+
+    private boolean designateMainUserOnBoot() {
+        var res = mSystemContext.getResources();
+        boolean defaultValue = res.getBoolean(R.bool.config_designateMainUser)
+                || res.getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        if (!Build.isDebuggable()) {
+            return defaultValue;
+        }
+        return SystemProperties.getBoolean(SYSPROP_DESIGNATE_MAIN_USER, defaultValue);
+    }
+
+    private boolean createInitialUserOnBoot() {
+        return mSystemContext.getResources().getBoolean(R.bool.config_createInitialUser);
     }
 
     /**
@@ -3043,8 +3077,7 @@ public final class SystemServer implements Dumpable {
         final HsumBootUserInitializer hsumBootUserInitializer =
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
                         mPackageManagerService, mContentResolver,
-                        context.getResources().getBoolean(R.bool.config_createInitialUser)
-                        );
+                        designateMainUserOnBoot(), createInitialUserOnBoot());
         if (hsumBootUserInitializer != null) {
             t.traceBegin("HsumBootUserInitializer.init");
             hsumBootUserInitializer.init(t);

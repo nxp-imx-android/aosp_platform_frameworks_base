@@ -3263,6 +3263,18 @@
          ignored (as the initial user is the main user). -->
     <bool name="config_createInitialUser">false</bool>
 
+    <!-- Whether the system should "designate" the main user on boot:
+         - If it's true and the device doesn't have a main user (meaning it's the first boot or it
+           migrated from false to true), then the system will either promote the first admin
+           (migration) to be the main user, or create a main user (first boot).
+         - If it's false and the device has a main user (meaning it migrated from true to false),
+           then the main user will be "demoted" to just an admin.
+
+         Notice that if config_isMainUserPermanentAdmin is true, this config is
+         ignored (i.e, the system will act as it was true) as main user is required in this case.
+    -->
+    <bool name="config_designateMainUser">false</bool>
+
     <!-- Whether switch to headless system user is allowed. If allowed,
     headless system user can run in the foreground even though it is not a full user. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
