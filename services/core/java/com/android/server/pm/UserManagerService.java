@@ -43,6 +43,7 @@ import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_UNSPECIFIED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_ALREADY_AN_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_IS_NOT_AN_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
+import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_GRANT_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_REVOKE_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_USER_CREATE;
@@ -587,7 +588,7 @@ public class UserManagerService extends IUserManager.Stub {
     @GuardedBy("mUserLifecycleListeners")
     private final ArrayList<UserLifecycleListener> mUserLifecycleListeners = new ArrayList<>();
 
-    private final UserJourneyLogger mUserJourneyLogger = new UserJourneyLogger();
+    private final UserJourneyLogger mUserJourneyLogger;
 
     private final LockPatternUtils mLockPatternUtils;
 
@@ -1065,7 +1066,7 @@ public class UserManagerService extends IUserManager.Stub {
     // TODO(b/28848102) Add support for test dependencies injection
     @VisibleForTesting
     UserManagerService(Context context) {
-        this(context, /* pm= */ null, /* userDataPreparer= */ null,
+        this(context, /* pm= */ null, /* userDataPreparer= */ null, new UserJourneyLogger(),
                 /* packagesLock= */ new Object(), context.getCacheDir(), /* users= */ null);
     }
 
@@ -1076,16 +1077,17 @@ public class UserManagerService extends IUserManager.Stub {
      */
     UserManagerService(Context context, PackageManagerService pm, UserDataPreparer userDataPreparer,
             Object packagesLock) {
-        this(context, pm, userDataPreparer, packagesLock, Environment.getDataDirectory(),
-                /* users= */ null);
+        this(context, pm, userDataPreparer, new UserJourneyLogger(), packagesLock,
+                Environment.getDataDirectory(), /* users= */ null);
     }
 
     @VisibleForTesting
-    UserManagerService(Context context, PackageManagerService pm,
-            UserDataPreparer userDataPreparer, Object packagesLock, File dataDir,
+    UserManagerService(Context context, PackageManagerService pm, UserDataPreparer userDataPreparer,
+            UserJourneyLogger userJourneyLogger,  Object packagesLock, File dataDir,
             SparseArray<UserData> users) {
         mContext = context;
         mPm = pm;
+        mUserJourneyLogger = userJourneyLogger;
         mPackagesLock = packagesLock;
         mUsers = users != null ? users : new SparseArray<>();
         mHandler = new MainHandler();
@@ -1358,16 +1360,23 @@ public class UserManagerService extends IUserManager.Stub {
 
     private @CanBeNULL @UserIdInt int getMainUserIdUnchecked() {
         synchronized (mUsersLock) {
-            final int userSize = mUsers.size();
-            for (int i = 0; i < userSize; i++) {
-                final UserInfo user = mUsers.valueAt(i).info;
-                if (user.isMain() && !mRemovingUserIds.get(user.id)) {
-                    return user.id;
-                }
+            var mainUser = getMainUserLU();
+            return mainUser == null ? UserHandle.USER_NULL : mainUser.id;
+        }
+    }
+
+    @GuardedBy("mUsersLock")
+    private @Nullable UserInfo getMainUserLU() {
+        int userSize = mUsers.size();
+        for (int i = 0; i < userSize; i++) {
+            UserInfo user = mUsers.valueAt(i).info;
+            if (user.isMain() && !mRemovingUserIds.get(user.id)) {
+                return user;
             }
         }
-        return UserHandle.USER_NULL;
+        return null;
     }
+
 
     private @CanBeNULL @UserIdInt int getPrivateProfileUserId() {
         synchronized (mUsersLock) {
@@ -5347,6 +5356,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         initDefaultGuestRestrictions();
 
+        Slogf.i(LOG_TAG, "Creating system user: %s", userData);
         writeUserLP(userData);
         writeUserListLP();
     }
@@ -6155,10 +6165,14 @@ public class UserManagerService extends IUserManager.Stub {
                                 USER_OPERATION_ERROR_UNKNOWN);
                     }
                 }
-                if (isMainUser && getMainUserIdUnchecked() != UserHandle.USER_NULL) {
-                    throwCheckedUserOperationException(
-                            "Cannot add user with FLAG_MAIN as main user already exists.",
-                            UserManager.USER_OPERATION_ERROR_MAX_USERS);
+                if (isMainUser) {
+                    int mainUserId = getMainUserIdUnchecked();
+                    if (mainUserId != UserHandle.USER_NULL) {
+                        throwCheckedUserOperationException(
+                                "Cannot add user with FLAG_MAIN as main user already exists (id="
+                                        + mainUserId + ").",
+                                UserManager.USER_OPERATION_ERROR_MAX_USERS);
+                    }
                 }
                 if (!canAddMoreUsersOfType(userTypeDetails)) {
                     if (isUserLimitReachedForLogging()) {
@@ -8824,6 +8838,32 @@ public class UserManagerService extends IUserManager.Stub {
         boolean defaultValue = getSystemResources()
                 .getBoolean(R.bool.config_isMainUserPermanentAdmin);
         return defaultValue;
+    }
+
+    boolean demoteMainUser() {
+        if (!android.multiuser.Flags.demoteMainUser()) {
+            Slog.d(LOG_TAG, "demoteMainUser(): ignoring because flag is disabled");
+            return false;
+        }
+
+        synchronized (mUsersLock) {
+            var mainUser = getMainUserLU();
+            if (mainUser == null) {
+                Slog.e(LOG_TAG, "demoteMainUser(): no main user");
+                return false;
+            }
+            if (mainUser.id == UserHandle.USER_SYSTEM) {
+                Slog.e(LOG_TAG, "demoteMainUser(): cannot demote system user");
+                return false;
+            }
+
+            Slogf.i(LOG_TAG, "Demoting main user (%s)", mainUser);
+            mUserJourneyLogger.logUserJourneyBegin(mainUser.id, USER_JOURNEY_DEMOTE_MAIN_USER);
+            var userData = getUserDataLU(mainUser.id);
+            userData.info.flags ^= UserInfo.FLAG_MAIN;
+            writeUserLP(userData);
+            return true;
+        }
     }
 
     /**

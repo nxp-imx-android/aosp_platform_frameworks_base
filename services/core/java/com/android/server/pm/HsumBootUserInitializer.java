@@ -69,8 +69,8 @@ public final class HsumBootUserInitializer {
                 }
             };
 
-    /** Whether this device should always have a non-removable MainUser, including at first boot. */
-    private final boolean mShouldAlwaysHaveMainUser;
+    /** Whether it should create a main user on first boot. */
+    private final boolean mShouldCreateMainUser;
 
     /** Whether it should create an initial user, but without setting it as the main user. */
     private final boolean mShouldCreateInitialUser;
@@ -90,12 +90,12 @@ public final class HsumBootUserInitializer {
     @VisibleForTesting
     HsumBootUserInitializer(UserManagerService ums, ActivityManagerService ams,
             PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldAlwaysHaveMainUser, boolean shouldCreateInitialUser) {
+            boolean shouldCreateMainUser, boolean shouldCreateInitialUser) {
         mUms = ums;
         mAms = ams;
         mPms = pms;
         mContentResolver = contentResolver;
-        mShouldAlwaysHaveMainUser = shouldAlwaysHaveMainUser;
+        mShouldCreateMainUser = shouldCreateMainUser;
         mShouldCreateInitialUser = shouldCreateInitialUser;
     }
 
@@ -105,7 +105,7 @@ public final class HsumBootUserInitializer {
             Slogf.d(TAG, "preCreateInitialUserFlagInit())");
         }
 
-        if (mShouldAlwaysHaveMainUser) {
+        if (mShouldCreateMainUser) {
             t.traceBegin("createMainUserIfNeeded");
             preCreateInitialUserCreateMainUserIfNeeded();
             t.traceEnd();
@@ -129,7 +129,7 @@ public final class HsumBootUserInitializer {
                     UserManager.USER_TYPE_FULL_SECONDARY,
                     UserInfo.FLAG_ADMIN | UserInfo.FLAG_MAIN,
                     /* parentId= */ UserHandle.USER_NULL,
-                    /* preCreated= */ false,
+                    /* preCreate= */ false,
                     /* disallowedPackages= */ null,
                     /* token= */ null);
             if (newInitialUser != null) {
@@ -153,9 +153,9 @@ public final class HsumBootUserInitializer {
      */
     public void init(TimingsTraceAndSlog t) {
         if (DEBUG) {
-            Slogf.d(TAG, "init(): shouldAlwaysHaveMainUser=%b, shouldCreateInitialUser=%b, "
+            Slogf.d(TAG, "init(): shouldCreateMainUser=%b, shouldCreateInitialUser=%b, "
                     + "Flags.createInitialUser=%b",
-                    mShouldAlwaysHaveMainUser, mShouldCreateInitialUser, Flags.createInitialUser());
+                    mShouldCreateMainUser, mShouldCreateInitialUser, Flags.createInitialUser());
         } else {
             Slogf.i(TAG, "Initializing");
         }
@@ -165,10 +165,18 @@ public final class HsumBootUserInitializer {
             return;
         }
 
-        if (mShouldAlwaysHaveMainUser) {
-            createMainUserIfNeeded(t);
+        t.traceBegin("getMainUserId");
+        int mainUserId = mUms.getMainUserId();
+        t.traceEnd();
+
+        if (mShouldCreateMainUser) {
+            createMainUserIfNeeded(t, mainUserId);
             return;
         }
+
+        t.traceBegin("demoteMainUserIfNeeded");
+        demoteMainUserIfNeeded(t, mainUserId);
+        t.traceEnd();
 
         if (mShouldCreateInitialUser) {
             createAdminUserIfNeeded(t);
@@ -179,11 +187,10 @@ public final class HsumBootUserInitializer {
         }
     }
 
-    private void createMainUserIfNeeded(TimingsTraceAndSlog t) {
+    private void createMainUserIfNeeded(TimingsTraceAndSlog t, @UserIdInt int mainUserId) {
         // Always tracing as it used to be done by the caller
         t.traceBegin("createMainUserIfNeeded");
         try {
-            int mainUserId = mUms.getMainUserId();
             if (mainUserId != UserHandle.USER_NULL) {
                 if (DEBUG) {
                     Slogf.d(TAG, "createMainUserIfNeeded(): found MainUser (userId=%d)",
@@ -197,6 +204,23 @@ public final class HsumBootUserInitializer {
         }
     }
 
+    private void demoteMainUserIfNeeded(TimingsTraceAndSlog t, @UserIdInt int mainUserId) {
+        if (mainUserId == UserHandle.USER_NULL) {
+            if (DEBUG) {
+                Slogf.d(TAG, "demoteMainUserIfNeeded(): didn't find MainUser");
+            }
+            return;
+        }
+        t.traceBegin("demoteMainUserIfNeeded");
+        try {
+            Slogf.i(TAG, "Demoting main user (%d)", mainUserId);
+            if (!mUms.demoteMainUser()) {
+                Slogf.wtf(TAG, "Failed to demote main user");
+            }
+        } finally {
+            t.traceEnd();
+        }
+    }
     private void createAdminUserIfNeeded(TimingsTraceAndSlog t) {
         t.traceBegin("createAdminUserIfNeeded");
         try {
@@ -230,7 +254,7 @@ public final class HsumBootUserInitializer {
                     UserManager.USER_TYPE_FULL_SECONDARY,
                     flags,
                     /* parentId= */ UserHandle.USER_NULL,
-                    /* preCreated= */ false,
+                    /* preCreate= */ false,
                     /* disallowedPackages= */ null,
                     /* token= */ null);
             Slogf.i(TAG, "Successfully created %s, userId=%d", logName, newInitialUser.id);

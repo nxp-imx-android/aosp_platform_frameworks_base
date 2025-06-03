@@ -104,6 +104,8 @@ public class UserJourneyLogger {
             FrameworkStatsLog.USER_LIFECYCLE_JOURNEY_REPORTED__JOURNEY__REVOKE_ADMIN;
     public static final int USER_JOURNEY_USER_LIFECYCLE =
             FrameworkStatsLog.USER_LIFECYCLE_JOURNEY_REPORTED__JOURNEY__USER_LIFECYCLE;
+    public static final int USER_JOURNEY_DEMOTE_MAIN_USER =
+            FrameworkStatsLog.USER_LIFECYCLE_JOURNEY_REPORTED__JOURNEY__DEMOTE_MAIN_USER;
 
     @IntDef(prefix = {"USER_JOURNEY"}, value = {
             USER_JOURNEY_UNKNOWN,
@@ -115,7 +117,8 @@ public class UserJourneyLogger {
             USER_JOURNEY_USER_REMOVE,
             USER_JOURNEY_GRANT_ADMIN,
             USER_JOURNEY_REVOKE_ADMIN,
-            USER_JOURNEY_USER_LIFECYCLE
+            USER_JOURNEY_USER_LIFECYCLE,
+            USER_JOURNEY_DEMOTE_MAIN_USER
     })
     public @interface UserJourney {
     }
