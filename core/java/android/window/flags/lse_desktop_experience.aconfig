@@ -801,13 +801,6 @@ flag {
 }
 
 flag {
-    name: "enable_key_gesture_handler_for_recents"
-    namespace: "lse_desktop_experience"
-    description: "Enables the key gesture handler for listening to recents related key events, e.g. overview, all apps."
-    bug: "406452076"
-}
-
-flag {
     name: "enable_key_gesture_handler_for_sysui"
     namespace: "lse_desktop_experience"
     description: "Enables the key gesture handler for listening to SysUi interested key events."
