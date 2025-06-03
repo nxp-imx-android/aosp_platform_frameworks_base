@@ -100,7 +100,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     @Nullable
     private volatile SessionCreationOrTransferRequest mPendingTransferRequest;
 
-    private final EventListener mOnDeviceRouteEventListener = new EventListener();
+    private final DeviceRouteEventListener mDeviceRouteEventListener =
+            new DeviceRouteEventListener();
 
     public static SystemMediaRoute2Provider create(
             Context context, UserHandle user, Looper looper) {
@@ -119,7 +120,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         mDeviceRouteController =
-                DeviceRouteController.createInstance(context, looper, mOnDeviceRouteEventListener);
+                DeviceRouteController.createInstance(context, looper, mDeviceRouteEventListener);
     }
 
     public void start() {
@@ -218,12 +219,17 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
     @Override
     public void selectRoute(long requestId, String sessionId, String routeId) {
-        // Do nothing since we don't support multiple BT yet.
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            // Pass params to DeviceRouteController to start the broadcast
+            mDeviceRouteController.selectRoute(requestId, routeId);
+        }
     }
 
     @Override
     public void deselectRoute(long requestId, String sessionId, String routeId) {
-        // Do nothing since we don't support multiple BT yet.
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            mDeviceRouteController.deselectRoute(requestId, routeId);
+        }
     }
 
     @Override
@@ -363,6 +369,16 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 }
             }
 
+            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+                for (MediaRoute2Info route : mDeviceRouteController.getSelectableRoutes()) {
+                    builder.addSelectableRoute(route.getId());
+                }
+
+                for (MediaRoute2Info route : mDeviceRouteController.getDeselectableRoutes()) {
+                    builder.addDeselectableRoute(route.getId());
+                }
+            }
+
             if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
                 var oldSessionInfo =
                         Flags.enableMirroringInMediaRouter2()
@@ -444,22 +460,13 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                     .setSystemSession(true);
 
             List<MediaRoute2Info> selectedRoutes = mDeviceRouteController.getSelectedRoutes();
-            List<String> transferableRoutes = new ArrayList<>();
             mSelectedRouteIds = selectedRoutes.stream().map(MediaRoute2Info::getId).toList();
-
-            var defaultRouteBuilder =
-                    new MediaRoute2Info.Builder(
-                                    MediaRoute2Info.ROUTE_ID_DEFAULT, selectedRoutes.getFirst())
-                            .setSystemRoute(true)
-                            .setProviderId(mUniqueId);
-            if (Flags.hideBtAddressFromAppsWithoutBtPermission()) {
-                defaultRouteBuilder.setAddress(null); // We clear the address field.
-            }
-            mDefaultRoute = defaultRouteBuilder.build();
+            List<String> transferableRoutes = new ArrayList<>();
 
             for (String selectedRouteId : mSelectedRouteIds) {
                 builder.addSelectedRoute(selectedRouteId);
             }
+
             for (MediaRoute2Info route : mDeviceRouteController.getAvailableRoutes()) {
                 String routeId = route.getId();
                 if (!mSelectedRouteIds.contains(routeId)) {
@@ -470,6 +477,27 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
             for (String route : transferableRoutes) {
                 builder.addTransferableRoute(route);
             }
+
+            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+                for (MediaRoute2Info route : mDeviceRouteController.getSelectableRoutes()) {
+                    builder.addSelectableRoute(route.getId());
+                }
+
+                for (MediaRoute2Info route : mDeviceRouteController.getDeselectableRoutes()) {
+                    builder.addDeselectableRoute(route.getId());
+                }
+            }
+
+            // Handle the default route
+            var defaultRouteBuilder =
+                    new MediaRoute2Info.Builder(
+                                    MediaRoute2Info.ROUTE_ID_DEFAULT, selectedRoutes.getFirst())
+                            .setSystemRoute(true)
+                            .setProviderId(mUniqueId);
+            if (Flags.hideBtAddressFromAppsWithoutBtPermission()) {
+                defaultRouteBuilder.setAddress(null); // We clear the address field.
+            }
+            mDefaultRoute = defaultRouteBuilder.build();
 
             if (Flags.enableBuiltInSpeakerRouteSuitabilityStatuses()) {
                 int transferReason = RoutingSessionInfo.TRANSFER_REASON_FALLBACK;
@@ -592,8 +620,11 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
         List<String> selectedRoutes = sessionInfo.getSelectedRoutes();
 
-        if (selectedRoutes.size() != 1) {
-            throw new IllegalStateException("Selected routes list should contain only 1 route id.");
+        if (!Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            if (selectedRoutes.size() != 1) {
+                throw new IllegalStateException(
+                        "Selected routes list should contain only 1 route id.");
+            }
         }
 
         String oldSelectedRouteId = MediaRouter2Utils.getOriginalId(selectedRoutes.get(0));
@@ -641,7 +672,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
         publishProviderState();
     }
 
-    private class EventListener implements DeviceRouteController.EventListener {
+    private class DeviceRouteEventListener implements DeviceRouteController.EventListener {
 
         @Override
         public void onDeviceRouteChanged() {
