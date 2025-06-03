@@ -52,12 +52,14 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Helper class to read/write aggregated app op access events.
@@ -506,58 +508,38 @@ public class AppOpHistoryHelper {
          * Evict older events i.e. events from previous time windows.
          */
         private List<AggregatedAppOpAccessEvent> evict() {
-            synchronized (this) {
-                List<AggregatedAppOpAccessEvent> evictedEvents = new ArrayList<>();
-                ArrayMap<AppOpAccessEvent, AggregatedAppOpValues> snapshot =
-                        new ArrayMap<>(mCache);
-                long evictionTimestamp = System.currentTimeMillis() - mQuantizationMillis;
-                evictionTimestamp = discretizeTimestamp(evictionTimestamp);
-                for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> opEvent :
-                        snapshot.entrySet()) {
-                    if (opEvent.getKey().mAccessTime <= evictionTimestamp) {
-                        evictedEvents.add(
-                                getAggregatedAppOpEvent(opEvent.getKey(), opEvent.getValue()));
-                        mCache.remove(opEvent.getKey());
-                    }
-                }
-                return evictedEvents;
-            }
+            final long evictionTimestamp = discretizeTimestamp(
+                    System.currentTimeMillis() - mQuantizationMillis);
+            return evict(opAccessEvent -> opAccessEvent.mAccessTime <= evictionTimestamp);
         }
 
-        private AggregatedAppOpAccessEvent getAggregatedAppOpEvent(AppOpAccessEvent accessEvent,
-                AggregatedAppOpValues appOpValues) {
-            return new AggregatedAppOpAccessEvent(accessEvent.mUid, accessEvent.mPackageName,
-                    accessEvent.mOpCode, accessEvent.mDeviceId, accessEvent.mAttributionTag,
-                    accessEvent.mOpFlags, accessEvent.mUidState, accessEvent.mAttributionFlags,
-                    accessEvent.mAttributionChainId, accessEvent.mAccessTime,
-                    accessEvent.mDuration, appOpValues.mTotalDuration,
-                    appOpValues.mTotalAccessCount, appOpValues.mTotalRejectCount);
+        private List<AggregatedAppOpAccessEvent> evict(Predicate<AppOpAccessEvent> predicate) {
+            synchronized (this) {
+                if (mCache.isEmpty()) {
+                    return Collections.emptyList();
+                }
+
+                List<AggregatedAppOpAccessEvent> evictedOps = new ArrayList<>();
+                List<AppOpAccessEvent> keysToBeRemoved = new ArrayList<>();
+                for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> event :
+                        mCache.entrySet()) {
+                    if (predicate.test(event.getKey())) {
+                        keysToBeRemoved.add(event.getKey());
+                        evictedOps.add(getAggregatedAppOpEvent(event.getKey(), event.getValue()));
+                    }
+                }
+                for (AppOpAccessEvent eventKey : keysToBeRemoved) {
+                    mCache.remove(eventKey);
+                }
+                return evictedOps;
+            }
         }
 
         /**
          * Evict specified app ops from cache, and return the list of evicted ops.
          */
         private List<AggregatedAppOpAccessEvent> evict(IntArray ops) {
-            synchronized (this) {
-                List<AggregatedAppOpAccessEvent> cachedOps = new ArrayList<>();
-                List<AppOpAccessEvent> keysToBeRemoved = new ArrayList<>();
-                if (mCache.isEmpty()) {
-                    return cachedOps;
-                }
-                for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> event :
-                        mCache.entrySet()) {
-                    if (ops.contains(event.getKey().mOpCode)) {
-                        keysToBeRemoved.add(event.getKey());
-                        cachedOps.add(getAggregatedAppOpEvent(event.getKey(), event.getValue()));
-                    }
-                }
-                if (!cachedOps.isEmpty()) {
-                    for (AppOpAccessEvent eventKey : keysToBeRemoved) {
-                        mCache.remove(eventKey);
-                    }
-                }
-                return cachedOps;
-            }
+            return evict(appOpAccessEvent -> ops.contains(appOpAccessEvent.mOpCode));
         }
 
         /**
@@ -571,6 +553,16 @@ public class AppOpHistoryHelper {
                 mCache.clear();
                 return cachedOps;
             }
+        }
+
+        private AggregatedAppOpAccessEvent getAggregatedAppOpEvent(AppOpAccessEvent accessEvent,
+                AggregatedAppOpValues appOpValues) {
+            return new AggregatedAppOpAccessEvent(accessEvent.mUid, accessEvent.mPackageName,
+                    accessEvent.mOpCode, accessEvent.mDeviceId, accessEvent.mAttributionTag,
+                    accessEvent.mOpFlags, accessEvent.mUidState, accessEvent.mAttributionFlags,
+                    accessEvent.mAttributionChainId, accessEvent.mAccessTime,
+                    accessEvent.mDuration, appOpValues.mTotalDuration,
+                    appOpValues.mTotalAccessCount, appOpValues.mTotalRejectCount);
         }
 
         /**
