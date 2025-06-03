@@ -167,7 +167,10 @@ public class AdbDebuggingManager {
     private final Set<String> mWifiConnectedKeys = new HashSet<>();
     // The current info of the adbwifi connection.
     private AdbConnectionInfo mAdbConnectionInfo = new AdbConnectionInfo();
+
     // Polls for a tls port property when adb wifi is enabled
+    private AdbConnectionPortPoller mConnectionPortPoller;
+
     private final Ticker mTicker;
 
     public AdbDebuggingManager(Context context) {
@@ -206,6 +209,27 @@ public class AdbDebuggingManager {
             @NonNull UserHandle userHandle) {
         context.sendBroadcastAsUser(intent, userHandle,
                 android.Manifest.permission.MANAGE_DEBUGGING);
+    }
+
+    private void startTLSPortPoller() {
+        mConnectionPortPoller = new AdbConnectionPortPoller(port -> {
+            Slog.d(TAG, "Received tls port from poller =" + port);
+            Message msg = mHandler.obtainMessage(port > 0
+                    ? AdbDebuggingHandler.MSG_SERVER_CONNECTED
+                    : AdbDebuggingHandler.MSG_SERVER_DISCONNECTED);
+            msg.obj = port;
+            mHandler.sendMessage(msg);
+        });
+        mConnectionPortPoller.start();
+    }
+
+    private void stopTLSPortPoller() {
+        if (mConnectionPortPoller == null) {
+            return;
+        }
+
+        mConnectionPortPoller.cancelAndWait();
+        mConnectionPortPoller = null;
     }
 
     class PairingThread extends Thread implements NsdManager.RegistrationListener {
@@ -824,15 +848,11 @@ public class AdbDebuggingManager {
         }
 
         private void startAdbdWifi() {
-            if (mThread != null) {
-                mThread.sendResponse(MSG_START_ADB_WIFI);
-            }
+            AdbService.enableADBdWifi();
         }
 
         private void stopAdbdWifi() {
-            if (mThread != null) {
-                mThread.sendResponse(MSG_STOP_ADB_WIFI);
-            }
+            AdbService.disableADBdWifi();
         }
 
         private void startAdbDebuggingThread() {
@@ -1073,6 +1093,7 @@ public class AdbDebuggingManager {
 
 
                     startAdbDebuggingThread();
+                    startTLSPortPoller();
                     startAdbdWifi();
                     mAdbWifiEnabled = true;
 
@@ -1118,6 +1139,7 @@ public class AdbDebuggingManager {
                     mContext.registerReceiver(mBroadcastReceiver, intentFilter);
 
                     startAdbDebuggingThread();
+                    startTLSPortPoller();
                     startAdbdWifi();
                     mAdbWifiEnabled = true;
 
@@ -1218,14 +1240,20 @@ public class AdbDebuggingManager {
                     int port = (int) msg.obj;
                     onAdbdWifiServerDisconnected(port);
                     stopAdbDebuggingThread();
+                    stopTLSPortPoller();
                     break;
                 }
                 case MSG_ADBD_SOCKET_CONNECTED: {
                     Slog.d(TAG, "adbd socket connected");
+                    if (mAdbWifiEnabled) {
+                        // In scenarios where adbd is restarted, the tls port may change.
+                        startTLSPortPoller();
+                    }
                     break;
                 }
                 case MSG_ADBD_SOCKET_DISCONNECTED: {
                     Slog.d(TAG, "adbd socket disconnected");
+                    stopTLSPortPoller();
                     if (mAdbWifiEnabled) {
                         // In scenarios where adbd is restarted, the tls port may change.
                         onAdbdWifiServerDisconnected(-1);

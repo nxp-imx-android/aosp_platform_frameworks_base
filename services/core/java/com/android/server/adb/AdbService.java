@@ -433,6 +433,16 @@ public class AdbService extends IAdbManager.Stub {
                 AdbService::setAdbEnabledDoNotCallDirectly, this, enable, transportType));
     }
 
+    static void enableADBdWifi() {
+        Slog.d(TAG, "Enabling ADBd Wifi property");
+        SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "1");
+    }
+
+    static void disableADBdWifi() {
+        Slog.d(TAG, "Disabling ADBd Wifi property");
+        SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "0");
+    }
+
     private void setAdbEnabledDoNotCallDirectly(boolean enable, byte transportType) {
         Slog.d(TAG, "setAdbEnabled(" + enable + "), mIsAdbUsbEnabled=" + mIsAdbUsbEnabled
                  + ", mIsAdbWifiEnabled=" + mIsAdbWifiEnabled + ", transportType=" + transportType);
@@ -451,11 +461,11 @@ public class AdbService extends IAdbManager.Stub {
                 mIsAdbWifiEnabled = enable;
                 if (mIsAdbWifiEnabled) {
                     // Start adb over WiFi.
-                    SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "1");
+                    enableADBdWifi();
                     acquireMulticastLock();
                 } else {
                     // Stop adb over WiFi.
-                    SystemProperties.set(WIFI_PERSISTENT_CONFIG_PROPERTY, "0");
+                    disableADBdWifi();
                     releaseMulticastLock();
                 }
                 break;
