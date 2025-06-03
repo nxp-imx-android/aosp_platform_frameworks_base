@@ -224,6 +224,15 @@ class PhysicsPropertyAnimatorTest : SysuiTestCase() {
     @Test
     fun testEndedBeforeStartingCleanupHandler() {
         effectiveProperty.setValue(view, 100f)
+        val finishListener2 = Mockito.mock(DynamicAnimation.OnAnimationEndListener::class.java)
+        val animationProperties: AnimationProperties =
+            object : AnimationProperties() {
+                override fun getAnimationEndListener(
+                    property: Property<*, *>?
+                ): DynamicAnimation.OnAnimationEndListener {
+                    return finishListener2
+                }
+            }
         animationProperties.setDelay(200)
         PhysicsPropertyAnimator.setProperty(
             view,
@@ -240,6 +249,8 @@ class PhysicsPropertyAnimatorTest : SysuiTestCase() {
         Assert.assertTrue(propertyData.offset == 0f)
         Assert.assertTrue(propertyData.animator == null)
         Assert.assertTrue(propertyData.doubleOvershootAvoidingListener == null)
+        Mockito.verify(finishListener)?.onAnimationEnd(any(), any(), any(), any())
+        Mockito.verify(finishListener2).onAnimationEnd(any(), any(), any(), any())
     }
 
     @Test

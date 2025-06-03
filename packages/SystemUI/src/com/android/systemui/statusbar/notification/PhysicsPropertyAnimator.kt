@@ -223,6 +223,10 @@ private fun startAnimation(
             0f /* value */,
             0f /* velocity */
         )
+        endListener?.onAnimationEnd(propertyData.animator,
+            cancelled,
+            0f /* value */,
+            0f /* velocity */)
         propertyData.animator = null
         propertyData.doubleOvershootAvoidingListener = null
         propertyData.offset = 0f
