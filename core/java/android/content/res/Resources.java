@@ -434,7 +434,6 @@ public class Resources {
      * @hide Pending API finalization.
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    @RavenwoodThrow(blockedBy = DrawableInflater.class)
     public final DrawableInflater getDrawableInflater() {
         if (mDrawableInflater == null) {
             mDrawableInflater = new DrawableInflater(this, mClassLoader);
@@ -933,7 +932,6 @@ public class Resources {
      * @deprecated Use {@link #getDrawable(int, Theme)} instead.
      */
     @Deprecated
-    @RavenwoodThrow(blockedBy = Drawable.class)
     public Drawable getDrawable(@DrawableRes int id) throws NotFoundException {
         final Drawable d = getDrawable(id, null);
         if (d != null && d.canApplyTheme()) {
@@ -958,7 +956,6 @@ public class Resources {
      * @throws NotFoundException Throws NotFoundException if the given ID does
      *         not exist.
      */
-    @RavenwoodThrow(blockedBy = Drawable.class)
     public Drawable getDrawable(@DrawableRes int id, @Nullable Theme theme)
             throws NotFoundException {
         return getDrawableForDensity(id, 0, theme);
@@ -994,7 +991,6 @@ public class Resources {
      */
     @Nullable
     @Deprecated
-    @RavenwoodThrow(blockedBy = Drawable.class)
     public Drawable getDrawableForDensity(@DrawableRes int id, int density)
             throws NotFoundException {
         return getDrawableForDensity(id, density, null);
@@ -1018,7 +1014,6 @@ public class Resources {
      *             not exist.
      */
     @Nullable
-    @RavenwoodThrow(blockedBy = Drawable.class)
     public Drawable getDrawableForDensity(@DrawableRes int id, int density, @Nullable Theme theme) {
         final TypedValue value = obtainTempTypedValue();
         try {
@@ -1806,7 +1801,6 @@ public class Resources {
          * @throws NotFoundException Throws NotFoundException if the given ID
          *         does not exist.
          */
-        @RavenwoodThrow(blockedBy = Drawable.class)
         public Drawable getDrawable(@DrawableRes int id) throws NotFoundException {
             return Resources.this.getDrawable(id, this);
         }

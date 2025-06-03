@@ -48,7 +48,6 @@ import android.os.LocaleList;
 import android.os.ParcelFileDescriptor;
 import android.os.Trace;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
-import android.ravenwood.annotation.RavenwoodThrow;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -782,7 +781,6 @@ public class ResourcesImpl {
     }
 
     @Nullable
-    @RavenwoodThrow(blockedBy = Drawable.class)
     Drawable loadDrawable(@NonNull Resources wrapper, @NonNull TypedValue value, int id,
             int density, @Nullable Resources.Theme theme)
             throws NotFoundException {
