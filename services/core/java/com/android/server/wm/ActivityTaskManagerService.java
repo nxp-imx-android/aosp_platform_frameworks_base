@@ -1947,6 +1947,25 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return mAmInternal.getActivityInfoForUser(aInfo, userId);
     }
 
+    /**
+     * Checks if a task opened on the display with the given ID can be repositioned on screen using
+     * the {@link android.app.ActivityManager.AppTask#moveTaskTo} method.
+     * <p>
+     * This method does not guarantee that a subsequent call to reposition a task on the given
+     * display will succeed. Instead, it indicates whether the given display's windowing mode
+     * configuration allows for handling repositioning requests.
+     *
+     * @param displayId Target display ID
+     * @return Whether the windowing mode active on display with given ID allows task repositioning
+     */
+    public boolean isTaskMoveAllowedOnDisplay(int displayId) {
+        if (checkCallingPermission(Manifest.permission.REPOSITION_SELF_WINDOWS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        return mRootWindowContainer.isTaskMoveAllowedOnDisplay(displayId);
+    }
+
     @Override
     public IActivityClientController getActivityClientController() {
         return mActivityClientController;

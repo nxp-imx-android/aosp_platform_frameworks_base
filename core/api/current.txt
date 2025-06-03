@@ -4822,6 +4822,7 @@ package android.app {
     method public boolean isLowRamDevice();
     method @Deprecated public static boolean isRunningInTestHarness();
     method public static boolean isRunningInUserTestHarness();
+    method @FlaggedApi("com.android.window.flags.enable_window_repositioning_api") public boolean isTaskMoveAllowedOnDisplay(int);
     method public static boolean isUserAMonkey();
     method @RequiresPermission(android.Manifest.permission.KILL_BACKGROUND_PROCESSES) public void killBackgroundProcesses(String);
     method @RequiresPermission(android.Manifest.permission.REORDER_TASKS) public void moveTaskToFront(int, int);

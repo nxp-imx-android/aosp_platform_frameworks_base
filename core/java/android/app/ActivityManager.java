@@ -3185,6 +3185,30 @@ public class ActivityManager {
     }
 
     /**
+     * Checks if a task opened on the display with the given ID can be repositioned on screen using
+     * the {@link android.app.ActivityManager.AppTask#moveTaskTo} method.
+     * <p>
+     * This method does not guarantee that a subsequent call to reposition a task on the given
+     * display will succeed. Instead, it indicates whether the given display's windowing mode
+     * configuration allows for handling repositioning requests.
+     * <p>
+     * Apps without the {@link android.Manifest.permission#REPOSITION_SELF_WINDOWS} permission are
+     * not allowed to move tasks and this method will always return {@code false} for such apps.
+     *
+     * @param displayId Target display ID
+     * @return Whether the windowing mode active on display with given ID allows task repositioning
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @SuppressLint("RequiresPermission")
+    public boolean isTaskMoveAllowedOnDisplay(int displayId) {
+        try {
+            return getTaskService().isTaskMoveAllowedOnDisplay(displayId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Information you can retrieve about a particular Service that is
      * currently running in the system.
      */
