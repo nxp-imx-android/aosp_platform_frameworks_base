@@ -15043,6 +15043,37 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 r.getSbn().getId(), r.getSbn().getTag(), r, false, false)).isTrue();
     }
 
+    @Test
+    public void checkAutogroupSummaryExemptFromLimit() throws Exception {
+        // Add maximum number of notifications per package
+        for (int i = 0; i < NotificationManagerService.MAX_PACKAGE_NOTIFICATIONS; i++) {
+            Notification n = new Notification.Builder(mContext, "").build();
+            StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, i, null, mUid, 0,
+                    n, UserHandle.getUserHandleForUid(mUid), null, 0);
+            NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+            mService.addNotification(r);
+        }
+
+        // Check that next regular summary notification is diqualified from enqueueing
+        StatusBarNotification sbn = generateSbn(mPkg, mUid, 0, UserHandle.getUserId(mUid));
+        sbn.getNotification().flags |= FLAG_GROUP_SUMMARY;
+        NotificationRecord summary = new NotificationRecord(mContext, sbn,
+                mTestNotificationChannel);
+
+        assertThat(mService.checkDisqualifyingFeatures(summary.getUserId(), summary.getUid(),
+                summary.getSbn().getId(), summary.getSbn().getTag(), summary, true,
+                false)).isFalse();
+
+        // Check that next autogroup summary notification is exempt from checkDisqualifyingFeatures
+        sbn = generateSbn(mPkg, mUid, 0, UserHandle.getUserId(mUid));
+        sbn.getNotification().flags |= Notification.FLAG_AUTOGROUP_SUMMARY;
+        summary = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+
+        assertThat(mService.checkDisqualifyingFeatures(summary.getUserId(), summary.getUid(),
+                summary.getSbn().getId(), summary.getSbn().getTag(), summary, true,
+                false)).isTrue();
+    }
+
     private Notification createBigPictureNotification(boolean isBigPictureStyle, boolean hasImage,
             boolean isImageBitmap) {
         Notification.Builder builder = new Notification.Builder(mContext)

@@ -9333,8 +9333,9 @@ public class NotificationManagerService extends SystemService {
                 }
             }
 
-            // limit the number of non-fgs/uij outstanding notificationrecords an app can have
-            if (!n.isFgsOrUij()) {
+            // Limit the number of non-fgs/uij outstanding notificationrecords an app can have
+            // Do not count autogroup summaries
+            if (!n.isFgsOrUij() && !GroupHelper.isAggregatedGroup(r)) {
                 int count = getNotificationCount(pkg, userId, id, tag);
                 if (count >= MAX_PACKAGE_NOTIFICATIONS) {
                     mUsageStats.registerOverCountQuota(pkg);
