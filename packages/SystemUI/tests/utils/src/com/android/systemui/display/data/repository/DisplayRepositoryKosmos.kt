@@ -22,6 +22,7 @@ import android.view.Display
 import android.view.mockIWindowManager
 import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -30,7 +31,10 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.mockCommandQueue
+import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
+import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.util.mockito.mock
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
@@ -46,8 +50,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     displayStateInteractor: DisplayStateInteractor = this.displayStateInteractor,
     statusbarIconRefreshInteractorFromConstructor: StatusBarIconRefreshInteractor =
         this.statusBarIconRefreshInteractor,
-): SystemUIDisplaySubcomponent {
-    return object : SystemUIDisplaySubcomponent {
+): SystemUIPhoneDisplaySubcomponent {
+    return object : SystemUIPhoneDisplaySubcomponent {
+
         override val displayCoroutineScope: CoroutineScope
             get() = coroutineScope
 
@@ -62,6 +67,12 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val lifecycleListeners: Set<SystemUIDisplaySubcomponent.LifecycleListener> =
             sysUiDefaultDisplaySubcomponentLifecycleListeners
+
+        override val homeStatusBarComponentFactory: HomeStatusBarComponent.Factory
+            get() = mock<HomeStatusBarComponent.Factory>()
+
+        override val statusBarFragmentProvider: Provider<CollapsedStatusBarFragment>
+            get() = Provider<CollapsedStatusBarFragment> { mock<CollapsedStatusBarFragment>() }
     }
 }
 
@@ -79,6 +90,12 @@ val Kosmos.fakeSysuiDisplayComponentFactory by Fixture {
 
 val Kosmos.displaySubcomponentPerDisplayRepository by Fixture {
     FakePerDisplayRepository<SystemUIDisplaySubcomponent>().apply {
+        add(Display.DEFAULT_DISPLAY, sysuiDefaultDisplaySubcomponent)
+    }
+}
+
+val Kosmos.displayPhoneSubcomponentPerDisplayRepository by Fixture {
+    FakePerDisplayRepository<SystemUIPhoneDisplaySubcomponent>().apply {
         add(Display.DEFAULT_DISPLAY, sysuiDefaultDisplaySubcomponent)
     }
 }

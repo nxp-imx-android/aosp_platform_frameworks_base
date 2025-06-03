@@ -19,7 +19,6 @@ package com.android.systemui.display.dagger
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
-import com.android.systemui.statusbar.dagger.StatusBarPerDisplayModule
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import dagger.BindsInstance
 import dagger.Subcomponent
@@ -37,7 +36,7 @@ import kotlinx.coroutines.CoroutineScope
  * thread is not feasible as it would cause jank.
  */
 @PerDisplaySingleton
-@Subcomponent(modules = [PerDisplayCommonModule::class, StatusBarPerDisplayModule::class])
+@Subcomponent(modules = [PerDisplayCommonModule::class])
 interface SystemUIDisplaySubcomponent {
 
     @get:DisplayAware val displayCoroutineScope: CoroutineScope
