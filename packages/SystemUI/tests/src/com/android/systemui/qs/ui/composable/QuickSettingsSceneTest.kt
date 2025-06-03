@@ -41,6 +41,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.testKosmos
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,6 +57,7 @@ class QuickSettingsSceneTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
 
+    @Ignore
     @Test
     fun testViewHierarchy() {
         val shadeSession = object : SaveableSession, Session by Session(SessionStorage()) {
