@@ -90,6 +90,27 @@ public abstract class PowerManagerInternal {
     }
 
     /**
+     * Converts wakelock flags into strings.
+     * @param flags wakelock flags to convert to string
+     * @return Readable string of wakelock value.
+     */
+    @SuppressWarnings("deprecation")
+    public static String getLockLevelString(int flags) {
+        return switch (flags & PowerManager.WAKE_LOCK_LEVEL_MASK) {
+            case PowerManager.FULL_WAKE_LOCK -> "FULL_WAKE_LOCK";
+            case PowerManager.SCREEN_BRIGHT_WAKE_LOCK -> "SCREEN_BRIGHT_WAKE_LOCK";
+            case PowerManager.SCREEN_DIM_WAKE_LOCK -> "SCREEN_DIM_WAKE_LOCK";
+            case PowerManager.PARTIAL_WAKE_LOCK -> "PARTIAL_WAKE_LOCK";
+            case PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK -> "PROXIMITY_SCREEN_OFF_WAKE_LOCK";
+            case PowerManager.DOZE_WAKE_LOCK -> "DOZE_WAKE_LOCK";
+            case PowerManager.DRAW_WAKE_LOCK -> "DRAW_WAKE_LOCK";
+            case PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK ->
+                    "SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK";
+            default -> "???";
+        };
+    }
+
+    /**
      * Returns true if the wakefulness state represents an interactive state
      * as defined by {@link android.os.PowerManager#isInteractive}.
      */
