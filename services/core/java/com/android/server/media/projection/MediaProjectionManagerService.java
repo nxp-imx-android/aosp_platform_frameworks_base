@@ -1218,7 +1218,7 @@ public final class MediaProjectionManagerService extends SystemService
                     mCountStarts++;
                     return;
                 }
-                if (Flags.startUidCheck() && validateCallingPackageName(mContext, packageName)) {
+                if (Flags.startUidCheck() && !validateCallingPackageName(mContext, packageName)) {
                     throw new SecurityException(
                             "This MediaProjection session was not granted to this application.");
                 }
