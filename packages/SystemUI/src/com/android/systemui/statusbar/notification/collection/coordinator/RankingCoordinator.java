@@ -66,9 +66,9 @@ public class RankingCoordinator implements Coordinator {
     private static final Map<String, Integer> BUNDLE_KEY_SORT_ORDER = new HashMap<>();
     static {
         BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.SOCIAL_MEDIA_ID, 1);
-        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.PROMOTIONS_ID, 2);
-        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.NEWS_ID, 3);
-        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.RECS_ID, 4);
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.NEWS_ID, 2);
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.RECS_ID, 3);
+        BUNDLE_KEY_SORT_ORDER.put(NotificationChannel.PROMOTIONS_ID, 4);
         BUNDLE_KEY_SORT_ORDER.put("debug_bundle", 99);
     }
 
