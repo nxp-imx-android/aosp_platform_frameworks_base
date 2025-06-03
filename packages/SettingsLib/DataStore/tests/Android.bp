@@ -11,6 +11,7 @@ android_robolectric_test {
     name: "SettingsLibDataStoreTest",
     srcs: ["src/**/*.kt"],
     static_libs: [
+        "Robolectric_all-target",
         "SettingsLibDataStore",
         "androidx.collection_collection-ktx",
         "androidx.core_core-ktx",
@@ -21,8 +22,8 @@ android_robolectric_test {
         "mockito-kotlin2",
     ],
     associates: ["SettingsLibDataStore"],
-    java_resource_dirs: ["config"],
-    instrumentation_for: "SettingsLibDataStoreShell",
     coverage_libs: ["SettingsLibDataStore"],
-    strict_mode: false,
+    instrumentation_for: "SettingsLibDataStoreShell",
+    java_resource_dirs: ["config"],
+    upstream: true,
 }

@@ -33,7 +33,6 @@ android_library {
         "SettingsLibSettingsTheme",
         "androidx.annotation_annotation",
         "androidx.preference_preference",
-        "guava",
     ],
     kotlincflags: ["-Xjvm-default=all"],
 }

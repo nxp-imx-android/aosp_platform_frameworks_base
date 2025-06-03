@@ -67,7 +67,9 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         val context = requireContext()
         visitPreferenceScreen(context) { preferenceScreenMetadata, coroutineScope ->
             val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
-            fun PreferenceHierarchyNode.visitRecursively(isParentAvailableOnCondition: Boolean) {
+            suspend fun PreferenceHierarchyNode.visitRecursively(
+                isParentAvailableOnCondition: Boolean
+            ) {
                 if (!metadata.isAvailable(context)) return
                 val isAvailableOnCondition =
                     isParentAvailableOnCondition || metadata.isAvailableOnCondition
@@ -80,7 +82,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                         .toRawColumnValues(context, preferenceScreenMetadata, screenTitle)
                         ?.let { cursor.addRow(it) }
                 }
-                (this as? PreferenceHierarchy)?.forEach {
+                (this as? PreferenceHierarchy)?.forEachAsync {
                     it.visitRecursively(isAvailableOnCondition)
                 }
             }
@@ -110,6 +112,8 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                         .toRawColumnValues(context, preferenceScreenMetadata, screenTitle)
                         ?.let { cursor.addRow(it) }
                 }
+                // forEachAsync is not used so as to ignore async nodes, which are treated as
+                // available on condition
                 (this as? PreferenceHierarchy)?.forEach { it.visitRecursively() }
             }
             preferenceScreenMetadata
@@ -126,12 +130,13 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
 
     private fun visitPreferenceScreen(
         context: Context,
-        action: (PreferenceScreenMetadata, CoroutineScope) -> Unit,
+        action: suspend (PreferenceScreenMetadata, CoroutineScope) -> Unit,
     ) = runBlocking {
         usePreferenceHierarchyScope {
-            PreferenceScreenRegistry.preferenceScreenMetadataFactories.forEach { _, factory ->
+            // TODO: support visiting screens concurrently and setting timeout for each screen
+            PreferenceScreenRegistry.preferenceScreenMetadataFactories.forEachAsync { _, factory ->
                 // parameterized screen is not supported as there is no way to provide arguments
-                if (factory is PreferenceScreenMetadataParameterizedFactory) return@forEach
+                if (factory is PreferenceScreenMetadataParameterizedFactory) return@forEachAsync
                 val preferenceScreenMetadata = factory.create(context)
                 if (
                     preferenceScreenMetadata.hasCompleteHierarchy() &&

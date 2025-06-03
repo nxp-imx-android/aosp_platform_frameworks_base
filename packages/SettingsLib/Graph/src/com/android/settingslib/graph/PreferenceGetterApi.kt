@@ -129,7 +129,7 @@ class PreferenceGetterApiHandler(
             }
             val nodes = mutableMapOf<String, PreferenceHierarchyNode?>()
             for (coordinate in coordinates) nodes[coordinate.key] = null
-            screenMetadata.getPreferenceHierarchy(application, this).forEachRecursively {
+            screenMetadata.getPreferenceHierarchy(application, this).forEachRecursivelyAsync {
                 val metadata = it.metadata
                 val key = metadata.key
                 if (nodes.containsKey(key)) nodes[key] = it
