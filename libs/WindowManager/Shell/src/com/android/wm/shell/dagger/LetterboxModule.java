@@ -18,7 +18,6 @@ package com.android.wm.shell.dagger;
 
 import android.annotation.NonNull;
 
-import com.android.wm.shell.common.transition.TransitionStateHolder;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy;
 import com.android.wm.shell.compatui.letterbox.MixedLetterboxController;
@@ -73,10 +72,9 @@ public abstract class LetterboxModule {
     @Provides
     static LetterboxLifecycleController provideLetterboxLifecycleController(
             @NonNull MixedLetterboxController letterboxController,
-            @NonNull TransitionStateHolder transitionStateHolder,
             @NonNull LetterboxControllerStrategy letterboxControllerStrategy
     ) {
-        return new LetterboxLifecycleControllerImpl(letterboxController, transitionStateHolder,
+        return new LetterboxLifecycleControllerImpl(letterboxController,
                 letterboxControllerStrategy);
     }
 }
