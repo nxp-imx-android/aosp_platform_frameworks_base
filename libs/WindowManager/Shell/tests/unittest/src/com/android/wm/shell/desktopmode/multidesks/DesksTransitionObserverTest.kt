@@ -690,7 +690,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
     fun independentDeskTransition_deskToBack_deactivatesSkippingReorder() =
         testScope.runTest {
             val deskId = 5
@@ -703,6 +706,11 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition = Binder(),
                 info =
                     buildTransitionInfo()
+                        .addHomeChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        )
                         .addDeskChange(
                             deskId = deskId,
                             mode = TRANSIT_TO_BACK,
@@ -721,7 +729,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
     fun independentDeskTransition_deskToBack_userSwitch_deactivatesKeepingRepoActive() =
         testScope.runTest {
             val deskId = 5
@@ -735,6 +746,11 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition = Binder(),
                 info =
                     buildTransitionInfo()
+                        .addHomeChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = newUserRepository.userId,
+                            displayId = displayId,
+                        )
                         .addDeskChange(
                             deskId = deskId,
                             mode = TRANSIT_TO_BACK,
@@ -755,6 +771,37 @@ class DesksTransitionObserverTest : ShellTestCase() {
             // However, it should remain active (in the old user's repo) to allow restoring to it
             // when switching back.
             assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
+    fun independentDeskTransition_deskToBackWithNothingInFront_keepsDeskActive() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_BACK,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            verify(mockDesksOrganizer, never())
+                .deactivateDesk(any(), deskId = eq(5), skipReorder = any())
+            assertThat(repository.getActiveDeskId(displayId)).isEqualTo(deskId)
         }
 
     @Test
