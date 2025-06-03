@@ -925,6 +925,32 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testSwitchUser_settingValueIsDisabled_shouldNotMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putIntForUser(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 0, 1);
+
+        mWm.setCurrentUser(1);
+
+        assertFalse(mWm.isMagnifyImeEnabled());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility
+            .Flags.FLAG_ENABLE_MAGNIFICATION_MAGNIFY_NAV_BAR_AND_IME)
+    public void testSwitchUser_settingValueIsEnabled_shouldMagnify() {
+        final ContentResolver cr = useFakeSettingsProvider();
+        Settings.Secure.putIntForUser(cr,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MAGNIFY_NAV_AND_IME, 1, 2);
+
+        mWm.setCurrentUser(2);
+
+        assertTrue(mWm.isMagnifyImeEnabled());
+    }
+
+    @Test
     public void testCompatOverrideScale() {
         final float overrideScale = 2; // 0.5x on client side.
         final CompatModePackages cmp = mWm.mAtmService.mCompatModePackages;
