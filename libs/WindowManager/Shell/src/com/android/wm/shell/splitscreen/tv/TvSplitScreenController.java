@@ -103,7 +103,8 @@ public class TvSplitScreenController extends SplitScreenController {
                 syncQueue, rootTDAOrganizer, displayController, displayImeController,
                 displayInsetsController, null, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, Optional.empty(),
-                Optional.empty(), null /* stageCoordinator */, multiInstanceHelper, splitState,
+                Optional.empty(), Optional.empty(), null /* stageCoordinator */,
+                multiInstanceHelper, splitState,
                 mainExecutor, mainHandler, rootDisplayAreaOrganizer, desktopState,
                 activityTaskManager, msdlPlayer);
 

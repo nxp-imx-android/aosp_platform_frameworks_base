@@ -155,7 +155,9 @@ import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.common.split.SplitWindowManager;
+import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
+import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
@@ -245,6 +247,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private final LaunchAdjacentController mLaunchAdjacentController;
     private final Optional<WindowDecorViewModel> mWindowDecorViewModel;
     private final Optional<DesktopTasksController> mDesktopTasksController;
+    private final Optional<DesktopUserRepositories> mDesktopUserRepositories;
     /** Singleton source of truth for the current state of split screen on this device. */
     private final SplitState mSplitState;
     private final SplitStatusBarHider mStatusBarHider;
@@ -395,6 +398,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
@@ -411,6 +415,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mWindowDecorViewModel = windowDecorViewModel;
         mSplitState = splitState;
         mDesktopTasksController = desktopTasksController;
+        mDesktopUserRepositories = desktopUserRepositories;
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
@@ -491,6 +496,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
@@ -517,6 +523,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mWindowDecorViewModel = windowDecorViewModel;
         mSplitState = splitState;
         mDesktopTasksController = desktopTasksController;
+        mDesktopUserRepositories = desktopUserRepositories;
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
@@ -982,7 +989,18 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
         if (enableFullScreenWindowOnRemovingSplitScreenStageBugfix() && taskInfo != null
                 && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
+            RunningTaskInfo task = mTaskOrganizer.getRunningTaskInfo(taskId);
             prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                // TODO: b/422176395 - Use options#setReparentLeafTaskToTda instead once it can work
+                // with wct#startTask.
+                DesktopRepository currentDesktopRepo = mDesktopUserRepositories.map(
+                        DesktopUserRepositories::getCurrent).orElse(
+                        null);
+                if (currentDesktopRepo != null && currentDesktopRepo.isActiveTask(taskId)) {
+                    wct.reparent(task.getToken(), null, true);
+                }
+            }
         }
         wct.startTask(taskId, outOptions[0]);
         mSplitTransitions.startFullscreenTransition(wct, remoteTransition);
@@ -2071,6 +2089,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             int targetWindowingMode) {
         ActivityOptions options = ActivityOptions.fromBundle(opts);
         options.setLaunchWindowingMode(targetWindowingMode);
+        // We are trying to move to fullscreen, reparent the task to tda to prevent it from being
+        // launched in a previously existing root task.
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                && targetWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+            options.setReparentLeafTaskToTda(true);
+        }
         opts.putAll(options.toBundle());
         addActivityOptions(opts, launchTarget);
     }

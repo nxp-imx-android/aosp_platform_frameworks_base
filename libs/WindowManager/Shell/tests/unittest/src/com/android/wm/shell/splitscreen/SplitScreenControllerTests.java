@@ -150,6 +150,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 mDisplayInsetsController, mDragAndDropController, mTransitions, mTransactionPool,
                 mIconProvider, Optional.of(mRecentTasks), mLaunchAdjacentController,
                 Optional.of(mWindowDecorViewModel), Optional.of(mDesktopTasksController),
+                Optional.empty(),
                 mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
                 mRootDisplayAreaOrganizer, mDesktopState, activityTaskManager, mMSDLPlayer));
     }
