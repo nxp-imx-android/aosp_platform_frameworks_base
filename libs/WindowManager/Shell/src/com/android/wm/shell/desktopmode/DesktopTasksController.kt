@@ -370,6 +370,7 @@ class DesktopTasksController(
     /** Setter to handle snap events */
     fun setSnapEventHandler(handler: SnapEventHandler) {
         snapEventHandler = handler
+        desktopTasksLimiter.ifPresent { it.snapEventHandler = snapEventHandler }
     }
 
     /** Returns the transition type for the given remote transition. */

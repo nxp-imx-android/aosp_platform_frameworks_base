@@ -53,6 +53,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.CoroutineScope
@@ -99,6 +100,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     @Mock lateinit var userManager: UserManager
     @Mock lateinit var shellController: ShellController
     @Mock lateinit var desktopMixedTransitionHandler: DesktopMixedTransitionHandler
+    @Mock lateinit var snapEventHandler: SnapEventHandler
 
     private lateinit var desktopTasksLimiter: DesktopTasksLimiter
     private lateinit var userRepositories: DesktopUserRepositories
@@ -136,6 +138,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 desktopMixedTransitionHandler,
                 MAX_TASK_LIMIT,
             )
+        desktopTasksLimiter.snapEventHandler = snapEventHandler
     }
 
     @After
@@ -722,6 +725,8 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         verify(desktopMixedTransitionHandler).startTaskLimitMinimizeTransition(any(), any())
         assertThat(desktopTasksLimiter.getMinimizingTask(minimizeTransition)?.taskId)
             .isEqualTo(existingTasks.first().taskId)
+        verify(snapEventHandler)
+            .removeTaskIfTiled(existingTasks.first().displayId, existingTasks.first().taskId)
     }
 
     @Test
