@@ -41,6 +41,7 @@
 #define USB_STATE_MAX_LEN 20
 #define FFS_VENDOR_CTRL_REQUEST_EP0 "/dev/usb-ffs/ctrl/ep0"
 
+#define FFS_ACCESSORY_EP0 "/dev/usb-ffs/aoa/ep0"
 
 namespace {
 struct func_desc {
@@ -176,7 +177,6 @@ const struct desc_v2 ctrl_desc = {
 };
 
 #define CTRL_INTERFACE_STR "Android Control Interface"
-
 struct ctrl_functionfs_lang {
     __le16 code;
     char str1[sizeof(CTRL_INTERFACE_STR)];
@@ -201,6 +201,50 @@ const struct ctrl_functionfs_strings ctrl_strings = {
                         .str1 = CTRL_INTERFACE_STR,
                 },
 };
+
+const struct desc_v2 acc_desc = {
+    .header =
+            {
+                    .magic = htole32(FUNCTIONFS_DESCRIPTORS_MAGIC_V2),
+                    .length = htole32(sizeof(acc_desc)),
+                    .flags = FUNCTIONFS_HAS_FS_DESC | FUNCTIONFS_HAS_HS_DESC |
+                            FUNCTIONFS_HAS_SS_DESC,
+            },
+    .fs_count = 3,
+    .hs_count = 3,
+    .ss_count = 5,
+    .fs_descs = fs_descriptors,
+    .hs_descs = hs_descriptors,
+    .ss_descs = ss_descriptors,
+};
+
+#define ACC_INTERFACE_STR "Android Accessory Interface"
+struct acc_functionfs_lang {
+    __le16 code;
+    char str1[sizeof(ACC_INTERFACE_STR)];
+} __attribute__((packed));
+
+struct acc_functionfs_strings {
+    struct usb_functionfs_strings_head header;
+    struct acc_functionfs_lang lang0;
+} __attribute__((packed));
+
+const struct acc_functionfs_strings acc_strings = {
+        .header =
+                {
+                        .magic = htole32(FUNCTIONFS_STRINGS_MAGIC),
+                        .length = htole32(sizeof(acc_strings)),
+                        .str_count = htole32(1),
+                        .lang_count = htole32(1),
+                },
+        .lang0 =
+                {
+                        .code = htole16(0x0409),
+                        .str1 = ACC_INTERFACE_STR,
+                },
+};
+
+
 } // namespace
 
 namespace android
@@ -783,6 +827,31 @@ static jboolean android_server_UsbDeviceManager_startVendorControlRequestMonitor
     return JNI_TRUE;
 }
 
+static jboolean android_server_UsbDeviceManager_openAccessoryControl(JNIEnv * /* env */,
+                                                                     jobject /* thiz */) {
+    ALOGI("Writing descriptors to USB Accessory...");
+
+    int fd = TEMP_FAILURE_RETRY(open(FFS_ACCESSORY_EP0, O_RDWR));
+    if (fd < 0) {
+        ALOGE("Opening accessory ep0 failed: %d - %s", fd, strerror(errno));
+        return JNI_FALSE;
+    }
+    ssize_t ret = TEMP_FAILURE_RETRY(write(fd, &acc_desc, sizeof(acc_desc)));
+    if (ret < 0) {
+        ALOGE("Writing accessory desc failed: %d - %s", fd, strerror(errno));
+        close(fd);
+        return JNI_FALSE;
+    }
+    ret = TEMP_FAILURE_RETRY(write(fd, &acc_strings, sizeof(acc_strings)));
+    if (ret < 0) {
+        ALOGE("Writing accessory strings failed: %d - %s", fd, strerror(errno));
+        close(fd);
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
+}
+
 static jstring android_server_UsbDeviceManager_waitAndGetProperty(JNIEnv *env, jobject thiz,
                                                                   jstring jPropName) {
     ScopedUtfChars propName(env, jPropName);
@@ -808,6 +877,8 @@ static const JNINativeMethod method_table[] = {
          (void *)android_server_UsbDeviceManager_stopGadgetMonitor},
         {"nativeStartVendorControlRequestMonitor", "()Z",
          (void *)android_server_UsbDeviceManager_startVendorControlRequestMonitor},
+        {"nativeOpenAccessoryControl", "()Z",
+         (void *)android_server_UsbDeviceManager_openAccessoryControl},
         {"nativeWaitAndGetProperty", "(Ljava/lang/String;)Ljava/lang/String;",
          (void *)android_server_UsbDeviceManager_waitAndGetProperty},
 };

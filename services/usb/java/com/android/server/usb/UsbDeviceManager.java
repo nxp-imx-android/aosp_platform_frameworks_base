@@ -361,6 +361,12 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
         }
         mControlFds.put(UsbManager.FUNCTION_PTP, ptpFd);
 
+        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            if (!nativeOpenAccessoryControl()) {
+                Slog.e(TAG, "Failed to open control for accessory");
+            }
+        }
+
         if (mUsbGadgetHal == null) {
             /**
              * Initialze the legacy UsbHandler
@@ -2769,4 +2775,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private native void nativeStopGadgetMonitor();
 
     private native boolean nativeStartVendorControlRequestMonitor();
+
+    private native boolean nativeOpenAccessoryControl();
 }
