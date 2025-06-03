@@ -164,7 +164,7 @@ constructor(
                                                     EXTRA_AUTOFILL_ID
                                                 )
                                             val token = activityId?.token
-                                            Log.v(
+                                            Log.i(
                                                 TAG,
                                                 "Performing action: $activityId, $autofillId, " +
                                                     "$pendingIntent, $intent",
@@ -184,14 +184,14 @@ constructor(
                                         }
                                     },
                                     onPerformLongClick = {
-                                        Log.v(TAG, "AmbientCueRepositoryImpl: onPerformLongClick")
+                                        Log.i(TAG, "AmbientCueRepositoryImpl: onPerformLongClick")
                                         trace("performAmbientCueLongClick") {
                                             val pendingIntent =
                                                 chip.extras?.getParcelable<PendingIntent>(
                                                     EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT
                                                 )
                                             if (pendingIntent != null) {
-                                                Log.v(TAG, "Performing long click: $pendingIntent")
+                                                Log.i(TAG, "Performing long click: $pendingIntent")
                                                 launchPendingIntent(pendingIntent)
                                             }
                                         }
@@ -203,7 +203,7 @@ constructor(
                     if (DEBUG) {
                         Log.d(TAG, "SmartSpace OnTargetsAvailableListener $targets")
                     }
-                    Log.v(TAG, "SmartSpace actions $actions")
+                    Log.i(TAG, "SmartSpace actions $actions")
                     trySend(actions)
                 }
 
