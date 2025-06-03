@@ -92,7 +92,7 @@ constructor(
     val isBlurCurrentlySupported: StateFlow<Boolean> = repository.isBlurSupported
 
     /** Radius of blur to be applied on the window root view. */
-    val blurRadiusRequestedByShade: StateFlow<Int> = repository.blurRequestedByShade.asStateFlow()
+    val blurRadiusRequestedByShade: StateFlow<Float> = repository.blurRequestedByShade.asStateFlow()
 
     /** Scale factor to apply to content underneath blurs on the window root view. */
     val blurScaleRequestedByShade: StateFlow<Float> = repository.scaleRequestedByShade.asStateFlow()
@@ -121,7 +121,7 @@ constructor(
         if (communalInteractor.isCommunalBlurring.value) {
             return false
         }
-        repository.blurRequestedByShade.value = blurRadius
+        repository.blurRequestedByShade.value = blurRadius.toFloat()
         repository.scaleRequestedByShade.value = blurScale
         return true
     }
