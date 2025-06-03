@@ -22,22 +22,29 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyboard.shortcut.shared.model.Shortcut
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategory
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType
+import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperState
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutIcon
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutSubCategory
 import com.android.systemui.res.R
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class AppsShortcutCategoryRepository
 @Inject
-constructor(userVisibleAppsRepository: UserVisibleAppsRepository, context: Context) :
-    ShortcutCategoriesRepository {
+constructor(
+    userVisibleAppsRepository: UserVisibleAppsRepository,
+    context: Context,
+    stateRepository: ShortcutHelperStateRepository,
+) : ShortcutCategoriesRepository {
 
     override val categories: Flow<List<ShortcutCategory>> =
-        userVisibleAppsRepository.userVisibleApps.map { userVisibleApps ->
-            if (userVisibleApps.isEmpty()) {
+        stateRepository.state.combine(userVisibleAppsRepository.userVisibleApps) {
+            state,
+            userVisibleApps ->
+            if (state is ShortcutHelperState.Inactive || userVisibleApps.isEmpty()) {
                 emptyList()
             } else {
                 listOf(

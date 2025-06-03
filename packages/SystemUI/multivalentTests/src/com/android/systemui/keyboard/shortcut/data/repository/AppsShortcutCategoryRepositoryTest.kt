@@ -29,6 +29,7 @@ import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategory
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutIcon
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutSubCategory
+import com.android.systemui.keyboard.shortcut.shortcutHelperTestHelper
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
@@ -50,6 +51,7 @@ class AppsShortcutCategoryRepositoryTest : SysuiTestCase() {
     private val fakeLauncherApps = kosmos.fakeLauncherApps
     private val userTracker = kosmos.fakeUserTracker
     private val testScope = kosmos.testScope
+    private val helper = kosmos.shortcutHelperTestHelper
 
     @Before
     fun setup() {
@@ -76,6 +78,18 @@ class AppsShortcutCategoryRepositoryTest : SysuiTestCase() {
             ICON_RES_ID_2,
             TEST_PACKAGE_LABEL_2,
         )
+
+        helper.showFromActivity()
+    }
+
+    @Test
+    fun categories_emitsEmptyList_whenShortcutHelperIsInactive() {
+        testScope.runTest {
+            val categories by collectLastValue(repo.categories)
+            helper.hideFromActivity()
+
+            assertThat(categories).isEmpty()
+        }
     }
 
     @Test
