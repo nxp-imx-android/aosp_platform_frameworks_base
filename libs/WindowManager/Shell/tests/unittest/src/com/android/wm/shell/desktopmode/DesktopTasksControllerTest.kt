@@ -1344,7 +1344,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // Create new active desk and launch new task.
         taskRepository.addDesk(DEFAULT_DISPLAY, deskId = 2)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
-        val newDeskTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        val newDeskTask = createFullscreenTask(displayId = DEFAULT_DISPLAY)
         val wct = controller.handleRequest(Binder(), createTransition(newDeskTask))
 
         // New task should be cascaded independently of tasks in other desks.
@@ -5689,7 +5689,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskVisible(freeformTask)
 
         val task =
-            setUpFullscreenTask().apply {
+            createFullscreenTask().apply {
                 isActivityStackTransparent = true
                 isTopActivityNoDisplay = true
                 numActivities = 1
@@ -5711,7 +5711,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         markTaskVisible(freeformTask)
 
         val task =
-            setUpFullscreenTask().apply {
+            createFullscreenTask().apply {
                 isActivityStackTransparent = true
                 isTopActivityNoDisplay = true
                 numActivities = 1
@@ -5835,7 +5835,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val topTransparentTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
         taskRepository.setTopTransparentFullscreenTaskData(DEFAULT_DISPLAY, topTransparentTask)
 
-        val task = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        val task = createFullscreenTask(displayId = DEFAULT_DISPLAY)
 
         val result = controller.handleRequest(Binder(), createTransition(task))
         assertThat(result?.changes?.get(task.token.asBinder())?.windowingMode)
@@ -5931,7 +5931,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             context.resources.getString(com.android.internal.R.string.config_systemUi)
         val baseComponent = ComponentName(systemUIPackageName, /* cls= */ "")
         val task =
-            setUpFullscreenTask().apply {
+            createFullscreenTask().apply {
                 baseActivity = baseComponent
                 isTopActivityNoDisplay = true
             }
@@ -5956,7 +5956,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             context.resources.getString(com.android.internal.R.string.config_systemUi)
         val baseComponent = ComponentName(systemUIPackageName, /* cls= */ "")
         val task =
-            setUpFullscreenTask(displayId = DEFAULT_DISPLAY).apply {
+            createFullscreenTask(displayId = DEFAULT_DISPLAY).apply {
                 baseActivity = baseComponent
                 isTopActivityNoDisplay = true
             }
@@ -6715,6 +6715,16 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val result =
             controller.handleRequest(Binder(), createTransition(task1, type = TRANSIT_OPEN))
+
+        assertNull(result, "Should not handle request")
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX)
+    fun handleRequest_fullscreenTaskRelaunch_returnNull() {
+        val task = setUpFullscreenTask()
+
+        val result = controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_OPEN))
 
         assertNull(result, "Should not handle request")
     }
@@ -9546,7 +9556,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Test
     fun handleRequest_fullscreenLaunchToDesktop_attemptsImmersiveExit() {
         setUpFreeformTask()
-        val task = setUpFullscreenTask()
+        val task = createFullscreenTask()
         val binder = Binder()
 
         controller.handleRequest(binder, createTransition(task))
@@ -9674,7 +9684,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     fun shouldPlayDesktopAnimation_fullscreenEntersDesktop_plays() {
         // At least one freeform task to be in a desktop.
         val existingTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
-        val triggerTask = setUpFullscreenTask(displayId = DEFAULT_DISPLAY)
+        val triggerTask = createFullscreenTask(displayId = DEFAULT_DISPLAY)
         assertThat(controller.isAnyDeskActive(triggerTask.displayId)).isTrue()
         taskRepository.setTaskInFullImmersiveState(
             displayId = existingTask.displayId,
@@ -10509,6 +10519,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         enableUserFullscreenOverride: Boolean = false,
         enableSystemFullscreenOverride: Boolean = false,
         aspectRatioOverrideApplied: Boolean = false,
+        visible: Boolean = true,
     ): RunningTaskInfo {
         val task = createFullscreenTask(displayId)
         val activityInfo = ActivityInfo()
@@ -10557,6 +10568,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     appCompatTaskInfo.topActivityAppBounds.set(0, 0, 1600, 1200)
                 }
             }
+            isVisible = visible
         }
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         runningTasks.add(task)
@@ -10710,6 +10722,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             FlagsParameterization.allCombinationsOf(
                 Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
                 Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX,
+                Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
             )
     }
 }
