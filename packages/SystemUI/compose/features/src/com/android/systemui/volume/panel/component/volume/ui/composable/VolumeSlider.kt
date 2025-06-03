@@ -167,6 +167,7 @@ fun VolumeSlider(
                                             icon = {
                                                 Icon(
                                                     icon = icon,
+                                                    tint = null,
                                                     modifier =
                                                         Modifier.size(24.dp)
                                                             .testTag(
@@ -186,6 +187,7 @@ fun VolumeSlider(
                                             icon = {
                                                 Icon(
                                                     icon = icon,
+                                                    tint = null,
                                                     modifier =
                                                         Modifier.size(24.dp)
                                                             .testTag(
