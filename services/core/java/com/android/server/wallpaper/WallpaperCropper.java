@@ -16,7 +16,9 @@
 
 package com.android.server.wallpaper;
 
+import static android.app.Flags.fixWallpaperCropsOnRestore;
 import static android.app.WallpaperManager.ORIENTATION_LANDSCAPE;
+import static android.app.WallpaperManager.ORIENTATION_PORTRAIT;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
 import static android.app.WallpaperManager.getOrientation;
 import static android.app.WallpaperManager.getRotatedOrientation;
@@ -208,13 +210,19 @@ public class WallpaperCropper {
             return res;
         }
 
-
         // Case 5: if the device is a foldable, if we're looking for an unfolded orientation and
         // have the suggested crop of the relative folded orientation, reuse it by adding content.
         int foldedOrientation = defaultDisplayInfo.getFoldedOrientation(orientation);
         suggestedCrop = suggestedCrops.get(foldedOrientation);
+        // Exception: don't reuse the suggested crop for landscape if a portrait suggested crop
+        // exists. In that case we'd rather go to case 6 and use the portrait suggested crop. This
+        // is in order to have a consistent wallpaper position on both SQUARE_PORTRAIT and
+        // SQUARE_LANDSCAPE orientations.
+        boolean skip = fixWallpaperCropsOnRestore()
+                && foldedOrientation == ORIENTATION_LANDSCAPE
+                && suggestedCrops.contains(ORIENTATION_PORTRAIT);
         suggestedDisplaySize = defaultDisplayInfo.defaultDisplaySizes.get(foldedOrientation);
-        if (suggestedCrop != null) {
+        if (suggestedCrop != null && !skip) {
             // only keep the visible part (without parallax)
             Rect adjustedCrop = noParallax(suggestedCrop, suggestedDisplaySize, bitmapSize, rtl);
             return getAdjustedCrop(adjustedCrop, bitmapSize, displaySize, false, rtl, ADD);
