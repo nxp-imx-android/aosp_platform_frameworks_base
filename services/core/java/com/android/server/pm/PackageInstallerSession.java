@@ -1371,7 +1371,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Start binding to the verification service, if not bound already.
             mVerifierController.bindToVerifierServiceIfNeeded(mPm::snapshotComputer, userId);
             if (!TextUtils.isEmpty(params.appPackageName)) {
-                mVerifierController.notifyPackageNameAvailable(params.appPackageName);
+                mVerifierController.notifyPackageNameAvailable(params.appPackageName, userId);
             }
         }
     }
@@ -3209,7 +3209,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          */
         public void onTimeout() {
             // Always notify the verifier, regardless of the policy.
-            mVerifierController.notifyVerificationTimeout(sessionId);
+            mVerifierController.notifyVerificationTimeout(sessionId, userId);
             mHandler.post(() -> {
                 if (mCurrentVerificationPolicy.get() != VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
                     // Continue with the rest of the verification and installation.
@@ -6035,7 +6035,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Only notify for the cancellation if the verification request has not
             // been sent out, which happens right after commit() is called.
             mVerifierController.notifyVerificationCancelled(
-                    params.appPackageName);
+                    params.appPackageName, userId);
         }
     }
 
