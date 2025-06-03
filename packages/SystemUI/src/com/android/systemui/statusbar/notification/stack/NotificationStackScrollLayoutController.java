@@ -135,9 +135,7 @@ import com.android.systemui.statusbar.policy.ConfigurationController.Configurati
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.tuner.TunerService;
-import com.android.systemui.util.Compile;
 import com.android.systemui.util.settings.SecureSettings;
-import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -214,8 +212,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private final ActivityStarter mActivityStarter;
     private final SensitiveNotificationProtectionController
             mSensitiveNotificationProtectionController;
-
-    private final WallpaperInteractor mWallpaperInteractor;
 
     private View mLongPressedView;
 
@@ -835,7 +831,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             ActivityStarter activityStarter,
             SplitShadeStateController splitShadeStateController,
             SensitiveNotificationProtectionController sensitiveNotificationProtectionController,
-            WallpaperInteractor wallpaperInteractor,
             MagneticNotificationRowManager magneticNotificationRowManager,
             NotificationSectionsManager sectionsManager) {
         mView = view;
@@ -886,7 +881,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mDismissibilityProvider = dismissibilityProvider;
         mActivityStarter = activityStarter;
         mSensitiveNotificationProtectionController = sensitiveNotificationProtectionController;
-        mWallpaperInteractor = wallpaperInteractor;
         mView.passSplitShadeStateController(splitShadeStateController);
         mMagneticNotificationRowManager = magneticNotificationRowManager;
         mSectionsManager = sectionsManager;
@@ -991,8 +985,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 (changedRow, expanded) -> mView.onGroupExpandChanged(changedRow, expanded));
 
         mViewBinder.bindWhileAttached(mView, this);
-
-        mView.setWallpaperInteractor(mWallpaperInteractor);
     }
 
     private boolean isInVisibleLocation(NotificationEntry entry) {
