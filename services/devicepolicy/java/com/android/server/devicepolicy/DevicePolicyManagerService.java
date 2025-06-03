@@ -1688,39 +1688,31 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     // Used by DevicePolicyManagerServiceShellCommand
-    List<OwnerShellData> listAllOwners() {
+    void printAllOwners(PrintWriter pw) {
         Preconditions.checkCallAuthorization(
                 hasCallingOrSelfPermission(permission.MANAGE_DEVICE_ADMINS));
-        return mInjector.binderWithCleanCallingIdentity(() -> {
-            SparseArray<DevicePolicyData> userData;
-
-            // Gets the owners of "full users" first (device owner and profile owners)
-            List<OwnerShellData> owners = mOwners.listAllOwners();
-            synchronized (getLockObject()) {
-                for (int i = 0; i < owners.size(); i++) {
-                    OwnerShellData owner = owners.get(i);
-                    owner.isAffiliated = isUserAffiliatedWithDeviceLocked(owner.userId);
-                }
-                userData = mUserData;
+        synchronized (getLockObject()) {
+            if (getDeviceOwnerUserIdUncheckedLocked() != UserHandle.USER_NULL) {
+                pw.printf("User %d: admin=%s,DeviceOwner\n", getDeviceOwnerUserIdUncheckedLocked(),
+                        getDeviceOwnerAdminLocked().info.getComponent().flattenToShortString());
             }
-
-            // Then the owners of profile users (managed profiles)
-            for (int i = 0; i < userData.size(); i++) {
-                DevicePolicyData policyData = mUserData.valueAt(i);
-                int userId = userData.keyAt(i);
-                int parentUserId = mUserManagerInternal.getProfileParentId(userId);
-                boolean isProfile = parentUserId != userId;
-                if (!isProfile) continue;
-                for (int j = 0; j < policyData.mAdminList.size(); j++) {
-                    ActiveAdmin admin = policyData.mAdminList.get(j);
-                    OwnerShellData owner = OwnerShellData.forManagedProfileOwner(userId,
-                            parentUserId, admin.info.getComponent());
-                    owners.add(owner);
+            for (var userId : mOwners.getProfileOwnerKeys()) {
+                pw.printf("User %d: admin=%s,", userId, getProfileOwnerAdminLocked(userId).info
+                        .getComponent().flattenToShortString());
+                if (isManagedProfile(userId)) {
+                    pw.printf("ManagedProfileOwner(parentUserId=%d)", getProfileParentId(userId));
+                } else {
+                    pw.print("ProfileOwner");
                 }
+                if (isUserAffiliatedWithDeviceLocked(userId)) {
+                    pw.print(",Affiliated");
+                }
+                if (mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId)) {
+                    pw.print(",OrganizationOwnedDevice");
+                }
+                pw.println();
             }
-
-            return owners;
-        });
+        }
     }
 
     /**
