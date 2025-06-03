@@ -54,6 +54,7 @@ import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.navigationbar.NavigationModeController.ModeChangedListener
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
+import com.android.systemui.shared.system.taskStackChangeListeners
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.update
@@ -93,7 +94,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             dumpManager = dumpManager,
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
-            focusdDisplayRepository = kosmos.fakeFocusedDisplayRepository,
+            taskStackChangeListeners = kosmos.taskStackChangeListeners,
         )
 
     @Test
@@ -105,7 +106,9 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
 
-            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
             advanceTimeBy(DEBOUNCE_DELAY_MS)
             onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
             advanceUntilIdle()
@@ -197,8 +200,11 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
     fun globallyFocusedTaskId_whenFocusedTaskChange_taskIdUpdated() =
         kosmos.runTest {
             val globallyFocusedTaskId by collectLastValue(underTest.globallyFocusedTaskId)
+            runCurrent()
 
-            fakeFocusedDisplayRepository.setGlobalTask(RunningTaskInfo().apply { taskId = TASK_ID })
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
             advanceTimeBy(DEBOUNCE_DELAY_MS)
 
             assertThat(globallyFocusedTaskId).isEqualTo(TASK_ID)
