@@ -17,6 +17,7 @@
 package com.android.systemui.display.domain.interactor
 
 import android.content.applicationContext
+import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.kosmos.Kosmos
@@ -25,12 +26,18 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.util.mockito.mock
 import java.util.concurrent.Executor
 
-val Kosmos.displayStateInteractor by Fixture {
-    DisplayStateInteractorImpl(
+fun Kosmos.createDisplayStateInteractor(
+    stateRepository: DisplayStateRepository
+): DisplayStateInteractorImpl {
+    return DisplayStateInteractorImpl(
         displayScope = applicationCoroutineScope,
         context = applicationContext,
         mainExecutor = mock<Executor>(),
-        displayStateRepository = displayStateRepository,
+        displayStateRepository = stateRepository,
         displayRepository = displayRepository,
     )
+}
+
+val Kosmos.displayStateInteractor by Fixture {
+    createDisplayStateInteractor(displayStateRepository)
 }

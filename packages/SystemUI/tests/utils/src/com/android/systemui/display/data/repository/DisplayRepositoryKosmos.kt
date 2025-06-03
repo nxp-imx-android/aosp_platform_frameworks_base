@@ -23,6 +23,7 @@ import android.view.mockIWindowManager
 import com.android.app.displaylib.fakes.FakePerDisplayRepository
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
@@ -41,8 +42,8 @@ val Kosmos.sysUiDefaultDisplaySubcomponentLifecycleListeners by Fixture {
 
 fun Kosmos.createFakeDisplaySubcomponent(
     coroutineScope: CoroutineScope = testScope.backgroundScope,
-    displayStateRepository: DisplayStateRepository = mock<DisplayStateRepository>(),
-    displayStateInteractor: DisplayStateInteractor = mock<DisplayStateInteractor>(),
+    displayStateRepository: DisplayStateRepository = this.displayStateRepository,
+    displayStateInteractor: DisplayStateInteractor = this.displayStateInteractor,
     statusbarIconRefreshInteractorFromConstructor: StatusBarIconRefreshInteractor =
         this.statusBarIconRefreshInteractor,
 ): SystemUIDisplaySubcomponent {

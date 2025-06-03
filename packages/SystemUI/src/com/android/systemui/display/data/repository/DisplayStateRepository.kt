@@ -116,6 +116,7 @@ constructor(
                     ),
             )
 
+    // TODO: b/417956803 - This should use the configuration instead
     override val isLargeScreen: StateFlow<Boolean> =
         currentDisplayInfo
             .map {
@@ -125,6 +126,7 @@ constructor(
             }
             .stateIn(bgDisplayScope, started = SharingStarted.Eagerly, initialValue = false)
 
+    // TODO: b/417956803 - This should use the configuration instead
     override val isWideScreen: StateFlow<Boolean> =
         currentDisplayInfo
             .map { it.logicalWidth.toDpi() >= LARGE_SCREEN_MIN_DPS }
