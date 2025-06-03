@@ -45,6 +45,7 @@ import android.media.AudioDevicePort;
 import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.media.MediaRoute2Info;
+import android.media.RoutingSessionInfo;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.os.Looper;
 import android.os.UserHandle;
@@ -360,6 +361,28 @@ public class AudioManagerRouteControllerTest {
                                 .getName()
                                 .toString())
                 .isEqualTo(FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET.getProductName().toString());
+    }
+
+    @Test
+    public void getSessionReleaseType_returnTypeSharing() {
+        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
+                .thenReturn(
+                        List.of(
+                                createAudioDeviceAttribute(
+                                        AudioDeviceInfo.TYPE_BLE_BROADCAST, /* address= */ "")));
+        assertThat(mControllerUnderTest.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_TYPE_SHARING);
+    }
+
+    @Test
+    public void getSessionReleaseType_returnTypeUnsupported() {
+        when(mMockAudioManager.getDevicesForAttributes(ATTRIBUTES_MEDIA))
+                .thenReturn(
+                        List.of(
+                                createAudioDeviceAttribute(
+                                        AudioDeviceInfo.TYPE_WIRED_HEADSET, /* address= */ "")));
+        assertThat(mControllerUnderTest.getSessionReleaseType())
+                .isEqualTo(RoutingSessionInfo.RELEASE_UNSUPPORTED);
     }
 
     // Internal methods.
