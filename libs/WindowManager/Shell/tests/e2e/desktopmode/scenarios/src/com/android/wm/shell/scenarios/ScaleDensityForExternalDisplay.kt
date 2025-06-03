@@ -41,17 +41,9 @@ import org.junit.Rule
 import org.junit.Test
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
-
-const val FLAG_DISPLAY_SIZE_CONNECTED_DISPLAY_SETTING: String =
-    "com.android.settings.flags.display_size_connected_display_setting"
-const val FLAG_RESOLUTION_AND_ENABLE_CONNECTED_DISPLAY_SETTING =
-    "com.android.settings.flags.resolution_and_enable_connected_display_setting"
-
 @Ignore("Test Base Class")
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-    FLAG_DISPLAY_SIZE_CONNECTED_DISPLAY_SETTING,
-    FLAG_RESOLUTION_AND_ENABLE_CONNECTED_DISPLAY_SETTING
 )
 abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
 
