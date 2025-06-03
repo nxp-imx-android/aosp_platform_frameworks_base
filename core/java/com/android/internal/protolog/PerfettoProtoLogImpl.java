@@ -515,7 +515,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                         }
                     }
 
-                    throw new RuntimeException(sb.toString(), e);
+                    Log.wtf(LOG_TAG, sb.toString(), e);
                 }
             });
         }
