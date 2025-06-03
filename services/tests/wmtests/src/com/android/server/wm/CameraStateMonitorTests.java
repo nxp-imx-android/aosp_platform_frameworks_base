@@ -57,7 +57,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     @Test
     public void testOnCameraOpened_policyAdded_notifiesCameraOpened() {
         runTestScenario((robot) -> {
-            robot.addListenerThatCanClose();
+            robot.addPolicyThatCanClose();
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
             robot.checkCameraOpenedCalledForCanClosePolicy(1);
@@ -67,7 +67,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     @Test
     public void testOnCameraOpened_policyAdded_cameraRegistersAsOpenedDuringTheCallback() {
         runTestScenario((robot) -> {
-            robot.addListenerThatCanClose();
+            robot.addPolicyThatCanClose();
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
             robot.checkCameraRegisteresAsOpenedForCanClosePolicy(true);
@@ -77,7 +77,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     @Test
     public void testOnCameraOpened_cameraClosed_notifyCameraClosed() {
         runTestScenario((robot) -> {
-            robot.addListenerThatCanClose();
+            robot.addPolicyThatCanClose();
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
             robot.onCameraClosed(CAMERA_ID_1);
@@ -90,7 +90,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     @Test
     public void testOnCameraOpenedAndClosed_cameraRegistersAsClosedDuringTheCallback() {
         runTestScenario((robot) -> {
-            robot.addListenerThatCanClose();
+            robot.addPolicyThatCanClose();
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
             robot.onCameraClosed(CAMERA_ID_1);
@@ -102,7 +102,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     @Test
     public void testOnCameraOpened_policyCannotCloseYet_notifyCameraClosedAgain() {
         runTestScenario((robot) -> {
-            robot.addListenerThatCannotCloseOnce();
+            robot.addPolicyThatCannotCloseOnce();
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
             robot.onCameraClosed(CAMERA_ID_1);
@@ -115,7 +115,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     @Test
     public void testReconnectedToDifferentCamera_notifiesPolicy() {
         runTestScenario((robot) -> {
-            robot.addListenerThatCanClose();
+            robot.addPolicyThatCanClose();
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
             robot.onCameraClosed(CAMERA_ID_1);
             robot.onCameraOpened(CAMERA_ID_2, TEST_PACKAGE_1);
@@ -136,12 +136,12 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     private static class CameraStateMonitorRobotTests extends AppCompatRobotBase {
         private final WindowTestsBase mWindowTestsBase;
 
-        // Simulates a listener which will react to the change on a particular activity - for
+        // Simulates a policy which will react to the change on a particular activity - for
         // example put the activity in a camera compat mode.
-        private FakeCameraCompatStateListener mFakeListenerCanClose;
-        // Simulates a listener which for some reason cannot process `onCameraClosed` event once it
+        private FakeAppCompatCameraStatePolicy mFakePolicyCanClose;
+        // Simulates a policy which for some reason cannot process `onCameraClosed` event once it
         // first arrives - this means that the update needs to be postponed.
-        private FakeCameraCompatStateListener mFakeListenerCannotCloseOnce;
+        private FakeAppCompatCameraStatePolicy mFakePolicyCannotCloseOnce;
 
         private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
@@ -165,8 +165,8 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
                 spyOn(displayContent.mAppCompatCameraPolicy.mCameraCompatFreeformPolicy);
             }
 
-            mFakeListenerCannotCloseOnce = new FakeCameraCompatStateListener(true);
-            mFakeListenerCanClose = new FakeCameraCompatStateListener(false);
+            mFakePolicyCannotCloseOnce = new FakeAppCompatCameraStatePolicy(true);
+            mFakePolicyCanClose = new FakeAppCompatCameraStatePolicy(false);
         }
 
         @Override
@@ -227,12 +227,12 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
             });
         }
 
-        private void addListenerThatCanClose() {
-            getCameraStateMonitor().addCameraStateListener(mFakeListenerCanClose);
+        private void addPolicyThatCanClose() {
+            getAppCompatCameraStateSource().addCameraStatePolicy(mFakePolicyCanClose);
         }
 
-        private void addListenerThatCannotCloseOnce() {
-            getCameraStateMonitor().addCameraStateListener(mFakeListenerCannotCloseOnce);
+        private void addPolicyThatCannotCloseOnce() {
+            getAppCompatCameraStateSource().addCameraStatePolicy(mFakePolicyCannotCloseOnce);
         }
 
         private void onCameraOpened(@NonNull String cameraId, @NonNull String packageName) {
@@ -251,23 +251,23 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         }
 
         private void checkCameraOpenedCalledForCanClosePolicy(int times) {
-            assertEquals(times, mFakeListenerCanClose.mOnCameraOpenedCounter);
+            assertEquals(times, mFakePolicyCanClose.mOnCameraOpenedCounter);
         }
 
         private void checkCanCloseCalledForCanClosePolicy(int times) {
-            assertEquals(times, mFakeListenerCanClose.mCheckCanCloseCounter);
+            assertEquals(times, mFakePolicyCanClose.mCheckCanCloseCounter);
         }
 
         private void checkCanCloseCalledForCannotCloseOncePolicy(int times) {
-            assertEquals(times, mFakeListenerCannotCloseOnce.mCheckCanCloseCounter);
+            assertEquals(times, mFakePolicyCannotCloseOnce.mCheckCanCloseCounter);
         }
 
         private void checkCameraClosedCalledForCanClosePolicy(int times) {
-            assertEquals(times, mFakeListenerCanClose.mOnCameraClosedCounter);
+            assertEquals(times, mFakePolicyCanClose.mOnCameraClosedCounter);
         }
 
         private void checkCameraClosedCalledForCannotCloseOncePolicy(int times) {
-            assertEquals(times, mFakeListenerCannotCloseOnce.mOnCameraClosedCounter);
+            assertEquals(times, mFakePolicyCannotCloseOnce.mOnCameraClosedCounter);
         }
 
         private void waitHandlerIdle() {
@@ -276,6 +276,11 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
 
         private CameraStateMonitor getCameraStateMonitor() {
             return activity().top().mDisplayContent.mAppCompatCameraPolicy.mCameraStateMonitor;
+        }
+
+        private AppCompatCameraStateSource getAppCompatCameraStateSource() {
+            return ((AppCompatCameraStateSource) getCameraStateMonitor()
+                    .mAppCompatCameraStatePolicy);
         }
     }
 }

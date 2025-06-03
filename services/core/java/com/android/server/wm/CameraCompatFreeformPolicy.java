@@ -58,7 +58,7 @@ import com.android.internal.protolog.WmProtoLogGroups;
  * changes to the camera and display orientation signals to match those expected on a portrait
  * device in that orientation (for example, on a standard phone).
  */
-final class CameraCompatFreeformPolicy implements CameraStateMonitor.CameraCompatStateListener,
+final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
         ActivityRefresher.Evaluator {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "CameraCompatFreeformPolicy" : TAG_WM;
 
@@ -66,6 +66,8 @@ final class CameraCompatFreeformPolicy implements CameraStateMonitor.CameraCompa
     private final DisplayContent mDisplayContent;
     @NonNull
     private final ActivityRefresher mActivityRefresher;
+    @NonNull
+    private final AppCompatCameraStateSource mCameraStateNotifier;
     @NonNull
     private final CameraStateMonitor mCameraStateMonitor;
 
@@ -82,14 +84,16 @@ final class CameraCompatFreeformPolicy implements CameraStateMonitor.CameraCompa
 
     CameraCompatFreeformPolicy(@NonNull DisplayContent displayContent,
             @NonNull CameraStateMonitor cameraStateMonitor,
+            @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
         mDisplayContent = displayContent;
         mCameraStateMonitor = cameraStateMonitor;
+        mCameraStateNotifier = cameraStateNotifier;
         mActivityRefresher = activityRefresher;
     }
 
     void start() {
-        mCameraStateMonitor.addCameraStateListener(this);
+        mCameraStateNotifier.addCameraStatePolicy(this);
         mActivityRefresher.addEvaluator(this);
         mIsRunning = true;
     }
@@ -101,7 +105,7 @@ final class CameraCompatFreeformPolicy implements CameraStateMonitor.CameraCompa
 
     /** Releases camera callback listener. */
     void dispose() {
-        mCameraStateMonitor.removeCameraStateListener(this);
+        mCameraStateNotifier.removeCameraStatePolicy(this);
         mActivityRefresher.removeEvaluator(this);
         mIsRunning = false;
     }
