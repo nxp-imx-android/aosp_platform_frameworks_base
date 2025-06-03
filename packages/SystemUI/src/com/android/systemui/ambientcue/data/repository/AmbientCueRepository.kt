@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.data.repository
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager
 import android.app.BroadcastOptions
@@ -38,12 +39,13 @@ import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.shared.system.QuickStepContract
+import com.android.systemui.shared.system.TaskStackChangeListener
+import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.io.PrintWriter
 import java.util.concurrent.Executor
@@ -101,8 +103,8 @@ constructor(
     dumpManager: DumpManager,
     @Background executor: Executor,
     @Application applicationContext: Context,
-    focusdDisplayRepository: FocusedDisplayRepository,
     launcherProxyService: LauncherProxyService,
+    private val taskStackChangeListeners: TaskStackChangeListeners,
 ) : AmbientCueRepository, Dumpable {
 
     init {
@@ -263,8 +265,17 @@ constructor(
 
     @OptIn(FlowPreview::class)
     override val globallyFocusedTaskId: StateFlow<Int> =
-        focusdDisplayRepository.globallyFocusedTask
-            .map { it?.taskId ?: INVALID_TASK_ID }
+        conflatedCallbackFlow {
+                val taskListener =
+                    object : TaskStackChangeListener {
+                        override fun onTaskMovedToFront(runningTaskInfo: RunningTaskInfo) {
+                            trySend(runningTaskInfo.taskId)
+                        }
+                    }
+
+                taskStackChangeListeners.registerTaskStackListener(taskListener)
+                awaitClose { taskStackChangeListeners.unregisterTaskStackListener(taskListener) }
+            }
             .distinctUntilChanged()
             // Filter out focused task quick change. For example, when user clicks ambient cue, the
             // click event will also be sent to NavBar, so it will cause a quick change of focused
