@@ -1391,6 +1391,16 @@ flag {
 }
 
 flag {
+    name: "skip_deactivation_of_desk_with_nothing_in_front"
+    namespace: "lse_desktop_experience"
+    description: "Keep the desk active on TO_BACK transitions without nothing else in front"
+    bug: "421124396"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "skip_decor_view_relayout_when_closing_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to skip DecorView relayout when the corresponding window is closing."
