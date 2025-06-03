@@ -31,6 +31,7 @@ import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
@@ -131,6 +132,14 @@ class TaskBroadcaster
         } else {
             Slog.w(TAG, "Could not find RunningTaskInfo for taskId: " + taskId);
         }
+    }
+
+    @Override
+    public void onTaskRemoved(int taskId) throws RemoteException {
+        Slog.v(TAG, "onTaskRemoved: taskId=" + taskId);
+
+        RemoteTaskRemovedMessage taskRemovedMessage = new RemoteTaskRemovedMessage(taskId);
+        sendMessageToAllConnectedAssociations(taskRemovedMessage);
     }
 
     private void sendDeviceConnectedMessage(int associationId) {

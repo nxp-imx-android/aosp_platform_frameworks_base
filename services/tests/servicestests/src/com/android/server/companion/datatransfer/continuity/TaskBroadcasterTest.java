@@ -47,6 +47,8 @@ import com.android.server.companion.datatransfer.continuity.connectivity.Connect
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -211,5 +213,31 @@ public class TaskBroadcasterTest {
         RemoteTaskAddedMessage remoteTaskAddedMessage =
                 (RemoteTaskAddedMessage) taskContinuityMessage.getData();
         assertThat(remoteTaskAddedMessage.getTask().getId()).isEqualTo(taskId);
+    }
+
+        @Test
+    public void testOnTaskRemoved_sendsMessageToAllAssociations() throws Exception {
+        // Start broadcasting.
+        int taskId = 123;
+        mTaskBroadcaster.startBroadcasting();
+        verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
+        AssociationInfo associationInfo = createAssociationInfo(1, "name1");
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+            .thenReturn(Arrays.asList(associationInfo));
+
+        mTaskBroadcaster.onTaskRemoved(taskId);
+
+        // Verify sendMessage is called
+        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+                eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+                messageCaptor.capture(),
+                any(int[].class));
+        byte[] capturedMessage = messageCaptor.getValue();
+        TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(capturedMessage);
+        assertThat(taskContinuityMessage.getData()).isInstanceOf(RemoteTaskRemovedMessage.class);
+        RemoteTaskRemovedMessage remoteTaskRemovedMessage =
+                (RemoteTaskRemovedMessage) taskContinuityMessage.getData();
+        assertThat(remoteTaskRemovedMessage.taskId()).isEqualTo(taskId);
     }
 }
