@@ -108,6 +108,80 @@ public class DisplayInfoTest {
         assertFalse(displayInfo1.equals(displayInfo2));
     }
 
+    @Test
+    public void testResolutionChange_makesDisplayInfosDifferent() {
+        var modes = new Display.Mode[] {
+            new Display.Mode(/*modeId=*/1, /*width=*/1024, /*height=*/768, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/2, /*width=*/1024, /*height=*/768, /*refreshRate=*/120),
+            new Display.Mode(/*modeId=*/3, /*width=*/800, /*height=*/600, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/4, /*width=*/800, /*height=*/600, /*refreshRate=*/120)
+        };
+        DisplayInfo displayInfo1 = new DisplayInfo();
+        setSupportedModes(displayInfo1, modes, 1);
+
+        DisplayInfo displayInfo2 = new DisplayInfo();
+        setSupportedModes(displayInfo2, modes, 3);
+
+        assertFalse(displayInfo1.equals(displayInfo2, /* compareOnlyBasicChanges= */ true));
+    }
+
+    @Test
+    public void testNoResolutionChange_keepsDisplayInfosEqual() {
+        var modes = new Display.Mode[] {
+            new Display.Mode(/*modeId=*/1, /*width=*/1024, /*height=*/768, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/2, /*width=*/1024, /*height=*/768, /*refreshRate=*/120),
+            new Display.Mode(/*modeId=*/3, /*width=*/800, /*height=*/600, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/4, /*width=*/800, /*height=*/600, /*refreshRate=*/120)
+        };
+        DisplayInfo displayInfo1 = new DisplayInfo();
+        setSupportedModes(displayInfo1, modes, 1);
+
+        DisplayInfo displayInfo2 = new DisplayInfo();
+        setSupportedModes(displayInfo2, modes, 2);
+
+        assertTrue(displayInfo1.equals(displayInfo2, /* compareOnlyBasicChanges= */ true));
+    }
+
+    @Test
+    public void testOneModeNotFound_makesDisplayInfosDifferent() {
+        var modes = new Display.Mode[] {
+            new Display.Mode(/*modeId=*/1, /*width=*/1024, /*height=*/768, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/2, /*width=*/1024, /*height=*/768, /*refreshRate=*/120),
+            new Display.Mode(/*modeId=*/3, /*width=*/800, /*height=*/600, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/4, /*width=*/800, /*height=*/600, /*refreshRate=*/120)
+        };
+        DisplayInfo displayInfo1 = new DisplayInfo();
+        setSupportedModes(displayInfo1, modes, 1);
+
+        DisplayInfo displayInfo2 = new DisplayInfo();
+        setSupportedModes(displayInfo2, modes, 0);
+
+        assertFalse(displayInfo1.equals(displayInfo2, /* compareOnlyBasicChanges= */ true));
+    }
+
+    @Test
+    public void testBothModesNotFound_makesDisplayInfosEqual() {
+        var modes = new Display.Mode[] {
+            new Display.Mode(/*modeId=*/1, /*width=*/1024, /*height=*/768, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/2, /*width=*/1024, /*height=*/768, /*refreshRate=*/120),
+            new Display.Mode(/*modeId=*/3, /*width=*/800, /*height=*/600, /*refreshRate=*/60),
+            new Display.Mode(/*modeId=*/4, /*width=*/800, /*height=*/600, /*refreshRate=*/120)
+        };
+        DisplayInfo displayInfo1 = new DisplayInfo();
+        setSupportedModes(displayInfo1, modes, 0);
+
+        DisplayInfo displayInfo2 = new DisplayInfo();
+        setSupportedModes(displayInfo2, modes, 0);
+
+        assertTrue(displayInfo1.equals(displayInfo2, /* compareOnlyBasicChanges= */ true));
+    }
+
+    private void setSupportedModes(DisplayInfo info, Display.Mode[] modes, int modeId) {
+        info.supportedModes = modes;
+        info.modeId = modeId;
+        info.refreshRateOverride = 90;
+    }
+
     private void setSupportedMode(DisplayInfo info, Display.Mode mode) {
         info.supportedModes = new Display.Mode[]{mode};
         info.modeId = mode.getModeId();
