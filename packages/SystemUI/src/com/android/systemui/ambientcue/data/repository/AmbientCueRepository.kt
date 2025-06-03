@@ -36,6 +36,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.ambientcue.shared.model.ActionModel
+import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -147,10 +148,13 @@ constructor(
                                 val actionType = chip.extras?.getString(EXTRA_ACTION_TYPE)
                                 ActionModel(
                                     icon =
-                                        chip.icon?.loadDrawable(applicationContext)
-                                            ?: applicationContext.getDrawable(
-                                                R.drawable.ic_paste_spark
-                                            )!!,
+                                        IconModel(
+                                            chip.icon?.loadDrawable(applicationContext)
+                                                ?: applicationContext.getDrawable(
+                                                    R.drawable.ic_paste_spark
+                                                )!!,
+                                            chip?.icon?.resPackage + "#" + chip?.icon?.resId,
+                                        ),
                                     label = title,
                                     attribution = chip.subtitle?.toString(),
                                     onPerformAction = {

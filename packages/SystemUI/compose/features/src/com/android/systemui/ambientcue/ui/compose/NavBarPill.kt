@@ -71,6 +71,7 @@ import androidx.compose.ui.util.lerp
 import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
+import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
@@ -197,7 +198,8 @@ fun NavBarPill(
                 ) {
                     // Should have at most 1 expanded chip
                     var expandedChip = false
-                    actions.fastForEachIndexed { index, action ->
+                    val filteredActions = FilterUtils.filterActions(actions)
+                    filteredActions.fastForEachIndexed { index, action ->
                         val isMrAction = action.actionType == ActionType.MR
 
                         // Pill rounded container
@@ -219,9 +221,9 @@ fun NavBarPill(
                                         shape = CircleShape,
                                     )
                                 }
-                            if ((actions.size == 1 || isMrAction) && !expandedChip) {
+                            if ((filteredActions.size == 1 || isMrAction) && !expandedChip) {
                                 expandedChip = true
-                                val hasBackground = actions.size > 1
+                                val hasBackground = filteredActions.size > 1
                                 // Expanded chip for single action or MR
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -238,30 +240,33 @@ fun NavBarPill(
                                             .padding(4.dp),
                                 ) {
                                     Image(
-                                        painter = rememberDrawablePainter(action.icon),
+                                        painter = rememberDrawablePainter(action.icon.drawable),
                                         contentDescription = action.label,
                                         modifier =
                                             Modifier.size(16.dp).then(iconBorder).clip(CircleShape),
                                     )
-                                    Text(
-                                        text = action.label,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
-                                    )
+                                    if (!action.icon.repeated) {
+                                        Text(
+                                            text = action.label,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
+                                        )
+                                    }
                                 }
                             } else {
                                 // Smaller app icons
                                 Image(
-                                    painter = rememberDrawablePainter(action.icon),
+                                    painter = rememberDrawablePainter(action.icon.drawable),
                                     contentDescription = action.label,
                                     modifier =
                                         Modifier.then(
                                                 when (index) {
                                                     0 -> Modifier.padding(start = 5.dp)
-                                                    actions.size - 1 -> Modifier.padding(end = 5.dp)
+                                                    filteredActions.size - 1 ->
+                                                        Modifier.padding(end = 5.dp)
                                                     else -> Modifier
                                                 }
                                             )

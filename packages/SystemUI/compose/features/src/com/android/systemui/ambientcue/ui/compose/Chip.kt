@@ -60,7 +60,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 .combinedClickable(onClick = action.onClick, onLongClick = action.onLongClick)
                 .padding(start = 12.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
     ) {
-        val painter = rememberDrawablePainter(action.icon)
+        val painter = rememberDrawablePainter(action.icon.drawable)
         Image(
             painter = painter,
             contentDescription = action.label,
