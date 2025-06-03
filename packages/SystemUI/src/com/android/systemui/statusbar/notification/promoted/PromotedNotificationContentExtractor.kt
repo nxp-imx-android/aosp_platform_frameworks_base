@@ -259,6 +259,8 @@ constructor(
         return contentBuilder.build()
     }
 
+    private data class InflationIdentity(val layout: Int, val density: Float, val scale: Float)
+
     private fun inflateNotificationView(
         contentBuilder: PromotedNotificationContentModel.Builder,
         systemUiContext: Context,
@@ -275,6 +277,16 @@ constructor(
         trace("AODPromotedNotification#inflate") {
             contentBuilder.notificationView =
                 LayoutInflater.from(systemUiContext).inflate(res, /* root= */ null)
+            val inflationIdentity =
+                InflationIdentity(
+                    layout = res,
+                    density = systemUiContext.resources.displayMetrics.density,
+                    scale = systemUiContext.resources.displayMetrics.scaledDensity,
+                )
+            contentBuilder.notificationView?.setTag(
+                com.android.systemui.res.R.id.aod_promoted_notification_inflation_identity,
+                inflationIdentity,
+            )
         }
     }
 

@@ -101,7 +101,7 @@ fun AODPromotedNotification(
             Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
             return
         }
-        key(content.identity) {
+        key(content.identity, notificationView.getTag(viewInflationIdentity)) {
             AODPromotedNotificationView(
                 notificationViewFactory = { notificationView },
                 content = content,
@@ -812,5 +812,6 @@ private fun scaledFontHeight(@DimenRes dimenId: Int): Dp {
 }
 
 private val viewUpdaterTagId = systemuiR.id.aod_promoted_notification_view_updater_tag
+private val viewInflationIdentity = systemuiR.id.aod_promoted_notification_inflation_identity
 
 private const val TAG = "AODPromotedNotification"
