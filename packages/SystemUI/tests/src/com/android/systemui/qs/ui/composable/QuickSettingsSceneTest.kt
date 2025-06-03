@@ -57,7 +57,7 @@ class QuickSettingsSceneTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Test
-    fun testViewHierarchy() = {
+    fun testViewHierarchy() {
         val shadeSession = object : SaveableSession, Session by Session(SessionStorage()) {
             @Composable
             override fun <T : Any> rememberSaveableSession(
