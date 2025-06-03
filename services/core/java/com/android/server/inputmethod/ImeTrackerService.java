@@ -17,6 +17,7 @@
 package com.android.server.inputmethod;
 
 import android.Manifest;
+import android.annotation.DurationMillisLong;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -102,6 +103,7 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             if (entry == null) return;
 
             entry.mPhase = phase;
+            entry.mLastProgressTime = System.currentTimeMillis();
         }
     }
 
@@ -310,7 +312,13 @@ public final class ImeTrackerService extends IImeTracker.Stub {
 
             pw.print(prefix);
             pw.print("  reason=" + InputMethodDebug.softInputDisplayReasonToString(entry.mReason));
-            pw.println(" " + ImeTracker.Debug.phaseToString(entry.mPhase));
+            pw.print(" " + ImeTracker.Debug.phaseToString(entry.mPhase));
+
+            if (entry.mStatus == ImeTracker.STATUS_TIMEOUT) {
+                pw.print(" lastProgressTime="
+                        + formatter.format(Instant.ofEpochMilli(entry.mLastProgressTime)));
+            }
+            pw.println();
 
             pw.print(prefix);
             pw.println("  requestWindowName=" + entry.mRequestWindowName);
@@ -330,10 +338,19 @@ public final class ImeTrackerService extends IImeTracker.Stub {
             private final int mUid;
 
             /** Clock time in milliseconds when the IME request was created. */
+            @DurationMillisLong
             private final long mStartTime = System.currentTimeMillis();
 
             /** Duration in milliseconds of the IME request from start to end. */
+            @DurationMillisLong
             private long mDuration = 0;
+
+            /**
+             * Clock time in milliseconds when the last {@link #onProgress} call was received. Used
+             * in analyzing timed out requests.
+             */
+            @DurationMillisLong
+            private long mLastProgressTime = System.currentTimeMillis();
 
             /** Type of the IME request. */
             @ImeTracker.Type
