@@ -252,6 +252,11 @@ class BundleEntryAdapter(
     override fun isBundle(): Boolean {
         return true
     }
+
+    override fun onBundleDisabled() {
+        // do nothing. it should not be possible for a bundle to be contained within a bundle
+        Log.wtf(TAG, "onBundleDisabled() called")
+    }
 }
 
 private const val TAG = "BundleEntryAdapter"

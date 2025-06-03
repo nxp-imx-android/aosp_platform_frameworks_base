@@ -87,6 +87,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function2;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -524,6 +525,15 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         Function2<Integer, Boolean, Unit> enableBundle = (type, enable) -> {
             try {
                 mNotificationManager.setAssistantClassificationTypeState(type, enable);
+                if (!enable) {
+                    // if disabling a bundle, we also need to re-sort all notifications in it
+                    List<ExpandableNotificationRow> children = row.getAttachedChildren();
+                    if (children != null) {
+                        for (ExpandableNotificationRow child : children) {
+                            child.getEntryAdapter().onBundleDisabled();
+                        }
+                    }
+                }
             } catch (RemoteException e) {
                 Log.e(TAG, "Couldn't set bundle state", e);
             }
