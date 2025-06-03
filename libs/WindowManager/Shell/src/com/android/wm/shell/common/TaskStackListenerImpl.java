@@ -60,6 +60,7 @@ public class TaskStackListenerImpl extends TaskStackListener implements Handler.
     private static final int ON_TASK_DESCRIPTION_CHANGED = 19;
     private static final int ON_ACTIVITY_ROTATION = 20;
     private static final int ON_RECENT_TASK_REMOVED_FOR_ADD_TASK = 21;
+    private static final int ON_LOCK_TASK_MODE_CHANGE = 22;
 
     /**
      * List of {@link TaskStackListenerCallback} registered from {@link #addListener}.
@@ -135,6 +136,11 @@ public class TaskStackListenerImpl extends TaskStackListener implements Handler.
     @Override
     public void onRecentTaskRemovedForAddTask(int taskId) {
         mMainHandler.obtainMessage(ON_RECENT_TASK_REMOVED_FOR_ADD_TASK, taskId).sendToTarget();
+    }
+
+    @Override
+    public void onLockTaskModeChanged(int mode) {
+        mMainHandler.obtainMessage(ON_LOCK_TASK_MODE_CHANGE, mode, 0 /* unused */).sendToTarget();
     }
 
     @Override
@@ -432,6 +438,12 @@ public class TaskStackListenerImpl extends TaskStackListener implements Handler.
                 case ON_ACTIVITY_ROTATION: {
                     for (int i = mTaskStackListeners.size() - 1; i >= 0; i--) {
                         mTaskStackListeners.get(i).onActivityRotation(msg.arg1);
+                    }
+                    break;
+                }
+                case ON_LOCK_TASK_MODE_CHANGE: {
+                    for (int i = mTaskStackListeners.size() - 1; i >= 0; i--) {
+                        mTaskStackListeners.get(i).onLockTaskModeChanged(msg.arg1);
                     }
                     break;
                 }

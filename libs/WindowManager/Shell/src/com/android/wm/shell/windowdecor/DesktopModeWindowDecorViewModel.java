@@ -104,6 +104,7 @@ import com.android.wm.shell.common.DisplayChangeController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.common.LockTaskChangeListener;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
@@ -179,6 +180,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -187,7 +189,8 @@ import java.util.function.Supplier;
  */
 
 public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
-        FocusTransitionListener, SnapEventHandler {
+        FocusTransitionListener, SnapEventHandler,
+        LockTaskChangeListener.LockTaskModeChangedListener {
     private static final String TAG = "DesktopModeWindowDecorViewModel";
 
     private final WindowDecorationWrapper.Factory mWindowDecoratioWrapperFactory;
@@ -268,6 +271,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final CompatUIHandler mCompatUI;
     private final UserProfileContexts mUserProfileContexts;
 
+    private final LockTaskChangeListener mLockTaskChangeListener;
+
     public DesktopModeWindowDecorViewModel(
             Context context,
             ShellExecutor shellExecutor,
@@ -313,7 +318,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesksOrganizer desksOrganizer,
             ShellDesktopState shellDesktopState,
             DesktopConfig desktopConfig,
-            UserProfileContexts userProfileContexts) {
+            UserProfileContexts userProfileContexts,
+            LockTaskChangeListener lockTaskChangeListener) {
         this(
                 context,
                 shellExecutor,
@@ -366,7 +372,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desksOrganizer,
                 shellDesktopState,
                 desktopConfig,
-                userProfileContexts);
+                userProfileContexts,
+                lockTaskChangeListener);
     }
 
     @VisibleForTesting
@@ -422,7 +429,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesksOrganizer desksOrganizer,
             ShellDesktopState shellDesktopState,
             DesktopConfig desktopConfig,
-            UserProfileContexts userProfileContexts) {
+            UserProfileContexts userProfileContexts,
+            LockTaskChangeListener lockTaskChangeListener) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -514,6 +522,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     onExclusionRegionChanged(displayId, region);
                     return Unit.INSTANCE;
                 });
+        mLockTaskChangeListener = lockTaskChangeListener;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -550,6 +559,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             onTaskInfoChanged(taskInfo);
             return Unit.INSTANCE;
         });
+        mLockTaskChangeListener.addListener(this);
     }
 
     @Override
@@ -648,6 +658,37 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
     }
 
+    @Override
+    public void onLockTaskModeChanged(int mode) {
+        forAllWindowDecorations(decoration -> {
+            final RunningTaskInfo taskInfo = decoration.getTaskInfo();
+            decoration.relayout(taskInfo, decoration.getHasGlobalFocus(),
+                    decoration.getExclusionRegion());
+        });
+    }
+
+    private void forAllWindowDecorations(Consumer<WindowDecorationWrapper> callback) {
+        forAllWindowDecorations(callback, /* reverseOrder= */ false);
+    }
+
+    private void forAllWindowDecorations(Consumer<WindowDecorationWrapper> callback,
+            boolean reverseOrder) {
+        final int decorSize = mWindowDecorByTaskId.size();
+        if (reverseOrder) {
+            for (int i = decorSize - 1; i >= 0; i--) {
+                final WindowDecorationWrapper decoration = mWindowDecorByTaskId.valueAt(i);
+                if (decoration == null) continue;
+                callback.accept(decoration);
+            }
+        } else {
+            for (int i = 0; i < decorSize; i++) {
+                final WindowDecorationWrapper decoration = mWindowDecorByTaskId.valueAt(i);
+                if (decoration == null) continue;
+                callback.accept(decoration);
+            }
+        }
+    }
+
     private void initializeTiling(RunningTaskInfo taskInfo) {
         DesktopRepository taskRepository = mDesktopUserRepositories.getCurrent();
         Integer deskId = taskRepository.getActiveDeskId(taskInfo.displayId);
@@ -709,12 +750,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     private void onExclusionRegionChanged(int displayId, @NonNull Region exclusionRegion) {
-        final int decorCount = mWindowDecorByTaskId.size();
-        for (int i = 0; i < decorCount; i++) {
-            final WindowDecorationWrapper decoration = mWindowDecorByTaskId.valueAt(i);
-            if (decoration.getTaskInfo().displayId != displayId) continue;
-            decoration.onExclusionRegionChanged(exclusionRegion);
-        }
+        forAllWindowDecorations(decoration -> {
+            if (decoration.getTaskInfo().displayId == displayId) {
+                decoration.onExclusionRegionChanged(exclusionRegion);
+            }
+        });
     }
 
     private void openHandleMenu(int taskId) {
@@ -992,7 +1032,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
         final DesktopRepository repository = mDesktopUserRepositories.getCurrent();
         final Integer leftTaskId = repository.getLeftTiledTask(deskId);
-        final Integer rightTaskId =  repository.getRightTiledTask(deskId);
+        final Integer rightTaskId = repository.getRightTiledTask(deskId);
         if (leftTaskId != null) {
             final WindowDecorationWrapper decor = mWindowDecorByTaskId.get(leftTaskId);
             final RunningTaskInfo taskInfo = decor.getTaskInfo();
@@ -1982,7 +2022,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mDesktopModeCompatPolicy,
                     mShellDesktopState,
                     mDesktopConfig,
-                    mWindowDecorationActions);
+                    mWindowDecorationActions,
+                    mLockTaskChangeListener);
             windowDecoration =
                     mWindowDecoratioWrapperFactory.fromDefaultDecoration(defaultWindowDecoration);
         } else {
@@ -2020,7 +2061,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mDesktopModeCompatPolicy,
                             mShellDesktopState,
                             mDesktopConfig,
-                            mWindowDecorationActions);
+                            mWindowDecorationActions,
+                            mLockTaskChangeListener);
             windowDecoration = mWindowDecoratioWrapperFactory
                     .fromDesktopDecoration(desktopModeWindowDecoration);
         }
@@ -2211,13 +2253,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public void onKeyguardVisibilityChanged(boolean visible, boolean occluded,
                 boolean animatingDismiss) {
-            final int size = mWindowDecorByTaskId.size();
-            for (int i = size - 1; i >= 0; i--) {
-                final WindowDecorationWrapper decor = mWindowDecorByTaskId.valueAt(i);
-                if (decor != null) {
-                    decor.onKeyguardStateChanged(visible, occluded);
-                }
-            }
+            forAllWindowDecorations(decor -> {
+                decor.onKeyguardStateChanged(visible, occluded);
+            }, /* reverseOrder= */ true);
         }
     }
 

@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.common;
 
+import static android.app.ActivityManager.LOCK_TASK_MODE_LOCKED;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -234,6 +236,13 @@ public class TaskStackListenerImplTest extends ShellTestCase {
         mImpl.onActivityRotation(123);
         verify(mCallback).onActivityRotation(eq(123));
         verify(mOtherCallback).onActivityRotation(eq(123));
+    }
+
+    @Test
+    public void testOnLockTaskModeChanged() {
+        mImpl.onLockTaskModeChanged(LOCK_TASK_MODE_LOCKED);
+        verify(mCallback).onLockTaskModeChanged(eq(LOCK_TASK_MODE_LOCKED));
+        verify(mOtherCallback).onLockTaskModeChanged(eq(LOCK_TASK_MODE_LOCKED));
     }
 
     /**
