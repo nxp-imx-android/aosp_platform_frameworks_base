@@ -41,6 +41,7 @@ import android.util.Slog;
 
 import com.android.internal.R;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -132,6 +133,20 @@ import java.util.Objects;
     }
 
     @Override
+    @NonNull
+    public List<MediaRoute2Info> getSelectableRoutes() {
+        // Unsupported.
+        return Collections.emptyList();
+    }
+
+    @Override
+    @NonNull
+    public List<MediaRoute2Info> getDeselectableRoutes() {
+        // Unsupported.
+        return Collections.emptyList();
+    }
+
+    @Override
     public synchronized List<MediaRoute2Info> getAvailableRoutes() {
         return List.of(mDeviceRoute);
     }
@@ -140,6 +155,16 @@ import java.util.Objects;
     public synchronized void transferTo(long requestId, @Nullable String routeId) {
         // Unsupported. This implementation doesn't support transferable routes (always exposes a
         // single non-bluetooth route).
+    }
+
+    @Override
+    public synchronized void selectRoute(long requestId, @NonNull String routeId) {
+        // Unsupported.
+    }
+
+    @Override
+    public synchronized void deselectRoute(long requestId, @NonNull String routeId) {
+        // Unsupported.
     }
 
     @Override

@@ -118,6 +118,22 @@ import java.util.List;
     List<MediaRoute2Info> getAvailableRoutes();
 
     /**
+     * Returns a list of currently selectable routes.
+     *
+     * <p>For example, BLE devices can be grouped and will show up here.
+     */
+    @NonNull
+    List<MediaRoute2Info> getSelectableRoutes();
+
+    /**
+     * Returns a list of currently deselectable routes.
+     *
+     * <p>For example, selected BLE devices in a broadcast session.
+     */
+    @NonNull
+    List<MediaRoute2Info> getDeselectableRoutes();
+
+    /**
      * Transfers device output to the given route.
      *
      * <p>If the route is {@code null} then active route will be deactivated.
@@ -126,6 +142,22 @@ import java.util.List;
      * @param routeId To switch to or {@code null} to unset the active device.
      */
     void transferTo(long requestId, @Nullable String routeId);
+
+    /**
+     * Adds the route with the given id to the current selected routes, making playback occur on all
+     * selected routes simultaneously.
+     *
+     * @param routeId route that audio would be playing on.
+     */
+    void selectRoute(long requestId, @NonNull String routeId);
+
+    /**
+     * Removes the route with the given id from the current selected routes, playback will be
+     * stopped for the related device.
+     *
+     * @param routeId route that audio would be stopped playing on.
+     */
+    void deselectRoute(long requestId, @NonNull String routeId);
 
     /**
      * Updates device route volume.
