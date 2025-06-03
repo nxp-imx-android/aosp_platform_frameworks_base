@@ -71,6 +71,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     private boolean mServerVisible;
 
     /**
+     * The server visibility of the source provider's window before the latest
+     * {@link #onPreLayout} call.
+     */
+    private boolean mServerVisiblePreLayout;
+
+    /**
      * When the IME is not ready, it has givenInsetsPending. However, this could happen again,
      * after it became serverVisible. This flag indicates is used to determine if it is
      * readyForDispatching
@@ -91,12 +97,17 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     }
 
     @Override
-    void onPostLayout() {
-        boolean wasServerVisible = mServerVisible;
-        super.onPostLayout();
+    void onPreLayout() {
+        mServerVisiblePreLayout = mServerVisible;
+        super.onPreLayout();
 
-        final boolean givenInsetsPending = mWin != null && mWin.mGivenInsetsPending;
         mLastDrawn = mWin != null && mWin.isDrawn();
+    }
+
+    @Override
+    boolean onPostLayout() {
+        final boolean controlDispatched = super.onPostLayout();
+        final boolean givenInsetsPending = mWin != null && mWin.mGivenInsetsPending;
 
         // isLeashReadyForDispatching (used to dispatch the leash of the control) is
         // depending on mGivenInsetsReady. Therefore, triggering notifyControlChanged here
@@ -109,9 +120,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             mGivenInsetsReady = true;
             ImeTracker.forLogging().onProgress(mStatsToken,
                     ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
-            mStateController.notifyControlChanged(mControlTarget, this);
+            if (!controlDispatched) {
+                mStateController.notifyControlChanged(mControlTarget, this);
+            }
             setImeShowing(true);
-        } else if (wasServerVisible && isServerVisible() && mGivenInsetsReady
+            return true;
+        } else if (mServerVisiblePreLayout && isServerVisible() && mGivenInsetsReady
                 && givenInsetsPending) {
             // If the server visibility didn't change (still visible), and mGivenInsetsReady
             // is set, we won't call into notifyControlChanged. Therefore, we can reset the
@@ -127,6 +141,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                     mControlTarget);
             setImeShowing(false);
         }
+        return controlDispatched;
     }
 
     @Nullable
