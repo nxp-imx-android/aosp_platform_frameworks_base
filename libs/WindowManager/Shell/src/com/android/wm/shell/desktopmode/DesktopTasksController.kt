@@ -691,12 +691,9 @@ class DesktopTasksController(
             if (desktopModeSupportedOnDisplay) {
                 // Desktop supported on display; reparent desks, focused desk on top.
                 for (deskId in deskIds) {
-                    val toTop =
-                        desktopRepository
-                            .getActiveTasks(disconnectedDisplayId)
-                            .contains(focusTransitionObserver.globallyFocusedTaskId)
+                    val deskTasks = desktopRepository.getActiveTaskIdsInDesk(deskId)
                     // Remove desk if it's empty.
-                    if (desktopRepository.getActiveTasks(disconnectedDisplayId).isEmpty()) {
+                    if (deskTasks.isEmpty()) {
                         desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.RemoveDesk(
@@ -710,6 +707,8 @@ class DesktopTasksController(
                         )
                     } else {
                         // Otherwise, reparent it to the destination display.
+                        val toTop =
+                            deskTasks.contains(focusTransitionObserver.globallyFocusedTaskId)
                         desksOrganizer.moveDeskToDisplay(wct, deskId, destinationDisplayId, toTop)
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.ChangeDeskDisplay(
