@@ -17,6 +17,7 @@
 package com.android.packageinstaller.v2.model
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.PendingIntent
@@ -25,10 +26,13 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.Flags
 import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageInstaller.SessionParams
+import android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_ERROR
+import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import android.net.Uri
@@ -51,6 +55,7 @@ import com.android.packageinstaller.v2.model.InstallAborted.Companion.DLG_PACKAG
 import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_ANONYMOUS_SOURCE
 import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_INSTALL_CONFIRMATION
 import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_UNKNOWN_SOURCE
+import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_VERIFICATION_CONFIRMATION
 import com.android.packageinstaller.v2.model.PackageUtil.canPackageQuery
 import com.android.packageinstaller.v2.model.PackageUtil.generateStubPackageInfo
 import com.android.packageinstaller.v2.model.PackageUtil.getAppSnippet
@@ -68,6 +73,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
+@SuppressLint("MissingPermission")
 class InstallRepository(private val context: Context) {
 
     private val packageManager: PackageManager = context.packageManager
@@ -149,6 +155,8 @@ class InstallRepository(private val context: Context) {
         isSessionInstall =
             PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL == intent.action
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
+                || (Flags.verificationService()
+                && PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE == intent.action)
 
         sessionId = if (isSessionInstall)
             intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
@@ -318,6 +326,12 @@ class InstallRepository(private val context: Context) {
     @OptIn(DelicateCoroutinesApi::class)
     fun stageForInstall() {
         val uri = intent.data
+        val action = intent.action
+
+        if (PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE == action) {
+            _stagingResult.value = InstallVerificationConfirmationRequired()
+            return
+        }
         if (stagedSessionId != SessionInfo.INVALID_ID
             || isSessionInstall
             || (uri != null && SCHEME_PACKAGE == uri.scheme)
@@ -543,6 +557,15 @@ class InstallRepository(private val context: Context) {
             packageSource = info
             // mOriginatingURI = null;
             // mReferrerURI = null;
+            pendingUserActionReason = info.getPendingUserActionReason()
+        } else if (PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE == intent.action) {
+            val info = packageInstaller.getSessionInfo(sessionId)
+            val resolvedPath = info?.resolvedBaseApkPath
+            if (info == null || !info.isSealed || resolvedPath == null) {
+                Log.e(LOG_TAG, "Session $sessionId in funky state; ignoring")
+                return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+            }
+            packageSource = Uri.fromFile(File(resolvedPath))
             pendingUserActionReason = info.getPendingUserActionReason()
         } else {
             // Two possible origins:
@@ -792,6 +815,39 @@ class InstallRepository(private val context: Context) {
             return false
         }
         return true
+    }
+
+    fun requestVerificationConfirmation(): InstallStage {
+        var confirmationSnippet: InstallStage = generateConfirmationSnippet()
+
+        if (confirmationSnippet.stageCode == InstallStage.STAGE_ABORTED) {
+            packageInstaller.setVerificationUserResponse(
+                sessionId, VERIFICATION_USER_RESPONSE_ERROR
+            )
+            return confirmationSnippet
+        }
+
+        val verificationInfo: VerificationUserConfirmationInfo? =
+            packageInstaller.getVerificationUserConfirmationInfo(sessionId)
+        if (verificationInfo == null) {
+            Log.e(LOG_TAG, "Could not get VerificationInfo for sessionId $sessionId")
+            packageInstaller.setVerificationUserResponse(
+                sessionId, VERIFICATION_USER_RESPONSE_ERROR
+            )
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
+
+        confirmationSnippet = confirmationSnippet as InstallUserActionRequired
+        val appSnippet = PackageUtil.getAppSnippet(
+                context, confirmationSnippet.appLabel, confirmationSnippet.appIcon)
+
+        // Since InstallUserActionRequired returned by generateConfirmationSnippet is immutable,
+        // create a new InstallUserActionRequired with the required data
+        return InstallUserActionRequired(
+            actionReason = USER_ACTION_REASON_VERIFICATION_CONFIRMATION,
+            appSnippet = appSnippet,
+            verificationInfo = verificationInfo
+        )
     }
 
     /**
@@ -1044,6 +1100,18 @@ class InstallRepository(private val context: Context) {
         sessionStager!!.cancel()
         stagingJob.cancel()
         cleanupStagingSession()
+    }
+
+    fun setUserVerificationResponse(responseCode: Int) {
+        if (PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE != intent.action) {
+            Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
+            _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+            return
+        }
+        packageInstaller.setVerificationUserResponse(sessionId, responseCode)
+        _installResult.value = InstallAborted(
+            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+        )
     }
 
     val stagingProgress: LiveData<Int>

@@ -333,6 +333,15 @@ object PackageUtil {
         }
     }
 
+    /**
+     * Generates an [AppSnippet] containing specified appIcon and appLabel
+     */
+    @JvmStatic
+    fun getAppSnippet(context: Context, label: CharSequence?, icon: Drawable?): AppSnippet {
+        val largeIconSize = getLargeIconSize(context)
+        return AppSnippet(label, icon, largeIconSize)
+    }
+
     private fun getLargeIconSize(context: Context): Int {
         val am = context.getSystemService<ActivityManager>(ActivityManager::class.java)
         return am.launcherLargeIconSize

@@ -73,6 +73,7 @@ import android.content.pm.PackageInstaller.InstallConstraintsResult;
 import android.content.pm.PackageInstaller.SessionInfo;
 import android.content.pm.PackageInstaller.SessionParams;
 import android.content.pm.PackageInstaller.UnarchivalStatus;
+import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.DeleteFlags;
@@ -1409,6 +1410,20 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
     }
 
     @Override
+    @EnforcePermission(android.Manifest.permission.SET_VERIFICATION_USER_RESPONSE)
+    public VerificationUserConfirmationInfo getVerificationUserConfirmationInfo(int sessionId) {
+        getVerificationUserConfirmationInfo_enforcePermission();
+        final VerificationUserConfirmationInfo result;
+        synchronized (mSessions) {
+            final PackageInstallerSession session = mSessions.get(sessionId);
+            result = session != null
+                    ? session.generateVerificationInfo()
+                    : null;
+        }
+        return result;
+    }
+
+    @Override
     public ParceledListSlice<SessionInfo> getStagedSessions() {
         final int callingUid = Binder.getCallingUid();
         final List<SessionInfo> result = new ArrayList<>();
@@ -2008,6 +2023,22 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
     void onUserRemoved(int userId) {
         synchronized (mVerificationPolicyPerUser) {
             mVerificationPolicyPerUser.delete(userId);
+        }
+    }
+
+    @Override
+    @EnforcePermission(android.Manifest.permission.SET_VERIFICATION_USER_RESPONSE)
+    public void setVerificationUserResponse(int sessionId,
+            @PackageInstaller.VerificationUserResponse int userResponse) {
+        setVerificationUserResponse_enforcePermission();
+
+        synchronized (mSessions) {
+            PackageInstallerSession session = mSessions.get(sessionId);
+            if (session != null) {
+                session.setVerificationUserResponse(userResponse);
+            } else {
+                Slog.e(TAG, "Session " + sessionId + " not found");
+            }
         }
     }
 

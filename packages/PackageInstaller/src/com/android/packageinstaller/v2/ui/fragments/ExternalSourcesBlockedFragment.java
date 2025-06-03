@@ -154,6 +154,6 @@ public class ExternalSourcesBlockedFragment extends DialogFragment {
         String sourcePkg = args.getString(ARGS_SOURCE_PKG);
 
         mDialogData = new InstallUserActionRequired(actionReason, appSnippet, false, null, null,
-            sourcePkg);
+            sourcePkg, /* VerificationUserConfirmationInfo= */ null);
     }
 }

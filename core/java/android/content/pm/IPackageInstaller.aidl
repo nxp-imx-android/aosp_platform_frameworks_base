@@ -22,6 +22,7 @@ import android.content.pm.IPackageDeleteObserver2;
 import android.content.pm.IPackageInstallerCallback;
 import android.content.pm.IPackageInstallerSession;
 import android.content.pm.PackageInstaller;
+import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.VersionedPackage;
 import android.content.IntentSender;
@@ -99,4 +100,10 @@ interface IPackageInstaller {
     @EnforcePermission("VERIFICATION_AGENT")
     boolean setVerificationPolicy(int policy, int userId);
     String getVerificationServiceProvider();
+
+    @EnforcePermission("SET_VERIFICATION_USER_RESPONSE")
+    void setVerificationUserResponse(int sessionId, int verificationUserResponse);
+
+    @EnforcePermission("SET_VERIFICATION_USER_RESPONSE")
+    VerificationUserConfirmationInfo getVerificationUserConfirmationInfo(int sessionId);
 }

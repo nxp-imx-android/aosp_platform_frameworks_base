@@ -9187,6 +9187,17 @@
         android:protectionLevel="internal"
         android:featureFlag="android.content.pm.verification_service" />
 
+     <!-- @SystemApi
+        @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
+        Allows only the default PackageInstaller app to set user's response for
+        an incomplete verification.
+        <p>Protection level: internal|installer
+        @hide
+    -->
+    <permission android:name="android.permission.SET_VERIFICATION_USER_RESPONSE"
+        android:protectionLevel="internal|installer"
+        android:featureFlag="android.content.pm.verification_service" />
+
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>
     <!-- Attribution for Country Detector. -->
