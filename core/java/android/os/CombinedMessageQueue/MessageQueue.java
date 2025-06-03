@@ -3047,7 +3047,7 @@ public final class MessageQueue {
                 }
                 if (removeMatches) {
                     if (p.removeFromStack()) {
-                        msg.recycleUnchecked();
+                        msg.clear();
                         decAndTraceMessageCount();
                         if (mMessageCounts.incrementCancelled()) {
                             concurrentWake();
@@ -3086,7 +3086,7 @@ public final class MessageQueue {
             if (compare.compareMessage(msg, h, what, object, r, when)) {
                 if (removeMatches) {
                     if (queue.remove(msg)) {
-                        msg.recycleUnchecked();
+                        msg.clear();
                         decAndTraceMessageCount();
                         found = true;
                     }

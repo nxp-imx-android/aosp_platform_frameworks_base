@@ -333,8 +333,23 @@ public final class Message implements Parcelable {
      */
     @UnsupportedAppUsage
     void recycleUnchecked() {
-        // Mark the message as in use while it remains in the recycled object pool.
-        // Clear out all other details.
+        clear();
+        if (!MessageQueue.getUseConcurrent()) {
+            synchronized (sPoolSync) {
+                if (sPoolSize < MAX_POOL_SIZE) {
+                    next = sPool;
+                    sPool = this;
+                    sPoolSize++;
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears all Message contents.
+     */
+    void clear() {
+        // Prevent accidental reuse such as if this Message is recycled.
         flags = FLAG_IN_USE;
         what = 0;
         arg1 = 0;
@@ -347,16 +362,6 @@ public final class Message implements Parcelable {
         target = null;
         callback = null;
         data = null;
-
-        if (!MessageQueue.getUseConcurrent()) {
-            synchronized (sPoolSync) {
-                if (sPoolSize < MAX_POOL_SIZE) {
-                    next = sPool;
-                    sPool = this;
-                    sPoolSize++;
-                }
-            }
-        }
     }
 
     /**
