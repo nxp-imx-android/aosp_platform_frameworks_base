@@ -3513,10 +3513,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return true;
     }
 
-    boolean syncNextBuffer() {
-        return mSyncState != SYNC_STATE_NONE;
-    }
-
     /**
      * Returns {@code true} if this window container belongs to a different sync group than the
      * given group.

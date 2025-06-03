@@ -1056,7 +1056,8 @@ public class WindowStateTests extends WindowTestsBase {
         try {
             doThrow(new RemoteException("test")).when(win.mClient).resized(any() /* layout */,
                     anyBoolean() /* reportDraw */, anyBoolean() /* forceLayout */,
-                    anyInt() /* displayId */, anyBoolean() /* dragResizing */);
+                    anyInt() /* displayId */, anyBoolean() /* withBuffers */,
+                    anyBoolean() /* dragResizing */);
         } catch (RemoteException ignored) {
         }
         win.reportResized();
@@ -1068,7 +1069,7 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    public void testRequestResizeForBlastSync() {
+    public void testRequestResizeForSync() {
         final WindowState win = newWindowBuilder("window", TYPE_APPLICATION).build();
         makeWindowVisible(win);
         makeLastConfigReportedToClient(win, true /* visible */);

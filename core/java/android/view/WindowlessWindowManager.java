@@ -673,7 +673,7 @@ public class WindowlessWindowManager implements IWindowSession {
                         state, null);
                 layout.syncSeqId = Integer.MAX_VALUE;
                 s.mClient.resized(layout, false /* reportDraw */, false /* forceLayout */,
-                        s.mDisplayId, false /* dragResizing */);
+                        s.mDisplayId, false /* syncWithBuffers */, false /* dragResizing */);
             } catch (RemoteException e) {
                 // Too bad
             }
@@ -681,7 +681,7 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public boolean cancelDraw(IWindow window) {
+    public boolean cancelDraw(IWindow window, int seqId) {
         return false;
     }
 

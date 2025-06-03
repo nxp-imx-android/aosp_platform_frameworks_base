@@ -203,15 +203,16 @@ public class ClientTransactionItemTest {
         final ClientWindowFrames frames = new ClientWindowFrames();
         final WindowStateResizeItem item = new WindowStateResizeItem(mWindow, frames,
                 true /* reportDraw */, mergedConfiguration, mInsetsState, true /* forceLayout */,
-                123 /* displayId */, 321 /* syncSeqId */, true /* dragResizing */,
-                activityWindowInfo);
+                123 /* displayId */, 321 /* syncSeqId */, true /* syncWithBuffers */,
+                true /* dragResizing */, activityWindowInfo);
 
         item.execute(mHandler, mPendingActions);
 
         final ArgumentCaptor<WindowRelayoutResult> layout =
                 ArgumentCaptor.forClass(WindowRelayoutResult.class);
         verify(mWindow).resized(layout.capture(), eq(true) /* reportDraw */,
-                eq(true) /* forceLayout */, eq(123) /* displayId */, eq(true) /* dragResizing */);
+                eq(true) /* forceLayout */, eq(123) /* displayId */, eq(true) /* syncWithBuffers */,
+                eq(true) /* dragResizing */);
         assertEquals(frames, layout.getValue().frames);
         assertEquals(mergedConfiguration, layout.getValue().mergedConfiguration);
         assertEquals(mInsetsState, layout.getValue().insetsState);

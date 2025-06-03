@@ -2263,7 +2263,7 @@ public final class ViewRootImpl implements ViewParent,
         return originalMode;
     }
 
-    void handleAppVisibility(boolean visible) {
+    void handleAppVisibility(boolean visible, int seqId) {
         if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
             Trace.instant(Trace.TRACE_TAG_VIEW, TextUtils.formatSimple(
                     "%s visibilityChanged oldVisibility=%b newVisibility=%b", mTag,
@@ -2298,7 +2298,7 @@ public final class ViewRootImpl implements ViewParent,
     /** Handles messages {@link #MSG_RESIZED} and {@link #MSG_RESIZED_REPORT}. */
     private void handleResized(ClientWindowFrames frames, boolean reportDraw,
             MergedConfiguration mergedConfiguration, InsetsState insetsState, boolean forceLayout,
-            int displayId, int syncSeqId, boolean dragResizing,
+            int displayId, int seqId, boolean syncWithBuffers, boolean dragResizing,
             @Nullable ActivityWindowInfo activityWindowInfo) {
         if (!mAdded) {
             return;
@@ -2367,7 +2367,7 @@ public final class ViewRootImpl implements ViewParent,
 
         mForceNextWindowRelayout |= forceLayout;
         mPendingAlwaysConsumeSystemBars = false;
-        mSyncSeqId = syncSeqId > mSyncSeqId ? syncSeqId : mSyncSeqId;
+        mSyncSeqId = seqId > mSyncSeqId ? seqId : mSyncSeqId;
 
         if (reportDraw) {
             reportNextDraw("resized");
@@ -4206,7 +4206,7 @@ public final class ViewRootImpl implements ViewParent,
             // traversal. So we don't know if the sync is complete that we can continue to draw.
             // Here invokes cancelDraw to obtain the information.
             try {
-                cancelDraw = mWindowSession.cancelDraw(mWindow);
+                cancelDraw = mWindowSession.cancelDraw(mWindow, 0);
                 cancelReason = "wm_sync";
                 if (DEBUG_BLAST) {
                     Log.d(mTag, "cancelDraw returned " + cancelDraw);
@@ -6982,7 +6982,7 @@ public final class ViewRootImpl implements ViewParent,
                     doProcessInputEvents();
                     break;
                 case MSG_DISPATCH_APP_VISIBILITY:
-                    handleAppVisibility(msg.arg1 != 0);
+                    handleAppVisibility(msg.arg1 != 0, msg.arg2);
                     break;
                 case MSG_DISPATCH_GET_NEW_SURFACE:
                     handleGetNewSurface();
@@ -6994,10 +6994,11 @@ public final class ViewRootImpl implements ViewParent,
                     final boolean reportDraw = msg.what == MSG_RESIZED_REPORT;
                     final boolean forceLayout = args.argi1 != 0;
                     final int displayId = args.argi2;
-                    final boolean dragResizing = args.argi3 != 0;
+                    final boolean syncWithBuffers = args.argi3 != 0;
+                    final boolean dragResizing = args.argi4 != 0;
                     handleResized(layout.frames, reportDraw, layout.mergedConfiguration,
                             layout.insetsState, forceLayout, displayId, layout.syncSeqId,
-                            dragResizing, layout.activityWindowInfo);
+                            syncWithBuffers, dragResizing, layout.activityWindowInfo);
                     args.recycle();
                     break;
                 }
@@ -9599,16 +9600,17 @@ public final class ViewRootImpl implements ViewParent,
         final int requestedHeight = (int) (measuredHeight * appScale + 0.5f);
         int relayoutResult = 0;
         mRelayoutSeq++;
+        final int seqId = mLastSyncSeqId;
         if (relayoutAsync) {
             mWindowSession.relayoutAsync(mWindow, params,
                     requestedWidth, requestedHeight, viewVisibility,
                     insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0, mRelayoutSeq,
-                    mLastSyncSeqId);
+                    seqId);
         } else {
             relayoutResult = mWindowSession.relayout(mWindow, params,
                     requestedWidth, requestedHeight, viewVisibility,
                     insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
-                    mRelayoutSeq, mLastSyncSeqId, mRelayoutResult, mSurfaceControl);
+                    mRelayoutSeq, seqId, mRelayoutResult, mSurfaceControl);
             mRelayoutRequested = true;
 
             onClientWindowFramesChanged(mTmpFrames);
@@ -10272,13 +10274,14 @@ public final class ViewRootImpl implements ViewParent,
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private void dispatchResized(WindowRelayoutResult layout, boolean reportDraw,
-            boolean forceLayout, int displayId, boolean dragResizing) {
+            boolean forceLayout, int displayId, boolean syncWithBuffers, boolean dragResizing) {
         Message msg = mHandler.obtainMessage(reportDraw ? MSG_RESIZED_REPORT : MSG_RESIZED);
         SomeArgs args = SomeArgs.obtain();
         args.arg1 = layout;
         args.argi1 = forceLayout ? 1 : 0;
         args.argi2 = displayId;
-        args.argi3 = dragResizing ? 1 : 0;
+        args.argi3 = syncWithBuffers ? 1 : 0;
+        args.argi4 = dragResizing ? 1 : 0;
 
         msg.obj = args;
         mHandler.sendMessage(msg);
@@ -11017,9 +11020,13 @@ public final class ViewRootImpl implements ViewParent,
         synthesizeInputEvent(event);
     }
 
-    public void dispatchAppVisibility(boolean visible) {
+    /**
+     * Notify that the visibility has changed
+     */
+    public void dispatchAppVisibility(boolean visible, int seqId) {
         Message msg = mHandler.obtainMessage(MSG_DISPATCH_APP_VISIBILITY);
         msg.arg1 = visible ? 1 : 0;
+        msg.arg2 = seqId;
         mHandler.sendMessage(msg);
     }
 
@@ -11777,8 +11784,8 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         @Override
-        public void resized(WindowRelayoutResult layout, boolean reportDraw,
-                boolean forceLayout, int displayId, boolean dragResizing) {
+        public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
+                int displayId, boolean syncWithBuffers, boolean dragResizing) {
             final boolean isFromResizeItem = mIsFromTransactionItem;
             mIsFromTransactionItem = false;
             // Although this is a AIDL method, it will only be triggered in local process through
@@ -11797,8 +11804,8 @@ public final class ViewRootImpl implements ViewParent,
             if (isFromResizeItem && viewAncestor.mHandler.getLooper()
                     == ActivityThread.currentActivityThread().getLooper()) {
                 viewAncestor.handleResized(layout.frames, reportDraw, layout.mergedConfiguration,
-                        layout.insetsState, forceLayout, displayId, layout.syncSeqId, dragResizing,
-                        layout.activityWindowInfo);
+                        layout.insetsState, forceLayout, displayId, layout.syncSeqId,
+                        syncWithBuffers, dragResizing, layout.activityWindowInfo);
                 return;
             }
             // The the parameters from WindowStateResizeItem are already copied.
@@ -11807,7 +11814,8 @@ public final class ViewRootImpl implements ViewParent,
             if (needsCopy) {
                 layout = new WindowRelayoutResult(layout);
             }
-            viewAncestor.dispatchResized(layout, reportDraw, forceLayout, displayId, dragResizing);
+            viewAncestor.dispatchResized(layout, reportDraw, forceLayout, displayId,
+                    syncWithBuffers, dragResizing);
         }
 
         @Override
@@ -11879,10 +11887,10 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         @Override
-        public void dispatchAppVisibility(boolean visible) {
+        public void dispatchAppVisibility(boolean visible, int seqId) {
             final ViewRootImpl viewAncestor = mViewAncestor.get();
             if (viewAncestor != null) {
-                viewAncestor.dispatchAppVisibility(visible);
+                viewAncestor.dispatchAppVisibility(visible, seqId);
             }
         }
 
