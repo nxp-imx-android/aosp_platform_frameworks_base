@@ -48,7 +48,7 @@ android {
 }
 
 dependencies {
-    api(project(":Spa:spa"))
+    api(project(":Spa"))
     api(project(":Spa:testutils"))
     androidTestImplementation(libs.dexmaker.mockito)
 }
