@@ -31,6 +31,7 @@ import android.os.OutcomeReceiver
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.provider.Settings
 import android.testing.PollingCheck
 import android.view.Display
 import android.view.InputDevice
@@ -42,6 +43,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.compatibility.common.util.SettingsStateChangerRule
 import com.android.server.accessibility.Flags
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CompletableFuture
@@ -73,15 +75,23 @@ class FullScreenMagnificationMouseFollowingTest {
     val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     @get:Rule(order = 1)
+    val immersiveModeConfirmationDialogSettingsRule =
+        SettingsStateChangerRule(
+            instrumentation.context,
+            Settings.Secure.IMMERSIVE_MODE_CONFIRMATIONS,
+            "confirmed"
+        )
+
+    @get:Rule(order = 2)
     val magnificationAccessibilityServiceRule =
         InstrumentedAccessibilityServiceTestRule<TestMagnificationAccessibilityService>(
             TestMagnificationAccessibilityService::class.java, false
         )
 
-    @get:Rule(order = 2)
+    @get:Rule(order = 3)
     val desktopMouseRule = DesktopMouseTestRule()
 
-    @get:Rule(order = 3)
+    @get:Rule(order = 4)
     val a11yDumpRule: AccessibilityDumpOnFailureRule = AccessibilityDumpOnFailureRule()
 
     private lateinit var service: TestMagnificationAccessibilityService
