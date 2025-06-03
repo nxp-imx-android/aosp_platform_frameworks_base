@@ -6959,6 +6959,9 @@ public abstract class BatteryStats {
                         case BatteryManager.BATTERY_PLUGGED_WIRELESS:
                             item.append(checkin ? "w" : "wireless");
                             break;
+                        case BatteryManager.BATTERY_PLUGGED_DOCK:
+                            item.append(checkin ? "d" : "dock");
+                            break;
                         default:
                             item.append(oldPlug);
                             break;
