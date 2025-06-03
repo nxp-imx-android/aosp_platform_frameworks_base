@@ -2553,28 +2553,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ആപ്പുകൾ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"നിങ്ങളുടെ ഫിംഗർപ്രിന്റുകൾ ഇനി തിരിച്ചറിയാനാകില്ല. ഫിംഗർപ്രിന്റ് അൺലോക്ക് വീണ്ടും സജ്ജീകരിക്കുക."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"സുരക്ഷയും സ്വകാര്യതയും"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB-യ്ക്ക് വിപുലമായ പരിരക്ഷ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ഡാറ്റ കൈമാറ്റത്തിന് ഉപകരണം അൺലോക്ക് ചെയ്യുക"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"ഡാറ്റ കൈമാറ്റത്തിന് നിങ്ങളുടെ ഉപകരണം അൺലോക്ക് ചെയ്‌ത ശേഷം വീണ്ടും കണക്റ്റ് ചെയ്യേണ്ടി വന്നേക്കാം"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"വേഗത്തിലുള്ള ചാർജിംഗിനും ഡാറ്റ കൈമാറ്റത്തിനും ഉപകരണം അൺലോക്ക് ചെയ്യുക"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"വേഗത്തിലുള്ള ചാർജിംഗിനും ഡാറ്റ കൈമാറ്റത്തിനും നിങ്ങളുടെ ഉപകരണം അൺലോക്ക് ചെയ്‌ത ശേഷം വീണ്ടും കണക്റ്റ് ചെയ്യേണ്ടി വന്നേക്കാം"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"വേഗത്തിലുള്ള ചാർജിംഗിന് ഉപകരണം അൺലോക്ക് ചെയ്യുക"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"വേഗത്തിലുള്ള ചാർജിംഗിന് നിങ്ങളുടെ ഉപകരണം അൺലോക്ക് ചെയ്‌ത ശേഷം വീണ്ടും കണക്റ്റ് ചെയ്യേണ്ടി വന്നേക്കാം"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"നിശബ്‌ദമാക്കുക"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"അറിയിപ്പ് നിശബ്‌ദമാക്കി"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"നിങ്ങൾ ഉപകരണം റീസ്‌റ്റാർട്ട് ചെയ്യുന്നത് വരെ നിശബ്‌ദമാക്കിയിരിക്കുന്നു"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"സംശയാസ്പദമായ USB ആക്റ്റിവിറ്റി"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ഡാറ്റാ സിഗ്‌നൽ പ്രവർത്തനരഹിതമാക്കി."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ഫിംഗർപ്രിന്റ് അൺലോക്കുമായി ബന്ധപ്പെട്ട് പ്രശ്നം നേരിടുന്നുണ്ടോ?"</string>

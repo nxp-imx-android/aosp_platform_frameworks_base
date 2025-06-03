@@ -2553,28 +2553,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"အပလီကေးရှင်းများ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"သင့်လက်ဗွေများကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"လုံခြုံရေးနှင့် ကိုယ်ရေးအချက်အလက်လုံခြုံမှု"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB အတွက် အဆင့်မြင့်ကာကွယ်ရေး"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ဒေတာလွှဲပြောင်းရန်အတွက် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"ဒေတာလွှဲပြောင်းရန်အတွက် သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပြီး ပြန်ချိတ်ဆက်ရန် လိုအပ်နိုင်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"အမြန်အားသွင်းခြင်းနှင့် ဒေတာလွှဲပြောင်းခြင်းတို့အတွက် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"အမြန်အားသွင်းခြင်းနှင့် ဒေတာလွှဲပြောင်းခြင်းတို့အတွက် သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပြီး ပြန်ချိတ်ဆက်ရန် လိုအပ်နိုင်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"အမြန်အားသွင်းခြင်းအတွက် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"အမြန်အားသွင်းခြင်းအတွက် သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပြီး ပြန်ချိတ်ဆက်ရန် လိုအပ်နိုင်သည်"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"အသံတိတ်ရန်"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"အကြောင်းကြားချက် အသံတိတ်ထားသည်"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"သင့်စက်ကို ပြန်မစမချင်း အသံတိတ်ထားသည်"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"သံသယဖြစ်ဖွယ် USB လုပ်ဆောင်ချက်"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ဒေတာအချက်ပြမှုကို ပိတ်လိုက်ပါပြီ။"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>
