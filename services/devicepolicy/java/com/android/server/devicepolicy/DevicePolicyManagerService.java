@@ -501,6 +501,7 @@ import android.util.AtomicFile;
 import android.util.DebugUtils;
 import android.util.IndentingPrintWriter;
 import android.util.IntArray;
+import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -10143,11 +10144,24 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    /**
+     * @deprecated TODO(b/420745998): the concept of main user is deprecated, callers should use
+     * other signals like checking if the user is admin, current user, system user, et.c..
+     */
+    @Deprecated
     private @UserIdInt int getMainUserId() {
+        boolean logIt = Log.isLoggable(LOG_TAG, Log.VERBOSE);
         int mainUserId = mUserManagerInternal.getMainUserId();
         if (mainUserId == UserHandle.USER_NULL) {
-            Slogf.d(LOG_TAG, "getMainUserId(): no main user, returning USER_SYSTEM");
+            if (logIt) {
+                Slogf.w(LOG_TAG, new Exception("getMainUserId() called when it's null:"));
+            } else {
+                Slogf.w(LOG_TAG, "getMainUserId(): no main user, returning USER_SYSTEM");
+            }
             return UserHandle.USER_SYSTEM;
+        }
+        if (logIt) {
+            Slogf.v(LOG_TAG, new Exception(), "getMainUserId() returning %d at:", mainUserId);
         }
         return mainUserId;
     }
