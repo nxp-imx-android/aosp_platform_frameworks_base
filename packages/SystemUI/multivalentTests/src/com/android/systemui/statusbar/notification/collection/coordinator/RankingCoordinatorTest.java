@@ -334,20 +334,20 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     public void testSilentSectionComparator_sortsBundlesByPrefixedKeys() {
         // This is the sorted order
         BundleEntry socialBundle = new BundleEntry(BundleSpec.Companion.getSOCIAL_MEDIA());
-        BundleEntry promoBundle = new BundleEntry(BundleSpec.Companion.getPROMOTIONS());
         BundleEntry newsBundle = new BundleEntry(BundleSpec.Companion.getNEWS());
         BundleEntry recsBundle = new BundleEntry(BundleSpec.Companion.getRECOMMENDED());
+        BundleEntry promoBundle = new BundleEntry(BundleSpec.Companion.getPROMOTIONS());
 
         // Add them in unsorted order
         List<BundleEntry> bundles = new ArrayList<>(Arrays.asList(
-                newsBundle, socialBundle, recsBundle, promoBundle
+                promoBundle, newsBundle, socialBundle, recsBundle
         ));
         Collections.sort(bundles, mSilentSectioner.getComparator());
 
         assertEquals("i=0 expected Social", socialBundle, bundles.get(0));
-        assertEquals("i=1 expected Promo", promoBundle, bundles.get(1));
-        assertEquals("i=2 expected News", newsBundle, bundles.get(2));
-        assertEquals("i=3 expected Recs", recsBundle, bundles.get(3));
+        assertEquals("i=1 expected News", newsBundle, bundles.get(1));
+        assertEquals("i=2 expected Recs", recsBundle, bundles.get(2));
+        assertEquals("i=3 expected Promo", promoBundle, bundles.get(3));
     }
 
     @Test
