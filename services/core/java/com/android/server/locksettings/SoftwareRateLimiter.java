@@ -84,8 +84,8 @@ class SoftwareRateLimiter {
     @VisibleForTesting static final Duration SAVED_WRONG_GUESS_TIMEOUT = Duration.ofMinutes(5);
 
     /**
-     * A table that maps the number of (real) wrong guesses to the delay that is enforced after that
-     * number of (real) wrong guesses. Out-of-bounds indices default to the final delay.
+     * A table that maps the number of (real) failures to the delay that is enforced after that
+     * number of (real) failures. Out-of-bounds indices default to the final delay.
      */
     private static final Duration[] DELAY_TABLE =
             new Duration[] {
@@ -127,14 +127,11 @@ class SoftwareRateLimiter {
     private static class RateLimiterState {
 
         /**
-         * The number of (real) wrong guesses since the last correct guess. This includes only wrong
-         * guesses that reached the hardware rate-limiter and were reported to be wrong guesses. It
-         * excludes guesses that never reached the real credential check for a reason such as
-         * detection of a duplicate wrong guess, too short, delay still remaining, etc. It also
-         * excludes any times that the real credential check failed due to a transient error (e.g.
-         * failure to communicate with the Secure Element) rather than due to the guess being wrong.
+         * The number of failed attempts since the last correct guess, not counting attempts that
+         * never reached the real credential check for a reason such as detection of a duplicate
+         * wrong guess, too short, delay still remaining, etc.
          */
-        public int numWrongGuesses;
+        public int numFailures;
 
         /** The number of duplicate wrong guesses since the last correct guess or reboot */
         public int numDuplicateWrongGuesses;
@@ -143,10 +140,10 @@ class SoftwareRateLimiter {
         public final int statsCredentialType;
 
         /**
-         * The time since boot at which the number of wrong guesses was last incremented, or zero if
-         * the number of wrong guesses was last incremented before the current boot.
+         * The time since boot at which the failure counter was last incremented, or zero if the
+         * failure counter was last incremented before the current boot.
          */
-        public Duration timeSinceBootOfLastWrongGuess = Duration.ZERO;
+        public Duration timeSinceBootOfLastFailure = Duration.ZERO;
 
         /**
          * The list of wrong guesses that were recently tried already in the current boot, ordered
@@ -155,8 +152,8 @@ class SoftwareRateLimiter {
         public final LockscreenCredential[] savedWrongGuesses =
                 new LockscreenCredential[MAX_SAVED_WRONG_GUESSES];
 
-        RateLimiterState(int numWrongGuesses, LockscreenCredential firstGuess) {
-            this.numWrongGuesses = numWrongGuesses;
+        RateLimiterState(int numFailures, LockscreenCredential firstGuess) {
+            this.numFailures = numFailures;
             this.statsCredentialType = getStatsCredentialType(firstGuess);
         }
     }
@@ -173,8 +170,8 @@ class SoftwareRateLimiter {
     private Duration getCurrentDelay(RateLimiterState state) {
         if (!mEnforcing) {
             return Duration.ZERO;
-        } else if (state.numWrongGuesses >= 0 && state.numWrongGuesses < DELAY_TABLE.length) {
-            return DELAY_TABLE[state.numWrongGuesses];
+        } else if (state.numFailures >= 0 && state.numFailures < DELAY_TABLE.length) {
+            return DELAY_TABLE[state.numFailures];
         } else {
             return DELAY_TABLE[DELAY_TABLE.length - 1];
         }
@@ -211,16 +208,15 @@ class SoftwareRateLimiter {
                             // The state isn't cached yet. Create it.
                             //
                             // For LSKF-based synthetic password protectors the only persistent
-                            // software rate-limiter state is the number of wrong guesses, which is
-                            // loaded from a counter file on-disk. timeSinceBootOfLastWrongGuess is
-                            // just set to zero, so effectively the delay resets to its original
-                            // value (for the current number of wrong guesses) upon reboot. That
-                            // matches what typical hardware rate-limiter implementations do; they
-                            // typically do not have access to a trusted real-time clock that runs
-                            // without the device being powered on.
+                            // software rate-limiter state is the failure counter.
+                            // timeSinceBootOfLastFailure is just set to zero, so effectively the
+                            // delay resets to its original value (for the current failure count)
+                            // upon reboot. That matches what typical hardware rate-limiter
+                            // implementations do; they typically do not have access to a trusted
+                            // real-time clock that runs without the device being powered on.
                             //
                             // Likewise, rebooting causes any saved wrong guesses to be forgotten.
-                            return new RateLimiterState(readWrongGuessCounter(id), guess);
+                            return new RateLimiterState(readFailureCounter(id), guess);
                         });
 
         // Check for remaining delay. Note that the case of a positive remaining delay normally
@@ -230,12 +226,12 @@ class SoftwareRateLimiter {
         // following a reboot which causes the lock screen to "forget" the delay.
         final Duration delay = getCurrentDelay(state);
         final Duration now = mInjector.getTimeSinceBoot();
-        final Duration remainingDelay = state.timeSinceBootOfLastWrongGuess.plus(delay).minus(now);
+        final Duration remainingDelay = state.timeSinceBootOfLastFailure.plus(delay).minus(now);
         if (remainingDelay.isPositive()) {
             Slogf.e(
                     TAG,
-                    "Rate-limited; numWrongGuesses=%d, remainingDelay=%s",
-                    state.numWrongGuesses,
+                    "Rate-limited; numFailures=%d, remainingDelay=%s",
+                    state.numFailures,
                     remainingDelay);
             return SoftwareRateLimiterResult.rateLimited(remainingDelay);
         }
@@ -264,19 +260,19 @@ class SoftwareRateLimiter {
     }
 
     /**
-     * Reports a successful guess to the software rate-limiter. This causes the wrong guess counter
-     * and saved wrong guesses to be cleared.
+     * Reports a successful guess to the software rate-limiter. This causes the failure counter and
+     * saved wrong guesses to be cleared.
      */
     synchronized void reportSuccess(LskfIdentifier id) {
         RateLimiterState state = getExistingState(id);
         writeStats(id, state, /* success= */ true);
-        // If the wrong guess counter is still 0, then there is no need to write it. Nor can there
-        // be any saved wrong guesses, so there is no need to forget them. This optimizes for the
+        // If the failure counter is still 0, then there is no need to write it. Nor can there be
+        // any saved wrong guesses, so there is no need to forget them. This optimizes for the
         // common case where the first guess is correct.
-        if (state.numWrongGuesses != 0) {
-            state.numWrongGuesses = 0;
+        if (state.numFailures != 0) {
+            state.numFailures = 0;
             state.numDuplicateWrongGuesses = 0;
-            writeWrongGuessCounter(id, state);
+            writeFailureCounter(id, state);
             forgetSavedWrongGuesses(state);
         }
     }
@@ -329,13 +325,13 @@ class SoftwareRateLimiter {
         // ineffective on all such devices, still apply it. This does mean that correct guesses that
         // encountered an error will be rate-limited. However, by design the rate-limiter kicks in
         // gradually anyway, so there will be a chance for the user to try again.
-        state.numWrongGuesses++;
-        state.timeSinceBootOfLastWrongGuess = mInjector.getTimeSinceBoot();
+        state.numFailures++;
+        state.timeSinceBootOfLastFailure = mInjector.getTimeSinceBoot();
 
         // Update the counter on-disk. It is important that this be done before the failure is
         // reported to the UI, and that it be done synchronously e.g. by fsync()-ing the file and
         // its containing directory. This minimizes the risk of the counter being rolled back.
-        writeWrongGuessCounter(id, state);
+        writeFailureCounter(id, state);
 
         writeStats(id, state, /* success= */ false);
 
@@ -386,7 +382,7 @@ class SoftwareRateLimiter {
         FrameworkStatsLog.write(
                 FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED,
                 /* success= */ success,
-                /* num_unique_guesses= */ state.numWrongGuesses + (success ? 1 : 0),
+                /* num_unique_guesses= */ state.numFailures + (success ? 1 : 0),
                 /* num_duplicate_guesses= */ state.numDuplicateWrongGuesses,
                 /* credential_type= */ state.statsCredentialType,
                 /* software_rate_limiter_enforcing= */ mEnforcing,
@@ -450,22 +446,22 @@ class SoftwareRateLimiter {
         }
     }
 
-    private int readWrongGuessCounter(LskfIdentifier id) {
+    private int readFailureCounter(LskfIdentifier id) {
         if (id.isSpecialCredential()) {
             // Special credentials (e.g. FRP credential and repair mode exit credential) do not yet
-            // store a persistent wrong guess counter.
+            // store a persistent failure counter.
             return 0;
         }
-        return mInjector.readWrongGuessCounter(id);
+        return mInjector.readFailureCounter(id);
     }
 
-    private void writeWrongGuessCounter(LskfIdentifier id, RateLimiterState state) {
+    private void writeFailureCounter(LskfIdentifier id, RateLimiterState state) {
         if (id.isSpecialCredential()) {
             // Special credentials (e.g. FRP credential and repair mode exit credential) do not yet
-            // store a persistent wrong guess counter.
+            // store a persistent failure counter.
             return;
         }
-        mInjector.writeWrongGuessCounter(id, state.numWrongGuesses);
+        mInjector.writeFailureCounter(id, state.numFailures);
     }
 
     // Only for unit tests.
@@ -483,10 +479,10 @@ class SoftwareRateLimiter {
                             "userId=%d, protectorId=%016x", lskfId.userId, lskfId.protectorId));
             final RateLimiterState state = mState.valueAt(index);
             pw.increaseIndent();
-            pw.println("numWrongGuesses=" + state.numWrongGuesses);
+            pw.println("numFailures=" + state.numFailures);
             pw.println("numDuplicateWrongGuesses=" + state.numDuplicateWrongGuesses);
             pw.println("statsCredentialType=" + state.statsCredentialType);
-            pw.println("timeSinceBootOfLastWrongGuess=" + state.timeSinceBootOfLastWrongGuess);
+            pw.println("timeSinceBootOfLastFailure=" + state.timeSinceBootOfLastFailure);
             pw.println(
                     "numSavedWrongGuesses="
                             + Arrays.stream(state.savedWrongGuesses)
@@ -497,9 +493,9 @@ class SoftwareRateLimiter {
     }
 
     interface Injector {
-        int readWrongGuessCounter(LskfIdentifier id);
+        int readFailureCounter(LskfIdentifier id);
 
-        void writeWrongGuessCounter(LskfIdentifier id, int count);
+        void writeFailureCounter(LskfIdentifier id, int count);
 
         Duration getTimeSinceBoot();
 

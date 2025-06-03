@@ -77,7 +77,7 @@ public class SoftwareRateLimiterTest {
                 mInjector.advanceTime(Duration.ofMillis(1));
             }
             verifyUniqueWrongGuess(id, guess, delayTable[Math.min(i + 1, delayTable.length - 1)]);
-            verifyWrongGuessCounter(id, i + 1);
+            verifyFailureCounter(id, i + 1);
         }
         verifyRateLimited(id, newPassword("password"), delayTable[delayTable.length - 1]);
     }
@@ -95,7 +95,7 @@ public class SoftwareRateLimiterTest {
         final Duration expectedDelay = delayTable[numWrongGuesses];
 
         mInjector.setTime(Duration.ofSeconds(10));
-        mInjector.writeWrongGuessCounter(id, numWrongGuesses);
+        mInjector.writeFailureCounter(id, numWrongGuesses);
         mRateLimiter = new SoftwareRateLimiter(mInjector);
 
         mInjector.setTime(Duration.ofSeconds(1));
@@ -103,13 +103,13 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    public void testSuccessResetsWrongGuessCounter() {
+    public void testSuccessResetsFailureCounter() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         makeGuessesUntilRateLimited(id);
         mRateLimiter.reportSuccess(id);
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyUniqueWrongGuess(id, newPassword("password"));
-        verifyWrongGuessCounter(id, 1);
+        verifyFailureCounter(id, 1);
     }
 
     @Test
@@ -167,10 +167,10 @@ public class SoftwareRateLimiterTest {
         final LockscreenCredential guess = newPassword("password");
 
         verifyUniqueWrongGuess(id, guess);
-        verifyWrongGuessCounter(id, 1);
+        verifyFailureCounter(id, 1);
         for (int i = 0; i < 100; i++) {
             verifyDuplicateWrongGuess(id, guess);
-            verifyWrongGuessCounter(id, 1);
+            verifyFailureCounter(id, 1);
         }
     }
 
@@ -367,19 +367,19 @@ public class SoftwareRateLimiterTest {
         verifyUniqueWrongGuess(id, password);
     }
 
-    // For special credentials (e.g. FRP credential), the wrong guess counter is not currently being
+    // For special credentials (e.g. FRP credential), the failure counter is not currently being
     // stored persistently. But all the other logic should still work using the in-memory state.
     @Test
     public void testSpecialCredential() {
         LskfIdentifier id = new LskfIdentifier(-9999, SyntheticPasswordManager.NULL_PROTECTOR_ID);
         LockscreenCredential guess = newPassword("password");
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyUniqueWrongGuess(id, guess);
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyDuplicateWrongGuess(id, guess);
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyCredentialTooShort(id, newPassword("abc"));
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         makeGuessesUntilRateLimited(id);
     }
 
@@ -448,7 +448,7 @@ public class SoftwareRateLimiterTest {
             }
             assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
             mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
-            verifyWrongGuessCounter(id, i + 1);
+            verifyFailureCounter(id, i + 1);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -520,13 +520,13 @@ public class SoftwareRateLimiterTest {
         assertThat(nextDelay).isEqualTo(expectedNextDelay);
     }
 
-    private void verifyWrongGuessCounter(LskfIdentifier id, int expectedValue) {
-        assertThat(mInjector.readWrongGuessCounter(id)).isEqualTo(expectedValue);
+    private void verifyFailureCounter(LskfIdentifier id, int expectedValue) {
+        assertThat(mInjector.readFailureCounter(id)).isEqualTo(expectedValue);
     }
 
     private static class TestInjector implements SoftwareRateLimiter.Injector {
 
-        private final Map<LskfIdentifier, Integer> mWrongGuessCounters = new HashMap<>();
+        private final Map<LskfIdentifier, Integer> mFailureCounters = new HashMap<>();
         private final List<WorkItem> mWorkList = new ArrayList<>();
         private Duration mTimeSinceBoot = Duration.ZERO;
 
@@ -543,13 +543,13 @@ public class SoftwareRateLimiterTest {
         }
 
         @Override
-        public int readWrongGuessCounter(LskfIdentifier id) {
-            return mWrongGuessCounters.getOrDefault(id, 0);
+        public int readFailureCounter(LskfIdentifier id) {
+            return mFailureCounters.getOrDefault(id, 0);
         }
 
         @Override
-        public void writeWrongGuessCounter(LskfIdentifier id, int counter) {
-            mWrongGuessCounters.put(id, counter);
+        public void writeFailureCounter(LskfIdentifier id, int counter) {
+            mFailureCounters.put(id, counter);
         }
 
         @Override
