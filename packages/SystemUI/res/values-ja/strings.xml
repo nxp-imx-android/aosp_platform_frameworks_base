@@ -263,6 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"グループを閉じます。"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"グループにデバイスを追加します。"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"グループからデバイスを削除します。"</string>
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> をグループに追加します。"</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> をグループから削除します。"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"アプリを開きます。"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"接続されていません。"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ローミング"</string>
@@ -822,19 +824,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ONにする"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ON - 顔ベース"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ミュートしてまとめる"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"通知オーガナイザーを使用する"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"対象: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"セールス情報、新機能など"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"トップニュース、論説など"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"高評価、投稿など"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ニュースレター、おすすめのメディアなど"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ON にする"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"長い会話を要約して、内容をすばやく確認できるようになりました"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"通知オーガナイザーは、優先度の低い通知をまとめてサイレントにします"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"OFF にする"</string>
@@ -1595,7 +1593,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"キーボード バックライト"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"レベル %1$d/%2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"ホーム コントロール"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"ホーム コントロールにスクリーンセーバーからすばやくアクセス"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"ホーム コントロールにすばやくアクセスできます"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"元に戻す"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"戻るには、3 本の指でタッチパッドを左か右にスワイプします"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"ホームに移動するには、3 本の指でタッチパッドを上にスワイプします"</string>

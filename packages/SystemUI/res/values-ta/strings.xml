@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"குழுவைச் சுருக்கும்."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"குழுவில் சாதனத்தைச் சேர்க்கும்."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"குழுவிலிருந்து சாதனத்தை அகற்றும்."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"ஆப்ஸைத் திறக்கும்."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"இணைக்கப்படவில்லை."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ரோமிங்"</string>

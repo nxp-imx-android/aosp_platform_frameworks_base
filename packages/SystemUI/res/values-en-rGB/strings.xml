@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Collapse group."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Add device to group."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Remove device from group."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Open application."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Not connected."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -1593,7 +1597,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Keyboard backlight"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"Level %1$d of %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"Home controls"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"Quickly access your home controls as a screensaver"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"Quickly access your home controls as a screen saver"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Undo"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"To go back, swipe left or right with three fingers on the touchpad"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"To go home, swipe up with three fingers on the touchpad"</string>

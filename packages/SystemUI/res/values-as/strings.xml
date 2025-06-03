@@ -156,7 +156,7 @@
     <string name="cast_to_other_device_stop_dialog_message_specific_app" msgid="8616103075630934513">"বৰ্তমান আপুনি আশে-পাশে থকা ডিভাইচ এটাত <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> কাষ্ট কৰি আছে"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic_with_device" msgid="9213582497852420203">"বৰ্তমান আপুনি <xliff:g id="DEVICE_NAME">%1$s</xliff:g>ত কাষ্ট কৰি আছে"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic" msgid="4100272100480415076">"বৰ্তমান আপুনি আশে-পাশে থকা ডিভাইচ এটাত কাষ্ট কৰি আছে"</string>
-    <string name="cast_to_other_device_stop_dialog_button" msgid="6420183747435521834">"কাষ্ট বন্ধ কৰক"</string>
+    <string name="cast_to_other_device_stop_dialog_button" msgid="6420183747435521834">"কাষ্ট কৰাটো বন্ধ কৰক"</string>
     <string name="close_dialog_button" msgid="4749497706540104133">"বন্ধ কৰক"</string>
     <string name="issuerecord_title" msgid="286627115110121849">"সমস্যা ৰেকৰ্ডাৰ"</string>
     <string name="issuerecord_background_processing_label" msgid="1666840264959336876">"সমস্যা ৰেকৰ্ড কৰি থকা হৈছে"</string>
@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"গোট সংকোচন কৰক।"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"গোটত ডিভাইচ যোগ দিয়ক।"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"গোটৰ পৰা ডিভাইচ আঁতৰাওক।"</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"এপ্লিকেশ্বনটো খোলক।"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"সংযোগ হৈ থকা নাই।"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ৰ\'মিং"</string>
@@ -1293,7 +1297,7 @@
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ডিভাইচ সংযোগ কৰক"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ডিভাইচ সংযোগ কৰক"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"অজ্ঞাত এপ্"</string>
-    <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাষ্ট বন্ধ কৰক"</string>
+    <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাষ্ট কৰাটো বন্ধ কৰক"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"অডিঅ\' আউটপুটৰ বাবে উপলব্ধ ডিভাইচ।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ভলিউম"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>

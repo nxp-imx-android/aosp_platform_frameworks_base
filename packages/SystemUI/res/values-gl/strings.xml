@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Contraer o grupo."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Engadir o dispositivo ao grupo."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Quitar o dispositivo do grupo."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Abrir a aplicación."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Non conectada"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Itinerancia"</string>
@@ -1251,7 +1255,7 @@
     <string name="controls_structure_tooltip" msgid="4355922222944447867">"Pasar o dedo para ver máis"</string>
     <string name="retry_face" msgid="416380073082560186">"Tentar de novo a autenticación por recoñecemento facial"</string>
     <string name="controls_seeding_in_progress" msgid="3033855341410264148">"Cargando recomendacións"</string>
-    <string name="controls_media_title" msgid="1746947284862928133">"Contido multimedia"</string>
+    <string name="controls_media_title" msgid="1746947284862928133">"Multimedia"</string>
     <string name="controls_media_close_session" msgid="4780485355795635052">"Queres ocultar este control multimedia para <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Non se pode ocultar esta sesión multimedia."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Ocultar"</string>

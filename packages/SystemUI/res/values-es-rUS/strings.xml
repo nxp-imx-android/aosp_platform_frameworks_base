@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Contraer grupo"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Agregar el dispositivo al grupo."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Quitar el dispositivo del grupo."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Abrir aplicación."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"No conectado"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -1593,7 +1597,7 @@
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Retroiluminación del teclado"</string>
     <string name="keyboard_backlight_value" msgid="7336398765584393538">"Nivel %1$d de %2$d"</string>
     <string name="home_controls_dream_label" msgid="6567105701292324257">"Controles de la casa"</string>
-    <string name="home_controls_dream_description" msgid="4644150952104035789">"Usa rápidamente los controles de la casa como protector de pantalla"</string>
+    <string name="home_controls_dream_description" msgid="4644150952104035789">"Para usar rápidamente los controles de la casa"</string>
     <string name="volume_undo_action" msgid="5815519725211877114">"Deshacer"</string>
     <string name="back_edu_toast_content" msgid="4530314597378982956">"Para ir hacia atrás, desliza hacia la izquierda o la derecha con tres dedos en el panel táctil"</string>
     <string name="home_edu_toast_content" msgid="3381071147871955415">"Para ir a la pantalla principal, desliza hacia arriba con tres dedos en el panel táctil"</string>

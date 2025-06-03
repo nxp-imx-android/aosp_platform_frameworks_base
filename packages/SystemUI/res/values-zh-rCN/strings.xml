@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"收起群组。"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"将设备添加到群组。"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"从群组中移除设备。"</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"打开应用。"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"未连接。"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"漫游"</string>
@@ -1297,7 +1301,7 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"音频输出的可用设备。"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"音量"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"已连接的扬声器"</string>
+    <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"已连接的音箱"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"音箱和显示屏"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"建议"</string>
     <string name="media_output_group_title_suggested_device" msgid="4157186235837903826">"建议的设备"</string>

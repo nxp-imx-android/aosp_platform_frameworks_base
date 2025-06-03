@@ -263,6 +263,10 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"ຫຍໍ້ກຸ່ມເຂົ້າ."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ເພີ່ມອຸປະກອນໃສ່ໃນກຸ່ມ."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ລຶບອຸປະກອນອອກຈາກກຸ່ມ."</string>
+    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"ເປີດແອັບພລິເຄຊັນ."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"ບໍ່ໄດ້ເຊື່ອມຕໍ່."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ໂຣມມິງ"</string>
@@ -820,19 +824,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ເປີດ​"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ເປີດ - ອ້າງອີງໃບໜ້າ"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ປິດສຽງ ແລະ ເປັນຊຸດ"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"ໃຊ້ຕົວຈັດລະບຽບການແຈ້ງເຕືອນ"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"ສຳລັບ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ການຂາຍ, ຄຸນສົມບັດໃໝ່ ແລະ ອື່ນໆອີກ"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"ສະຕໍຣີເດັ່ນ, ບັນນາທິການ ແລະ ອື່ນໆອີກ"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ການຖືກໃຈ, ໂພສ ແລະ ອື່ນໆອີກ"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ຈົດໝາຍຂ່າວ, ສື່ແນະນໍາ ແລະ ອື່ນໆອີກ"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ເປີດ"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ຕອນນີ້ທ່ານສາມາດສະຫຼຸບການສົນທະນາທີ່ຍາວຂຶ້ນໄດ້ເພື່ອໃຫ້ທ່ານສະຫຼຸບຢ່າງວ່ອງໄວ"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"ຕົວຈັດການການແຈ້ງເຕືອນຈະຮວມ ແລະ ປິດສຽງການແຈ້ງເຕືອນທີ່ມີບຸລິມະສິດທີ່ຕໍ່າກວ່າ"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ແລ້ວໆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ນຳໃຊ້"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ປິດ"</string>
