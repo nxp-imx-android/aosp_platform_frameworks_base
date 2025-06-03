@@ -39,3 +39,6 @@ per-file *WindowTracing* = file:platform/development:/tools/winscope/OWNERS
 per-file ActivityStarter.java = file:/ACTIVITY_SECURITY_OWNERS
 per-file ActivityStartController.java = file:/ACTIVITY_SECURITY_OWNERS
 per-file ActivityTaskManagerService.java = file:/ACTIVITY_SECURITY_OWNERS
+
+# Files related to device state based auto-rotate
+per-file DeviceStateAutoRotateSetting* = file:/services/foldables/OWNERS
