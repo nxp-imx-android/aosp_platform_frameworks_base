@@ -280,6 +280,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         onClickListenerCaptor.firstValue.onClick(view)
 
+        verify(mockDesktopTasksController).getNextFocusedTask(decor.mTaskInfo)
+
         val transactionCaptor = argumentCaptor<WindowContainerTransaction>()
         verify(mockFreeformTaskTransitionStarter).startRemoveTransition(transactionCaptor.capture())
         val wct = transactionCaptor.firstValue
@@ -308,6 +310,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         onClickListenerCaptor.firstValue.onClick(view)
 
+        verify(mockDesktopTasksController).getNextFocusedTask(decor.mTaskInfo)
         verify(mockDesktopTasksController)
             .minimizeTask(decor.mTaskInfo, MinimizeReason.MINIMIZE_BUTTON)
     }

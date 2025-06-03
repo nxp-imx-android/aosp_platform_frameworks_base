@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode
 import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
+import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.AppOpsManager
 import android.app.KeyguardManager
 import android.app.PendingIntent
@@ -585,6 +586,30 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         assertThat(controller.doesAnyTaskRequireTaskbarRounding(DEFAULT_DISPLAY)).isTrue()
+    }
+
+    @Test
+    fun getNextFocusedTask_onlyClosingTask_returnInvalidId() {
+        val closingTask = setUpFreeformTask()
+        assertThat(controller.getNextFocusedTask(closingTask)).isEqualTo(INVALID_TASK_ID)
+    }
+
+    @Test
+    fun getNextFocusedTask_oneNonClosingTask_returnNextFocusedTask() {
+        val otherTask = setUpFreeformTask()
+        val closingTask = setUpFreeformTask()
+        assertThat(controller.getNextFocusedTask(closingTask)).isEqualTo(otherTask.taskId)
+    }
+
+    @Test
+    fun getNextFocusedTask_multipleNonClosingTask_returnNextFocusedTask() {
+        val otherTask = setUpFreeformTask()
+        val otherTask2 = setUpFreeformTask()
+        val otherTask3 = setUpFreeformTask()
+        val closingTask = setUpFreeformTask()
+        assertThat(controller.getNextFocusedTask(closingTask)).isNotEqualTo(otherTask.taskId)
+        assertThat(controller.getNextFocusedTask(closingTask)).isNotEqualTo(otherTask2.taskId)
+        assertThat(controller.getNextFocusedTask(closingTask)).isEqualTo(otherTask3.taskId)
     }
 
     @Test

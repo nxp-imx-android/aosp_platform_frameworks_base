@@ -1181,6 +1181,22 @@ class DesktopTasksController(
         }
     }
 
+    /**
+     * Returns the task that will be focused next after the current task (the given [taskInfo]) is
+     * removed, due to being minimized or closed.
+     *
+     * @param taskInfo the task that is being removed.
+     * @return the taskId of the next focused task, or [INVALID_TASK_ID] if no task is found.
+     */
+    fun getNextFocusedTask(taskInfo: RunningTaskInfo): Int {
+        val deskId = getOrCreateDefaultDeskId(taskInfo.displayId) ?: return INVALID_TASK_ID
+        return taskRepository
+            .getExpandedTasksIdsInDeskOrdered(deskId)
+            // exclude current task since maximize/restore transition has not taken place yet.
+            .filterNot { it == taskInfo.taskId }
+            .firstOrNull { !taskRepository.isClosingTask(it) } ?: INVALID_TASK_ID
+    }
+
     fun minimizeTask(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val wct = WindowContainerTransaction()
         val taskId = taskInfo.taskId

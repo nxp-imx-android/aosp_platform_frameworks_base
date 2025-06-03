@@ -25,7 +25,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnLongClickListener
@@ -73,12 +72,6 @@ import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
-import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.CLOSING
-import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.FOCUSED
-import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.MINIMIZING
-import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.NOT_FOCUSED
-import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.OPENING
-import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.A11yState.UNKNOWN
 
 /**
  * A desktop mode window decoration used when the window is floating (i.e. freeform). It hosts
@@ -209,8 +202,6 @@ class AppHeaderViewHolder(
     private lateinit var a11yTextRestore: String
     private lateinit var currentTaskInfo: RunningTaskInfo
 
-    private var a11yState = UNKNOWN
-
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnTouchListener(onCaptionTouchListener)
@@ -240,7 +231,6 @@ class AppHeaderViewHolder(
             context.getString(R.string.desktop_mode_a11y_action_maximize_restore)
         )
 
-        captionHandle.accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE
         captionHandle.accessibilityDelegate = object : View.AccessibilityDelegate() {
             override fun onInitializeAccessibilityNodeInfo(
                 host: View,
@@ -250,6 +240,8 @@ class AppHeaderViewHolder(
                 info.addAction(a11yActionSnapLeft)
                 info.addAction(a11yActionSnapRight)
                 info.addAction(a11yActionMaximizeRestore)
+                info.liveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+                info.isScreenReaderFocusable = false
             }
 
             override fun performAccessibilityAction(
@@ -344,7 +336,7 @@ class AppHeaderViewHolder(
             ): Boolean {
                 when (action) {
                     AccessibilityAction.ACTION_CLICK.id -> {
-                        setA11yStateTo(CLOSING)
+                        captionHandle.stateDescription = a11yAnnounceTextClosing
                         desktopModeUiEventLogger.log(currentTaskInfo, A11Y_APP_WINDOW_CLOSE_BUTTON)
                     }
                 }
@@ -361,7 +353,7 @@ class AppHeaderViewHolder(
             ): Boolean {
                 when (action) {
                     AccessibilityAction.ACTION_CLICK.id -> {
-                        setA11yStateTo(MINIMIZING)
+                        captionHandle.stateDescription = a11yAnnounceTextMinimizing
                         desktopModeUiEventLogger.log(
                             currentTaskInfo, A11Y_APP_WINDOW_MINIMIZE_BUTTON
                         )
@@ -408,12 +400,15 @@ class AppHeaderViewHolder(
         )
     }
 
+    /** Announces app window name as "focused" via Talkback */
+    fun a11yAnnounceFocused() {
+        captionHandle.stateDescription = a11yAnnounceTextFocused
+    }
+
     /** Sets the app's name in the header. */
     fun setAppName(name: CharSequence) {
         appNameTextView.text = name
         populateA11yStrings(name)
-
-        if (a11yState == OPENING) setA11yStateTo(FOCUSED)
 
         updateMaximizeButtonContentDescription()
     }
@@ -471,20 +466,6 @@ class AppHeaderViewHolder(
             )
         } else {
             bindDataLegacy(taskInfo, hasGlobalFocus, isCaptionVisible)
-        }
-
-        if (hasGlobalFocus) {
-            // app window is gaining focus
-            if (a11yState == UNKNOWN) {
-                // app window is opening from close or minimize
-                setA11yStateTo(OPENING)
-            } else if (a11yState == NOT_FOCUSED) {
-                // app window is being re-focused after being in background
-                setA11yStateTo(FOCUSED)
-            }
-        } else if (!hasGlobalFocus && a11yState == FOCUSED) {
-            // app window is losing focus and moving to background as another window gains focus
-            setA11yStateTo(NOT_FOCUSED)
         }
     }
 
@@ -914,28 +895,6 @@ class AppHeaderViewHolder(
     override fun close() {
         // Should not fire long press events after closing the window decoration.
         maximizeWindowButton.cancelLongPress()
-    }
-
-    private enum class A11yState {
-        UNKNOWN, OPENING, MINIMIZING, CLOSING, NOT_FOCUSED, FOCUSED
-    }
-
-    private fun setA11yStateTo(newState: A11yState) {
-        if (!DesktopExperienceFlags.ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue) {
-            Log.i(TAG, "no a11y state change due to missing " +
-                    "enable_desktop_windowing_app_header_state_change_announcements")
-            return
-        }
-        val newStateDesc = when (newState) {
-            OPENING -> a11yAnnounceTextOpening
-            MINIMIZING -> a11yAnnounceTextMinimizing
-            CLOSING -> a11yAnnounceTextClosing
-            NOT_FOCUSED -> a11yAnnounceTextNotFocused
-            FOCUSED -> a11yAnnounceTextFocused
-            else -> null
-        }
-        captionHandle.stateDescription = newStateDesc
-        a11yState = newState
     }
 
     companion object {
