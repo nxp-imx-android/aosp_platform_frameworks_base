@@ -633,7 +633,7 @@ public class VirtualDeviceManagerServiceTest {
 
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isFalse();
 
-        mInputController.addDeviceForTesting(BINDER, mIVirtualInputDevice);
+        mInputController.addDevice(BINDER, mIVirtualInputDevice);
         assertThat(mLocalService.isInputDeviceOwnedByVirtualDevice(INPUT_DEVICE_ID)).isTrue();
 
         mInputController.removeDeviceForTesting(BINDER);
