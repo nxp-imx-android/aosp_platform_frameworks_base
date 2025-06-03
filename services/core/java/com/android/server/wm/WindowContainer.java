@@ -73,7 +73,6 @@ import android.util.RotationUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
-import android.view.DisplayInfo;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsState;
@@ -3246,26 +3245,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     @VisibleForTesting
     Point getLastSurfacePosition() {
         return mLastSurfacePosition;
-    }
-
-    /**
-     * The {@code outFrame} retrieved by this method specifies where the animation will finish
-     * the entrance animation, as the next frame will display the window at these coordinates. In
-     * case of exit animation, this is where the animation will start, as the frame before the
-     * animation is displaying the window at these bounds.
-     *
-     * @param outFrame The bounds where entrance animation finishes or exit animation starts.
-     * @param outInsets Insets that are covered by system windows.
-     * @param outStableInsets Insets that determine the area covered by the stable system windows.
-     * @param outSurfaceInsets Positive insets between the drawing surface and window content.
-     */
-    void getAnimationFrames(Rect outFrame, Rect outInsets, Rect outStableInsets,
-            Rect outSurfaceInsets) {
-        final DisplayInfo displayInfo = getDisplayContent().getDisplayInfo();
-        outFrame.set(0, 0, displayInfo.appWidth, displayInfo.appHeight);
-        outInsets.setEmpty();
-        outStableInsets.setEmpty();
-        outSurfaceInsets.setEmpty();
     }
 
     /** Gets the position of this container in its parent's coordinate. */

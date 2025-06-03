@@ -73,7 +73,6 @@ import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION;
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_VISIBLE;
 import static android.view.WindowInsets.Type.navigationBars;
-import static android.view.WindowInsets.Type.systemBars;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowLayout.UNSPECIFIED_LENGTH;
 import static android.view.WindowManager.LayoutParams.FIRST_SUB_WINDOW;
@@ -5552,35 +5551,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     mAttrs.inputFeatures, getWindowTag().toString(), getOwningUid());
         }
         return mKeyInterceptionInfo;
-    }
-
-    @Override
-    void getAnimationFrames(Rect outFrame, Rect outInsets, Rect outStableInsets,
-            Rect outSurfaceInsets) {
-        // Containing frame will usually cover the whole screen, including dialog windows.
-        // For freeform workspace windows it will not cover the whole screen and it also
-        // won't exactly match the final freeform window frame (e.g. when overlapping with
-        // the status bar). In that case we need to use the final frame.
-        if (inFreeformWindowingMode()) {
-            outFrame.set(getFrame());
-        } else if (areAppWindowBoundsLetterboxed() || mToken.isFixedRotationTransforming()) {
-            // 1. The letterbox surfaces should be animated with the owner activity, so use task
-            //    bounds to include them.
-            // 2. If the activity has fixed rotation transform, its windows are rotated in activity
-            //    level. Because the animation runs before display is rotated, task bounds should
-            //    represent the frames in display space coordinates.
-            outFrame.set(getTask().getBounds());
-        } else {
-            outFrame.set(getParentFrame());
-        }
-        final Task task = getTask();
-        final Rect bounds = task == null ? getBounds() : task.getBounds();
-        outSurfaceInsets.set(mAttrs.surfaceInsets);
-        final InsetsState state = getInsetsStateWithVisibilityOverride();
-        outInsets.set(state.calculateInsets(outFrame, bounds, systemBars(),
-                false /* ignoreVisibility */).toRect());
-        outStableInsets.set(state.calculateInsets(outFrame, bounds, systemBars(),
-                true /* ignoreVisibility */).toRect());
     }
 
     void setViewVisibility(int viewVisibility) {
