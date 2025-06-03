@@ -64,6 +64,7 @@ import com.android.settingslib.preference.PreferenceScreenCreator
 import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
 import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -76,6 +77,7 @@ private constructor(
     private val callingPid: Int,
     private val callingUid: Int,
     private val request: GetPreferenceGraphRequest,
+    private val coroutineScope: CoroutineScope,
 ) {
     private val preferenceScreenFactory by lazy {
         PreferenceScreenFactory(context.ofLocale(request.locale))
@@ -179,7 +181,10 @@ private constructor(
                 val instance = newInstance()
                 Log.d(TAG, "createPreferenceScreen $instance")
                 if (instance is PreferenceScreenProvider) {
-                    return@withContext instance.createPreferenceScreen(preferenceScreenFactory)
+                    return@withContext instance.createPreferenceScreen(
+                        preferenceScreenFactory,
+                        coroutineScope,
+                    )
                 } else {
                     Log.w(TAG, "$instance is not PreferenceScreenProvider")
                 }
@@ -221,7 +226,7 @@ private constructor(
         if (!checkScreenFlag(metadata)) return false
         return addPreferenceScreen(metadata.key, metadata.arguments) {
             completeHierarchy = metadata.hasCompleteHierarchy()
-            root = metadata.getPreferenceHierarchy(context).toProto(metadata, true)
+            root = metadata.getPreferenceHierarchy(context, coroutineScope).toProto(metadata, true)
         }
     }
 
@@ -375,7 +380,8 @@ private constructor(
         }
         if (fragment is PreferenceScreenProvider) {
             try {
-                val screen = fragment.createPreferenceScreen(preferenceScreenFactory)
+                val screen =
+                    fragment.createPreferenceScreen(preferenceScreenFactory, coroutineScope)
                 val screenKey = screen?.key
                 if (!screenKey.isNullOrEmpty()) {
                     @Suppress("CheckReturnValue")
@@ -404,7 +410,11 @@ private constructor(
             callingPid: Int,
             callingUid: Int,
             request: GetPreferenceGraphRequest,
-        ) = PreferenceGraphBuilder(context, callingPid, callingUid, request).also { it.init() }
+            coroutineScope: CoroutineScope,
+        ) =
+            PreferenceGraphBuilder(context, callingPid, callingUid, request, coroutineScope).also {
+                it.init()
+            }
     }
 }
 
