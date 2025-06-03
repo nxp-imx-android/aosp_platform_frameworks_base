@@ -43,7 +43,7 @@ data class LetterboxLifecycleEvent(
     val taskBounds: Rect,
     val letterboxBounds: Rect? = null,
     val containerToken: WindowContainerToken? = null,
-    val leash: SurfaceControl? = null,
+    val taskLeash: SurfaceControl? = null,
 )
 
 /**
@@ -91,6 +91,6 @@ fun Change.toLetterboxLifecycleEvent(): LetterboxLifecycleEvent {
         taskBounds = taskBounds,
         letterboxBounds = letterboxBounds,
         containerToken = taskInfo?.token,
-        leash = leash
+        taskLeash = leash
     )
 }

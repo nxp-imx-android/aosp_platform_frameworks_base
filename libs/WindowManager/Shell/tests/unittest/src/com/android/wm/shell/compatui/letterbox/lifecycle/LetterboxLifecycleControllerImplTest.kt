@@ -85,7 +85,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
                 r.createLifecycleEvent(
                     type = LetterboxLifecycleEventType.OPEN,
                     letterboxBounds = Rect(500, 0, 800, 1800),
-                    letterboxActivityLeash = null
+                    eventTaskLeash = null
                 )
             )
             r.verifyCreateLetterboxSurface(expected = false)
@@ -99,7 +99,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
                 r.createLifecycleEvent(
                     type = LetterboxLifecycleEventType.OPEN,
                     letterboxBounds = Rect(500, 0, 800, 1800),
-                    letterboxActivityLeash = null
+                    eventTaskLeash = null
                 )
             )
             r.verifyUpdateLetterboxSurfaceBounds(
@@ -125,7 +125,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
         private val startTransaction: Transaction
         private val finishTransaction: Transaction
         private val token: WindowContainerToken
-        private val leash: SurfaceControl
+        private val taskLeash: SurfaceControl
 
         companion object {
             @JvmStatic
@@ -144,7 +144,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             startTransaction = mock<Transaction>()
             finishTransaction = mock<Transaction>()
             token = mock<WindowContainerToken>()
-            leash = mock<SurfaceControl>()
+            taskLeash = mock<SurfaceControl>()
             lifecycleController = LetterboxLifecycleControllerImpl(
                 letterboxController,
                 letterboxModeStrategy
@@ -158,7 +158,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             taskBounds: Rect = TASK_BOUNDS,
             letterboxBounds: Rect? = null,
             letterboxActivityToken: WindowContainerToken = token,
-            letterboxActivityLeash: SurfaceControl? = leash
+            eventTaskLeash: SurfaceControl? = taskLeash
         ): LetterboxLifecycleEvent = LetterboxLifecycleEvent(
             type = type,
             displayId = displayId,
@@ -166,7 +166,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             taskBounds = taskBounds,
             letterboxBounds = letterboxBounds,
             containerToken = letterboxActivityToken,
-            leash = letterboxActivityLeash
+            taskLeash = eventTaskLeash
         )
 
         fun invokeLifecycleControllerWith(event: LetterboxLifecycleEvent) {
@@ -188,7 +188,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
             ).createLetterboxSurface(
                 eq(LetterboxKey(displayId, taskId)),
                 eq(startTransaction),
-                eq(leash),
+                eq(taskLeash),
                 eq(token)
             )
         }
