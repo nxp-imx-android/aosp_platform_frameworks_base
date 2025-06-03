@@ -349,6 +349,10 @@ fun LegacyFlickerTest.appWindowIsInvisibleAtEnd(component: IComponentMatcher) {
     assertWmEnd { this.isAppWindowInvisible(component) }
 }
 
+fun LegacyFlickerTest.appWindowOnTopAtStart(component: IComponentMatcher) {
+    assertWmStart { this.isAppWindowOnTop(component) }
+}
+
 fun LegacyFlickerTest.appWindowOnTopAtEnd(component: IComponentMatcher) {
     assertWmEnd { this.isAppWindowOnTop(component) }
 }
