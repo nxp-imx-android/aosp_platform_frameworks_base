@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertNull;
 
+import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
@@ -36,7 +37,7 @@ public class ThemeSettingsTests {
             /* colorIndex= */ 1,
             /* systemPalette= */ 0xFF123456,
             /* accentColor= */ 0xFF654321,
-            /* colorSource= */ "home_wallpaper",
+            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
             /* themeStyle= */ ThemeStyle.VIBRANT,
             /* colorBoth= */ true);
 
@@ -49,16 +50,18 @@ public class ThemeSettingsTests {
                 .colorIndex(2)
                 .systemPalette(0xFFFF0000)
                 .accentColor(0xFF00FF00)
-                .colorSource("preset")
+                .colorSource(FieldColorSource.VALUE_PRESET)
                 .themeStyle(ThemeStyle.MONOCHROMATIC)
                 .colorBoth(false);
+
+
 
         ThemeSettings settings = updater.toThemeSettings(DEFAULTS);
 
         assertThat(settings.colorIndex()).isEqualTo(2);
         assertThat(settings.systemPalette()).isEqualTo(0xFFFF0000);
         assertThat(settings.accentColor()).isEqualTo(0xFF00FF00);
-        assertThat(settings.colorSource()).isEqualTo("preset");
+        assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
         assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.MONOCHROMATIC);
         assertThat(settings.colorBoth()).isEqualTo(false);
     }
@@ -87,7 +90,7 @@ public class ThemeSettingsTests {
                 .colorIndex(2)
                 .systemPalette(0xFFFF0000)
                 .accentColor(0xFF00FF00)
-                .colorSource("preset")
+                .colorSource(FieldColorSource.VALUE_PRESET)
                 .themeStyle(ThemeStyle.MONOCHROMATIC)
                 .colorBoth(false);
 

@@ -27,22 +27,15 @@ import java.util.function.Function;
 /** @hide */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public class FieldThemeStyle extends ThemeSettingsField<Integer, String> {
-    public FieldThemeStyle(
-            String key,
-            Function<ThemeSettingsUpdater, Integer> updaterGetter,
+    public FieldThemeStyle(String key, Function<ThemeSettingsUpdater, Integer> updaterGetter,
             BiConsumer<ThemeSettingsUpdater, Integer> updaterSetter,
-            Function<ThemeSettings, Integer> getter,
-            ThemeSettings defaults
-    ) {
+            Function<ThemeSettings, Integer> getter, ThemeSettings defaults) {
         super(key, updaterGetter, updaterSetter, getter, defaults);
     }
 
     private static final @ThemeStyle.Type List<Integer> sValidStyles = Arrays.asList(
-            ThemeStyle.EXPRESSIVE,
-            ThemeStyle.SPRITZ,
-            ThemeStyle.TONAL_SPOT, ThemeStyle.FRUIT_SALAD, ThemeStyle.RAINBOW,
-            ThemeStyle.VIBRANT,
-            ThemeStyle.MONOCHROMATIC);
+            ThemeStyle.EXPRESSIVE, ThemeStyle.SPRITZ, ThemeStyle.TONAL_SPOT, ThemeStyle.FRUIT_SALAD,
+            ThemeStyle.RAINBOW, ThemeStyle.VIBRANT, ThemeStyle.MONOCHROMATIC);
 
     @Override
     public String serialize(@ThemeStyle.Type Integer typedValue) {

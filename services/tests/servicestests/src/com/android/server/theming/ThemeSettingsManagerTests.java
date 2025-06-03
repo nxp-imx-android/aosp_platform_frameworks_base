@@ -21,7 +21,9 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentResolver;
+import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
+import android.content.theming.ThemeSettingsField;
 import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
 import android.provider.Settings;
@@ -43,7 +45,7 @@ public class ThemeSettingsManagerTests {
             /* colorIndex= */ 1,
             /* systemPalette= */ 0xFF123456,
             /* accentColor= */ 0xFF654321,
-            /* colorSource= */ "home_wallpaper",
+            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
             /* themeStyle= */ ThemeStyle.VIBRANT,
             /* colorBoth= */ true);
 
@@ -86,7 +88,7 @@ public class ThemeSettingsManagerTests {
                 .colorIndex(3)
                 .systemPalette(0xFF112233)
                 .accentColor(0xFF332211)
-                .colorSource("preset")
+                .colorSource(FieldColorSource.VALUE_PRESET)
                 .themeStyle(ThemeStyle.MONOCHROMATIC)
                 .colorBoth(false);
 
@@ -95,17 +97,17 @@ public class ThemeSettingsManagerTests {
         String settingsString = Settings.Secure.getStringForUser(mContentResolver,
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mUserId);
         JSONObject settingsJson = new JSONObject(settingsString);
-        assertThat(settingsJson.getString("android.theme.customization.color_index")).isEqualTo(
+        assertThat(settingsJson.getString(ThemeSettingsField.OVERLAY_COLOR_INDEX)).isEqualTo(
                 "3");
-        assertThat(settingsJson.getString("android.theme.customization.system_palette"))
+        assertThat(settingsJson.getString(ThemeSettingsField.OVERLAY_CATEGORY_SYSTEM_PALETTE))
                 .isEqualTo("ff112233");
-        assertThat(settingsJson.getString("android.theme.customization.accent_color"))
+        assertThat(settingsJson.getString(ThemeSettingsField.OVERLAY_CATEGORY_ACCENT_COLOR))
                 .isEqualTo("ff332211");
-        assertThat(settingsJson.getString("android.theme.customization.color_source"))
-                .isEqualTo("preset");
-        assertThat(settingsJson.getString("android.theme.customization.theme_style"))
-                .isEqualTo("MONOCHROMATIC");
-        assertThat(settingsJson.getString("android.theme.customization.color_both")).isEqualTo("0");
+        assertThat(settingsJson.getString(ThemeSettingsField.OVERLAY_COLOR_SOURCE))
+                .isEqualTo(FieldColorSource.VALUE_PRESET);
+        assertThat(settingsJson.getString(ThemeSettingsField.OVERLAY_CATEGORY_THEME_STYLE))
+                .isEqualTo(ThemeStyle.name(ThemeStyle.MONOCHROMATIC));
+        assertThat(settingsJson.getString(ThemeSettingsField.OVERLAY_COLOR_BOTH)).isEqualTo("0");
     }
 
     @Test
@@ -115,7 +117,7 @@ public class ThemeSettingsManagerTests {
                 .colorIndex(3)
                 .systemPalette(0xFF112233)
                 .accentColor(0xFF332211)
-                .colorSource("preset")
+                .colorSource(FieldColorSource.VALUE_PRESET)
                 .themeStyle(ThemeStyle.MONOCHROMATIC)
                 .colorBoth(false);
 

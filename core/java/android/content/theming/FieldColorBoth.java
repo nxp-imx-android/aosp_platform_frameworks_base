@@ -27,13 +27,9 @@ import java.util.function.Function;
 /** @hide */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public class FieldColorBoth extends ThemeSettingsField<Boolean, String> {
-    public FieldColorBoth(
-            String key,
-            Function<ThemeSettingsUpdater, Boolean> updaterGetter,
+    public FieldColorBoth(String key, Function<ThemeSettingsUpdater, Boolean> updaterGetter,
             BiConsumer<ThemeSettingsUpdater, Boolean> updaterSetter,
-            Function<ThemeSettings, Boolean> getter,
-            ThemeSettings defaults
-    ) {
+            Function<ThemeSettings, Boolean> getter, ThemeSettings defaults) {
         super(key, updaterGetter, updaterSetter, getter, defaults);
     }
 

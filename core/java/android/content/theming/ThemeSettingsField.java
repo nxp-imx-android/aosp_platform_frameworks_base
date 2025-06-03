@@ -48,7 +48,7 @@ import java.util.function.Function;
  * </ul>
  * <p>
  * The {@link #fromJSON(JSONObject, ThemeSettingsUpdater)} and
- * {@link #toJSON(ThemeSettings, JSONObject)}
+ * {@link #toJSON(ThemeSettingsUpdater, JSONObject)}
  * methods handle the extraction and serialization of the field's value to and from JSON objects
  * respectively. The {@link #fallbackParse(Object, Object)} method is used to parse a string
  * representation of the field's value, falling back to a default value if parsing fails.
