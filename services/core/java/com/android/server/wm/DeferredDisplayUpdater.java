@@ -17,6 +17,7 @@
 package com.android.server.wm;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
@@ -192,7 +193,8 @@ class DeferredDisplayUpdater {
     private void requestDisplayChangeTransition(boolean physicalDisplayUpdated,
             @NonNull Runnable onStartCollect) {
 
-        final Transition transition = new Transition(TRANSIT_CHANGE, /* flags= */ 0,
+        final Transition transition = new Transition(TRANSIT_CHANGE,
+                /* flags= */ TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION,
                 mDisplayContent.mTransitionController,
                 mDisplayContent.mTransitionController.mSyncEngine);
 
