@@ -151,7 +151,7 @@ constructor(
             notifKey = key,
             groupKey = key,
             shelfIcon = Icon.createWithResource(appContext, iconResId),
-            statusBarIcon = null,
+            statusBarIcon = Icon.createWithResource(appContext, iconResId),
             aodIcon = null,
             isAmbient = false,
         )

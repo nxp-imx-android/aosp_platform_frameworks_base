@@ -20,6 +20,7 @@ import android.app.Notification
 import android.content.Context
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.contentDescForNotification
 import javax.inject.Inject
@@ -36,6 +37,11 @@ class IconBuilder @Inject constructor(@Main private val context: Context) {
             "${entry.sbn.packageName}/0x${Integer.toHexString(entry.sbn.id)}",
             entry.sbn,
         )
+    }
+
+    @JvmOverloads
+    fun createIconView(entry: BundleEntry, context: Context = this.context): StatusBarIconView {
+        return StatusBarIconView(context, "${entry.bundleRepository.bundleType}", null)
     }
 
     fun getIconContentDescription(n: Notification): CharSequence {

@@ -39,6 +39,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.InflationException
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
@@ -275,6 +276,55 @@ constructor(
             }
         }
 
+    /**
+     * Inflate icon views for each icon variant and assign appropriate icons to them. Stores the
+     * result in [BundleEntry.getIcons]. These icons never change and can be shown on a redacted
+     * lockscreen, so they don't have an equivalent update method.
+     *
+     * @throws InflationException Exception if required icons are not valid or specified
+     */
+    @Throws(InflationException::class)
+    fun createIcons(context: Context, entry: BundleEntry) =
+        traceSection("IconManager.createIcons") {
+            // Construct the status bar icon view.
+            val sbIcon = iconBuilder.createIconView(entry)
+            sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            val sbChipIcon: StatusBarIconView?
+            if (!StatusBarConnectedDisplays.isEnabled) {
+                sbChipIcon = iconBuilder.createIconView(entry)
+                sbChipIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            } else {
+                sbChipIcon = null
+            }
+
+            // Construct the shelf icon view.
+            val shelfIcon = iconBuilder.createIconView(entry)
+            shelfIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            shelfIcon.visibility = View.INVISIBLE
+
+            // Construct the aod icon view.
+            val aodIcon = iconBuilder.createIconView(entry)
+            aodIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            aodIcon.setIncreasedSize(true)
+
+            // Set the icon views' icons
+            val (normalIconDescriptor, sensitiveIconDescriptor) = getIconDescriptors(context, entry)
+
+            try {
+                setIcon(entry, normalIconDescriptor, sbIcon)
+                if (sbChipIcon != null) {
+                    setIcon(entry, normalIconDescriptor, sbChipIcon)
+                }
+                setIcon(entry, sensitiveIconDescriptor, shelfIcon)
+                setIcon(entry, sensitiveIconDescriptor, aodIcon)
+                entry.icons =
+                    IconPack.buildPack(sbIcon, sbChipIcon, shelfIcon, aodIcon, entry.icons)
+            } catch (e: InflationException) {
+                entry.icons = IconPack.buildEmptyPack(entry.icons)
+                throw e
+            }
+        }
+
     private fun updateIconsSafe(entry: NotificationEntry) {
         try {
             updateIcons(entry)
@@ -294,6 +344,34 @@ constructor(
                 iconDescriptor
             }
         return Pair(iconDescriptor, sensitiveDescriptor)
+    }
+
+    @Throws(InflationException::class)
+    private fun getIconDescriptors(
+        context: Context,
+        entry: BundleEntry,
+    ): Pair<StatusBarIcon, StatusBarIcon> {
+        val iconDescriptor = getIconDescriptor(context, entry)
+        return Pair(iconDescriptor, iconDescriptor)
+    }
+
+    @Throws(InflationException::class)
+    private fun getIconDescriptor(context: Context, entry: BundleEntry): StatusBarIcon {
+        // If the descriptor is already cached, return it
+        entry.icons.smallIconDescriptor?.also {
+            return it
+        }
+        val (icon: Icon?, type: StatusBarIcon.Type) =
+            Icon.createWithResource(context, entry.bundleRepository.bundleIcon) to
+                StatusBarIcon.Type.ResourceIcon
+
+        if (icon == null) {
+            throw InflationException("No icon for bundle ${entry.bundleRepository.bundleType}")
+        }
+
+        val sbi = icon.toStatusBarIcon(context, entry, type)
+        entry.icons.smallIconDescriptor = sbi
+        return sbi
     }
 
     @Throws(InflationException::class)
@@ -369,6 +447,19 @@ constructor(
         }
     }
 
+    @Throws(InflationException::class)
+    private fun setIcon(
+        entry: BundleEntry,
+        iconDescriptor: StatusBarIcon,
+        iconView: StatusBarIconView,
+    ) {
+        iconView.setShowsConversation(false)
+        iconView.setTag(R.id.icon_is_pre_L, false)
+        if (!iconView.set(iconDescriptor)) {
+            throw InflationException("Couldn't create icon $iconDescriptor")
+        }
+    }
+
     private fun Icon.toStatusBarIcon(
         entry: NotificationEntry,
         type: StatusBarIcon.Type,
@@ -381,6 +472,22 @@ constructor(
             n.iconLevel,
             n.number,
             iconBuilder.getIconContentDescription(n),
+            type,
+        )
+    }
+
+    private fun Icon.toStatusBarIcon(
+        context: Context,
+        entry: BundleEntry,
+        type: StatusBarIcon.Type,
+    ): StatusBarIcon {
+        return StatusBarIcon(
+            context.user,
+            context.packageName,
+            /* icon = */ this,
+            0,
+            0,
+            context.getString(entry.bundleRepository.titleText),
             type,
         )
     }

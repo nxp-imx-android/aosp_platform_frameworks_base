@@ -22,7 +22,7 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.traceSection
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.statusbar.notification.collection.NotifCollection
+import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder.IconViewStore
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel
 import com.android.systemui.statusbar.phone.NotificationIconContainer
@@ -75,5 +75,5 @@ constructor(
 }
 
 /** [IconViewStore] for the status bar. */
-class StatusBarNotificationIconViewStore @Inject constructor(notifCollection: NotifCollection) :
-    IconViewStore by (notifCollection.iconViewStoreBy { it.statusBarIcon })
+class StatusBarNotificationIconViewStore @Inject constructor(notifPipeline: NotifPipeline) :
+    IconViewStore by (notifPipeline.iconViewStoreBy { it.statusBarIcon })

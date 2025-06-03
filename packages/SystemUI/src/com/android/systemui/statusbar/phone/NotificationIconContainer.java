@@ -356,7 +356,9 @@ public class NotificationIconContainer extends ViewGroup {
         }
         StatusBarIconView iconView = (StatusBarIconView) child;
         Icon sourceIcon = iconView.getSourceIcon();
-        String groupKey = iconView.getNotification().getGroupKey();
+        String groupKey = iconView.getNotification() != null
+                ? iconView.getNotification().getGroupKey()
+                : null;
         if (mReplacingIcons == null) {
             return false;
         }
