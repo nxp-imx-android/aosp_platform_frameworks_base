@@ -145,6 +145,10 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
         return mWeaverHidl;
     }
 
+    public boolean isWeaverEnabled() {
+        return mWeaverService != null;
+    }
+
     public int getSumOfWeaverFailureCounters() {
         return mWeaverService.getSumOfFailureCounters();
     }

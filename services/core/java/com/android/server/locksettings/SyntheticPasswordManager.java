@@ -719,10 +719,27 @@ class SyntheticPasswordManager {
             case WeaverReadStatus.OK:
                 return VerifyCredentialResponse.OK;
             case WeaverReadStatus.THROTTLE:
+                // Either the credential could not be verified because a timeout is still active, or
+                // the credential was incorrect and there is a timeout before the next attempt will
+                // be allowed. INCORRECT_KEY is preferred in the latter case to avoid the ambiguity,
+                // but we still have to support implementations that use THROTTLE for both cases.
+                //
+                // TODO(b/395976735): needs unit testing via MockWeaverService
                 return responseFromTimeout(weaverResponse);
             case WeaverReadStatus.INCORRECT_KEY:
                 if (weaverResponse.timeout != 0) {
+                    // The credential was incorrect, and there is a timeout until the next attempt
+                    // will be allowed. This is reached if the Weaver implementation returns
+                    // INCORRECT_KEY in this case instead of THROTTLE.
+                    //
+                    // TODO(b/395976735): use RESPONSE_CRED_INCORRECT in this case, and update users
+                    // of VerifyCredentialResponse to be compatible with that.
+                    // TODO(b/395976735): needs unit testing via MockWeaverService
                     return responseFromTimeout(weaverResponse);
+                }
+                if (android.security.Flags.softwareRatelimiter()) {
+                    return VerifyCredentialResponse.fromError(
+                            VerifyCredentialResponse.RESPONSE_CRED_INCORRECT);
                 }
                 break;
         }
