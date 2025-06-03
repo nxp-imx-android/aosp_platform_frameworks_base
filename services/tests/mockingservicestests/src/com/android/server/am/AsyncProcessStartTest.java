@@ -209,8 +209,8 @@ public class AsyncProcessStartTest {
                 anyBoolean(), anyBoolean(), any(),
                 any(), any(), any(),
                 any(), any(),
+                any(), any(), any(), anyBoolean(),
                 any(), any(),
-                any(), any(), any(),
                 anyLong(), anyLong());
 
         final ProcessRecord r = spy(new ProcessRecord(mAms, ai, ai.processName, ai.uid));
@@ -274,7 +274,7 @@ public class AsyncProcessStartTest {
                 null, null,
                 null,
                 null, null, null,
-                null, null, null, null,
+                null, null, false, null, null,
                 0, 0);
 
         // Sleep until timeout should have triggered

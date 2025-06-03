@@ -268,6 +268,12 @@ class ProcessRecord implements WindowProcessListener {
     private long[] mLoggableCompatChanges;
 
     /**
+     * Whether to log compat change checks to statsd.
+     */
+    @GuardedBy("mService")
+    private boolean mLogChangeChecksToStatsD;
+
+    /**
      * Who is watching for the death.
      */
     @GuardedBy("mService")
@@ -961,6 +967,11 @@ class ProcessRecord implements WindowProcessListener {
     }
 
     @GuardedBy("mService")
+    boolean isLogChangeChecksToStatsD() {
+        return mLogChangeChecksToStatsD;
+    }
+
+    @GuardedBy("mService")
     void setDisabledCompatChanges(long[] disabledCompatChanges) {
         mDisabledCompatChanges = disabledCompatChanges;
     }
@@ -968,6 +979,11 @@ class ProcessRecord implements WindowProcessListener {
     @GuardedBy("mService")
     void setLoggableCompatChanges(long[] loggableCompatChanges) {
         mLoggableCompatChanges = loggableCompatChanges;
+    }
+
+    @GuardedBy("mService")
+    void setLogChangeChecksToStatsD(boolean logChangeChecksToStatsD) {
+        mLogChangeChecksToStatsD = logChangeChecksToStatsD;
     }
 
     @GuardedBy("mService")

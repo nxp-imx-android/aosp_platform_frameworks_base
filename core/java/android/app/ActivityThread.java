@@ -997,6 +997,7 @@ public final class ActivityThread extends ClientTransactionHandler
 
         long[] disabledCompatChanges;
         long[] mLoggableCompatChanges;
+        boolean mLogChangeChecksToStatsD;
 
         SharedMemory mSerializedSystemFontMap;
 
@@ -1328,6 +1329,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 ContentCaptureOptions contentCaptureOptions,
                 long[] disabledCompatChanges,
                 long[] loggableCompatChanges,
+                boolean logChangeChecksToStatsD,
                 SharedMemory serializedSystemFontMap,
                 FileDescriptor applicationSharedMemoryFd,
                 long startRequestedElapsedTime,
@@ -1399,6 +1401,7 @@ public final class ActivityThread extends ClientTransactionHandler
             data.contentCaptureOptions = contentCaptureOptions;
             data.disabledCompatChanges = disabledCompatChanges;
             data.mLoggableCompatChanges = loggableCompatChanges;
+            data.mLogChangeChecksToStatsD = logChangeChecksToStatsD;
             data.mSerializedSystemFontMap = serializedSystemFontMap;
             data.startRequestedElapsedTime = startRequestedElapsedTime;
             data.startRequestedUptime = startRequestedUptime;
@@ -7598,7 +7601,10 @@ public final class ActivityThread extends ClientTransactionHandler
         Process.setStartTimes(SystemClock.elapsedRealtime(), SystemClock.uptimeMillis(),
                 data.startRequestedElapsedTime, data.startRequestedUptime);
 
-        AppCompatCallbacks.install(data.disabledCompatChanges, data.mLoggableCompatChanges);
+        AppCompatCallbacks.install(
+                data.disabledCompatChanges,
+                data.mLoggableCompatChanges,
+                data.mLogChangeChecksToStatsD);
         // Let libcore handle any compat changes after installing the list of compat changes.
         AppSpecializationHooks.handleCompatChangesBeforeBindingApplication();
 
