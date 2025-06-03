@@ -18,7 +18,6 @@ package com.android.wm.shell.appzoomout
 import android.content.Context
 import android.os.Handler
 import android.util.ArrayMap
-import android.view.Choreographer
 import android.view.Display
 import android.view.SurfaceControl
 import android.window.DisplayAreaInfo
@@ -42,7 +41,6 @@ class TopLevelZoomOutDisplayAreaOrganizer(
     displayLayout: DisplayLayout,
     private val context: Context,
     mainExecutor: Executor,
-    private val mainHandler: Handler,
     private val interactionJankMonitor: InteractionJankMonitor,
 ) : DisplayAreaOrganizer(mainExecutor) {
 
@@ -86,32 +84,33 @@ class TopLevelZoomOutDisplayAreaOrganizer(
         reset()
     }
 
-    fun setProgress(progress: Float) {
+    fun setProgress(progress: Float, vsyncId: Long, sysuiMainHandler: Handler?) {
         if (mProgress == progress) {
             return
         }
 
-        updateCuj(lastProgress = mProgress, progress = progress)
+        updateCuj(lastProgress = mProgress, progress = progress, sysuiMainHandler = sysuiMainHandler)
         mProgress = progress
-        apply()
+        apply(vsyncId)
     }
 
-    private fun apply() {
+    private fun apply(vsyncId: Long) {
         val tx = SurfaceControl.Transaction()
         mDisplayAreaTokenMap.values.forEach { leash: SurfaceControl ->
-            updateSurface(tx, leash, mProgress)
+            updateSurface(tx, leash, mProgress, vsyncId)
         }
         tx.apply()
     }
 
     private fun reset() {
-        setProgress(0f)
+        setProgress(0f, 0, null)
     }
 
     private fun updateSurface(
         tx: SurfaceControl.Transaction,
         leash: SurfaceControl,
-        progress: Float
+        progress: Float,
+        vsyncId: Long,
     ) {
         if (progress == 0f) {
             // Reset when scale is set back to 0.
@@ -168,10 +167,10 @@ class TopLevelZoomOutDisplayAreaOrganizer(
             .setCornerRadius(leash, cornerRadius * zoomOutScale)
             .setScale(leash, zoomOutScale, zoomOutScale)
             .setPosition(leash, positionXOffset, positionYOffset)
-            .setFrameTimelineVsync(Choreographer.getInstance().vsyncId)
+            .setFrameTimelineVsync(vsyncId)
     }
 
-    private fun updateCuj(lastProgress: Float, progress: Float) {
+    private fun updateCuj(lastProgress: Float, progress: Float, sysuiMainHandler: Handler?) {
         // TODO(b/418136893): Send clearer start/cancel/end signals from SysUI instead
         if (progress == 1f) {
             // If the animation reaches a progress of 1f, it means that assistant is being launched
@@ -186,7 +185,7 @@ class TopLevelZoomOutDisplayAreaOrganizer(
                 interactionJankMonitor.begin(
                     it,
                     context,
-                    mainHandler,
+                    sysuiMainHandler,
                     CUJ_LPP_ASSIST_INVOCATION_EFFECT
                 )
             }

@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.appzoomout
 
+import android.os.Handler
+
 class FakeAppZoomOut : AppZoomOut {
     var lastTopLevelProgress: Float = 0f
         private set
@@ -27,7 +29,7 @@ class FakeAppZoomOut : AppZoomOut {
         lastAppZoomProgress = progress
     }
 
-    override fun setTopLevelProgress(progress: Float) {
+    override fun setTopLevelProgress(progress: Float, vsyncId: Long, sysuiMainHandler: Handler) {
         lastTopLevelProgress = progress
     }
 }
