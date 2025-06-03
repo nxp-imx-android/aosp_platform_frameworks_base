@@ -20,6 +20,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.os.Binder
 import android.os.PowerManager
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
@@ -412,6 +413,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun onStatusBarTouchEvent_withoutSceneFlag_onSameDisplayTouch_handlesInput() =
         kosmos.testScope.runTest {
+            whenever(userTracker.userId).thenReturn(Binder.getCallingUserHandle().identifier)
             val shadeDisplayId = 0
             whenever(statusBarShadeDisplayPolicy.displayId)
                 .thenReturn(MutableStateFlow(shadeDisplayId))
