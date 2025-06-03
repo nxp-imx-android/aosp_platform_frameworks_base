@@ -95,7 +95,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         }
         val appIdAppFunctionAccessFlags =
             newState.mutateUserState(agentUserId)!!.mutateAppIdAppFunctionAccessFlags()
-        val flags = appIdAppFunctionAccessFlags.mutateOrPut(agentAppId) { MutableIntMap() }
+        val flags = appIdAppFunctionAccessFlags.mutateOrPut(agentAppId) { MutableIntIntMap() }
         flags.putWithDefault(targetUid, newFlags, 0)
         return true
     }
