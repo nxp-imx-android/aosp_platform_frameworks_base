@@ -168,6 +168,10 @@ public class GetRequestSession extends RequestSession<GetCredentialRequest,
     @Override
     public void onFinalErrorReceived(ComponentName componentName, String errorType,
             String message) {
+        if (Flags.metricBugfixesContinued()) {
+            mRequestSessionMetric.updateMetricsOnResponseReceived(mProviders, componentName,
+                    isPrimaryProviderViaProviderInfo(componentName));
+        }
         respondToClientWithErrorAndFinish(errorType, message);
     }
 
@@ -212,6 +216,10 @@ public class GetRequestSession extends RequestSession<GetCredentialRequest,
                 getProviderDataAndInitiateUi();
             } else {
                 String exception = GetCredentialException.TYPE_NO_CREDENTIAL;
+                if (Flags.metricBugfixesContinued()) {
+                    mRequestSessionMetric.updateMetricsOnResponseReceived(mProviders, componentName,
+                            isPrimaryProviderViaProviderInfo(componentName));
+                }
                 mRequestSessionMetric.collectFrameworkException(exception);
                 respondToClientWithErrorAndFinish(exception,
                         "No credentials available");
@@ -235,6 +243,10 @@ public class GetRequestSession extends RequestSession<GetCredentialRequest,
         // Respond to client if all auth entries are empty and nothing else to show on the UI
         if (providerDataContainsEmptyAuthEntriesOnly()) {
             String exception = GetCredentialException.TYPE_NO_CREDENTIAL;
+            if (Flags.metricBugfixesContinued()) {
+                mRequestSessionMetric.updateMetricsOnResponseReceived(mProviders, componentName,
+                        isPrimaryProviderViaProviderInfo(componentName));
+            }
             mRequestSessionMetric.collectFrameworkException(exception);
             respondToClientWithErrorAndFinish(exception,
                     "No credentials available");
