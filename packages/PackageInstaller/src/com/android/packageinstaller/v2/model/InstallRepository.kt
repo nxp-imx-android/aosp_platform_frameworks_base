@@ -112,6 +112,12 @@ class InstallRepository(private val context: Context) {
      * apps.
      */
     private var originatingUid = Process.INVALID_UID
+    /**
+     * UID of the origin of the installation from the sessionInfo. This UID is used to fetch the
+     * update-ownership app-label of the source of the install, and also check whether the source
+     * app has the AppOp to install other apps.
+     */
+    private var originatingUidFromSessionInfo = Process.INVALID_UID
     private var callingPackage: String? = null
     private var sessionStager: SessionStager? = null
     private lateinit var intent: Intent
@@ -160,7 +166,20 @@ class InstallRepository(private val context: Context) {
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
+        // By default, the originatingUid is callingUid. If the caller is the system download
+        // provider or the documents manager, we parse the originatingUid from the
+        // Intent.EXTRA_ORIGINATING_UID. And we check the appOps permission for the originatingUid
+        // later.
         originatingUid = callingUid
+        if (PackageUtil.isDocumentsManager(context, callingUid)
+            || PackageUtil.getSystemDownloadsProviderInfo(
+                context.packageManager, callingUid) != null) {
+            // The originating uid from the intent. We only trust/use this if it comes from either
+            // the document manager app or the downloads provider. It may be Process.INVALID_UID if
+            // the original owner App is not installed on the device now.
+            originatingUid = intent.getIntExtra(Intent.EXTRA_ORIGINATING_UID, Process.INVALID_UID)
+        }
+
         val sessionInfo: SessionInfo? =
             if (sessionId != SessionInfo.INVALID_ID)
                 packageInstaller.getSessionInfo(sessionId)
@@ -168,7 +187,7 @@ class InstallRepository(private val context: Context) {
         if (sessionInfo != null) {
             callingAttributionTag = sessionInfo.installerAttributionTag
             if (sessionInfo.originatingUid != Process.INVALID_UID) {
-                originatingUid = sessionInfo.originatingUid
+                originatingUidFromSessionInfo = sessionInfo.originatingUid
             }
         }
 
@@ -186,6 +205,7 @@ class InstallRepository(private val context: Context) {
                     "calling package: $callingPackage\n" +
                     "callingUid: $callingUid\n" +
                     "originatingUid: $originatingUid\n" +
+                    "originatingUidFromSessionInfo: $originatingUidFromSessionInfo\n" +
                     "sourceInfo: $sourceInfo"
             )
         }
@@ -203,8 +223,14 @@ class InstallRepository(private val context: Context) {
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
-        isTrustedSource = isInstallRequestFromTrustedSource(sourceInfo, this.intent, callingUid)
-        if (!isInstallPermissionGrantedOrRequested(context, callingUid, isTrustedSource)) {
+        isTrustedSource = isInstallRequestFromTrustedSource(sourceInfo, this.intent, originatingUid)
+        // In general case, the originatingUid is callingUid. If callingUid is INVALID_UID, return
+        // InstallAborted in the check above. When the originatingUid is INVALID_UID here, it means
+        // the originatingUid is from the system download manager or the system documents manager,
+        // and the package doesn't exist on the device. For this case, we don't need to check the
+        // permission for the originatingUid. The package doesn't exist.
+        if (originatingUid != Process.INVALID_UID
+            && !isInstallPermissionGrantedOrRequested(context, originatingUid, isTrustedSource)) {
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
@@ -241,8 +267,8 @@ class InstallRepository(private val context: Context) {
     ): Boolean {
         val isPrivilegedAndKnown = sourceInfo != null && sourceInfo.isPrivilegedApp &&
             intent.getBooleanExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, false)
-        val isInstallPkgPermissionGranted =
-            isPermissionGranted(context, Manifest.permission.INSTALL_PACKAGES, callingUid)
+        val isInstallPkgPermissionGranted = callingUid != Process.INVALID_UID
+                && isPermissionGranted(context, Manifest.permission.INSTALL_PACKAGES, callingUid)
 
         return isPrivilegedAndKnown || isInstallPkgPermissionGranted
     }
@@ -398,7 +424,9 @@ class InstallRepository(private val context: Context) {
         params.setOriginatingUri(
             intent.getParcelableExtra(Intent.EXTRA_ORIGINATING_URI, Uri::class.java)
         )
-        params.setOriginatingUid(originatingUid)
+        if (originatingUid != Process.INVALID_UID) {
+            params.setOriginatingUid(originatingUid)
+        }
         params.setInstallerPackageName(intent.getStringExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME))
         params.setInstallReason(PackageManager.INSTALL_REASON_USER)
         // Disable full screen intent usage by for sideloads.
@@ -690,8 +718,15 @@ class InstallRepository(private val context: Context) {
             !TextUtils.isEmpty(existingUpdateOwnerLabel) &&
             userActionReason == PackageInstaller.REASON_REMIND_OWNERSHIP
         ) {
+            // In the update-ownership case, the callingUid is not from the download manager
+            // or documents manager. The originatingUid should not be INVALID_UID, it should be
+            // callingUid in this case. It is not INVALID_UID.
+            var uid = originatingUidFromSessionInfo
+            if (uid == Process.INVALID_UID) {
+                uid = originatingUid
+            }
             val originatingPackageName =
-                getPackageNameForUid(context, originatingUid, callingPackage)
+                getPackageNameForUid(context, uid, callingPackage)
             getApplicationLabel(originatingPackageName)
         } else {
             null
