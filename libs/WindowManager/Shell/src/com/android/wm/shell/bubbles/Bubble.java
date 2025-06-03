@@ -16,7 +16,6 @@
 package com.android.wm.shell.bubbles;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.os.AsyncTask.Status.FINISHED;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PRIVATE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
@@ -53,7 +52,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
@@ -139,8 +137,6 @@ public class Bubble implements BubbleViewProvider {
 
     @Nullable
     private BubbleViewInfoTask mInflationTask;
-    @Nullable
-    private BubbleViewInfoTaskLegacy mInflationTaskLegacy;
     private boolean mInflateSynchronously;
     private boolean mPendingIntentCanceled;
     private boolean mIsImportantConversation;
@@ -758,53 +754,26 @@ public class Bubble implements BubbleViewProvider {
             BubbleAppInfoProvider appInfoProvider,
             boolean skipInflation) {
         ProtoLog.v(WM_SHELL_BUBBLES, "Inflate bubble key=%s", getKey());
-        if (Flags.bubbleViewInfoExecutors()) {
-            if (mInflationTask != null && !mInflationTask.isFinished()) {
-                mInflationTask.cancel();
-            }
-            mInflationTask = new BubbleViewInfoTask(this,
-                    context,
-                    expandedViewManager,
-                    taskViewFactory,
-                    positioner,
-                    stackView,
-                    layerView,
-                    iconFactory,
-                    appInfoProvider,
-                    skipInflation,
-                    callback,
-                    mMainExecutor,
-                    mBgExecutor);
-            if (mInflateSynchronously) {
-                mInflationTask.startSync();
-            } else {
-                mInflationTask.start();
-            }
+        if (mInflationTask != null && !mInflationTask.isFinished()) {
+            mInflationTask.cancel();
+        }
+        mInflationTask = new BubbleViewInfoTask(this,
+                context,
+                expandedViewManager,
+                taskViewFactory,
+                positioner,
+                stackView,
+                layerView,
+                iconFactory,
+                appInfoProvider,
+                skipInflation,
+                callback,
+                mMainExecutor,
+                mBgExecutor);
+        if (mInflateSynchronously) {
+            mInflationTask.startSync();
         } else {
-            if (mInflationTaskLegacy != null && mInflationTaskLegacy.getStatus() != FINISHED) {
-                mInflationTaskLegacy.cancel(true /* mayInterruptIfRunning */);
-            }
-            mInflationTaskLegacy = new BubbleViewInfoTaskLegacy(this,
-                    context,
-                    expandedViewManager,
-                    taskViewFactory,
-                    positioner,
-                    stackView,
-                    layerView,
-                    iconFactory,
-                    skipInflation,
-                    bubble -> {
-                        if (callback != null) {
-                            callback.onBubbleViewsReady(bubble);
-                        }
-                    },
-                    mMainExecutor,
-                    mBgExecutor);
-            if (mInflateSynchronously) {
-                mInflationTaskLegacy.onPostExecute(mInflationTaskLegacy.doInBackground());
-            } else {
-                mInflationTaskLegacy.execute();
-            }
+            mInflationTask.start();
         }
     }
 
@@ -813,56 +782,13 @@ public class Bubble implements BubbleViewProvider {
     }
 
     void stopInflation() {
-        if (Flags.bubbleViewInfoExecutors()) {
-            if (mInflationTask == null) {
-                return;
-            }
-            mInflationTask.cancel();
-        } else {
-            if (mInflationTaskLegacy == null) {
-                return;
-            }
-            mInflationTaskLegacy.cancel(true /* mayInterruptIfRunning */);
+        if (mInflationTask == null) {
+            return;
         }
+        mInflationTask.cancel();
     }
 
     void setViewInfo(BubbleViewInfoTask.BubbleViewInfo info) {
-        if (!isInflated()) {
-            mIconView = info.imageView;
-            mExpandedView = info.expandedView;
-            mBubbleBarExpandedView = info.bubbleBarExpandedView;
-        }
-
-        mShortcutInfo = info.shortcutInfo;
-        mAppName = info.appName;
-        if (mTitle == null) {
-            mTitle = mAppName;
-        }
-        mFlyoutMessage = info.flyoutMessage;
-
-        mBadgeBitmap = info.badgeBitmap;
-        mRawBadgeBitmap = info.rawBadgeBitmap;
-        mBubbleBitmap = info.bubbleBitmap;
-
-        mDotColor = info.dotColor;
-        mDotPath = info.dotPath;
-
-        if (mExpandedView != null) {
-            mExpandedView.update(this /* bubble */);
-        }
-        if (mBubbleBarExpandedView != null) {
-            mBubbleBarExpandedView.update(this /* bubble */);
-        }
-        if (mIconView != null) {
-            mIconView.setRenderedBubble(this /* bubble */);
-        }
-    }
-
-    /**
-     * @deprecated {@link BubbleViewInfoTaskLegacy} is deprecated.
-     */
-    @Deprecated
-    void setViewInfoLegacy(BubbleViewInfoTaskLegacy.BubbleViewInfo info) {
         if (!isInflated()) {
             mIconView = info.imageView;
             mExpandedView = info.expandedView;
