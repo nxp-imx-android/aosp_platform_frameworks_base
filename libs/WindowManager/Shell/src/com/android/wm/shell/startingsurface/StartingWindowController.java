@@ -85,6 +85,7 @@ import java.util.ArrayList;
  */
 public class StartingWindowController implements RemoteCallable<StartingWindowController> {
     public static final String TAG = "ShellStartingWindow";
+    private static final String TRACE_NAME_STARTING_SHOWING = "starting_window_showing";
 
     private static final long TASK_BG_COLOR_RETAIN_TIME_MS = 5000;
 
@@ -166,19 +167,9 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             }
             final ArrayList<WindowRecord> records = findRecords(transition);
             if (records != null) {
-                startTransaction.addTransactionCommittedListener(mShellMainExecutor, () -> {
-                    for (int i = records.size() - 1; i >= 0; --i) {
-                        final int taskId = records.get(i).mTaskId;
-                        final WindowRecord wr = mWindowRecords.get(taskId);
-                        if (wr == null) {
-                            return;
-                        }
-                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
-                                "RSO:Transaction applied for task=%d", taskId);
-                        wr.mTransactionApplied = true;
-                        executeRemovalIfPossible(wr);
-                    }
-                });
+                for (int i = records.size() - 1; i >= 0; --i) {
+                    records.get(i).mStartTransaction = startTransaction;
+                }
                 return;
             }
 
@@ -189,8 +180,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
                         && TransitionUtil.isOpeningMode(c.getMode())) {
                     // Uncertain condition, this is activity transition so we don't know which
                     // task the starting window belongs.
-                    final UncertainTracker tracker = new UncertainTracker(
-                            () -> uncertainTrackComplete(transition));
+                    final UncertainTracker tracker = new UncertainTracker(transition,
+                            () -> uncertainTrackComplete(transition, "Transaction"));
                     mUncertainTrackers.put(transition, tracker);
                     startTransaction.addTransactionCommittedListener(mShellMainExecutor,
                             tracker);
@@ -198,6 +189,70 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
                             "RSO:Create uncertain transition tracker=%s", tracker);
                     break;
                 }
+            }
+        }
+
+        @Override
+        public void onTransitionStarting(@NonNull IBinder transition) {
+            if (!hasPendingRemoval()) {
+                return;
+            }
+            final ArrayList<WindowRecord> records = findRecords(transition);
+            if (records != null) {
+                for (int i = records.size() - 1; i >= 0; --i) {
+                    final WindowRecord r = records.get(i);
+                    r.mTransitionPlayed = true;
+                    executeRemovalIfPossible(r);
+                }
+            } else {
+                uncertainTrackComplete(transition, "onTransitionStarting");
+            }
+        }
+
+        @Override
+        public void onTransitionMerged(@NonNull IBinder merged, @NonNull IBinder playing) {
+            if (!hasPendingRemoval()) {
+                return;
+            }
+            final ArrayList<WindowRecord> mergedRecords = findRecords(merged);
+            // The starting window is created in a continuing transition.
+            if (mergedRecords != null) {
+                for (int i = mergedRecords.size() - 1; i >= 0; --i) {
+                    final WindowRecord r = mergedRecords.get(i);
+                    final int taskId = r.mTaskId;
+                    final SurfaceControl.Transaction st = r.mStartTransaction;
+                    if (st != null) {
+                        // Listen for the transaction to commit so that the window has a chance to
+                        // be removed earlier, before onFinished.
+                        st.addTransactionCommittedListener(mShellMainExecutor, () -> {
+                            final WindowRecord wr = mWindowRecords.get(taskId);
+                            if (wr == null) {
+                                return;
+                            }
+                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                                    "RSO:Transaction applied for task=%d", taskId);
+                            wr.mTransitionPlayed = true;
+                            executeRemovalIfPossible(wr);
+                        });
+                    } else {
+                        // Switch merged to playing because they won't receive onTransitionFinished.
+                        r.mTransition = playing;
+                    }
+                }
+                return;
+            }
+            // Merge uncertainTrackers to initial playing transition.
+            final ArrayList<WindowRecord> records = findRecords(playing);
+            if (records == null) {
+                return;
+            }
+            final UncertainTracker uncertainTracker = mUncertainTrackers.get(merged);
+            if (uncertainTracker == null) {
+                return;
+            }
+            for (int i = records.size() - 1; i >= 0; --i) {
+                final WindowRecord r = records.get(i);
+                r.updateUncertainTrackers(uncertainTracker);
             }
         }
 
@@ -211,11 +266,17 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             if (records != null) {
                 for (int i = records.size() - 1; i >= 0; --i) {
                     final WindowRecord r = records.get(i);
-                    r.mTransactionApplied = true;
+                    r.mTransitionPlayed = true;
+                    if (r.mMergedUncertainTrackers != null) {
+                        for (int j = r.mMergedUncertainTrackers.size() - 1; j >= 0; --j) {
+                            final UncertainTracker u = r.mMergedUncertainTrackers.remove(j);
+                            mUncertainTrackers.remove(u.mTransition);
+                        }
+                    }
                     executeRemovalIfPossible(r);
                 }
             } else {
-                uncertainTrackComplete(transition);
+                uncertainTrackComplete(transition, "onTransitionFinished");
             }
         }
 
@@ -240,6 +301,9 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             }
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
                     "RSO:Window wasn't created, removal record task=%d", taskId);
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_WINDOW_MANAGER, TAG, taskId);
+            }
             mWindowRecords.remove(taskId);
         }
 
@@ -277,17 +341,19 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
                 return;
             }
             if (record.mTransition == null
-                    || (record.mTransactionApplied && mUncertainTrackers.isEmpty())) {
+                    || (record.mTransitionPlayed && mUncertainTrackers.isEmpty())) {
                 mWindowRecords.remove(record.mTaskId);
                 removeStartingWindowInner(record.mStartingWindowRemovalInfo);
             }
         }
 
-        private void uncertainTrackComplete(IBinder transition) {
+        private void uncertainTrackComplete(IBinder transition, String reason) {
             final boolean hasRemove = mUncertainTrackers.remove(transition) != null;
             if (!hasRemove || !mUncertainTrackers.isEmpty()) {
                 return;
             }
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_REMOVE_STARTING_TRACKER,
+                    "RSO:uncertainTrackComplete=%s", reason);
             // check if anything task left due to uncertain transition.
             for (int i = mWindowRecords.size() - 1; i >= 0; --i) {
                 final WindowRecord record = mWindowRecords.valueAt(i);
@@ -296,8 +362,10 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
         }
 
         static class UncertainTracker implements SurfaceControl.TransactionCommittedListener {
+            private final IBinder mTransition;
             private final Runnable mCleanUp;
-            UncertainTracker(Runnable cleanUp) {
+            UncertainTracker(IBinder transition, Runnable cleanUp) {
+                mTransition = transition;
                 mCleanUp = cleanUp;
             }
 
@@ -311,11 +379,13 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
 
         private static class WindowRecord {
             final int mTaskId;
-            final IBinder mTransition;
-            boolean mTransactionApplied;
+            IBinder mTransition;
+            boolean mTransitionPlayed;
             StartingWindowRemovalInfo mStartingWindowRemovalInfo;
 
             final ArraySet<IBinder> mAppTokens = new ArraySet<>();
+            ArrayList<UncertainTracker> mMergedUncertainTrackers;
+            SurfaceControl.Transaction mStartTransaction;
 
             WindowRecord(int taskId, IBinder transition, IBinder appToken) {
                 mTaskId = taskId;
@@ -330,6 +400,13 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
             boolean removeAppToken(IBinder token) {
                 mAppTokens.remove(token);
                 return mAppTokens.isEmpty();
+            }
+
+            void updateUncertainTrackers(UncertainTracker uncertainTracker) {
+                if (mMergedUncertainTrackers == null) {
+                    mMergedUncertainTrackers = new ArrayList<>();
+                }
+                mMergedUncertainTrackers.add(uncertainTracker);
             }
         }
     }
@@ -366,6 +443,10 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
         if (Flags.removeStartingInTransition()) {
             mShellMainExecutor.execute(() -> mRemoveStartingObserver.onAddingWindow(
                     windowInfo.taskInfo.taskId, windowInfo.transitionToken, windowInfo.appToken));
+        }
+        if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+            Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_WINDOW_MANAGER, TAG,
+                    TRACE_NAME_STARTING_SHOWING, windowInfo.taskInfo.taskId);
         }
         mSplashScreenExecutor.execute(() -> {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "addStartingWindow");
@@ -447,6 +528,9 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
     }
 
     void removeStartingWindowInner(StartingWindowRemovalInfo removalInfo) {
+        if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_WINDOW_MANAGER, TAG, removalInfo.taskId);
+        }
         mSplashScreenExecutor.execute(() -> mStartingSurfaceDrawer.removeStartingWindow(
                 removalInfo));
         if (!removalInfo.windowlessSurface) {
