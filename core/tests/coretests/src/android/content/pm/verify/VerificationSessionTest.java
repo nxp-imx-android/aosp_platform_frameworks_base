@@ -124,6 +124,19 @@ public class VerificationSessionTest {
     }
 
     @Test
+    public void testParcelWithNullExtensionParams() {
+        VerificationSession session = new VerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
+                TEST_PACKAGE_NAME, TEST_PACKAGE_URI, TEST_SIGNING_INFO, mTestDeclaredLibraries,
+                /* extensionParams= */ null, TEST_POLICY, mTestSessionInterface);
+        Parcel parcel = Parcel.obtain();
+        session.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        VerificationSession sessionFromParcel =
+                VerificationSession.CREATOR.createFromParcel(parcel);
+        assertThat(sessionFromParcel.getExtensionParams().isEmpty()).isTrue();
+    }
+
+    @Test
     public void testInterface() throws Exception {
         when(mTestSessionInterface.getTimeoutTime(anyInt())).thenAnswer(i -> TEST_TIMEOUT_TIME);
         when(mTestSessionInterface.extendTimeRemaining(anyInt(), anyLong())).thenAnswer(

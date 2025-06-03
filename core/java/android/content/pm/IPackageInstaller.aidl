@@ -96,7 +96,7 @@ interface IPackageInstaller {
 
     @EnforcePermission("VERIFICATION_AGENT")
     int getVerificationPolicy(int userId);
-
     @EnforcePermission("VERIFICATION_AGENT")
     boolean setVerificationPolicy(int policy, int userId);
+    String getVerificationServiceProvider();
 }

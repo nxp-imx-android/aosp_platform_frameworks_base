@@ -438,13 +438,18 @@ public class PackageInstaller {
      * {@link Session#commit(IntentSender)}. This extra is provided only when the installation has
      * failed. Installers can use this extra to check if the installation failure was caused by a
      * verification failure.
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    @SystemApi
     public static final String EXTRA_VERIFICATION_FAILURE_REASON =
             "android.content.pm.extra.VERIFICATION_FAILURE_REASON";
+
+    /**
+     * An extra containing the response provided by the verifier to any extension
+     * params provided by the installer. It will be of type {@link PersistableBundle}.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String EXTRA_VERIFICATION_EXTENSION_RESPONSE =
+            "android.content.pm.extra.VERIFICATION_EXTENSION_RESPONSE";
 
     /**
      * Streaming installation pending.
@@ -794,31 +799,24 @@ public class PackageInstaller {
      * be connected. It can also corresponds to the status of
      * {@link VerificationSession#VERIFICATION_INCOMPLETE_UNKNOWN} reported by the verifier via
      * {@link VerificationSession#reportVerificationIncomplete(int)}.
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    @SystemApi
     public static final int VERIFICATION_FAILED_REASON_UNKNOWN = 0;
 
     /**
      * Verification failed because the network is unavailable. This corresponds to the status of
      * {@link VerificationSession#VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE} reported by the
      * verifier via {@link VerificationSession#reportVerificationIncomplete(int)}.
-     *
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    @SystemApi
     public static final int VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE = 1;
 
     /**
      * Verification failed because the package is blocked, as reported by the verifier via
      * {@link VerificationSession#reportVerificationComplete(VerificationStatus)} or
      * {@link VerificationSession#reportVerificationComplete(VerificationStatus, PersistableBundle)}
-     * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    @SystemApi
     public static final int VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED = 2;
 
     /**
@@ -1644,6 +1642,22 @@ public class PackageInstaller {
     public final boolean setVerificationPolicy(@VerificationPolicy int policy) {
         try {
             return mInstaller.setVerificationPolicy(policy, mUserId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     *  Return the package name of the verification service provider, for the
+     *  purpose of interacting with the specific verifier in relation to
+     *  extension parameters and response structure.  Return null if the system
+     *  verifier service provider is not available to the caller, or if there is no
+     *  such provider specified by the system.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public final @Nullable String getVerificationServiceProvider() {
+        try {
+            return mInstaller.getVerificationServiceProvider();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -2950,6 +2964,9 @@ public class PackageInstaller {
         public boolean forceVerification;
         /** {@hide} */
         public boolean isAutoInstallDependenciesEnabled = true;
+        /** {@hide} */
+        @Nullable
+        public PersistableBundle extensionParams;
 
         private final ArrayMap<String, Integer> mPermissionStates;
 
@@ -3011,6 +3028,7 @@ public class PackageInstaller {
             dexoptCompilerFilter = source.readString();
             forceVerification = source.readBoolean();
             isAutoInstallDependenciesEnabled = source.readBoolean();
+            extensionParams = source.readPersistableBundle();
         }
 
         /** {@hide} */
@@ -3049,6 +3067,7 @@ public class PackageInstaller {
             ret.dexoptCompilerFilter = dexoptCompilerFilter;
             ret.forceVerification = forceVerification;
             ret.isAutoInstallDependenciesEnabled = isAutoInstallDependenciesEnabled;
+            ret.extensionParams = extensionParams;
             return ret;
         }
 
@@ -3816,6 +3835,19 @@ public class PackageInstaller {
             isAutoInstallDependenciesEnabled = enableAutoInstallDependencies;
         }
 
+        /**
+         * Optionally called to provide a set of parameters to pass directly
+         * to the verification service provider (a.k.a., the verifier) to
+         * provide any additional context regarding the pending verification.
+         * The structure of this bundle will be specific to the implementation
+         * of the verifier, so callers can determine the verifier by calling
+         * {@link PackageInstaller#getVerificationServiceProvider()}.
+         */
+        @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+        public void setExtensionParams(@NonNull PersistableBundle extensionParams) {
+            this.extensionParams = extensionParams;
+        }
+
         /** {@hide} */
         public void dump(IndentingPrintWriter pw) {
             pw.printPair("mode", mode);
@@ -3853,6 +3885,7 @@ public class PackageInstaller {
             pw.printPair("dexoptCompilerFilter", dexoptCompilerFilter);
             pw.printPair("forceVerification", forceVerification);
             pw.printPair("isAutoInstallDependenciesEnabled", isAutoInstallDependenciesEnabled);
+            pw.printPair("extensionParams", extensionParams);
             pw.println();
         }
 
@@ -3901,6 +3934,7 @@ public class PackageInstaller {
             dest.writeString(dexoptCompilerFilter);
             dest.writeBoolean(forceVerification);
             dest.writeBoolean(isAutoInstallDependenciesEnabled);
+            dest.writePersistableBundle(extensionParams);
         }
 
         public static final Parcelable.Creator<SessionParams>
@@ -5668,5 +5702,4 @@ public class PackageInstaller {
             return mUserActionIntent;
         }
     }
-
 }

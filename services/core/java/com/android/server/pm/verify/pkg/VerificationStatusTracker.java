@@ -17,6 +17,7 @@
 package com.android.server.pm.verify.pkg;
 
 import android.annotation.CurrentTimeMillisLong;
+import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -38,7 +39,8 @@ public final class VerificationStatusTracker {
      * can be extended via {@link #extendTimeRemaining} to the maximum allowed.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PROTECTED)
-    public VerificationStatusTracker(long defaultTimeoutMillis, long maxExtendedTimeoutMillis,
+    public VerificationStatusTracker(@DurationMillisLong long defaultTimeoutMillis,
+            @DurationMillisLong long maxExtendedTimeoutMillis,
             @NonNull VerifierController.Injector injector) {
         mStartTime = injector.getCurrentTimeMillis();
         mTimeoutTime = mStartTime + defaultTimeoutMillis;
@@ -59,7 +61,7 @@ public final class VerificationStatusTracker {
      * @return 0 if the timeout time has been reached, otherwise the remaining time in milliseconds
      * before the timeout is reached.
      */
-    public @CurrentTimeMillisLong long getRemainingTime() {
+    public @DurationMillisLong long getRemainingTime() {
         final long remainingTime = mTimeoutTime - mInjector.getCurrentTimeMillis();
         if (remainingTime < 0) {
             return 0;
@@ -73,7 +75,7 @@ public final class VerificationStatusTracker {
      * @return the amount of time in millis that the timeout has been extended, subject to the max
      * amount allowed.
      */
-    public long extendTimeRemaining(@CurrentTimeMillisLong long additionalMs) {
+    public @DurationMillisLong long extendTimeRemaining(@DurationMillisLong long additionalMs) {
         if (mTimeoutTime + additionalMs > mMaxTimeoutTime) {
             additionalMs = mMaxTimeoutTime - mTimeoutTime;
         }

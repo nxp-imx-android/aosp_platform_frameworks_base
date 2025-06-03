@@ -16,22 +16,20 @@
 
 package com.android.server.pm.verify.pkg;
 
-import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
-import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.provider.DeviceConfig.NAMESPACE_PACKAGE_MANAGER_SERVICE;
 
+import static com.android.server.pm.PackageInstallerService.isValidPackageName;
+
+import android.annotation.CurrentTimeMillisLong;
+import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SuppressLint;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.SigningInfo;
 import android.content.pm.verify.pkg.IVerificationSessionInterface;
@@ -39,13 +37,10 @@ import android.content.pm.verify.pkg.IVerifierService;
 import android.content.pm.verify.pkg.VerificationSession;
 import android.content.pm.verify.pkg.VerificationStatus;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.PersistableBundle;
-import android.os.Process;
-import android.os.UserHandle;
+import android.os.SystemProperties;
 import android.provider.DeviceConfig;
-import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 
@@ -55,7 +50,6 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.infra.ServiceConnector;
 import com.android.server.pm.Computer;
 import com.android.server.pm.PackageInstallerSession;
-import com.android.server.pm.pkg.PackageStateInternal;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -111,6 +105,8 @@ public class VerifierController {
     // The maximum amount of time to wait before the system unbinds from the verifier.
     private static final long UNBIND_TIMEOUT_MILLIS = TimeUnit.HOURS.toMillis(6);
 
+    private static VerifierController sInstance;
+
     private final Context mContext;
     private final Handler mHandler;
     // Guards the remote service object, as well as the verifier name and UID, which should all be
@@ -119,44 +115,53 @@ public class VerifierController {
     @Nullable
     @GuardedBy("mLock")
     private ServiceConnector<IVerifierService> mRemoteService;
-    @Nullable
-    @GuardedBy("mLock")
-    private ComponentName mRemoteServiceComponentName;
     @GuardedBy("mLock")
     private int mRemoteServiceUid = INVALID_UID;
     @NonNull
-    private Injector mInjector;
+    private final Injector mInjector;
+
+    @Nullable
+    private final String mVerifierPackageName;
 
     // Repository of active verification sessions and their status, mapping from id to status.
     @NonNull
     @GuardedBy("mVerificationStatus")
     private final SparseArray<VerificationStatusTracker> mVerificationStatus = new SparseArray<>();
 
-    public VerifierController(@NonNull Context context, @NonNull Handler handler) {
-        this(context, handler, new Injector());
+    /**
+     * Get an instance of VerifierController.
+     */
+    public static VerifierController getInstance(@NonNull Context context, @NonNull Handler handler,
+            @Nullable String verifierPackageName) {
+        if (sInstance == null) {
+            sInstance = new VerifierController(
+                    context, handler, verifierPackageName, new Injector());
+        }
+        return sInstance;
     }
 
     @VisibleForTesting
     public VerifierController(@NonNull Context context, @NonNull Handler handler,
-            @NonNull Injector injector) {
+            @Nullable String verifierPackageName, @NonNull Injector injector) {
         mContext = context;
         mHandler = handler;
+        mVerifierPackageName = verifierPackageName;
         mInjector = injector;
     }
 
     /**
      * Used by the installation session to get the package name of the installed verifier.
+     * It can be overwritten by a system config for testing purpose.
+     * TODO(b/360129657): remove debug property and verifier override after moving tests to cts-root
      */
     @Nullable
-    public String getVerifierPackageName(Supplier<Computer> snapshotSupplier, int userId) {
-        synchronized (mLock) {
-            if (isVerifierConnectedLocked()) {
-                // Verifier is connected or is being connected, so it must be installed.
-                return mRemoteServiceComponentName.getPackageName();
-            }
+    public String getVerifierPackageName() {
+        final String verifierPackageOverride = SystemProperties.get(
+                "debug.pm.verification_service_provider_override", "");
+        if (!verifierPackageOverride.isEmpty() && isValidPackageName(verifierPackageOverride)) {
+            return verifierPackageOverride;
         }
-        // Verifier has been disconnected, or it hasn't been connected. Check if it's installed.
-        return mInjector.getVerifierPackageName(snapshotSupplier.get(), userId);
+        return mVerifierPackageName;
     }
 
     /**
@@ -186,49 +191,46 @@ public class VerifierController {
             }
             return true;
         }
-        Computer snapshot = snapshotSupplier.get();
-        Pair<ServiceConnector<IVerifierService>, ComponentName> result =
-                mInjector.getRemoteService(snapshot, mContext, userId, mHandler);
-        if (result == null || result.first == null) {
-            if (DEBUG) {
-                Slog.i(TAG, "Unable to find a qualified verifier.");
-            }
+        final String verifierPackageName = getVerifierPackageName();
+        if (verifierPackageName == null) {
+            // The system has no verifier installed, and if it has not been overwritten by any tests
             return false;
         }
-        final int verifierUid = snapshot.getPackageUidInternal(
-                result.second.getPackageName(), 0, userId, /* callingUid= */ SYSTEM_UID);
+        final int verifierUid = snapshotSupplier.get().getPackageUidInternal(
+                verifierPackageName, 0, userId, /* callingUid= */ SYSTEM_UID);
         if (verifierUid == INVALID_UID) {
             if (DEBUG) {
-                Slog.i(TAG, "Unable to find the UID of the qualified verifier.");
+                Slog.i(TAG, "Unable to find the UID of the qualified verifier."
+                        + " Is it installed on " + userId + "?");
             }
             return false;
         }
         synchronized (mLock) {
-            mRemoteService = result.first;
-            mRemoteServiceComponentName = result.second;
+            mRemoteService = mInjector.getRemoteService(
+                    verifierPackageName, mContext, userId, mHandler);
             mRemoteServiceUid = verifierUid;
         }
 
         if (DEBUG) {
-            Slog.i(TAG, "Connecting to a qualified verifier: " + mRemoteServiceComponentName);
+            Slog.i(TAG, "Connecting to a qualified verifier: " + verifierPackageName);
         }
         mRemoteService.setServiceLifecycleCallbacks(
                 new ServiceConnector.ServiceLifecycleCallbacks<>() {
                     @Override
                     public void onConnected(@NonNull IVerifierService service) {
-                        Slog.i(TAG, "Verifier " + mRemoteServiceComponentName + " is connected");
+                        Slog.i(TAG, "Verifier " + verifierPackageName + " is connected");
                     }
 
                     @Override
                     public void onDisconnected(@NonNull IVerifierService service) {
                         Slog.w(TAG,
-                                "Verifier " + mRemoteServiceComponentName + " is disconnected");
+                                "Verifier " + verifierPackageName + " is disconnected");
                         destroy();
                     }
 
                     @Override
                     public void onBinderDied() {
-                        Slog.w(TAG, "Verifier " + mRemoteServiceComponentName + " has died");
+                        Slog.w(TAG, "Verifier " + verifierPackageName + " has died");
                         destroy();
                     }
 
@@ -237,7 +239,6 @@ public class VerifierController {
                             if (isVerifierConnectedLocked()) {
                                 mRemoteService.unbind();
                                 mRemoteService = null;
-                                mRemoteServiceComponentName = null;
                                 mRemoteServiceUid = INVALID_UID;
                             }
                         }
@@ -249,7 +250,7 @@ public class VerifierController {
 
     @GuardedBy("mLock")
     private boolean isVerifierConnectedLocked() {
-        return mRemoteService != null && mRemoteServiceComponentName != null;
+        return mRemoteService != null;
     }
 
     /**
@@ -314,7 +315,8 @@ public class VerifierController {
             Uri stagedPackageUri, SigningInfo signingInfo,
             List<SharedLibraryInfo> declaredLibraries,
             @PackageInstaller.VerificationPolicy int verificationPolicy,
-            PersistableBundle extensionParams, PackageInstallerSession.VerifierCallback callback,
+            @Nullable PersistableBundle extensionParams,
+            PackageInstallerSession.VerifierCallback callback,
             boolean retry) {
         // Try connecting to the verifier if not already connected
         if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId)) {
@@ -467,7 +469,7 @@ public class VerifierController {
         }
 
         @Override
-        public long getTimeoutTime(int verificationId) {
+        public @CurrentTimeMillisLong long getTimeoutTime(int verificationId) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatus) {
                 final VerificationStatusTracker tracker = mVerificationStatus.get(verificationId);
@@ -480,7 +482,8 @@ public class VerifierController {
         }
 
         @Override
-        public long extendTimeRemaining(int verificationId, long additionalMs) {
+        public @DurationMillisLong long extendTimeRemaining(int verificationId,
+                @DurationMillisLong long additionalMs) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatus) {
                 final VerificationStatusTracker tracker = mVerificationStatus.get(verificationId);
@@ -545,17 +548,13 @@ public class VerifierController {
         /**
          * Mock this method to inject the remote service to enable unit testing.
          */
-        @Nullable
-        public Pair<ServiceConnector<IVerifierService>, ComponentName> getRemoteService(
-                @NonNull Computer snapshot, @NonNull Context context, int userId,
+        @NonNull
+        public ServiceConnector<IVerifierService> getRemoteService(
+                @NonNull String verifierPackageName, @NonNull Context context, int userId,
                 @NonNull Handler handler) {
-            final ComponentName verifierComponent = resolveVerifierComponentName(snapshot, userId);
-            if (verifierComponent == null) {
-                return null;
-            }
             final Intent intent = new Intent(PackageManager.ACTION_VERIFY_PACKAGE);
-            intent.setComponent(verifierComponent);
-            return new Pair<>(new ServiceConnector.Impl<IVerifierService>(
+            intent.setPackage(verifierPackageName);
+            return new ServiceConnector.Impl<>(
                     context, intent, Context.BIND_AUTO_CREATE, userId,
                     IVerifierService.Stub::asInterface) {
                 @Override
@@ -572,93 +571,7 @@ public class VerifierController {
                 protected long getAutoDisconnectTimeoutMs() {
                     return UNBIND_TIMEOUT_MILLIS;
                 }
-            }, verifierComponent);
-        }
-
-        /**
-         * Return the package name of the verifier installed on this device.
-         */
-        @Nullable
-        public String getVerifierPackageName(Computer snapshot, int userId) {
-            final ComponentName componentName = resolveVerifierComponentName(snapshot, userId);
-            if (componentName == null) {
-                return null;
-            }
-            return componentName.getPackageName();
-        }
-
-        /**
-         * Find the ComponentName of the verifier service agent, using the intent action.
-         * If multiple qualified verifier services are present, the one with the highest intent
-         * filter priority will be chosen.
-         */
-        private static @Nullable ComponentName resolveVerifierComponentName(Computer snapshot,
-                int userId) {
-            final Intent intent = new Intent(PackageManager.ACTION_VERIFY_PACKAGE);
-            final int resolveFlags = MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE;
-            final List<ResolveInfo> matchedServices = snapshot.queryIntentServicesInternal(
-                    intent, null,
-                    resolveFlags, userId, SYSTEM_UID, Process.INVALID_PID,
-                    /*includeInstantApps*/ false, /*resolveForStart*/ false);
-            if (matchedServices.isEmpty()) {
-                Slog.w(TAG,
-                        "Failed to find any matching verifier service agent");
-                return null;
-            }
-            ResolveInfo best = null;
-            int numMatchedServices = matchedServices.size();
-            for (int i = 0; i < numMatchedServices; i++) {
-                ResolveInfo cur = matchedServices.get(i);
-                if (!isQualifiedVerifier(snapshot, cur, userId)) {
-                    continue;
-                }
-                if (best == null || cur.priority > best.priority) {
-                    best = cur;
-                }
-            }
-            if (best != null) {
-                Slog.i(TAG, "Found verifier service agent: "
-                        + best.getComponentInfo().getComponentName().toShortString());
-                return best.getComponentInfo().getComponentName();
-            }
-            Slog.w(TAG, "Didn't find any qualified verifier service agent.");
-            return null;
-        }
-
-        @SuppressLint("AndroidFrameworkRequiresPermission")
-        private static boolean isQualifiedVerifier(Computer snapshot, ResolveInfo ri, int userId) {
-            // Basic null checks
-            if (ri.getComponentInfo() == null) {
-                return false;
-            }
-            final ApplicationInfo applicationInfo = ri.getComponentInfo().applicationInfo;
-            if (applicationInfo == null) {
-                return false;
-            }
-            // Check for installed state
-            PackageStateInternal ps = snapshot.getPackageStateInternal(
-                    ri.getComponentInfo().packageName, SYSTEM_UID);
-            if (ps == null || !ps.getUserStateOrDefault(userId).isInstalled()) {
-                return false;
-            }
-            // Check for enabled state
-            if (!snapshot.isComponentEffectivelyEnabled(ri.getComponentInfo(),
-                    UserHandle.of(userId))) {
-                return false;
-            }
-            // Allow binding to a non-privileged app on an ENG build
-            // TODO: think of a better way to test it on non-eng builds
-            if (Build.IS_ENG) {
-                return true;
-            }
-            // Check if the app is platform-signed or is privileged
-            if (!applicationInfo.isSignedWithPlatformKey() && !applicationInfo.isPrivilegedApp()) {
-                return false;
-            }
-            // Check for permission
-            return (snapshot.checkUidPermission(
-                    android.Manifest.permission.VERIFICATION_AGENT, applicationInfo.uid)
-                    != PackageManager.PERMISSION_GRANTED);
+            };
         }
 
         /**

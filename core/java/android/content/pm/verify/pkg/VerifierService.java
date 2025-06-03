@@ -28,7 +28,20 @@ import android.os.IBinder;
 
 /**
  * A base service implementation for the verifier agent to implement.
- *
+ * <p></p>
+ * The verifier agent app should register the implemented {@link VerifierService} in the manifest.
+ * Example:
+ * <pre>{@code
+ *     <service android:name=".MyVerifierService"
+ *         permission="android.permission.BIND_VERIFICATION_AGENT">
+ *       <intent-filter>
+ *         <action android:name="android.content.pm.action.VERIFY_PACKAGE" />
+ *       </intent-filter>
+ *     </service>
+ * }</pre>
+ * <p></p>
+ * Notice that the verifier agent app should also declare {@code android:forceQueryable="true"} to
+ * make itself visible to the installers.
  * @hide
  */
 @SystemApi
@@ -43,8 +56,9 @@ public abstract class VerifierService extends Service {
 
     /**
      * Called when a package recently provided via {@link #onPackageNameAvailable}
-     * is no longer expected to be installed. This is a hint that any pre-fetch or
-     * cache created as a result of the previous call may be be cleared.
+     * is no longer expected to be installed.
+     * <p>This is a hint that any pre-fetch or
+     * cache created as a result of the previous call may be be cleared.</p>
      * <p>This method will never be called after {@link #onVerificationRequired} is called for the
      * same package. Once a verification is officially requested by
      * {@link #onVerificationRequired}, it cannot be cancelled.
@@ -53,26 +67,28 @@ public abstract class VerifierService extends Service {
     public abstract void onVerificationCancelled(@NonNull String packageName);
 
     /**
-     * Called when an application needs to be verified. Details about the
+     * Called when an application needs to be verified.
+     * <p>Details about the
      * verification and actions that can be taken on it will be encapsulated in
-     * the provided {@link VerificationSession} parameter.
+     * the provided {@link VerificationSession} parameter.</p>
      */
     public abstract void onVerificationRequired(@NonNull VerificationSession session);
 
     /**
-     * Called when a verification needs to be retried. This can be encountered
+     * Called when a verification needs to be retried.
+     * <p>This can be encountered
      * when a prior verification was marked incomplete and the user has indicated
      * that they've resolved the issue, or when a timeout is reached, but the
-     * the system is attempting to retry. Details about the
+     * the system is attempting to retry.
+     * </p>
+     * <p>Details about the
      * verification and actions that can be taken on it will be encapsulated in
-     * the provided {@link VerificationSession} parameter.
+     * the provided {@link VerificationSession} parameter.</p>
      */
     public abstract void onVerificationRetry(@NonNull VerificationSession session);
 
     /**
-     * Called in the case that an active verification has failed. Any APIs called
-     * on the {@link VerificationSession} instance associated with this {@code verificationId} will
-     * throw an {@link IllegalStateException}.
+     * Called in the case that an active verification has failed because of the timeout.
      */
     public abstract void onVerificationTimeout(int verificationId);
 

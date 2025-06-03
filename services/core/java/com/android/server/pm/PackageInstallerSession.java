@@ -22,6 +22,7 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.PACKAGE_UPDAT
 import static android.content.pm.DataLoaderType.INCREMENTAL;
 import static android.content.pm.DataLoaderType.STREAMING;
 import static android.content.pm.Flags.cloudCompilationVerification;
+import static android.content.pm.PackageInstaller.EXTRA_VERIFICATION_EXTENSION_RESPONSE;
 import static android.content.pm.PackageInstaller.EXTRA_VERIFICATION_FAILURE_REASON;
 import static android.content.pm.PackageInstaller.LOCATION_DATA_APP;
 import static android.content.pm.PackageInstaller.UNARCHIVAL_OK;
@@ -438,7 +439,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      * Note all calls must be done outside {@link #mLock} to prevent lock inversion.
      */
     private final StagingManager mStagingManager;
-    @NonNull private final VerifierController mVerifierController;
+    @NonNull
+    private final VerifierController mVerifierController;
 
     private final InstallDependencyHelper mInstallDependencyHelper;
 
@@ -2969,7 +2971,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             if (!mVerifierController.startVerificationSession(mPm::snapshotComputer, userId,
                     sessionId, getPackageName(), Uri.fromFile(stageDir), signingInfo,
                     declaredLibraries, mCurrentVerificationPolicy.get(),
-                    /* extensionParams= */ null, verifierCallback, /* retry= */ false)) {
+                    /* extensionParams= */ params.extensionParams,
+                    verifierCallback, /* retry= */ false)) {
                 // A verifier is installed but cannot be connected.
                 verifierCallback.onConnectionFailed();
             }
@@ -2984,20 +2987,19 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Feature is not enabled.
             return false;
         }
+        if (mVerifierController.getVerifierPackageName() == null) {
+            // The system doesn't have a verifier specified.
+            return false;
+        }
         if ((params.installFlags & PackageManager.INSTALL_FROM_ADB) != 0) {
             // adb installs are exempted from verification unless explicitly requested
             if (!params.forceVerification) {
                 return false;
             }
         }
-        final String verifierPackageName = mVerifierController.getVerifierPackageName(
-                mPm::snapshotComputer, userId);
-        if (verifierPackageName == null) {
-            // Feature is enabled but no verifier installed.
-            return false;
-        }
+        final String verifierPackageName = mVerifierController.getVerifierPackageName();
         synchronized (mLock) {
-            if (verifierPackageName.equals(mPackageName)) {
+            if (TextUtils.equals(verifierPackageName, mPackageName)) {
                 // The verifier itself is being updated. Skip.
                 Slog.w(TAG, "Skipping verification service because the verifier is being updated");
                 return false;
@@ -3133,11 +3135,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          */
         public void onVerificationCompleteReceived(@NonNull VerificationStatus statusReceived,
                 @Nullable PersistableBundle extensionResponse) {
-            // TODO: handle extension response
             mHandler.post(() -> {
                 if (statusReceived.isVerified()
                         || mCurrentVerificationPolicy.get() == VERIFICATION_POLICY_NONE) {
                     // Continue with the rest of the verification and installation.
+                    // TODO(b/360129657): also add extension response to successful install results
                     resumeVerify();
                     return;
                 }
@@ -3149,6 +3151,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 Bundle bundle = new Bundle();
                 bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
                         VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED);
+                if (extensionResponse != null) {
+                    bundle.putParcelable(EXTRA_VERIFICATION_EXTENSION_RESPONSE, extensionResponse);
+                }
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
                         sb.toString(), bundle);
             });
@@ -5945,6 +5950,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             if (extras.containsKey(EXTRA_VERIFICATION_FAILURE_REASON)) {
                 fillIn.putExtra(EXTRA_VERIFICATION_FAILURE_REASON,
                         extras.getInt(EXTRA_VERIFICATION_FAILURE_REASON));
+            }
+            if (extras.containsKey(EXTRA_VERIFICATION_EXTENSION_RESPONSE)) {
+                fillIn.putExtra(EXTRA_VERIFICATION_EXTENSION_RESPONSE,
+                        extras.getParcelable(EXTRA_VERIFICATION_EXTENSION_RESPONSE,
+                                PersistableBundle.class));
             }
         }
         try {

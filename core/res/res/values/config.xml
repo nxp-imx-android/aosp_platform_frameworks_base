@@ -7574,4 +7574,6 @@
     <string-array name="config_appFunctionsDeviceSettingsPackages" translatable="false">
     </string-array>
 
+    <!-- Package name for verification service provider app [DO NOT TRANSLATE] -->
+    <string name="config_verificationServiceProviderPackageName" translatable="false" />
 </resources>
