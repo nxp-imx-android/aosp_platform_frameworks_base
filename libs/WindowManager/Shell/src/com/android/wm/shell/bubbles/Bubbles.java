@@ -36,7 +36,6 @@ import android.window.ScreenCapture.ScreenshotHardwareBuffer;
 import android.window.ScreenCapture.SynchronousScreenCaptureListener;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.wm.shell.shared.annotations.ExternalThread;
@@ -356,16 +355,12 @@ public interface Bubbles {
         void animateBubbleBarLocation(BubbleBarLocation location);
 
         /**
-         * Called when an application icon is being dragged over the Bubble Bar drop zone.
-         * The location of the Bubble Bar is provided as an argument.
+         * Show the bubble bar pillow view at the provided location.
+         * If the location is null, the pillow view is should be hidden.
+         *
+         * @param location The location to show the pillow view, or null to hide it.
          */
-        void onDragItemOverBubbleBarDragZone(@NonNull BubbleBarLocation location);
-
-        /**
-         * Called when an application icon is being dragged outside the Bubble Bar drop zone.
-         * Always called after {@link #onDragItemOverBubbleBarDragZone(BubbleBarLocation)}
-         */
-        void onItemDraggedOutsideBubbleBarDropZone();
+        void showBubbleBarPillowAt(@Nullable BubbleBarLocation location);
     }
 
     /** Listener to find out about stack expansion / collapse events. */

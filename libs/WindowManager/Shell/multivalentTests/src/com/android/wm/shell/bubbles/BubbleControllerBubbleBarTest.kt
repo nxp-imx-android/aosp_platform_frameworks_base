@@ -497,8 +497,6 @@ class BubbleControllerBubbleBarTest {
 
         override fun animateBubbleBarLocation(location: BubbleBarLocation?) {}
 
-        override fun onDragItemOverBubbleBarDragZone(location: BubbleBarLocation) {}
-
-        override fun onItemDraggedOutsideBubbleBarDropZone() {}
+        override fun showBubbleBarPillowAt(location: BubbleBarLocation?) {}
     }
 }

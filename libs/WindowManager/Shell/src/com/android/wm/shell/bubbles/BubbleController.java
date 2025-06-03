@@ -942,10 +942,9 @@ public class BubbleController implements ConfigurationChangeListener,
     /**
      * Show bubble bar pin view given location.
      */
-    public void showBubbleBarPinAtLocation(BubbleBarLocation bubbleBarLocation) {
+    public void showBubbleBarPinAtLocation(@Nullable BubbleBarLocation bubbleBarLocation) {
         if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
-            // TODO(b/411505605) show bubble bar drop target in launcher since taskbar window is
-            // layered on top of the shell drag window
+            mBubbleStateListener.showBubbleBarPillowAt(bubbleBarLocation);
         }
     }
 
@@ -3016,14 +3015,8 @@ public class BubbleController implements ConfigurationChangeListener,
                     }
 
                     @Override
-                    public void onDragItemOverBubbleBarDragZone(
-                            @NonNull BubbleBarLocation location) {
-                        mListener.call(l -> l.onDragItemOverBubbleBarDragZone(location));
-                    }
-
-                    @Override
-                    public void onItemDraggedOutsideBubbleBarDropZone() {
-                        mListener.call(IBubblesListener::onItemDraggedOutsideBubbleBarDropZone);
+                    public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
+                        mListener.call(l -> l.showBubbleBarPillowAt(location));
                     }
                 };
 
