@@ -44,6 +44,11 @@ final class CameraIdPackageNameBiMapping {
         mCameraIdToPackageMap.put(cameraId, packageName);
     }
 
+    @Nullable
+    String getPackageNameForCameraId(@NonNull String cameraId) {
+        return mCameraIdToPackageMap.get(cameraId);
+    }
+
     boolean containsPackageName(@NonNull String packageName) {
         return mPackageToCameraIdMap.containsKey(packageName);
     }

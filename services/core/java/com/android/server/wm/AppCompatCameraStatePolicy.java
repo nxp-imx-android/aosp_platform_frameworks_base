@@ -16,6 +16,7 @@
 package com.android.server.wm;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 /**
  * Interface that camera compat policies to implement to be notified of camera open/close signals.
@@ -23,8 +24,10 @@ import android.annotation.NonNull;
 interface AppCompatCameraStatePolicy {
     /**
      * Notifies the compat listener that a task has opened camera.
+     *
+     * @param appProcess The process in the {@link Task} which requested camera to be opened.
      */
-    void onCameraOpened(@NonNull ActivityRecord cameraActivity);
+    void onCameraOpened(@NonNull WindowProcessController appProcess, @NonNull Task task);
 
     /**
      * Checks whether a listener is ready to do a cleanup when camera is closed.
@@ -35,10 +38,17 @@ interface AppCompatCameraStatePolicy {
     //  change based on the cameraId - CameraStateMonitor should keep track of this.
     //  This method actually checks "did an activity only temporarily close the camera", because a
     //  refresh for compatibility is triggered.
-    boolean canCameraBeClosed(@NonNull String cameraId);
+    boolean canCameraBeClosed(@NonNull String cameraId, @NonNull Task task);
 
     /**
      * Notifies the compat listener that camera is closed.
+     *
+     * <p>Due to delays in notifying that camera is closed (currently 2 seconds), and the cause of
+     * camera close could the that the task is closed, the app process and/or task might be null. As
+     * parts of camera compat are done on activity level, application level, or even camera compat
+     * policy level, the policies are notified even if the task or app are not active anymore.
+     *
+     * @param appProcess The process in the {@link Task} which requested camera to be opened.
      */
-    void onCameraClosed();
+    void onCameraClosed(@Nullable WindowProcessController appProcess, @Nullable Task task);
 }
