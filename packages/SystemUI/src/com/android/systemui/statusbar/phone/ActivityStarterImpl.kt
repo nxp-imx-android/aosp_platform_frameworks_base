@@ -377,6 +377,22 @@ constructor(
         intent: Intent,
         onlyProvisioned: Boolean,
         dismissShade: Boolean,
+        customMessage: String?,
+        callback: ActivityStarter.Callback?,
+    ) {
+        activityStarterInternal.startActivityDismissingKeyguard(
+            intent = intent,
+            onlyProvisioned = onlyProvisioned,
+            dismissShade = dismissShade,
+            customMessage = customMessage,
+            callback = callback,
+        )
+    }
+
+    override fun startActivityDismissingKeyguard(
+        intent: Intent,
+        onlyProvisioned: Boolean,
+        dismissShade: Boolean,
         disallowEnterPictureInPictureWhileLaunching: Boolean,
         callback: ActivityStarter.Callback?,
         flags: Int,
