@@ -20,6 +20,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,15 +36,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 
 @Composable
 fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
-    val outlineColor = MaterialTheme.colorScheme.onBackground
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
+    val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -62,7 +65,13 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             contentDescription = action.label,
             modifier =
                 Modifier.size(24.dp)
-                    .border(0.75.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                    .then(
+                        if (action.actionType == ActionType.MR) {
+                            Modifier
+                        } else {
+                            Modifier.border(0.75.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                        }
+                    )
                     .clip(CircleShape),
         )
 
