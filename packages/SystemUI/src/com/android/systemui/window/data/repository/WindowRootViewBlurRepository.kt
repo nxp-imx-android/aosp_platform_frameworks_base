@@ -18,7 +18,6 @@ package com.android.systemui.window.data.repository
 
 import android.app.ActivityManager
 import android.os.SystemProperties
-import android.util.Log
 import android.view.CrossWindowBlurListeners
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
@@ -34,7 +33,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
 typealias BlurAppliedListener = Consumer<Int>
@@ -94,7 +92,6 @@ constructor(
 
                 awaitClose { crossWindowBlurListeners.removeListener(sendUpdate) }
             } // stateIn because this is backed by a binder call.
-            .onEach { Log.d(TAG, "isBlurSupported changed to $it") }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override var blurAppliedListener: BlurAppliedListener? = null

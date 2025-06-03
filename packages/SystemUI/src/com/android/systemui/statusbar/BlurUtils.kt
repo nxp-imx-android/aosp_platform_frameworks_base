@@ -285,6 +285,6 @@ constructor(
     companion object {
         const val TRACK_NAME = "BlurUtils"
         private const val TAG = "BlurUtils"
-        private val isLoggable = Log.isLoggable(TAG, Log.VERBOSE) || Build.isDebuggable()
+        private val isLoggable = Log.isLoggable(TAG, Log.VERBOSE) || Build.IS_ENG
     }
 }
