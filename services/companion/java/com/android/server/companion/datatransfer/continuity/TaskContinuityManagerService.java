@@ -18,6 +18,7 @@ package com.android.server.companion.datatransfer.continuity;
 
 import android.annotation.NonNull;
 import android.companion.CompanionDeviceManager;
+import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
@@ -82,6 +83,15 @@ public final class TaskContinuityManagerService extends SystemService {
 
         @Override
         public void unregisterRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+        }
+
+        @Override
+        public void requestHandoff(
+            int associationId,
+            int remoteTaskId,
+            @NonNull IHandoffRequestCallback callback) {
+
+            // TODO: joeantonetti - Implement this method.
         }
     }
 
