@@ -1131,8 +1131,15 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
 
             int reason = mDisplayGroupAllocator.getContentModeForDisplayLocked(
                     display, displayDeviceInfo.type);
-            if (reason == REASON_PROJECTED || reason == REASON_EXTENDED
-                    || reason == REASON_NON_DESKTOP) {
+
+            // We set the flag only if the group being created is a non-default group, is internal
+            // or external(We don't want to set FLAG_DEFAULT_GROUP_ADJACENT for virtual displays)
+            // and is in projected,extended or non desktop mode
+            if (groupId != Display.DEFAULT_DISPLAY_GROUP
+                    && (displayDeviceInfo.type == Display.TYPE_INTERNAL
+                            || displayDeviceInfo.type == Display.TYPE_EXTERNAL)
+                    && (reason == REASON_PROJECTED || reason == REASON_EXTENDED
+                    || reason == REASON_NON_DESKTOP)) {
                 newGroup.setFlags(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
             }
         }
