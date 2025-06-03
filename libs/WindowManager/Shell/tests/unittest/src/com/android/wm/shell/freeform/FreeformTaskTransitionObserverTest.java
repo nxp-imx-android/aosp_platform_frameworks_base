@@ -37,6 +37,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.IWindowContainerToken;
@@ -50,6 +51,7 @@ import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
+import com.android.wm.shell.desktopmode.DesktopInOrderTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
@@ -83,6 +85,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     @Mock private DesksTransitionObserver mDesksTransitionObserver;
     @Mock private DesktopImeHandler mDesktopImeHandler;
     @Mock private DesktopBackNavTransitionObserver mDesktopBackNavTransitionObserver;
+    @Mock private DesktopInOrderTransitionObserver mDesktopInOrderTransitionObserver;
     private FakeDesktopState mDesktopState;
     private FreeformTaskTransitionObserver mTransitionObserver;
     private AutoCloseable mMocksInits = null;
@@ -112,7 +115,8 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
                         Optional.of(mDesksTransitionObserver),
                         mDesktopState,
                         Optional.of(mDesktopImeHandler),
-                        Optional.of(mDesktopBackNavTransitionObserver));
+                        Optional.of(mDesktopBackNavTransitionObserver),
+                        Optional.of(mDesktopInOrderTransitionObserver));
 
         final ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(mShellInit).addInitCallback(initRunnableCaptor.capture(), same(mTransitionObserver));
@@ -407,6 +411,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionReady_forwardsToDesktopImmersiveController() {
         final IBinder transition = mock(IBinder.class);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CHANGE, 0).build();
@@ -420,6 +425,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionMerged_forwardsToDesktopImmersiveController() {
         final IBinder merged = mock(IBinder.class);
         final IBinder playing = mock(IBinder.class);
@@ -431,6 +437,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionStarting_forwardsToDesktopImmersiveController() {
         final IBinder transition = mock(IBinder.class);
 
@@ -441,6 +448,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionFinished_forwardsToDesktopImmersiveController() {
         final IBinder transition = mock(IBinder.class);
 
@@ -450,6 +458,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionReady_forwardsToDesksTransitionObserver() {
         final IBinder transition = mock(IBinder.class);
         final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, /* flags= */ 0)
@@ -462,6 +471,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionMerged_forwardsToDesksTransitionObserver() {
         final IBinder merged = mock(IBinder.class);
         final IBinder playing = mock(IBinder.class);
@@ -472,12 +482,50 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
     public void onTransitionFinished_forwardsToDesksTransitionObserver() {
         final IBinder transition = mock(IBinder.class);
 
         mTransitionObserver.onTransitionFinished(transition, /* aborted = */ false);
 
         verify(mDesksTransitionObserver).onTransitionFinished(transition);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
+    public void onTransitionReady_forwardsToDesktopInOrderTransitionObserver() {
+        final IBinder transition = mock(IBinder.class);
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, /* flags= */ 0)
+                .build();
+        final SurfaceControl.Transaction startT = new StubTransaction();
+        final SurfaceControl.Transaction finishT = new StubTransaction();
+
+
+        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
+
+        verify(mDesktopInOrderTransitionObserver).onTransitionReady(transition, info, startT,
+                finishT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
+    public void onTransitionMerged_forwardsToDesktopInOrderTransitionObserver() {
+        final IBinder merged = mock(IBinder.class);
+        final IBinder playing = mock(IBinder.class);
+
+        mTransitionObserver.onTransitionMerged(merged, playing);
+
+        verify(mDesktopInOrderTransitionObserver).onTransitionMerged(merged, playing);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
+    public void onTransitionFinished_forwardsToDesktopInOrderTransitionObserver() {
+        final IBinder transition = mock(IBinder.class);
+
+        mTransitionObserver.onTransitionFinished(transition, /* aborted = */ false);
+
+        verify(mDesktopInOrderTransitionObserver).onTransitionFinished(transition, false);
     }
 
     private static TransitionInfo.Change createChange(int mode, int taskId, int windowingMode) {
