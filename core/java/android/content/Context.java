@@ -4385,6 +4385,7 @@ public abstract class Context {
                 MEDIA_ROUTER_SERVICE,
                 TELEPHONY_SERVICE,
                 TELEPHONY_SUBSCRIPTION_SERVICE,
+                TELEPHONY_PHONE_NUMBER_SERVICE,
                 CARRIER_CONFIG_SERVICE,
                 EUICC_SERVICE,
                 // @hide: MMS_SERVICE,
@@ -5430,6 +5431,16 @@ public abstract class Context {
      * @see android.telephony.SubscriptionManager
      */
     public static final String TELEPHONY_SUBSCRIPTION_SERVICE = "telephony_subscription_service";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.telephony.PhoneNumberManager} for parsing phone numbers.
+     *
+     * @see #getSystemService(String)
+     * @see android.telephony.PhoneNumberManager
+     */
+    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_ENABLE_PHONE_NUMBER_PARSING_API)
+    public static final String TELEPHONY_PHONE_NUMBER_SERVICE = "telephony_phone_number";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
