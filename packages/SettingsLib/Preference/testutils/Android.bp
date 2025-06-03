@@ -30,4 +30,5 @@ android_library {
         "mockito-kotlin2",
         "truth",
     ],
+    test_only: true,
 }

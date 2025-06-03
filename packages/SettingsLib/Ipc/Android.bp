@@ -13,6 +13,8 @@ android_library {
         "guava",
         "kotlinx-coroutines-android",
     ],
+    sdk_version: "system_current",
+    min_sdk_version: "21",
     kotlincflags: ["-Xjvm-default=all"],
 }
 
@@ -26,4 +28,5 @@ android_library {
         "flag-junit",
         "kotlinx-coroutines-android",
     ],
+    test_only: true,
 }
