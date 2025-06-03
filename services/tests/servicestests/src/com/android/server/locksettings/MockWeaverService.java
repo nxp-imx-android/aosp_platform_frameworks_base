@@ -9,6 +9,7 @@ import android.hardware.weaver.WeaverReadStatus;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ public class MockWeaverService implements IWeaver {
     }
 
     private final WeaverSlot[] mSlots = new WeaverSlot[MAX_SLOTS];
+    private WeaverReadResponse mInjectedReadResponse;
 
     public MockWeaverService() {
         for (int i = 0; i < MAX_SLOTS; i++) {
@@ -57,8 +59,13 @@ public class MockWeaverService implements IWeaver {
         if (slotId < 0 || slotId >= MAX_SLOTS) {
             throw new RuntimeException("Invalid slot id");
         }
+        WeaverReadResponse response = mInjectedReadResponse;
+        if (response != null) {
+            mInjectedReadResponse = null;
+            return response;
+        }
         WeaverSlot slot = mSlots[slotId];
-        WeaverReadResponse response = new WeaverReadResponse();
+        response = new WeaverReadResponse();
         if (Arrays.equals(key, slot.key)) {
             response.value = slot.value.clone();
             response.status = WeaverReadStatus.OK;
@@ -92,6 +99,14 @@ public class MockWeaverService implements IWeaver {
     /** Returns an adapter object that implements the old (HIDL) Weaver interface. */
     public android.hardware.weaver.V1_0.IWeaver.Stub asHidl() {
         return new MockWeaverServiceHidlAdapter();
+    }
+
+    /** Injects a response to be returned by the next {@link #read(int, byte[])}. */
+    public void injectReadResponse(int status, Duration timeout) {
+        WeaverReadResponse response = new WeaverReadResponse();
+        response.status = status;
+        response.timeout = timeout.toMillis();
+        mInjectedReadResponse = response;
     }
 
     private class MockWeaverServiceHidlAdapter extends android.hardware.weaver.V1_0.IWeaver.Stub {

@@ -156,7 +156,7 @@ public class SoftwareRateLimiterTest {
                 verifyRateLimited(id, prevGuess);
                 return;
             }
-            mRateLimiter.reportWrongGuess(id, nextGuess);
+            mRateLimiter.reportFailure(id, nextGuess, /* isCertainlyWrongGuess= */ true);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -418,6 +418,41 @@ public class SoftwareRateLimiterTest {
         }
     }
 
+    // Tests that if a generic failure (isCertainlyWrongGuess=false) is reported to the
+    // SoftwareRateLimiter, then the SoftwareRateLimiter does not match against that guess when
+    // detecting duplicate wrong guesses.
+    @Test
+    public void testReportGenericFailure_doesNotSaveWrongGuess() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+
+        for (int i = 0; i < 2; i++) {
+            SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
+            assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
+        }
+    }
+
+    // Tests that if a generic failure (isCertainlyWrongGuess=false) is reported to the
+    // SoftwareRateLimiter, then the failure counter is still incremented and the rate-limiter
+    // eventually kicks in.
+    @Test
+    public void testReportGenericFailure_incrementsFailureCounter() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+
+        for (int i = 0; i < 100; i++) {
+            SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
+            if (result.code == RATE_LIMITED) {
+                return;
+            }
+            assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
+            verifyWrongGuessCounter(id, i + 1);
+        }
+        fail("Rate-limiter never kicked in");
+    }
+
     private void makeGuessesUntilRateLimited(LskfIdentifier id) {
         for (int i = 0; i < 100; i++) {
             final LockscreenCredential guess = newPassword("rate_limit_me" + i);
@@ -426,7 +461,7 @@ public class SoftwareRateLimiterTest {
                 assertThat(result.code).isEqualTo(RATE_LIMITED);
                 return;
             }
-            mRateLimiter.reportWrongGuess(id, guess);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -472,15 +507,16 @@ public class SoftwareRateLimiterTest {
     private void verifyUniqueWrongGuess(LskfIdentifier id, LockscreenCredential guess) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        mRateLimiter.reportWrongGuess(id, guess);
+        mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
     }
 
-    // Same as above but also verifies the next delay reported by reportWrongGuess().
+    // Same as above but also verifies the next delay reported by reportFailure().
     private void verifyUniqueWrongGuess(
             LskfIdentifier id, LockscreenCredential guess, Duration expectedNextDelay) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        Duration nextDelay = mRateLimiter.reportWrongGuess(id, guess);
+        Duration nextDelay =
+                mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
         assertThat(nextDelay).isEqualTo(expectedNextDelay);
     }
 

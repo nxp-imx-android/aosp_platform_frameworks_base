@@ -224,10 +224,10 @@ class SoftwareRateLimiter {
                         });
 
         // Check for remaining delay. Note that the case of a positive remaining delay normally
-        // won't be reached, since reportWrongGuess() will have returned the delay when the last
-        // guess was made, causing the lock screen to block inputs for that amount of time. But
-        // checking for it is still needed to cover any cases where a guess gets made anyway, for
-        // example following a reboot which causes the lock screen to "forget" the delay.
+        // won't be reached, since reportFailure() will have returned the delay when the last guess
+        // was made, causing the lock screen to block inputs for that amount of time. But checking
+        // for it is still needed to cover any cases where a guess gets made anyway, for example
+        // following a reboot which causes the lock screen to "forget" the delay.
         final Duration delay = getCurrentDelay(state);
         final Duration now = mInjector.getTimeSinceBoot();
         final Duration remainingDelay = state.timeSinceBootOfLastWrongGuess.plus(delay).minus(now);
@@ -298,27 +298,37 @@ class SoftwareRateLimiter {
     }
 
     /**
-     * Reports a new wrong guess to the software rate-limiter.
+     * Reports a failure to the software rate-limiter.
      *
-     * <p>This must be called immediately after the hardware rate-limiter reported that the given
-     * guess is incorrect, before the credential check failure is made visible in the UI. It is
-     * assumed that {@link #apply(LskfIdentifier, LockscreenCredential)} was previously called with
-     * the same parameters and returned a {@code CONTINUE_TO_HARDWARE} result.
+     * <p>This must be called immediately after the hardware rate-limiter reported a failure, before
+     * the credential check failure is made visible in the UI. It is assumed that {@link
+     * #apply(LskfIdentifier, LockscreenCredential)} was previously called with the same parameters
+     * and returned a {@code CONTINUE_TO_HARDWARE} result.
      *
      * @param id the ID of the protector or special credential
-     * @param newWrongGuess a new wrong guess for the LSKF
+     * @param guess the LSKF that was attempted
+     * @param isCertainlyWrongGuess true if it's certain that the failure was caused by the guess
+     *     being wrong, as opposed to e.g. a transient hardware glitch
      * @return the delay until when the next guess will be allowed
      */
-    synchronized Duration reportWrongGuess(LskfIdentifier id, LockscreenCredential newWrongGuess) {
+    synchronized Duration reportFailure(
+            LskfIdentifier id, LockscreenCredential guess, boolean isCertainlyWrongGuess) {
         RateLimiterState state = getExistingState(id);
 
         // In non-enforcing mode, ignore duplicate wrong guesses here since they were already
         // counted by apply(), including having stats written for them. In enforcing mode, this
         // method isn't passed duplicate wrong guesses.
-        if (!mEnforcing && ArrayUtils.contains(state.savedWrongGuesses, newWrongGuess)) {
+        if (!mEnforcing && ArrayUtils.contains(state.savedWrongGuesses, guess)) {
             return Duration.ZERO;
         }
 
+        // Increment the failure counter regardless of whether the failure is a certainly wrong
+        // guess or not. A generic failure might still be caused by a wrong guess. Gatekeeper only
+        // ever returns generic failures, and some Weaver implementations prefer THROTTLE to
+        // INCORRECT_KEY once the delay becomes nonzero. Instead of making the software rate-limiter
+        // ineffective on all such devices, still apply it. This does mean that correct guesses that
+        // encountered an error will be rate-limited. However, by design the rate-limiter kicks in
+        // gradually anyway, so there will be a chance for the user to try again.
         state.numWrongGuesses++;
         state.timeSinceBootOfLastWrongGuess = mInjector.getTimeSinceBoot();
 
@@ -329,24 +339,27 @@ class SoftwareRateLimiter {
 
         writeStats(id, state, /* success= */ false);
 
-        insertNewWrongGuess(state, newWrongGuess);
+        // Save certainly wrong guesses so that duplicates of them can be detected.
+        if (isCertainlyWrongGuess) {
+            insertNewWrongGuess(state, guess);
 
-        // Schedule the saved wrong guesses to be forgotten after a few minutes, extending the
-        // existing timeout if one was already running.
-        mInjector.removeCallbacksAndMessages(/* token= */ state);
-        mInjector.postDelayed(
-                () -> {
-                    Slogf.i(
-                            TAG,
-                            "Forgetting wrong LSKF guesses for user %d, protector %016x",
-                            id.userId,
-                            id.protectorId);
-                    synchronized (this) {
-                        forgetSavedWrongGuessesNoCancel(state);
-                    }
-                },
-                /* token= */ state,
-                SAVED_WRONG_GUESS_TIMEOUT.toMillis());
+            // Schedule the saved wrong guesses to be forgotten after a few minutes, extending the
+            // existing timeout if one was already running.
+            mInjector.removeCallbacksAndMessages(/* token= */ state);
+            mInjector.postDelayed(
+                    () -> {
+                        Slogf.i(
+                                TAG,
+                                "Forgetting wrong LSKF guesses for user %d, protector %016x",
+                                id.userId,
+                                id.protectorId);
+                        synchronized (this) {
+                            forgetSavedWrongGuessesNoCancel(state);
+                        }
+                    },
+                    /* token= */ state,
+                    SAVED_WRONG_GUESS_TIMEOUT.toMillis());
+        }
 
         return getCurrentDelay(state);
     }
@@ -384,7 +397,7 @@ class SoftwareRateLimiter {
     private RateLimiterState getExistingState(LskfIdentifier id) {
         RateLimiterState state = mState.get(id);
         if (state == null) {
-            // This should never happen, since reportSuccess() and reportWrongGuess() are always
+            // This should never happen, since reportSuccess() and reportFailure() are always
             // supposed to be paired with a call to apply() that created the state if it did not
             // exist. Nor is it supported to call clearLskfState() or clearUserState() in between;
             // higher-level locking in LockSettingsService guarantees that never happens.

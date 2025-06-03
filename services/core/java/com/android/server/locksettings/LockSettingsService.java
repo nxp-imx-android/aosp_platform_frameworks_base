@@ -2549,8 +2549,12 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (response.isMatched()) {
                 mSoftwareRateLimiter.reportSuccess(lskfId);
             } else {
-                // TODO(b/395976735): don't count transient failures
-                Duration swTimeout = mSoftwareRateLimiter.reportWrongGuess(lskfId, credential);
+                boolean isCertainlyWrongGuess =
+                        response.getResponseCode()
+                                == VerifyCredentialResponse.RESPONSE_CRED_INCORRECT;
+                Duration swTimeout =
+                        mSoftwareRateLimiter.reportFailure(
+                                lskfId, credential, isCertainlyWrongGuess);
 
                 // The software rate-limiter may use longer delays than the hardware one. While the
                 // long-term solution is to update the hardware rate-limiter to match, for now this
