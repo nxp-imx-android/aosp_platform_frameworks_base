@@ -264,6 +264,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @Override
     @NonNull
+    public List<MediaRoute2Info> getSelectableRoutes() {
+        // TODO(b/421884879): Implement the select / deselect function
+        return Collections.emptyList();
+    }
+
+    @Override
+    @NonNull
+    public List<MediaRoute2Info> getDeselectableRoutes() {
+        // TODO(b/421884879): Implement the select / deselect function
+        return Collections.emptyList();
+    }
+
+    @Override
+    @NonNull
     public synchronized List<MediaRoute2Info> getAvailableRoutes() {
         return mRouteIdToAvailableDeviceRoutes.values().stream()
                 .map(it -> it.mMediaRoute2Info)
@@ -310,6 +324,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
         // We post the transfer operation to the handler to avoid making these calls on a binder
         // thread. See class javadoc for details.
         mHandler.post(guardedTransferAction);
+    }
+
+    @Override
+    public synchronized void selectRoute(long requestId, @NonNull String routeId) {
+        // TODO(b/421884879): Implement the select / deselect function
+    }
+
+    @Override
+    public synchronized void deselectRoute(long requestId, @NonNull String routeId) {
+        // TODO(b/421884879): Implement the select / deselect function
     }
 
     @RequiresPermission(
