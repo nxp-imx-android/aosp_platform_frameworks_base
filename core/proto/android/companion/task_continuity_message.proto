@@ -27,6 +27,7 @@ message TaskContinuityMessage {
         RemoteTaskAddedMessage remote_task_added_message = 2;
         RemoteTaskRemovedMessage remote_task_removed = 3;
         HandoffRequestMessage handoff_request = 4;
+        RemoteTaskUpdatedMessage remote_task_updated = 5;
     }
 }
 
@@ -36,6 +37,10 @@ message ContinuityDeviceConnected {
 }
 
 message RemoteTaskAddedMessage {
+    RemoteTaskInfo task = 1;
+}
+
+message RemoteTaskUpdatedMessage {
     RemoteTaskInfo task = 1;
 }
 
