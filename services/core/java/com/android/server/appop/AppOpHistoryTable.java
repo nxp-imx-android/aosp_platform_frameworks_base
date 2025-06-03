@@ -90,7 +90,7 @@ final class AppOpHistoryTable {
             + Columns.ID + " INTEGER PRIMARY KEY,"
             + Columns.UID + " INTEGER,"
             + Columns.PACKAGE_NAME + " TEXT,"
-            + Columns.DEVICE_ID + " TEXT NOT NULL,"
+            + Columns.DEVICE_ID + " TEXT,"
             + Columns.OP_CODE + " INTEGER,"
             + Columns.ATTRIBUTION_TAG + " TEXT,"
             + Columns.UID_STATE + " INTEGER,"
