@@ -16,6 +16,8 @@
 
 package com.android.server.display.whitebalance;
 
+import static com.android.server.display.TestUtilsKt.createSensor;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -39,7 +41,6 @@ import androidx.test.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.util.test.LocalServiceKeeperRule;
-import com.android.server.display.TestUtils;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.display.utils.AmbientFilter;
 import com.android.server.display.utils.AmbientFilterStubber;
@@ -97,8 +98,8 @@ public final class AmbientLuxTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mLightSensor = TestUtils.createSensor(Sensor.TYPE_LIGHT, null);
-        mAmbientColorSensor = TestUtils.createSensor(AMBIENT_COLOR_TYPE, AMBIENT_COLOR_TYPE_STR);
+        mLightSensor = createSensor(Sensor.TYPE_LIGHT);
+        mAmbientColorSensor = createSensor(AMBIENT_COLOR_TYPE, AMBIENT_COLOR_TYPE_STR);
         mContextSpy = spy(new ContextWrapper(InstrumentationRegistry.getContext()));
         mResourcesSpy = spy(mContextSpy.getResources());
         when(mContextSpy.getResources()).thenReturn(mResourcesSpy);
