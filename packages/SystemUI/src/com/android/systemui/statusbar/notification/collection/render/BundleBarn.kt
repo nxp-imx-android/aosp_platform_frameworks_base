@@ -28,7 +28,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.lifecycle.viewModel
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeDisplayAware
@@ -93,6 +92,7 @@ constructor(
             val controller = component.expandableNotificationRowController
             controller.init(bundleEntry)
             keyToControllerMap[bundleEntry.key] = controller
+            row.repeatWhenAttached { repeatOnLifecycle(Lifecycle.State.CREATED) { row.reset() } }
             initBundleHeaderView(bundleEntry, row)
         }
         debugBundleLog(TAG) { "calling inflate: ${bundleEntry.key}" }
