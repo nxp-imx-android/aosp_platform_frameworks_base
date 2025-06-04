@@ -8503,7 +8503,9 @@ public class AudioService extends IAudioService.Stub
 
     private void onUpdateBtCommDeviceActive(@BtCommDeviceActiveType int btCommDeviceActive) {
         if (mBtCommDeviceActive.getAndSet(btCommDeviceActive) != btCommDeviceActive) {
-            getVssForStreamOrDefault(AudioSystem.STREAM_VOICE_CALL).updateIndexFactors();
+            final VolumeStreamState vss = getVssForStreamOrDefault(AudioSystem.STREAM_VOICE_CALL);
+            vss.updateIndexFactors();
+            vss.applyAllVolumes();
         }
     }
 
