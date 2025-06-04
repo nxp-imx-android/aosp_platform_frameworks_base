@@ -1416,17 +1416,20 @@ public class NotificationStackScrollLayout
             return;
         }
         createSortedNotificationLists(mTmpSortedChildren, mTmpNonOverlapChildren);
+        // Now lets update the overlaps for the views, ensuring that we set the values for every
+        // view, otherwise they might get stuck.
         mTmpNonOverlapChildren.forEach((child) -> {
             child.setBottomOverlap(0);
             child.setTopOverlap(0);
         });
 
-        // Now lets update the overlaps for the views, ensuring that we set the values for every
-        // view, otherwise they might get stuck
-        float minimumClipPosition = 0;
+        // The NSSL can actually  be inset and notifications even rendering above it. Let's make
+        // sure that we don't clip them at 0 but use some large negative number (not min
+        // because overflow)
+        float minimumClipPosition = Integer.MIN_VALUE >> 1;
         ExpandableView lastTransientView = null;
-        float transientClippingPosition = 0;
-        float lastGroupEnd = 0;
+        float transientClippingPosition = minimumClipPosition;
+        float lastGroupEnd = minimumClipPosition;
         for (int i = 0; i < mTmpSortedChildren.size(); i++) {
             ExpandableView expandableView = mTmpSortedChildren.get(i);
             float currentTop = getRelativePosition(expandableView);
