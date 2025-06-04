@@ -147,7 +147,7 @@ public class NavigationBarControllerImpl implements
         mDisplayTracker = displayTracker;
         mDisplayManager = mContext.getSystemService(DisplayManager.class);
         commandQueue.addCallback(mCommandQueueCallbacks);
-        if (DesktopExperienceFlags.ENABLE_SYS_DECORS_CALLBACKS_VIA_WM.isTrue()) {
+        if (WmCallbackForSysDecorFlag.isEnabled()) {
             displaysWithDecorationsRepositoryCompat.registerDisplayDecorationListener(
                     mDisplayDecorationListener, mainCoroutineDispatcher);
         }
