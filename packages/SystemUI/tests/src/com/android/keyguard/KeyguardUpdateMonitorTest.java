@@ -2469,6 +2469,14 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         Assert.assertFalse(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
     }
 
+    @Test
+    public void forceIsDismissibleKeyguard_respectsDream() {
+        mKeyguardUpdateMonitor.tryForceIsDismissibleKeyguard();
+        mKeyguardUpdateMonitor.dispatchDreamingStarted();
+        mTestableLooper.processAllMessages();
+        Assert.assertFalse(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
+    }
+
     private Intent defaultSimStateChangedIntent() {
         Intent intent = new Intent(TelephonyIntents.ACTION_SIM_STATE_CHANGED);
         intent.putExtra(SubscriptionManager.EXTRA_SLOT_INDEX, 0);
