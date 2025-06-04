@@ -17,9 +17,11 @@
 package com.android.systemui.statusbar.policy;
 
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
+import static android.view.accessibility.Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE;
 
 import static com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_STANDARD;
 
+import android.annotation.FlaggedApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -1056,6 +1058,18 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
 
         @Override
         public boolean requestRectangleOnScreen(Rect rectangle) {
+            return requestRectangleOnScreen(rectangle,
+                    false,
+                    RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED);
+        }
+
+        @FlaggedApi(FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+        @Override
+        public boolean requestRectangleOnScreen(@NonNull Rect rectangle, boolean immediate,
+                @RectangleOnScreenRequestSource int source) {
+            if (android.view.accessibility.Flags.requestRectangleWithSource()) {
+                super.requestRectangleOnScreen(rectangle, immediate, source);
+            }
             return mRemoteInputView.requestScrollTo();
         }
 
