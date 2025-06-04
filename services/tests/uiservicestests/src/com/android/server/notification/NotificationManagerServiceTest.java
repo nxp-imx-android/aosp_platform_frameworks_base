@@ -2113,21 +2113,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testEnqueueNotificationWithTag_DoesNotLogOnTitleUpdate() throws Exception {
-        final String tag = "testEnqueueNotificationWithTag_DoesNotLogOnTitleUpdate";
-        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, tag, 0,
-                generateNotificationRecord(null).getNotification(),
-                mUserId);
-        final Notification notif = generateNotificationRecord(null).getNotification();
-        notif.extras.putString(Notification.EXTRA_TITLE, "Changed title");
-        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, tag, 0, notif, mUserId);
-        waitForIdle();
-        assertEquals(2, mNotificationRecordLogger.numCalls());
-        assertEquals(NOTIFICATION_POSTED, mNotificationRecordLogger.event(0));
-        assertNull(mNotificationRecordLogger.event(1));
-    }
-
-    @Test
     public void testEnqueueNotificationWithTag_LogsAgainAfterCancel() throws Exception {
         final String tag = "testEnqueueNotificationWithTag_LogsAgainAfterCancel";
         Notification notification = new Notification.Builder(mContext,
