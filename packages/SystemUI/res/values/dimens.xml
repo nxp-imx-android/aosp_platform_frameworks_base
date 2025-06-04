@@ -588,7 +588,7 @@
     <dimen name="notifications_unseen_footer_icon_size">16dp</dimen>
 
     <!-- Height of the status bar header bar when on Keyguard -->
-    <dimen name="status_bar_header_height_keyguard">40dp</dimen>
+    <dimen name="status_bar_header_height_keyguard">@dimen/status_bar_height</dimen>
 
     <!-- Margin start of the system icons super container -->
     <dimen name="system_icons_super_container_margin_start">16dp</dimen>
@@ -599,7 +599,7 @@
     <dimen name="match_parent">-1px</dimen>
 
     <!-- Height of status bar in split shade mode - visible only on large screens -->
-    <dimen name="large_screen_shade_header_height">48dp</dimen>
+    <dimen name="large_screen_shade_header_height">@dimen/status_bar_height</dimen>
     <dimen name="large_screen_shade_header_min_height">@dimen/qs_header_row_min_height</dimen>
     <dimen name="large_screen_shade_header_left_padding">@dimen/qs_horizontal_margin</dimen>
     <dimen name="shade_header_system_icons_height">@dimen/large_screen_shade_header_min_height</dimen>
@@ -779,8 +779,8 @@
     <dimen name="qs_header_mobile_icon_size">@dimen/status_bar_icon_drawing_size</dimen>
     <dimen name="qs_header_carrier_separator_width">6dp</dimen>
     <dimen name="qs_carrier_margin_width">4dp</dimen>
-    <dimen name="qs_header_height">120dp</dimen>
-    <dimen name="qs_header_row_min_height">48dp</dimen>
+    <dimen name="qs_header_height">@dimen/status_bar_height</dimen>
+    <dimen name="qs_header_row_min_height">@dimen/status_bar_height</dimen>
 
     <dimen name="qs_header_non_clickable_element_height">24sp</dimen>
     <dimen name="new_qs_header_non_clickable_element_height">24sp</dimen>
