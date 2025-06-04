@@ -17,7 +17,6 @@ package com.android.systemui.media.dialog
 
 import android.content.Context
 import android.graphics.drawable.Icon
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.text.BidiFormatter
@@ -311,8 +310,12 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mDivider.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.contentDescription)
-                .isEqualTo(mContext.getString(R.string.accessibility_add_device_to_group_with_name,
-                         BidiFormatter.getInstance().unicodeWrap(TEST_DEVICE_NAME_2)))
+                .isEqualTo(
+                    mContext.getString(
+                        R.string.accessibility_add_device_to_group_with_name,
+                        BidiFormatter.getInstance().unicodeWrap(TEST_DEVICE_NAME_2),
+                    )
+                )
             assertThat(mTitleText.visibility).isEqualTo(VISIBLE)
             assertThat(mTitleText.text.toString()).isEqualTo(TEST_DEVICE_NAME_2)
 
@@ -334,9 +337,12 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         createAndBindDeviceViewHolder(position = 2).apply {
             assertThat(mGroupButton.visibility).isEqualTo(VISIBLE)
             assertThat(mGroupButton.contentDescription)
-                .isEqualTo(mContext.getString(
+                .isEqualTo(
+                    mContext.getString(
                         R.string.accessibility_remove_device_from_group_with_name,
-                        BidiFormatter.getInstance().unicodeWrap(TEST_DEVICE_NAME_2)))
+                        BidiFormatter.getInstance().unicodeWrap(TEST_DEVICE_NAME_2),
+                    )
+                )
             mGroupButton.performClick()
         }
 
@@ -473,24 +479,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         verify(mMediaSwitchingController, never()).connectDevice(any())
     }
 
-    @DisableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
     @Test
-    fun clickFullItemOfSelectableDevice_flagOff_verifyConnectDevice() {
-        mMediaSwitchingController.stub {
-            on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
-        }
-        updateAdapterWithDevices(listOf(mMediaDevice2))
-
-        createAndBindDeviceViewHolder(position = 0).apply {
-            assertThat(mTitleText.text.toString()).isEqualTo(TEST_DEVICE_NAME_2)
-            mMainContent.performClick()
-        }
-        verify(mMediaSwitchingController).connectDevice(mMediaDevice2)
-    }
-
-    @EnableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
-    @Test
-    fun clickFullItemOfSelectableDevice_flagOn_hasListingPreference_verifyConnectDevice() {
+    fun clickFullItemOfSelectableDevice_hasListingPreference_verifyConnectDevice() {
         mMediaDevice2.stub { on { hasRouteListingPreferenceItem() } doReturn true }
         mMediaSwitchingController.stub {
             on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
@@ -504,9 +494,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         verify(mMediaSwitchingController).connectDevice(mMediaDevice2)
     }
 
-    @EnableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
     @Test
-    fun clickFullItemOfSelectableDevice_flagOn_isTransferable_verifyConnectDevice() {
+    fun clickFullItemOfSelectableDevice_isTransferable_verifyConnectDevice() {
         mMediaSwitchingController.stub {
             on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
             on { transferableMediaDevices } doReturn listOf(mMediaDevice2)
@@ -520,9 +509,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
         verify(mMediaSwitchingController).connectDevice(mMediaDevice2)
     }
 
-    @EnableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
     @Test
-    fun clickFullItemOfSelectableDevice_flagOn_notTransferable_verifyNotConnectDevice() {
+    fun clickFullItemOfSelectableDevice_notTransferable_verifyNotConnectDevice() {
         mMediaDevice2.stub { on { hasRouteListingPreferenceItem() } doReturn false }
         mMediaSwitchingController.stub {
             on { selectableMediaDevice } doReturn listOf(mMediaDevice2)
