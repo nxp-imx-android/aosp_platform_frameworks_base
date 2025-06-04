@@ -56,7 +56,6 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0) {
             .waitForAndVerify()
 
         tapl.setEnableRotation(true)
-        tapl.setExpectedRotation(rotation.value)
     }
 
     @Test
