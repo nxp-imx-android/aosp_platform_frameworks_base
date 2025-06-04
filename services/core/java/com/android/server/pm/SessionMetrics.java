@@ -201,8 +201,28 @@ final class SessionMetrics {
                         nativeLibExtractionDurationMillis,
                         packageVerificationDurationMillis,
                         internalInstallationDurationMillis,
-                        sessionLifetimeMillis
-                )
+                        sessionLifetimeMillis,
+                        /* adiVerificationPolicy= */ 0,
+                        /* adiVerifierUid= */ 0,
+                        /* adiBypassedReason= */ 0,
+                        /* adiTimeoutExtensionRequested= */ false,
+                        /* adiHasExtensionParams= */ false,
+                        /* adiVerificationPolicyOverrideRequested= */ false,
+                        /* adiSessionPolicyOverrideValue= */ 0,
+                        /* adiVerifierResponse= */ 0,
+                        /* aslStatus= */ 0,
+                        /* adiUserActionRequired= */ false,
+                        /* adiUserActionRequiredReason= */ 0,
+                        /* adiUserResponse= */ 0,
+                        /* adiRetryCount= */ 0,
+                        /* isAdiLite= */ false,
+                        /* adiVerificationFailedReason= */ 0,
+                        /* adiFailedPackageName= */ null,
+                        /* adiVerificationDurationMillis= */ 0L,
+                        /* adiVerificationPrepDurationMillis= */ 0L,
+                        /* adiVerificationRetryDurationMillis= */ 0L,
+                        /* adiOnVerificationCancelledCalled= */ false
+                        )
         );
     }
 
