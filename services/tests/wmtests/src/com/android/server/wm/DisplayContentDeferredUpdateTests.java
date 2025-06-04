@@ -18,6 +18,7 @@ package com.android.server.wm;
 
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
+import static android.view.WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.any;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -235,6 +236,19 @@ public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
         // Verify that screen is unblocked as start transaction of the transition
         // has been completed
         verify(mScreenUnblocker).sendToTarget();
+    }
+
+    @Test
+    public void testDisplaySwitching_requestsTransitionWithDisplayLevelFlag() {
+        mDisplayContent.mDisplayUpdater.onDisplaySwitching(/* switching= */ true);
+        mUniqueId = "new";
+
+        mDisplayContent.requestDisplayUpdate(mock(Runnable.class));
+
+        captureStartTransitionCollection().getValue().onCollectStarted(/* deferred= */ true);
+        final Transition transition = captureRequestedTransition().getValue();
+        assertThat(transition.getFlags() & TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION)
+                .isNotEqualTo(0);
     }
 
     @Test
