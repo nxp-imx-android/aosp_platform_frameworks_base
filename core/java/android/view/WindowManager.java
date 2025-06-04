@@ -1503,7 +1503,7 @@ public interface WindowManager extends ViewManager {
      * <pre>
      * &lt;application&gt;
      *   &lt;property
-     *     android:name="android.window.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE"
+     *     android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
      *     android:value="false"/&gt;
      * &lt;/application&gt;
      * </pre>or
