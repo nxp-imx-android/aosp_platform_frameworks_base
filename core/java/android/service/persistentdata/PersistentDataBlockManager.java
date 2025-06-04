@@ -16,7 +16,6 @@
 
 package android.service.persistentdata;
 
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -26,7 +25,6 @@ import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.content.Context;
 import android.os.RemoteException;
-import android.security.Flags;
 import android.service.oemlock.OemLockManager;
 
 import java.lang.annotation.Retention;
@@ -36,7 +34,6 @@ import java.lang.annotation.RetentionPolicy;
  * Interface to the persistent data partition.  Provides access to information about the state
  * of factory reset protection.
  */
-@FlaggedApi(Flags.FLAG_FRP_ENFORCEMENT)
 @SystemService(Context.PERSISTENT_DATA_BLOCK_SERVICE)
 public class PersistentDataBlockManager {
     private static final String TAG = PersistentDataBlockManager.class.getSimpleName();
@@ -259,7 +256,6 @@ public class PersistentDataBlockManager {
      * not been able to deactivate FRP because the deactivation secrets were wiped by an untrusted
      * factory reset.
      */
-    @FlaggedApi(Flags.FLAG_FRP_ENFORCEMENT)
     public boolean isFactoryResetProtectionActive() {
         try {
             return sService.isFactoryResetProtectionActive();
@@ -275,7 +271,6 @@ public class PersistentDataBlockManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_FRP_ENFORCEMENT)
     @SystemApi
     @RequiresPermission(android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION)
     public boolean deactivateFactoryResetProtection(@NonNull byte[] secret) {
@@ -312,7 +307,6 @@ public class PersistentDataBlockManager {
      *
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_FRP_ENFORCEMENT)
     @SystemApi
     @SuppressLint("RequiresPermission")
     public boolean setFactoryResetProtectionSecret(@NonNull byte[] secret) {
