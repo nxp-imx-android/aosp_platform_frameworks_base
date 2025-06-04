@@ -55,6 +55,7 @@ import com.android.systemui.privacy.PrivacyItemController;
 import com.android.systemui.privacy.PrivacyType;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore;
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository;
 import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController;
 import com.android.systemui.statusbar.policy.NextAlarmController;
@@ -114,6 +115,10 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
     UserTracker mUserTracker;
     @Mock
     PrivacyItemController mPrivacyItemController;
+    @Mock
+    AmbientStatusBarViewModel.Factory mAmbientStatusBarViewModelFactory;
+    @Mock
+    ConnectedDisplaysStatusBarNotificationIconViewStore.Factory mIconViewStoreFactory;
 
     LogBuffer mLogBuffer = FakeLogBuffer.Factory.Companion.create();
 
@@ -155,6 +160,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 mKosmos.getWifiInteractor(),
                 mPrivacyItemController,
                 mKosmos.getCommunalSceneInteractor(),
+                mAmbientStatusBarViewModelFactory,
+                mIconViewStoreFactory,
                 mLogBuffer);
         mController.onInit();
     }
@@ -331,6 +338,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 mKosmos.getWifiInteractor(),
                 mPrivacyItemController,
                 mKosmos.getCommunalSceneInteractor(),
+                mAmbientStatusBarViewModelFactory,
+                mIconViewStoreFactory,
                 mLogBuffer);
         controller.onViewAttached();
         verify(mView, never()).showIcon(

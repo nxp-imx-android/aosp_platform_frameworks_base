@@ -30,7 +30,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.compose.ui.platform.ComposeView;
 
+import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream;
+import com.android.systemui.ambient.statusbar.ui.binder.AmbientStatusBarViewBinder;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dreams.DreamLogger;
@@ -46,6 +49,7 @@ import com.android.systemui.privacy.PrivacyType;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.CrossFadeHelper;
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore;
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractor;
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel;
 import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController;
@@ -90,6 +94,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
     private final List<DreamOverlayStatusBarItemsProvider.StatusBarItem> mExtraStatusBarItems =
             new ArrayList<>();
     private final CommunalSceneInteractor mCommunalSceneInteractor;
+    private final AmbientStatusBarViewModel.Factory mAmbientStatusBarViewModelFactory;
+    private final ConnectedDisplaysStatusBarNotificationIconViewStore.Factory mIconViewStoreFactory;
     private final DreamLogger mLogger;
 
     private boolean mIsAttached;
@@ -157,6 +163,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
             WifiInteractor wifiInteractor,
             PrivacyItemController privacyItemController,
             CommunalSceneInteractor communalSceneInteractor,
+            AmbientStatusBarViewModel.Factory ambientStatusBarViewModelFactory,
+            ConnectedDisplaysStatusBarNotificationIconViewStore.Factory iconViewStoreFactory,
             @DreamLog LogBuffer logBuffer) {
         super(view);
         mResources = resources;
@@ -174,6 +182,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
         mWifiInteractor = wifiInteractor;
         mPrivacyItemController = privacyItemController;
         mCommunalSceneInteractor = communalSceneInteractor;
+        mAmbientStatusBarViewModelFactory = ambientStatusBarViewModelFactory;
+        mIconViewStoreFactory = iconViewStoreFactory;
         mLogger = new DreamLogger(logBuffer, TAG);
     }
 
@@ -198,6 +208,16 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
     @Override
     protected void onViewAttached() {
         mIsAttached = true;
+
+        if (OngoingActivityChipsOnDream.isEnabled()) {
+            final ComposeView ongoingActivityChipsView =
+                    mView.findViewById(R.id.dream_overlay_ongoing_activity_chips);
+            AmbientStatusBarViewBinder.bindOngoingActivityChipsView(
+                    getContext(),
+                    ongoingActivityChipsView,
+                    mAmbientStatusBarViewModelFactory,
+                    mIconViewStoreFactory);
+        }
 
         collectFlow(
                 mView,
