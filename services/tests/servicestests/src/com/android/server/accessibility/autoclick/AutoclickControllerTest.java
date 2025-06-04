@@ -1413,6 +1413,39 @@ public class AutoclickControllerTest {
         assertThat(scrollCaptor.eventCount).isEqualTo(countBeforeRunnable);
     }
 
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void exitButton_exitsScrollMode() {
+        // Initialize the controller.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Set the active click type to scroll.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Enable revert to left click setting.
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                AccessibilityUtils.State.ON,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK));
+
+        // Show the scroll panel and verify it's visible before pause.
+        mController.mAutoclickScrollPanel.show();
+        assertThat(mController.mAutoclickScrollPanel.isVisible()).isTrue();
+
+        // Simulate exit button click.
+        mController.mScrollPanelController.onExitScrollMode();
+
+        // Verify that the scroll panel is hidden.
+        assertThat(mController.mAutoclickScrollPanel.isVisible()).isFalse();
+
+        // Verify that the click type is reset to left click.
+        assertThat(mController.getActiveClickTypeForTest())
+                .isEqualTo(AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK);
+    }
     /**
      * =========================================================================
      * Helper Functions

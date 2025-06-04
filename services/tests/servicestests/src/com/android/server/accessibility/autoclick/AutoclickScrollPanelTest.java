@@ -337,7 +337,7 @@ public class AutoclickScrollPanelTest {
     }
 
     @Test
-    public void exitButton_click_hidesPanel() {
+    public void exitButton_click_callsOnExitScrollMode() {
         float cursorX = 300;
         float cursorY = 300;
 
@@ -347,8 +347,8 @@ public class AutoclickScrollPanelTest {
         // Simulate clicking the exit button.
         mExitButton.performClick();
 
-        // Verify the panel is hidden.
-        assertThat(mScrollPanel.isVisible()).isFalse();
+        // Verify that the controller's onExitScrollMode was called.
+        verify(mMockScrollPanelController).onExitScrollMode();
     }
 
     // Helper method to simulate a hover event on a view.
