@@ -366,9 +366,14 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * @param displayId The display to create the root task on.
      * @param windowingMode Windowing mode to put the root task in.
      * @param listener The listener to get the created task callback.
+     *
+     * @deprecated Use {@link #createRootTask(CreateRootTaskRequest, TaskListener)}
      */
     public void createRootTask(int displayId, int windowingMode, TaskListener listener) {
-        createRootTask(displayId, windowingMode, listener, false /* removeWithTaskOrganizer */);
+        createRootTask(new CreateRootTaskRequest()
+                        .setDisplayId(displayId)
+                        .setWindowingMode(windowingMode),
+                listener);
     }
 
     /**
@@ -377,11 +382,16 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * @param windowingMode Windowing mode to put the root task in.
      * @param listener The listener to get the created task callback.
      * @param removeWithTaskOrganizer True if this task should be removed when organizer destroyed.
+     *
+     * @deprecated Use {@link #createRootTask(CreateRootTaskRequest, TaskListener)}
      */
     public void createRootTask(int displayId, int windowingMode, TaskListener listener,
             boolean removeWithTaskOrganizer) {
-        createRootTask(displayId, windowingMode, listener, removeWithTaskOrganizer,
-                false /* reparentOnDisplayRemoval */);
+        createRootTask(new CreateRootTaskRequest()
+                        .setDisplayId(displayId)
+                        .setWindowingMode(windowingMode)
+                        .setRemoveWithTaskOrganizer(removeWithTaskOrganizer),
+                listener);
     }
 
     /**
@@ -391,15 +401,33 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      * @param listener The listener to get the created task callback.
      * @param removeWithTaskOrganizer True if this task should be removed when organizer destroyed.
      * @param reparentOnDisplayRemoval True if this task should be reparented on display removal.
+     *
+     * @deprecated Use {@link #createRootTask(CreateRootTaskRequest, TaskListener)}
      */
     public void createRootTask(int displayId, int windowingMode, TaskListener listener,
             boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval) {
+        createRootTask(new CreateRootTaskRequest()
+                        .setDisplayId(displayId)
+                        .setWindowingMode(windowingMode)
+                        .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
+                        .setReparentOnDisplayRemoval(reparentOnDisplayRemoval),
+                listener);
+    }
+
+    /**
+     * Creates a persistent root task in WM for a particular windowing-mode.
+     * @param request The data for this request
+     * @param listener The listener to get the created task callback.
+     *
+     * @hide
+     */
+    public void createRootTask(@NonNull CreateRootTaskRequest request, TaskListener listener) {
         ProtoLog.v(WM_SHELL_TASK_ORG, "createRootTask() displayId=%d winMode=%d listener=%s" ,
-                displayId, windowingMode, listener.toString());
+                request.displayId, request.windowingMode, listener.toString());
         final IBinder cookie = new Binder();
+        request.setLaunchCookie(cookie);
         setPendingLaunchCookieListener(cookie, listener);
-        super.createRootTask(displayId, windowingMode, cookie, removeWithTaskOrganizer,
-                reparentOnDisplayRemoval);
+        super.createRootTask(request);
     }
 
     /**

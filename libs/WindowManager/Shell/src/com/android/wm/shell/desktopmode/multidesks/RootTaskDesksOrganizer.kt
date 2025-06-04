@@ -26,6 +26,7 @@ import android.util.SparseArray
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DesktopExperienceFlags
+import android.window.TaskOrganizer
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
@@ -150,13 +151,15 @@ class RootTaskDesksOrganizer(
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
         createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
         shellTaskOrganizer.createRootTask(
-            displayId,
-            WINDOWING_MODE_FREEFORM,
-            /* listener = */ this,
-            /* removeWithTaskOrganizer = */ true,
-            /* reparentOnDisplayRemoval = */ DesktopExperienceFlags
-                .ENABLE_DISPLAY_DISCONNECT_INTERACTION
-                .isTrue,
+            TaskOrganizer.CreateRootTaskRequest()
+                .setName("Desk")
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setRemoveWithTaskOrganizer(true)
+                .setReparentOnDisplayRemoval(DesktopExperienceFlags
+                    .ENABLE_DISPLAY_DISCONNECT_INTERACTION
+                    .isTrue),
+            this,
         )
     }
 
@@ -603,13 +606,15 @@ class RootTaskDesksOrganizer(
         createDeskMinimizationRootRequests +=
             CreateDeskMinimizationRootRequest(displayId = displayId, deskId = deskId)
         shellTaskOrganizer.createRootTask(
-            displayId,
-            WINDOWING_MODE_FREEFORM,
-            /* listener = */ this,
-            /* removeWithTaskOrganizer = */ true,
-            /* reparentOnDisplayRemoval = */ DesktopExperienceFlags
-                .ENABLE_DISPLAY_DISCONNECT_INTERACTION
-                .isTrue,
+            TaskOrganizer.CreateRootTaskRequest()
+                .setName("MinimizedDesk_$deskId")
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setRemoveWithTaskOrganizer(true)
+                .setReparentOnDisplayRemoval(DesktopExperienceFlags
+                    .ENABLE_DISPLAY_DISCONNECT_INTERACTION
+                    .isTrue),
+            this,
         )
     }
 

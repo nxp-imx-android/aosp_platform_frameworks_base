@@ -88,6 +88,7 @@ import android.window.IMultitaskingController;
 import android.window.IMultitaskingControllerCallback;
 import android.window.ScreenCapture;
 import android.window.ScreenCapture.SynchronousScreenCaptureListener;
+import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -582,7 +583,11 @@ public class BubbleController implements ConfigurationChangeListener,
             // The app bubble should be dismissed with proper transition (such as need to convert
             // it to fullscreen) if the bubble task is no longer be a leaf task under this leaf
             // task.
-            mTaskOrganizer.createRootTask(mContext.getDisplayId(), WINDOWING_MODE_MULTI_WINDOW,
+            mTaskOrganizer.createRootTask(
+                    new TaskOrganizer.CreateRootTaskRequest()
+                            .setName("Bubbles")
+                            .setDisplayId(mContext.getDisplayId())
+                            .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW),
                     new ShellTaskOrganizer.TaskListener() {
                         @Override
                         public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo,
