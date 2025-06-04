@@ -4044,6 +4044,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 any<WindowContainerTransaction>(),
                 isA(DesktopModeMoveToDisplayTransitionHandler::class.java),
             )
+        verify(snapEventHandler, verificationMode).removeTaskIfTiled(task.displayId, task.taskId)
     }
 
     @Test

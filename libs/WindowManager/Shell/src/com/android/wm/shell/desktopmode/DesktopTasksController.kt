@@ -1834,7 +1834,7 @@ class DesktopTasksController(
             logW("moveToDisplay: desk not found for display: $displayId")
             return
         }
-
+        snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
         // TODO: b/393977830 and b/397437641 - do not assume that freeform==desktop.
         if (!task.isFreeform) {
             addMoveToDeskTaskChanges(wct = wct, task = task, deskId = destinationDeskId)
