@@ -31,6 +31,8 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToDreamingTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.GoneToDreamingTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.LockscreenToDreamingTransitionViewModel
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
@@ -51,6 +53,8 @@ constructor(
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     fromGlanceableHubTransitionViewModel: GlanceableHubToDreamingTransitionViewModel,
     toGlanceableHubTransitionViewModel: DreamingToGlanceableHubTransitionViewModel,
+    fromLockscreenTransitionViewModel: LockscreenToDreamingTransitionViewModel,
+    fromGoneTransitionViewModel: GoneToDreamingTransitionViewModel,
     private val toLockscreenTransitionViewModel: DreamingToLockscreenTransitionViewModel,
     private val fromDreamingTransitionInteractor: FromDreamingTransitionInteractor,
     private val communalInteractor: CommunalInteractor,
@@ -117,4 +121,15 @@ constructor(
                 keyguardTransitionInteractor.isInTransition(Edge.create(from = DREAMING)),
             )
             .distinctUntilChanged()
+
+    val statusBarAlpha: Flow<Float> =
+        merge(
+                toLockscreenTransitionViewModel.statusBarAlpha,
+                fromLockscreenTransitionViewModel.statusBarAlpha,
+                fromGoneTransitionViewModel.statusBarAlpha,
+                // Reset explicit alpha once dream-exit transition ended
+                transitionEnded.map { -1f },
+            )
+            .distinctUntilChanged()
+            .dumpWhileCollecting("statusBarAlphaByDream")
 }
