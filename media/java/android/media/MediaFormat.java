@@ -192,6 +192,7 @@ public final class MediaFormat {
     public static final String MIMETYPE_AUDIO_AC3 = "audio/ac3";
     public static final String MIMETYPE_AUDIO_EAC3 = "audio/eac3";
     public static final String MIMETYPE_AUDIO_EAC3_JOC = "audio/eac3-joc";
+    /** MIME type for AC-4 sync frame transport format audio stream. */
     public static final String MIMETYPE_AUDIO_AC4 = "audio/ac4";
     public static final String MIMETYPE_AUDIO_SCRAMBLED = "audio/scrambled";
     /** MIME type for MPEG-H Audio single stream */
