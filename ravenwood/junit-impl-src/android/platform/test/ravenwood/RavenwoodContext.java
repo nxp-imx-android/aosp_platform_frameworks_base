@@ -46,7 +46,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -89,7 +88,7 @@ public class RavenwoodContext extends RavenwoodBaseContext {
         mMainThread = mainThread;
         mResourcesSupplier = resourcesSupplier;
 
-        mDataDir = Files.createTempDirectory(mPackageName).toFile();
+        mDataDir = RavenwoodDriver.sAppDataDir;
 
         // Services provided by a typical shipping device
         registerService(ClipboardManager.class,

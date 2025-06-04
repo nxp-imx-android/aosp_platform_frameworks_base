@@ -51,6 +51,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.Environment_ravenwood;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Looper_ravenwood;
@@ -84,6 +85,7 @@ import org.junit.runner.Description;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
@@ -230,6 +232,9 @@ public class RavenwoodDriver {
     private static final long sCallingIdentity =
             packBinderIdentityToken(false, FIRST_APPLICATION_UID, sMyPid);
 
+    static volatile File sRootDir;
+    static volatile File sAppDataDir;
+
     /**
      * Initialize the global environment.
      */
@@ -348,6 +353,11 @@ public class RavenwoodDriver {
         loadRavenwoodProperties();
 
         assertMockitoVersion();
+
+        sRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
+        sAppDataDir = new File(sRootDir, "data/app/appdatadir/");
+        sAppDataDir.mkdirs();
+        Environment_ravenwood.init(sRootDir);
 
         Log.i(TAG, "TargetPackageName=" + sTargetPackageName);
         Log.i(TAG, "TestPackageName=" + sTestPackageName);
