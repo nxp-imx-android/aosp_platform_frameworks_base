@@ -100,20 +100,8 @@ private fun AlertDialogPresenter.SettingsAlertDialog(
             dismissButton?.let {
                 { if (isSpaExpressiveEnabled) DismissButton(it) else Button(it) }
             },
-        title =
-            title?.let {
-                {
-                    if (isSpaExpressiveEnabled)
-                        Text(it, style = MaterialTheme.typography.bodyLarge)
-                    else CenterRow {
-                        Text(it)
-                    }
-                }
-            },
-        text =
-            text?.let {
-                { CenterRow { Column(Modifier.verticalScroll(rememberScrollState())) { text() } } }
-            },
+        title = title?.let { { SettingsAlertDialogTitle(it) } },
+        text = text?.let { { SettingsAlertDialogText(it) } },
         properties = DialogProperties(usePlatformDefaultWidth = false),
     )
 }
@@ -137,6 +125,16 @@ fun getDialogWidth(): Dp {
                 Configuration.ORIENTATION_LANDSCAPE -> 0.65f
                 else -> 0.85f
             }
+}
+
+@Composable
+internal fun SettingsAlertDialogTitle(title: String) {
+    Text(text = title, style = MaterialTheme.typography.headlineSmall)
+}
+
+@Composable
+internal fun SettingsAlertDialogText(text: @Composable (() -> Unit)) {
+    Column(Modifier.verticalScroll(rememberScrollState())) { text() }
 }
 
 @Composable
