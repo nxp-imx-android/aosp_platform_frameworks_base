@@ -302,6 +302,43 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
+    fun testActionCredentialMatched_dismissesWhenCredentialAllowed() {
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
+            )
+        val attestation = ByteArray(10)
+        container.onCredentialMatched(attestation, true)
+        waitForIdleSync()
+
+        verify(callback)
+            .onDismissed(
+                eq(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED),
+                eq(attestation),
+                eq(authContainer?.requestId ?: 0L),
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    fun testActionCredentialMatched_doesNotDismissWhenCredentialNotAllowed() {
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
+            )
+        val attestation = ByteArray(10)
+        container.onCredentialMatched(attestation, false)
+        waitForIdleSync()
+
+        verify(callback, never())
+            .onDismissed(
+                eq(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED),
+                eq(attestation),
+                eq(authContainer?.requestId ?: 0L),
+            )
+    }
+
+    @Test
     fun testActionError_sendsDismissedError() {
         val container = initializeFingerprintContainer()
         container.mBiometricCallback.onError()

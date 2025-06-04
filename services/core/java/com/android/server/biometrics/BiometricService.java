@@ -52,6 +52,7 @@ import android.hardware.biometrics.IBiometricSensorReceiver;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
+import android.hardware.biometrics.IIdentityCheckStateListener;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
@@ -123,6 +124,7 @@ public class BiometricService extends SystemService {
     @VisibleForTesting
     final SettingObserver mSettingObserver;
     private final List<EnabledOnKeyguardCallback> mEnabledOnKeyguardCallbacks;
+    private final List<IIdentityCheckStateListener> mIdentityCheckStateListeners;
     private final Random mRandom = new Random();
     @NonNull private final Supplier<Long> mRequestCounter;
     @NonNull private final BiometricContext mBiometricContext;
@@ -1118,6 +1120,20 @@ public class BiometricService extends SystemService {
         }
 
         @android.annotation.EnforcePermission(android.Manifest.permission.USE_BIOMETRIC_INTERNAL)
+        @Override
+        public void registerIdentityCheckStateListener(IIdentityCheckStateListener listener) {
+            super.registerIdentityCheckStateListener_enforcePermission();
+            mIdentityCheckStateListeners.add(listener);
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.USE_BIOMETRIC_INTERNAL)
+        @Override
+        public void unregisterIdentityCheckStateListener(IIdentityCheckStateListener listener) {
+            super.unregisterIdentityCheckStateListener_enforcePermission();
+            mIdentityCheckStateListeners.remove(listener);
+        }
+
+        @android.annotation.EnforcePermission(android.Manifest.permission.USE_BIOMETRIC_INTERNAL)
         @Override // Binder call
         public void invalidateAuthenticatorIds(int userId, int fromSensorId,
                 IInvalidationCallback callback) {
@@ -1476,6 +1492,7 @@ public class BiometricService extends SystemService {
         mDevicePolicyManager = mInjector.getDevicePolicyManager(context);
         mImpl = new BiometricServiceWrapper();
         mEnabledOnKeyguardCallbacks = new ArrayList<>();
+        mIdentityCheckStateListeners = new ArrayList<>();
         mSettingObserver = mInjector.getSettingObserver(context, mHandler,
                 mEnabledOnKeyguardCallbacks);
         mRequestCounter = mInjector.getRequestGenerator();
@@ -1863,8 +1880,10 @@ public class BiometricService extends SystemService {
                 createClientDeathReceiver(requestId), preAuthInfo, token, requestId,
                 operationId, userId, createBiometricSensorReceiver(requestId), receiver,
                 opPackageName, promptInfo, debugEnabled,
-                mInjector.getFingerprintSensorProperties(getContext()),
-                mInjector.getAuthenticationPolicyManager(getContext()), mHandler);
+                mInjector.getFingerprintSensorProperties(getContext()), new WatchRangingHelper(
+                requestId,
+                mInjector.getAuthenticationPolicyManager(getContext()), mHandler,
+                this::onWatchRangingStateChange));
 
         try {
             mAuthSession.goToInitialState();
@@ -1897,6 +1916,16 @@ public class BiometricService extends SystemService {
             }
         }
         return null;
+    }
+
+    private void onWatchRangingStateChange(int state) {
+        for (int i = 0; i < mIdentityCheckStateListeners.size(); i++) {
+            try {
+                mIdentityCheckStateListeners.get(i).onWatchRangingStateChanged(state);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException", e);
+            }
+        }
     }
 
     private void dumpInternal(PrintWriter pw) {

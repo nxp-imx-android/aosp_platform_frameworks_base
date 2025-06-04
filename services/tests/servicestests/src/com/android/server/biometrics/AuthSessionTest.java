@@ -1129,11 +1129,14 @@ public class AuthSessionTest {
 
         final PreAuthInfo preAuthInfo = createPreAuthInfo(sensors, userId, promptInfo,
                 checkDevicePolicyManager);
+        final WatchRangingHelper watchRangingHelper = new WatchRangingHelper(requestId,
+                mAuthenticationPolicyManager, mHandler, watchRangingState -> {
+        });
         return new AuthSession(mContext, mBiometricContext, mStatusBarService, mSysuiReceiver,
                 mKeyStoreAuthorization, mRandom, mClientDeathReceiver, preAuthInfo, mToken,
                 requestId, operationId, userId, mSensorReceiver, mClientReceiver, TEST_PACKAGE,
                 promptInfo, false /* debugEnabled */, mFingerprintSensorProps,
-                mBiometricFrameworkStatsLogger, mAuthenticationPolicyManager, mHandler);
+                mBiometricFrameworkStatsLogger, watchRangingHelper);
     }
 
     private AuthSession createIdentityCheckAuthSession(List<BiometricSensor> sensors,
@@ -1147,11 +1150,14 @@ public class AuthSessionTest {
 
         final PreAuthInfo preAuthInfo = createPreAuthInfo(sensors, userId, promptInfo,
                 checkDevicePolicyManager);
+        final WatchRangingHelper watchRangingHelper = new WatchRangingHelper(requestId,
+                mAuthenticationPolicyManager, mHandler, watchRangingState -> {
+        });
         return new AuthSession(mContext, mBiometricContext, mStatusBarService, mSysuiReceiver,
                 mKeyStoreAuthorization, mRandom, mClientDeathReceiver, preAuthInfo, mToken,
                 requestId, operationId, userId, mSensorReceiver, mClientReceiver, TEST_PACKAGE,
                 promptInfo, false /* debugEnabled */, mFingerprintSensorProps,
-                mBiometricFrameworkStatsLogger, mAuthenticationPolicyManager, mHandler);
+                mBiometricFrameworkStatsLogger, watchRangingHelper);
     }
 
     private PromptInfo createPromptInfo(@Authenticators.Types int authenticators) {

@@ -67,7 +67,10 @@ sealed class BiometricPromptRequest(
             showEmergencyCallButton = info.isShowEmergencyCallButton,
         ) {
         val biometricsRequested: Boolean = Utils.isBiometricAllowed(info)
+        /* Whether credential is allowed, determined by Identity Check */
         val credentialAllowed: Boolean = Utils.isDeviceCredentialAllowed(info)
+        /* Whether credential is requested by the prompt caller */
+        val credentialRequested: Boolean = info.isDeviceCredentialAllowed
 
         /** PIN prompt. */
         class Pin(
