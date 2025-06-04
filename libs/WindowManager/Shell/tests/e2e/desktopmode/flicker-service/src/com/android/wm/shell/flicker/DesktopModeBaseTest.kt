@@ -45,6 +45,7 @@ abstract class DesktopModeBaseTest(flicker: LegacyFlickerTest) : BaseBenchmarkTe
 
     companion object {
         @get:ClassRule
+        @JvmStatic
         val screenRecordRule = ScreenRecordRule()
     }
 
