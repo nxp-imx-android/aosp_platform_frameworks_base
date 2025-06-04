@@ -46,6 +46,8 @@ import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
@@ -96,9 +98,13 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var testScope: CoroutineScope
     private lateinit var shellInit: ShellInit
+    private lateinit var desktopUserRepositories: DesktopUserRepositories
 
     // Mock running tasks are registered here so we can get the list from mock shell task organizer
     private val runningTasks = mutableListOf<RunningTaskInfo>()
+
+    private val repository: DesktopRepository
+        get() = desktopUserRepositories.current
 
     @Before
     fun setUp() {
@@ -116,6 +122,21 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         val tda = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
         tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(tda)
+        desktopUserRepositories =
+            DesktopUserRepositories(
+                ShellInit(TestShellExecutor()),
+                /* shellController= */ mock(),
+                /* persistentRepository= */ mock(),
+                /* repositoryInitializer= */ mock(),
+                testScope,
+                /* userManager= */ mock(),
+                FakeDesktopState(),
+                FakeDesktopConfig(),
+            )
+        repository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 10)
+        repository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 10)
+        repository.addDesk(displayId = SECOND_DISPLAY, deskId = 11)
+        repository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = 11)
 
         doAnswer {
                 keyGestureEventHandler = (it.arguments[1] as KeyGestureEventHandler)
@@ -130,6 +151,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 context,
                 Optional.of(desktopModeWindowDecorViewModel),
                 Optional.of(desktopTasksController),
+                desktopUserRepositories,
                 inputManager,
                 shellTaskOrganizer,
                 focusTransitionObserver,
@@ -161,7 +183,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
             .thenReturn(defaultDisplayArea)
         // Setup a focused task on secondary display, which is expected to move to default display
-        val task = setUpFreeformTask(displayId = SECOND_DISPLAY)
+        val task = setUpDesktopTask(displayId = SECOND_DISPLAY)
         task.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
         whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
@@ -182,7 +204,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     @Test
     @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureSnapLeft_shouldSnapResizeTaskToLeft() {
-        val task = setUpFreeformTask()
+        val task = setUpDesktopTask()
         task.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
         whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
@@ -208,7 +230,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     @Test
     @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureSnapRight_shouldSnapResizeTaskToRight() {
-        val task = setUpFreeformTask()
+        val task = setUpDesktopTask()
         task.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
         whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
@@ -234,7 +256,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     @Test
     @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureToggleFreeformWindowSize_shouldToggleTaskSize() {
-        val task = setUpFreeformTask()
+        val task = setUpDesktopTask()
         task.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
         whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
@@ -262,7 +284,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     @Test
     @EnableFlags(FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS)
     fun keyGestureMinimizeFreeformWindow_shouldMinimizeTask() {
-        val task = setUpFreeformTask()
+        val task = setUpDesktopTask()
         task.isFocused = true
         whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
         whenever(focusTransitionObserver.hasGlobalFocus(eq(task))).thenReturn(true)
@@ -309,7 +331,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         verify(desktopTasksController).activateNextDesk(displayId)
     }
 
-    private fun setUpFreeformTask(
+    private fun setUpDesktopTask(
         displayId: Int = DEFAULT_DISPLAY,
         bounds: Rect? = null,
     ): RunningTaskInfo {
@@ -318,6 +340,12 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         task.topActivityInfo = activityInfo
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         runningTasks.add(task)
+        repository.addTask(
+            displayId = displayId,
+            taskId = task.taskId,
+            isVisible = task.isVisible,
+            taskBounds = task.configuration.windowConfiguration.getBounds(),
+        )
         return task
     }
 

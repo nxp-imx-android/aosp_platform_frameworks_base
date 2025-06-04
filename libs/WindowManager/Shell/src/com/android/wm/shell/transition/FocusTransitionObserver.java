@@ -34,12 +34,15 @@ import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.window.DesktopExperienceFlags;
 import android.window.TransitionInfo;
 
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
+import com.android.wm.shell.shared.TransitionUtil.LeafTaskFilter;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,12 +77,26 @@ public class FocusTransitionObserver {
         final SparseArray<RunningTaskInfo> lastTransitionFocusedTasks =
                 mFocusedTaskOnDisplay.clone();
 
+        // Find all leaf tasks in the transition.
+        final List<Integer> leafTasks = new ArrayList<>();
+        final LeafTaskFilter leafTaskFilter = new LeafTaskFilter();
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            if (leafTaskFilter.test(change)) {
+                leafTasks.add(change.getTaskInfo().taskId);
+            }
+        }
         final List<TransitionInfo.Change> changes = info.getChanges();
+        // Iterate in reverse, so front-most tasks are processed last.
         for (int i = changes.size() - 1; i >= 0; i--) {
             final TransitionInfo.Change change = changes.get(i);
 
             final RunningTaskInfo task = change.getTaskInfo();
-            if (task != null) {
+            final boolean updateTaskFocus =
+                    DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue()
+                            ? (task != null && leafTasks.contains(task.taskId))
+                            : task != null;
+            if (updateTaskFocus) {
                 if (change.hasFlags(FLAG_MOVED_TO_TOP) || change.getMode() == TRANSIT_OPEN) {
                     updateFocusedTaskPerDisplay(task, task.displayId);
                 } else {

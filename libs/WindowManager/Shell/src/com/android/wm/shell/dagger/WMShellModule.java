@@ -1111,6 +1111,7 @@ public abstract class WMShellModule {
             Context context,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
             Optional<DesktopTasksController> desktopTasksController,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InputManager inputManager,
             ShellTaskOrganizer shellTaskOrganizer,
             FocusTransitionObserver focusTransitionObserver,
@@ -1122,6 +1123,7 @@ public abstract class WMShellModule {
                 || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
+                    desktopUserRepositories,
                     inputManager, shellTaskOrganizer, focusTransitionObserver,
                     mainExecutor, displayController));
         }
