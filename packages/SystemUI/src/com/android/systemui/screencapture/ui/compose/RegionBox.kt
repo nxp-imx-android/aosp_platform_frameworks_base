@@ -39,50 +39,59 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun RegionBox(width: Dp, height: Dp, modifier: Modifier = Modifier) {
     // The diameter of the resizable knob on each corner of the region box.
-    val KNOB_DIAMETER = 10.dp
+    val KNOB_DIAMETER = 8.dp
     // The width of the border stroke around the region box.
-    val BORDER_STROKE_WIDTH = 1.dp
+    val BORDER_STROKE_WIDTH = 4.dp
 
+    // The box that contains the whole screen.
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Box(
-            modifier =
-                modifier.size(width, height)
-                    .border(BORDER_STROKE_WIDTH, MaterialTheme.colorScheme.onSurfaceVariant)
-        ) {
-            // The offset is half of the knob diameter so that knob is centered.
+        // The box container for the region box and its knobs.
+        Box(modifier = Modifier.size(width, height)) {
+            // The main box for the region selection.
+            Box(
+                modifier =
+                    Modifier.fillMaxSize()
+                        .border(BORDER_STROKE_WIDTH, MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+
+            // The offset is half of the knob diameter so that it is centered.
             val knobOffset = KNOB_DIAMETER / 2
 
             // Top left knob
             Knob(
                 diameter = KNOB_DIAMETER,
                 modifier =
-                    modifier.align(Alignment.TopStart).offset(x = -knobOffset, y = -knobOffset),
+                    Modifier.align(Alignment.TopStart).offset(x = -knobOffset, y = -knobOffset),
             )
 
             // Top right knob
             Knob(
                 diameter = KNOB_DIAMETER,
-                modifier = modifier.align(Alignment.TopEnd).offset(x = knobOffset, y = -knobOffset),
+                modifier = Modifier.align(Alignment.TopEnd).offset(x = knobOffset, y = -knobOffset),
             )
 
             // Bottom left knob
             Knob(
                 diameter = KNOB_DIAMETER,
                 modifier =
-                    modifier.align(Alignment.BottomStart).offset(x = -knobOffset, y = knobOffset),
+                    Modifier.align(Alignment.BottomStart).offset(x = -knobOffset, y = knobOffset),
             )
 
             // Bottom right knob
             Knob(
                 diameter = KNOB_DIAMETER,
                 modifier =
-                    modifier.align(Alignment.BottomEnd).offset(x = knobOffset, y = knobOffset),
+                    Modifier.align(Alignment.BottomEnd).offset(x = knobOffset, y = knobOffset),
             )
         }
     }
 }
 
-/** The circular knob on each corner of the box used for dragging each corner. */
+/**
+ * The circular knob on each corner of the box used for dragging each corner.
+ *
+ * @param diameter The diameter of the knob.
+ */
 @Composable
 private fun Knob(diameter: Dp, modifier: Modifier = Modifier) {
     Box(
