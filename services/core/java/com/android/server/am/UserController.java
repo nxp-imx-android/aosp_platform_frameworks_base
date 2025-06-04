@@ -2244,14 +2244,16 @@ class UserController implements Handler.Callback {
 
         if (android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
             if (userStartMode == USER_START_MODE_BACKGROUND && userInfo.isFull() &&
-                    (autoStopUserInSecs = determineWhenToScheduleStop(autoStopUserInSecs)) > 0) {
+                    (autoStopUserInSecs > 0 || mBackgroundUserScheduledStopTimeSecs > 0)) {
                 if (!needStart
                         && !mHandler.hasEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
                                 Integer.valueOf(userId))) {
                     Slogf.d(TAG, "Not scheduling background user stop: user %d is already running"
                             + " in background in perpetuity, so keep it that way", userId);
-                } else {
+                } else if (autoStopUserInSecs > 0) {
                     scheduleStopOfBackgroundUser(userId, autoStopUserInSecs);
+                } else {
+                    scheduleStopOfInactiveBackgroundUser(userId);
                 }
             } else {
                 // This start shouldn't be scheduled for stopping. Clear existing scheduled stops.
@@ -2304,22 +2306,6 @@ class UserController implements Handler.Callback {
             sendUserStartingBroadcast(userId, callingUid, callingPid);
             t.traceEnd();
         }
-    }
-
-    /**
-     * Determines when to schedule stopping a background user, balancing between the provided
-     * parameter and the default {@link #mBackgroundUserScheduledStopTimeSecs}. It is the smallest
-     * positive value among them.
-     * Returns a non-positive value (i.e. don't schedule) if both are non-positive.
-     */
-    private int determineWhenToScheduleStop(int autoStopUserInSecs) {
-        if (autoStopUserInSecs <= 0) {
-            return mBackgroundUserScheduledStopTimeSecs;
-        }
-        if (mBackgroundUserScheduledStopTimeSecs <= 0) {
-            return autoStopUserInSecs;
-        }
-        return Math.min(mBackgroundUserScheduledStopTimeSecs, autoStopUserInSecs);
     }
 
     /**
@@ -2652,8 +2638,23 @@ class UserController implements Handler.Callback {
      * users that haven't been actively used in a long time, using the default delay for that.
      * This is only intended for full users that are currently in the background.
      */
-    private void scheduleStopOfInactiveBackgroundUser(@UserIdInt int oldUserId) {
-        scheduleStopOfBackgroundUser(oldUserId, mBackgroundUserScheduledStopTimeSecs);
+    private void scheduleStopOfInactiveBackgroundUser(@UserIdInt int userId) {
+        if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
+            return;
+        }
+        if (mBackgroundUserScheduledStopTimeSecs <= 0) {
+            // Feature is not enabled on this device.
+            return;
+        }
+        if (userId == mInjector.getUserManagerInternal().getMainUserId()) {
+            // MainUser is currently special for things like Docking, so we'll exempt it for now.
+            Slogf.i(TAG, "Exempting user %d from being stopped due to inactivity by virtue "
+                    + "of it being the main user", userId);
+            mHandler.removeEqualMessages(SCHEDULE_STOP_BACKGROUND_USER_MSG,
+                    Integer.valueOf(userId));
+            return;
+        }
+        scheduleStopOfBackgroundUser(userId, mBackgroundUserScheduledStopTimeSecs);
     }
 
     /**
@@ -2662,43 +2663,40 @@ class UserController implements Handler.Callback {
      * some reason, and therefore are rescheduling it until a later point.
      * This is only intended for full users that are currently in the background.
      */
-    private void rescheduleStopOfBackgroundUser(@UserIdInt int oldUserId) {
-        scheduleStopOfBackgroundUser(oldUserId, POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS);
+    private void rescheduleStopOfBackgroundUser(@UserIdInt int userId) {
+        scheduleStopOfBackgroundUser(userId, POSTPONEMENT_TIME_FOR_BACKGROUND_USER_STOP_SECS);
     }
 
     /**
-     * Possibly schedules the user to be stopped at after the given number of seconds.
+     * Possibly schedules the user to be stopped after the given number of seconds.
      * This is only intended for full users that are currently in the background.
      */
-    private void scheduleStopOfBackgroundUser(@UserIdInt int oldUserId, int delayUptimeSecs) {
+    private void scheduleStopOfBackgroundUser(@UserIdInt int userId, int delayUptimeSecs) {
         if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
             return;
         }
-        if (delayUptimeSecs <= 0 || UserManager.isVisibleBackgroundUsersEnabled()) {
+        if (delayUptimeSecs <= 0) {
+            return;
+        }
+        if (UserManager.isVisibleBackgroundUsersEnabled()) {
             // Feature is not enabled on this device.
             return;
         }
-        if (oldUserId == UserHandle.USER_SYSTEM) {
+        if (userId == UserHandle.USER_SYSTEM) {
             // Never stop system user
             return;
         }
         synchronized(mLock) {
-            final UserState uss = mStartedUsers.get(oldUserId);
+            final UserState uss = mStartedUsers.get(userId);
             if (uss == null || uss.state == UserState.STATE_STOPPING
                     || uss.state == UserState.STATE_SHUTDOWN) {
                 // We've stopped (or are stopping) the user anyway, so don't bother scheduling.
                 return;
             }
         }
-        if (oldUserId == mInjector.getUserManagerInternal().getMainUserId()) {
-            // MainUser is currently special for things like Docking, so we'll exempt it for now.
-            Slogf.i(TAG, "Exempting user %d from being stopped due to inactivity by virtue "
-                    + "of it being the main user", oldUserId);
-            return;
-        }
-        Slogf.d(TAG, "Scheduling to stop user %d in %d seconds", oldUserId, delayUptimeSecs);
+        Slogf.d(TAG, "Scheduling to stop user %d in %d seconds", userId, delayUptimeSecs);
         final int delayUptimeMs = delayUptimeSecs * 1000;
-        final Object msgObj = oldUserId;
+        final Object msgObj = userId;
         mHandler.sendMessageDelayed(
                 mHandler.obtainMessage(SCHEDULE_STOP_BACKGROUND_USER_MSG, msgObj),
                 delayUptimeMs);
@@ -2722,18 +2720,13 @@ class UserController implements Handler.Callback {
             Slogf.i(TAG, "User %d is scheduled for bg stopping later, so wait until then", userId);
             return;
         }
-        if (avoidStoppingUserDueToUpcomingAlarm(userId)) {
-            // We want this user running soon for alarm-purposes, so don't stop it now. Reschedule.
-            Slogf.d(TAG, "User %d will fire an alarm soon, so reschedule bg stopping", userId);
+        if (avoidStoppingUserRightNow(userId)) {
+            Slogf.d(TAG, "Rescheduling bg stopping of user %d because it (or its profile) should "
+                    + "not be stopped right now ", userId);
             rescheduleStopOfBackgroundUser(userId);
             return;
         }
-        if (mInjector.getAudioManagerInternal().isUserPlayingAudio(userId)) {
-            // User is audible (even if invisibly, e.g. via an alarm), so don't stop it. Reschedule.
-            Slogf.d(TAG, "User %d is playing audio, so reschedule bg stopping", userId);
-            rescheduleStopOfBackgroundUser(userId);
-            return;
-        }
+
         synchronized (mLock) {
             if (getCurrentOrTargetUserIdLU() == userId) {
                 // User is (somehow) already in the foreground, or we're currently switching to it.
@@ -2746,12 +2739,43 @@ class UserController implements Handler.Callback {
             final UserInfo currentOrTargetUser = getCurrentUserLU();
             if (currentOrTargetUser != null && currentOrTargetUser.isGuest()) {
                 // Don't kill any background users for the sake of a Guest. Just reschedule instead.
+                Slogf.d(TAG, "Current user %d is a Guest, so reschedule bg stopping of user %d",
+                        currentOrTargetUser.id, userId);
                 rescheduleStopOfBackgroundUser(userId);
                 return;
             }
             Slogf.i(TAG, "Stopping background user %d due to inactivity", userId);
             stopUsersLU(userId, /* allowDelayedLocking= */ true, null, null);
         }
+    }
+
+    /**
+     * Returns whether to avoid stopping the given user because, even though it may only be in the
+     * background, it (or {@link #getUsersToStopLU(int) a user that would stop if it stopped}) is
+     * still currently useful (e.g. playing audio, or has an upcoming alarm).
+     *
+     * Makes requests of other services, so don't call while holding a lock.
+     */
+    private boolean avoidStoppingUserRightNow(@UserIdInt int userId) {
+        final int[] usersThatWouldStop;
+        synchronized (mLock) {
+            usersThatWouldStop = getUsersToStopLU(userId);
+        }
+        for (int relatedUserId : usersThatWouldStop) {
+            if (avoidStoppingUserDueToUpcomingAlarm(relatedUserId)) {
+                // We want this user running soon for alarm-purposes, so don't stop it now.
+                Slogf.d(TAG, "Avoid stopping user %d because user %d will fire an alarm soon",
+                        userId, relatedUserId);
+                return true;
+            }
+            if (mInjector.getAudioManagerInternal().isUserPlayingAudio(relatedUserId)) {
+                // User is audible (even if invisibly, e.g. via an alarm), so don't stop it.
+                Slogf.d(TAG, "Avoid stopping user %d because user %d is playing audio",
+                        userId, relatedUserId);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
