@@ -62,8 +62,7 @@ final class ComposePrimitivesVibratorStep extends AbstractComposedVibratorStep {
             if (primitives.isEmpty()) {
                 Slog.w(VibrationThread.TAG, "Ignoring wrong segment for a ComposePrimitivesStep: "
                         + effect.getSegments().get(segmentIndex));
-                // Skip this step and play the next one right away.
-                return nextSteps(/* segmentsPlayed= */ 1);
+                return skipStep();
             }
 
             if (VibrationThread.DEBUG) {
@@ -77,9 +76,7 @@ final class ComposePrimitivesVibratorStep extends AbstractComposedVibratorStep {
             long vibratorOnResult = controller.on(primitivesArray, getVibration().id, stepId);
             handleVibratorOnResult(vibratorOnResult);
             getVibration().stats.reportComposePrimitives(vibratorOnResult, primitivesArray);
-
-            // The next start and off times will be calculated from mVibratorOnResult.
-            return nextSteps(/* segmentsPlayed= */ primitives.size());
+            return vibratorOnNextSteps(/* segmentsPlayed= */ primitives.size());
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIBRATOR);
         }
