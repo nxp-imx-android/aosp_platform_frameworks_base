@@ -1916,6 +1916,25 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 !nonOverlapList.contains(child));
     }
 
+    @Test
+    @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT})
+    public void testOverlapWhenOutOfBounds() {
+        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        mStackScroller.addContainerView(firstRow);
+
+        ExpandableViewState viewState = firstRow.getViewState();
+        viewState.initFrom(firstRow);
+        viewState.setYTranslation(-100f);
+        viewState.height = 100;
+        viewState.notGoneIndex = 0;
+        viewState.applyToView(firstRow);
+
+        mStackScroller.avoidNotificationOverlaps();
+        // bigger than because of padding
+        assertTrue("TopOverlap not calculated accurately", firstRow.getTopOverlap() == 0);
+        assertTrue("BottomOverlap not calculated accurately", firstRow.getBottomOverlap() == 0);
+    }
+
     private MotionEvent captureTouchSentToSceneFramework() {
         ArgumentCaptor<MotionEvent> captor = ArgumentCaptor.forClass(MotionEvent.class);
         verify(mStackScrollLayoutController).sendTouchToSceneFramework(captor.capture());
