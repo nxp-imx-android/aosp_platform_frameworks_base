@@ -52,7 +52,6 @@ val Kosmos.quickSettingsSceneContentViewModel by Fixture {
             }
             view
         }),
-        qsContainerViewModelFactory = quickSettingsContainerViewModelFactory,
         footerActionsViewModelFactory = footerActionsViewModelFactory,
         footerActionsController = footerActionsController,
         mediaCarouselInteractor = mediaCarouselInteractor,

@@ -77,7 +77,6 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                     brightnessMirrorViewModelFactory = brightnessMirrorViewModelFactory,
                     shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
                     qsSceneAdapter = fakeQsSceneAdapter,
-                    qsContainerViewModelFactory = kosmos.quickSettingsContainerViewModelFactory,
                     footerActionsViewModelFactory = footerActionsViewModelFactory,
                     footerActionsController = footerActionsController,
                     mediaCarouselInteractor = mediaCarouselInteractor,
