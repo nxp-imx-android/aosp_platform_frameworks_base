@@ -31,8 +31,8 @@ import android.tools.traces.monitors.PerfettoTraceMonitor.Companion.newBuilder
 import android.tools.traces.monitors.TraceMonitor
 import android.util.Log
 import android.util.proto.ProtoInputStream
-import androidx.test.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
@@ -92,12 +92,12 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_NoOp_Inactive() {
+    fun traceNoOpInactive() {
         trace_NoOp()
     }
 
     @Test
-    fun trace_NoOp_Active() {
+    fun traceNoOpActive() {
         runWithActiveTrace(1) { this.trace_NoOp() }
     }
 
@@ -120,23 +120,23 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_SimplePacket_Inactive() {
+    fun traceSimplePacketInactive() {
         trace_SimplePacket()
     }
 
     @Test
-    fun trace_SimplePacket_Active() {
+    fun traceSimplePacketActive() {
         runWithActiveTrace(1) { this.trace_SimplePacket() }
     }
 
     @Test
-    fun trace_SimplePacket_Active_MultiSession() {
+    fun traceSimplePacketActiveMultiSession() {
         // NOTE: There is a maximum allowed tracing sessions per UID so we cannot exceed that.
         runWithActiveTrace(3) { this.trace_SimplePacket() }
     }
 
     @Test
-    fun trace_NewPacket() {
+    fun traceNewPacket() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             while (state.keepRunning()) {
@@ -150,7 +150,7 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_MultiplePackets() {
+    fun traceMultiplePackets() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             val value = AtomicInteger(0)
@@ -176,7 +176,7 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_LargePacket() {
+    fun traceLargePacket() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             // Define a large string payload (approx 4KB)
@@ -197,7 +197,7 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_WithTraceSection() {
+    fun traceWithTraceSection() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             val value = AtomicInteger(0)
@@ -224,7 +224,7 @@ class DataSourcePerfTest {
 
     @Test
     @Throws(InterruptedException::class)
-    fun trace_ConcurrentSimplePacket() {
+    fun traceConcurrentSimplePacket() {
         runWithActiveTrace(1) {
             val numThreads = 12
             val executor = Executors.newFixedThreadPool(numThreads)
@@ -319,7 +319,7 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_TlsStateAccess() {
+    fun traceTlsStateAccess() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             while (state.keepRunning()) {
@@ -345,7 +345,7 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_IncrementalStateAccess() {
+    fun traceIncrementalStateAccess() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             while (state.keepRunning()) {
@@ -371,7 +371,7 @@ class DataSourcePerfTest {
     }
 
     @Test
-    fun trace_ComplexPacket() {
+    fun traceComplexPacket() {
         runWithActiveTrace(1) {
             val state = perfStatusReporter.benchmarkState
             val value = AtomicInteger(0)
@@ -476,7 +476,7 @@ class DataSourcePerfTest {
     }
 
     private fun tempDataSourceDir(): File {
-        val tempDir = InstrumentationRegistry.getInstrumentation().context.cacheDir
+        val tempDir = InstrumentationRegistry.getInstrumentation().targetContext.cacheDir
         return File(tempDir, "DataSourcePerfTest_Dummy_" + System.nanoTime())
     }
 
