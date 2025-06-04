@@ -138,6 +138,7 @@ import android.widget.RemoteViews;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.SuspendedAppActivity;
 import com.android.internal.app.UnlaunchableAppActivity;
 import com.android.internal.appwidget.IAppWidgetHost;
@@ -349,6 +350,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     // and package events, as well as various internal events within
     // AppWidgetService.
     private Handler mCallbackHandler;
+    // ServiceThread on which the callback handler runs
+    private ServiceThread mServiceThread;
     // Map of user id to the next app widget id (monotonically increasing integer)
     // that can be allocated for a new app widget.
     // See {@link AppWidgetHost#allocateAppWidgetId}.
@@ -392,10 +395,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             mSaveStateHandler = BackgroundThread.getHandler();
         }
         mSavePreviewsHandler = new Handler(BackgroundThread.get().getLooper());
-        final ServiceThread serviceThread = new ServiceThread(TAG,
-                android.os.Process.THREAD_PRIORITY_FOREGROUND, false /* allowIo */);
-        serviceThread.start();
-        mCallbackHandler = new CallbackHandler(serviceThread.getLooper());
+        mServiceThread = new ServiceThread(TAG,
+            android.os.Process.THREAD_PRIORITY_FOREGROUND, false /* allowIo */);
+        mServiceThread.start();
+        mCallbackHandler = new CallbackHandler(mServiceThread.getLooper());
         mBackupRestoreController = new BackupRestoreController();
         mSecurityPolicy = new SecurityPolicy();
         mIsCombinedBroadcastEnabled = DeviceConfig.getBoolean(NAMESPACE_SYSTEMUI,
@@ -441,6 +444,11 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     @Override
     public int getMaxBitmapMemory() {
         return mMaxWidgetBitmapMemory;
+    }
+
+    @VisibleForTesting
+    ServiceThread getServiceThread() {
+        return mServiceThread;
     }
 
     /**
