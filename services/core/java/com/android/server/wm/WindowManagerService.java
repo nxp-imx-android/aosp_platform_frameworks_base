@@ -153,6 +153,7 @@ import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListe
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
 import static com.android.window.flags.Flags.multiCrop;
+import static com.android.window.flags.Flags.screenBrightnessDimOnEmulator;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
@@ -4248,24 +4249,47 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    public void showEmulatorDisplayOverlayIfNeeded() {
-        if (mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_windowEnableCircularEmulatorDisplayOverlay)
-                && SystemProperties.getBoolean(PROPERTY_EMULATOR_CIRCULAR, false)
-                && Build.IS_EMULATOR) {
+    @VisibleForTesting
+    void showEmulatorDisplayOverlayIfNeeded() {
+        if (shouldShowEmulatorDisplayOverlay()) {
             mH.sendMessage(mH.obtainMessage(H.SHOW_EMULATOR_DISPLAY_OVERLAY));
         }
     }
 
-    public void showEmulatorDisplayOverlay() {
+    private boolean shouldShowEmulatorDisplayOverlay() {
+        return enableCircularEmulatorDisplayOverlay()
+                || enableScreenBrightnessEmulatorDisplayOverlay();
+    }
+
+    @VisibleForTesting
+    boolean enableCircularEmulatorDisplayOverlay() {
+        return Build.IS_EMULATOR
+                && mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_windowEnableCircularEmulatorDisplayOverlay)
+                && SystemProperties.getBoolean(PROPERTY_EMULATOR_CIRCULAR, false);
+    }
+
+    @VisibleForTesting
+    boolean enableScreenBrightnessEmulatorDisplayOverlay() {
+        return screenBrightnessDimOnEmulator() && Build.IS_EMULATOR
+                && mContext.getResources().getBoolean(
+                R.bool.config_windowEnableScreenBrightnessEmulatorDisplayOverlay);
+    }
+
+    @VisibleForTesting
+    void showEmulatorDisplayOverlay() {
         synchronized (mGlobalLock) {
 
             if (SHOW_LIGHT_TRANSACTIONS) Slog.i(TAG_WM, ">>> showEmulatorDisplayOverlay");
             if (mEmulatorDisplayOverlay == null) {
                 mEmulatorDisplayOverlay = new EmulatorDisplayOverlay(mContext,
+                        this,
                         getDefaultDisplayContentLocked(),
                         mPolicy.getWindowLayerFromTypeLw(WindowManager.LayoutParams.TYPE_POINTER)
-                                * TYPE_LAYER_MULTIPLIER + 10, mTransaction);
+                                * TYPE_LAYER_MULTIPLIER + 10,
+                        mTransaction,
+                        enableCircularEmulatorDisplayOverlay(),
+                        enableScreenBrightnessEmulatorDisplayOverlay());
             }
             mEmulatorDisplayOverlay.setVisibility(true, mTransaction);
             mTransaction.apply();
