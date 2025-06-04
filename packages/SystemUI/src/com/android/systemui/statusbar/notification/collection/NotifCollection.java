@@ -928,6 +928,7 @@ public class NotifCollection implements Dumpable, PipelineDumpable {
         return entry.getSbn().getGroupKey().equals(dismissedGroupKey)
                 && !entry.getSbn().getNotification().isGroupSummary()
                 && !hasFlag(entry, Notification.FLAG_ONGOING_EVENT)
+                && !hasFlag(entry, Notification.FLAG_PROMOTED_ONGOING)
                 && !hasFlag(entry, Notification.FLAG_BUBBLE)
                 && !hasFlag(entry, Notification.FLAG_NO_CLEAR)
                 && (entry.getChannel() == null || !entry.getChannel().isImportantConversation())
