@@ -193,6 +193,6 @@ constructor(
 
     companion object {
         private const val TAG = "AmbientCueViewModel"
-        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 15.seconds
+        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 30.seconds
     }
 }
