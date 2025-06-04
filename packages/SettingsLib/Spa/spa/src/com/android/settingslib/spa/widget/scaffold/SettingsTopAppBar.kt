@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.window.embedding.ActivityEmbeddingController
 import com.android.settingslib.spa.framework.compose.localActivity
-import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,21 +33,12 @@ internal fun SettingsTopAppBar(
     isFirstLayerPageWhenEmbedded: Boolean,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    if (isSpaExpressiveEnabled) {
-        MorphingTitleLargeTopAppBar(
-            title = title,
-            navigationIcon = { NavigationIcon(isFirstLayerPageWhenEmbedded) },
-            actions = actions,
-            scrollBehavior = scrollBehavior,
-        )
-    } else {
-        CustomizedLargeTopAppBar(
-            title = title,
-            navigationIcon = { NavigationIcon(isFirstLayerPageWhenEmbedded) },
-            actions = actions,
-            scrollBehavior = scrollBehavior,
-        )
-    }
+    CustomizedLargeTopAppBar(
+        title = title,
+        navigationIcon = { NavigationIcon(isFirstLayerPageWhenEmbedded) },
+        actions = actions,
+        scrollBehavior = scrollBehavior,
+    )
 }
 
 @Composable
