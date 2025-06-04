@@ -80,6 +80,14 @@ public class RemoteTaskUpdatedMessageTest {
         assertRemoteTaskInfoEqual(expected.getTask(), actual.getTask());
     }
 
+    @Test
+    public void testGetFieldNumber_returnsCorrectValue() {
+        RemoteTaskUpdatedMessage remoteTaskUpdatedMessage
+            = new RemoteTaskUpdatedMessage(createNewRemoteTaskInfo("label", 0));
+        assertThat(remoteTaskUpdatedMessage.getFieldNumber())
+            .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED);
+    }
+
     private RemoteTaskInfo createNewRemoteTaskInfo(String label, long lastUsedTimeMillis) {
         ActivityManager.RunningTaskInfo runningTaskInfo
             = createRunningTaskInfo(1, label, lastUsedTimeMillis);

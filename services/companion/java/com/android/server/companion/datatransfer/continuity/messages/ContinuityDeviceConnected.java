@@ -39,14 +39,14 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
         mRemoteTasks = remoteTasks;
     }
 
-    ContinuityDeviceConnected(ProtoInputStream pis) throws IOException {
+    static ContinuityDeviceConnected readFromProto(ProtoInputStream pis) throws IOException {
 
-        boolean hasReadForegroundTaskId = false;
+        int currentForegroundTaskId = 0;
         List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.ContinuityDeviceConnected.CURRENT_FOREGROUND_TASK_ID:
-                    mCurrentForegroundTaskId = pis.readInt(
+                    currentForegroundTaskId = pis.readInt(
                         android.companion.ContinuityDeviceConnected.CURRENT_FOREGROUND_TASK_ID
                     );
 
@@ -61,7 +61,7 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
             }
         }
 
-        mRemoteTasks = remoteTasks;
+        return new ContinuityDeviceConnected(currentForegroundTaskId, remoteTasks);
     }
 
     /**
@@ -76,6 +76,14 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
      */
     public List<RemoteTaskInfo> getRemoteTasks() {
         return mRemoteTasks;
+    }
+
+    /**
+     * Returns the proto field number for this message type.
+     */
+    @Override
+    public long getFieldNumber() {
+        return android.companion.TaskContinuityMessage.DEVICE_CONNECTED;
     }
 
     /**

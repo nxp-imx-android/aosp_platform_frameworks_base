@@ -60,7 +60,7 @@ public class RemoteTaskAddedMessageTest {
 
         ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         RemoteTaskAddedMessage remoteTaskAddedMessage
-            = new RemoteTaskAddedMessage(pis);
+            = RemoteTaskAddedMessage.readFromProto(pis);
 
         assertRemoteTaskInfoEqual(expected, remoteTaskAddedMessage.getTask());
     }
@@ -75,9 +75,18 @@ public class RemoteTaskAddedMessageTest {
         pos.flush();
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final RemoteTaskAddedMessage actual = new RemoteTaskAddedMessage(pis);
+        final RemoteTaskAddedMessage actual = RemoteTaskAddedMessage.readFromProto(pis);
 
         assertRemoteTaskInfoEqual(expected.getTask(), actual.getTask());
+    }
+
+    @Test
+    public void testGetFieldNumber_returnsCorrectValue() {
+        RemoteTaskAddedMessage remoteTaskAddedMessage
+            = new RemoteTaskAddedMessage(createNewRemoteTaskInfo("label", 0));
+
+        assertThat(remoteTaskAddedMessage.getFieldNumber())
+            .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED);
     }
 
     private RemoteTaskInfo createNewRemoteTaskInfo(String label, long lastUsedTimeMillis) {
