@@ -161,6 +161,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.SetScreenLockDialogActivity;
+import com.android.internal.app.SetScreenLockDialogContract;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.notification.SystemNotificationChannels;
@@ -1996,17 +1997,23 @@ public class UserManagerService extends IUserManager.Stub {
                         showConfirmCredentialToDisableQuietMode(userId, target, callingPackage);
                         return false;
                     } else if (km != null && !km.isDeviceSecure(parentUserId)
-                            && android.multiuser.Flags.showSetScreenLockDialog()
-                            // TODO(b/330720545): Add a better way to accomplish this, also use it
-                            //  to block profile creation w/o device credentials present.
                             && Settings.Secure.getIntForUser(mContext.getContentResolver(),
                                 Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1) {
-                        Intent setScreenLockPromptIntent =
-                                SetScreenLockDialogActivity
-                                        .createBaseIntent(LAUNCH_REASON_DISABLE_QUIET_MODE);
-                        setScreenLockPromptIntent.putExtra(EXTRA_ORIGIN_USER_ID, userId);
-                        mContext.startActivityAsUser(setScreenLockPromptIntent,
-                                UserHandle.of(parentUserId));
+                        final Intent setScreenLockPromptIntent;
+                        if (android.multiuser.Flags.moveSetScreenLockDialogToSettingsApp()) {
+                            setScreenLockPromptIntent =
+                                    SetScreenLockDialogContract.createUserSpecificDialogIntent(
+                                            SetScreenLockDialogContract
+                                                    .LAUNCH_REASON_DISABLE_QUIET_MODE,
+                                            userId);
+                        } else {
+                            setScreenLockPromptIntent =
+                                    SetScreenLockDialogActivity.createBaseIntent(
+                                            LAUNCH_REASON_DISABLE_QUIET_MODE);
+                            setScreenLockPromptIntent.putExtra(EXTRA_ORIGIN_USER_ID, userId);
+                        }
+                        mContext.startActivityAsUser(
+                                setScreenLockPromptIntent, UserHandle.of(parentUserId));
                         return false;
                     } else {
                         Slog.w(LOG_TAG, "Allowing profile unlock even when device credentials "
