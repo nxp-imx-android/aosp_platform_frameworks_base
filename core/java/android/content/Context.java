@@ -6976,6 +6976,16 @@ public abstract class Context {
     public static final String DYNAMIC_INSTRUMENTATION_SERVICE = "dynamic_instrumentation";
 
     /**
+     * Use with {@link #getSystemService(String)} to retrieve a
+     * {@link android.service.chooser.ChooserManager}.
+     *
+     * @see #getSystemService(String)
+     * @see android.service.chooser.ChooserManager
+     */
+    @FlaggedApi(android.service.chooser.Flags.FLAG_INTERACTIVE_CHOOSER)
+    public static final String CHOOSER_SERVICE = "chooser";
+
+    /**
      * Determine whether the given permission is allowed for a particular
      * process and user ID running in the system.
      *

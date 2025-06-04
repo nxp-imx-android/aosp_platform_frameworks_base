@@ -63,3 +63,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "interactive_chooser"
+  is_exported: true
+  namespace: "intentresolver"
+  description: "Enables Interactive Chooser Session API."
+  bug: "404593897"
+}
