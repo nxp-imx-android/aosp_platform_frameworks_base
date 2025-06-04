@@ -138,6 +138,17 @@ private fun TaskBarAnd3ButtonAmbientCue(
                 translationY = screenHeightPx - size.height
             },
     )
+    ActionList(
+        actions = actions,
+        visible = visible && expanded,
+        onDismiss = { viewModel.collapse() },
+        horizontalAlignment = Alignment.End,
+        modifier =
+            modifier.graphicsLayer {
+                translationX = screenWidthPx - size.width - actionsHorizontalPaddingPx
+                translationY = pillCenter.y - size.height - actionsVerticalPaddingPx
+            },
+    )
     ShortPill(
         actions = actions,
         visible = visible,
@@ -173,17 +184,6 @@ private fun TaskBarAnd3ButtonAmbientCue(
         onClick = { viewModel.expand() },
         onCloseClick = { viewModel.hide() },
     )
-    ActionList(
-        actions = actions,
-        visible = visible && expanded,
-        onDismiss = { viewModel.collapse() },
-        horizontalAlignment = Alignment.End,
-        modifier =
-            modifier.graphicsLayer {
-                translationX = screenWidthPx - size.width - actionsHorizontalPaddingPx
-                translationY = pillCenter.y - size.height - actionsVerticalPaddingPx
-            },
-    )
 }
 
 @Composable
@@ -203,15 +203,6 @@ private fun NavBarAmbientCue(
 
     LaunchedEffect(expanded) { onShouldInterceptTouches(expanded, null) }
     BackgroundGlow(visible = visible, expanded = expanded, modifier = modifier)
-    NavBarPill(
-        actions = actions,
-        navBarWidth = navBarWidth,
-        visible = visible,
-        expanded = expanded,
-        modifier = modifier.padding(bottom = 4.dp),
-        onClick = { viewModel.expand() },
-        onCloseClick = { viewModel.hide() },
-    )
     ActionList(
         actions = actions,
         visible = visible && expanded,
@@ -222,6 +213,15 @@ private fun NavBarAmbientCue(
                 start = ACTIONS_HORIZONTAL_PADDING.dp,
                 end = ACTIONS_HORIZONTAL_PADDING.dp,
             ),
+    )
+    NavBarPill(
+        actions = actions,
+        navBarWidth = navBarWidth,
+        visible = visible,
+        expanded = expanded,
+        modifier = modifier.padding(bottom = 4.dp),
+        onClick = { viewModel.expand() },
+        onCloseClick = { viewModel.hide() },
     )
 }
 
