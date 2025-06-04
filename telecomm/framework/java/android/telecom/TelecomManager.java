@@ -1157,6 +1157,55 @@ public class TelecomManager {
     public static final String TRANSACTION_CALL_ID_KEY = "TelecomCallId";
 
     /**
+     * Indicates that when a call moves from {@link android.telecom.Call#STATE_DIALING} to
+     * {@link android.telecom.Call#STATE_ACTIVE}, the system should not generate any call connected
+     * indication.
+     * <p>
+     * Used with {@link #setCallConnectedIndicatorPreference and
+     * {@link #getCallConnectedIndicatorPreference()}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    public static final int CALL_CONNECTED_INDICATOR_NONE = 0;
+
+    /**
+     * Indicates that when a call moves from {@link android.telecom.Call#STATE_DIALING} to
+     * {@link android.telecom.Call#STATE_ACTIVE}, the system should play a tone which indicates that
+     * the call has connected.
+     * <p>
+     * Used with {@link #setCallConnectedIndicatorPreference and
+     * {@link #getCallConnectedIndicatorPreference()}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    public static final int CALL_CONNECTED_INDICATOR_TONE = (1 << 0);
+
+    /**
+     * Indicates that when a call moves from {@link android.telecom.Call#STATE_DIALING} to
+     * {@link android.telecom.Call#STATE_ACTIVE}, the system should make a haptic vibration which
+     * indicates that the call has connected.
+     * <p>
+     * Used with {@link #setCallConnectedIndicatorPreference and
+     * {@link #getCallConnectedIndicatorPreference()}.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    public static final int CALL_CONNECTED_INDICATOR_VIBRATION = (1 << 1);
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @IntDef(
+            prefix = {"CALL_CONNECTED_INDICATOR_"},
+            flag = true,
+            value = {CALL_CONNECTED_INDICATOR_NONE, CALL_CONNECTED_INDICATOR_TONE,
+                    CALL_CONNECTED_INDICATOR_VIBRATION})
+    public @interface CallConnectedIndicator {}
+
+    /**
      * @hide
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
@@ -3034,6 +3083,58 @@ public class TelecomManager {
             }
         }
     }
+
+    /**
+     * Retrieves the user's chosen call connected indicator preference.
+     * <p>
+     * See {@link #setCallConnectedIndicatorPreference(int)} for more information.
+     * @return Returns the current preference for the call connected indicator.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    public @CallConnectedIndicator int getCallConnectedIndicatorPreference() {
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                return service.getCallConnectedIndicatorPreference(mContext.getOpPackageName());
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException getCallConnectedIndicatorPreference: " + e);
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        throw new IllegalStateException("Telecom is not available");
+    }
+
+    /**
+     * Specifies the user's call connected indicator preference.
+     * <p>
+     * When a call transitions from {@link android.telecom.Call#STATE_DIALING} to
+     * {@link android.telecom.Call#STATE_ACTIVE}, the system can indicate that the call has
+     * connected by playing a call connected tone and/or generating a haptic vibration.
+     * @param preference The preference of the call connected indicator.
+     * @throws IllegalArgumentException if an invalid preference is specified.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_CALL_CONNECTED_INDICATOR_PREFERENCE)
+    @RequiresPermission(Manifest.permission.MODIFY_PHONE_STATE)
+    public void setCallConnectedIndicatorPreference(@CallConnectedIndicator int preference) {
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                service.setCallConnectedIndicatorPreference(
+                        mContext.getOpPackageName(), preference);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException setCallConnectedIndicatorPreference: " + e);
+                throw e.rethrowFromSystemServer();
+            }
+        } else {
+            throw new IllegalStateException("Telecom is not available");
+        }
+    }
+
 
     private boolean isSystemProcess() {
         return Process.myUid() == Process.SYSTEM_UID;
