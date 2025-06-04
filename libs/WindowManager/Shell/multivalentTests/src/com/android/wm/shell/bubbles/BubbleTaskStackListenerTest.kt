@@ -51,7 +51,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
 import java.util.Optional
 
 /**
@@ -146,7 +145,9 @@ class BubbleTaskStackListenerTest {
     )
     fun onActivityRestartAttempt_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
         val captionInsetsOwner = Binder()
-        whenever(bubble.taskView.captionInsetsOwner).thenReturn(captionInsetsOwner)
+        mockTaskView.stub {
+            on { getCaptionInsetsOwner() } doReturn captionInsetsOwner
+        }
         task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         bubbleData.stub {
             on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
