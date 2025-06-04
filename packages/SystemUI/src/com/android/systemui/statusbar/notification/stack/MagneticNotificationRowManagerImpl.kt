@@ -451,8 +451,10 @@ constructor(
      */
     class DirectionEstimator {
 
-        // A buffer to hold past translations. This is used as a FIFO structure with a fixed size.
-        private val translationBuffer = ArrayDeque<Float>()
+        // A ring buffer to hold past translations. This is a FIFO structure with a fixed size.
+        private val translationBuffer = FloatArray(size = TRANSLATION_BUFFER_SIZE)
+        // The head points to the next available slot in the buffer
+        private var bufferHead = 0
 
         /**
          * A kernel function that multiplies values in the translation buffer to derive a weighted
@@ -484,10 +486,9 @@ constructor(
         fun recordTranslation(translation: Float) {
             if (!acceptTranslations) return
 
-            if (translationBuffer.size == TRANSLATION_BUFFER_SIZE) {
-                translationBuffer.removeFirst()
-            }
-            translationBuffer.addLast(translation)
+            translationBuffer[bufferHead] = translation
+            // Move the head pointer, wrapping if necessary
+            bufferHead = (bufferHead + 1) % TRANSLATION_BUFFER_SIZE
         }
 
         /**
@@ -504,31 +505,24 @@ constructor(
 
         fun reset() {
             direction = 0f
-            translationBuffer.clear()
+            translationBuffer.fill(element = 0f)
             acceptTranslations = true
         }
 
-        private fun ArrayDeque<Float>.kernelMean(): Float {
-            if (isEmpty()) {
-                return 0f
-            } else {
-                if (size < TRANSLATION_BUFFER_SIZE) {
-                    // If the buffer is not full, we fill it from the left with 0 so that the kernel
-                    // applies correctly, giving more weight to recent (right-most) values and less
-                    // weight to old (left-most) values in the buffer
-                    val toFill = TRANSLATION_BUFFER_SIZE - size
-                    for (i in 1..toFill) {
-                        addFirst(0f)
-                    }
-                }
-
-                // Get a weighted average after applying the kernel function
-                val weightedSum =
-                    kernel
-                        .zip(other = this) { kernelMultiplier, value -> value * kernelMultiplier }
-                        .sum()
-                return sign(weightedSum / size)
+        private fun FloatArray.kernelMean(): Float {
+            // Unfold the ring buffer into a list with the most recent translations to the right
+            val unfolded = mutableListOf<Float>()
+            var i = bufferHead
+            repeat(times = size) {
+                unfolded.add(translationBuffer[i])
+                i = (i + 1) % size
             }
+            // Get a weighted average after applying the kernel function
+            val weightedSum =
+                kernel
+                    .zip(other = unfolded) { kernelMultiplier, value -> value * kernelMultiplier }
+                    .sum()
+            return sign(weightedSum / size)
         }
 
         companion object {
