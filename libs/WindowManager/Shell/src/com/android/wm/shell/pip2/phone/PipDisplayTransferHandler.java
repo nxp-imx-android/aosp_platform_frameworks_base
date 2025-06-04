@@ -146,6 +146,10 @@ public class PipDisplayTransferHandler implements
                 Rect finalBounds = new Rect(pipBounds);
                 final DisplayLayout targetDisplayLayout = mDisplayController.getDisplayLayout(
                         mTargetDisplayId);
+
+                mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
+                mPipDisplayLayoutState.setDisplayLayout(targetDisplayLayout);
+
                 // Snap to movement bounds edge of the target display ID on drag release.
                 // The target display layout needs to be supplied since this happens before the PiP
                 // is released and the display ID and layout are updated.
@@ -159,8 +163,6 @@ public class PipDisplayTransferHandler implements
                 mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
                 mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
 
-                mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
-                mPipDisplayLayoutState.setDisplayLayout(targetDisplayLayout);
                 mPipTransitionState.setPinnedTaskLeash(pipLeash);
                 mPipTransitionState.setPipTaskInfo(taskInfo);
 
