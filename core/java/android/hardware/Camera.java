@@ -17,6 +17,7 @@
 package android.hardware;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.system.OsConstants.EACCES;
@@ -365,7 +366,7 @@ public class Camera {
         VirtualDeviceManager virtualDeviceManager =
                 context.getSystemService(VirtualDeviceManager.class);
         return virtualDeviceManager == null
-                ? DEVICE_POLICY_DEFAULT
+                ? DEVICE_POLICY_INVALID
                 : virtualDeviceManager.getDevicePolicy(context.getDeviceId(), POLICY_TYPE_CAMERA);
     }
 

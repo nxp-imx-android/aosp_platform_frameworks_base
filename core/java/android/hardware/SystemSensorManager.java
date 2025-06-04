@@ -17,6 +17,7 @@
 package android.hardware;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -172,7 +173,11 @@ public class SystemSensorManager extends SensorManager {
     @Override
     public List<Sensor> getSensorList(int type) {
         final int deviceId = mContext.getDeviceId();
-        if (isDeviceSensorPolicyDefault(deviceId)) {
+        final int sensorPolicy = getSensorPolicy(deviceId);
+        if (sensorPolicy == DEVICE_POLICY_INVALID) {
+            return Collections.emptyList();
+        }
+        if (sensorPolicy == DEVICE_POLICY_DEFAULT) {
             return super.getSensorList(type);
         }
 
@@ -208,7 +213,11 @@ public class SystemSensorManager extends SensorManager {
     @Override
     protected List<Sensor> getFullSensorList() {
         final int deviceId = mContext.getDeviceId();
-        if (isDeviceSensorPolicyDefault(deviceId)) {
+        final int sensorPolicy = getSensorPolicy(deviceId);
+        if (sensorPolicy == DEVICE_POLICY_INVALID) {
+            return List.of();
+        }
+        if (sensorPolicy == DEVICE_POLICY_DEFAULT) {
             return mFullSensorsList;
         }
 
@@ -747,7 +756,11 @@ public class SystemSensorManager extends SensorManager {
     protected SensorDirectChannel createDirectChannelImpl(
             MemoryFile memoryFile, HardwareBuffer hardwareBuffer) {
         int deviceId = mContext.getDeviceId();
-        if (isDeviceSensorPolicyDefault(deviceId)) {
+        final int sensorPolicy = getSensorPolicy(deviceId);
+        if (sensorPolicy == DEVICE_POLICY_INVALID) {
+            throw new IllegalArgumentException("Invalid device id in context");
+        }
+        if (sensorPolicy == DEVICE_POLICY_DEFAULT) {
             deviceId = DEVICE_ID_DEFAULT;
         }
         int id;
@@ -1198,15 +1211,17 @@ public class SystemSensorManager extends SensorManager {
                 parameter.type, parameter.floatValues, parameter.intValues) == 0;
     }
 
-    private boolean isDeviceSensorPolicyDefault(int deviceId) {
+    private int getSensorPolicy(int deviceId) {
         if (deviceId == DEVICE_ID_DEFAULT) {
-            return true;
+            return DEVICE_ID_DEFAULT;
         }
         if (mVdm == null) {
             mVdm = mContext.getSystemService(VirtualDeviceManager.class);
         }
-        return mVdm == null
-                || mVdm.getDevicePolicy(deviceId, POLICY_TYPE_SENSORS) == DEVICE_POLICY_DEFAULT;
+        if (mVdm == null) {
+            return DEVICE_POLICY_INVALID;
+        }
+        return mVdm.getDevicePolicy(deviceId, POLICY_TYPE_SENSORS);
     }
 
     /**

@@ -955,6 +955,10 @@ package android.companion.virtual {
     method public void playSoundEffect(int, int);
   }
 
+  public final class VirtualDeviceParams implements android.os.Parcelable {
+    field public static final int DEVICE_POLICY_INVALID = -1; // 0xffffffff
+  }
+
 }
 
 package android.companion.virtual.camera {

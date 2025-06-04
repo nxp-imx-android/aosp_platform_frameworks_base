@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
@@ -534,8 +535,11 @@ public class VirtualDeviceManagerService extends SystemService {
         @VirtualDeviceParams.DevicePolicy
         public int getDevicePolicy(int deviceId, @VirtualDeviceParams.PolicyType int policyType) {
             VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
-            return virtualDevice != null
-                    ? virtualDevice.getDevicePolicy(policyType) : DEVICE_POLICY_DEFAULT;
+            if (virtualDevice == null) {
+                return Flags.handleInvalidDeviceId()
+                        ? DEVICE_POLICY_INVALID : DEVICE_POLICY_DEFAULT;
+            }
+            return virtualDevice.getDevicePolicy(policyType);
         }
 
         @Override // Binder call
