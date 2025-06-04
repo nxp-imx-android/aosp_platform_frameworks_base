@@ -21,6 +21,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
@@ -57,6 +58,7 @@ val Kosmos.quickSettingsSceneContentViewModel by Fixture {
         mediaCarouselInteractor = mediaCarouselInteractor,
         shadeModeInteractor = shadeModeInteractor,
         sceneInteractor = sceneInteractor,
+        mainDispatcher = testDispatcher,
     )
 }
 
