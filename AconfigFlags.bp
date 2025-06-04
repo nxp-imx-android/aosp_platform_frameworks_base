@@ -94,6 +94,7 @@ aconfig_declarations_group {
         "com.android.hardware.input-aconfig-java",
         "com.android.input.flags-aconfig-java",
         "com.android.internal.compat.flags-aconfig-java",
+        "com.android.internal.content.storage.flags-aconfig-java",
         "com.android.internal.foldables.flags-aconfig-java",
         "com.android.internal.os.flags-aconfig-java",
         "com.android.internal.pm.pkg.component.flags-aconfig-java",
@@ -1021,6 +1022,12 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.service.compat.flags-aconfig-java",
     aconfig_declarations: "android.service.compat.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "com.android.internal.content.storage.flags-aconfig-java",
+    aconfig_declarations: "com.android.internal.content.storage.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
