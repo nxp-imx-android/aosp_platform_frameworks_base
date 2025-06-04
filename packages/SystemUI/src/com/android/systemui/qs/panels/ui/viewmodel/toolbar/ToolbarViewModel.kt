@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import com.android.systemui.animation.Expandable
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.classifier.domain.interactor.runIfNotFalseTap
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.globalactions.GlobalActionsDialogLite
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -42,6 +43,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Provider
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -60,6 +62,7 @@ constructor(
     private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
     private val falsingInteractor: FalsingInteractor,
     @ShadeDisplayAware appContext: Context,
+    @Main private val mainDispatcher: CoroutineDispatcher,
 ) : ExclusiveActivatable() {
     private val qsThemedContext =
         ContextThemeWrapper(appContext, R.style.Theme_SystemUI_QuickSettings)
@@ -97,7 +100,7 @@ constructor(
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {
-            launch {
+            launch(context = mainDispatcher) {
                 try {
                     globalActionsDialogLite = globalActionsDialogLiteProvider.get()
                     awaitCancellation()
