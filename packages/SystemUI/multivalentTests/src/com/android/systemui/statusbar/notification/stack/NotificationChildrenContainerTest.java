@@ -121,7 +121,9 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_likeCollapsed() {
-        mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
+        View headerView = new ComposeView(mContext);
+        mChildrenContainer.setBundleHeaderView(headerView);
+        mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(true),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_COLLAPSED);
     }
@@ -130,7 +132,9 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_expandedChildren() {
-        mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
+        View headerView = new ComposeView(mContext);
+        mChildrenContainer.setBundleHeaderView(headerView);
+        mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
         mChildrenContainer.setChildrenExpanded(true);
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
@@ -139,7 +143,9 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
-        mChildrenContainer.initBundleHeader(mock(BundleHeaderViewModel.class));
+        View headerView = new ComposeView(mContext);
+        mChildrenContainer.setBundleHeaderView(headerView);
+        mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
         mGroup.setUserLocked(true);
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(),
                 NotificationChildrenContainer.NUMBER_OF_CHILDREN_BUNDLE_EXPANDED);
@@ -311,12 +317,14 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         View currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
         Assert.assertFalse(currentView instanceof ComposeView);
 
+        View headerView = new ComposeView(mContext);
+        mChildrenContainer.setBundleHeaderView(headerView);
         BundleHeaderViewModel viewModel = mKosmos.getBundleHeaderViewModel();
-        mChildrenContainer.initBundleHeader(viewModel);
+        mChildrenContainer.setBundleHeaderViewModel(viewModel);
         currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
         Assert.assertTrue(currentView instanceof ComposeView);
 
-        mChildrenContainer.initBundleHeader(viewModel);
+        mChildrenContainer.setBundleHeaderViewModel(viewModel);
         View finalView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
         Assert.assertEquals(currentView, finalView);
     }

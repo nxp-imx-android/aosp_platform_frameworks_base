@@ -39,11 +39,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.compose.ui.platform.ComposeView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.NotificationExpandButton;
-import com.android.systemui.notifications.ui.composable.row.BundleHeaderKt;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.CrossFadeHelper;
@@ -132,8 +130,8 @@ public class NotificationChildrenContainer extends ViewGroup
      * This view is only set when this NCC is a bundle. If this view is set, all other header
      * view variants have to be null.
      */
-    private ComposeView mBundleHeaderView;
-    private BundleHeaderViewModel mBundleHeaderViewModel;
+    private View mBundleHeaderView;
+    @Nullable private BundleHeaderViewModel mBundleHeaderViewModel;
 
     private NotificationHeaderView mGroupHeader;
     private NotificationHeaderViewWrapper mGroupHeaderWrapper;
@@ -513,19 +511,16 @@ public class NotificationChildrenContainer extends ViewGroup
         mMinimizedGroupHeader = null;
         mMinimizedGroupHeaderWrapper = null;
     }
-
-    /**
-     * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
-     * This can only be init once and not in conjunction with any other header view.
-     */
-    public void initBundleHeader(@NonNull BundleHeaderViewModel viewModel) {
+    public void setBundleHeaderView(@NonNull View view) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
-        if (mBundleHeaderView != null) return;
         initBundleDimens();
-
-        mBundleHeaderViewModel = viewModel;
-        mBundleHeaderView = BundleHeaderKt.createComposeView(mBundleHeaderViewModel, getContext());
+        mBundleHeaderView = view;
         addView(mBundleHeaderView);
+        invalidate();
+    }
+
+    public void setBundleHeaderViewModel(@Nullable BundleHeaderViewModel viewModel) {
+        mBundleHeaderViewModel = viewModel;
         invalidate();
     }
 
@@ -1434,7 +1429,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 mGroupHeader.setHeaderBackgroundDrawable(null);
             }
         }
-        if (mBundleHeaderView != null) {
+        if (mBundleHeaderViewModel != null) {
             if (expanded) {
                 ColorDrawable cd = new ColorDrawable();
                 cd.setColor(mContainingNotification.calculateBgColor());

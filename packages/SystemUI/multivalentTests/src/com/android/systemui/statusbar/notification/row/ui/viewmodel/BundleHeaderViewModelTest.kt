@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import android.platform.test.annotations.EnableFlags
-import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
@@ -49,7 +48,6 @@ class BundleHeaderViewModelTest : SysuiTestCase() {
 
     @Mock lateinit var mockSceneTransitionLayoutState: MutableSceneTransitionLayoutState
     @Mock lateinit var mockComposeScope: CoroutineScope
-    @Mock lateinit var onExpandClickListener: View.OnClickListener
 
     private lateinit var underTest: BundleHeaderViewModel
 
@@ -60,7 +58,6 @@ class BundleHeaderViewModelTest : SysuiTestCase() {
 
         underTest.state = mockSceneTransitionLayoutState
         underTest.composeScope = mockComposeScope
-        underTest.onExpandClickListener = onExpandClickListener
     }
 
     @Test
@@ -75,7 +72,6 @@ class BundleHeaderViewModelTest : SysuiTestCase() {
         // Assert
         verify(mockSceneTransitionLayoutState)
             .setTargetScene(BundleHeader.Scenes.Expanded, mockComposeScope)
-        verify(onExpandClickListener).onClick(null)
     }
 
     @Test
@@ -90,6 +86,5 @@ class BundleHeaderViewModelTest : SysuiTestCase() {
         // Assert
         verify(mockSceneTransitionLayoutState)
             .setTargetScene(BundleHeader.Scenes.Collapsed, mockComposeScope)
-        verify(onExpandClickListener).onClick(null)
     }
 }

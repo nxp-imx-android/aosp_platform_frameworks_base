@@ -1916,17 +1916,16 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mRedactionType = redactionType;
     }
 
-    /**
-     * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
-     * This can only be init once and not in conjunction with any other header view.
-     */
-    public void initBundleHeader(@NonNull BundleHeaderViewModel bundleHeaderViewModel) {
+    public void setBundleHeaderView(@NonNull View view) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
-        bundleHeaderViewModel.setOnExpandClickListener(mExpandClickListener);
+        childrenContainer.setBundleHeaderView(view);
+    }
 
-        childrenContainer.initBundleHeader(bundleHeaderViewModel);
-
+    public void setBundleHeaderViewModel(@Nullable BundleHeaderViewModel viewModel) {
+        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
+        NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
+        childrenContainer.setBundleHeaderViewModel(viewModel);
         if (TransparentHeaderFix.isEnabled()) {
             updateBackgroundForGroupState();
         }
