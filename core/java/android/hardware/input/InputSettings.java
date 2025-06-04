@@ -25,7 +25,6 @@ import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
 import static com.android.hardware.input.Flags.pointerAcceleration;
 import static com.android.hardware.input.Flags.touchpadSystemGestureDisable;
 import static com.android.hardware.input.Flags.touchpadThreeFingerTapShortcut;
-import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.input.flags.Flags.FLAG_KEYBOARD_REPEAT_KEYS;
 import static com.android.input.flags.Flags.keyboardRepeatKeys;
 
@@ -435,15 +434,6 @@ public class InputSettings {
     }
 
     /**
-     * Returns true if the feature flag for touchpad visualizer is enabled.
-     *
-     * @hide
-     */
-    public static boolean isTouchpadVisualizerFeatureFlagEnabled() {
-        return touchpadVisualizer();
-    }
-
-    /**
      * Returns true if the feature flag for the touchpad three-finger tap shortcut is enabled.
      *
      * @hide
@@ -495,9 +485,6 @@ public class InputSettings {
      * @hide
      */
     public static boolean useTouchpadVisualizer(@NonNull Context context) {
-        if (!isTouchpadVisualizerFeatureFlagEnabled()) {
-            return false;
-        }
         return Settings.System.getIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_VISUALIZER, 0, UserHandle.USER_CURRENT) == 1;
     }
@@ -512,9 +499,6 @@ public class InputSettings {
      */
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setTouchpadVisualizer(@NonNull Context context, boolean enabled) {
-        if (!isTouchpadVisualizerFeatureFlagEnabled()) {
-            return;
-        }
         Settings.System.putIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_VISUALIZER, enabled ? 1 : 0, UserHandle.USER_CURRENT);
     }
