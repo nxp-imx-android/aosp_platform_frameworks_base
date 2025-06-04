@@ -893,7 +893,13 @@ public final class AuthSession implements IBinder.DeathRecipient {
                     break;
 
                 default:
-                    Slog.w(TAG, "Unhandled reason: " + reason);
+                    // Check range of fallback option values.
+                    if (reason >= BiometricPrompt.DISMISSED_REASON_FALLBACK_OPTION_BASE
+                            && reason < BiometricPrompt.DISMISSED_REASON_FALLBACK_OPTION_MAX) {
+                        mClientReceiver.onDialogDismissed(reason);
+                    } else {
+                        Slog.w(TAG, "Unhandled reason: " + reason);
+                    }
                     break;
             }
         } catch (RemoteException e) {

@@ -23,6 +23,7 @@ import static android.hardware.biometrics.BiometricConstants.BIOMETRIC_ERROR_NEG
 import static android.hardware.biometrics.BiometricPrompt.DISMISSED_REASON_BIOMETRIC_CONFIRMED;
 import static android.hardware.biometrics.BiometricPrompt.DISMISSED_REASON_BIOMETRIC_CONFIRM_NOT_REQUIRED;
 import static android.hardware.biometrics.BiometricPrompt.DISMISSED_REASON_CONTENT_VIEW_MORE_OPTIONS;
+import static android.hardware.biometrics.BiometricPrompt.DISMISSED_REASON_FALLBACK_OPTION_BASE;
 import static android.hardware.biometrics.BiometricPrompt.DISMISSED_REASON_NEGATIVE;
 import static android.hardware.biometrics.BiometricPrompt.DISMISSED_REASON_USER_CANCEL;
 
@@ -671,6 +672,33 @@ public class AuthSessionTest {
                 eq(BIOMETRIC_ERROR_CONTENT_VIEW_MORE_OPTIONS_BUTTON),
                 eq(0) /* vendorCode */,
                 eq(0) /* userId */);
+    }
+
+    @Test
+    public void onDialogDismissed_withFallbackReason_notifiesClientReceiverWithCorrectReason()
+            throws RemoteException {
+        setupFingerprint(0 /* id */, FingerprintSensorProperties.TYPE_REAR);
+
+        final AuthSession session = createAuthSession(
+                mSensors,
+                false /* checkDevicePolicyManager */,
+                Authenticators.BIOMETRIC_STRONG,
+                TEST_REQUEST_ID,
+                0 /* operationId */,
+                0 /* userId */
+        );
+
+        session.onDialogDismissed(DISMISSED_REASON_FALLBACK_OPTION_BASE,
+                null /* credentialAttestation */);
+
+        verify(mClientReceiver).onDialogDismissed(
+                eq(DISMISSED_REASON_FALLBACK_OPTION_BASE)
+        );
+
+        verify(mClientReceiver, never()).onError(anyInt(), anyInt(), anyInt());
+        verify(mClientReceiver, never()).onAuthenticationSucceeded(anyInt());
+        verify(mClientReceiver, never()).onAuthenticationFailed();
+        verify(mClientReceiver, never()).onAcquired(anyInt(), any());
     }
 
     @Test
