@@ -85,6 +85,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         shouldUseDragToDesktop: Boolean = false,
     ) {
         innerHelper.launchViaIntent(wmHelper)
+        if (isInDesktopWindowingMode(wmHelper)) return
+
         if (shouldUseDragToDesktop) {
             enterDesktopModeWithDrag(
                 wmHelper = wmHelper,
