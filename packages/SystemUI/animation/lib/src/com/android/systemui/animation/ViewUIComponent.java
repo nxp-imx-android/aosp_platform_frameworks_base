@@ -60,7 +60,7 @@ public class ViewUIComponent implements UIComponent {
     private final Handler mMainHandler;
     @Nullable private SurfaceControl mSurfaceControl;
     @Nullable private Surface mSurface;
-    @Nullable private Rect mViewBoundsOverride;
+    @Nullable private RectF mViewBoundsOverride;
     private boolean mVisibleOverride;
     private final boolean mEnableBackgroundDimming;
     private final Paint mPaint = new Paint();
@@ -91,7 +91,7 @@ public class ViewUIComponent implements UIComponent {
     }
 
     @Override
-    public Rect getBounds() {
+    public RectF getBounds() {
         if (isAttachedToLeash() && mViewBoundsOverride != null) {
             return mViewBoundsOverride;
         }
@@ -195,7 +195,7 @@ public class ViewUIComponent implements UIComponent {
             return;
         }
 
-        final Rect realBounds = getRealBounds();
+        final RectF realBounds = getRealBounds();
         if (realBounds.width() == 0 || realBounds.height() == 0) {
             // bad bounds.
             logD("draw: skipped - zero bounds");
@@ -207,7 +207,7 @@ public class ViewUIComponent implements UIComponent {
         // Clear the canvas first.
         canvas.drawColor(0, PorterDuff.Mode.CLEAR);
         if (mVisibleOverride) {
-            Rect renderBounds = getBounds();
+            RectF renderBounds = getBounds();
             canvas.translate(renderBounds.left, renderBounds.top);
 
             float cornerRadius = (float) Math.min(renderBounds.width(), renderBounds.height()) / 2;
@@ -227,8 +227,8 @@ public class ViewUIComponent implements UIComponent {
             }
 
             canvas.scale(
-                    (float) renderBounds.width() / realBounds.width(),
-                    (float) renderBounds.height() / realBounds.height());
+                    renderBounds.width() / realBounds.width(),
+                    renderBounds.height() / realBounds.height());
 
             if (mView.getClipToOutline()) {
                 mView.getOutlineProvider().getOutline(mView, mClippingOutline);
@@ -253,10 +253,10 @@ public class ViewUIComponent implements UIComponent {
         draw();
     }
 
-    private Rect getRealBounds() {
+    private RectF getRealBounds() {
         Rect output = new Rect();
         mView.getBoundsOnScreen(output);
-        return output;
+        return new RectF(output);
     }
 
     private boolean isAttachedToLeash() {
@@ -279,7 +279,7 @@ public class ViewUIComponent implements UIComponent {
         }
     }
 
-    private void setBounds(Rect bounds) {
+    private void setBounds(RectF bounds) {
         logD("setBounds: " + bounds);
         mViewBoundsOverride = bounds;
         if (isAttachedToLeash()) {
@@ -381,7 +381,7 @@ public class ViewUIComponent implements UIComponent {
         }
 
         @Override
-        public Transaction setBounds(ViewUIComponent ui, Rect bounds) {
+        public Transaction setBounds(ViewUIComponent ui, RectF bounds) {
             mChanges.add(() -> ui.post(() -> ui.setBounds(bounds)));
             return this;
         }

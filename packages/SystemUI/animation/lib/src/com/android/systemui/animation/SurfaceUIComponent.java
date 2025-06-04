@@ -33,12 +33,12 @@ import java.util.concurrent.Executor;
  */
 public class SurfaceUIComponent implements UIComponent {
     private final ArrayList<SurfaceControl> mSurfaces = new ArrayList<>();
-    private final Rect mBaseBounds;
+    private final RectF mBaseBounds;
     private final float[] mFloat9 = new float[9];
 
     private float mAlpha;
     private boolean mVisible;
-    private Rect mBounds;
+    private RectF mBounds;
     @Nullable
     private final SurfaceControl mBackgroundDimmingSurface;
 
@@ -67,8 +67,8 @@ public class SurfaceUIComponent implements UIComponent {
         mSurfaces.addAll(surfaces);
         mAlpha = alpha;
         mVisible = visible;
-        mBounds = bounds;
-        mBaseBounds = baseBounds;
+        mBounds = new RectF(bounds);
+        mBaseBounds = new RectF(baseBounds);
         if (enableBackgroundDimming) {
           mBackgroundDimmingSurface = new SurfaceControl.Builder()
                   .setName("SurfaceUIComponent-BackgroundDimming")
@@ -79,9 +79,9 @@ public class SurfaceUIComponent implements UIComponent {
           if (!bounds.equals(baseBounds)) {
               Matrix matrix = new Matrix();
               matrix.setRectToRect(
-                  new RectF(baseBounds),
-                  new RectF(bounds),
-                  Matrix.ScaleToFit.CENTER);
+                      mBaseBounds,
+                      mBounds,
+                      Matrix.ScaleToFit.CENTER);
               new SurfaceControl.Transaction()
                   .setMatrix(mBackgroundDimmingSurface, matrix, mFloat9).apply();
           }
@@ -103,7 +103,7 @@ public class SurfaceUIComponent implements UIComponent {
     }
 
     @Override
-    public Rect getBounds() {
+    public RectF getBounds() {
         return mBounds;
     }
 
@@ -166,7 +166,7 @@ public class SurfaceUIComponent implements UIComponent {
         }
 
         @Override
-        public Transaction setBounds(SurfaceUIComponent ui, Rect bounds) {
+        public Transaction setBounds(SurfaceUIComponent ui, RectF bounds) {
             mChanges.add(
                     () -> {
                         if (ui.mBounds.equals(bounds)) {
@@ -175,8 +175,8 @@ public class SurfaceUIComponent implements UIComponent {
                         ui.mBounds = bounds;
                         Matrix matrix = new Matrix();
                         matrix.setRectToRect(
-                                new RectF(ui.mBaseBounds),
-                                new RectF(ui.mBounds),
+                                ui.mBaseBounds,
+                                ui.mBounds,
                                 Matrix.ScaleToFit.CENTER);
                         ui.mSurfaces.forEach(
                                 s -> mTransaction.setMatrix(s, matrix, ui.mFloat9));
