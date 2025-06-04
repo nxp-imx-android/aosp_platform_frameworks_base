@@ -385,7 +385,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         textView: ImageFloatingTextView? = text,
     ) {
         val headerTitleView = if (collapsed) title else null
-        updateHeader(content, titleView = headerTitleView, collapsed = collapsed)
+        updateHeader(content, headerTitleView = headerTitleView, collapsed = collapsed)
 
         if (headerTitleView == null) {
             updateTitle(title, content)
@@ -451,15 +451,18 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private fun updateHeader(
         content: PromotedNotificationContentModel,
         collapsed: Boolean,
-        titleView: TextView?,
+        headerTitleView: TextView?,
     ) {
-        val hasTitle = titleView != null && content.title != null
+        val hasTitleInHeader = headerTitleView != null && content.title != null
         val hasSubText = content.subText != null
-        val hasText = content.text != null
-        val isSingleLine = !hasTitle && !hasText
+
+        // Determine if the notification has no content *below* the header/top line
+        val hasTextBelowHeader = content.text != null
+        val hasTitleBelowHeader = content.title != null && headerTitleView == null
+        val isSingleLine = !hasTitleBelowHeader && !hasTextBelowHeader
 
         // the collapsed form doesn't show the app name unless there is no other text in the header
-        val appNameRequired = !hasTitle && !hasSubText
+        val appNameRequired = !hasTitleInHeader && !hasSubText
         val hideAppName = (!appNameRequired && collapsed)
 
         // We're only showing the top line (e.g. for redacted notifs), so center it
@@ -470,11 +473,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
         updateAppName(content, forceHide = hideAppName)
         updateTextView(headerTextSecondary, content.subText)
-        updateTitle(titleView, content)
+        updateTitle(headerTitleView, content)
         updateTimeAndChronometer(content)
         updateProfileBadge(content)
 
-        updateHeaderDividers(content, hideTitle = !hasTitle, hideAppName = hideAppName)
+        updateHeaderDividers(content, hideTitle = !hasTitleInHeader, hideAppName = hideAppName)
     }
 
     private fun updateHeaderDividers(
