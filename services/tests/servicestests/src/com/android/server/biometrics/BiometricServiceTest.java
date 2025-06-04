@@ -74,6 +74,7 @@ import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.IDisplayManager;
 import android.hardware.face.FaceManager;
 import android.hardware.face.FaceSensorProperties;
 import android.hardware.face.FaceSensorPropertiesInternal;
@@ -108,7 +109,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
-import com.android.internal.statusbar.ISessionListener;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.server.biometrics.log.BiometricContextProvider;
 import com.android.server.biometrics.sensors.AuthSessionCoordinator;
@@ -143,17 +143,11 @@ public class BiometricServiceTest {
 
     private static final String ERROR_HW_UNAVAILABLE = "hw_unavailable";
     private static final String ERROR_NOT_RECOGNIZED = "not_recognized";
-    private static final String ERROR_TIMEOUT = "error_timeout";
-    private static final String ERROR_CANCELED = "error_canceled";
-    private static final String ERROR_UNABLE_TO_PROCESS = "error_unable_to_process";
     private static final String ERROR_USER_CANCELED = "error_user_canceled";
-    private static final String ERROR_LOCKOUT = "error_lockout";
     private static final String FACE_SUBTITLE = "face_subtitle";
     private static final String FINGERPRINT_SUBTITLE = "fingerprint_subtitle";
     private static final String CREDENTIAL_SUBTITLE = "credential_subtitle";
     private static final String DEFAULT_SUBTITLE = "default_subtitle";
-
-    private static final String FINGERPRINT_ACQUIRED_SENSOR_DIRTY = "sensor_dirty";
 
     private static final int SENSOR_ID_FINGERPRINT = 0;
     private static final int SENSOR_ID_FACE = 1;
@@ -198,8 +192,6 @@ public class BiometricServiceTest {
     @Mock
     IBiometricAuthenticator mFaceAuthenticator;
     @Mock
-    IBiometricAuthenticator mCredentialAuthenticator;
-    @Mock
     ITrustManager mTrustManager;
     @Mock
     DevicePolicyManager mDevicePolicyManager;
@@ -207,8 +199,6 @@ public class BiometricServiceTest {
     private WindowManager mWindowManager;
     @Mock
     private IStatusBarService mStatusBarService;
-    @Mock
-    private ISessionListener mSessionListener;
     @Mock
     private AuthSessionCoordinator mAuthSessionCoordinator;
     @Mock
@@ -230,6 +220,8 @@ public class BiometricServiceTest {
     private FingerprintManager mFingerprintManager;
     @Mock
     private FaceManager mFaceManager;
+    @Mock
+    private IDisplayManager mDisplayManager;
 
     BiometricContextProvider mBiometricContextProvider;
 
@@ -239,10 +231,16 @@ public class BiometricServiceTest {
 
         resetReceivers();
 
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.type = Display.TYPE_INTERNAL;
+        final Display display = new Display(new DisplayManagerGlobal(
+                mDisplayManager), 0 /* displayId */, displayInfo, mResources);
+
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
         when(mContext.getResources()).thenReturn(mResources);
         when(mContext.getSystemService(Context.DEVICE_POLICY_SERVICE))
                 .thenReturn(mDevicePolicyManager);
+        when(mContext.getDisplay()).thenReturn(display);
 
         when(mInjector.getActivityManagerService()).thenReturn(mock(IActivityManager.class));
         when(mInjector.getStatusBarService()).thenReturn(mock(IStatusBarService.class));
