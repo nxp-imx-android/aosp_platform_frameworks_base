@@ -791,6 +791,17 @@ flag {
 }
 
 flag {
+    name: "enable_inorder_transition_callbacks_for_desktop"
+    namespace: "lse_desktop_experience"
+    description: "Refactor flag for moving desktop transition observers outside of /n"
+    "FreeformTaskTransitionObserver."
+    bug: "421369676"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_input_layer_transition_fix"
     namespace: "lse_desktop_experience"
     description: "Enables a bugfix for input layer disposal during certain transitions."
