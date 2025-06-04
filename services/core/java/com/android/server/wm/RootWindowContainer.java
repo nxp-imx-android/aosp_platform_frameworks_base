@@ -2166,16 +2166,19 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                         .setActivityType(r.getActivityType())
                         .setOnTop(true)
                         .setActivityInfo(r.info)
-                        .setParent(taskDisplayArea)
                         .setIntent(r.intent)
                         .setDeferTaskAppear(true)
                         .setHasBeenVisible(true)
-                        // In case the activity is in system split screen, or Activity Embedding
-                        // split, we need to animate the PIP Task from the original TaskFragment
-                        // bounds, so also setting the windowing mode, otherwise the bounds may
-                        // be reset to fullscreen.
-                        .setWindowingMode(taskFragment.getWindowingMode())
                         .build();
+
+                taskDisplayArea.addChild(rootTask, POSITION_TOP);
+                // The windowing mode should be set after attaching to display area or it will abort
+                // silently. In case the activity is in system split screen, or Activity Embedding
+                // split, we need to animate the PIP Task from the original TaskFragment
+                // bounds, so also setting the windowing mode, otherwise the bounds may
+                // be reset to fullscreen.
+                rootTask.setWindowingMode(taskFragment.getWindowingMode());
+
                 // Establish bi-directional link between the original and pinned task.
                 r.setLastParentBeforePip(launchIntoPipHostActivity);
                 // It's possible the task entering PIP is in freeform, so save the last

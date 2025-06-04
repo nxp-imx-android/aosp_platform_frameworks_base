@@ -119,12 +119,16 @@ class PipDesktopState(
     fun isDisplayDesktopFirst(displayId: Int) =
         rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
 
+    /** Returns whether Recents is in the middle of animating. */
+    fun isRecentsAnimating(): Boolean =
+        RecentsTransitionStateListener.isAnimating(recentsTransitionState)
+
     /** Returns the windowing mode to restore to when resizing out of PIP direction. */
     fun getOutPipWindowingMode(): Int {
         val isInDesktop = isPipInDesktopMode()
         // Temporary workaround for b/409201669: Always expand to fullscreen if we're exiting PiP
         // in the middle of Recents animation from Desktop session.
-        if (RecentsTransitionStateListener.isAnimating(recentsTransitionState) && isInDesktop) {
+        if (isRecentsAnimating() && isInDesktop) {
             return WINDOWING_MODE_FULLSCREEN
         }
 
