@@ -2004,6 +2004,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
         final ActivityRecord atoken = mActivityRecord;
         if (atoken != null) {
+            if (atoken.mStartingData != null && mAttrs.type != TYPE_APPLICATION_STARTING
+                    && atoken.mStartingData.mRemoveAfterTransition) {
+                // Preventing app window from visible during un-occluding animation playing due to
+                // alpha blending.
+                return false;
+            }
             return ((!isParentWindowHidden() && atoken.isVisible())
                     || isAnimating(TRANSITION | PARENTS));
         }
@@ -3090,7 +3096,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             final int mask = FLAG_SHOW_WHEN_LOCKED | FLAG_DISMISS_KEYGUARD
                     | FLAG_ALLOW_LOCK_WHILE_SCREEN_ON;
             WindowManager.LayoutParams sa = mActivityRecord.mStartingWindow.mAttrs;
+            final boolean wasShowWhenLocked = (sa.flags & FLAG_SHOW_WHEN_LOCKED) != 0;
+            final boolean removeShowWhenLocked = (mAttrs.flags & FLAG_SHOW_WHEN_LOCKED) == 0;
             sa.flags = (sa.flags & ~mask) | (mAttrs.flags & mask);
+            if (wasShowWhenLocked && removeShowWhenLocked) {
+                // Trigger unoccluding animation if needed.
+                mActivityRecord.checkKeyguardFlagsChanged();
+                mActivityRecord.deferStartingWindowRemovalForKeyguardUnoccluding();
+            }
         }
     }
 
