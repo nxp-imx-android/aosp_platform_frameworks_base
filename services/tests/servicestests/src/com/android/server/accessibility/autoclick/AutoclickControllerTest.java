@@ -647,6 +647,27 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void toggleAutoclickPause_inScrollMode_exitsScrollMode() {
+        // Initialize the controller.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Set the active click type to scroll.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+        mController.mAutoclickScrollPanel.show();
+
+        // Verify it's visible before pause.
+        assertThat(mController.mAutoclickScrollPanel.isVisible()).isTrue();
+
+        // Pause autoclick.
+        mController.clickPanelController.toggleAutoclickPause(true);
+
+        // Verify scroll panel is now hidden.
+        assertThat(mController.mAutoclickScrollPanel.isVisible()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void onMotionEvent_flagOn_lazyInitAutoclickScrollPanel() {
         assertThat(mController.mAutoclickScrollPanel).isNull();
 
