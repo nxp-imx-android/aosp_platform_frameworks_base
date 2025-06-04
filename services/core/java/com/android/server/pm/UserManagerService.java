@@ -1516,8 +1516,7 @@ public class UserManagerService extends IUserManager.Stub {
             final int userSize = mUsers.size();
             for (int i = 0; i < userSize; i++) {
                 final UserData userData = mUsers.valueAt(i);
-                if (userData.info.supportsSwitchToByUser() &&
-                        (!fullUserOnly || userData.info.isFull())) {
+                if (userData.info.supportsSwitchTo() && (!fullUserOnly || userData.info.isFull())) {
                     int firstSwitchable = userData.info.id;
                     return firstSwitchable;
                 }
