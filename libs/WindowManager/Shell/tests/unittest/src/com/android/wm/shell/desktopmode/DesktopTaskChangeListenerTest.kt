@@ -16,13 +16,18 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.content.Intent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
+import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
@@ -120,6 +125,22 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
+    fun onTaskOpening_freeformWallpaperActivityTask_noop() {
+        val freeformWallpaperActivity = createWallpaperTaskInfo(WINDOWING_MODE_FREEFORM)
+        whenever(desktopUserRepositories.current.isActiveTask(freeformWallpaperActivity.taskId))
+            .thenReturn(false)
+
+        desktopTaskChangeListener.onTaskOpening(freeformWallpaperActivity)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(
+                freeformWallpaperActivity.displayId,
+                freeformWallpaperActivity.taskId,
+                freeformWallpaperActivity.isVisible,
+            )
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskOpening_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
@@ -161,6 +182,16 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
+    fun onTaskChanging_freeformWallpaperActivityTask_noop() {
+        val task = createWallpaperTaskInfo(WINDOWING_MODE_FREEFORM)
+
+        desktopTaskChangeListener.onTaskChanging(task)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(task.displayId, task.taskId, task.isVisible)
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskChanging_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
@@ -198,6 +229,16 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         desktopTaskChangeListener.onTaskMovingToFront(task)
 
         verify(desktopUserRepositories.current).addTask(task.displayId, task.taskId, task.isVisible)
+    }
+
+    @Test
+    fun onTaskMovingToFront_freeformWallpaperActivityTask_noop() {
+        val task = createWallpaperTaskInfo(WINDOWING_MODE_FREEFORM)
+
+        desktopTaskChangeListener.onTaskMovingToFront(task)
+
+        verify(desktopUserRepositories.current, never())
+            .addTask(task.displayId, task.taskId, task.isVisible)
     }
 
     @Test
@@ -313,6 +354,15 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
         verify(desktopUserRepositories.current, never()).removeClosingTask(task.taskId)
         verify(desktopUserRepositories.current, never()).removeTask(task.taskId)
     }
+
+    private fun createWallpaperTaskInfo(windowingMode: Int): RunningTaskInfo =
+        TestRunningTaskInfoBuilder()
+            .setBaseIntent(
+                Intent().apply { component = DesktopWallpaperActivity.wallpaperActivityComponent }
+            )
+            .setToken(MockToken().token())
+            .setWindowingMode(windowingMode)
+            .build()
 
     companion object {
         private const val UNSUPPORTED_DISPLAY_ID = 3
