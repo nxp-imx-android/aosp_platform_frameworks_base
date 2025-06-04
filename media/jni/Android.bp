@@ -100,7 +100,6 @@ cc_library_shared {
         "libsonivox",
         "libstagefright",
         "libstagefright_foundation",
-        "libstagefright_persistentsurface",
         "libui",
         "libutils",
     ],
