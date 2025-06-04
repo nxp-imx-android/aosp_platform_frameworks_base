@@ -17,6 +17,7 @@
 package com.android.internal.net;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -97,6 +98,23 @@ public class ConnectivityBlobStoreTest {
 
         // Removing again returns false
         assertFalse(connectivityBlobStore.remove(TEST_NAME));
+    }
+
+    @Test
+    public void testRemoveAll() throws Exception {
+        final ConnectivityBlobStore connectivityBlobStore = createConnectivityBlobStore();
+        final int numEntries = 5;
+        for (int i = 0; i < numEntries; i++) {
+            assertTrue(connectivityBlobStore.put(TEST_NAME + i, TEST_BLOB));
+        }
+        assertEquals(numEntries, connectivityBlobStore.list("").length);
+
+        // Remove all blobs and check that the blob store is empty.
+        assertTrue(connectivityBlobStore.removeAll());
+        assertEquals(0, connectivityBlobStore.list("").length);
+
+        // Removing all blobs from an empty database should also succeed.
+        assertTrue(connectivityBlobStore.removeAll());
     }
 
     @Test
