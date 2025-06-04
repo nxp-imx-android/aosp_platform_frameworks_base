@@ -1869,6 +1869,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
         if (orientation == topOrientation || ar.inMultiWindowMode()
+                || ar.getTask().inMultiWindowMode()
                 || ar.getRequestedConfigurationOrientation() == ORIENTATION_UNDEFINED) {
             return;
         }
