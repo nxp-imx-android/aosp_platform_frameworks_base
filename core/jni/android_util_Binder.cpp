@@ -27,7 +27,6 @@
 #include <binder/ProcessState.h>
 #include <binder/Stability.h>
 #include <binderthreadstate/CallerUtils.h>
-#include <cutils/atomic.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <log/log.h>
@@ -180,7 +179,7 @@ static void gcIfManyNewRefs(JNIEnv* env)
 {
     uint32_t totalRefs = gNumLocalRefsCreated.load(std::memory_order_relaxed)
             + gNumDeathRefsCreated.load(std::memory_order_relaxed);
-    uint32_t collectedAtRefs = gCollectedAtRefs.load(memory_order_relaxed);
+    uint32_t collectedAtRefs = gCollectedAtRefs.load(std::memory_order_relaxed);
     // A bound on the number of threads that can have incremented gNum...RefsCreated before the
     // following check is executed. Effectively a bound on #threads. Almost any value will do.
     static constexpr uint32_t MAX_RACING = 100000;
@@ -360,7 +359,7 @@ protected:
     virtual ~JavaBBinder()
     {
         ALOGV("Destroying JavaBBinder %p\n", this);
-        gNumLocalRefsDeleted.fetch_add(1, memory_order_relaxed);
+        gNumLocalRefsDeleted.fetch_add(1, std::memory_order_relaxed);
         JNIEnv* env = javavm_to_jnienv(mVM);
         env->DeleteGlobalRef(mObject);
     }
