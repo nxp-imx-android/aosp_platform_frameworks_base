@@ -17,6 +17,9 @@
 package com.android.systemui.display.data.repository
 
 import android.content.res.Configuration
+import android.content.testableContext
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.util.DisplayMetrics
 import android.util.Size
 import android.view.Display
@@ -25,65 +28,54 @@ import android.view.DisplayInfo
 import android.view.Surface
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState
 import com.android.systemui.display.shared.model.DisplayRotation
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.spy
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DisplayStateRepositoryImplTest : SysuiTestCase() {
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val display = mock<Display>()
-    private val testScope = TestScope(StandardTestDispatcher())
-    private val fakeDeviceStateRepository = FakeDeviceStateRepository()
-    private val fakeDisplayRepository = FakeDisplayRepository()
     private val configuration = Configuration()
+    private val context = kosmos.testableContext
 
-    private lateinit var underTest: DisplayStateRepository
+    private val underTest by lazy { kosmos.realDisplayStateRepository }
 
     @Before
     fun setUp() {
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_reverseDefaultRotation,
-            false,
-        )
+        context.display = display
+        context.orCreateTestableResources.apply {
+            addOverride(com.android.internal.R.bool.config_reverseDefaultRotation, false)
+            overrideConfiguration(configuration)
+        }
 
         // Set densityDpi such that pixels and DP are the same; Makes it easier to read and write
         // tests.
         configuration.densityDpi = DisplayMetrics.DENSITY_DEFAULT
-
-        mContext = spy(mContext)
-        whenever(mContext.display).thenReturn(display)
-        whenever(mContext.resources.configuration).thenReturn(configuration)
-
-        underTest =
-            DisplayStateRepositoryImpl(
-                testScope.backgroundScope,
-                mContext,
-                fakeDeviceStateRepository,
-                fakeDisplayRepository,
-            )
     }
 
     @Test
     fun updatesIsInRearDisplayMode_whenRearDisplayStateChanges() =
-        testScope.runTest {
+        kosmos.runTest {
             val isInRearDisplayMode by collectLastValue(underTest.isInRearDisplayMode)
-            runCurrent()
 
             fakeDeviceStateRepository.emit(DeviceState.FOLDED)
             assertThat(isInRearDisplayMode).isFalse()
@@ -94,9 +86,8 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
 
     @Test
     fun updatesCurrentRotation_whenDisplayStateChanges() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentRotation by collectLastValue(underTest.currentRotation)
-            runCurrent()
 
             whenever(display.getDisplayInfo(any())).then {
                 val info = it.getArgument<DisplayInfo>(0)
@@ -104,7 +95,7 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 return@then true
             }
 
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(currentRotation).isEqualTo(DisplayRotation.ROTATION_90)
 
             whenever(display.getDisplayInfo(any())).then {
@@ -113,15 +104,14 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 return@then true
             }
 
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(currentRotation).isEqualTo(DisplayRotation.ROTATION_180)
         }
 
     @Test
     fun updatesCurrentSize_whenDisplayStateChanges() =
-        testScope.runTest {
+        kosmos.runTest {
             val currentSize by collectLastValue(underTest.currentDisplaySize)
-            runCurrent()
 
             whenever(display.getDisplayInfo(any())).then {
                 val info = it.getArgument<DisplayInfo>(0)
@@ -130,7 +120,7 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 info.logicalHeight = 200
                 return@then true
             }
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(currentSize).isEqualTo(Size(100, 200))
 
             whenever(display.getDisplayInfo(any())).then {
@@ -140,15 +130,15 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 info.logicalHeight = 200
                 return@then true
             }
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(currentSize).isEqualTo(Size(200, 100))
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun updatesIsLargeScreen_whenDisplayStateChanges() =
-        testScope.runTest {
+        kosmos.runTest {
             val isLargeScreen by collectLastValue(underTest.isLargeScreen)
-            runCurrent()
 
             whenever(display.getDisplayInfo(any())).then {
                 val info = it.getArgument<DisplayInfo>(0)
@@ -157,7 +147,7 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 info.logicalHeight = 700
                 return@then true
             }
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(isLargeScreen).isFalse()
 
             whenever(display.getDisplayInfo(any())).then {
@@ -167,15 +157,15 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 info.logicalHeight = 700
                 return@then true
             }
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(isLargeScreen).isTrue()
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun updatesIsWideScreen_whenDisplayStateChanges() =
-        testScope.runTest {
+        kosmos.runTest {
             val isWideScreen by collectLastValue(underTest.isWideScreen)
-            runCurrent()
 
             whenever(display.getDisplayInfo(any())).then {
                 val info = it.getArgument<DisplayInfo>(0)
@@ -184,7 +174,7 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 info.logicalHeight = 700
                 return@then true
             }
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(isWideScreen).isFalse()
 
             whenever(display.getDisplayInfo(any())).then {
@@ -194,7 +184,74 @@ class DisplayStateRepositoryImplTest : SysuiTestCase() {
                 info.logicalHeight = 200
                 return@then true
             }
-            fakeDisplayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
             assertThat(isWideScreen).isTrue()
         }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun currentRotation_anotherDisplaychanged_noChange() =
+        kosmos.runTest {
+            val currentRotation by collectLastValue(underTest.currentRotation)
+
+            whenever(display.getDisplayInfo(any())).then {
+                val info = it.getArgument<DisplayInfo>(0)
+                info.rotation = Surface.ROTATION_90
+                return@then true
+            }
+
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY)
+            assertThat(currentRotation).isEqualTo(DisplayRotation.ROTATION_90)
+
+            whenever(display.getDisplayInfo(any())).then {
+                val info = it.getArgument<DisplayInfo>(0)
+                info.rotation = Surface.ROTATION_180
+                return@then true
+            }
+
+            displayRepository.emitDisplayChangeEvent(DEFAULT_DISPLAY + 1)
+            // Still the previous one!
+            assertThat(currentRotation).isEqualTo(DisplayRotation.ROTATION_90)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun isWideScreen_fromConfiguration() =
+        kosmos.runTest {
+            val isWideScreen by collectLastValue(underTest.isWideScreen)
+
+            val smallScreenConfig = Configuration().apply { screenWidthDp = SMALL_SCREEN_WIDTH_DP }
+            kosmos.fakeConfigurationRepository.onConfigurationChange(smallScreenConfig)
+
+            assertThat(isWideScreen).isFalse()
+
+            val wideScreenConfig = Configuration().apply { screenWidthDp = LARGE_SCREEN_WIDTH_DP }
+            kosmos.fakeConfigurationRepository.onConfigurationChange(wideScreenConfig)
+
+            assertThat(isWideScreen).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun isLargeScreen_fromConfiguration() =
+        kosmos.runTest {
+            val isLargeScreen by collectLastValue(underTest.isLargeScreen)
+
+            val smallScreenConfig =
+                Configuration().apply { smallestScreenWidthDp = SMALL_SCREEN_WIDTH_DP }
+            kosmos.fakeConfigurationRepository.onConfigurationChange(smallScreenConfig)
+
+            assertThat(isLargeScreen).isFalse()
+
+            val wideScreenConfig =
+                Configuration().apply { smallestScreenWidthDp = LARGE_SCREEN_WIDTH_DP }
+            kosmos.fakeConfigurationRepository.onConfigurationChange(wideScreenConfig)
+
+            assertThat(isLargeScreen).isTrue()
+        }
+
+    private companion object {
+        const val SMALL_SCREEN_WIDTH_DP = 1
+        const val LARGE_SCREEN_WIDTH_DP = 1000000
+    }
 }
