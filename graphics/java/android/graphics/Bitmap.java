@@ -1575,6 +1575,7 @@ public final class Bitmap implements Parcelable {
         private int format;
         private long[] natives;
         private byte[][] buffers;
+        private int[] sizes;
         private int max;
 
         public DumpData(@NonNull CompressFormat format, int max) {
@@ -1582,12 +1583,14 @@ public final class Bitmap implements Parcelable {
             this.format = format.nativeInt;
             this.natives = new long[max];
             this.buffers = new byte[max][];
+            this.sizes = new int[max];
             this.count = 0;
         }
 
-        public void add(long nativePtr, byte[] buffer) {
+        public void add(long nativePtr, byte[] buffer, int size) {
             natives[count] = nativePtr;
             buffers[count] = buffer;
+            sizes[count] = size;
             count = (count >= max) ? max : count + 1;
         }
 
@@ -1639,7 +1642,8 @@ public final class Bitmap implements Parcelable {
         for (Bitmap bitmap : allBitmaps) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream();
             if (bitmap.compress(fmt, 90, bas)) {
-                dumpData.add(bitmap.getNativeInstance(), bas.toByteArray());
+                dumpData.add(bitmap.getNativeInstance(), bas.toByteArray(),
+                        bitmap.getAllocationByteCount());
             }
         }
         Log.i(TAG, dumpData.size() + "/" + allBitmaps.size() + " bitmaps dumped");
