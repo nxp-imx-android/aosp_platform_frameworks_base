@@ -259,6 +259,25 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT)
+    public void test_committedStateChanged_eventEmitted() {
+        when(mFlagsMock.isCommittedStateSeparateEventEnabled()).thenReturn(true);
+        initLogicalDisplayMapper();
+        TestDisplayDevice device = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        // add
+        LogicalDisplay displayAdded = add(device);
+        assertEquals(info(displayAdded).address, info(device).address);
+        assertEquals(DEFAULT_DISPLAY, id(displayAdded));
+
+        device.getSourceInfo().committedState = STATE_ON;
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device, DISPLAY_DEVICE_EVENT_CHANGED);
+        verify(mListenerMock).onLogicalDisplayEventLocked(
+                mDisplayCaptor.capture(), eq(LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED));
+    }
+
+    @Test
     public void testDisplayDeviceAddAndRemove_NonInternalTypes() {
         initLogicalDisplayMapper();
         testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL);
