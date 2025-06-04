@@ -702,6 +702,45 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testTaskAppearedListenerCallback() {
+        final RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_FULLSCREEN);
+
+        final RunningTaskInfo[] updatedTasks = new RunningTaskInfo[1];
+
+        final ShellTaskOrganizer.TaskAppearedListener listener =
+                new ShellTaskOrganizer.TaskAppearedListener() {
+                    @Override
+                    public void onTaskAppeared(RunningTaskInfo taskInfo, SurfaceControl leash) {
+                        updatedTasks[0] = taskInfo;
+                    }
+                };
+
+        mOrganizer.addTaskAppearedListener(listener);
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        assertEquals(updatedTasks[0], task1);
+    }
+
+    @Test
+    public void testTaskInfoChangedListenerCallback() {
+        RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_FULLSCREEN);
+        mOrganizer.onTaskAppeared(task1, /* leash= */ null);
+
+        RunningTaskInfo[] vanishedTasks = new RunningTaskInfo[1];
+        ShellTaskOrganizer.TaskInfoChangedListener listener =
+                new ShellTaskOrganizer.TaskInfoChangedListener() {
+                    @Override
+                    public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
+                        vanishedTasks[0] = taskInfo;
+                    }
+                };
+        mOrganizer.addTaskInfoChangedListener(listener);
+        mOrganizer.onTaskInfoChanged(task1);
+
+        assertEquals(vanishedTasks[0], task1);
+    }
+
+    @Test
     public void testTaskVanishedCallback() {
         RunningTaskInfo task1 = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_FULLSCREEN);
         mOrganizer.onTaskAppeared(task1, /* leash= */ null);

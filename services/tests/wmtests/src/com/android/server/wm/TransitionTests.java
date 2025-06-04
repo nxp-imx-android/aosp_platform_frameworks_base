@@ -88,6 +88,7 @@ import android.util.ArraySet;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ActivityTransitionInfo;
+import android.window.AppCompatTransitionInfo;
 import android.window.IDisplayAreaOrganizer;
 import android.window.IRemoteTransition;
 import android.window.ITaskFragmentOrganizer;
@@ -210,10 +211,16 @@ public class TransitionTests extends WindowTestsBase {
         final Task theTask = createTask(mDisplayContent);
         final ActivityRecord closing = createActivityRecord(theTask);
         final ActivityRecord opening = createActivityRecord(theTask);
+        opening.getRequestedOverrideConfiguration().windowConfiguration.setBounds(
+                new Rect(10, 10, 200, 300));
+        opening.onRequestedOverrideConfigurationChanged(
+                opening.getRequestedOverrideConfiguration());
+        final Rect letterboxBounds = opening.getBounds();
         final ActivityTransitionInfo closingActivityTransitionInfo =
                 new ActivityTransitionInfo(closing.mActivityComponent, theTask.mTaskId);
-        final ActivityTransitionInfo openingActivityTransitionInfo =
-                new ActivityTransitionInfo(opening.mActivityComponent, theTask.mTaskId);
+        final ActivityTransitionInfo openingActivityTransitionInfo = new ActivityTransitionInfo(
+                opening.mActivityComponent, theTask.mTaskId,
+                new AppCompatTransitionInfo(letterboxBounds));
         final ArrayMap<WindowContainer, Transition.ChangeInfo> changes = new ArrayMap<>();
         // Start states.
         changes.put(theTask, new Transition.ChangeInfo(theTask, true /* vis */, false /* exChg */));
@@ -237,10 +244,12 @@ public class TransitionTests extends WindowTestsBase {
         assertEquals(TRANSIT_OPEN, openingChange.getMode());
         assertEquals(opening.mActivityComponent, openingChange.getActivityComponent());
         assertEquals(openingActivityTransitionInfo, openingChange.getActivityTransitionInfo());
+        assertNotNull(openingChange.getActivityTransitionInfo());
         final TransitionInfo.Change closingChange = transitionChanges.get(1);
         assertEquals(TRANSIT_TO_BACK, closingChange.getMode());
         assertEquals(closing.mActivityComponent, closingChange.getActivityComponent());
         assertEquals(closingActivityTransitionInfo, closingChange.getActivityTransitionInfo());
+        assertNull(closingChange.getActivityTransitionInfo().getAppCompatTransitionInfo());
     }
 
     @Test

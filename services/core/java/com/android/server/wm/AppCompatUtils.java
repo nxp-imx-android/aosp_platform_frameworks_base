@@ -38,6 +38,7 @@ import android.graphics.Rect;
 import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.WindowInsets;
+import android.window.AppCompatTransitionInfo;
 
 import com.android.window.flags.Flags;
 
@@ -319,6 +320,23 @@ final class AppCompatUtils {
     static boolean isInDesktopMode(@NonNull Context context,
             @WindowingMode int parentWindowingMode) {
         return parentWindowingMode == WINDOWING_MODE_FREEFORM && canEnterDesktopMode(context);
+    }
+
+    /**
+     * Creates a {@link AppCompatTransitionInfo} which encapsulate the letterbox
+     * information if needed.
+     *
+     * @param activityRecord The {@link ActivityRecord} for the current activity.
+     * @return The {@link AppCompatTransitionInfo} encapsulating AppCompat related
+     * information if the activity is letterboxed or {@code null} otherwise.
+     */
+    @Nullable
+    static AppCompatTransitionInfo createAppCompatTransitionInfo(
+            @NonNull ActivityRecord activityRecord) {
+        if (activityRecord.areBoundsLetterboxed()) {
+            return new AppCompatTransitionInfo(new Rect(activityRecord.getBounds()));
+        }
+        return null;
     }
 
     private static void clearAppCompatTaskInfo(@NonNull AppCompatTaskInfo info) {
