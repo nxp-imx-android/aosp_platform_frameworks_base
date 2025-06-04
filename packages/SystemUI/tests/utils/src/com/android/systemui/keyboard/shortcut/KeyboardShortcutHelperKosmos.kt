@@ -195,7 +195,13 @@ val Kosmos.shortcutHelperStateInteractor by
     }
 
 var Kosmos.appsShortcutCategoryRepository: ShortcutCategoriesRepository by
-    Kosmos.Fixture { AppsShortcutCategoryRepository(userVisibleAppsRepository, applicationContext) }
+    Kosmos.Fixture {
+        AppsShortcutCategoryRepository(
+            userVisibleAppsRepository,
+            applicationContext,
+            shortcutHelperStateRepository,
+        )
+    }
 
 val Kosmos.shortcutHelperCategoriesInteractor by
     Kosmos.Fixture {
