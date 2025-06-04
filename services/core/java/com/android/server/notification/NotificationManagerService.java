@@ -11671,7 +11671,7 @@ public class NotificationManagerService extends SystemService {
             final StatusBarNotification childSbn = childR.getSbn();
             if (grouChildChecker.apply(childR, userId, pkg, groupKey)
                 && (flagChecker == null || flagChecker.apply(childR.getFlags()))
-                && (!childR.getChannel().isImportantConversation() || reason != REASON_CANCEL)) {
+                && (!isPromotedOutOfGroup(childR) || reason != REASON_CANCEL)) {
                 EventLogTags.writeNotificationCancel(callingUid, callingPid, pkg, childSbn.getId(),
                         childSbn.getTag(), userId, 0, 0, childReason, listenerName);
                 notificationList.remove(i);
@@ -11680,6 +11680,15 @@ public class NotificationManagerService extends SystemService {
                         cancellationElapsedTimeMs);
             }
         }
+    }
+
+    /**
+     * Certain notifications have attributes that causes SystemUI to *always* promote them out of
+     * their group, i.e. make them a top-level notification in the shade. These notifications should
+     * not be cancelled when the group is.
+     */
+    private boolean isPromotedOutOfGroup(NotificationRecord r) {
+        return r.getChannel().isImportantConversation() || r.getNotification().isPromotedOngoing();
     }
 
     @GuardedBy("mNotificationLock")
