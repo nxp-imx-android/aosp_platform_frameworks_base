@@ -1070,7 +1070,7 @@ public class RemoteViews implements Parcelable, Filter {
             out.write(RemoteViewsProto.SetEmptyViewAction.VIEW_ID,
                     appResources.getResourceName(mViewId));
             out.write(RemoteViewsProto.SetEmptyViewAction.EMPTY_VIEW_ID,
-                    appResources.getResourceName(mViewId));
+                    appResources.getResourceName(mEmptyViewId));
             out.end(token);
         }
 
