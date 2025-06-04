@@ -802,9 +802,15 @@ public final class TimeZoneDetectorStrategyImpl implements TimeZoneDetectorStrat
             // whether the device / user sticks with it.
             TimeZoneChangeListener.TimeZoneChangeEvent changeEvent =
                     new TimeZoneChangeListener.TimeZoneChangeEvent(
-                            SystemClock.elapsedRealtime(), System.currentTimeMillis(), origin,
+                            SystemClock.elapsedRealtime(),
+                            System.currentTimeMillis(),
+                            origin,
                             userId,
-                            currentZoneId, newZoneId, newConfidence, cause);
+                            currentZoneId,
+                            newZoneId,
+                            currentConfidence,
+                            newConfidence,
+                            cause);
             mChangeTracker.process(changeEvent);
         }
     }
