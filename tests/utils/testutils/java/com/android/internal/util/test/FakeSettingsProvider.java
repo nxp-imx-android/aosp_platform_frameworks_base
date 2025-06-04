@@ -18,11 +18,14 @@ package com.android.internal.util.test;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.test.mock.MockContentProvider;
+import android.util.ArrayMap;
 import android.util.Log;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Fake for system settings.
@@ -69,12 +72,19 @@ public class FakeSettingsProvider extends MockContentProvider {
     private static final String TAG = FakeSettingsProvider.class.getSimpleName();
     private static final boolean DBG = false;
     private static final String[] TABLES = { "system", "secure", "global" };
+    private static final Map<String, String> EMPTY_MAP = Map.of();
 
-    private final HashMap<String, HashMap<String, String>> mTables = new HashMap<>();
+    /**
+     * Stores settings values. Keyed by:
+     * - Table name (e.g., "system")
+     * - User ID (e.g., USER_SYSTEM)
+     * - Setting name (e.g., "screen_brightness")
+     */
+    private final Map<String, Map<Integer, Map<String, String>>> mDb = new ArrayMap<>();
 
     public FakeSettingsProvider() {
         for (int i = 0; i < TABLES.length; i++) {
-            mTables.put(TABLES[i], new HashMap<String, String>());
+            mDb.put(TABLES[i], new ArrayMap<>());
         }
     }
 
@@ -116,27 +126,41 @@ public class FakeSettingsProvider extends MockContentProvider {
 
         Bundle out = new Bundle();
         String value;
+        int userId = extras.getInt(Settings.CALL_METHOD_USER_KEY);
+        if (userId == UserHandle.USER_CURRENT) {
+            userId = UserHandle.getUserId(Process.myUid());
+        }
+        if (userId < 0) {
+            throw new UnsupportedOperationException("userId " + userId + " is not a real user");
+        }
         switch (op) {
             case "GET":
-                value = mTables.get(table).get(arg);
+                value = mDb.get(table).getOrDefault(userId, EMPTY_MAP).get(arg);
                 if (value != null) {
-                    if (DBG) {
-                        Log.d(TAG, String.format("Returning fake setting %s.%s = %s",
-                                table, arg, value));
-                    }
                     out.putString(Settings.NameValueTable.VALUE, value);
+                }
+                if (DBG) {
+                    Log.d(TAG, String.format("Returning fake setting %d:%s.%s = %s",
+                            userId, table, arg, (value == null) ? "null" : "\"" + value + "\""));
                 }
                 break;
             case "PUT":
                 value = extras.getString(Settings.NameValueTable.VALUE, null);
-                if (DBG) {
-                    Log.d(TAG, String.format("Inserting fake setting %s.%s = %s",
-                            table, arg, value));
-                }
+                final boolean changed;
                 if (value != null) {
-                    mTables.get(table).put(arg, value);
+                    changed = !value.equals(mDb.get(table)
+                            .computeIfAbsent(userId, (u) -> new ArrayMap<>())
+                            .put(arg, value));
+                    if (DBG) {
+                        Log.d(TAG, String.format("Inserting fake setting %d:%s.%s = \"%s\"",
+                                userId, table, arg, value));
+                    }
                 } else {
-                    mTables.get(table).remove(arg);
+                    changed = mDb.get(table).getOrDefault(userId, EMPTY_MAP).remove(arg) != null;
+                    if (DBG) {
+                        Log.d(TAG, String.format("Removing fake setting %d:%s.%s", userId, table,
+                                arg));
+                    }
                 }
                 break;
             default:
