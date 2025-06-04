@@ -43,6 +43,8 @@ import android.view.Gravity;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
+import com.android.internal.policy.DesktopModeCompatUtils;
+
 import java.util.function.Consumer;
 
 /**
@@ -158,7 +160,8 @@ public final class DesktopModeBoundsCalculator {
         }
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
-        final int stableBoundsOrientation = AppCompatUtils.computeConfigOrientation(stableBounds);
+        final int stableBoundsOrientation =
+                DesktopModeCompatUtils.computeConfigOrientation(stableBounds);
         int activityOrientation = getActivityConfigurationOrientation(
                 activity, task, stableBoundsOrientation);
         // Use orientation mismatch to resolve aspect ratio to match fixed orientation letterboxing
@@ -251,7 +254,7 @@ public final class DesktopModeBoundsCalculator {
                     task.topRunningActivity().getWindowConfiguration();
             final Rect existingBounds = windowConfiguration.getAppBounds() != null
                     ? windowConfiguration.getAppBounds() : windowConfiguration.getBounds();
-            return AppCompatUtils.computeConfigOrientation(existingBounds);
+            return DesktopModeCompatUtils.computeConfigOrientation(existingBounds);
         }
         final int activityOrientation = activity.getOverrideOrientation();
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
