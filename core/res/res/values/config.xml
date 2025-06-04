@@ -3254,6 +3254,12 @@
          Note that HSUM devices without this enabled will not automatically have a main user. -->
     <bool name="config_isMainUserPermanentAdmin">true</bool>
 
+    <!-- Whether to disallow the removal of the last admin user on device. This generally has no
+         effect on non-HSUM devices, where the system user is always an admin and cannot be removed.
+         Note that if config_isMainUserPermanentAdmin is true, this config is generally irrelevant,
+         since then the main user is a permanent admin. -->
+    <bool name="config_disallowRemovingLastAdminUser">true</bool>
+
     <!-- Whether all secondary users (and the system user) are eligible to have profiles.
          If false, only the MainUser is eligible to have profiles. -->
     <bool name="config_supportProfilesOnNonMainUser">false</bool>

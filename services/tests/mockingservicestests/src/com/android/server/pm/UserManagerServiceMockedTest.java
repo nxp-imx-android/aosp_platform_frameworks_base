@@ -1623,6 +1623,118 @@ public final class UserManagerServiceMockedTest {
         testSetMainUser_userNotAdmin();
     }
 
+    @Test
+    public void testIsLastFullAdminUser_nonHsum_targetNotSystemUser_returnsFalse() {
+        setSystemUserHeadless(false);
+        addAdminUser(USER_ID);
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_hsum_targetNotAdmin_returnsFalse() {
+        setSystemUserHeadless(true);
+        addUser(USER_ID); // USER_ID is full, not admin
+        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullAdminExists_returnsFalse() {
+        setSystemUserHeadless(true);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
+
+        expect.withMessage("isLastFullAdminUserLU(%s)", USER_ID)
+                .that(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+        expect.withMessage("isLastFullAdminUserLU(%s)", OTHER_USER_ID)
+                .that(mUms.isLastFullAdminUserLU(mUsers.get(OTHER_USER_ID).info)).isFalse();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_hsum_targetAdmin_systemUserNotFull_returnsTrue() {
+        // Ensure system user (0) is admin, but not full
+        setSystemUserHeadless(true);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullNotAdmin_returnsTrue() {
+        setSystemUserHeadless(true);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+        addUser(OTHER_USER_ID); // OTHER_USER_ID is full, not admin
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullAdminIsRemoving_returnsTrue() {
+        setSystemUserHeadless(true);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
+        mUms.addRemovingUserId(OTHER_USER_ID); // Mark OTHER_USER_ID as dying
+
+        // OTHER_USER_ID will be excluded by getUsersInternal
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullAdminIsPartial_returnsTrue() {
+        setSystemUserHeadless(true);
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+        addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
+        mUsers.get(OTHER_USER_ID).info.partial = true; // Mark OTHER_USER_ID as partial
+
+        // OTHER_USER_ID will be excluded by getUsersInternal
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_targetAdmin_otherFullAdminIsPreCreated_returnsTrue() {
+        // Ensure system user (0) is full admin
+        setSystemUserHeadless(false);
+        mUsers.get(UserHandle.USER_SYSTEM).info.preCreated = true; // Mark system user as preCreated
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+
+        // OTHER_USER_ID will be excluded by getUsersInternal
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
+    }
+
+    @Test
+    public void
+            testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsOtherFullAdmin_returnsFalse() {
+        // Ensure system user (0) is full admin
+        setSystemUserHeadless(false);
+
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_systemUserIsFullAdmin_targetIsSystemUser_returnsTrue() {
+        // Ensure system user (0) is full admin
+        setSystemUserHeadless(false);
+
+        // Add another non-admin full user to ensure system is not the *only* user
+        addUser(USER_ID);
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(UserHandle.USER_SYSTEM).info)).isTrue();
+    }
+
+    @Test
+    public void testIsLastFullAdminUser_targetAdmin_otherFullAdminIsSystemUser_returnsFalse() {
+        // Ensure system user (0) is full admin
+        setSystemUserHeadless(false);
+
+        addAdminUser(USER_ID); // USER_ID is full, admin (target)
+
+        assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+    }
+
     /**
      * Returns true if the user's XML file has Default restrictions
      * @param userId Id of the user.
@@ -1846,6 +1958,12 @@ public final class UserManagerServiceMockedTest {
         TestUserData userData = new TestUserData(user);
         addUserData(userData);
         return user;
+    }
+
+    private void addAdminUser(@UserIdInt int userId) {
+        TestUserData userData = new TestUserData(userId);
+        userData.info.flags = UserInfo.FLAG_FULL | UserInfo.FLAG_ADMIN;
+        addUserData(userData);
     }
 
     private UserInfo addDyingUser(UserInfo user) {

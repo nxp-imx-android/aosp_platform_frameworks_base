@@ -2393,6 +2393,20 @@ public class UserManager {
     public static final int REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN = -5;
 
     /**
+     * A response code from {@link #removeUserWhenPossible(UserHandle, boolean)} indicating that
+     * user being removed cannot be removed because it is
+     * the last {@link #isAdminUser() admin} user on the device.
+     *
+     * @hide
+     */
+    // TODO(b/419105275): Currently, the headless system user is also an admin user. When we
+    // disallow the removal of last admin user, we mean the last admin user that's not the HSU.
+    // If/When b/419105275 removes the admin flag from HSU, this comment should be removed.
+    @FlaggedApi(android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    @SystemApi
+    public static final int REMOVE_RESULT_ERROR_LAST_ADMIN_USER = -6;
+
+    /**
      * Possible response codes from {@link #removeUserWhenPossible(UserHandle, boolean)}.
      *
      * @hide
@@ -2406,6 +2420,7 @@ public class UserManager {
             REMOVE_RESULT_ERROR_USER_NOT_FOUND,
             REMOVE_RESULT_ERROR_SYSTEM_USER,
             REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN,
+            REMOVE_RESULT_ERROR_LAST_ADMIN_USER,
             REMOVE_RESULT_ERROR_UNKNOWN,
     })
     @Retention(RetentionPolicy.SOURCE)

@@ -39,10 +39,10 @@ import static com.android.internal.app.SetScreenLockDialogActivity.EXTRA_ORIGIN_
 import static com.android.internal.app.SetScreenLockDialogActivity.LAUNCH_REASON_DISABLE_QUIET_MODE;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
+import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_UNSPECIFIED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_ALREADY_AN_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_IS_NOT_AN_ADMIN;
-import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_PROMOTE_MAIN_USER;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_GRANT_ADMIN;
@@ -3467,7 +3467,8 @@ public class UserManagerService extends IUserManager.Stub {
         synchronized (mPackagesLock) {
             final UserData userData;
             synchronized (mUsersLock) {
-                final int userRemovability = getUserRemovabilityLocked(userId, "set as ephemeral");
+                final int userRemovability =
+                        getUserRemovabilityLockedLU(userId, "set as ephemeral");
                 if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                     return userRemovability;
                 }
@@ -6816,7 +6817,7 @@ public class UserManagerService extends IUserManager.Stub {
         final boolean isProfile;
         final IntArray profileIds;
         synchronized (mUsersLock) {
-            final int userRemovability = getUserRemovabilityLocked(userId, "removed");
+            final int userRemovability = getUserRemovabilityLockedLU(userId, "removed");
             if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                 return UserManager.isRemoveResultSuccessful(userRemovability);
             }
@@ -6904,7 +6905,7 @@ public class UserManagerService extends IUserManager.Stub {
             final UserData userData;
             synchronized (mPackagesLock) {
                 synchronized (mUsersLock) {
-                    final int userRemovability = getUserRemovabilityLocked(userId, "removed");
+                    final int userRemovability = getUserRemovabilityLockedLU(userId, "removed");
                     if (userRemovability != UserManager.REMOVE_RESULT_USER_IS_REMOVABLE) {
                         return UserManager.isRemoveResultSuccessful(userRemovability);
                     }
@@ -7031,30 +7032,41 @@ public class UserManagerService extends IUserManager.Stub {
      * See also {@link UserManager#isRemoveResultSuccessful}.
      */
     @GuardedBy("mUsersLock")
-    private @UserManager.RemoveResult int getUserRemovabilityLocked(@UserIdInt int userId,
+    private @UserManager.RemoveResult int getUserRemovabilityLockedLU(@UserIdInt int userId,
             String msg) {
-        String prefix = TextUtils.formatSimple("User %d can not be %s, ", userId, msg);
         if (userId == UserHandle.USER_SYSTEM) {
-            Slog.e(LOG_TAG, prefix + "system user cannot be removed.");
+            Slogf.e(LOG_TAG, "User %d can not be %s, system user cannot be removed.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_SYSTEM_USER;
         }
         final UserData userData = mUsers.get(userId);
         if (userData == null) {
-            Slog.e(LOG_TAG, prefix + "invalid user id provided.");
+            Slogf.e(LOG_TAG, "User %d can not be %s, invalid user id provided.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_USER_NOT_FOUND;
         }
         if (isNonRemovableMainUser(userData.info)) {
-            Slog.e(LOG_TAG, prefix
-                    + "main user cannot be removed when it's a permanent admin user.");
+            Slogf.e(LOG_TAG, "User %d can not be %s, main user cannot be removed when it's a"
+                    + " permanent admin user.", userId, msg);
             return UserManager.REMOVE_RESULT_ERROR_MAIN_USER_PERMANENT_ADMIN;
         }
         if (mRemovingUserIds.get(userId)) {
-            Slog.w(LOG_TAG, prefix + "it is already scheduled for removal.");
+            Slogf.w(LOG_TAG, "User %d can not be %s, it is already scheduled for removal.", userId,
+                    msg);
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
+        }
+        if (android.multiuser.Flags.disallowRemovingLastAdminUser()) {
+            if (getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)) {
+                // For HSUM, the headless system user is currently flagged as an admin user now.
+                // Thus we must exclude it when checking for the last admin user, and only consider
+                // full admin users. b/419105275 will investigate not making HSU an admin.
+                if (isLastFullAdminUserLU(userData.info)) {
+                    Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.",
+                            userId, msg);
+                    return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
+                }
+            }
         }
         return UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
     }
-
 
     private void finishRemoveUser(final @UserIdInt int userId) {
         Slog.i(LOG_TAG, "finishRemoveUser " + userId);
@@ -8846,6 +8858,29 @@ public class UserManagerService extends IUserManager.Stub {
      */
     private boolean isNonRemovableMainUser(UserInfo userInfo) {
         return userInfo.isMain() && isMainUserPermanentAdmin();
+    }
+
+    /** Returns if the user is the last admin user that is a full user. */
+    @GuardedBy("mUsersLock")
+    @VisibleForTesting
+    boolean isLastFullAdminUserLU(UserInfo userInfo) {
+        if (!userInfo.isAdmin() || !userInfo.isFull()) {
+            return false;
+        }
+        final int userSize = mUsers.size();
+        for (int i = 0; i < userSize; i++) {
+            final UserInfo otherUserInfo = mUsers.valueAt(i).info;
+            if (otherUserInfo.partial || mRemovingUserIds.get(otherUserInfo.id)
+                    || otherUserInfo.preCreated) {
+                continue;
+            }
+            if (userInfo.id != otherUserInfo.id && otherUserInfo.isAdmin()
+                    && otherUserInfo.isFull()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /** Must be public otherwise can't be mocked. */
