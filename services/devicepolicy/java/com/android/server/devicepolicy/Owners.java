@@ -49,8 +49,6 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.File;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -63,8 +61,6 @@ import java.util.Set;
  */
 class Owners {
     private static final String TAG = "DevicePolicyManagerService";
-
-    private static final boolean DEBUG = false; // DO NOT SUBMIT WITH TRUE
 
     private final UserManager mUserManager;
     private final PackageManagerInternal mPackageManagerInternal;
@@ -356,23 +352,6 @@ class Owners {
             return mData.mProfileOwners.keySet();
         }
     }
-
-    List<OwnerShellData> listAllOwners() {
-        List<OwnerShellData> owners = new ArrayList<>();
-        synchronized (mData) {
-            if (mData.mDeviceOwner != null) {
-                owners.add(OwnerShellData.forDeviceOwner(mData.mDeviceOwnerUserId,
-                        mData.mDeviceOwner.admin));
-            }
-            for (int i = 0; i < mData.mProfileOwners.size(); i++) {
-                int userId = mData.mProfileOwners.keyAt(i);
-                OwnerInfo info = mData.mProfileOwners.valueAt(i);
-                owners.add(OwnerShellData.forUserProfileOwner(userId, info.admin));
-            }
-        }
-        return owners;
-    }
-
 
     SystemUpdatePolicy getSystemUpdatePolicy() {
         synchronized (mData) {
