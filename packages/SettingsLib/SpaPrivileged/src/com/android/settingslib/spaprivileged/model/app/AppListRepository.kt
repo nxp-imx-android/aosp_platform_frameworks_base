@@ -25,7 +25,6 @@ import android.content.pm.Flags
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ApplicationInfoFlags
 import android.content.pm.ResolveInfo
-import android.os.SystemProperties
 import android.util.Log
 import com.android.internal.R
 import com.android.settingslib.spaprivileged.framework.common.userManager
@@ -58,6 +57,12 @@ interface AppListRepository {
 
     /** Loads the list of [ApplicationInfo], and filter base on `isSystemApp`. */
     suspend fun loadAndFilterApps(userId: Int, isSystemApp: Boolean): List<ApplicationInfo>
+
+    /** Loads the list of [ApplicationInfo], and choose whether to exclude system apps or not. */
+    suspend fun loadAndMaybeExcludeSystemApps(
+        userId: Int,
+        excludeSystemApp: Boolean,
+    ): List<ApplicationInfo> = listOf()
 }
 
 /**
@@ -172,6 +177,17 @@ class AppListRepositoryImpl(
             isSystemApp(app, homeOrLauncherPackages) == isSystemApp
         }
     }
+
+    override suspend fun loadAndMaybeExcludeSystemApps(userId: Int, excludeSystemApp: Boolean) =
+        coroutineScope {
+            val loadAppsDeferred = async { loadApps(userId) }
+            val homeOrLauncherPackages = loadHomeOrLauncherPackages(userId)
+            if (excludeSystemApp) {
+                loadAppsDeferred.await().filter { app -> !isSystemApp(app, homeOrLauncherPackages) }
+            } else {
+                loadAppsDeferred.await()
+            }
+        }
 
     private suspend fun showSystemPredicate(
         userId: Int,
