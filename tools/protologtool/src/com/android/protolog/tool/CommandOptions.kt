@@ -22,8 +22,7 @@ class CommandOptions(args: Array<String>) {
     companion object {
         const val TRANSFORM_CALLS_CMD = "transform-protolog-calls"
         const val GENERATE_CONFIG_CMD = "generate-viewer-config"
-        const val READ_LOG_CMD = "read-log"
-        private val commands = setOf(TRANSFORM_CALLS_CMD, GENERATE_CONFIG_CMD, READ_LOG_CMD)
+        private val commands = setOf(TRANSFORM_CALLS_CMD, GENERATE_CONFIG_CMD)
 
         // TODO: This is always the same. I don't think it's required
         private const val PROTOLOG_CLASS_PARAM = "--protolog-class"
@@ -54,9 +53,6 @@ class CommandOptions(args: Array<String>) {
                 $PROTOLOGGROUP_CLASS_PARAM <class name> $PROTOLOGGROUP_JAR_PARAM <config.jar>
                 $VIEWER_CONFIG_PARAM <viewer.json|viewer.pb> [<input.java>]
             - creates viewer config file from given java files.
-
-            $READ_LOG_CMD $VIEWER_CONFIG_PARAM <viewer.json|viewer.pb> <wm_log.pb>
-            - translates a binary log to a readable format.
         """.trimIndent()
 
         private fun validateClassName(name: String): String {
@@ -251,22 +247,6 @@ class CommandOptions(args: Array<String>) {
                 legacyOutputFilePath = validateNotSpecified(LEGACY_OUTPUT_FILE_PATH, params)
                 javaSourceArgs = validateJavaInputList(inputFiles)
                 logProtofileArg = ""
-            }
-            READ_LOG_CMD -> {
-                protoLogClassNameArg = validateNotSpecified(PROTOLOG_CLASS_PARAM, params)
-                protoLogGroupsClassNameArg = validateNotSpecified(PROTOLOGGROUP_CLASS_PARAM, params)
-                protoLogGroupsJarArg = validateNotSpecified(PROTOLOGGROUP_JAR_PARAM, params)
-                viewerConfigFileNameArg =
-                    validateConfigFileName(getParam(VIEWER_CONFIG_PARAM, params))
-                viewerConfigTypeArg = validateNotSpecified(VIEWER_CONFIG_TYPE_PARAM, params)
-                outputSourceJarArg = validateNotSpecified(OUTPUT_SOURCE_JAR_PARAM, params)
-                viewerConfigFilePathArg =
-                    validateNotSpecified(VIEWER_CONFIG_FILE_PATH_PARAM, params)
-                legacyViewerConfigFilePathArg =
-                    validateNotSpecified(LEGACY_VIEWER_CONFIG_FILE_PATH_PARAM, params)
-                legacyOutputFilePath = validateNotSpecified(LEGACY_OUTPUT_FILE_PATH, params)
-                javaSourceArgs = listOf()
-                logProtofileArg = validateLogInputList(inputFiles)
             }
             else -> {
                 throw InvalidCommandException("Unknown command.")

@@ -47,7 +47,6 @@ import com.github.javaparser.ast.stmt.BlockStmt
 import com.github.javaparser.ast.stmt.ReturnStmt
 import com.github.javaparser.ast.type.ClassOrInterfaceType
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -457,12 +456,6 @@ object ProtoLogTool {
         return packagePath
     }
 
-    private fun read(command: CommandOptions) {
-        LogParser(ViewerConfigParser())
-                .parse(FileInputStream(command.logProtofileArg),
-                        FileInputStream(command.viewerConfigFileNameArg), System.out)
-    }
-
     @JvmStatic
     fun main(args: Array<String>) {
         try {
@@ -494,7 +487,6 @@ object ProtoLogTool {
         when (command.command) {
             CommandOptions.TRANSFORM_CALLS_CMD -> processClasses(command)
             CommandOptions.GENERATE_CONFIG_CMD -> viewerConf(command)
-            CommandOptions.READ_LOG_CMD -> read(command)
         }
     }
 
