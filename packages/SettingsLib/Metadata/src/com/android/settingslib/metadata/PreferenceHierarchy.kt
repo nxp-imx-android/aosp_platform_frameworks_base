@@ -52,7 +52,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     /**
      * Children of the hierarchy.
      *
-     * Each item be either [PreferenceHierarchyNode], [PreferenceHierarchy] or [Deferred] (async sub
+     * Each item is either [PreferenceHierarchyNode], [PreferenceHierarchy] or [Deferred] (async sub
      * hierarchy).
      */
     private val children = mutableListOf<Any>()
@@ -397,13 +397,3 @@ fun PreferenceScreenMetadata.preferenceHierarchy(
     context: Context,
     init: PreferenceHierarchy.() -> Unit,
 ) = PreferenceHierarchy(context, this).also(init)
-
-/**
- * Builder function to create [PreferenceHierarchy] with coroutine in
- * [DSL](https://kotlinlang.org/docs/type-safe-builders.html) manner.
- */
-suspend fun asyncPreferenceHierarchy(
-    context: Context,
-    metadata: PreferenceGroup,
-    init: suspend PreferenceHierarchy.() -> Unit,
-) = PreferenceHierarchy(context, metadata).also { init(it) }

@@ -1,2 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.android.settingslib.preference.test" />
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    package="com.android.settingslib.preference.test">
+
+    <!-- override temporarily to support running tests in Android Studio. -->
+    <uses-sdk tools:overrideLibrary="platform_testing.libraries.flag.junit,android.frameworks.base" />
+</manifest>
