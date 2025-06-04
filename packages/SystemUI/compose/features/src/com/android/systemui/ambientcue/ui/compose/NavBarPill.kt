@@ -176,7 +176,7 @@ fun NavBarPill(
                                             .clip(RoundedCornerShape(16.dp))
                                             .background(
                                                 if (hasBackground) {
-                                                    MaterialTheme.colorScheme.surfaceContainer
+                                                    MaterialTheme.colorScheme.surfaceContainerLow
                                                 } else {
                                                     Color.Transparent
                                                 }
@@ -203,7 +203,7 @@ fun NavBarPill(
                                             style = MaterialTheme.typography.labelMedium,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
-                                            color = MaterialTheme.colorScheme.onSurface,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.alpha(0.4f),
                                         )
                                     }

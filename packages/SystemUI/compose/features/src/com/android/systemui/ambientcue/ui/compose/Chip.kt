@@ -45,7 +45,6 @@ import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 
 @Composable
 fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
-    val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
 
     Row(
@@ -80,7 +79,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             Text(
                 action.label,
                 style = MaterialTheme.typography.labelLarge,
-                color = outlineColor,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = if (hasAttribution) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -88,7 +87,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 Text(
                     action.attribution!!,
                     style = MaterialTheme.typography.labelLarge,
-                    color = outlineColor,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     modifier = Modifier.alpha(0.8f),
                     overflow = TextOverflow.Ellipsis,
