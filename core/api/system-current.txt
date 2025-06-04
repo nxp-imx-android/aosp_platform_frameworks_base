@@ -10689,6 +10689,7 @@ package android.net.wifi {
     method @NonNull public static String[] list(@NonNull String);
     method public static boolean put(@NonNull String, @NonNull byte[]);
     method public static boolean remove(@NonNull String);
+    method @FlaggedApi("android.net.wifi.flags.wifi_keystore_remove_all_api") public static boolean removeAll();
   }
 
   public final class WifiMigration {
