@@ -34,6 +34,7 @@ import android.os.Trace;
 import android.util.IntArray;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
 
 import java.io.File;
@@ -88,7 +89,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         if (appOpEvents.isEmpty()) {
             return;
         }
-        long startTime = SystemClock.elapsedRealtime();
+        long startTime = SystemClock.uptimeMillis();
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
                 "AppOpHistoryDbHelper_" + mAggregationTimeWindow + "_Write");
         try {
@@ -147,7 +148,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
             Slog.e(LOG_TAG, "Couldn't insert app op records in " + mDatabaseFile.getName(), ex);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
-            long writeTimeMillis = SystemClock.elapsedRealtime() - startTime;
+            long writeTimeMillis = SystemClock.uptimeMillis() - startTime;
             FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED, /* read_time= */
                     -1, writeTimeMillis,
                     mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow), writeSource);
@@ -187,7 +188,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         String sql = AppOpHistoryQueryHelper.buildSqlQuery(
                 AppOpHistoryTable.SELECT_TABLE_DATA, conditions, orderByColumn, ascending, limit);
 
-        long startTime = SystemClock.elapsedRealtime();
+        long startTime = SystemClock.uptimeMillis();
         try {
             SQLiteDatabase db = getReadableDatabase();
             db.beginTransactionReadOnly();
@@ -204,7 +205,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         } catch (Exception ex) {
             Slog.e(LOG_TAG, "Couldn't read app op records from " + mDatabaseFile.getName(), ex);
         } finally {
-            long readTimeMillis = SystemClock.elapsedRealtime() - startTime;
+            long readTimeMillis = SystemClock.uptimeMillis() - startTime;
             FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED,
                     readTimeMillis, /* write_time= */ -1,
                     mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow),
@@ -242,6 +243,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         return chainId;
     }
 
+    @VisibleForTesting
     List<AggregatedAppOpAccessEvent> getAppOpHistory() {
         List<AggregatedAppOpAccessEvent> results = new ArrayList<>();
 
@@ -301,7 +303,8 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         int totalRejectCount = statement.getColumnInt(13);
 
         return new AggregatedAppOpAccessEvent(uid,
-                packageName, opCode, deviceId, attributionTag,
+                packageName != null ? packageName.intern() : null, opCode, deviceId.intern(),
+                attributionTag != null ? attributionTag.intern() : null,
                 opFlags, uidState, attributionFlags, attributionChainId, accessTime,
                 duration, totalDuration, totalAccessCount, totalRejectCount);
     }

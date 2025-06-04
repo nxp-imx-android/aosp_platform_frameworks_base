@@ -240,7 +240,8 @@ public class AppOpHistoryHelper {
     }
 
     private List<AggregatedAppOpAccessEvent> getAppOpHistory(AppOpsManager.HistoricalOps result,
-            long beginTimeMillis, long endTimeMillis, int filter, int uidFilter,
+            long beginTimeMillis, long endTimeMillis,
+            @AppOpsManager.HistoricalOpsRequestFilter int filter, int uidFilter,
             @Nullable String packageNameFilter,
             @Nullable String[] opNamesFilter,
             @Nullable String attributionTagFilter, int opFlagsFilter) {
@@ -817,6 +818,12 @@ public class AppOpHistoryHelper {
         public AppOpAccessEvent {
             if (mPackageName != null) {
                 mPackageName = mPackageName.intern();
+            }
+            if (mAttributionTag != null) {
+                mAttributionTag = mAttributionTag.intern();
+            }
+            if (mDeviceId != null) {
+                mDeviceId = mDeviceId.intern();
             }
         }
 
