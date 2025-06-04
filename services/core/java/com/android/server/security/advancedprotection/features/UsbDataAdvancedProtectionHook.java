@@ -23,6 +23,8 @@ import static android.hardware.usb.UsbManager.ACTION_USB_PORT_CHANGED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
 import static android.hardware.usb.UsbPortStatus.DATA_ROLE_NONE;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
+import static android.hardware.usb.UsbPortStatus.COMPLIANCE_WARNING_BC_1_2;
+import static android.hardware.usb.UsbPortStatus.COMPLIANCE_WARNING_INPUT_POWER_LIMITED;
 
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -135,7 +137,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     @Override
     public boolean isAvailable() {
         boolean usbDataProtectionEnabled =
-                // TODO(b/418846176): Set fallback default to false once product flag is set b/418846176
+                // TODO(b/418846176): Set fallback default to false once product flag is set
                 SystemProperties.getBoolean(USB_DATA_PROTECTION_ENABLE_SYSTEM_PROPERTY, true);
         if (!usbDataProtectionEnabled) {
             Slog.d(TAG, "USB data protection is disabled through system property");
@@ -196,29 +198,36 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                 setUsbDataSignalIfPossible(false);
 
                             } else if (ACTION_USB_PORT_CHANGED.equals(intent.getAction())) {
-                                if (Build.IS_DEBUGGABLE) {
-                                    dumpUsbDevices();
-                                }
 
                                 UsbPortStatus portStatus =
                                         intent.getParcelableExtra(
                                                 UsbManager.EXTRA_PORT_STATUS, UsbPortStatus.class);
 
+                                if (Build.IS_DEBUGGABLE) {
+                                    dumpUsbDevices(portStatus);
+                                }
+
                                 if (mKeyguardManager.isKeyguardLocked()) {
                                     updateDelayedDisableTask(portStatus);
                                 }
 
-                                if (usbIsNotConnected(portStatus)) {
+                                if (isUsbConnected(portStatus)) {
                                     clearExistingNotification();
                                 } else {
                                     if (isUsbPortConnectionPowerBrick(portStatus)) {
-                                        // For cases where high speed chargers do not use USB-PD PPS
-                                        if (mDataRequiredForHighPowerCharge) {
+                                        // For cases where high speed chargers do not use USB-PD
+                                        // PPS, or uses BC1.2
+                                        if (mDataRequiredForHighPowerCharge
+                                                || isUsbChargingComplianceWarningPresent(
+                                                        portStatus)) {
                                             sendPowerNotificationIfDeviceLocked(portStatus);
                                         }
                                     } else {
-                                        if (mDataRequiredForHighPowerCharge
-                                                && isUsbPowerSink(portStatus)) {
+                                        if (isPortPowerSinking(portStatus)
+                                            && (mDataRequiredForHighPowerCharge
+                                                    || !portStatus.isPdCompliant()
+                                                    || isUsbChargingComplianceWarningPresent(
+                                                            portStatus))) {
                                             sendPowerAndDataNotificationIfDeviceLocked(portStatus);
                                         } else {
                                             sendDataNotificationIfDeviceLocked(portStatus);
@@ -231,7 +240,20 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         }
                     }
 
-                    private boolean usbIsNotConnected(UsbPortStatus portStatus) {
+                    private boolean isUsbChargingComplianceWarningPresent(
+                            UsbPortStatus portStatus) {
+                        if (portStatus != null) {
+                            for (int warning : portStatus.getComplianceWarnings()) {
+                                if (warning == COMPLIANCE_WARNING_BC_1_2
+                                        || warning == COMPLIANCE_WARNING_INPUT_POWER_LIMITED) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    }
+
+                    private boolean isUsbConnected(UsbPortStatus portStatus) {
                         return portStatus != null && !portStatus.isConnected();
                     }
 
@@ -241,7 +263,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                         == UsbPortStatus.POWER_BRICK_STATUS_CONNECTED;
                     }
 
-                    private boolean isUsbPowerSink(UsbPortStatus portStatus) {
+                    private boolean isPortPowerSinking(UsbPortStatus portStatus) {
                         return portStatus != null
                                 && portStatus.getCurrentPowerRole()
                                         == UsbPortStatus.POWER_ROLE_SINK;
@@ -269,8 +291,10 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                         != UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
                     }
 
-                    // TODO: b/401540215 Remove this as part of pre-release cleanup
-                    private void dumpUsbDevices() {
+                    // TODO:(b/401540215) Remove this as part of pre-release cleanup
+                    private void dumpUsbDevices(UsbPortStatus portStatus) {
+                        Slog.d(TAG, "dumpUsbDevices: " + portStatus.toString());
+                        Slog.d(TAG, "dumpUsbDevices: PD-compliance: " + portStatus.isPdCompliant());
                         Slog.d(TAG, "dumpUsbDevices: ");
                         Map<String, UsbDevice> portStatusMap = mUsbManager.getDeviceList();
                         for (UsbDevice device : portStatusMap.values()) {
@@ -449,7 +473,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                         status, OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
                     break;
                 } else {
-                    Slog.e(TAG, "USB Data protection toggle attemptfailed");
+                    Slog.e(TAG, "USB Data protection toggle attempt failed");
                 }
             } catch (RemoteException e) {
                 Slog.e(TAG, "RemoteException thrown when calling enableUsbDataSignal", e);
