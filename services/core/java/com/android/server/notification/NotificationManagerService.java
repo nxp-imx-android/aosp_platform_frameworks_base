@@ -12432,6 +12432,33 @@ public class NotificationManagerService extends SystemService {
             return android.Manifest.permission.REQUEST_NOTIFICATION_ASSISTANT_SERVICE;
         }
 
+        @Override
+        public void dump(PrintWriter pw, DumpFilter filter) {
+            super.dump(pw, filter);
+            pw.println("    Unsupported Adjustment keys: ");
+            for (int userId : mNasUnsupported.keySet()) {
+                pw.println("      " + userId + ": " + mNasUnsupported.get(userId));
+            }
+            pw.println("    (user) Denied Adjustment keys: ");
+            for (int userId : mDeniedAdjustments.keySet()) {
+                pw.println("      user " + userId + ": " + deniedAdjustmentsForUser(userId));
+            }
+
+            pw.println("    Allowed bundle types: ");
+            for (int userId : mAllowedClassificationTypes.keySet()) {
+                pw.println("      user " + userId + ": " + mAllowedClassificationTypes.get(userId));
+            }
+
+            pw.println("    Disallowed adjustment pkg count: ");
+            for (int userId : mAdjustmentKeyDeniedPackages.keySet()) {
+                pw.println("      user: " + userId + ": ");
+                for (String type : mAdjustmentKeyDeniedPackages.get(userId).keySet()) {
+                    pw.println("          " + type + ": "
+                            + mAdjustmentKeyDeniedPackages.get(userId).size());
+                }
+            }
+        }
+
         // Convenience method to enforce defaults and shared settings:
         // - if the passed-in user is a profile user, get the data for its parent instead, as
         //   the allowed classification types are shared across all profiles of a full user.
