@@ -425,6 +425,10 @@ public class AudioService extends IAudioService.Stub
         return mPlatformType == AudioSystem.PLATFORM_AUTOMOTIVE;
     }
 
+    /*package*/ boolean isPlatformPc() {
+        return mPlatformType == AudioSystem.PLATFORM_PC;
+    }
+
     /** The controller for the volume UI. */
     private final VolumeController mVolumeController = new VolumeController();
 
@@ -655,8 +659,9 @@ public class AudioService extends IAudioService.Stub
      * Some streams alias to different streams according to device category (phone or tablet) or
      * use case (in call vs off call...). See updateStreamVolumeAlias() for more details.
      *  sStreamVolumeAlias contains STREAM_VOLUME_ALIAS_VOICE aliases for a voice capable device
-     *  (phone), STREAM_VOLUME_ALIAS_TELEVISION for a television or set-top box and
-     *  STREAM_VOLUME_ALIAS_DEFAULT for other devices (e.g. tablets).*/
+     *  (phone), STREAM_VOLUME_ALIAS_TELEVISION for a television or set-top box,
+     *  STREAM_VOLUME_ALIAS_PC_SINGLE_VOLUME for a desktop/laptop that enables config_single_volume
+     *  and STREAM_VOLUME_ALIAS_DEFAULT for other devices (e.g. tablets).*/
     private final int[] STREAM_VOLUME_ALIAS_VOICE = new int[] {
         AudioSystem.STREAM_VOICE_CALL,      // STREAM_VOICE_CALL
         AudioSystem.STREAM_RING,            // STREAM_SYSTEM
@@ -684,6 +689,20 @@ public class AudioService extends IAudioService.Stub
         AudioSystem.STREAM_MUSIC,       // STREAM_TTS
         AudioSystem.STREAM_MUSIC,       // STREAM_ACCESSIBILITY
         AudioSystem.STREAM_MUSIC        // STREAM_ASSISTANT
+    };
+    private final int[] STREAM_VOLUME_ALIAS_PC_SINGLE_VOLUME = new int[] {
+        AudioSystem.STREAM_MUSIC,           // STREAM_VOICE_CALL
+        AudioSystem.STREAM_MUSIC,           // STREAM_SYSTEM
+        AudioSystem.STREAM_MUSIC,           // STREAM_RING
+        AudioSystem.STREAM_MUSIC,           // STREAM_MUSIC
+        AudioSystem.STREAM_MUSIC,           // STREAM_ALARM
+        AudioSystem.STREAM_MUSIC,           // STREAM_NOTIFICATION
+        AudioSystem.STREAM_BLUETOOTH_SCO,   // STREAM_BLUETOOTH_SCO
+        AudioSystem.STREAM_MUSIC,           // STREAM_SYSTEM_ENFORCED
+        AudioSystem.STREAM_MUSIC,           // STREAM_DTMF
+        AudioSystem.STREAM_MUSIC,           // STREAM_TTS
+        AudioSystem.STREAM_ACCESSIBILITY,   // STREAM_ACCESSIBILITY
+        AudioSystem.STREAM_MUSIC            // STREAM_ASSISTANT
     };
     /**
      * Using Volume groups configuration allows to control volume per attributes
@@ -2860,7 +2879,11 @@ public class AudioService extends IAudioService.Stub
                 AudioSystem.STREAM_ASSISTANT : AudioSystem.STREAM_MUSIC;
 
         if (mIsSingleVolume) {
-            initStreamVolumeAlias(STREAM_VOLUME_ALIAS_TELEVISION);
+            if (isPlatformPc()) {
+                initStreamVolumeAlias(STREAM_VOLUME_ALIAS_PC_SINGLE_VOLUME);
+            } else {
+                initStreamVolumeAlias(STREAM_VOLUME_ALIAS_TELEVISION);
+            }
             dtmfStreamAlias = AudioSystem.STREAM_MUSIC;
         } else if (mUseVolumeGroupAliases) {
             initStreamVolumeAlias(STREAM_VOLUME_ALIAS_NONE);
@@ -4276,7 +4299,7 @@ public class AudioService extends IAudioService.Stub
                         // unmute immediately for volume up
                         muteAliasStreams(streamTypeAlias, false);
                     } else if (direction == AudioManager.ADJUST_LOWER) {
-                        if (mIsSingleVolume) {
+                        if (mIsSingleVolume && !isPlatformPc()) {
                             sendMsg(mAudioHandler, MSG_UNMUTE_STREAM_ON_SINGLE_VOL_DEVICE,
                                     SENDMSG_QUEUE, streamTypeAlias, flags, null,
                                     UNMUTE_STREAM_DELAY);
@@ -13010,7 +13033,7 @@ public class AudioService extends IAudioService.Stub
 
     private void updateA11yVolumeAlias(boolean a11VolEnabled) {
         if (DEBUG_VOL) Log.d(TAG, "Accessibility volume enabled = " + a11VolEnabled);
-        if (mIsSingleVolume) {
+        if (mIsSingleVolume && !isPlatformPc()) {
             if (DEBUG_VOL) Log.d(TAG, "Accessibility volume is not set on single volume device");
             return;
         }
