@@ -1718,9 +1718,24 @@ public class AppOpsManager {
     public static final int OP_SYSTEM_APPLICATION_OVERLAY =
             AppOpEnums.APP_OP_SYSTEM_APPLICATION_OVERLAY;
 
+    /**
+     * Access cell identity data.
+     *
+     * @hide
+     */
+    public static final int OP_READ_CELL_IDENTITY = AppOpEnums.APP_OP_READ_CELL_IDENTITY;
+
+    /**
+     * Access cell info data such as connection status or registered to a
+     * mobile network.
+     *
+     * @hide
+     */
+    public static final int OP_READ_CELL_INFO = AppOpEnums.APP_OP_READ_CELL_INFO;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 165;
+    public static final int _NUM_OP = 167;
 
     /**
      * All app ops represented as strings.
@@ -1888,7 +1903,9 @@ public class AppOpsManager {
             OPSTR_SCENE_UNDERSTANDING_COARSE,
             OPSTR_SCENE_UNDERSTANDING_FINE,
             OPSTR_POST_PROMOTED_NOTIFICATIONS,
-            OPSTR_SYSTEM_APPLICATION_OVERLAY
+            OPSTR_SYSTEM_APPLICATION_OVERLAY,
+            OPSTR_READ_CELL_IDENTITY,
+            OPSTR_READ_CELL_INFO
     })
     public @interface AppOpString {}
 
@@ -2695,6 +2712,12 @@ public class AppOpsManager {
     public static final String OPSTR_SYSTEM_APPLICATION_OVERLAY =
             "android:system_application_overlay";
 
+    /** @hide Read telephony cell identity. */
+    public static final String OPSTR_READ_CELL_IDENTITY = "android:read_cell_identity";
+
+    /** @hide Read telephony cell information. */
+    public static final String OPSTR_READ_CELL_INFO = "android:read_cell_info";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -3364,6 +3387,14 @@ public class AppOpsManager {
                 "SYSTEM_APPLICATION_OVERLAY")
                 .setPermission(com.android.media.projection.flags.Flags.recordingOverlay()
                         ? Manifest.permission.SYSTEM_APPLICATION_OVERLAY : null)
+                .build(),
+        new AppOpInfo.Builder(OP_READ_CELL_IDENTITY, OPSTR_READ_CELL_IDENTITY,
+                "READ_CELL_IDENTITY")
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED)
+                .build(),
+        new AppOpInfo.Builder(OP_READ_CELL_INFO, OPSTR_READ_CELL_INFO,
+                "READ_CELL_INFO")
+                .setDefaultMode(AppOpsManager.MODE_ALLOWED)
                 .build(),
     };
 
