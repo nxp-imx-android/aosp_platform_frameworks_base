@@ -185,6 +185,17 @@ constructor(
 
             try {
                 setIcon(entry, normalIconDescriptor, sbIcon)
+
+                if (
+                    android.app.Flags.hideStatusBarNotification() &&
+                        entry.sbn.notification.extras?.getBoolean(
+                            Notification.EXTRA_HIDE_STATUS_BAR_NOTIFICATION
+                        ) == true
+                ) {
+                    Log.i(TAG, "EXTRA_HIDE_STATUS_BAR_NOTIFICATION set, hiding the icon.")
+                    sbIcon.visibility = View.GONE
+                }
+
                 if (sbChipIcon != null) {
                     setIcon(entry, normalIconDescriptor, sbChipIcon)
                 }
