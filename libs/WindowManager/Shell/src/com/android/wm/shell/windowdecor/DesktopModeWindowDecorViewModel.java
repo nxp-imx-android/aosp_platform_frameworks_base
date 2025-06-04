@@ -1099,10 +1099,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mSplitScreenController.moveTaskToFullscreen(getOtherSplitTask(mTaskId).taskId,
                             SplitScreenController.EXIT_REASON_DESKTOP_MODE);
                 } else {
-                    final int nextFocusedTaskId =
-                            mDesktopTasksController.getNextFocusedTask(decoration.mTaskInfo);
-                    if (nextFocusedTaskId != INVALID_TASK_ID) {
-                        mWindowDecorByTaskId.get(nextFocusedTaskId).a11yAnnounceNewFocusedWindow();
+                    if (DesktopExperienceFlags
+                            .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
+                        final int nextFocusedTaskId =
+                                mDesktopTasksController.getNextFocusedTask(decoration.mTaskInfo);
+                        DesktopModeWindowDecoration nextFocusedWindow =
+                                mWindowDecorByTaskId.get(nextFocusedTaskId);
+                        if (nextFocusedWindow != null) {
+                            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+                        }
                     }
                     WindowContainerTransaction wct = new WindowContainerTransaction();
                     final Function1<IBinder, Unit> runOnTransitionStart =
@@ -1146,10 +1151,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             getInputMethod(mMotionEvent));
                 }
             } else if (id == R.id.minimize_window) {
-                final int nextFocusedTaskId = mDesktopTasksController
-                        .getNextFocusedTask(decoration.mTaskInfo);
-                if (nextFocusedTaskId != INVALID_TASK_ID) {
-                    mWindowDecorByTaskId.get(nextFocusedTaskId).a11yAnnounceNewFocusedWindow();
+                if (DesktopExperienceFlags
+                        .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
+                    final int nextFocusedTaskId = mDesktopTasksController
+                            .getNextFocusedTask(decoration.mTaskInfo);
+                    DesktopModeWindowDecoration nextFocusedWindow =
+                            mWindowDecorByTaskId.get(nextFocusedTaskId);
+                    if (nextFocusedWindow != null) {
+                        nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+                    }
                 }
                 mDesktopTasksController.minimizeTask(
                         decoration.mTaskInfo, MinimizeReason.MINIMIZE_BUTTON);
@@ -2201,10 +2211,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onMinimize(@NonNull RunningTaskInfo taskInfo) {
-            final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(taskInfo);
-            if (nextFocusedTaskId != INVALID_TASK_ID) {
-                mViewModel.mWindowDecorByTaskId.get(nextFocusedTaskId)
-                        .a11yAnnounceNewFocusedWindow();
+            if (DesktopExperienceFlags
+                    .ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS.isTrue()) {
+                final int nextFocusedTaskId = mDesktopTasksController.getNextFocusedTask(taskInfo);
+                DesktopModeWindowDecoration nextFocusedWindow =
+                        mViewModel.mWindowDecorByTaskId.get(nextFocusedTaskId);
+                if (nextFocusedWindow != null) {
+                    nextFocusedWindow.a11yAnnounceNewFocusedWindow();
+                }
             }
             mDesktopTasksController.minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON);
         }

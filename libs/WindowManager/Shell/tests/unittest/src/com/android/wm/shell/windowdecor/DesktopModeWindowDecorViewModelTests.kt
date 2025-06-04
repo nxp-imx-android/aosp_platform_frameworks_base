@@ -264,7 +264,38 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
     fun testCloseButtonInFreeform_closeWindow() {
+        val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            onCaptionButtonClickListener = onClickListenerCaptor,
+        )
+
+        val view = mock<View> {
+            on { id } doReturn R.id.close_window
+        }
+
+        desktopModeWindowDecorViewModel
+            .setFreeformTaskTransitionStarter(mockFreeformTaskTransitionStarter)
+
+        onClickListenerCaptor.firstValue.onClick(view)
+
+        verify(mockDesktopTasksController, never()).getNextFocusedTask(decor.mTaskInfo)
+
+        val transactionCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(mockFreeformTaskTransitionStarter).startRemoveTransition(transactionCaptor.capture())
+        val wct = transactionCaptor.firstValue
+
+        assertThat(wct.hierarchyOps).hasSize(1)
+        val hierarchyOp = wct.hierarchyOps[0]
+        assertThat(hierarchyOp.type).isEqualTo(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
+        assertThat(hierarchyOp.container).isEqualTo(decor.mTaskInfo.token.asBinder())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
+    fun testCloseButtonInFreeform_withStateChangeAnnouncementFlag_closeWindow() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor = createOpenTaskDecoration(
             windowingMode = WINDOWING_MODE_FREEFORM,
@@ -294,7 +325,34 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MINIMIZE_BUTTON)
-    fun testMinimizeButtonInFreefrom_minimizeWindow() {
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS)
+    fun testMinimizeButtonInFreeform_minimizeWindow() {
+        val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            onCaptionButtonClickListener = onClickListenerCaptor,
+        )
+
+        val view = mock<View> {
+            on { id } doReturn R.id.minimize_window
+        }
+
+        desktopModeWindowDecorViewModel
+            .setFreeformTaskTransitionStarter(mockFreeformTaskTransitionStarter)
+
+        onClickListenerCaptor.firstValue.onClick(view)
+
+        verify(mockDesktopTasksController, never()).getNextFocusedTask(decor.mTaskInfo)
+        verify(mockDesktopTasksController)
+            .minimizeTask(decor.mTaskInfo, MinimizeReason.MINIMIZE_BUTTON)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MINIMIZE_BUTTON,
+        Flags.FLAG_ENABLE_DESKTOP_APP_HEADER_STATE_CHANGE_ANNOUNCEMENTS
+    )
+    fun testMinimizeButtonInFreeform_withStateChangeAnnouncementFlag_minimizeWindow() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
         val decor = createOpenTaskDecoration(
             windowingMode = WINDOWING_MODE_FREEFORM,
