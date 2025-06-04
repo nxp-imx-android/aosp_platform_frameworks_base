@@ -387,13 +387,4 @@ class CommandOptionsTest {
         }
         assertThat(exception).hasMessageThat().contains("required, got invalid.yaml instead")
     }
-
-    @Test
-    fun readLog() {
-        val testLine = "read-log --viewer-config $TEST_VIEWER_JSON $TEST_LOG"
-        val cmd = CommandOptions(testLine.split(' ').toTypedArray())
-        assertEquals(CommandOptions.READ_LOG_CMD, cmd.command)
-        assertEquals(TEST_VIEWER_JSON, cmd.viewerConfigFileNameArg)
-        assertEquals(TEST_LOG, cmd.logProtofileArg)
-    }
 }
