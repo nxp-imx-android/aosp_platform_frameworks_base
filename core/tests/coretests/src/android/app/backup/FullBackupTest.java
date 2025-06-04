@@ -18,14 +18,23 @@ package android.app.backup;
 
 import static android.app.backup.FullBackup.ConfigSection.CLOUD_BACKUP;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import android.app.backup.FullBackup.BackupScheme.PathWithRequiredFlags;
 import android.content.Context;
-import android.test.AndroidTestCase;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -39,7 +48,8 @@ import java.util.Map;
 import java.util.Set;
 
 @LargeTest
-public class FullBackupTest extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class FullBackupTest {
     private XmlPullParserFactory mFactory;
     private XmlPullParser mXpp;
     private Context mContext;
@@ -47,16 +57,17 @@ public class FullBackupTest extends AndroidTestCase {
     Map<String, Set<PathWithRequiredFlags>> includeMap;
     Set<PathWithRequiredFlags> excludesSet;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
         mFactory = XmlPullParserFactory.newInstance();
         mXpp = mFactory.newPullParser();
-        mContext = getContext();
+        mContext = InstrumentationRegistry.getInstrumentation().getContext();
 
         includeMap = new ArrayMap<>();
         excludesSet = new ArraySet<>();
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyInclude() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -80,6 +91,7 @@ public class FullBackupTest extends AndroidTestCase {
         assertEquals("Invalid requireFlags parsed for <include/>", 0, include.getRequiredFlags());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyIncludeRequireEncryptionFlag() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -107,6 +119,7 @@ public class FullBackupTest extends AndroidTestCase {
                 include.getRequiredFlags());
     }
 
+    @Test
     public void testParseBackupSchemeFromXml_onlyIncludeRequireFakeEncryptionFlag()
             throws Exception {
         mXpp.setInput(
@@ -132,6 +145,7 @@ public class FullBackupTest extends AndroidTestCase {
                 include.getRequiredFlags());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyIncludeRequireD2DFlag() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -159,6 +173,7 @@ public class FullBackupTest extends AndroidTestCase {
                 include.getRequiredFlags());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyIncludeRequireEncryptionAndD2DFlags()
             throws Exception {
         mXpp.setInput(
@@ -188,6 +203,7 @@ public class FullBackupTest extends AndroidTestCase {
                 include.getRequiredFlags());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyIncludeRequireD2DFlagAndIngoreGarbage()
             throws Exception {
         mXpp.setInput(
@@ -216,6 +232,7 @@ public class FullBackupTest extends AndroidTestCase {
                 include.getRequiredFlags());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyExcludeRequireFlagsNotSupported()
             throws Exception {
         mXpp.setInput(
@@ -233,6 +250,7 @@ public class FullBackupTest extends AndroidTestCase {
         }
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_onlyExclude() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -251,6 +269,7 @@ public class FullBackupTest extends AndroidTestCase {
                 excludesSet.iterator().next().getPath());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_includeAndExclude() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -276,6 +295,7 @@ public class FullBackupTest extends AndroidTestCase {
                 excludesSet.iterator().next().getPath());
     }
 
+    @Test
     public void testparseBackupSchemeFromXml_lotsOfIncludesAndExcludes() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -405,6 +425,7 @@ public class FullBackupTest extends AndroidTestCase {
                 arrayedSet.get(6));
     }
 
+    @Test
     public void testParseBackupSchemeFromXml_invalidXmlFails() throws Exception {
         // Invalid root tag.
         mXpp.setInput(
@@ -447,6 +468,7 @@ public class FullBackupTest extends AndroidTestCase {
         }
     }
 
+    @Test
     public void testInvalidPath_doesNotBackup() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -464,6 +486,7 @@ public class FullBackupTest extends AndroidTestCase {
         assertNull("Didn't throw away invalid \"..\" path.", fileDomainIncludes);
     }
 
+    @Test
     public void testParseNewBackupSchemeFromXml_emptyCloudSectionIsRespected() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -480,6 +503,7 @@ public class FullBackupTest extends AndroidTestCase {
         assertTrue(result);
     }
 
+    @Test
     public void testParseNewBackupSchemeFromXml_emptyCloudSectionWithEncryptionFlagIsRespected()
             throws Exception {
         mXpp.setInput(
@@ -500,6 +524,7 @@ public class FullBackupTest extends AndroidTestCase {
                 BackupAgent.FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED);
     }
 
+    @Test
     public void testDoubleDotInPath_isIgnored() throws Exception {
         mXpp.setInput(
                 new StringReader(
@@ -517,6 +542,7 @@ public class FullBackupTest extends AndroidTestCase {
         assertNull("Didn't throw away invalid \"..\" path.", fileDomainIncludes);
     }
 
+    @Test
     public void testDoubleSlashInPath_isIgnored() throws Exception {
         mXpp.setInput(
                 new StringReader(
