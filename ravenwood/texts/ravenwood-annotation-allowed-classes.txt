@@ -584,6 +584,7 @@ com.android.internal.power.ModemPowerProfile
 
 com.android.internal.protolog.LogcatOnlyProtoLogImpl
 com.android.internal.protolog.ProtoLog
+com.android.internal.protolog.ProtoLogController
 
 com.android.internal.protolog.common.LogLevel
 
