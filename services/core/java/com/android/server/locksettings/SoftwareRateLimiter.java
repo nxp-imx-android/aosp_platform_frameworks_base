@@ -127,13 +127,18 @@ class SoftwareRateLimiter {
     private static class RateLimiterState {
 
         /**
-         * The number of failed attempts since the last correct guess, not counting attempts that
-         * never reached the real credential check for a reason such as detection of a duplicate
-         * wrong guess, too short, delay still remaining, etc.
+         * The number of failed attempts since the last successful attempt, not counting attempts
+         * that never reached the real credential check for a reason such as detection of a
+         * duplicate wrong guess, credential too short, delay still remaining, etc.
          */
         public int numFailures;
 
-        /** The number of duplicate wrong guesses since the last correct guess or reboot */
+        /**
+         * The number of the duplicate wrong guesses that have been detected since the last success
+         * or reboot. Note that the ability to detect duplicate wrong guesses may vary from device
+         * to device depending on whether the error codes returned by the hardware rate-limiter
+         * clearly differentiate between wrong guesses and other errors.
+         */
         public int numDuplicateWrongGuesses;
 
         /** The type of the LSKF, as a value of the stats CredentialType enum */
@@ -382,7 +387,7 @@ class SoftwareRateLimiter {
         FrameworkStatsLog.write(
                 FrameworkStatsLog.LSKF_AUTHENTICATION_ATTEMPTED,
                 /* success= */ success,
-                /* num_unique_guesses= */ state.numFailures + (success ? 1 : 0),
+                /* num_failures= */ state.numFailures,
                 /* num_duplicate_guesses= */ state.numDuplicateWrongGuesses,
                 /* credential_type= */ state.statsCredentialType,
                 /* software_rate_limiter_enforcing= */ mEnforcing,
