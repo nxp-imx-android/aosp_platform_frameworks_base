@@ -2930,20 +2930,16 @@ public class LockSettingsService extends ILockSettings.Stub {
         return mRecoverableKeyStoreManager.getKey(alias);
     }
 
-    /**
-     * Starts a session to verify lock screen credentials provided by a remote device.
-     */
-    @NonNull
-    public RemoteLockscreenValidationSession startRemoteLockscreenValidation() {
+    /** Starts a session to verify lock screen credentials provided by a remote device. */
+    @Override
+    public @NonNull RemoteLockscreenValidationSession startRemoteLockscreenValidation() {
         return mRecoverableKeyStoreManager.startRemoteLockscreenValidation(this);
     }
 
-    /**
-     * Verifies encrypted credentials guess from a remote device.
-     */
-    @NonNull
-    public RemoteLockscreenValidationResult
-            validateRemoteLockscreen(@NonNull byte[] encryptedCredential) {
+    /** Verifies encrypted credentials guess from a remote device. */
+    @Override
+    public @NonNull RemoteLockscreenValidationResult validateRemoteLockscreen(
+            @NonNull byte[] encryptedCredential) {
         return mRecoverableKeyStoreManager.validateRemoteLockscreen(encryptedCredential, this);
     }
 
