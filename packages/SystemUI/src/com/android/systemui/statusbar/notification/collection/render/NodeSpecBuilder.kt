@@ -17,7 +17,10 @@
 package com.android.systemui.statusbar.notification.collection.render
 
 import com.android.app.tracing.traceSection
+import com.android.systemui.statusbar.notification.Bundles
 import com.android.systemui.statusbar.notification.NotificationSectionsFeatureManager
+import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
+import com.android.systemui.statusbar.notification.Summarization
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -42,6 +45,8 @@ class NodeSpecBuilder(
     private val viewBarn: NotifViewBarn,
     private val bundleBarn: BundleBarn,
     private val logger: NodeSpecBuilderLogger,
+    @Bundles private val bundleOnboardingAffordanceManager: OnboardingAffordanceManager,
+    @Summarization private val summaryOnboardingAffordanceManager: OnboardingAffordanceManager,
 ) {
     private var lastSections = setOf<NotifSection?>()
 
@@ -61,6 +66,13 @@ class NodeSpecBuilder(
             val sectionOrder = mutableListOf<NotifSection?>()
             val sectionHeaders = mutableMapOf<NotifSection?, NodeController?>()
             val sectionCounts = mutableMapOf<NotifSection?, Int>()
+            var seenBundle = false
+
+            // If needed, the AI summaries onboarding affordance should be added above all
+            // notifications.
+            if (summaryOnboardingAffordanceManager.addAffordanceToStack) {
+                root.children.add(NodeSpecImpl(root, summaryOnboardingAffordanceManager.controller))
+            }
 
             for (entry in notifList) {
                 val section = entry.section!!
@@ -84,6 +96,16 @@ class NodeSpecBuilder(
                     currentSection = section
                     if (Compile.IS_DEBUG) {
                         sectionOrder.add(section)
+                    }
+                }
+
+                // Include onboarding affordance for bundles above the first bundle, if needed.
+                if (!seenBundle && entry is BundleEntry) {
+                    seenBundle = true
+                    if (bundleOnboardingAffordanceManager.addAffordanceToStack) {
+                        root.children.add(
+                            NodeSpecImpl(root, bundleOnboardingAffordanceManager.controller)
+                        )
                     }
                 }
 

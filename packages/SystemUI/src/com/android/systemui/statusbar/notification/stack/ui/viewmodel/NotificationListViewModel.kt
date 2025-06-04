@@ -62,6 +62,7 @@ constructor(
     val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     val footerViewModelFactory: FooterViewModel.Factory,
     val emptyShadeViewModelFactory: EmptyShadeViewModel.Factory,
+    val bundleOnboarding: BundleOnboardingViewModel,
     val logger: Optional<NotificationLoggerViewModel>,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     notificationStackInteractor: NotificationStackInteractor,

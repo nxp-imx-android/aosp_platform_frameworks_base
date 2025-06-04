@@ -23,7 +23,10 @@ import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.os.Build
 import android.os.SystemProperties
 import androidx.annotation.VisibleForTesting
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.statusbar.notification.Bundles
+import com.android.systemui.statusbar.notification.OnboardingAffordanceManager
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -33,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
+import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Invalidator
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifBundler
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
@@ -50,6 +54,9 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_RECS
 import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 /** Coordinator for sections derived from NotificationAssistantService classification. */
 @CoordinatorScope
@@ -62,6 +69,8 @@ constructor(
     @PromoHeader private val promoHeaderController: NodeController,
     private val bundleBarn: BundleBarn,
     private val systemClock: SystemClock,
+    @Application private val coroutineScope: CoroutineScope,
+    @Bundles private val onboardingAffordanceManager: OnboardingAffordanceManager,
 ) : Coordinator {
 
     val newsSectioner =
@@ -328,6 +337,17 @@ constructor(
             pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
             pipeline.addOnBeforeRenderListListener(bundleMembershipUpdater)
             pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
+            bindOnboardingAffordanceInvalidator(pipeline)
+        }
+    }
+
+    private fun bindOnboardingAffordanceInvalidator(pipeline: NotifPipeline) {
+        val invalidator = object : Invalidator("bundle onboarding") {}
+        pipeline.addPreRenderInvalidator(invalidator)
+        coroutineScope.launch {
+            onboardingAffordanceManager.view.collect {
+                invalidator.invalidateList("bundle onboarding view changed")
+            }
         }
     }
 
