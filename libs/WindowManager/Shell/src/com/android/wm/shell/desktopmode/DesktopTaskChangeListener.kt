@@ -46,6 +46,14 @@ class DesktopTaskChangeListener(
             return
         }
         if (isFreeformTask(taskInfo) && !desktopRepository.isActiveTask(taskInfo.taskId)) {
+            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
+            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
+            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
+                logE(
+                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, returning early instead"
+                )
+                return
+            }
             desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
         }
     }
@@ -72,6 +80,14 @@ class DesktopTaskChangeListener(
         if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
             desktopRepository.removeTask(taskInfo.taskId)
         } else if (isFreeformTask(taskInfo)) {
+            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
+            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
+            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
+                logE(
+                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, returning early instead"
+                )
+                return
+            }
             // If the task is already active in the repository, then moves task to the front,
             // else adds the task.
             desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
@@ -108,6 +124,14 @@ class DesktopTaskChangeListener(
             desktopRepository.removeTask(taskInfo.taskId)
         }
         if (isFreeformTask(taskInfo)) {
+            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
+            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
+            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
+                logE(
+                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, returning early instead"
+                )
+                return
+            }
             // If the task is already active in the repository, then it only moves the task to the
             // front.
             desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
@@ -163,6 +187,10 @@ class DesktopTaskChangeListener(
 
     private fun logD(msg: String, vararg arguments: Any?) {
         ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logE(msg: String, vararg arguments: Any?) {
+        ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     companion object {
