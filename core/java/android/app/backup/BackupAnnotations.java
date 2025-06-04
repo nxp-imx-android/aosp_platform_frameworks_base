@@ -50,7 +50,8 @@ public class BackupAnnotations {
     @IntDef({
         BackupDestination.CLOUD,
         BackupDestination.DEVICE_TRANSFER,
-        BackupDestination.ADB_BACKUP
+        BackupDestination.ADB_BACKUP,
+        BackupDestination.CROSS_PLATFORM_TRANSFER,
     })
     public @interface BackupDestination {
         // A cloud backup.
@@ -59,5 +60,7 @@ public class BackupAnnotations {
         int DEVICE_TRANSFER = 1;
         // An adb backup.
         int ADB_BACKUP = 2;
+        // A device migration to or from another platform.
+        int CROSS_PLATFORM_TRANSFER = 3;
     }
 }

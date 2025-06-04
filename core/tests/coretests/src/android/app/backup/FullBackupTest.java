@@ -17,14 +17,23 @@
 package android.app.backup;
 
 import static android.app.backup.FullBackup.ConfigSection.CLOUD_BACKUP;
+import static android.app.backup.FullBackup.ConfigSection.CROSS_PLATFORM_TRANSFER;
+
+import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import android.app.backup.FullBackup.BackupScheme.PathWithRequiredFlags;
+import android.app.backup.FullBackup.BackupScheme.PlatformSpecificParams;
 import android.content.Context;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 
@@ -32,7 +41,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.backup.Flags;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
@@ -50,12 +62,16 @@ import java.util.Set;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class FullBackupTest {
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
     private XmlPullParserFactory mFactory;
     private XmlPullParser mXpp;
     private Context mContext;
 
     Map<String, Set<PathWithRequiredFlags>> includeMap;
     Set<PathWithRequiredFlags> excludesSet;
+    Map<String, PlatformSpecificParams> mPlatformSpecificParamsMap;
 
     @Before
     public void setUp() throws Exception {
@@ -65,6 +81,7 @@ public class FullBackupTest {
 
         includeMap = new ArrayMap<>();
         excludesSet = new ArraySet<>();
+        mPlatformSpecificParamsMap = new ArrayMap<>();
     }
 
     @Test
@@ -498,7 +515,7 @@ public class FullBackupTest {
         FullBackup.BackupScheme backupScheme = FullBackup.getBackupSchemeForTest(mContext);
         boolean result =
                 backupScheme.parseNewBackupSchemeFromXmlLocked(
-                        mXpp, CLOUD_BACKUP, excludesSet, includeMap);
+                        mXpp, CLOUD_BACKUP, excludesSet, includeMap, mPlatformSpecificParamsMap);
 
         assertTrue(result);
     }
@@ -516,7 +533,7 @@ public class FullBackupTest {
         FullBackup.BackupScheme backupScheme = FullBackup.getBackupSchemeForTest(mContext);
         boolean result =
                 backupScheme.parseNewBackupSchemeFromXmlLocked(
-                        mXpp, CLOUD_BACKUP, excludesSet, includeMap);
+                        mXpp, CLOUD_BACKUP, excludesSet, includeMap, mPlatformSpecificParamsMap);
 
         assertTrue(result);
         assertEquals(
@@ -555,5 +572,139 @@ public class FullBackupTest {
         bs.parseBackupSchemeFromXmlLocked(mXpp, excludesSet, includeMap);
 
         assertEquals("Didn't throw away invalid path containing \"//\".", 0, excludesSet.size());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testParseOldBackupSchemeFromXml_flagOn_crossPlatformTransferSection_throws()
+            throws Exception {
+        mXpp.setInput(
+                new StringReader(
+                        "<full-backup-content><platform-specific-params"
+                            + " bundleId=\"com.example.app\" teamId=\"0\" contentVersion=\"1.0\" />"
+                            + "</full-backup-content>"));
+        FullBackup.BackupScheme bs = FullBackup.getBackupSchemeForTest(mContext);
+
+        assertThrows(
+                "Unexpected platform-specific-params in old scheme should throw an exception",
+                XmlPullParserException.class,
+                () -> bs.parseBackupSchemeFromXmlLocked(mXpp, excludesSet, includeMap));
+    }
+
+    @Test
+    @DisableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testParseNewBackupSchemeFromXml_flagOff_crossPlatformTransferSection_throws()
+            throws Exception {
+        mXpp.setInput(
+                new StringReader(
+                        "<data-extraction-rules><cross-platform-transfer platform=\"ios\"><include"
+                                + " path=\"file.txt\" domain=\"file\" /><platform-specific-params"
+                                + " bundleId=\"com.example.app\" teamId=\"0123abcd\""
+                                + " contentVersion=\"1.0\" /></cross-platform-transfer>"
+                                + "</data-extraction-rules>"));
+        FullBackup.BackupScheme bs =
+                FullBackup.getBackupSchemeForTest(
+                        mContext, BackupAnnotations.BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        assertThrows(
+                "cross-platform-transfer in backup rules when feature is disabled should throw an"
+                    + " exception",
+                XmlPullParserException.class,
+                () ->
+                        bs.parseNewBackupSchemeFromXmlLocked(
+                                mXpp,
+                                CROSS_PLATFORM_TRANSFER,
+                                excludesSet,
+                                includeMap,
+                                mPlatformSpecificParamsMap));
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testParseNewBackupSchemeFromXml_flagOn_crossPlatformTransferSection_isParsed()
+            throws Exception {
+        assumeTrue(Flags.enableCrossPlatformTransfer());
+        mXpp.setInput(
+                new StringReader(
+                        "<data-extraction-rules><cross-platform-transfer platform=\"ios\"><include"
+                                + " path=\"file.txt\" domain=\"file\" /><platform-specific-params"
+                                + " bundleId=\"com.example.app\" teamId=\"0123abcd\""
+                                + " contentVersion=\"1.0\" /></cross-platform-transfer>"
+                                + "</data-extraction-rules>"));
+        FullBackup.BackupScheme bs =
+                FullBackup.getBackupSchemeForTest(
+                        mContext, BackupAnnotations.BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        boolean result =
+                bs.parseNewBackupSchemeFromXmlLocked(
+                        mXpp,
+                        CROSS_PLATFORM_TRANSFER,
+                        excludesSet,
+                        includeMap,
+                        mPlatformSpecificParamsMap);
+
+        assertTrue(result);
+        assertThat(mPlatformSpecificParamsMap).containsKey("ios");
+        PlatformSpecificParams actual = mPlatformSpecificParamsMap.get("ios");
+        assertThat(actual.getBundleId()).isEqualTo("com.example.app");
+        assertThat(actual.getTeamId()).isEqualTo("0123abcd");
+        assertThat(actual.getContentVersion()).isEqualTo("1.0");
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testParseNewBackupSchemeFromXml_flagOn_missingPlatform_isParsedButIgnored()
+            throws Exception {
+        assumeTrue(Flags.enableCrossPlatformTransfer());
+        mXpp.setInput(
+                new StringReader(
+                        "<data-extraction-rules><cross-platform-transfer><include"
+                                + " path=\"file.txt\" domain=\"file\" /><platform-specific-params"
+                                + " bundleId=\"com.example.app\" teamId=\"0123abcd\""
+                                + " contentVersion=\"1.0\" /></cross-platform-transfer>"
+                                + "</data-extraction-rules>"));
+        FullBackup.BackupScheme bs =
+                FullBackup.getBackupSchemeForTest(
+                        mContext, BackupAnnotations.BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        boolean result =
+                bs.parseNewBackupSchemeFromXmlLocked(
+                        mXpp,
+                        CROSS_PLATFORM_TRANSFER,
+                        excludesSet,
+                        includeMap,
+                        mPlatformSpecificParamsMap);
+
+        assertTrue(result);
+        assertThat(mPlatformSpecificParamsMap).isEmpty();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void testParseNewBackupSchemeFromXml_flagOn_invalidAttributeCount_throws()
+            throws Exception {
+        assumeTrue(Flags.enableCrossPlatformTransfer());
+        mXpp.setInput(
+                new StringReader(
+                        "<data-extraction-rules><cross-platform-transfer platform=\"ios\"><include"
+                                + " path=\"file.txt\" domain=\"file\" /><platform-specific-params"
+                                + " bundleId=\"com.example.app\" teamId=\"0123abcd\""
+                                + " contentVersion=\"1.0\" platform=\"ios\" />"
+                                + "</cross-platform-transfer>"
+                                + "</data-extraction-rules>"));
+        FullBackup.BackupScheme bs =
+                FullBackup.getBackupSchemeForTest(
+                        mContext, BackupAnnotations.BackupDestination.CROSS_PLATFORM_TRANSFER);
+
+        assertThrows(
+                "invalid number of attributes in platform-specific-params should throw",
+                XmlPullParserException.class,
+                () ->
+                        bs.parseNewBackupSchemeFromXmlLocked(
+                                mXpp,
+                                CROSS_PLATFORM_TRANSFER,
+                                excludesSet,
+                                includeMap,
+                                mPlatformSpecificParamsMap));
     }
 }
