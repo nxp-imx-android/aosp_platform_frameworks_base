@@ -255,6 +255,10 @@ public class PipTransition extends PipTransitionController implements
     @Override
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
+        if (mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP) {
+            // An enter PiP transition has already been scheduled and is waiting to be played.
+            return null;
+        }
         if (isAutoEnterInButtonNavigation(request) || isEnterPictureInPictureModeRequest(request)) {
             mEnterTransition = transition;
             mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);
@@ -305,7 +309,7 @@ public class PipTransition extends PipTransitionController implements
     @Override
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
             @Nullable SurfaceControl.Transaction finishT) {
-        if (transition == mBoundsChangeTransition && aborted) {
+        if ((transition == mBoundsChangeTransition || transition == mEnterTransition) && aborted) {
             onTransitionAborted();
         }
     }
@@ -1111,6 +1115,13 @@ public class PipTransition extends PipTransitionController implements
         switch (currentState) {
             case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
                 nextState = PipTransitionState.CHANGED_PIP_BOUNDS;
+                break;
+            case PipTransitionState.SCHEDULED_ENTER_PIP:
+                if (mPipTransitionState.getPipTaskToken() != null) {
+                    nextState = PipTransitionState.ENTERED_PIP;
+                } else {
+                    nextState = PipTransitionState.EXITED_PIP;
+                }
                 break;
         }
 
