@@ -52,7 +52,6 @@ constructor(
     val brightnessMirrorViewModelFactory: BrightnessMirrorViewModel.Factory,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val qsSceneAdapter: QSSceneAdapter,
-    qsContainerViewModelFactory: QuickSettingsContainerViewModel.Factory,
     private val footerActionsViewModelFactory: FooterActionsViewModel.Factory,
     private val footerActionsController: FooterActionsController,
     val mediaCarouselInteractor: MediaCarouselInteractor,
@@ -60,7 +59,6 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     @Main private val mainDispatcher: CoroutineDispatcher,
 ) : ExclusiveActivatable() {
-    val qsContainerViewModel = qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
 
     private val hydrator = Hydrator("QuickSettingsSceneContentViewModel.hydrator")
 
@@ -82,8 +80,6 @@ constructor(
     override suspend fun onActivated(): Nothing {
         coroutineScope {
             launch { hydrator.activate() }
-
-            launch { qsContainerViewModel.activate() }
 
             launch(context = mainDispatcher) {
                 shadeModeInteractor.shadeMode.collect { shadeMode ->
