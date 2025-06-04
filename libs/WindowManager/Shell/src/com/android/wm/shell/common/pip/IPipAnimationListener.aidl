@@ -38,9 +38,4 @@ oneway interface IPipAnimationListener {
      * Notifies the listener that user leaves PiP by tapping on the expand button.
      */
     void onExpandPip();
-
-    /**
-     * Notifies the listener that the PiP has exited.
-     */
-    void onExitPip();
 }
