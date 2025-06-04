@@ -257,6 +257,10 @@ class BundleEntryAdapter(
         // do nothing. it should not be possible for a bundle to be contained within a bundle
         Log.wtf(TAG, "onBundleDisabled() called")
     }
+
+    override fun getBundleType(): Int {
+        return entry.bundleRepository.bundleType
+    }
 }
 
 private const val TAG = "BundleEntryAdapter"

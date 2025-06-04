@@ -243,5 +243,10 @@ public interface EntryAdapter {
      * Processes when the bundle this entry is within is disabled.
      */
     void onBundleDisabled();
+
+    /**
+     * Returns the bundle type of this entry if it is a bundle.
+     */
+    int getBundleType();
 }
 

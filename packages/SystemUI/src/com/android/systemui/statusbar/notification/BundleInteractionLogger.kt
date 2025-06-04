@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification
 
+import android.service.notification.Adjustment
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.util.FrameworkStatsLog
@@ -24,12 +25,25 @@ import com.android.systemui.statusbar.notification.collection.BundleEntry
 import javax.inject.Inject
 
 enum class BundleInteractedEvent(private val _id: Int) : UiEventLogger.UiEventEnum {
-    @UiEvent(doc = "User dismissed a bundle") NOTIF_BUNDLE_DISMISSED(2264);
+    @UiEvent(doc = "User dismissed a bundle") NOTIF_BUNDLE_DISMISSED(2264),
+    @UiEvent(doc = "User expanded a bundle") NOTIF_BUNDLE_EXPANDED(2343),
+    @UiEvent(doc = "User collapsed a bundle") NOTIF_BUNDLE_COLLAPSED(2344);
 
     override fun getId() = _id
 }
 
 class BundleInteractionLogger @Inject constructor() {
+
+    fun logBundleExpansionChanged(@Adjustment.Types bundleType: Int, nowExpanded: Boolean) {
+        FrameworkStatsLog.write(
+            FrameworkStatsLog.NOTIFICATION_BUNDLE_INTERACTED,
+            /* optional int32 event_id */ if (nowExpanded)
+                BundleInteractedEvent.NOTIF_BUNDLE_EXPANDED.id
+            else BundleInteractedEvent.NOTIF_BUNDLE_COLLAPSED.id,
+            /* optional int32 type */ bundleType,
+            /* optional bool contents_shown */ true, // irrelevant but inherently true
+        )
+    }
 
     fun logBundleDismissed(bundle: BundleEntry) {
         FrameworkStatsLog.write(

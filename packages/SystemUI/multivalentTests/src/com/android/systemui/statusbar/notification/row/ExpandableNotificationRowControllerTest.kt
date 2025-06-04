@@ -34,6 +34,7 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.plugins.PluginManager
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.statusbar.SmartReplyController
+import com.android.systemui.statusbar.notification.BundleInteractionLogger
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
@@ -113,6 +114,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     private val msdlPlayer: MSDLPlayer = mock()
     private val rebindingTracker: NotificationRebindingTracker = mock()
     private val entryAdapterFactory: EntryAdapterFactory = mock()
+    private val bundleInteractionLogger: BundleInteractionLogger = mock()
     private lateinit var controller: ExpandableNotificationRowController
 
     @Before
@@ -164,6 +166,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             rebindingTracker,
             entryAdapterFactory,
             kosmos.windowRootViewBlurInteractor,
+            bundleInteractionLogger,
         )
     }
 

@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.SystemClock
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator.Companion.debugBundleAppName
@@ -297,4 +298,11 @@ class NotificationEntryAdapter(
             row.attachedChildren?.forEach { it.entryAdapter.onBundleDisabled() }
         }
     }
+
+    override fun getBundleType(): Int {
+        Log.wtf(TAG, "getBundleType() called on non-bundle entry")
+        return -1
+    }
 }
+
+private const val TAG = "NotifEntryAdapter"
