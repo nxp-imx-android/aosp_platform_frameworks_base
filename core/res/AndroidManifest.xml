@@ -5343,12 +5343,12 @@
                 android:featureFlag="android.xr.xr_manifest_entries" />
 
     <!-- Used for permissions that are associated with accessing
-         particularly sensitive XR tracking data.
+         sensitive XR eye tracking data.
 
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
-    <permission-group android:name="android.permission-group.XR_TRACKING_SENSITIVE"
-                      android:label="@string/permgrouplab_xr_tracking_sensitive"
-                      android:description="@string/permgroupdesc_xr_tracking_sensitive"
+    <permission-group android:name="android.permission-group.XR_EYE_SENSITIVE"
+                      android:label="@string/permgrouplab_xr_eye_sensitive"
+                      android:description="@string/permgroupdesc_xr_eye_sensitive"
                       android:priority="100"
                       android:featureFlag="android.xr.xr_manifest_entries" />
 
@@ -5363,6 +5363,16 @@
                 android:label="@string/permlab_eye_tracking_fine"
                 android:description="@string/permdesc_eye_tracking_fine"
                 android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Used for permissions that are associated with accessing
+         sensitive XR tracking data.
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission-group android:name="android.permission-group.XR_TRACKING_SENSITIVE"
+                      android:label="@string/permgrouplab_xr_tracking_sensitive"
+                      android:description="@string/permgroupdesc_xr_tracking_sensitive"
+                      android:priority="100"
+                      android:featureFlag="android.xr.xr_manifest_entries" />
 
     <!-- Allows an application to get head tracking data.  Unmanaged
          activities (OpenXR activities with the manifest property

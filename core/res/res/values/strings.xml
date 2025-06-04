@@ -1015,14 +1015,19 @@
     <string name="permgroupdesc_notifications">show notifications</string>
 
     <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
+    <string name="permgrouplab_xr_eye_sensitive">XR sensitive eye tracking data</string>
+    <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
+    <string name="permgroupdesc_xr_eye_sensitive">access sensitive eye gaze data</string>
+
+    <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
     <string name="permgrouplab_xr_tracking">XR tracking data</string>
     <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
     <string name="permgroupdesc_xr_tracking">access XR data about you and the environment around you</string>
 
     <!-- Title of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=40]-->
-    <string name="permgrouplab_xr_tracking_sensitive">sensitive XR tracking data</string>
+    <string name="permgrouplab_xr_tracking_sensitive">Sensitive XR tracking data</string>
     <!-- Description of a category of application permissions, listed so the user can choose whether they want to allow the application to do this. [CHAR LIMIT=NONE]-->
-    <string name="permgroupdesc_xr_tracking_sensitive">access sensitive tracking data, such as eye gaze</string>
+    <string name="permgroupdesc_xr_tracking_sensitive">access sensitive tracking data about you and the environment around you</string>
 
     <!-- Title for the capability of an accessibility service to retrieve window content. -->
     <string name="capability_title_canRetrieveWindowContent">Retrieve window content</string>

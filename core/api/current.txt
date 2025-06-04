@@ -373,6 +373,7 @@ package android {
     field public static final String SENSORS = "android.permission-group.SENSORS";
     field public static final String SMS = "android.permission-group.SMS";
     field public static final String STORAGE = "android.permission-group.STORAGE";
+    field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_EYE_SENSITIVE = "android.permission-group.XR_EYE_SENSITIVE";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_TRACKING = "android.permission-group.XR_TRACKING";
     field @FlaggedApi("android.xr.xr_manifest_entries") public static final String XR_TRACKING_SENSITIVE = "android.permission-group.XR_TRACKING_SENSITIVE";
   }
