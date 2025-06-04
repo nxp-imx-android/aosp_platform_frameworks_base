@@ -6985,8 +6985,125 @@ package android.app {
     method public android.app.Notification.MessagingStyle.Message setData(String, android.net.Uri);
   }
 
+  @FlaggedApi("android.app.api_metric_style") public static class Notification.Metric {
+    ctor public Notification.Metric(@NonNull android.app.Notification.Metric.MetricValue, @NonNull String, int);
+    method @NonNull public String getLabel();
+    method public int getMeaning();
+    method @NonNull public android.app.Notification.Metric.MetricValue getValue();
+    field public static final int MEANING_CELESTIAL = 393216; // 0x60000
+    field public static final int MEANING_CELESTIAL_MOON_PHASE = 393217; // 0x60001
+    field public static final int MEANING_CELESTIAL_SUNRISE = 393219; // 0x60003
+    field public static final int MEANING_CELESTIAL_SUNSET = 393220; // 0x60004
+    field public static final int MEANING_CELESTIAL_TIDE = 393218; // 0x60002
+    field public static final int MEANING_CHRONOMETER = 131072; // 0x20000
+    field public static final int MEANING_CHRONOMETER_ELAPSED_DURATION = 131076; // 0x20004
+    field public static final int MEANING_CHRONOMETER_EVENT_COUNTDOWN = 131074; // 0x20002
+    field public static final int MEANING_CHRONOMETER_STOPWATCH = 131075; // 0x20003
+    field public static final int MEANING_CHRONOMETER_TIMER = 131073; // 0x20001
+    field public static final int MEANING_EVENT = 196608; // 0x30000
+    field public static final int MEANING_EVENT_DATE = 196610; // 0x30002
+    field public static final int MEANING_EVENT_DATE_COUNTDOWN = 196609; // 0x30001
+    field public static final int MEANING_EVENT_TIME = 196611; // 0x30003
+    field public static final int MEANING_HEALTH = 262144; // 0x40000
+    field public static final int MEANING_HEALTH_ACTIVE_TIME = 262153; // 0x40009
+    field public static final int MEANING_HEALTH_BLOOD_OXYGEN_SATURATION = 262159; // 0x4000f
+    field public static final int MEANING_HEALTH_BLOOD_PRESSURE = 262148; // 0x40004
+    field public static final int MEANING_HEALTH_BREATHING_RATE = 262161; // 0x40011
+    field public static final int MEANING_HEALTH_CALORIES = 262151; // 0x40007
+    field public static final int MEANING_HEALTH_HEART_RATE_CURRENT = 262145; // 0x40001
+    field public static final int MEANING_HEALTH_HEART_RATE_RESTING = 262146; // 0x40002
+    field public static final int MEANING_HEALTH_HEART_RATE_VARIABILITY = 262147; // 0x40003
+    field public static final int MEANING_HEALTH_READINESS = 262152; // 0x40008
+    field public static final int MEANING_HEALTH_SKIN_TEMPERATURE = 262160; // 0x40010
+    field public static final int MEANING_HEALTH_SLEEP_DURATION = 262158; // 0x4000e
+    field public static final int MEANING_HEALTH_SLEEP_SCORE = 262156; // 0x4000c
+    field public static final int MEANING_HEALTH_SLEEP_STAGE = 262157; // 0x4000d
+    field public static final int MEANING_HEALTH_STEPS = 262149; // 0x40005
+    field public static final int MEANING_HEALTH_STEP_GOAL = 262150; // 0x40006
+    field public static final int MEANING_HEALTH_WATER_CONSUMPTION = 262154; // 0x4000a
+    field public static final int MEANING_HEALTH_WATER_GOAL = 262155; // 0x4000b
+    field public static final int MEANING_MOVEMENT = 65536; // 0x10000
+    field public static final int MEANING_MOVEMENT_DISTANCE_REMAINING = 65538; // 0x10002
+    field public static final int MEANING_MOVEMENT_DISTANCE_TRAVELED = 65537; // 0x10001
+    field public static final int MEANING_MOVEMENT_SPEED = 65539; // 0x10003
+    field public static final int MEANING_TRAVEL = 458752; // 0x70000
+    field public static final int MEANING_TRAVEL_BOARDING_LOCATION = 458755; // 0x70003
+    field public static final int MEANING_TRAVEL_PORT = 458753; // 0x70001
+    field public static final int MEANING_TRAVEL_TERMINAL = 458754; // 0x70002
+    field public static final int MEANING_UNKNOWN = 0; // 0x0
+    field public static final int MEANING_WEATHER = 327680; // 0x50000
+    field public static final int MEANING_WEATHER_AIR_QUALITY_INDEX = 327683; // 0x50003
+    field public static final int MEANING_WEATHER_ATMOSPHERIC_PRESSURE = 327689; // 0x50009
+    field public static final int MEANING_WEATHER_FORECAST = 327681; // 0x50001
+    field public static final int MEANING_WEATHER_POLLUTANT = 327684; // 0x50004
+    field public static final int MEANING_WEATHER_PRECIPITATION = 327688; // 0x50008
+    field public static final int MEANING_WEATHER_RELATIVE_HUMIDITY = 327687; // 0x50007
+    field public static final int MEANING_WEATHER_TEMPERATURE_INDOOR = 327686; // 0x50006
+    field public static final int MEANING_WEATHER_TEMPERATURE_OUTDOOR = 327685; // 0x50005
+    field public static final int MEANING_WEATHER_UV_INDEX = 327682; // 0x50002
+  }
+
+  public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedFloat(float);
+    ctor public Notification.Metric.FixedFloat(float, @Nullable String);
+    ctor public Notification.Metric.FixedFloat(float, @Nullable String, @IntRange(from=0x0, to=0x6) int, @IntRange(from=0x0, to=0x6) int);
+    method @IntRange(from=0, to=6) public int getMaxFractionDigits();
+    method @IntRange(from=0, to=6) public int getMinFractionDigits();
+    method @Nullable public String getUnit();
+    method public float getValue();
+  }
+
+  public static final class Notification.Metric.FixedInstant extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedInstant(@NonNull java.time.Instant);
+    ctor public Notification.Metric.FixedInstant(@NonNull java.time.Instant, int);
+    ctor public Notification.Metric.FixedInstant(@NonNull java.time.Instant, int, @Nullable java.util.TimeZone);
+    method public int getFormat();
+    method @Nullable public java.util.TimeZone getTimeZone();
+    method @NonNull public java.time.Instant getValue();
+    field public static final int FORMAT_AUTOMATIC = 0; // 0x0
+    field public static final int FORMAT_LONG_DATE = 1; // 0x1
+    field public static final int FORMAT_LONG_DATE_TIME = 3; // 0x3
+    field public static final int FORMAT_SHORT_DATE = 2; // 0x2
+    field public static final int FORMAT_SHORT_DATE_TIME = 4; // 0x4
+    field public static final int FORMAT_TIME = 5; // 0x5
+  }
+
+  public static final class Notification.Metric.FixedInt extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedInt(int);
+    ctor public Notification.Metric.FixedInt(int, @Nullable String);
+    method @Nullable public String getUnit();
+    method public int getValue();
+  }
+
+  public static final class Notification.Metric.FixedString extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedString(@NonNull String);
+    method @NonNull public String getValue();
+  }
+
+  public abstract static class Notification.Metric.MetricValue {
+  }
+
+  public static final class Notification.Metric.TimeDifference extends android.app.Notification.Metric.MetricValue {
+    method @NonNull public static android.app.Notification.Metric.TimeDifference forPausedStopwatch(@NonNull java.time.Duration, int);
+    method @NonNull public static android.app.Notification.Metric.TimeDifference forPausedTimer(@NonNull java.time.Duration, int);
+    method @NonNull public static android.app.Notification.Metric.TimeDifference forStopwatch(@NonNull java.time.Instant, int);
+    method @NonNull public static android.app.Notification.Metric.TimeDifference forTimer(@NonNull java.time.Instant, int);
+    method public int getFormat();
+    method @Nullable public java.time.Duration getPausedDuration();
+    method @Nullable public java.time.Instant getZeroTime();
+    method public boolean isStopwatch();
+    method public boolean isTimer();
+    field public static final int FORMAT_ADAPTIVE = 1; // 0x1
+    field public static final int FORMAT_CHRONOMETER_AUTOMATIC = 0; // 0x0
+    field public static final int FORMAT_CHRONOMETER_MINUTES = 2; // 0x2
+    field public static final int FORMAT_CHRONOMETER_SECONDS = 3; // 0x3
+  }
+
   @FlaggedApi("android.app.api_metric_style") public static class Notification.MetricStyle extends android.app.Notification.Style {
     ctor public Notification.MetricStyle();
+    method @NonNull public android.app.Notification.MetricStyle addMetric(@NonNull android.app.Notification.Metric);
+    method @NonNull public java.util.List<android.app.Notification.Metric> getMetrics();
+    method @NonNull public android.app.Notification.MetricStyle setMetrics(@NonNull java.util.List<android.app.Notification.Metric>);
   }
 
   @FlaggedApi("android.app.api_rich_ongoing") public static class Notification.ProgressStyle extends android.app.Notification.Style {
