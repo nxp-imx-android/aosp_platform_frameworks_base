@@ -110,6 +110,7 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.recents.IRecentsAnimationRunner;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
@@ -1326,7 +1327,7 @@ public class ShellTransitionTests extends ShellTestCase {
         final RecentsTransitionHandler recentsHandler =
                 new RecentsTransitionHandler(shellInit, mock(ShellTaskOrganizer.class), transitions,
                         mockRecentsTaskController, mock(HomeTransitionObserver.class),
-                        mock(DisplayController.class));
+                        mock(DisplayController.class), mock(DesksOrganizer.class));
         recentsHandler.setFinishTransactionSupplier(
                 () -> mock(SurfaceControl.Transaction.class));
         transitions.replaceDefaultHandlerForTest(mDefaultHandler);

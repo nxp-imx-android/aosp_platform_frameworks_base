@@ -82,6 +82,7 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -137,6 +138,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     private Transitions mTransitions;
     @Mock
     private UserManager mUserManager;
+    @Mock
+    private DesksOrganizer mDesksOrganizer;
 
     @Mock private DesktopRepository mDesktopRepository;
     @Mock private DisplayController mDisplayController;
@@ -189,7 +192,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         doReturn(mMainExecutor).when(mTransitions).getMainExecutor();
         mRecentsTransitionHandler = new RecentsTransitionHandler(mShellInit, mShellTaskOrganizer,
                 mTransitions, mRecentTasksController, mock(HomeTransitionObserver.class),
-                mDisplayController);
+                mDisplayController, mDesksOrganizer);
         // By default use a mock finish transaction since we are sending transitions that don't have
         // real surface controls
         mRecentsTransitionHandler.setFinishTransactionSupplier(
