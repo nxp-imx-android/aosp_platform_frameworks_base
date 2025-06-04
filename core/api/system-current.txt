@@ -4378,10 +4378,14 @@ package android.content.pm {
     ctor public PackageInstaller.VerificationUserConfirmationInfo();
     ctor public PackageInstaller.VerificationUserConfirmationInfo(int, int);
     method public int describeContents();
-    method public int getVerificationFailureReason();
     method public int getVerificationPolicy();
+    method public int getVerificationUserActionNeededReason();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PackageInstaller.VerificationUserConfirmationInfo> CREATOR;
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION = 3; // 0x3
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE = 1; // 0x1
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED = 2; // 0x2
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN = 0; // 0x0
   }
 
   public class PackageItemInfo {
@@ -4810,6 +4814,7 @@ package android.content.pm.verify.pkg {
     method public int describeContents();
     method public int getAslStatus();
     method @NonNull public String getFailureMessage();
+    method public boolean isLite();
     method public boolean isVerified();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.pkg.VerificationStatus> CREATOR;
@@ -4823,6 +4828,7 @@ package android.content.pm.verify.pkg {
     method @NonNull public android.content.pm.verify.pkg.VerificationStatus build();
     method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setAslStatus(int);
     method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setFailureMessage(@NonNull String);
+    method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setLite(boolean);
     method @NonNull public android.content.pm.verify.pkg.VerificationStatus.Builder setVerified(boolean);
   }
 

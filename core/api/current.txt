@@ -13122,6 +13122,7 @@ package android.content.pm {
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_UNARCHIVE_STATUS = "android.content.pm.extra.UNARCHIVE_STATUS";
     field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_VERIFICATION_EXTENSION_RESPONSE = "android.content.pm.extra.VERIFICATION_EXTENSION_RESPONSE";
     field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_VERIFICATION_FAILURE_REASON = "android.content.pm.extra.VERIFICATION_FAILURE_REASON";
+    field @FlaggedApi("android.content.pm.verification_service") public static final String EXTRA_VERIFICATION_LITE_PERFORMED = "android.content.pm.extra.VERIFICATION_LITE_PERFORMED";
     field public static final int PACKAGE_SOURCE_DOWNLOADED_FILE = 4; // 0x4
     field public static final int PACKAGE_SOURCE_LOCAL_FILE = 3; // 0x3
     field public static final int PACKAGE_SOURCE_OTHER = 1; // 0x1

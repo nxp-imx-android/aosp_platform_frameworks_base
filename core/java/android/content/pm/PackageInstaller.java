@@ -443,12 +443,36 @@ public class PackageInstaller {
     public static final String EXTRA_WARNINGS = "android.content.pm.extra.WARNINGS";
 
     /**
-     * When verification is blocked as part of the installation, additional reason for the block
-     * will be provided to the installer with a {@link VerificationFailedReason} as part of the
+     * When an installation fails because the verification was incomplete or blocked,
+     * this extra provides a code that explains the reason, such
+     * as {@link #VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE}. It is included in the
      * installation result returned via the {@link IntentSender} in
-     * {@link Session#commit(IntentSender)}. This extra is provided only when the installation has
-     * failed. Installers can use this extra to check if the installation failure was caused by a
-     * verification failure.
+     * {@link Session#commit(IntentSender)}. However, along with this reason code, installers can
+     * receive different status codes from {@link #EXTRA_STATUS} depending on their target SDK and
+     * privileged status:
+     * <p>
+     *      Non-privileged installers targeting 36 or less will first receive the
+     *      {@link #STATUS_PENDING_USER_ACTION} status code without this reason code. They will be
+     *      forced through the user action flow to allow the OS to inform the user of such
+     *      verification context before continuing to fail the install. If the user has the option
+     *      to bypass the verification result and chooses to do so, the installation will proceed.
+     *      Otherwise, the installer will receive the {@link #STATUS_FAILURE_ABORTED} status code
+     *      along with this reason code that explains why the verification had failed.
+     * </p>
+     * <p>
+     *     Privileged installer targeting 36 or less will directly receive the
+     *     {@link #STATUS_FAILURE_ABORTED} status code. This is because they are not expected to
+     *     have the capability of handling the {@link #STATUS_PENDING_USER_ACTION} flow, so the
+     *     installation will directly fail. This reason code will be supplied to them for
+     *     providing additional information.
+     * </p>
+     * <p>
+     *     All installers targeting 37 and higher will receive a {@link #STATUS_FAILURE_ABORTED}
+     *     status code along with this reason code, so the installers can explain the failure to the
+     *     user accordingly. An {@link Intent#EXTRA_INTENT} will also be populated with an intent
+     *     that can provide additional context where appropriate, should the installer prefer to
+     *     defer to the OS to explain the failure to the user.
+     * </p>
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     public static final String EXTRA_VERIFICATION_FAILURE_REASON =
@@ -461,6 +485,16 @@ public class PackageInstaller {
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     public static final String EXTRA_VERIFICATION_EXTENSION_RESPONSE =
             "android.content.pm.extra.VERIFICATION_EXTENSION_RESPONSE";
+
+    /**
+     * An extra containing a boolean indicating whether the lite verification was performed on
+     * the app to be installed. It is included in the installation result returned via the
+     * {@link IntentSender} in {@link Session#commit(IntentSender)} when the installation failed.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String EXTRA_VERIFICATION_LITE_PERFORMED =
+            "android.content.pm.extra.VERIFICATION_LITE_PERFORMED";
+
 
     /**
      * Streaming installation pending.
@@ -850,22 +884,29 @@ public class PackageInstaller {
     @SystemApi
     public static final int VERIFICATION_POLICY_NONE = 0; // platform default
     /**
-     * Only block installations on {@link #VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED}.
+     * Only block installations when the verification status says the package is blocked,
+     * and ask the user if they'd like to install anyway when the verification cannot complete for
+     * any other reason. In case of a network issue, the user also has the option to retry the
+     * verification.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
     public static final int VERIFICATION_POLICY_BLOCK_FAIL_OPEN = 1;
     /**
-     * Only block installations on {@link #VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED} and ask the
-     * user if they'd like to install anyway when the verification is blocked for other reason.
+     * Only block installations when the verification result says the package is blocked,
+     * and ask the user if they'd like to install anyway when the verification cannot complete for
+     * any other reason. In case of a network issue, the user also has the option to retry the
+     * verification.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
     public static final int VERIFICATION_POLICY_BLOCK_FAIL_WARN = 2;
     /**
-     * Block installations whose verification status is blocked for any reason.
+     * Block installations when the verification result says the package is blocked or when the
+     * verification cannot be conducted because of unknown reasons. In case of a network issue,
+     * the user has the option to retry the verification.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
@@ -4981,32 +5022,66 @@ public class PackageInstaller {
     }
 
     /**
-     * Details about an incomplete or failed verification.
+     * Details about an incomplete or failed verification that requires user intervention.
      *
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
     public static final class VerificationUserConfirmationInfo implements Parcelable {
+        /**
+         * Verification requires user intervention because of unknown reasons, such as when the
+         * verifier times out or cannot be connected.
+         */
+        public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN = 0;
+
+        /**
+         * Verification requires user intervention because the network is unavailable.
+         */
+        public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE = 1;
+
+        /**
+         * Verification requires user intervention because the package is blocked.
+         */
+        public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED = 2;
+
+        /**
+         * Verification requires user intervention because only the lite version of the
+         * verification was completed on the request, not the full verification.
+         */
+        public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION = 3;
+
+        /**
+         * @hide
+         */
+        @IntDef(value = {
+                VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
+                VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE,
+                VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED,
+                VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface UserActionNeededReason {
+        }
 
         @VerificationPolicy
         private int mVerificationPolicy;
 
-        @VerificationFailedReason
-        private int mVerificationFailureReason;
+        @UserActionNeededReason
+        private int mVerificationUserActionNeededReason;
 
         public VerificationUserConfirmationInfo() {
         }
 
         public VerificationUserConfirmationInfo(@VerificationPolicy int policy,
-                @VerificationFailedReason int failureReason) {
+                @UserActionNeededReason int reason) {
             mVerificationPolicy = policy;
-            mVerificationFailureReason = failureReason;
+            mVerificationUserActionNeededReason = reason;
         }
 
         private VerificationUserConfirmationInfo(@NonNull Parcel in) {
             mVerificationPolicy = in.readInt();
-            mVerificationFailureReason = in.readInt();
+            mVerificationUserActionNeededReason = in.readInt();
         }
 
         @VerificationPolicy
@@ -5014,9 +5089,9 @@ public class PackageInstaller {
             return mVerificationPolicy;
         }
 
-        @VerificationFailedReason
-        public int getVerificationFailureReason() {
-            return mVerificationFailureReason;
+        @UserActionNeededReason
+        public int getVerificationUserActionNeededReason() {
+            return mVerificationUserActionNeededReason;
         }
 
         @Override
@@ -5027,7 +5102,7 @@ public class PackageInstaller {
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mVerificationPolicy);
-            dest.writeInt(mVerificationFailureReason);
+            dest.writeInt(mVerificationUserActionNeededReason);
         }
 
         public static final @NonNull Parcelable.Creator<VerificationUserConfirmationInfo>
@@ -5047,7 +5122,7 @@ public class PackageInstaller {
         public String toString() {
             return "VerificationUserConfirmationInfo{"
                     + "verificationPolicy=" + mVerificationPolicy
-                    + ", vericationFailureReason=" + mVerificationFailureReason
+                    + ", verificationUserActionReason=" + mVerificationUserActionNeededReason
                     + '}';
         }
     }

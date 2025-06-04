@@ -94,6 +94,8 @@
     <string name="cannot_install_verification_unavailable_summary"><p>Warning: App verification could not take place. </p><p><a href="">Learn more</a> about package verification</p></string>
     <!-- Message presented in a dialog box when the verifier blocked an app from being installed. [CHAR LIMIT=none]-->
     <string name="cannot_install_package_summary"><p>This app can’t be installed because it has been blocked. </p><p><a href="">Learn more</a> about package verification</p></string>
+    <!-- Message presented in a dialog box when only the lite verification could be performed on the installation. [CHAR LIMIT=none]-->
+    <string name="lite_verification_summary"><p>This app is owned by ADI Lite Developer and bypasses the standard verification process. Do you want to proceed with installation?</p></string>
 
     <!-- [CHAR LIMIT=15] -->
     <string name="ok">OK</string>

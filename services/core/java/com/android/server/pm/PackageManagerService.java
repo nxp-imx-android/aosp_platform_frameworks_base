@@ -2494,6 +2494,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             mVerificationServiceProviderPackage =
                     getVerificationServiceProviderPackage(computer, mContext.getString(
                             R.string.config_verificationServiceProviderPackageName));
+            mProtectedPackages.setVerificationServiceProviderPackage(
+                    mVerificationServiceProviderPackage);
 
             // Initialize InstantAppRegistry's Instant App list for all users.
             forEachPackageState(computer, packageState -> {

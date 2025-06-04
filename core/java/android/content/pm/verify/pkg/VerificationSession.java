@@ -60,8 +60,8 @@ public final class VerificationSession implements Parcelable {
      * @hide
      */
     @IntDef(prefix = {"VERIFICATION_INCOMPLETE_"}, value = {
-            VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE,
             VERIFICATION_INCOMPLETE_UNKNOWN,
+            VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface VerificationIncompleteReason {
