@@ -1242,6 +1242,16 @@ flag {
 }
 
 flag {
+  name: "exclude_desk_roots_from_desktop_tasks"
+  namespace: "lse_desktop_experience"
+  description: "Do not include desk root tasks in freeform/desktop tasks"
+  bug: "417876539"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "force_close_top_transparent_fullscreen_task"
     namespace: "lse_desktop_experience"
     description: "If a top transparent fullscreen task is on top of desktop mode, force it to /n"

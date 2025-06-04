@@ -217,6 +217,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
             true, Flags.FLAG_ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS),
+    EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS(Flags::excludeDeskRootsFromDesktopTasks,
+            false, Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS),
     FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
             Flags::forceCloseTopTransparentFullscreenTask, true,
             Flags.FLAG_FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK),
