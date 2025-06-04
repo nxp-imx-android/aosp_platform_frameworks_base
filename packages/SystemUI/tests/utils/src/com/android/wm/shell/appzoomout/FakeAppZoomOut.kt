@@ -22,13 +22,6 @@ class FakeAppZoomOut : AppZoomOut {
     var lastTopLevelProgress: Float = 0f
         private set
 
-    var lastAppZoomProgress: Float = 0f
-        private set
-
-    override fun setProgress(progress: Float) {
-        lastAppZoomProgress = progress
-    }
-
     override fun setTopLevelProgress(progress: Float, vsyncId: Long, sysuiMainHandler: Handler) {
         lastTopLevelProgress = progress
     }
