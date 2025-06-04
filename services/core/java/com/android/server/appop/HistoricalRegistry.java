@@ -57,6 +57,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Process;
 import android.os.RemoteCallback;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
@@ -378,20 +379,66 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
     public void dump(String prefix, PrintWriter pw, int filterUid, @Nullable String filterPackage,
             @Nullable String filterAttributionTag, int filterOp, int filter,
             @NonNull SimpleDateFormat sdf, @NonNull Date date, boolean includeDiscreteOps,
-            int limit) {
+            int limit, boolean dumpHistory) {
         pw.println();
         pw.print(prefix);
         pw.print("History:");
         pw.print("  mode=");
         pw.println(AppOpsManager.historicalModeToString(mMode));
+
+        long shortIntervalMinute = Duration.ofMillis(mShortIntervalQuantizationMillis).toMinutes();
+        long longIntervalMinute = Duration.ofMillis(mLongIntervalQuantizationMillis).toMinutes();
+        pw.print("SHORT_INTERVAL(Aggregation Bucket)=");
+        pw.print(shortIntervalMinute + " Minute");
+        pw.print(", LONG_INTERVAL(Aggregation Bucket)=");
+        pw.println(longIntervalMinute + " Minutes");
+
+        pw.print("Database size(bytes): SHORT_INTERVAL=");
+        pw.print(getDatabaseFile(SHORT_INTERVAL_DATABASE_FILE).length());
+        pw.print(", LONG_INTERVAL=");
+        pw.println(getDatabaseFile(LONG_INTERVAL_DATABASE_FILE).length());
+
+        pw.print("Database Total records: SHORT_INTERVAL=");
+        pw.print(mShortIntervalHistoryHelper.getTotalRecordsCount());
+        pw.print(", LONG_INTERVAL=");
+        pw.println(mLongIntervalHistoryHelper.getTotalRecordsCount());
+        IntArray opCodes = new IntArray();
+        long endTimeMillis = System.currentTimeMillis();
+        if (!dumpHistory && !includeDiscreteOps) {
+            filter = AppOpsManager.FILTER_BY_OP_NAMES;
+            // print privacy indicator records for last 1 hour (or up to 500 records)
+            long beginTimeMillis = endTimeMillis - Duration.ofHours(1).toMillis();
+            opCodes.add(OP_CAMERA);
+            opCodes.add(OP_PHONE_CALL_CAMERA);
+
+            opCodes.add(OP_RECORD_AUDIO);
+            opCodes.add(OP_PHONE_CALL_MICROPHONE);
+            opCodes.add(OP_RECEIVE_AMBIENT_TRIGGER_AUDIO);
+            opCodes.add(OP_RECEIVE_SANDBOX_TRIGGER_AUDIO);
+
+            opCodes.add(OP_FINE_LOCATION);
+            opCodes.add(OP_COARSE_LOCATION);
+            opCodes.add(OP_EMERGENCY_LOCATION);
+            pw.println("----Location, Microphone, and Camera App Ops (Last 1 Hour)----");
+            mShortIntervalHistoryHelper.dump(beginTimeMillis, endTimeMillis, pw,
+                    Process.INVALID_UID, null, null, opCodes, filter,
+                    sdf, date, 500);
+            return;
+        }
+
+        if ((filter & AppOpsManager.FILTER_BY_OP_NAMES) != 0
+                && filterOp != AppOpsManager.OP_NONE) {
+            opCodes.add(filterOp);
+        }
+        long beginTimeMillis = endTimeMillis - mHistoryRetentionMillis;
         if (includeDiscreteOps) {
             pw.println("------------Discrete App Ops-------------");
-            mShortIntervalHistoryHelper.dump(pw, filterUid, filterPackage,
-                    filterAttributionTag, filterOp, filter, sdf, date, limit);
+            mShortIntervalHistoryHelper.dump(beginTimeMillis, endTimeMillis, pw, filterUid,
+                    filterPackage, filterAttributionTag, opCodes, filter, sdf, date, limit);
         } else {
             pw.println("------------Aggregated App Ops-------------");
-            mLongIntervalHistoryHelper.dump(pw, filterUid, filterPackage,
-                    filterAttributionTag, filterOp, filter, sdf, date, limit);
+            mLongIntervalHistoryHelper.dump(beginTimeMillis, endTimeMillis, pw, filterUid,
+                    filterPackage, filterAttributionTag, opCodes, filter, sdf, date, limit);
         }
     }
 

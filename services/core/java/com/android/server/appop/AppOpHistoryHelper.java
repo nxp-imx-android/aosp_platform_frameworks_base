@@ -309,6 +309,10 @@ public class AppOpHistoryHelper {
                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION);
     }
 
+    long getTotalRecordsCount() {
+        return mDbHelper.getTotalRecordsCount();
+    }
+
     @VisibleForTesting
     List<AggregatedAppOpAccessEvent> getAppOpHistory() {
         List<AggregatedAppOpAccessEvent> ops = new ArrayList<>();
@@ -364,29 +368,24 @@ public class AppOpHistoryHelper {
         return chains;
     }
 
-    void dump(PrintWriter pw, int filterUid,
-            @Nullable String filterPackage, @Nullable String filterAttributionTag, int filterOp,
+    void dump(long beginTimeMillis, long endTimeMillis, PrintWriter pw, int filterUid,
+            @Nullable String filterPackage, @Nullable String filterAttributionTag, IntArray opCodes,
             @AppOpsManager.HistoricalOpsRequestFilter int filter, @NonNull SimpleDateFormat sdf,
             @NonNull Date date, int limit) {
         // flush caches to the database
         insertAppOpHistory(mCache.evictAll(),
                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
-        long currentTime = System.currentTimeMillis();
-        long beginTimeMillis = discretizeTimestamp(currentTime - mHistoryRetentionMillis);
-        IntArray opCodes = new IntArray();
-        if ((filter & AppOpsManager.FILTER_BY_OP_NAMES) != 0
-                && filterOp != AppOpsManager.OP_NONE) {
-            opCodes.add(filterOp);
-        }
+        beginTimeMillis = discretizeTimestamp(beginTimeMillis);
 
         List<AggregatedAppOpAccessEvent> appOpHistoryAccesses = mDbHelper.getAppOpHistory(
-                filter, beginTimeMillis, currentTime, filterUid, filterPackage,
+                filter, beginTimeMillis, endTimeMillis, filterUid, filterPackage,
                 filterAttributionTag, opCodes, AppOpsManager.OP_FLAGS_ALL, limit,
                 AppOpHistoryTable.Columns.ACCESS_TIME, false);
 
         pw.println();
-        pw.println("UID|PACKAGE_NAME|DEVICE_ID|OP_NAME|ATTRIBUTION_TAG|UID_STATE|OP_FLAGS|"
-                + "ACCESS_TIME|ACCESS_COUNTS|REJECT_COUNTS|DURATION");
+        pw.println("UID|PACKAGE_NAME|DEVICE_ID|OP_NAME|ATTRIBUTION_TAG|ACCESS_TIME|ACCESS_COUNTS"
+                + "|REJECT_COUNTS|DURATION|UID_STATE|OP_FLAGS"
+                + "|ATTRIBUTION_CHAIN_ID|ATTRIBUTION_FLAGS");
         for (AggregatedAppOpAccessEvent aggAppOpAccess : appOpHistoryAccesses) {
             date.setTime(aggAppOpAccess.accessTimeMillis());
             pw.println(aggAppOpAccess.uid() + "|"
@@ -394,12 +393,14 @@ public class AppOpHistoryHelper {
                     + aggAppOpAccess.deviceId() + "|"
                     + AppOpsManager.opToName(aggAppOpAccess.opCode()) + "|"
                     + aggAppOpAccess.attributionTag() + "|"
-                    + getUidStateName(aggAppOpAccess.uidState()) + "|"
-                    + flagsToString(aggAppOpAccess.opFlags()) + "|"
                     + sdf.format(date) + "|"
                     + aggAppOpAccess.totalAccessCount() + "|"
                     + aggAppOpAccess.totalRejectCount() + "|"
-                    + aggAppOpAccess.durationMillis());
+                    + aggAppOpAccess.totalDurationMillis() + "|"
+                    + getUidStateName(aggAppOpAccess.uidState()) + "|"
+                    + flagsToString(aggAppOpAccess.opFlags()) + "|"
+                    + aggAppOpAccess.attributionChainId() + "|"
+                    + aggAppOpAccess.attributionFlags());
         }
         pw.println();
     }
