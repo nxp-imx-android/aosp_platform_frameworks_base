@@ -2280,7 +2280,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     return false;
                 }, true);
             }
-            mTransitionController.mTransitionTracer.logRemovingStartingWindow(mStartingData);
+
+            if (mStartingData.mTransitionId != 0) {
+                mTransitionController.mTransitionTracer.logRemovingStartingWindow(mStartingData);
+            }
         } else if (mAttrs.type == TYPE_BASE_APPLICATION
                 && isSelfAnimating(0, ANIMATION_TYPE_STARTING_REVEAL)) {
             // Cancel the remove starting window animation in case the binder dead before remove
