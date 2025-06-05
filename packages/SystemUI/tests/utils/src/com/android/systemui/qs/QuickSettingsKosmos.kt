@@ -45,6 +45,7 @@ import com.android.systemui.settings.userTracker
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.statusbar.policy.deviceProvisionedController
 import com.android.systemui.statusbar.policy.securityController
+import com.android.systemui.supervision.data.repository.supervisionRepository
 import com.android.systemui.user.data.repository.userSwitcherRepository
 import com.android.systemui.user.domain.interactor.userSwitcherInteractor
 import com.android.systemui.util.mockito.mock
@@ -91,6 +92,7 @@ var Kosmos.footerActionsInteractor: FooterActionsInteractor by Fixture {
         broadcastDispatcher = broadcastDispatcher,
         bgDispatcher = testDispatcher,
         context = mockedContext,
+        supervisionRepository = supervisionRepository,
     )
 }
 

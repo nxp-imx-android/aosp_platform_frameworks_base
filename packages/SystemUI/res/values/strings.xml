@@ -1659,6 +1659,9 @@
     <!-- Disclosure at the bottom of Quick Settings that indicates that parental controls are enabled. [CHAR LIMIT=100] -->
     <string name="quick_settings_disclosure_parental_controls">This device is managed by your parent</string>
 
+    <!-- Disclosure at the bottom of Quick Settings that indicates that some of the settings changes are protected by a PIN. [CHAR LIMIT=100] -->
+    <string name="quick_settings_disclosure_pin_protection">Some device settings are PIN protected.</string>
+
     <!-- Disclosure at the bottom of Quick Settings that indicates that the user's device belongs to their organization, and the organization can monitor network traffic on that device. [CHAR LIMIT=100] -->
     <string name="quick_settings_disclosure_management_monitoring">Your organization owns this device and may monitor network traffic</string>
 
@@ -1782,6 +1785,9 @@
 
     <!-- Dialog that a user can access via Quick Settings. [CHAR LIMIT=NONE]-->
     <string name="monitoring_description_parental_controls">This device is managed by your parent. Your parent can see and manage information such as the apps you use, your location, and your screen time.</string>
+
+    <!-- Dialog that a user can access via Quick Settings. [CHAR LIMIT=NONE]-->
+    <string name="monitoring_description_pin_protection">Some controls on your device, like daily limits \u0026 downtime, can only be changed with a PIN.</string>
 
     <!-- Name for a generic legacy VPN connection [CHAR LIMIT=20] -->
     <string name="legacy_vpn_name">VPN</string>
@@ -2031,6 +2037,9 @@
 
     <!-- Name of the supervision status bar icon. -->
     <string name="status_bar_supervision">Parental controls</string>
+
+    <!-- Name of the supervision status bar icon when pin is set. -->
+    <string name="status_bar_pin_supervision">PIN protection for some device controls</string>
 
     <!-- Description for adding  a quick settings tile -->
 
