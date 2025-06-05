@@ -110,7 +110,8 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                 && mDesktopState.canEnterDesktopMode()) {
             mDesktopUserRepositories.ifPresent(userRepositories -> {
                 DesktopRepository currentRepo = userRepositories.getProfile(taskInfo.userId);
-                currentRepo.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible);
+                currentRepo.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible,
+                        taskInfo.configuration.windowConfiguration.getBounds());
             });
         }
         updateLaunchAdjacentController();
@@ -168,7 +169,8 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                 DesktopRepository currentRepo =
                         mDesktopUserRepositories.get().getProfile(taskInfo.userId);
                 currentRepo.updateTask(taskInfo.displayId, taskInfo.taskId,
-                        taskInfo.isVisible);
+                        taskInfo.isVisible,
+                        taskInfo.configuration.windowConfiguration.getBounds());
             }
         }
         updateLaunchAdjacentController();
@@ -202,7 +204,8 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                 && mDesktopUserRepositories.isPresent()) {
             DesktopRepository repository =
                 mDesktopUserRepositories.get().getProfile(taskInfo.userId);
-            repository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible);
+            repository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible,
+                    taskInfo.configuration.windowConfiguration.getBounds());
         }
     }
 

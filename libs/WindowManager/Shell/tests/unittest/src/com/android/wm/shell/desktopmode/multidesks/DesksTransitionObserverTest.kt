@@ -472,6 +472,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
             deskId = 5,
             taskId = exitingTask.taskId,
             isVisible = true,
+            taskBounds = exitingTask.configuration.windowConfiguration.bounds,
         )
         assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isTrue()
 

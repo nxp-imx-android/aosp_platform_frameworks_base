@@ -54,7 +54,12 @@ class DesktopTaskChangeListener(
                 )
                 return
             }
-            desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+            desktopRepository.addTask(
+                taskInfo.displayId,
+                taskInfo.taskId,
+                taskInfo.isVisible,
+                taskInfo.configuration.windowConfiguration.bounds,
+            )
         }
     }
 
@@ -90,7 +95,12 @@ class DesktopTaskChangeListener(
             }
             // If the task is already active in the repository, then moves task to the front,
             // else adds the task.
-            desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+            desktopRepository.addTask(
+                taskInfo.displayId,
+                taskInfo.taskId,
+                taskInfo.isVisible,
+                taskInfo.configuration.windowConfiguration.bounds,
+            )
         }
     }
 
@@ -134,7 +144,12 @@ class DesktopTaskChangeListener(
             }
             // If the task is already active in the repository, then it only moves the task to the
             // front.
-            desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
+            desktopRepository.addTask(
+                taskInfo.displayId,
+                taskInfo.taskId,
+                taskInfo.isVisible,
+                taskInfo.configuration.windowConfiguration.bounds,
+            )
         }
     }
 
@@ -149,7 +164,12 @@ class DesktopTaskChangeListener(
         val desktopRepository: DesktopRepository =
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
-        desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, /* isVisible= */ false)
+        desktopRepository.updateTask(
+            taskInfo.displayId,
+            taskInfo.taskId,
+            isVisible = false,
+            taskInfo.configuration.windowConfiguration.bounds,
+        )
     }
 
     override fun onTaskClosing(taskInfo: RunningTaskInfo) {
@@ -172,7 +192,12 @@ class DesktopTaskChangeListener(
             // the repo.
             desktopRepository.removeClosingTask(taskInfo.taskId)
             if (isMinimized) {
-                desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, isVisible = false)
+                desktopRepository.updateTask(
+                    taskInfo.displayId,
+                    taskInfo.taskId,
+                    isVisible = false,
+                    taskInfo.configuration.windowConfiguration.bounds,
+                )
             } else {
                 desktopRepository.removeTask(taskInfo.taskId)
             }

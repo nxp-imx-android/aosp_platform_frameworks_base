@@ -94,9 +94,11 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
+import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS
 import com.android.window.flags.Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP
 import com.android.window.flags.Flags.FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT
+import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.window.flags.Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.R
@@ -133,6 +135,7 @@ import com.android.wm.shell.desktopmode.minimize.DesktopWindowLimitRemoteHandler
 import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
+import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.desktopmode.persistence.Desktop
 import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
@@ -204,7 +207,6 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
@@ -3203,6 +3205,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             deskId = deskId,
             taskId = task.taskId,
             isVisible = true,
+            taskBounds = TASK_BOUNDS,
         )
         whenever(shellTaskOrganizer.getRunningTaskInfo(anyInt())).thenReturn(null)
         whenever(
@@ -3909,6 +3912,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             deskId = 0,
             taskId = task.taskId,
             isVisible = true,
+            taskBounds = TASK_BOUNDS,
         )
         controller.moveToNextDisplay(task.taskId)
 
@@ -3945,6 +3949,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             deskId = sourceDeskId,
             taskId = task.taskId,
             isVisible = true,
+            taskBounds = TASK_BOUNDS,
         )
         controller.moveToNextDisplay(task.taskId)
 
@@ -3997,6 +4002,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             deskId = sourceDeskId,
             taskId = task.taskId,
             isVisible = true,
+            taskBounds = TASK_BOUNDS,
         )
         controller.moveToNextDisplay(task.taskId)
 
@@ -6319,7 +6325,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         taskRepository.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = task2.taskId)
         // Task is being minimized so mark it as not visible.
-        taskRepository.updateTask(displayId = DEFAULT_DISPLAY, task2.taskId, isVisible = false)
+        taskRepository.updateTask(
+            displayId = DEFAULT_DISPLAY,
+            task2.taskId,
+            isVisible = false,
+            taskBounds = TASK_BOUNDS,
+        )
         val result =
             controller.handleRequest(Binder(), createTransition(task2, type = TRANSIT_TO_BACK))
 
@@ -6939,7 +6950,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         task2.isFocused = true
         task3.isFocused = false
         taskRepository.minimizeTask(DEFAULT_DISPLAY, task1.taskId)
-        taskRepository.updateTask(DEFAULT_DISPLAY, task3.taskId, isVisible = false)
+        taskRepository.updateTask(DEFAULT_DISPLAY, task3.taskId, isVisible = false, TASK_BOUNDS)
 
         controller.enterFullscreen(DEFAULT_DISPLAY, transitionSource = UNKNOWN)
 
@@ -9992,10 +10003,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-    )
+    @EnableFlags(FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDisplayDisconnect_desktopModeSupported_reparentsDesks_focusedDeskActivated() {
         val defaultDisplayTask = setUpFreeformTask()
         val transition = Binder()
@@ -10091,8 +10099,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 defaultDisplayTask.taskId
             }
         whenever(focusTransitionObserver.globallyFocusedTaskId).thenReturn(focusedTaskId)
+        var preserveRequested = false
+        controller.preserveDisplayRequestHandler = PreserveDisplayRequestHandler {
+            preserveRequested = true
+        }
 
-        return assertNotNull(controller.handleRequest(transition, transitionRequestInfo))
+        val wct = assertNotNull(controller.handleRequest(transition, transitionRequestInfo))
+        assertThat(preserveRequested).isTrue()
+
+        return wct
     }
 
     @Test
@@ -10519,9 +10534,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
         }
         if (deskId != null) {
-            taskRepository.addTaskToDesk(displayId, deskId, task.taskId, isVisible = active)
+            taskRepository.addTaskToDesk(
+                displayId,
+                deskId,
+                task.taskId,
+                isVisible = active,
+                TASK_BOUNDS,
+            )
         } else {
-            taskRepository.addTask(displayId, task.taskId, isVisible = active)
+            taskRepository.addTask(displayId, task.taskId, isVisible = active, TASK_BOUNDS)
         }
         if (!background) {
             runningTasks.add(task)
@@ -10648,11 +10669,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     private fun markTaskVisible(task: RunningTaskInfo) {
-        taskRepository.updateTask(task.displayId, task.taskId, isVisible = true)
+        taskRepository.updateTask(task.displayId, task.taskId, isVisible = true, TASK_BOUNDS)
     }
 
     private fun markTaskHidden(task: RunningTaskInfo) {
-        taskRepository.updateTask(task.displayId, task.taskId, isVisible = false)
+        taskRepository.updateTask(task.displayId, task.taskId, isVisible = false, TASK_BOUNDS)
     }
 
     private fun getLatestWct(
@@ -10757,6 +10778,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         private const val DEFAULT_DESK_ID = 100
         // For testing disconnecting a display containing a desk.
         private const val DISCONNECTED_DESK_ID = 200
+        private val TASK_BOUNDS = Rect(100, 100, 300, 300)
 
         private const val TO_DESKTOP_ANIM_DURATION = 336
 

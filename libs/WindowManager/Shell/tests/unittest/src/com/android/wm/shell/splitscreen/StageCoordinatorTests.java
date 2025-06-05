@@ -531,7 +531,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         mDisplayAreaInfo.configuration.windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_FREEFORM);
         when(mRunningTaskInfo.getWindowingMode()).thenReturn(WINDOWING_MODE_FREEFORM);
-        mDesktopRepository.addTask(DEFAULT_DISPLAY, mTaskId, false);
+        mDesktopRepository.addTask(DEFAULT_DISPLAY, mTaskId, false, mBounds1);
         when(mDesktopRepository.isActiveTask(mTaskId)).thenReturn(true);
 
         mStageCoordinator.startTasks(mTaskId, null, INVALID_TASK_ID, null,

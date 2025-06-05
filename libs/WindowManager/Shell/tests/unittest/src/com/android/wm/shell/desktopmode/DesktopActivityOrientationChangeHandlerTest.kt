@@ -210,7 +210,12 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         activityInfo.screenOrientation = SCREEN_ORIENTATION_PORTRAIT
         task.topActivityInfo = activityInfo
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        userRepositories.current.addTask(DEFAULT_DISPLAY, task.taskId, isVisible = true)
+        userRepositories.current.addTask(
+            DEFAULT_DISPLAY,
+            task.taskId,
+            isVisible = true,
+            task.configuration.windowConfiguration.bounds,
+        )
         runningTasks.add(task)
 
         taskStackListener.onActivityRequestedOrientationChanged(
@@ -242,7 +247,12 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         userRepositories.current.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         userRepositories.current.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         val task = setUpFreeformTask(isResizeable = false)
-        userRepositories.current.updateTask(task.displayId, task.taskId, isVisible = false)
+        userRepositories.current.updateTask(
+            task.displayId,
+            task.taskId,
+            isVisible = false,
+            task.configuration.windowConfiguration.bounds,
+        )
 
         taskStackListener.onActivityRequestedOrientationChanged(
             task.taskId,
@@ -326,7 +336,12 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         task.topActivityInfo = activityInfo
         task.isResizeable = isResizeable
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        userRepositories.current.addTask(displayId, task.taskId, isVisible = true)
+        userRepositories.current.addTask(
+            displayId,
+            task.taskId,
+            isVisible = true,
+            task.configuration.windowConfiguration.bounds,
+        )
         runningTasks.add(task)
         return task
     }

@@ -187,6 +187,7 @@ class DesksTransitionObserver(
                         deskId = deskTransition.deskId,
                         taskId = deskTransition.enterTaskId,
                         isVisible = true,
+                        taskBounds = taskChange.taskInfo?.configuration?.windowConfiguration?.bounds,
                     )
                 } else {
                     // This is possible in cases where the task that was originally launched is a
