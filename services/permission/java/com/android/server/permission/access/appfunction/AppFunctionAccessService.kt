@@ -21,11 +21,6 @@ import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_USER
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_DENIED
-import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRANTED
-import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_PREGRANTED
-import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_USER_GRANTED
-import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_DENIED
-import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_GRANTED
 import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE
 import android.content.pm.SignedPackage
 import android.os.Binder
@@ -39,8 +34,6 @@ import com.android.server.permission.access.AppFunctionAccessUri
 import com.android.server.permission.access.UidUri
 import com.android.server.permission.access.collection.*
 import com.android.server.permission.access.util.PermissionEnforcer
-import com.android.server.permission.access.util.hasAnyBit
-import com.android.server.permission.access.util.hasBits
 import com.android.server.pm.PackageManagerLocal
 import com.android.server.pm.UserManagerInternal
 import com.android.server.pm.pkg.PackageState
@@ -50,6 +43,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
     private val policy =
         service.getSchemePolicy(UidUri.SCHEME, AppFunctionAccessUri.SCHEME)
             as AppIdAppFunctionAccessPolicy
+
     private val context = service.context
     private lateinit var packageManagerLocal: PackageManagerLocal
     private lateinit var userManagerInternal: UserManagerInternal
@@ -88,25 +82,18 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
                 Manifest.permission.MANAGE_APP_FUNCTION_ACCESS,
             )
         }
-
         val targetPackageState =
             getFilteredPackageState(targetPackageName, targetUserId, methodName)
                 ?: return ACCESS_REQUEST_STATE_UNREQUESTABLE
 
-        service.getState {
+        return service.getState {
             with(policy) {
-                val flags =
-                    getAccessFlags(
-                        agentPackageState.appId,
-                        agentUserId,
-                        targetPackageState.appId,
-                        targetUserId,
-                    )
-                return if (isAccessGranted(flags)) {
-                    ACCESS_REQUEST_STATE_GRANTED
-                } else {
-                    ACCESS_REQUEST_STATE_DENIED
-                }
+                getAccessRequestState(
+                    agentPackageState.appId,
+                    agentUserId,
+                    targetPackageState.appId,
+                    targetUserId,
+                )
             }
         }
     }
@@ -149,7 +136,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         }
     }
 
-    override fun setAgentAllowlist(agentAllowlist: List<SignedPackage>) {
+    override fun setAgentAllowlist(agentAllowlist: Set<SignedPackage>?) {
         service.onAgentAllowlistChanged(agentAllowlist)
     }
 
@@ -240,6 +227,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
             methodName,
             Manifest.permission.MANAGE_APP_FUNCTION_ACCESS,
         )
+
         return service.getState { with(policy) { filterPackageNames(getAgents(userId), userId) } }
     }
 
@@ -325,17 +313,5 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
 
     companion object {
         private val LOG_TAG = AppFunctionAccessService::class.java.simpleName
-
-        // Grant logic ordering goes as follows: USER flags override OTHER flags.
-        // If no other DENIED flags are applied, PREGRANTED flag means granted.
-        private fun isAccessGranted(flags: Int): Boolean {
-            if (flags.hasAnyBit(ACCESS_FLAG_MASK_USER)) {
-                return flags.hasBits(ACCESS_FLAG_USER_GRANTED)
-            }
-            if (flags.hasAnyBit(ACCESS_FLAG_MASK_OTHER)) {
-                return flags.hasBits(ACCESS_FLAG_OTHER_GRANTED)
-            }
-            return flags.hasBits(ACCESS_FLAG_PREGRANTED)
-        }
     }
 }

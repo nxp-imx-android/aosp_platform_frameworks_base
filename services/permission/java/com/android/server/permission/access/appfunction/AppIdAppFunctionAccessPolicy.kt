@@ -20,6 +20,12 @@ import android.Manifest.permission.EXECUTE_APP_FUNCTIONS
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_ALL
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_USER
+import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRANTED
+import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_PREGRANTED
+import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_USER_GRANTED
+import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_DENIED
+import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_GRANTED
+import android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE
 import android.app.appfunctions.AppFunctionService
 import android.content.pm.SignedPackage
 import android.os.UserHandle
@@ -52,6 +58,29 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
 
     private val upgrade = AppIdAppFunctionAccessUpgrade(this)
 
+    fun GetStateScope.getAccessRequestState(
+        agentAppId: Int,
+        agentUserId: Int,
+        targetAppId: Int,
+        targetUserId: Int,
+    ): Int {
+        if (
+            !anyInstalledPackageInUid(agentAppId, agentUserId) { isValidAgent(it, agentUserId) } ||
+                !anyInstalledPackageInUid(targetAppId, targetUserId) {
+                    isValidTarget(it, targetUserId)
+                }
+        ) {
+            return ACCESS_REQUEST_STATE_UNREQUESTABLE
+        }
+
+        val flags = getAccessFlags(agentAppId, agentUserId, targetAppId, targetUserId)
+        return if (isAccessGranted(flags)) {
+            ACCESS_REQUEST_STATE_GRANTED
+        } else {
+            ACCESS_REQUEST_STATE_DENIED
+        }
+    }
+
     fun GetStateScope.getAccessFlags(
         agentAppId: Int,
         agentUserId: Int,
@@ -74,7 +103,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
     ): Boolean {
         validateFlags(flags, flagMask)
         val targetUid = UserHandle.getUid(targetUserId, targetAppId)
-        if (agentUserId !in newState.userStates) {
+        if (agentUserId !in newState.userStates || targetUserId !in newState.userStates) {
             // Despite that we check UserManagerInternal.exists() in PermissionService, we may still
             // sometimes get race conditions between that check and the actual mutateState() call.
             // This should rarely happen but at least we should not crash.
@@ -83,8 +112,10 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         }
 
         if (
-            state.externalState.appIdPackageNames[agentAppId]?.isEmpty() != false ||
-                state.externalState.appIdPackageNames[targetAppId]?.isEmpty() != false
+            !anyInstalledPackageInUid(agentAppId, agentUserId) { isValidAgent(it, agentUserId) } ||
+                !anyInstalledPackageInUid(targetAppId, targetUserId) {
+                    isValidTarget(it, targetUserId)
+                }
         ) {
             return false
         }
@@ -135,7 +166,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
 
     fun GetStateScope.getAgents(userId: Int): List<String> = buildList {
         state.externalState.packageStates.forEach { packageName, packageState ->
-            if (isInstalledForUser(packageState, userId) && isValidAgent(packageState, userId)) {
+            if (packageState.isInstalledForUser(userId) && isValidAgent(packageState, userId)) {
                 this += packageName
             }
         }
@@ -149,11 +180,26 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         }
     }
 
-    private fun isValidAgent(packageState: PackageState, userId: Int): Boolean {
-        if (!isInstalledForUser(packageState, userId)) {
+    private fun GetStateScope.anyInstalledPackageInUid(
+        appId: Int,
+        userId: Int,
+        predicate: (PackageState) -> Boolean,
+    ): Boolean {
+        val packageNames = state.externalState.appIdPackageNames[appId] ?: return false
+        return packageNames.anyIndexed { _, packageName ->
+            val packageStates =
+                state.externalState.packageStates[packageName] ?: return@anyIndexed false
+            if (!packageStates.isInstalledForUser(userId)) {
+                return@anyIndexed false
+            }
+            return@anyIndexed predicate(packageStates)
+        }
+    }
+
+    private fun GetStateScope.isValidAgent(packageState: PackageState, userId: Int): Boolean {
+        if (!packageState.isInstalledForUser(userId)) {
             return false
         }
-
         if (
             packageState.androidPackage?.requestedPermissions?.contains(EXECUTE_APP_FUNCTIONS) !=
                 true
@@ -161,11 +207,27 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
             return false
         }
 
-        return true
+        if (state.externalState.agentAllowlist == null) {
+            return true
+        }
+
+        return state.externalState.agentAllowlist?.any { isAllowlistedAgent(it, packageState) } ==
+            true
+    }
+
+    fun isAllowlistedAgent(allowedAgent: SignedPackage, possibleAgent: PackageState): Boolean {
+        if (allowedAgent.packageName != possibleAgent.packageName) {
+            return false
+        }
+
+        return allowedAgent.certificateDigestOrNull == null ||
+            possibleAgent.androidPackage
+                ?.signingDetails
+                ?.hasSha256Certificate(allowedAgent.certificateDigest) == true
     }
 
     private fun isValidTarget(packageState: PackageState, userId: Int): Boolean {
-        if (!isInstalledForUser(packageState, userId)) {
+        if (!packageState.isInstalledForUser(userId)) {
             return false
         }
 
@@ -178,11 +240,31 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         } == true
     }
 
-    private inline fun isInstalledForUser(packageState: PackageState, userId: Int) =
-        packageState.getUserStateOrDefault(userId).isInstalled
+    private fun PackageState.isInstalledForUser(userId: Int) =
+        getUserStateOrDefault(userId).isInstalled
 
-    override fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {
-        // TODO b/416661798: implement when allowlist is implemented
+    override fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: Set<SignedPackage>?) {
+        if (agentAllowlist == null) {
+            // if the allowlist is null, then it isn't enforced, don't clean up state
+            return
+        }
+
+        val allowlistedAppIds = MutableIntSet()
+        agentAllowlist.forEachIndexed { _, signedPackage ->
+            allowlistedAppIds.add(
+                newState.externalState.packageStates[signedPackage.packageName]?.appId
+                    ?: return@forEachIndexed
+            )
+        }
+        newState.userStates.forEachIndexed { userIndex, user, _ ->
+            val appIdAppFunctionAccessFlags =
+                newState.mutateUserStateAt(userIndex).mutateAppIdAppFunctionAccessFlags()
+            appIdAppFunctionAccessFlags.forEachReversedIndexed { appIdIndex, appId, _ ->
+                if (appId !in allowlistedAppIds) {
+                    appIdAppFunctionAccessFlags.removeAt(appIdIndex)
+                }
+            }
+        }
     }
 
     override fun MutateStateScope.onUserRemoved(userId: Int) {
@@ -223,6 +305,39 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
         }
     }
 
+    override fun MutateStateScope.onPackageUninstalled(
+        packageName: String,
+        appId: Int,
+        userId: Int,
+    ) {
+        if (userId !in newState.userStates) {
+            return
+        }
+        val isValidAgentUid = anyInstalledPackageInUid(appId, userId) { isValidAgent(it, userId) }
+        if (!isValidAgentUid) {
+            if (appId in newState.userStates[userId]!!.appIdAppFunctionAccessFlags) {
+                newState.mutateUserState(userId)!!.mutateAppIdAppFunctionAccessFlags() -= appId
+            }
+        }
+        val isValidTargetUid = anyInstalledPackageInUid(appId, userId) { isValidTarget(it, userId) }
+        if (!isValidTargetUid) {
+            val uid = UserHandle.getUid(userId, appId)
+            newState.userStates.forEachIndexed { userIndex, _, userState ->
+                userState.appIdAppFunctionAccessFlags.forEachIndexed {
+                    appIdIndex,
+                    appId,
+                    accessFlags ->
+                    if (uid in accessFlags) {
+                        newState
+                            .mutateUserStateAt(userIndex)
+                            .mutateAppIdAppFunctionAccessFlags()
+                            .mutateAt(appIdIndex) -= uid
+                    }
+                }
+            }
+        }
+    }
+
     override fun MutateStateScope.upgradePackageState(
         packageState: PackageState,
         userId: Int,
@@ -241,5 +356,17 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
 
     companion object {
         private val LOG_TAG = AppIdAppFunctionAccessPolicy::class.java.simpleName
+
+        // Grant logic ordering goes as follows: USER flags override OTHER flags.
+        // If no other DENIED flags are applied, PREGRANTED flag means granted.
+        fun isAccessGranted(flags: Int): Boolean {
+            if (flags.hasAnyBit(ACCESS_FLAG_MASK_USER)) {
+                return flags.hasBits(ACCESS_FLAG_USER_GRANTED)
+            }
+            if (flags.hasAnyBit(ACCESS_FLAG_MASK_OTHER)) {
+                return flags.hasBits(ACCESS_FLAG_OTHER_GRANTED)
+            }
+            return flags.hasBits(ACCESS_FLAG_PREGRANTED)
+        }
     }
 }

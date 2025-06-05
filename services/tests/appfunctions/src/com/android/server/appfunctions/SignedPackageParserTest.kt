@@ -43,7 +43,8 @@ class SignedPackageParserTest {
 
         assertThat(result).hasSize(1)
         assertThat(result[0].packageName).isEqualTo(TEST_PACKAGE_NAME_1)
-        assertThat(result[0].certificateDigest).isNull()
+        assertThat(result[0].certificateDigest).isEmpty()
+        assertThat(result[0].certificateDigestOrNull).isNull()
     }
 
     @Test
@@ -67,7 +68,8 @@ class SignedPackageParserTest {
         assertThat(result[0].packageName).isEqualTo(TEST_PACKAGE_NAME_1)
         assertThat(result[0].certificateDigest).isEqualTo(TEST_CERTIFICATE_DIGEST_1)
         assertThat(result[1].packageName).isEqualTo(TEST_PACKAGE_NAME_2)
-        assertThat(result[1].certificateDigest).isNull()
+        assertThat(result[1].certificateDigest).isEmpty()
+        assertThat(result[1].certificateDigestOrNull).isNull()
     }
 
     @Test

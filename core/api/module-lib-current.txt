@@ -139,6 +139,7 @@ package android.content.pm {
 
   @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") public class SignedPackage {
     method @NonNull public byte[] getCertificateDigest();
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") @Nullable public byte[] getCertificateDigestOrNull();
     method @NonNull public String getPackageName();
   }
 
