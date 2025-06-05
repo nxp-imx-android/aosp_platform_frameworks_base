@@ -151,6 +151,12 @@ public class ExpandedAnimationControllerTest extends PhysicsAnimationLayoutTestC
         mExpandedController.dragBubbleOut(mViews.get(0), 1, 1);
     }
 
+    @Test
+    public void snapToExpandedState() {
+        mExpandedController.snapToExpandedState();
+        testBubblesInCorrectExpandedPositions();
+    }
+
     /** Expand the stack and wait for animations to finish. */
     private void expand() throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);

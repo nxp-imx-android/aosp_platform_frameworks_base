@@ -2373,6 +2373,11 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
+    /** Snaps the stack to its expanded state without animation. */
+    void snapToExpanded() {
+        setExpanded(/* shouldExpand= */ true, /* animateExpansion= */ false);
+    }
+
     /**
      * Changes the expanded state of the stack.
      * Don't call this directly, call mBubbleData#setExpanded.
@@ -2381,6 +2386,19 @@ public class BubbleStackView extends FrameLayout
      */
     // via BubbleData.Listener
     public void setExpanded(boolean shouldExpand) {
+        setExpanded(shouldExpand, true);
+    }
+
+    /**
+     * Updates the expanded state.
+     *
+     * <p>Normally the expanded state is updated through {@link #setExpanded(boolean)} which does so
+     * with animation, however after folding we may need to expand the stack without animation.
+     *
+     * @param shouldExpand whether the stack should be expanded or collapsed
+     * @param animateExpansion whether we should animate if expanding.
+     **/
+    private void setExpanded(boolean shouldExpand, boolean animateExpansion) {
         if (!shouldExpand) {
             // If we're collapsing, release the animating-out surface immediately since we have no
             // need for it, and this ensures it cannot remain visible as we collapse.
@@ -2405,8 +2423,7 @@ public class BubbleStackView extends FrameLayout
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__COLLAPSED);
             } else {
-                animateExpansion();
-                // TODO: move next line to BubbleData
+                expand(animateExpansion);
                 logBubbleEvent(mExpandedBubble,
                         FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__EXPANDED);
                 logBubbleEvent(mExpandedBubble,
@@ -2666,7 +2683,7 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
-    private void animateExpansion() {
+    private void expand(boolean animate) {
         ProtoLog.d(WM_SHELL_BUBBLES, "animateExpansion, expandedBubble=%s",
                 mExpandedBubble != null ? mExpandedBubble.getKey() : "null");
         cancelDelayedExpandCollapseSwitchAnimations();
@@ -2685,22 +2702,28 @@ public class BubbleStackView extends FrameLayout
         if (Flags.enableRetrievableBubbles() && isOnlyOverflowExpanded()) {
             animateOverflowExpansion();
         } else {
-            animateBubbleExpansion();
+            expandBubble(animate);
         }
     }
 
-    private void animateBubbleExpansion() {
+    private void expandBubble(boolean animate) {
         updateBadges(false /* setBadgeForCollapsedStack */);
         updatePointerPosition(false /* forIme */);
         if (Flags.enableBubbleStashing()) {
             mBubbleContainer.animate().translationX(0).start();
         }
-        mExpandedAnimationController.expandFromStack(() -> {
+        Runnable afterExpanded = () -> {
             if (mIsExpanded && getExpandedView() != null) {
                 maybeShowManageEdu();
             }
             updateOverflowDotVisibility(true /* expanding */);
-        } /* after */);
+        };
+        if (animate) {
+            mExpandedAnimationController.expandFromStack(afterExpanded);
+        } else {
+            mExpandedAnimationController.snapToExpandedState();
+            afterExpanded.run();
+        }
         int index;
         if (mExpandedBubble != null && BubbleOverflow.KEY.equals(mExpandedBubble.getKey())) {
             index = mBubbleData.getBubbles().size();
@@ -2713,6 +2736,18 @@ public class BubbleStackView extends FrameLayout
         mExpandedViewContainer.setTranslationX(0f);
         mExpandedViewContainer.setTranslationY(translationY);
         mExpandedViewContainer.setAlpha(1f);
+
+        if (!animate) {
+            BubbleExpandedView expandedView = getExpandedView();
+            if (expandedView == null) {
+                return;
+            }
+            expandedView.setContentAlpha(1f);
+            expandedView.setBackgroundAlpha(1f);
+            mExpandedViewContainer.setVisibility(VISIBLE);
+            afterExpandedViewAnimation();
+            return;
+        }
 
         final boolean showVertically = mPositioner.showBubblesVertically();
         // How far horizontally the bubble will be animating. We'll wait a bit longer for bubbles

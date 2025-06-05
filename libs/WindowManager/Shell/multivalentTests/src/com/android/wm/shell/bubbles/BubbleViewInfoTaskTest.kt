@@ -169,6 +169,8 @@ class BubbleViewInfoTaskTest {
                 HomeIntentProvider(context),
                 appInfoProvider,
                 { Optional.empty() },
+                Optional.empty(),
+                { false },
             )
 
         // TODO: (b/371829099) - when optional overflow is no longer flagged we can enable this

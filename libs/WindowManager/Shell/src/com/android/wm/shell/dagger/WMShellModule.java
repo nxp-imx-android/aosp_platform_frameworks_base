@@ -48,6 +48,7 @@ import com.android.app.viewcapture.ViewCaptureAwareWindowManagerFactory;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
+import com.android.internal.policy.FoldLockSettingsObserver;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
@@ -71,6 +72,8 @@ import com.android.wm.shell.bubbles.BubbleTransitions;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.appinfo.PackageManagerBubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.DragToBubbleController;
+import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
+import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserverImpl;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -303,6 +306,21 @@ public abstract class WMShellModule {
                 : taskViewTransitions;
     }
 
+    @WMSingleton
+    @Provides
+    @Bubbles
+    static FoldLockSettingsObserver provideFoldLockSettingsObserver(
+            Context context,
+            @ShellMainThread Handler mainHandler) {
+        FoldLockSettingsObserver observer = new FoldLockSettingsObserver(mainHandler, context);
+        observer.register();
+        return observer;
+    }
+
+    @Binds
+    abstract BubblesFoldLockSettingsObserver bindBubblesFoldLockSettingsObserver(
+            BubblesFoldLockSettingsObserverImpl impl);
+
     // Note: Handler needed for LauncherApps.register
     @WMSingleton
     @Provides
@@ -336,7 +354,9 @@ public abstract class WMShellModule {
             IWindowManager wmService,
             HomeIntentProvider homeIntentProvider,
             BubbleAppInfoProvider appInfoProvider,
-            Lazy<Optional<SplitScreenController>> splitScreenController) {
+            Lazy<Optional<SplitScreenController>> splitScreenController,
+            @NonNull Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
+            BubblesFoldLockSettingsObserver foldLockSettingsObserver) {
         final WindowManager wm = enableViewCaptureTracing()
                 ? ViewCaptureAwareWindowManagerFactory.getInstance(context)
                 : windowManager;
@@ -377,7 +397,9 @@ public abstract class WMShellModule {
                 new BubbleResizabilityChecker(),
                 homeIntentProvider,
                 appInfoProvider,
-                splitScreenController);
+                splitScreenController,
+                unfoldProgressProvider,
+                foldLockSettingsObserver);
     }
 
     //

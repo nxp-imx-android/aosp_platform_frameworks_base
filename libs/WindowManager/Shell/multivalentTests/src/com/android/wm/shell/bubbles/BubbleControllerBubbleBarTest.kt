@@ -489,6 +489,8 @@ class BubbleControllerBubbleBarTest {
             HomeIntentProvider(context),
             FakeBubbleAppInfoProvider(),
             { Optional.empty() },
+            Optional.empty(),
+            { false },
         )
     }
 
