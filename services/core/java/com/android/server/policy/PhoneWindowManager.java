@@ -202,7 +202,6 @@ import android.view.Display;
 import android.view.HapticFeedbackConstants;
 import android.view.IDisplayFoldListener;
 import android.view.InputDevice;
-import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
 import android.view.MotionEvent;
@@ -3737,27 +3736,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         msg.obj = downTime;
         msg.setAsynchronous(true);
         msg.sendToTarget();
-    }
-
-    @SuppressLint("MissingPermission")
-    private void injectBackGesture(long downtime, int displayId) {
-        // Create and inject down event
-        KeyEvent downEvent = new KeyEvent(downtime, downtime, KeyEvent.ACTION_DOWN,
-                KeyEvent.KEYCODE_BACK, 0 /* repeat */, 0 /* metaState */,
-                KeyCharacterMap.VIRTUAL_KEYBOARD, 0 /* scancode */,
-                KeyEvent.FLAG_FROM_SYSTEM | KeyEvent.FLAG_VIRTUAL_HARD_KEY,
-                InputDevice.SOURCE_KEYBOARD);
-        downEvent.setDisplayId(displayId);
-        mInputManager.injectInputEvent(downEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-
-
-        // Create and inject up event
-        KeyEvent upEvent = KeyEvent.changeAction(downEvent, KeyEvent.ACTION_UP);
-        upEvent.setDisplayId(displayId);
-        mInputManager.injectInputEvent(upEvent, InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-
-        downEvent.recycle();
-        upEvent.recycle();
     }
 
     private boolean handleHomeShortcuts(IBinder focusedToken, KeyEvent event) {
