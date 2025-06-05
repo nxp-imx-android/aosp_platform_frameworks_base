@@ -27,6 +27,7 @@
 #include <cmath>
 
 #include "SkColorSpace.h"
+#include "SkColorType.h"
 
 namespace android {
 namespace uirenderer {
@@ -66,6 +67,10 @@ static inline SkImageInfo createImageInfo(int32_t width, int32_t height, int32_t
             break;
         case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:
             colorType = kBGRA_8888_SkColorType;
+            alphaType = kPremul_SkAlphaType;
+            break;
+        case AHARDWAREBUFFER_FORMAT_B10G10R10A2_UNORM:
+            colorType = kBGRA_1010102_SkColorType;
             alphaType = kPremul_SkAlphaType;
             break;
         default:

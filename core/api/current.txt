@@ -19231,6 +19231,7 @@ package android.hardware {
     method public boolean isClosed();
     method public static boolean isSupported(@IntRange(from=1) int, @IntRange(from=1) int, int, @IntRange(from=1) int, long);
     method public void writeToParcel(android.os.Parcel, int);
+    field @FlaggedApi("com.android.graphics.hwui.flags.requested_formats_bgra_1010102") public static final int BGRA_1010102 = 67; // 0x43
     field public static final int BLOB = 33; // 0x21
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.HardwareBuffer> CREATOR;
     field public static final int DS_24UI8 = 50; // 0x32
