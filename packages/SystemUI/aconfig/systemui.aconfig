@@ -1842,16 +1842,6 @@ flag {
 }
 
 flag {
-   name: "skip_cancelling_huns_for_guts"
-   namespace: "systemui"
-   description: "Do not cancel HUNs when GUTs are exposed"
-   bug: "372227464"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "stuck_hearing_devices_qs_tile_fix"
     namespace: "systemui"
     description: "Prevent the Hearing Device Dialog's exit animation to avoid the appearance of it being stuck during activity launch."
