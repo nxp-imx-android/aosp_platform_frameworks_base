@@ -725,9 +725,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 private boolean canHeadsUpBeCancelled(ExpandableNotificationRow row) {
-                    final boolean areGutsNotExposed =
-                            !Flags.skipCancellingHunsForGuts() || !row.areGutsExposed();
-
                     final boolean cannotFullScreen = NotificationBundleUi.isEnabled()
                             ? !row.getEntryAdapter().isFullScreenCapable()
                             : (row.getEntryLegacy().getSbn().getNotification().fullScreenIntent
@@ -736,7 +733,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     return row.isPinned()
                             && !canChildBeDismissed(row)
                             && cannotFullScreen
-                            && areGutsNotExposed;
+                            && !row.areGutsExposed();
                 }
 
                 @Override
