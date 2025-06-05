@@ -58,10 +58,10 @@ class SegmentedButtonPreference @JvmOverloads constructor(
         holder.isDividerAllowedAbove = false
 
         buttonGroup = holder.findViewById(R.id.button_group) as MaterialButtonToggleGroup?
-        buttonLabels.add(holder.findViewById(R.id.button_1_text) as TextView)
-        buttonLabels.add(holder.findViewById(R.id.button_2_text) as TextView)
-        buttonLabels.add(holder.findViewById(R.id.button_3_text) as TextView)
-        buttonLabels.add(holder.findViewById(R.id.button_4_text) as TextView)
+        buttonLabels.add(0, holder.findViewById(R.id.button_1_text) as TextView)
+        buttonLabels.add(1, holder.findViewById(R.id.button_2_text) as TextView)
+        buttonLabels.add(2, holder.findViewById(R.id.button_3_text) as TextView)
+        buttonLabels.add(3, holder.findViewById(R.id.button_4_text) as TextView)
 
         // Apply stored data
         applyButtonSetupData()
