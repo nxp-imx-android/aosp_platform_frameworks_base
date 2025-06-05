@@ -207,8 +207,6 @@ public class PipControllerTest extends ShellTestCase {
             public void onPipResourceDimensionsChanged(int cornerRadius, int shadowRadius) {}
             @Override
             public void onExpandPip() {}
-            @Override
-            public void onExitPip() {}
         });
         assertTrue(mPipController.hasPinnedStackAnimationListener());
         // Create initial interface
