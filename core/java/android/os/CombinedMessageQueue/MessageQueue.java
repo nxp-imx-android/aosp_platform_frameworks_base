@@ -288,28 +288,12 @@ public final class MessageQueue {
     static final class EnqueueOrder implements Comparator<Message> {
         @Override
         public int compare(Message m1, Message m2) {
-            return compareMessages(m1, m2);
+            return Message.compareMessages(m1, m2);
         }
     }
 
     private static final EnqueueOrder sEnqueueOrder = new EnqueueOrder();
 
-    static int compareMessages(@NonNull Message m1, @NonNull Message m2) {
-        // Primary queue order is by when.
-        // Messages with an earlier when should come first in the queue.
-        final long whenDiff = m1.when - m2.when;
-        if (whenDiff > 0) return 1;
-        if (whenDiff < 0) return -1;
-
-        // Secondary queue order is by insert sequence.
-        // If two messages were inserted with the same `when`, the one inserted
-        // first should come first in the queue.
-        final long insertSeqDiff = m1.insertSeq - m2.insertSeq;
-        if (insertSeqDiff > 0) return 1;
-        if (insertSeqDiff < 0) return -1;
-
-        return 0;
-    }
 
     private static boolean isBarrier(Message msg) {
         return msg != null && msg.target == null;
@@ -805,7 +789,7 @@ public final class MessageQueue {
                 if (msg == null) {
                     earliest = asyncMsg;
                 } else if (asyncMsg != null) {
-                    if (compareMessages(msg, asyncMsg) > 0) {
+                    if (Message.compareMessages(msg, asyncMsg) > 0) {
                         earliest = asyncMsg;
                     }
                 }

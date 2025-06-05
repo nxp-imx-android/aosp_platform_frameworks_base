@@ -16,6 +16,7 @@
 
 package android.os;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.util.TimeUtils;
@@ -554,6 +555,23 @@ public final class Message implements Parcelable {
     /** Constructor (but the preferred way to get a Message is to call {@link #obtain() Message.obtain()}).
     */
     public Message() {
+    }
+
+    /*package*/ static int compareMessages(@NonNull Message m1, @NonNull Message m2) {
+        // Primary queue order is by when.
+        // Messages with an earlier when should come first in the queue.
+        final long whenDiff = m1.when - m2.when;
+        if (whenDiff > 0) return 1;
+        if (whenDiff < 0) return -1;
+
+        // Secondary queue order is by insert sequence.
+        // If two messages were inserted with the same `when`, the one inserted
+        // first should come first in the queue.
+        final long insertSeqDiff = m1.insertSeq - m2.insertSeq;
+        if (insertSeqDiff > 0) return 1;
+        if (insertSeqDiff < 0) return -1;
+
+        return 0;
     }
 
     @Override
