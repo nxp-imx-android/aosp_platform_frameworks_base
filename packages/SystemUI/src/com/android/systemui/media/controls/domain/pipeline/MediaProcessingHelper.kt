@@ -131,7 +131,11 @@ private fun areIconsEqual(context: Context, new: Icon?, old: Icon?): Boolean {
             Log.e(TAG, "Cannot compare recycled bitmap")
             return false
         }
-        new.bitmap.sameAs(old.bitmap)
+        // Icon.sameAs checks for Bitmap reference equality - faster if its
+        // actually equal.
+        new.sameAs(old) || new.bitmap.sameAs(old.bitmap)
+    } else if (new.type == Icon.TYPE_DATA || new.type == Icon.TYPE_RESOURCE) {
+        return new.sameAs(old);
     } else {
         val newDrawable = new.loadDrawable(context)
         val oldDrawable = old.loadDrawable(context)
