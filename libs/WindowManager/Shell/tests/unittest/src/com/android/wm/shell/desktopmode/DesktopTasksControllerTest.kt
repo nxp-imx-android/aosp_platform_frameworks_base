@@ -6720,13 +6720,67 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX)
-    fun handleRequest_fullscreenTaskRelaunch_returnNull() {
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_fullscreenTaskRelaunch_desktopFirst_returnNull() {
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
         val task = setUpFullscreenTask()
+        // Deactivate desk as fullscreen task is visible on top.
+        taskRepository.getActiveDeskId(DEFAULT_DISPLAY)?.let { taskRepository.setDeskInactive(it) }
 
         val result = controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_OPEN))
 
         assertNull(result, "Should not handle request")
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_backgroundFullscreenTaskRelaunch_desktopFirst_returnNull() {
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+        val task = setUpFullscreenTask(visible = false)
+
+        val result = controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_OPEN))
+
+        assertNull(result, "Should not handle request")
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_fullscreenTaskRelaunch_touchFirst_returnNull() {
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        val task = setUpFullscreenTask()
+        // Deactivate desk as fullscreen task is visible on top.
+        taskRepository.getActiveDeskId(DEFAULT_DISPLAY)?.let { taskRepository.setDeskInactive(it) }
+
+        val result = controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_OPEN))
+
+        assertNull(result, "Should not handle request")
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun handleRequest_backgroundFullscreenTaskRelaunch_touchFirst_moveToDesk() {
+        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        val task = setUpFullscreenTask(visible = false)
+
+        val result = controller.handleRequest(Binder(), createTransition(task, type = TRANSIT_OPEN))
+
+        verify(desksOrganizer).moveTaskToDesk(result!!, DEFAULT_DISPLAY, task)
     }
 
     @Test
