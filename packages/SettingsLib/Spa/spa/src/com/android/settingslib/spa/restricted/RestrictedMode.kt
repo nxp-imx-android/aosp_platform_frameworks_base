@@ -20,7 +20,19 @@ sealed interface RestrictedMode
 
 data object NoRestricted : RestrictedMode
 
-interface BlockedWithDetails : RestrictedMode {
+sealed interface Blocked : RestrictedMode {
+    /**
+     * Determines if the [RestrictedSwitchPreference]'s checked state will be forced to its param
+     * value of `ifBlockedOverrideCheckedTo` when the preference is blocked.
+     *
+     * Requires [RestrictedSwitchPreference]'s param `ifBlockedOverrideCheckedTo` to be set to a
+     * specific state (true or false).
+     */
+    val canOverrideSwitchChecked: Boolean
+        get() = false
+}
+
+interface BlockedWithDetails : Blocked {
     /** Show the details of this restriction, usually a dialog will be displayed. */
     fun showDetails()
 }

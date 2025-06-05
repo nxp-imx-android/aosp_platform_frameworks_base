@@ -29,14 +29,17 @@ import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
 internal class RestrictedSwitchPreferenceModel(
     model: SwitchPreferenceModel,
     private val restrictedMode: RestrictedMode?,
+    ifBlockedOverrideCheckedTo: Boolean?,
 ) : SwitchPreferenceModel {
     override val title = model.title
 
     override val checked =
-        when (restrictedMode) {
-            null -> ({ null })
-            is NoRestricted -> model.checked
-            is BlockedWithDetails -> model.checked
+        when {
+            restrictedMode == null -> ({ null })
+            restrictedMode is Blocked &&
+                restrictedMode.canOverrideSwitchChecked &&
+                ifBlockedOverrideCheckedTo != null -> ({ ifBlockedOverrideCheckedTo })
+            else -> model.checked
         }
 
     override val summary = model.summary

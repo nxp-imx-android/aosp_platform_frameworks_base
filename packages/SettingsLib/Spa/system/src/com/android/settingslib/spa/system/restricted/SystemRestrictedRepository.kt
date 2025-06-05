@@ -28,6 +28,8 @@ import com.android.settingslib.spa.restricted.NoRestricted
 import com.android.settingslib.spa.restricted.RestrictedMode
 import com.android.settingslib.spa.restricted.RestrictedRepository
 import com.android.settingslib.spa.restricted.Restrictions
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 /**
  * To use this, please register in [com.android.settingslib.spa.framework.common.SpaEnvironment].
@@ -46,11 +48,17 @@ class SystemRestrictedRepository(private val context: Context) : RestrictedRepos
      * always no restricted.
      */
     @RequiresPermission(anyOf = [MANAGE_USERS, INTERACT_ACROSS_USERS])
-    override fun getRestrictedMode(restrictions: Restrictions): RestrictedMode {
+    override fun restrictedModeFlow(restrictions: Restrictions): Flow<RestrictedMode> {
         check(restrictions is SystemRestrictions)
+        return flow { emit(getRestrictedMode(restrictions)) }
+    }
+
+    @RequiresPermission(anyOf = [MANAGE_USERS, INTERACT_ACROSS_USERS])
+    private fun getRestrictedMode(restrictions: SystemRestrictions): RestrictedMode {
         val userRestrictions = getUserRestrictions()
-        if (restrictions.keys.any { key -> userRestrictions.getBoolean(key) })
+        if (restrictions.keys.any { key -> userRestrictions.getBoolean(key) }) {
             return SystemBlockedByAdmin(context)
+        }
         return NoRestricted
     }
 

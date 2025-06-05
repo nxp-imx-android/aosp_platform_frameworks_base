@@ -23,6 +23,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.spa.restricted.NoRestricted
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
@@ -42,40 +44,48 @@ class SystemRestrictedRepositoryTest {
     private val repository = SystemRestrictedRepository(context)
 
     @Test
-    fun getRestrictedMode_emptyKeys_returnsNoRestricted() {
-        val restrictedMode = repository.getRestrictedMode(SystemRestrictions(keys = emptyList()))
+    fun getRestrictedMode_emptyKeys_returnsNoRestricted() = runBlocking {
+        val restrictedMode =
+            repository.restrictedModeFlow(SystemRestrictions(keys = emptyList())).first()
 
         assertThat(restrictedMode).isInstanceOf(NoRestricted::class.java)
     }
 
     @Test
-    fun getRestrictedMode_noUserRestrictions_returnsNoRestricted() {
+    fun getRestrictedMode_noUserRestrictions_returnsNoRestricted() = runBlocking {
         mockUserManager.stub { on { userRestrictions } doReturn bundleOf() }
 
         val restrictedMode =
-            repository.getRestrictedMode(SystemRestrictions(keys = listOf(RESTRICTION_KEY)))
+            repository
+                .restrictedModeFlow(SystemRestrictions(keys = listOf(RESTRICTION_KEY)))
+                .first()
 
         assertThat(restrictedMode).isInstanceOf(NoRestricted::class.java)
     }
 
     @Test
-    fun getRestrictedMode_userRestrictionFalse_returnsNoRestricted() {
+    fun getRestrictedMode_userRestrictionFalse_returnsNoRestricted() = runBlocking {
         mockUserManager.stub { on { userRestrictions } doReturn bundleOf(RESTRICTION_KEY to false) }
 
         val restrictedMode =
-            repository.getRestrictedMode(SystemRestrictions(keys = listOf(RESTRICTION_KEY)))
+            repository
+                .restrictedModeFlow(SystemRestrictions(keys = listOf(RESTRICTION_KEY)))
+                .first()
 
         assertThat(restrictedMode).isInstanceOf(NoRestricted::class.java)
     }
 
     @Test
-    fun getRestrictedMode_userRestrictionTrue_returnsBlockedByAdmin() {
+    fun getRestrictedMode_userRestrictionTrue_returnsBlockedByAdmin() = runBlocking {
         mockUserManager.stub { on { userRestrictions } doReturn bundleOf(RESTRICTION_KEY to true) }
 
         val restrictedMode =
-            repository.getRestrictedMode(SystemRestrictions(keys = listOf(RESTRICTION_KEY)))
+            repository
+                .restrictedModeFlow(SystemRestrictions(keys = listOf(RESTRICTION_KEY)))
+                .first()
 
         assertThat(restrictedMode).isInstanceOf(SystemBlockedByAdmin::class.java)
+        assertThat((restrictedMode as SystemBlockedByAdmin).canOverrideSwitchChecked).isTrue()
     }
 
     private companion object {

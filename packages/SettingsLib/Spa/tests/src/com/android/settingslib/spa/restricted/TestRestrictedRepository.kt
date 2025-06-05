@@ -16,21 +16,32 @@
 
 package com.android.settingslib.spa.restricted
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+
 class TestRestrictedRepository : RestrictedRepository {
     var isBlockedWithDetails = false
+    var canOverrideSwitchChecked = false
     var detailsIsShown = false
 
-    override fun getRestrictedMode(restrictions: Restrictions): RestrictedMode {
+    override fun restrictedModeFlow(restrictions: Restrictions): Flow<RestrictedMode> {
         check(restrictions is TestRestrictions)
-        return when {
+        return flowOf(getRestrictedMode(restrictions))
+    }
+
+    private fun getRestrictedMode(restrictions: TestRestrictions): RestrictedMode =
+        when {
             restrictions.isEmpty() -> NoRestricted
             isBlockedWithDetails ->
                 object : BlockedWithDetails {
+                    override val canOverrideSwitchChecked =
+                        this@TestRestrictedRepository.canOverrideSwitchChecked
+
                     override fun showDetails() {
                         detailsIsShown = true
                     }
                 }
+
             else -> NoRestricted
         }
-    }
 }

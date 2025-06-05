@@ -23,16 +23,29 @@ import com.android.settingslib.spa.restricted.NoRestricted
 import com.android.settingslib.spa.restricted.RestrictedMode
 import com.android.settingslib.spa.restricted.RestrictedRepository
 import com.android.settingslib.spa.restricted.Restrictions
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 class GalleryRestrictedRepository(private val context: Context) : RestrictedRepository {
-    override fun getRestrictedMode(restrictions: Restrictions): RestrictedMode {
+    override fun restrictedModeFlow(restrictions: Restrictions): Flow<RestrictedMode> {
         check(restrictions is GalleryRestrictions)
-        if (restrictions.isRestricted)
-            return object : BlockedWithDetails {
-                override fun showDetails() {
-                    context.startActivity(Intent("android.settings.SHOW_ADMIN_SUPPORT_DETAILS"))
+        return enableRestrictionsFlow.map { enableRestrictions ->
+            if (enableRestrictions && restrictions.isRestricted) {
+                object : BlockedWithDetails {
+                    override val canOverrideSwitchChecked = true
+
+                    override fun showDetails() {
+                        context.startActivity(Intent("android.settings.SHOW_ADMIN_SUPPORT_DETAILS"))
+                    }
                 }
+            } else {
+                NoRestricted
             }
-        return NoRestricted
+        }
+    }
+
+    companion object {
+        var enableRestrictionsFlow = MutableStateFlow(true)
     }
 }

@@ -16,7 +16,9 @@
 
 package com.android.settingslib.spa.restricted
 
+import kotlinx.coroutines.flow.Flow
+
 interface RestrictedRepository {
     /** Gets the restricted mode. */
-    fun getRestrictedMode(restrictions: Restrictions): RestrictedMode
+    fun restrictedModeFlow(restrictions: Restrictions): Flow<RestrictedMode>
 }
