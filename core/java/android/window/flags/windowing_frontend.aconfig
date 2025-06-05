@@ -345,6 +345,16 @@ flag {
 }
 
 flag {
+    name: "respect_requested_task_snapshot_resolution"
+    namespace: "windowing_frontend"
+    description: "Produce a task snapshot object that respects the requested resolution, and only cache low resolution snapshot in system server."
+    bug: "238206323"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "scramble_snapshot_file_name"
     namespace: "windowing_frontend"
     description: "Scramble the file name of task snapshot."

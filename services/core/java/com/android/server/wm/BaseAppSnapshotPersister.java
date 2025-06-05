@@ -30,6 +30,7 @@ import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 class BaseAppSnapshotPersister {
     static final String LOW_RES_FILE_POSTFIX = "_reduced";
@@ -59,8 +60,31 @@ class BaseAppSnapshotPersister {
     void persistSnapshot(int id, int userId, TaskSnapshot snapshot) {
         synchronized (mLock) {
             mSnapshotPersistQueue.sendToQueueLocked(mSnapshotPersistQueue
-                    .createStoreWriteQueueItem(id, userId, snapshot, mPersistInfoProvider));
+                    .createStoreWriteQueueItem(id, userId, snapshot, mPersistInfoProvider,
+                            null /* lowResSnapshotConsumer */));
         }
+    }
+
+    /**
+     * Persists a snapshot of a task to disk, and convert to low-res snapshot.
+     *
+     * @param id The id of the object that needs to be persisted.
+     * @param userId The id of the user this tasks belongs to.
+     * @param snapshot The snapshot to persist.
+     */
+    void persistSnapshotAndConvert(int id, int userId, TaskSnapshot snapshot,
+            Consumer<LowResSnapshotSupplier> lowResSnapshotConsumer) {
+        synchronized (mLock) {
+            mSnapshotPersistQueue.sendToQueueLocked(mSnapshotPersistQueue
+                    .createStoreWriteQueueItem(id, userId, snapshot, mPersistInfoProvider,
+                            lowResSnapshotConsumer));
+        }
+    }
+
+    interface LowResSnapshotSupplier {
+        TaskSnapshot getLowResSnapshot();
+
+        void abort();
     }
 
     /**

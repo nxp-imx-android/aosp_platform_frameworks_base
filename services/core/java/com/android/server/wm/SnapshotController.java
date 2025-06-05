@@ -272,33 +272,78 @@ class SnapshotController {
     @VisibleForTesting
     TaskSnapshot getTaskSnapshotInner(int taskId, Task task, long latestCaptureTime,
             @TaskSnapshotManager.Resolution int retrieveResolution) {
+        final boolean requestLowResolution =
+                retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW;
+        TaskSnapshot inCacheSnapshot;
+        boolean convertToLow;
         synchronized (mService.mGlobalLock) {
-            final TaskSnapshot snapshot = mTaskSnapshotController.getSnapshot(
+            inCacheSnapshot = mTaskSnapshotController.getSnapshot(
                     taskId, retrieveResolution);
-            if (snapshot != null) {
-                if (snapshot.getCaptureTime() > latestCaptureTime) {
-                    snapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                    return snapshot;
+            if (inCacheSnapshot != null) {
+                if (inCacheSnapshot.getCaptureTime() > latestCaptureTime) {
+                    inCacheSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                    return inCacheSnapshot;
                 } else {
                     return null;
                 }
             }
-            if (latestCaptureTime > 0) {
-                // Return null if the client already has the latest snapshot.
-                final TaskSnapshot inCacheSnapshot = mTaskSnapshotController.getSnapshot(
-                        taskId, TaskSnapshotManager.RESOLUTION_ANY);
-                if (inCacheSnapshot != null) {
-                    if (inCacheSnapshot.getCaptureTime() <= latestCaptureTime) {
-                        return null;
-                    }
+            inCacheSnapshot = mTaskSnapshotController.getSnapshot(
+                    taskId, TaskSnapshotManager.RESOLUTION_ANY);
+            if (latestCaptureTime > 0 && inCacheSnapshot != null) {
+                // return null if the client already has the latest snapshot.
+                if (inCacheSnapshot.getCaptureTime() <= latestCaptureTime) {
+                    return null;
                 }
             }
+            convertToLow = requestLowResolution && mTaskSnapshotController.mOnlyCacheLowResSnapshot
+                    && inCacheSnapshot != null && !inCacheSnapshot.isLowResolution();
+            if (convertToLow) {
+                inCacheSnapshot.addReference(TaskSnapshot.REFERENCE_CONVERT_RESOLUTION);
+            }
         }
-        final boolean isLowResolution =
-                retrieveResolution == TaskSnapshotManager.RESOLUTION_LOW;
+
+        if (convertToLow) {
+            final TaskSnapshot convertLowResSnapshot =
+                    convertToLowResSnapshot(task, inCacheSnapshot, true /* updateCache */);
+            if (convertLowResSnapshot != null) {
+                convertLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                return convertLowResSnapshot;
+            }
+        }
         // Don't call this while holding the lock as this operation might hit the disk.
         return mTaskSnapshotController.getSnapshotFromDisk(taskId,
-                task.mUserId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                task.mUserId, requestLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+    }
+
+    /**
+     * Converts a high-resolution snapshot to a low-resolution snapshot.
+     *
+     * <p>Note: If the snapshot is in the cache, a {@link TaskSnapshot#REFERENCE_CONVERT_RESOLUTION}
+     * reference should be added. This is to prevent the high-resolution snapshot
+     * from being released as soon as it is replaced by the newly-created low-resolution snapshot.
+     * </p>
+     *
+     * @param snapshot The high resolution snapshot.
+     * @param updateCache If true, update the converted low-resolution snapshot to cache.
+     */
+    TaskSnapshot convertToLowResSnapshot(Task task, TaskSnapshot snapshot, boolean updateCache) {
+        try {
+            Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "createLowResSnapshot");
+            final TaskSnapshot lowSnapshot = mTaskSnapshotController.createLowResSnapshot(snapshot);
+            if (updateCache && lowSnapshot != null) {
+                synchronized (mService.mGlobalLock) {
+                    if (task.isAttached()) {
+                        mTaskSnapshotController.updateCacheWithLowResSnapshotIfNeeded(
+                                task, lowSnapshot);
+                    }
+                }
+                return lowSnapshot;
+            }
+        } finally {
+            snapshot.removeReference(TaskSnapshot.REFERENCE_CONVERT_RESOLUTION);
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+        }
+        return null;
     }
 
     void notifySnapshotChanged(int taskId, TaskSnapshot snapshot) {
@@ -334,12 +379,17 @@ class SnapshotController {
         }
 
         @Override
-        public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache) {
+        public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache,
+                boolean lowResolution) {
             final long ident = Binder.clearCallingIdentity();
             try {
-                final Supplier<TaskSnapshot> supplier;
+                Supplier<TaskSnapshot> supplier = null;
+                TaskSnapshot freshSnapshot = null;
+                final Task task;
+                final boolean convertToLow = lowResolution
+                        && mTaskSnapshotController.mOnlyCacheLowResSnapshot;
                 synchronized (mService.mGlobalLock) {
-                    final Task task = mService.mRoot.anyTaskForId(taskId,
+                    task = mService.mRoot.anyTaskForId(taskId,
                             MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
                     if (task == null || !task.isVisible()) {
                         Slog.w(TAG, "takeTaskSnapshot: taskId=" + taskId
@@ -353,12 +403,30 @@ class SnapshotController {
                     // SnapshotPersister.
                     if (updateCache) {
                         supplier = mTaskSnapshotController.getRecordSnapshotSupplier(task,
-                                TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                                convertToLow
+                                        ? TaskSnapshot.REFERENCE_CONVERT_RESOLUTION
+                                        : TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
                     } else {
-                        return mTaskSnapshotController.snapshot(task);
+                        freshSnapshot = mTaskSnapshotController.snapshot(task);
                     }
                 }
-                return supplier != null ? supplier.get() : null;
+                // Don't call supplier.get while holding the lock.
+                if (freshSnapshot == null && supplier != null) {
+                    freshSnapshot = supplier.get();
+                }
+                if (freshSnapshot == null) {
+                    return null;
+                }
+                if (convertToLow) {
+                    final TaskSnapshot convert = SnapshotController.this
+                            .convertToLowResSnapshot(task, freshSnapshot, updateCache);
+                    if (convert != null) {
+                        convert.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                        return convert;
+                    }
+                }
+                freshSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                return freshSnapshot;
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }

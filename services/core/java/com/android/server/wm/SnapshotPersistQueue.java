@@ -27,8 +27,6 @@ import android.app.ActivityTaskManager;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.HardwareBuffer;
-import android.media.Image;
-import android.media.ImageReader;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.Trace;
@@ -41,6 +39,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.BaseAppSnapshotPersister.LowResSnapshotSupplier;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
 import com.android.server.wm.nano.WindowManagerProtos.TaskSnapshotProto;
 import com.android.window.flags.Flags;
@@ -51,6 +50,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 /**
  * Singleton worker thread to queue up persist or delete tasks of {@link TaskSnapshot}s to disk.
@@ -371,20 +371,24 @@ class SnapshotPersistQueue {
     }
 
     StoreWriteQueueItem createStoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
-            PersistInfoProvider provider) {
-        return new StoreWriteQueueItem(id, userId, snapshot, provider);
+            PersistInfoProvider provider,
+            Consumer<LowResSnapshotSupplier> lowResSnapshotConsumer) {
+        return new StoreWriteQueueItem(id, userId, snapshot, provider, lowResSnapshotConsumer);
     }
 
     class StoreWriteQueueItem extends WriteQueueItem {
         private final int mId;
         private final TaskSnapshot mSnapshot;
+        private final Consumer<LowResSnapshotSupplier> mLowResSnapshotConsumer;
 
         StoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
-                PersistInfoProvider provider) {
+                PersistInfoProvider provider,
+                Consumer<LowResSnapshotSupplier> lowResSnapshotConsumer) {
             super(provider, userId);
             mId = id;
             snapshot.addReference(TaskSnapshot.REFERENCE_PERSIST);
             mSnapshot = snapshot;
+            mLowResSnapshotConsumer = lowResSnapshotConsumer;
         }
 
         @GuardedBy("mLock")
@@ -474,22 +478,7 @@ class SnapshotPersistQueue {
                 return false;
             }
 
-            final int width;
-            final int height;
-            final int pixelFormat;
-            if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                width = mSnapshot.getHardwareBufferWidth();
-                height = mSnapshot.getHardwareBufferHeight();
-                pixelFormat = mSnapshot.getHardwareBufferFormat();
-            } else {
-                final HardwareBuffer hwBuffer = mSnapshot.getHardwareBuffer();
-                width = hwBuffer.getWidth();
-                height = hwBuffer.getHeight();
-                pixelFormat = hwBuffer.getFormat();
-            }
-            final Bitmap swBitmap = mustPersistByHardwareRender(mSnapshot)
-                    ? copyToSwBitmapReadBack()
-                    : copyToSwBitmapDirect(width, height, pixelFormat);
+            final Bitmap swBitmap = TaskSnapshotConvertUtil.copySWBitmap(mSnapshot);
             if (swBitmap == null) {
                 return false;
             }
@@ -506,6 +495,16 @@ class SnapshotPersistQueue {
                 return true;
             }
 
+            final int width;
+            final int height;
+            if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                width = mSnapshot.getHardwareBufferWidth();
+                height = mSnapshot.getHardwareBufferHeight();
+            } else {
+                final HardwareBuffer hwBuffer = mSnapshot.getHardwareBuffer();
+                width = hwBuffer.getWidth();
+                height = hwBuffer.getHeight();
+            }
             final Bitmap lowResBitmap = Bitmap.createScaledBitmap(swBitmap,
                     (int) (width * mPersistInfoProvider.lowResScaleFactor()),
                     (int) (height * mPersistInfoProvider.lowResScaleFactor()),
@@ -519,70 +518,26 @@ class SnapshotPersistQueue {
                 Slog.e(TAG, "Unable to open " + lowResFile + " for persisting.", e);
                 return false;
             }
-            lowResBitmap.recycle();
+            if (mLowResSnapshotConsumer != null) {
+                mLowResSnapshotConsumer.accept(new LowResSnapshotSupplier() {
+                    @Override
+                    public TaskSnapshot getLowResSnapshot() {
+                        final TaskSnapshot result = TaskSnapshotConvertUtil
+                                .convertLowResSnapshot(mSnapshot, lowResBitmap);
+                        lowResBitmap.recycle();
+                        return result;
+                    }
+
+                    @Override
+                    public void abort() {
+                        lowResBitmap.recycle();
+                    }
+                });
+            } else {
+                lowResBitmap.recycle();
+            }
 
             return true;
-        }
-
-        private Bitmap copyToSwBitmapReadBack() {
-            final Bitmap bitmap;
-            if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                bitmap = mSnapshot.wrapToBitmap();
-            } else {
-                bitmap = Bitmap.wrapHardwareBuffer(
-                        mSnapshot.getHardwareBuffer(), mSnapshot.getColorSpace());
-            }
-            if (bitmap == null) {
-                Slog.e(TAG, "Invalid task snapshot hw bitmap");
-                return null;
-            }
-
-            final Bitmap swBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false /* isMutable */);
-            if (swBitmap == null) {
-                Slog.e(TAG, "Bitmap conversion from (config=" + bitmap.getConfig()
-                        + ", isMutable=" + bitmap.isMutable()
-                        + ") to (config=ARGB_8888, isMutable=false) failed.");
-                return null;
-            }
-            bitmap.recycle();
-            return swBitmap;
-        }
-
-        /**
-         * Use ImageReader to create the software bitmap, so SkImage won't create an extra texture.
-         */
-        private Bitmap copyToSwBitmapDirect(int width, int height, int pixelFormat) {
-            try (ImageReader ir = ImageReader.newInstance(width, height,
-                    pixelFormat, 1 /* maxImages */)) {
-                if (Flags.reduceTaskSnapshotMemoryUsage()) {
-                    mSnapshot.attachAndQueueBufferWithColorSpace(ir.getSurface());
-                } else {
-                    ir.getSurface().attachAndQueueBufferWithColorSpace(
-                            mSnapshot.getHardwareBuffer(), mSnapshot.getColorSpace());
-                }
-                try (Image image = ir.acquireLatestImage()) {
-                    if (image == null || image.getPlaneCount() < 1) {
-                        Slog.e(TAG, "Image reader cannot acquire image");
-                        return null;
-                    }
-
-                    final Image.Plane[] planes = image.getPlanes();
-                    if (planes.length != 1) {
-                        Slog.e(TAG, "Image reader cannot get plane");
-                        return null;
-                    }
-                    final Image.Plane plane = planes[0];
-                    final int rowPadding = plane.getRowStride() - plane.getPixelStride()
-                            * image.getWidth();
-                    final Bitmap swBitmap = Bitmap.createBitmap(
-                            image.getWidth() + rowPadding / plane.getPixelStride() /* width */,
-                            image.getHeight() /* height */,
-                            pixelFormat == PixelFormat.RGB_565
-                                    ? Bitmap.Config.RGB_565 : Bitmap.Config.ARGB_8888);
-                    swBitmap.copyPixelsFromBuffer(plane.getBuffer());
-                    return swBitmap;
-                }
-            }
         }
 
         @Override
