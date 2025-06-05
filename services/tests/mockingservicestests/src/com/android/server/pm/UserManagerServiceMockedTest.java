@@ -1371,11 +1371,9 @@ public final class UserManagerServiceMockedTest {
 
     private static final boolean EXCLUDE_PARTIAL = true;
     private static final boolean EXCLUDE_DYING = true;
-    private static final boolean EXCLUDE_PRE_CREATED = true;
     private static final boolean RESOLVE_NULL_NAMES = true;
     private static final boolean DONT_EXCLUDE_PARTIAL = false;
     private static final boolean DONT_EXCLUDE_DYING = false;
-    private static final boolean DONT_EXCLUDE_PRE_CREATED = false;
     private static final boolean DONT_RESOLVE_NULL_NAMES = false;
 
     private void assertDefaultSystemUserName(List<UserInfo> users) {
@@ -1395,34 +1393,30 @@ public final class UserManagerServiceMockedTest {
         var nonAdminUser = addUser(new UserInfo(/* id= */ 8, /* name= */ null, FLAG_FULL));
         var partialUser = addUser(new UserInfo(/* id= */ 15, /* name= */ null, FLAG_FULL));
         partialUser.partial = true;
+        // NOTE: user pre-creation is not supported anymore, so it won't be returned
         var preCreatedUser = addUser(new UserInfo(/* id= */ 16, /* name= */ null, FLAG_FULL));
         preCreatedUser.preCreated = true;
         var dyingUser = addDyingUser(new UserInfo(/* id= */ 23, /* name= */ null, FLAG_FULL));
         var namedUser = addUser(new UserInfo(/* id= */ 42, "Bond, James Bond", FLAG_FULL));
 
-        expect.withMessage("getUsersWithUnresolvedNames(%s, %s, %s)", EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED)
-                .that(mUms.getUsersWithUnresolvedNames(EXCLUDE_PARTIAL, EXCLUDE_DYING,
-                        EXCLUDE_PRE_CREATED))
+        expect.withMessage("getUsersWithUnresolvedNames(%s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING)
+                .that(mUms.getUsersWithUnresolvedNames(EXCLUDE_PARTIAL, EXCLUDE_DYING))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser);
-        expect.withMessage("getUsersWithUnresolvedNames(%s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED)
-                .that(mUms.getUsersWithUnresolvedNames(DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
-                        EXCLUDE_PRE_CREATED))
+        expect.withMessage("getUsersWithUnresolvedNames(%s, %s)", DONT_EXCLUDE_PARTIAL,
+                EXCLUDE_DYING)
+                .that(mUms.getUsersWithUnresolvedNames(DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
                         partialUser);
-        expect.withMessage("getUsersWithUnresolvedNames(%s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, EXCLUDE_PRE_CREATED)
-                .that(mUms.getUsersWithUnresolvedNames(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
-                        EXCLUDE_PRE_CREATED))
+        expect.withMessage("getUsersWithUnresolvedNames(%s, %s)", DONT_EXCLUDE_PARTIAL,
+                DONT_EXCLUDE_DYING)
+                .that(mUms.getUsersWithUnresolvedNames(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
                         partialUser, dyingUser);
-        expect.withMessage("getUsersWithUnresolvedNames(%s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, DONT_EXCLUDE_PRE_CREATED)
-                .that(mUms.getUsersWithUnresolvedNames(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
-                        DONT_EXCLUDE_PRE_CREATED))
+        expect.withMessage("getUsersWithUnresolvedNames(%s, %s)", DONT_EXCLUDE_PARTIAL,
+                DONT_EXCLUDE_DYING)
+                .that(mUms.getUsersWithUnresolvedNames(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
-                        partialUser, dyingUser, preCreatedUser);
+                        partialUser, dyingUser);
     }
 
     @Test
@@ -1433,86 +1427,86 @@ public final class UserManagerServiceMockedTest {
         var nonAdminUser = addUser(new UserInfo(/* id= */ 8, /* name= */ null, FLAG_FULL));
         var partialUser = addUser(new UserInfo(/* id= */ 15, /* name= */ null, FLAG_FULL));
         partialUser.partial = true;
+        // NOTE: user pre-creation is not supported anymore, so it won't be returned
         var preCreatedUser = addUser(new UserInfo(/* id= */ 16, /* name= */ null, FLAG_FULL));
         preCreatedUser.preCreated = true;
         var dyingUser = addDyingUser(new UserInfo(/* id= */ 23, /* name= */ null, FLAG_FULL));
         var namedUser = addUser(new UserInfo(/* id= */ 42, "Bond, James Bond", FLAG_FULL));
 
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING,
+                DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(EXCLUDE_PARTIAL, EXCLUDE_DYING,
-                        EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES))
+                        DONT_RESOLVE_NULL_NAMES))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
+                DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
-                        EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES))
+                        DONT_RESOLVE_NULL_NAMES))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
                         partialUser);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
+                DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
-                        EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES))
+                        DONT_RESOLVE_NULL_NAMES))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
                         partialUser, dyingUser);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, DONT_EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
+                DONT_RESOLVE_NULL_NAMES)
                 .that(mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
-                        DONT_EXCLUDE_PRE_CREATED, DONT_RESOLVE_NULL_NAMES))
+                        DONT_RESOLVE_NULL_NAMES))
                 .containsExactly(headlessSystemUser, adminUser, nonAdminUser, namedUser,
-                        partialUser, dyingUser, preCreatedUser);
+                        partialUser, dyingUser);
 
         // NOTE: cannot check for a system user with resolved name on containsExactly() because
         // UserInfo doesn't implement equals, hence checks below need to explicitly check it
         List<UserInfo> resolvedNameUsers;
 
         resolvedNameUsers = mUms.getUsersInternal(EXCLUDE_PARTIAL, EXCLUDE_DYING,
-                EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+                RESOLVE_NULL_NAMES);
+        expect.withMessage("getUsersInternal(%s, %s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
                 .hasSize(4);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", EXCLUDE_PARTIAL, EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
                 .containsAtLeast(adminUser, nonAdminUser, namedUser);
         assertDefaultSystemUserName(resolvedNameUsers);
 
         resolvedNameUsers = mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
-                EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+                RESOLVE_NULL_NAMES);
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
                 .hasSize(5);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                EXCLUDE_DYING, EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
                 .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser);
         assertDefaultSystemUserName(resolvedNameUsers);
 
         resolvedNameUsers = mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
-                EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+                RESOLVE_NULL_NAMES);
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
                 .hasSize(6);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL,
+                DONT_EXCLUDE_DYING, RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
                 .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser, dyingUser);
         assertDefaultSystemUserName(resolvedNameUsers);
 
         resolvedNameUsers = mUms.getUsersInternal(DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
-                DONT_EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, DONT_EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+                RESOLVE_NULL_NAMES);
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
-                .hasSize(7);
-        expect.withMessage("getUsersInternal(%s, %s, %s, %s)", DONT_EXCLUDE_PARTIAL,
-                DONT_EXCLUDE_DYING, DONT_EXCLUDE_PRE_CREATED, RESOLVE_NULL_NAMES)
+                .hasSize(6);
+        expect.withMessage("getUsersInternal(%s, %s, %s)", DONT_EXCLUDE_PARTIAL, DONT_EXCLUDE_DYING,
+                RESOLVE_NULL_NAMES)
                 .that(resolvedNameUsers)
-                .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser, dyingUser,
-                        preCreatedUser);
+                .containsAtLeast(adminUser, nonAdminUser, namedUser, partialUser, dyingUser);
         assertDefaultSystemUserName(resolvedNameUsers);
     }
 

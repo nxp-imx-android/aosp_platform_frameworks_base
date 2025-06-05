@@ -2217,10 +2217,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
             t.traceBegin("read user settings");
             mFirstBoot = !mSettings.readLPw(computer,
-                    mInjector.getUserManagerInternal().getUsers(
-                    /* excludePartial= */ true,
-                    /* excludeDying= */ false,
-                    /* excludePreCreated= */ false));
+                    mInjector.getUserManagerInternal().getUsers(/* excludeDying= */ false));
             t.traceEnd();
 
             if (mFirstBoot) {
@@ -4384,9 +4381,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         int[] grantPermissionsUserIds = EMPTY_INT_ARRAY;
         final List<UserInfo> livingUsers = mInjector.getUserManagerInternal().getUsers(
-                /* excludePartial= */ true,
-                /* excludeDying= */ true,
-                /* excludePreCreated= */ false);
+                /* excludeDying= */ true);
         final int livingUserCount = livingUsers.size();
         for (int i = 0; i < livingUserCount; i++) {
             final int userId = livingUsers.get(i).id;
