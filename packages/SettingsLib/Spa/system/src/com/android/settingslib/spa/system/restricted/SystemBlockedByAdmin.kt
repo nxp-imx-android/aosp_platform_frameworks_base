@@ -22,6 +22,8 @@ import android.provider.Settings
 import com.android.settingslib.spa.restricted.BlockedWithDetails
 
 internal class SystemBlockedByAdmin(private val context: Context) : BlockedWithDetails {
+    override val canOverrideSwitchChecked = true
+
     override fun showDetails() {
         context.startActivity(Intent(Settings.ACTION_SHOW_ADMIN_SUPPORT_DETAILS))
     }

@@ -46,7 +46,7 @@ class RestrictedSwitchPreferenceTest {
     private val switchPreferenceModel =
         object : SwitchPreferenceModel {
             override val title = TITLE
-            private val checkedState = mutableStateOf(true)
+            var checkedState = mutableStateOf(true)
             override val checked = { checkedState.value }
             override val onCheckedChange: (Boolean) -> Unit = { checkedState.value = it }
         }
@@ -117,13 +117,43 @@ class RestrictedSwitchPreferenceTest {
         assertThat(testRestrictedRepository.detailsIsShown).isTrue()
     }
 
-    private fun setContent(restrictions: TestRestrictions) {
+    @Test
+    fun whenBlockedWithDetailsThenOverrideSwitchCheckedToFalse_overrideCheckedToFalse() {
+        switchPreferenceModel.checkedState.value = true
+        val restrictions = TestRestrictions(isEmpty = false)
+        testRestrictedRepository.isBlockedWithDetails = true
+        testRestrictedRepository.canOverrideSwitchChecked = true
+
+        setContent(restrictions, ifBlockedOverrideCheckedTo = false)
+
+        composeTestRule.onNodeWithText(TITLE).assertIsDisplayed().assertIsEnabled()
+        composeTestRule.onNode(isOff()).assertIsDisplayed()
+    }
+
+    @Test
+    fun whenBlockedWithDetailsThenOverrideSwitchCheckedToTrue_overrideCheckedToTrue() {
+        switchPreferenceModel.checkedState.value = false
+        val restrictions = TestRestrictions(isEmpty = false)
+        testRestrictedRepository.isBlockedWithDetails = true
+        testRestrictedRepository.canOverrideSwitchChecked = true
+
+        setContent(restrictions, ifBlockedOverrideCheckedTo = true)
+
+        composeTestRule.onNodeWithText(TITLE).assertIsDisplayed().assertIsEnabled()
+        composeTestRule.onNode(isOn()).assertIsDisplayed()
+    }
+
+    private fun setContent(
+        restrictions: TestRestrictions,
+        ifBlockedOverrideCheckedTo: Boolean? = null,
+    ) {
         composeTestRule.setContent {
             CompositionLocalProvider(LocalContext provides context) {
                 RestrictedSwitchPreference(
                     model = switchPreferenceModel,
                     restrictions = restrictions,
                     repository = testRestrictedRepository,
+                    ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
                 )
             }
         }
