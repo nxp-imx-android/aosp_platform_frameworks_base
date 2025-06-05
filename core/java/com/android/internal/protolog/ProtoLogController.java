@@ -19,6 +19,7 @@ package com.android.internal.protolog;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.ServiceManager;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
  * if shared, but instances are intended to be managed by the ProtoLog class or tests.
  * Internal state is synchronized via mInitLock.
  */
+@RavenwoodKeepWholeClass
 public class ProtoLogController {
 
     @Nullable
