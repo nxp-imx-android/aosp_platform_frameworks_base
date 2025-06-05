@@ -1585,17 +1585,11 @@ public class UserManagerService extends IUserManager.Stub {
         return UserHandle.USER_NULL;
     }
 
-    public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
-        return getUsers(/*excludePartial= */ true, excludeDying, /* excludePreCreated= */
-                true);
-    }
-
     @Override
-    public @NonNull List<UserInfo> getUsers(boolean excludePartial, boolean excludeDying,
-            boolean excludePreCreated) {
+    public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
         checkCreateUsersPermission("query users");
-        return getUsersInternal(excludePartial, excludeDying, excludePreCreated,
-                /* resolveNullNames= */ true);
+        return getUsersInternal(/* excludePartial= */ true, excludeDying, /* excludePreCreated= */
+                true, /* resolveNullNames= */ true);
     }
 
     // Used by cmd users
@@ -3168,7 +3162,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Returns true if there is more than one user that can be switched to. */
     private boolean areThereMultipleSwitchableUsers() {
-        List<UserInfo> aliveUsers = getUsers(true, true, true);
+        List<UserInfo> aliveUsers = getUsers(/* excludeDying= */ true);
         boolean isAnyAliveUser = false;
         for (UserInfo userInfo : aliveUsers) {
             if (userInfo.supportsSwitchToByUser()) {
@@ -7665,10 +7659,7 @@ public class UserManagerService extends IUserManager.Stub {
      * recycled.
      */
     void reconcileUsers(String volumeUuid) {
-        mUserDataPreparer.reconcileUsers(volumeUuid, getUsers(
-                /* excludePartial= */ true,
-                /* excludeDying= */ true,
-                /* excludePreCreated= */ false));
+        mUserDataPreparer.reconcileUsers(volumeUuid, getUsers(/* excludeDying= */ true));
     }
 
     /**
