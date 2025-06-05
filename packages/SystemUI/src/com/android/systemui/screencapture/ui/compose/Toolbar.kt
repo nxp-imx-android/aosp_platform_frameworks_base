@@ -53,6 +53,7 @@ fun Toolbar(
             PlatformIconButton(
                 iconResource = R.drawable.ic_close,
                 colors = IconButtonDefaults.iconButtonColors(),
+                shape = IconButtonDefaults.smallSquareShape,
                 contentDescription =
                     stringResource(id = R.string.underlay_close_button_content_description),
                 onClick = onCloseClick,
@@ -65,6 +66,6 @@ fun Toolbar(
 @Composable
 private fun defaultColors(): FloatingToolbarColors {
     return FloatingToolbarDefaults.standardFloatingToolbarColors(
-        toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainer
+        toolbarContainerColor = MaterialTheme.colorScheme.surfaceBright
     )
 }
