@@ -62,6 +62,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -439,11 +440,11 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         }
     }
 
-    void evictOtherChildren(WindowContainerTransaction wct, int taskId) {
+    void evictOtherChildren(WindowContainerTransaction wct, Set<Integer> keepTaskIds) {
         for (int i = mChildrenTaskInfo.size() - 1; i >= 0; i--) {
             final ActivityManager.RunningTaskInfo taskInfo = mChildrenTaskInfo.valueAt(i);
-            if (taskId == taskInfo.taskId) continue;
-            evictChild(wct, taskInfo, "other");
+            if (keepTaskIds.contains(taskInfo.taskId)) continue;
+            evictChild(wct, taskInfo, "other_" + stageTypeToString(mId));
         }
     }
 
