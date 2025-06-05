@@ -112,7 +112,7 @@ constructor(
 
     override fun shouldShowFaceScanningAnim(): Boolean {
         return canShowFaceScanningAnim() &&
-            (keyguardUpdateMonitor.isFaceDetectionRunning || authController.isShowing)
+            (keyguardUpdateMonitor.isFaceAuthOrDetectionRunning || authController.isShowing)
     }
 
     // Using the name "Creator" so that it doesn't become "...FactoryFactory".

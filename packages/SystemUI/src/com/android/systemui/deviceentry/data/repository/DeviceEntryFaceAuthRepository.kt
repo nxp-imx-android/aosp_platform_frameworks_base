@@ -283,12 +283,12 @@ constructor(
                     Pair(
                         biometricSettingsRepository.isFaceAuthCurrentlyAllowed
                             .isFalse()
+                            .or(isLockedOut)
                             .or(keyguardRepository.isKeyguardDismissible),
                         "faceAuthIsNotCurrentlyAllowedOrCurrentUserIsTrusted",
                     ),
                     // We don't want to run face detect if fingerprint can be used to unlock the
-                    // device
-                    // but it's not possible to authenticate with FP from the bouncer (UDFPS)
+                    // device bc it's not possible to authenticate with FP from the bouncer (UDFPS)
                     Pair(
                         and(isUdfps(), deviceEntryFingerprintAuthRepository.isRunning).isFalse(),
                         "udfpsAuthIsNotPossibleAnymore",
