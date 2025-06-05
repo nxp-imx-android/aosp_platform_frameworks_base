@@ -661,13 +661,13 @@ public class LockSettingsService extends ILockSettings.Stub {
     private class SoftwareRateLimiterInjector implements SoftwareRateLimiter.Injector {
 
         @Override
-        public int readWrongGuessCounter(LskfIdentifier id) {
-            return mSpManager.readWrongGuessCounter(id);
+        public int readFailureCounter(LskfIdentifier id) {
+            return mSpManager.readFailureCounter(id);
         }
 
         @Override
-        public void writeWrongGuessCounter(LskfIdentifier id, int count) {
-            mSpManager.writeWrongGuessCounter(id, count);
+        public void writeFailureCounter(LskfIdentifier id, int count) {
+            mSpManager.writeFailureCounter(id, count);
         }
 
         @Override

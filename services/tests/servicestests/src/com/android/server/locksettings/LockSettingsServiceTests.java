@@ -652,7 +652,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // The software and hardware counters start at 0.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
 
         // Try the same wrong PIN repeatedly.
@@ -668,7 +668,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             assertEquals(0, response.getTimeout());
         }
         // The software and hardware counters should now be 1, for 1 unique guess.
-        assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(1, mSpManager.readFailureCounter(lskfId));
         assertEquals(1, mSpManager.getSumOfWeaverFailureCounters());
     }
 
@@ -686,7 +686,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // The software and hardware counters start at 0.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
 
         // Try the same wrong PIN repeatedly.
@@ -699,7 +699,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         // The software counter should still be 0, since the software rate-limiter is fully disabled
         // and thus it should have never been told about the guesses at all. The hardware counter
         // should now be numGuesses, as all the (duplicate) guesses should have been sent to it.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(numGuesses, mSpManager.getSumOfWeaverFailureCounters());
     }
 
