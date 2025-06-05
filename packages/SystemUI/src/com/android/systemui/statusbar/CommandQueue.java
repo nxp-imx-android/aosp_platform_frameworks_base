@@ -40,6 +40,7 @@ import android.inputmethodservice.InputMethodService.BackDispositionMode;
 import android.inputmethodservice.InputMethodService.ImeWindowVisibility;
 import android.media.INearbyMediaDevicesProvider;
 import android.media.MediaRoute2Info;
+import android.media.session.MediaSession;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -575,7 +576,8 @@ public class CommandQueue extends IStatusBar.Stub implements
         /**
          * @see IStatusBar#showMediaOutputSwitcher
          */
-        default void showMediaOutputSwitcher(String packageName, UserHandle userHandle) {}
+        default void showMediaOutputSwitcher(String packageName, UserHandle userHandle,
+                @Nullable MediaSession.Token sessionToken) {}
 
         /**
          * @see IStatusBar#confirmImmersivePrompt
@@ -1456,7 +1458,8 @@ public class CommandQueue extends IStatusBar.Stub implements
         }
     }
     @Override
-    public void showMediaOutputSwitcher(String packageName, UserHandle userHandle) {
+    public void showMediaOutputSwitcher(String packageName, UserHandle userHandle,
+            @Nullable MediaSession.Token sessionToken) {
         int callingUid = Binder.getCallingUid();
         if (callingUid != 0 && callingUid != Process.SYSTEM_UID) {
             throw new SecurityException("Call only allowed from system server.");
@@ -1465,6 +1468,7 @@ public class CommandQueue extends IStatusBar.Stub implements
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = packageName;
             args.arg2 = userHandle;
+            args.arg3 = sessionToken;
             mHandler.obtainMessage(MSG_SHOW_MEDIA_OUTPUT_SWITCHER, args).sendToTarget();
         }
     }
@@ -2060,9 +2064,10 @@ public class CommandQueue extends IStatusBar.Stub implements
                     args = (SomeArgs) msg.obj;
                     String clientPackageName = (String) args.arg1;
                     UserHandle clientUserHandle = (UserHandle) args.arg2;
+                    MediaSession.Token sessionToken = (MediaSession.Token) args.arg3;
                     for (Callbacks callback : mCallbacks) {
                         callback.showMediaOutputSwitcher(clientPackageName,
-                                clientUserHandle);
+                                clientUserHandle, sessionToken);
                     }
                     break;
                 case MSG_CONFIRM_IMMERSIVE_PROMPT:

@@ -66,6 +66,7 @@ import android.media.RouteDiscoveryPreference;
 import android.media.RouteListingPreference;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
+import android.media.session.MediaSession;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -329,11 +330,12 @@ class MediaRouter2ServiceImpl {
     }
 
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
-    public boolean showMediaOutputSwitcherWithRouter2(@NonNull String packageName) {
+    public boolean showMediaOutputSwitcherWithRouter2(@NonNull String packageName,
+            @Nullable MediaSession.Token sessionToken) {
         UserHandle userHandle = Binder.getCallingUserHandle();
         final long token = Binder.clearCallingIdentity();
         try {
-            return showOutputSwitcher(packageName, userHandle);
+            return showOutputSwitcher(packageName, userHandle, sessionToken);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -925,7 +927,7 @@ class MediaRouter2ServiceImpl {
 
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
     public boolean showMediaOutputSwitcherWithProxyRouter(
-            @NonNull IMediaRouter2Manager proxyRouter) {
+            @NonNull IMediaRouter2Manager proxyRouter, @Nullable MediaSession.Token sessionToken) {
         Objects.requireNonNull(proxyRouter, "Proxy router must not be null");
 
         final long token = Binder.clearCallingIdentity();
@@ -938,10 +940,13 @@ class MediaRouter2ServiceImpl {
                     throw new UnsupportedOperationException(
                             "Only proxy routers can show the Output Switcher.");
                 }
-
+                if (!Flags.enableRouteVisibilityControlApi()) {
+                    sessionToken = null;
+                }
                 return showOutputSwitcher(
                         proxyRouterRecord.mTargetPackageName,
-                        UserHandle.of(proxyRouterRecord.mUserRecord.mUserId));
+                        UserHandle.of(proxyRouterRecord.mUserRecord.mUserId),
+                        sessionToken);
             }
         } finally {
             Binder.restoreCallingIdentity(token);
@@ -1102,13 +1107,15 @@ class MediaRouter2ServiceImpl {
 
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
     private boolean showOutputSwitcher(
-            @NonNull String packageName, @NonNull UserHandle userHandle) {
+            @NonNull String packageName, @NonNull UserHandle userHandle,
+            @Nullable MediaSession.Token sessionToken) {
         if (mActivityManager.getPackageImportance(packageName) > IMPORTANCE_FOREGROUND) {
             Slog.w(TAG, "showMediaOutputSwitcher only works when called from foreground");
             return false;
         }
         synchronized (mLock) {
-            mStatusBarManagerInternal.showMediaOutputSwitcher(packageName, userHandle);
+            mStatusBarManagerInternal.showMediaOutputSwitcher(packageName, userHandle,
+                    sessionToken);
         }
         return true;
     }
