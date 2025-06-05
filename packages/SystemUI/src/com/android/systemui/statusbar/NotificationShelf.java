@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar;
 
 import static com.android.keyguard.BouncerPanelExpansionCalculator.aboutToShowBouncerProgress;
+import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.Flags.physicalNotificationMovement;
 import static com.android.systemui.util.ColorUtilKt.hexColorString;
 
@@ -1068,11 +1069,6 @@ public class NotificationShelf extends ActivatableNotificationView {
         return false;
     }
 
-    @Override
-    protected boolean usesTransparentBackground() {
-        return super.usesTransparentBackground() && !mAmbientState.isOnKeyguard();
-    }
-
     public void setCanModifyColorOfNotifications(boolean canModifyColorOfNotifications) {
         mCanModifyColorOfNotifications = canModifyColorOfNotifications;
     }
@@ -1102,6 +1098,7 @@ public class NotificationShelf extends ActivatableNotificationView {
             DumpUtilsKt.withIncreasedIndent(pw, () -> {
                 pw.println("mActualWidth: " + mActualWidth);
                 pw.println("mStatusBarHeight: " + mStatusBarHeight);
+                pw.println("isOnKeyguard: " + isOnKeyguard());
             });
         }
     }
