@@ -22,7 +22,7 @@ HSPLandroid/graphics/Color;->luminance()F
 
 # TODO(shayba): remove the below once the generated profile is updated.
 # See: b/419605355
-Landroid/os/MessageQueue$EnqueueOrder;->*
+HSPLandroid/os/MessageQueue$EnqueueOrder;->*
 
 # Concurrent MessageQueue uses ConcurrentSkipListMap.
 # See: b/415954362
