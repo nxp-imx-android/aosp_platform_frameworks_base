@@ -22,8 +22,8 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.fragments.FragmentHostManager
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewInitializedListener
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewUpdatedListener
+import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions
@@ -53,7 +53,10 @@ interface StatusBarInitializer : CoreStartable {
      */
     fun initializeStatusBar()
 
-    interface OnStatusBarViewInitializedListener {
+    /** Called when the status bar associated with this instance is being destroyed. */
+    fun stop()
+
+    interface StatusBarViewLifecycleListener {
 
         /**
          * The status bar view has been initialized.
@@ -63,6 +66,9 @@ interface StatusBarInitializer : CoreStartable {
          *   view.
          */
         fun onStatusBarViewInitialized(component: HomeStatusBarComponent)
+
+        /** The status bar view has been destroyed. */
+        fun onStatusBarViewDestroyed(component: HomeStatusBarComponent) {}
     }
 
     interface OnStatusBarViewUpdatedListener {
@@ -94,7 +100,7 @@ constructor(
     @Assisted private val collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
     private val statusBarRootFactory: StatusBarRootFactory,
     @Assisted private val componentFactory: HomeStatusBarComponent.Factory,
-    private val creationListeners: Set<@JvmSuppressWildcards OnStatusBarViewInitializedListener>,
+    private val lifecycleListeners: Set<@JvmSuppressWildcards StatusBarViewLifecycleListener>,
 ) : StatusBarInitializer {
     private var component: HomeStatusBarComponent? = null
 
@@ -158,10 +164,9 @@ constructor(
                                 statusBarModePerDisplayRepository.onStatusBarViewInitialized(
                                     component
                                 )
-                            } else {
-                                creationListeners.forEach { listener ->
-                                    listener.onStatusBarViewInitialized(component)
-                                }
+                            }
+                            lifecycleListeners.forEach { listener ->
+                                listener.onStatusBarViewInitialized(component)
                             }
                         }
             }
@@ -188,7 +193,7 @@ constructor(
                             component!!.phoneStatusBarViewController,
                             component!!.phoneStatusBarTransitions,
                         )
-                        creationListeners.forEach { listener ->
+                        lifecycleListeners.forEach { listener ->
                             listener.onStatusBarViewInitialized(component!!)
                         }
                     }
@@ -206,6 +211,12 @@ constructor(
                 CollapsedStatusBarFragment.TAG,
             )
             .commit()
+    }
+
+    override fun stop() {
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
+        val component = this.component ?: return
+        lifecycleListeners.forEach { it.onStatusBarViewDestroyed(component) }
     }
 
     @AssistedFactory

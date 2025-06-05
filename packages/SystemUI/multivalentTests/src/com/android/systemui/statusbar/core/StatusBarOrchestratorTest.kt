@@ -31,7 +31,6 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessState
-import com.android.systemui.shade.mockNotificationShadeWindowViewController
 import com.android.systemui.shade.mockShadeSurface
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.data.model.StatusBarMode.LIGHTS_OUT
@@ -64,8 +63,6 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val fakeStatusBarModePerDisplayRepository = kosmos.fakeStatusBarModePerDisplayRepository
     private val mockPluginDependencyProvider = kosmos.mockPluginDependencyProvider
-    private val mockNotificationShadeWindowViewController =
-        kosmos.mockNotificationShadeWindowViewController
     private val mockShadeSurface = kosmos.mockShadeSurface
     private val fakeBouncerRepository = kosmos.fakeKeyguardBouncerRepository
     private val fakeStatusBarWindowStatePerDisplayRepository =
@@ -93,14 +90,6 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
         orchestrator.start()
 
         assertThat(fakeStatusBarWindowController.isAttached).isTrue()
-    }
-
-    @Test
-    fun start_setsStatusBarControllerOnShade() {
-        orchestrator.start()
-
-        verify(mockNotificationShadeWindowViewController)
-            .setStatusBarViewController(fakeStatusBarInitializer.statusBarViewController)
     }
 
     @Test
