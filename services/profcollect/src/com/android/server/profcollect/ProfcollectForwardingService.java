@@ -61,6 +61,8 @@ import com.android.server.wm.ActivityMetricsLaunchObserverRegistry;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -86,6 +88,8 @@ public final class ProfcollectForwardingService extends SystemService {
     private static IProfCollectd sIProfcollect;
     private static ProfcollectForwardingService sSelfService;
     private final Handler mHandler = new ProfcollectdHandler(IoThread.getHandler().getLooper());
+    private final ScheduledExecutorService mScheduledExecutorService =
+            Executors.newSingleThreadScheduledExecutor();
 
     private IProviderStatusCallback mProviderStatusCallback = new IProviderStatusCallback.Stub() {
         public void onProviderReady() {
@@ -279,8 +283,18 @@ public final class ProfcollectForwardingService extends SystemService {
                     connectNativeService();
                     break;
                 case MESSAGE_REGISTER_SCHEDULERS:
+                    // Register trace hint events observers.
                     registerObservers();
-                    PeriodicTraceJobService.schedule(getContext());
+                    // Background periodic tracing.
+                    final int interval =
+                            DeviceConfig.getInt(DeviceConfig.NAMESPACE_PROFCOLLECT_NATIVE_BOOT,
+                            "collection_interval", 600);
+                    mScheduledExecutorService.scheduleWithFixedDelay(() -> {
+                        if (sIProfcollect != null) {
+                            Utils.traceSystem(sIProfcollect, "periodic");
+                        }
+                    }, 0, interval, TimeUnit.SECONDS);
+                    // Background process and upload service.
                     ReportProcessJobService.schedule(getContext());
                     break;
                 default:
@@ -296,45 +310,6 @@ public final class ProfcollectForwardingService extends SystemService {
 
             sIProfcollect = null;
             tryConnectNativeService();
-        }
-    }
-
-    /**
-     * Background report process and upload service.
-     */
-    public static class PeriodicTraceJobService extends JobService {
-        // Unique ID in system server
-        private static final int PERIODIC_TRACE_JOB_ID = 241207;
-        private static final ComponentName JOB_SERVICE_NAME = new ComponentName(
-                "android",
-                PeriodicTraceJobService.class.getName());
-
-        /**
-         * Attach the service to the system job scheduler.
-         */
-        public static void schedule(Context context) {
-            final int interval = DeviceConfig.getInt(DeviceConfig.NAMESPACE_PROFCOLLECT_NATIVE_BOOT,
-                    "collection_interval", 600);
-            JobScheduler js = context.getSystemService(JobScheduler.class);
-            js.schedule(new JobInfo.Builder(PERIODIC_TRACE_JOB_ID, JOB_SERVICE_NAME)
-                    .setPeriodic(TimeUnit.SECONDS.toMillis(interval))
-                    // PRIORITY_DEFAULT is the highest priority we can request for a periodic job.
-                    .setPriority(JobInfo.PRIORITY_DEFAULT)
-                    .build());
-        }
-
-        @Override
-        public boolean onStartJob(JobParameters params) {
-            if (sIProfcollect != null) {
-                Utils.traceSystem(sIProfcollect, "periodic");
-            }
-            jobFinished(params, false);
-            return true;
-        }
-
-        @Override
-        public boolean onStopJob(JobParameters params) {
-            return false;
         }
     }
 
