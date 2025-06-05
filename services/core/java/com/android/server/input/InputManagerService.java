@@ -24,6 +24,7 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
 import static com.android.hardware.input.Flags.fixKeyboardInterceptorPolicyCall;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
+import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
 
 import android.Manifest;
@@ -347,7 +348,7 @@ public class InputManagerService extends IInputManager.Stub
     // Monitors any changes to the sysfs nodes when an input device is connected.
     private final SysfsNodeMonitor mSysfsNodeMonitor;
 
-    @NonNull
+    @Nullable
     private final TouchpadDebugViewController mTouchpadDebugViewController;
 
     // Manages Keyboard backlight
@@ -544,8 +545,9 @@ public class InputManagerService extends IInputManager.Stub
         mSettingsObserver = new InputSettingsObserver(mContext, mHandler, this, mNative);
         mKeyboardLayoutManager = new KeyboardLayoutManager(mContext, mNative, mDataStore,
                 injector.getLooper());
-        mTouchpadDebugViewController = new TouchpadDebugViewController(mContext,
-                injector.getLooper(), this);
+        mTouchpadDebugViewController =
+                touchpadVisualizer() ? new TouchpadDebugViewController(mContext,
+                        injector.getLooper(), this) : null;
         mBatteryController = new BatteryController(mContext, mNative, injector.getLooper(),
                 injector.getUEventManager());
         mSysfsNodeMonitor = new SysfsNodeMonitor(mContext, mNative, injector.getLooper(),
@@ -2392,13 +2394,17 @@ public class InputManagerService extends IInputManager.Stub
     // Native callback.
     @SuppressWarnings("unused")
     private void notifyTouchpadHardwareState(TouchpadHardwareState hardwareStates, int deviceId) {
-        mTouchpadDebugViewController.updateTouchpadHardwareState(hardwareStates, deviceId);
+        if (mTouchpadDebugViewController != null) {
+            mTouchpadDebugViewController.updateTouchpadHardwareState(hardwareStates, deviceId);
+        }
     }
 
     // Native callback.
     @SuppressWarnings("unused")
     private void notifyTouchpadGestureInfo(int type, int deviceId) {
-        mTouchpadDebugViewController.updateTouchpadGestureInfo(type, deviceId);
+        if (mTouchpadDebugViewController != null) {
+            mTouchpadDebugViewController.updateTouchpadGestureInfo(type, deviceId);
+        }
     }
 
     // Native callback.
@@ -3978,7 +3984,9 @@ public class InputManagerService extends IInputManager.Stub
 
     void updateTouchpadVisualizerEnabled(boolean enabled) {
         mNative.setShouldNotifyTouchpadHardwareState(enabled);
-        mTouchpadDebugViewController.updateTouchpadVisualizerEnabled(enabled);
+        if (mTouchpadDebugViewController != null) {
+            mTouchpadDebugViewController.updateTouchpadVisualizerEnabled(enabled);
+        }
     }
 
     void updatePointerLocationEnabled(boolean enabled) {
