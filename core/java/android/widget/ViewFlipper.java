@@ -38,7 +38,9 @@ import android.widget.RemoteViews.RemoteView;
 @RemoteView
 public class ViewFlipper extends ViewAnimator {
     private static final String TAG = "ViewFlipper";
-    private static final boolean LOGD = false;
+
+    //TODO(b/423971232): set LOGD back to false once the log is unneeded
+    private static final boolean LOGD = Build.isDebuggable();
 
     private static final int DEFAULT_INTERVAL = 3000;
 
@@ -181,7 +183,11 @@ public class ViewFlipper extends ViewAnimator {
         }
         if (LOGD) {
             Log.d(TAG, "updateRunning() mVisible=" + mVisible + ", mStarted=" + mStarted
-                    + ", mInhibited=" + mInhibited + ", mRunning=" + mRunning);
+                    + ", mInhibited=" + mInhibited + ", mRunning=" + mRunning
+                    + ", mInhibited=" + mInhibited + ", flipNow=" + flipNow
+                    + ", mFlipInterval=" + mFlipInterval + ", view=" + this
+                    + ", parent=" + this.getParent()
+            );
         }
     }
 
