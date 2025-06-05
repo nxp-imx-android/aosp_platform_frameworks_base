@@ -22,10 +22,10 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.hardware.input.KeyGestureEvent
+import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.internal.accessibility.common.ShortcutConstants
-import com.android.systemui.accessibility.data.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -38,12 +38,14 @@ import kotlinx.coroutines.withContext
 
 /** Provides data related to first-time dialog for key gesture to enable accessibility services. */
 interface AccessibilityShortcutsRepository {
-    suspend fun getKeyGestureConfirmInfoByType(
+    suspend fun getTitleToContentForKeyGestureDialog(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): KeyGestureConfirmInfo?
+    ): Pair<String, CharSequence>?
+
+    fun getActionKeyIconResId(): Int
 
     fun enableShortcutsForTargets(targetName: String)
 }
@@ -70,15 +72,15 @@ constructor(
             KeyEvent.KEYCODE_V to "V",
         )
 
-    override suspend fun getKeyGestureConfirmInfoByType(
+    override suspend fun getTitleToContentForKeyGestureDialog(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): KeyGestureConfirmInfo? {
+    ): Pair<String, CharSequence>? {
         val featureNameToIntro = getFeatureNameToIntro(keyGestureType, targetName)
 
-        // TODO: b/419026315 - Update the secondary modifier key label and icon dynamically
+        // TODO: b/419026315 - Update the secondary modifier key label.
         val secondaryModifierLabel = ShortcutHelperKeys.modifierLabels[MODIFIER_KEY xor metaState]
         val keyCodeLabel = keyCodeMap[keyCode]
         if (featureNameToIntro == null || secondaryModifierLabel == null || keyCodeLabel == null) {
@@ -92,14 +94,20 @@ constructor(
                 featureNameToIntro.first,
             )
         val contentText =
-            resources.getString(
-                R.string.accessibility_key_gesture_dialog_content,
+            TextUtils.expandTemplate(
+                resources.getText(R.string.accessibility_key_gesture_dialog_content),
                 secondaryModifierLabel.invoke(context),
                 keyCodeLabel,
                 featureNameToIntro.first,
                 featureNameToIntro.second,
             )
-        return KeyGestureConfirmInfo(title, contentText, targetName)
+
+        return Pair(title, contentText)
+    }
+
+    override fun getActionKeyIconResId(): Int {
+        // TODO: b/419026315 - Update the modifier key icon res id based on keyboard device.
+        return ShortcutHelperKeys.metaModifierIconResId
     }
 
     @SuppressLint("MissingPermission") // android.permission.MANAGE_ACCESSIBILITY

@@ -21,6 +21,7 @@ import android.hardware.input.KeyGestureEvent
 import android.view.KeyEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.accessibility.common.KeyGestureEventConstants
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
 import com.android.systemui.broadcast.broadcastDispatcher
@@ -98,7 +99,7 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
             runCurrent()
 
             verify(repository)
-                .getKeyGestureConfirmInfoByType(
+                .getTitleToContentForKeyGestureDialog(
                     eq(keyGestureType),
                     eq(metaState),
                     eq(keyCode),
@@ -116,10 +117,10 @@ class KeyGestureDialogInteractorTest : SysuiTestCase() {
         val intent =
             Intent().apply {
                 action = KeyGestureDialogInteractor.ACTION
-                putExtra(KeyGestureDialogInteractor.EXTRA_KEY_GESTURE_TYPE, keyGestureType)
-                putExtra(KeyGestureDialogInteractor.EXTRA_META_STATE, metaState)
-                putExtra(KeyGestureDialogInteractor.EXTRA_KEY_CODE, keyCode)
-                putExtra(KeyGestureDialogInteractor.EXTRA_TARGET_NAME, targetName)
+                putExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, keyGestureType)
+                putExtra(KeyGestureEventConstants.META_STATE, metaState)
+                putExtra(KeyGestureEventConstants.KEY_CODE, keyCode)
+                putExtra(KeyGestureEventConstants.TARGET_NAME, targetName)
             }
 
         broadcastDispatcher.sendIntentToMatchingReceiversOnly(context, intent)

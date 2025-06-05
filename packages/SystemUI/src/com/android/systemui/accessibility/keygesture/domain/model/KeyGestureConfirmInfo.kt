@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.accessibility.data.model
+package com.android.systemui.accessibility.keygesture.domain.model
+
+import androidx.annotation.DrawableRes
 
 data class KeyGestureConfirmInfo(
-    val title: CharSequence,
+    val title: String,
     val contentText: CharSequence,
     val targetName: String,
+    @DrawableRes val actionKeyIconResId: Int,
 )

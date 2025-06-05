@@ -2835,9 +2835,11 @@
     <!-- Text for the dialog title. -->
     <string name="accessibility_key_gesture_dialog_title" translatable="false">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
     <!-- Text for showing inside the dialog.-->
-    <string name="accessibility_key_gesture_dialog_content" translatable="false">Action + <xliff:g name="secondary_key" example="Alt">%1$s</xliff:g> + <xliff:g name="key_code" example="M">%2$s</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">%3$s</xliff:g>. <xliff:g name="feature_intro" example="Magnification intro">%4$s</xliff:g></string>
+    <string name="accessibility_key_gesture_dialog_content" translatable="false">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>. <xliff:g name="feature_intro" example="Magnification intro">^4</xliff:g></string>
     <!-- The prefix string for the magnification intro -->
     <string name="accessibility_key_gesture_dialog_magnifier_intro" translatable="false">This allows you to quickly zoom in on the screen to make content larger.</string>
+    <!-- Positive button text for the dialog -->
+    <string name="accessibility_key_gesture_dialog_positive_button_text" translatable="false">Turn on</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->
