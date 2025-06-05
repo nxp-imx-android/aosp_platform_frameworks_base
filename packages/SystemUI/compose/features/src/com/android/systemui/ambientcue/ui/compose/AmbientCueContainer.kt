@@ -198,8 +198,8 @@ private fun NavBarAmbientCue(
     val windowWidthSizeClass = calculateWindowSizeClass().widthSizeClass
 
     val navBarWidth =
-        if (windowWidthSizeClass == WindowWidthSizeClass.Compact) NAV_BAR_WIDTH_DP.dp
-        else NAV_BAR_LARGE_WIDTH_DP.dp
+        if (windowWidthSizeClass == WindowWidthSizeClass.Compact) NAV_BAR_PILL_WIDTH_DP.dp
+        else NAV_BAR_PILL_LARGE_WIDTH_DP.dp
 
     LaunchedEffect(expanded) { onShouldInterceptTouches(expanded, null) }
     BackgroundGlow(visible = visible, expanded = expanded, modifier = modifier)
@@ -226,7 +226,9 @@ private fun NavBarAmbientCue(
 }
 
 private const val NAV_BAR_WIDTH_DP = 108 // R.dimen.taskbar_stashed_small_screen from Launcher
+private const val NAV_BAR_PILL_WIDTH_DP = NAV_BAR_WIDTH_DP + 8
 private const val NAV_BAR_LARGE_WIDTH_DP = 220 // R.dimen.taskbar_stashed_handle_width from Launcher
+private const val NAV_BAR_PILL_LARGE_WIDTH_DP = NAV_BAR_LARGE_WIDTH_DP + 4
 
 private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from Launcher
 private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
