@@ -36,33 +36,31 @@ public final class TaskContinuityMessage {
     public TaskContinuityMessage(byte[] data) throws IOException {
 
         ProtoInputStream pis = new ProtoInputStream(data);
-        while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
-            switch (pis.getFieldNumber()) {
-                case (int) android.companion.TaskContinuityMessage.DEVICE_CONNECTED:
-                    final long deviceConnectedToken = pis.start(
-                        android.companion.TaskContinuityMessage.DEVICE_CONNECTED
-                    );
-
-                    mData = new ContinuityDeviceConnected(pis);
-                    pis.end(deviceConnectedToken);
-                    break;
-                case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE:
-                    final long remoteTaskAddedMessageToken = pis.start(
-                        android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE
-                    );
-
-                    mData = new RemoteTaskAddedMessage(pis);
-                    pis.end(remoteTaskAddedMessageToken);
-                    break;
-                case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
-                    final long remoteTaskRemovedToken = pis.start(
-                        android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED
-                    );
-                    mData = RemoteTaskRemovedMessage.readFromProto(pis);
-                    pis.end(remoteTaskRemovedToken);
-                    break;
-            }
+        if (pis.nextField() == ProtoInputStream.NO_MORE_FIELDS) {
+            return;
         }
+
+        int fieldNumber = pis.getFieldNumber();
+        final long dataToken = pis.start(fieldNumber);
+        switch (fieldNumber) {
+            case (int) android.companion.TaskContinuityMessage.DEVICE_CONNECTED:
+                mData = ContinuityDeviceConnected.readFromProto(pis);
+                break;
+            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED:
+                mData = RemoteTaskAddedMessage.readFromProto(pis);
+                break;
+            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED:
+                mData = RemoteTaskRemovedMessage.readFromProto(pis);
+                break;
+            case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED:
+                mData = new RemoteTaskUpdatedMessage(pis);
+                break;
+            case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
+                mData = HandoffRequestMessage.readFromProto(pis);
+                break;
+        }
+
+        pis.end(dataToken);
     }
 
     /**
@@ -77,34 +75,9 @@ public final class TaskContinuityMessage {
      */
     public byte[] toBytes() {
         ProtoOutputStream pos = new ProtoOutputStream();
-        switch (mData) {
-            case ContinuityDeviceConnected continuityDeviceConnected:
-                long continutyDeviceConnectedToken = pos.start(
-                    android.companion.TaskContinuityMessage.DEVICE_CONNECTED
-                );
-
-                continuityDeviceConnected.writeToProto(pos);
-                pos.end(continutyDeviceConnectedToken);
-                break;
-            case RemoteTaskAddedMessage remoteTaskAddedMessage:
-                long remoteTaskAddedMessageToken = pos.start(
-                    android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED_MESSAGE
-                );
-
-                remoteTaskAddedMessage.writeToProto(pos);
-                pos.end(remoteTaskAddedMessageToken);
-                break;
-            case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
-                long remoteTaskRemovedToken = pos.start(
-                    android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED
-                );
-                remoteTaskRemovedMessage.writeToProto(pos);
-                pos.end(remoteTaskRemovedToken);
-                break;
-            default:
-                break;
-        }
-
+        long dataToken = pos.start(mData.getFieldNumber());
+        mData.writeToProto(pos);
+        pos.end(dataToken);
         return pos.getBytes();
     }
 

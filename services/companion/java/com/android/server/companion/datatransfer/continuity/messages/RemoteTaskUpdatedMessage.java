@@ -48,6 +48,11 @@ public class RemoteTaskUpdatedMessage implements TaskContinuityMessageData {
     }
 
     @Override
+    public long getFieldNumber() {
+        return android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED;
+    }
+
+    @Override
     public void writeToProto(ProtoOutputStream pos) {
         long taskToken = pos.start(
             android.companion.RemoteTaskUpdatedMessage.TASK);

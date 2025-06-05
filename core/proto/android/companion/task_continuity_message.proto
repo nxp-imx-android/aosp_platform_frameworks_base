@@ -24,7 +24,7 @@ option java_multiple_files = true;
 message TaskContinuityMessage {
     oneof data {
         ContinuityDeviceConnected device_connected = 1;
-        RemoteTaskAddedMessage remote_task_added_message = 2;
+        RemoteTaskAddedMessage remote_task_added = 2;
         RemoteTaskRemovedMessage remote_task_removed = 3;
         HandoffRequestMessage handoff_request = 4;
         RemoteTaskUpdatedMessage remote_task_updated = 5;

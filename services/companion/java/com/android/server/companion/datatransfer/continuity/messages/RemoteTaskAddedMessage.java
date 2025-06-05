@@ -34,17 +34,25 @@ public class RemoteTaskAddedMessage implements TaskContinuityMessageData {
         mTask = task;
     }
 
-    RemoteTaskAddedMessage(ProtoInputStream pis) throws IOException {
+    static RemoteTaskAddedMessage readFromProto(ProtoInputStream pis) throws IOException {
+        RemoteTaskInfo task = null;
         while (pis.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
             switch (pis.getFieldNumber()) {
                 case (int) android.companion.RemoteTaskAddedMessage.TASK:
                     final long taskToken = pis.start(
                         android.companion.RemoteTaskAddedMessage.TASK);
-                    mTask = new RemoteTaskInfo(pis);
+                    task = new RemoteTaskInfo(pis);
                     pis.end(taskToken);
                     break;
             }
         }
+
+        return new RemoteTaskAddedMessage(task);
+    }
+
+    @Override
+    public long getFieldNumber() {
+        return android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED;
     }
 
     @Override

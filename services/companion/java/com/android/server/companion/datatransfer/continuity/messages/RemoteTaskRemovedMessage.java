@@ -39,6 +39,11 @@ public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMess
     }
 
     @Override
+    public long getFieldNumber() {
+        return android.companion.TaskContinuityMessage.REMOTE_TASK_REMOVED;
+    }
+
+    @Override
     public void writeToProto(ProtoOutputStream pos) {
         pos.write(
             android.companion.RemoteTaskRemovedMessage.TASK_ID,

@@ -40,6 +40,11 @@ public record HandoffRequestMessage(int taskId) implements TaskContinuityMessage
     }
 
     @Override
+    public long getFieldNumber() {
+        return android.companion.TaskContinuityMessage.HANDOFF_REQUEST;
+    }
+
+    @Override
     public void writeToProto(ProtoOutputStream pos) {
         pos.write(android.companion.HandoffRequestMessage.TASK_ID, taskId());
     }
