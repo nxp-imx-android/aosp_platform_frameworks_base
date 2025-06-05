@@ -126,6 +126,15 @@ class WallpaperWindowToken extends WindowToken {
         return mShowWhenLocked;
     }
 
+    @Override
+    void setInitialSurfaceControlProperties(SurfaceControl.Builder b) {
+        // Replace the name from toString because surface cannot rename and mShowWhenLocked is set
+        // after surface creation.
+        b.setName("WallpaperWindowToken{"
+                + Integer.toHexString(System.identityHashCode(this)) + '}');
+        super.setInitialSurfaceControlProperties(b);
+    }
+
     void setCropHints(SparseArray<Rect> cropHints) {
         mCropHints = cropHints.clone();
     }
