@@ -91,3 +91,11 @@ flag {
     description: "Feature flag to have a system API which shuts down the device."
     bug: "365055195"
 }
+
+flag {
+    name: "sleeplocks"
+    namespace: "power"
+    description: "Enable new wakelock to keep device asleep - for the user, but ensure that the CPU remains awake."
+    bug: "401624085"
+    is_fixed_read_only: true
+}
