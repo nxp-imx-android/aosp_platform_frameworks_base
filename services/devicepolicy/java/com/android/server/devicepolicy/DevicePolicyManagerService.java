@@ -12671,7 +12671,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final int userHandle = user.getIdentifier();
         final long id = mInjector.binderClearCallingIdentity();
         try {
-            maybeInstallDevicePolicyManagementRoleHolderInUser(userHandle);
+            maybeInstallDevicePolicyManagementRoleHolderInUser(userHandle,
+                    caller);
 
             manageUserUnchecked(admin, profileOwner, userHandle, adminExtras,
                     /* showDisclaimer= */ true);
@@ -21520,7 +21521,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     startTime,
                     callerPackage);
 
-            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id);
+            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id,
+                    caller);
 
             installExistingAdminPackage(userInfo.id, admin.getPackageName());
             if (!enableAdminAndSetProfileOwner(userInfo.id, caller.getUserId(), admin)) {
@@ -21613,7 +21615,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     startTime,
                     caller.getPackageName());
 
-            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id);
+            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id, caller);
             installExistingAdminPackage(userInfo.id, admin.getPackageName());
 
             if (!enableAdminAndSetProfileOwner(userInfo.id, caller.getUserId(), admin)) {
@@ -21741,9 +21743,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private void onCreateAndProvisionManagedProfileCompleted(
             ManagedProfileProvisioningParams provisioningParams) {}
 
-    private void maybeInstallDevicePolicyManagementRoleHolderInUser(int targetUserId) {
+    private void maybeInstallDevicePolicyManagementRoleHolderInUser(@UserIdInt int targetUserId,
+            CallerIdentity caller) {
         String devicePolicyManagerRoleHolderPackageName =
-                getRoleHolderPackageName(mContext, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT);
+                getRoleHolderPackageNameOnUser(mContext, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT,
+                        caller.getUserHandle());
         if (devicePolicyManagerRoleHolderPackageName == null) {
             Slogf.d(LOG_TAG, "No device policy management role holder specified.");
             return;
@@ -21767,14 +21771,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         } catch (RemoteException e) {
             // Does not happen, same process
         }
-    }
-
-    /**
-     * If multiple packages hold the role, returns the first package in the list.
-     */
-    @Nullable
-    private String getRoleHolderPackageName(Context context, String role) {
-        return getRoleHolderPackageNameOnUser(context, role, Process.myUserHandle());
     }
 
     /**
