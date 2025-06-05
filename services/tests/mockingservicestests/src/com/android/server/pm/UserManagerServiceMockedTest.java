@@ -652,14 +652,12 @@ public final class UserManagerServiceMockedTest {
                 mSpiedUms.createProfileForUserEvenWhenDisallowedWithThrow(PRIVATE_PROFILE_NAME,
                         USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
         Mockito.doNothing().when(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true), any(),
-                any());
+                eq(privateProfileUser.id), eq(true), any(), any());
 
         mSpiedUms.autoLockPrivateSpace();
 
         Mockito.verify(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -677,14 +675,12 @@ public final class UserManagerServiceMockedTest {
                 USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
         mockAutoLockForPrivateSpace(Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_ON_DEVICE_LOCK);
         Mockito.doNothing().when(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true), any(),
-                any());
+                eq(privateProfileUser.id), eq(true), any(), any());
 
         mSpiedUms.tryAutoLockingPrivateSpaceOnKeyguardChanged(true);
 
         Mockito.verify(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                        any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -705,8 +701,7 @@ public final class UserManagerServiceMockedTest {
 
         // Verify that no operation to disable quiet mode is not called
         Mockito.verify(mSpiedUms, never()).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -726,8 +721,7 @@ public final class UserManagerServiceMockedTest {
         verify((MockedVoidMethod) () -> Settings.Secure.getInt(any(),
                 eq(Settings.Secure.PRIVATE_SPACE_AUTO_LOCK), anyInt()), never());
         Mockito.verify(mSpiedUms, never()).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -747,13 +741,12 @@ public final class UserManagerServiceMockedTest {
                 mSpiedUms.createProfileForUserEvenWhenDisallowedWithThrow(PRIVATE_PROFILE_NAME,
                         USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
         Mockito.doNothing().when(mSpiedUms).scheduleAlarmToAutoLockPrivateSpace(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), anyLong());
-
+                eq(privateProfileUser.id), anyLong());
 
         mSpiedUms.maybeScheduleAlarmToAutoLockPrivateSpace();
 
         Mockito.verify(mSpiedUms).scheduleAlarmToAutoLockPrivateSpace(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), anyLong());
+                eq(privateProfileUser.id), anyLong());
     }
 
     @Test
