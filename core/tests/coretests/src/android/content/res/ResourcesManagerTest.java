@@ -476,8 +476,8 @@ public class ResourcesManagerTest {
         metrics.setToDefaults();
         final Configuration config = new Configuration();
         config.setToDefaults();
-        Resources resources = new Resources(new AssetManager(), metrics, config);
-        assertNotNull(resources);
+        final var assets = new AssetManager();
+        Resources resources = new Resources(assets, metrics, config);
 
         ResourcesImpl oriResImpl = resources.getImpl();
 
@@ -491,6 +491,12 @@ public class ResourcesManagerTest {
 
         // Package resources' paths should be cached in ResourcesManager.
         assertNotNull(ResourcesManager.getInstance().getRegisteredResourcePaths().get(TEST_LIB));
+
+        // Now make sure that when constructing another custom Resources object its
+        // AssetManager gets updated in place.
+        final var anotherResources = new Resources(assets, metrics, config);
+        assertSame(assets, anotherResources.getAssets());
+        assertTrue(containsPath(TEST_LIB, anotherResources.getAssets().getApkAssets()));
     }
 
     @Test
