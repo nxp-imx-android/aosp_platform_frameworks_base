@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.featurepods.av.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -40,7 +42,7 @@ import kotlinx.coroutines.flow.map
 class AvControlsChipViewModel
 @AssistedInject
 constructor(
-    @Application applicationContext: Context,
+    @Application val applicationContext: Context,
     avControlsChipInteractor: AvControlsChipInteractor,
 ) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
@@ -73,9 +75,20 @@ constructor(
                     chipText = null,
                     colors = ColorsModel.AvControlsTheme,
                     hoverBehavior = HoverBehavior.None,
+                    contentDescription =
+                        contentDescription(sensorActivityModel = sensorActivityModel),
                 )
         }
     }
+
+    private fun contentDescription(sensorActivityModel: SensorActivityModel.Active): String? =
+        when (sensorActivityModel.sensors) {
+            SensorActivityModel.Active.Sensors.CAMERA -> R.string.accessibility_camera_in_use
+            SensorActivityModel.Active.Sensors.MICROPHONE ->
+                R.string.accessibility_microphone_in_use
+            SensorActivityModel.Active.Sensors.CAMERA_AND_MICROPHONE ->
+                R.string.accessibility_camera_and_microphone_in_use
+        }.let { ContentDescription.Resource(it).loadContentDescription(applicationContext) }
 
     private fun icons(sensorActivityModel: SensorActivityModel.Active): List<ChipIcon> =
         when (sensorActivityModel.sensors) {

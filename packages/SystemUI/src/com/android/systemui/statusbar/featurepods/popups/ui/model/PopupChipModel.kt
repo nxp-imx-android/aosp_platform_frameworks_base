@@ -61,6 +61,7 @@ sealed class PopupChipModel {
         val showPopup: () -> Unit = {},
         val hidePopup: () -> Unit = {},
         val hoverBehavior: HoverBehavior = HoverBehavior.None,
+        val contentDescription: String? = null,
     ) : PopupChipModel() {
         override val logName = "Shown(id=$chipId, toggled=$isPopupShown)"
     }
