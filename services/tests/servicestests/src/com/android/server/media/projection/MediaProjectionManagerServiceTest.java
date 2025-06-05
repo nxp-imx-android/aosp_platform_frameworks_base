@@ -218,6 +218,11 @@ public class MediaProjectionManagerServiceTest {
         mWaitingDisplaySession.setVirtualDisplayId(5);
 
         mAppInfo.targetSdkVersion = 32;
+        mAppInfo.packageName = PACKAGE_NAME;
+
+        doReturn(mAppInfo).when(mPackageManager).getApplicationInfoAsUser(anyString(),
+                any(ApplicationInfoFlags.class), any(UserHandle.class));
+        doReturn(UID).when(mPackageManager).getPackageUidAsUser(anyString(), any(int.class));
 
         mService = new MediaProjectionManagerService(mContext);
     }
