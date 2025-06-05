@@ -49,6 +49,14 @@ class OrderMenuPreference @JvmOverloads constructor(
             }
         }
 
+    var isMenuButtonVisible: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyChanged()
+            }
+        }
+
     init {
         layoutResource = R.layout.settingslib_expressive_preference_ordermenu
         widgetLayoutResource = R.layout.settingslib_expressive_button_menu
@@ -66,6 +74,7 @@ class OrderMenuPreference @JvmOverloads constructor(
         holder.isDividerAllowedAbove = false
 
         menuButton = holder.findViewById(R.id.settingslib_menu_button) as? MaterialButton
+        (menuButton as android.view.View).visibility = if (isMenuButtonVisible) VISIBLE else GONE
 
         // setup the onClickListener
         setupMenuButton(context)
