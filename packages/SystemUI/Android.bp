@@ -466,9 +466,7 @@ android_library {
     resource_dirs: [],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.dagger-api",
-        "com.android.systemui.util.settings-api",
-        "com.android.systemui.retail-impl",
+        "com.android.systemui.pods-aosp-handheld",
         "SystemUI-res",
         "WifiTrackerLib",
         "WindowManager-Shell",
