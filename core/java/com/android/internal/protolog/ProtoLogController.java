@@ -27,7 +27,9 @@ import com.android.internal.protolog.common.IProtoLogGroup;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Controller for managing ProtoLog state and core logic.
@@ -46,24 +48,35 @@ public class ProtoLogController {
     @GuardedBy("mInitLock")
     private final Set<IProtoLogGroup> mGroups = new HashSet<>();
 
-    void registerLogGroupInProcess(@NonNull IProtoLogGroup... groups) {
+    /**
+     * Registers a log group in the process.
+     * @param groups The groups to register.
+     */
+    public void registerLogGroupInProcess(@NonNull IProtoLogGroup... groups) {
         synchronized (mInitLock) {
             var newGroups = Arrays.stream(groups)
+                    .filter(Objects::nonNull)
                     .filter(group -> !mGroups.contains(group))
-                    .toArray(IProtoLogGroup[]::new);
-            if (newGroups.length == 0) {
+                    .collect(Collectors.toUnmodifiableSet());
+            if (newGroups.isEmpty()) {
                 return;
             }
 
-            mGroups.addAll(Arrays.asList(newGroups));
+            assertForCollisions(newGroups);
+
+            mGroups.addAll(newGroups);
 
             if (mProtoLogInstance != null) {
-                mProtoLogInstance.registerGroups(newGroups);
+                mProtoLogInstance.registerGroups(newGroups.toArray(new IProtoLogGroup[0]));
             }
         }
     }
 
-    void init(@NonNull IProtoLogGroup... groups) {
+    /**
+     * Initializes the ProtoLog instance.
+     * @param groups The groups to register.
+     */
+    public void init(@NonNull IProtoLogGroup... groups) {
         registerLogGroupInProcess(groups);
 
         synchronized (mInitLock) {
@@ -74,8 +87,8 @@ public class ProtoLogController {
             // These tracing instances are only used when we cannot or do not preprocess the source
             // files to extract out the log strings. Otherwise, the trace calls are replaced with
             // calls directly to the generated tracing implementations.
-            if (ProtoLog.logOnlyToLogcat()) {
-                mProtoLogInstance = new LogcatOnlyProtoLogImpl();
+            if (shouldLogOnlyToLogcat()) {
+                mProtoLogInstance = createLogcatOnlyInstance();
             } else {
                 var datasource = ProtoLog.getSharedSingleInstanceDataSource();
 
@@ -83,6 +96,12 @@ public class ProtoLogController {
                         datasource, mGroups.toArray(new IProtoLogGroup[0]));
             }
         }
+    }
+
+    @Nullable
+    @VisibleForTesting
+    public IProtoLog getProtoLogInstance() {
+        return mProtoLogInstance;
     }
 
     /**
@@ -103,8 +122,35 @@ public class ProtoLogController {
         }
     }
 
+    @VisibleForTesting
     @NonNull
-    private PerfettoProtoLogImpl createAndEnableNewPerfettoProtoLogImpl(
+    public Set<IProtoLogGroup> getRegisteredGroups() {
+        return Set.copyOf(mGroups);
+    }
+
+    /**
+     * Decides if logging should only go to Logcat.
+     * Protected for testability.
+     */
+    protected boolean shouldLogOnlyToLogcat() {
+        return ProtoLog.logOnlyToLogcat();
+    }
+
+    /**
+     * Creates an instance of LogcatOnlyProtoLogImpl.
+     * Protected for testability.
+     */
+    @NonNull
+    protected IProtoLog createLogcatOnlyInstance() {
+        return new LogcatOnlyProtoLogImpl();
+    }
+
+    /**
+     * Creates and enables a new PerfettoProtoLogImpl.
+     * Protected for testability.
+     */
+    @NonNull
+    protected PerfettoProtoLogImpl createAndEnableNewPerfettoProtoLogImpl(
             @NonNull ProtoLogDataSource datasource, @NonNull IProtoLogGroup[] groups) {
         try {
             var unprocessedPerfettoProtoLogImpl =
@@ -114,6 +160,32 @@ public class ProtoLogController {
             return unprocessedPerfettoProtoLogImpl;
         } catch (ServiceManager.ServiceNotFoundException e) {
             throw new RuntimeException("Failed to create PerfettoProtoLogImpl", e);
+        }
+    }
+
+    private void assertForCollisions(Set<IProtoLogGroup> newGroups) {
+        // Check for ID collisions within the new groups first
+        Set<Integer> newIds = new HashSet<>();
+        for (IProtoLogGroup group : newGroups) {
+            if (group == null) {
+                continue;
+            }
+            if (!newIds.add(group.getId())) {
+                throw new RuntimeException("ProtoLog group ID collision for ID " + group.getId()
+                        + " within the same registration call.");
+            }
+        }
+
+        // Check for collisions with already registered groups
+        for (IProtoLogGroup group : newGroups) {
+            for (IProtoLogGroup existingGroup : mGroups) {
+                if (existingGroup.getId() == group.getId() && !existingGroup.equals(group)) {
+                    throw new RuntimeException("ProtoLog group ID collision for ID "
+                            + group.getId() + ". Group " + group.name()
+                            + " conflicts with already registered group "
+                            + existingGroup.name());
+                }
+            }
         }
     }
 }
