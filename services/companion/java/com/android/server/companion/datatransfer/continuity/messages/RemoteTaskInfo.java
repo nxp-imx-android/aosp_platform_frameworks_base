@@ -97,9 +97,10 @@ public class RemoteTaskInfo {
             .writeBytes(android.companion.RemoteTaskInfo.TASK_ICON, mTaskIcon);
     }
 
-    public RemoteTask toRemoteTask(int id, String deviceName) {
-        return new RemoteTask.Builder(id)
+    public RemoteTask toRemoteTask(int deviceId, String deviceName) {
+        return new RemoteTask.Builder(getId())
                 .setLabel(mLabel)
+                .setDeviceId(deviceId)
                 .setLastUsedTimestampMillis((int) mLastUsedTimeMillis)
                 .setSourceDeviceName(deviceName)
                 .build();
