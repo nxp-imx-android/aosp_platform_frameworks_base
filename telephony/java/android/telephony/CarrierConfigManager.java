@@ -60,6 +60,8 @@ import com.android.internal.telephony.ICarrierConfigLoader;
 import com.android.internal.telephony.flags.Flags;
 import com.android.telephony.Rlog;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -10758,6 +10760,123 @@ public class CarrierConfigManager {
     public static final String KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL =
             "show_avoid_bad_wifi_bool";
 
+    /**
+     * Auto data switch policy bitmask between primary and opportunistic intra-carrier networks.
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_", value = {
+            OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY,
+            OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_PERFORMANCE})
+    public @interface OpportunisticNetworkSwitchPolicyBitmask {}
+
+    /**
+     * Auto data network switch policy bitmask between primary and opportunistic networks:
+     * include availability based switch.
+     *
+     * @hide
+     */
+    public static final int OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY = 1 << 0;
+
+    /**
+     * Auto data network switch policy bitmask between primary and opportunistic networks:
+     * include performance based switch.
+     *
+     * @hide
+     */
+    public static final int OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_PERFORMANCE = 1 << 1;
+
+    /**
+     * Auto data switch policy between primary and opportunistic intra-carrier networks.
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "OPP_AUTO_DATA_SWITCH_POLICY_", value = {
+            OPP_AUTO_DATA_SWITCH_POLICY_DISABLED,
+            OPP_AUTO_DATA_SWITCH_POLICY_FOLLOW_SYSTEM,
+            OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY,
+            OPP_AUTO_DATA_SWITCH_POLICY_FOR_PERFORMANCE})
+    public @interface OpportunisticNetworkSwitchPolicy {}
+
+    /**
+     * Auto data network switch policy between primary and opportunistic profiles in the same
+     * subscription group: switching is disabled.
+     *
+     * @hide
+     */
+    public static final int OPP_AUTO_DATA_SWITCH_POLICY_DISABLED = 0;
+
+    /**
+     * Auto data network switch policy between primary and opportunistic profiles in the same
+     * subscription group: enable all system supported policies.
+     *
+     * <p>Enable data network switch by considering all supported information including but not
+     * limited on Network Registration State, Technologies (4G/5G), Signal Strength, Data
+     * subscription plan etc.
+     *
+     * <p>The system behavior may change over releases. Carriers can override with specific policies
+     * below if carriers would like a consistent behavior.
+     *
+     * @hide
+     */
+    public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOLLOW_SYSTEM = Integer.MAX_VALUE;
+
+    /**
+     * Auto data network switch policy between primary and opportunistic profiles in the same
+     * subscription group: switch to the network only with better availability.
+     *
+     * <p>In specific, when primary or opportunistic network is out of service while the other is
+     * active and in service, switch to the other one.
+     *
+     * <p>The availability-based switch is also restricted by the device resource config
+     * {@code auto_data_switch_availability_stability_time_threshold_millis}.
+     *
+     * @hide
+     */
+    public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY =
+            OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY;
+
+    /**
+     * Auto data network switch policy between primary and opportunistic profiles in the same
+     * subscription group: switch to the network with better data connection performance.
+     *
+     * <p>In specific, when both networks are connected, device may switch to network with better
+     * technologies (e.g. NR over LTE) and/or signal strength.
+     *
+     * <p>The performance-based switch is also restricted by the device resource config
+     * {@code auto_data_switch_performance_stability_time_threshold_millis}.
+     *
+     * <p>Performance based policy implicitly include availability based policy, that is, when
+     * primary or opportunistic is out of service, follow the same behavior for policy
+     * {@link #OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY}.
+     *
+     * @hide
+     */
+    public static final int OPP_AUTO_DATA_SWITCH_POLICY_FOR_PERFORMANCE =
+            OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_AVAILABILITY
+                    | OPP_AUTO_DATA_SWITCH_POLICY_BITMASK_PERFORMANCE;
+
+    /**
+     * Auto data network switch policies between primary and opportunistic profiles in the same
+     * subscription group.
+     *
+     * <p>The default value is {@link #OPP_AUTO_DATA_SWITCH_POLICY_DISABLED}, that is, auto data
+     * switch between primary and opportunistic networks is disabled.
+     *
+     * <p>Carriers can override the value for the primary subscription with
+     * {@link #OPP_AUTO_DATA_SWITCH_POLICY_FOLLOW_SYSTEM},
+     * {@link #OPP_AUTO_DATA_SWITCH_POLICY_FOR_AVAILABILITY}, or
+     * {@link #OPP_AUTO_DATA_SWITCH_POLICY_FOR_PERFORMANCE} to enable all system supported
+     * policies or specific policy according to the business user cases.
+     *
+     * <p>None of the policies here impact the auto data switch between primary networks.
+     * @hide
+     */
+    public static final String KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT =
+            "opp_auto_data_switch_policy_int";
+
     /** The default value for every variable. */
     private static final PersistableBundle sDefaults;
 
@@ -11593,6 +11712,7 @@ public class CarrierConfigManager {
             sDefaults.putBoolean(KEY_AVOID_BAD_WIFI_BOOL, true);
             sDefaults.putBoolean(KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL, false);
         }
+        sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT, 0);
     }
 
     /**
