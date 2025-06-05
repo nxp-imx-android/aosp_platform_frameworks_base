@@ -22,6 +22,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.icu.lang.UCharacter;
@@ -52,10 +53,10 @@ import com.android.systemui.plugins.DarkIconDispatcher;
 import com.android.systemui.plugins.DarkIconDispatcher.DarkReceiver;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.core.StatusBarRootModernization;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
-import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
 
@@ -72,7 +73,7 @@ public class Clock extends TextView implements
         DemoModeCommandReceiver,
         Tunable,
         CommandQueue.Callbacks,
-        DarkReceiver, ConfigurationListener {
+        DarkReceiver {
 
     public static final String CLOCK_SECONDS = "clock_seconds";
     private static final String CLOCK_SUPER_PARCELABLE = "clock_super_parcelable";
@@ -97,6 +98,7 @@ public class Clock extends TextView implements
     private SimpleDateFormat mContentDescriptionFormat;
     private Locale mLocale;
     private DateTimePatternGenerator mDateTimePatternGenerator;
+    private Configuration oldConfig = new Configuration();
 
     private static final int AM_PM_STYLE_NORMAL  = 0;
     private static final int AM_PM_STYLE_SMALL   = 1;
@@ -263,7 +265,7 @@ public class Clock extends TextView implements
                 handler.post(() -> {
                     if (!newLocale.equals(mLocale)) {
                         mLocale = newLocale;
-                         // Force refresh of dependent variables.
+                        // Force refresh of dependent variables.
                         mContentDescriptionFormatString = "";
                         mDateTimePatternGenerator = null;
                     }
@@ -367,8 +369,10 @@ public class Clock extends TextView implements
         setTextColor(Utils.getColorAttrDefaultColor(context, R.attr.wallpaperTextColor));
     }
 
-    @Override
     public void onDensityOrFontScaleChanged() {
+        ShadeWindowGoesAround.assertInLegacyMode();
+        // Note that this class is not being registered as configuration listener when used
+        // from compose. It will instead receive a normal "View#onConfigurationChanged".
         reloadDimens();
     }
 
@@ -384,6 +388,23 @@ public class Clock extends TextView implements
                 mContext.getResources().getDimensionPixelSize(
                         R.dimen.status_bar_clock_end_padding),
                 0);
+    }
+
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (ShadeWindowGoesAround.isEnabled()) {
+            if (densityOrFontScaleChanged(oldConfig, newConfig)) {
+                reloadDimens();
+            }
+            oldConfig = newConfig;
+        }
+    }
+
+    private boolean densityOrFontScaleChanged(Configuration oldConfig, Configuration newConfig) {
+        return (oldConfig.densityDpi != newConfig.densityDpi)
+                || oldConfig.fontScale != newConfig.fontScale;
     }
 
     private void updateShowSeconds() {
@@ -420,7 +441,7 @@ public class Clock extends TextView implements
             // Despite its name, getInstance creates a cloned instance, so reuse the generator to
             // avoid unnecessary churn.
             mDateTimePatternGenerator = DateTimePatternGenerator.getInstance(
-                context.getResources().getConfiguration().locale);
+                    context.getResources().getConfiguration().locale);
         }
 
         final char MAGIC1 = '\uEF00';
@@ -460,7 +481,7 @@ public class Clock extends TextView implements
                         a--;
                     }
                     format = format.substring(0, a) + MAGIC1 + format.substring(a, b)
-                        + "a" + MAGIC2 + format.substring(b + 1);
+                            + "a" + MAGIC2 + format.substring(b + 1);
                 }
             }
             mClockFormat = new SimpleDateFormat(format);
@@ -473,12 +494,12 @@ public class Clock extends TextView implements
             if (magic1 >= 0 && magic2 > magic1) {
                 SpannableStringBuilder formatted = new SpannableStringBuilder(result);
                 if (mAmPmStyle == AM_PM_STYLE_GONE) {
-                    formatted.delete(magic1, magic2+1);
+                    formatted.delete(magic1, magic2 + 1);
                 } else {
                     if (mAmPmStyle == AM_PM_STYLE_SMALL) {
                         CharacterStyle style = new RelativeSizeSpan(0.7f);
                         formatted.setSpan(style, magic1, magic2,
-                                          Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                                Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
                     }
                     formatted.delete(magic2, magic2 + 1);
                     formatted.delete(magic1, magic1 + 1);
