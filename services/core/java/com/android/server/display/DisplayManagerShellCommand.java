@@ -130,6 +130,8 @@ class DisplayManagerShellCommand extends ShellCommand {
                 return getModeSupportedHdrTypes();
             case "get-supported-hdr-output-types":
                 return getSupportedHdrOutputTypes();
+            case "get-active-mode":
+                return getActiveMode();
             default:
                 return handleDefaultCommands(cmd);
         }
@@ -255,6 +257,9 @@ class DisplayManagerShellCommand extends ShellCommand {
         pw.println("    (e.g., 1=DOLBY_VISION, 2=HDR10, 3=HLG, 4=HDR10_PLUS).");
         pw.println("    An empty array [] may indicate no types are supported OR the feature "
                 + "is disabled.");
+        pw.println("  get-active-mode DISPLAY_ID");
+        pw.println("    Gets the current active display mode (resolution, refresh rate)");
+        pw.println("    for the specified DISPLAY_ID.");
         pw.println();
         Intent.printIntentArgsHelp(pw, "");
     }
@@ -1040,6 +1045,56 @@ class DisplayManagerShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error retrieving supported HDR output types: "
                     + e.getMessage());
             Slog.e(TAG, "Failed to get supported HDR output types", e);
+            return 1;
+        }
+        return 0;
+    }
+
+    private int getActiveMode() {
+        final Context context = mService.getContext();
+        final DisplayManager dm = context.getSystemService(DisplayManager.class);
+
+        final String displayIdText = getNextArgRequired();
+        if (displayIdText == null) {
+            getErrPrintWriter().println("Error: Missing required argument DISPLAY_ID.");
+            return 1;
+        }
+
+        int displayId;
+        try {
+            displayId = Integer.parseInt(displayIdText);
+        } catch (NumberFormatException e) {
+            getErrPrintWriter().println("Error: Invalid format for DISPLAY_ID: " + displayIdText);
+            return 1;
+        }
+
+        final Display display = dm.getDisplay(displayId);
+
+        if (display == null) {
+            getErrPrintWriter().println("Error: Display with ID " + displayId + " not found.");
+            return 1;
+        }
+
+        try {
+            Display.Mode activeMode = display.getMode();
+
+            if (activeMode == null) {
+                getOutPrintWriter().println("Active mode for display " + displayId
+                        + ": null (or could not be determined)");
+            } else {
+                getOutPrintWriter().println("Active mode for display " + displayId + ":");
+                getOutPrintWriter().printf("  Mode ID: %d, Resolution: %dx%d, "
+                        + "Refresh Rate: %.2f Hz\n",
+                        activeMode.getModeId(),
+                        activeMode.getPhysicalWidth(),
+                        activeMode.getPhysicalHeight(),
+                        activeMode.getRefreshRate());
+            }
+        } catch (Exception e) {
+            getErrPrintWriter().println("Error retrieving active mode for display "
+                    + displayId + ": "
+                    + e.getMessage());
+            Slog.e(TAG, "Failed to get active mode for display " + displayId, e);
             return 1;
         }
         return 0;
