@@ -16,6 +16,7 @@
 
 package com.android.systemui.display.data.repository
 
+import android.content.testableContext
 import android.hardware.display.DisplayManager
 import android.os.fakeHandler
 import android.view.Display
@@ -33,6 +34,11 @@ import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInte
 import com.android.systemui.statusbar.mockCommandQueue
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
+import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
 import com.android.systemui.util.mockito.mock
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
@@ -50,9 +56,11 @@ fun Kosmos.createFakeDisplaySubcomponent(
     displayStateInteractor: DisplayStateInteractor = this.displayStateInteractor,
     statusbarIconRefreshInteractorFromConstructor: StatusBarIconRefreshInteractor =
         this.statusBarIconRefreshInteractor,
+    homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel =
+        this.homeStatusBarViewModelFactory,
+    homeStatusBarViewBinder: HomeStatusBarViewBinder = this.homeStatusBarViewBinder,
 ): SystemUIPhoneDisplaySubcomponent {
     return object : SystemUIPhoneDisplaySubcomponent {
-
         override val displayCoroutineScope: CoroutineScope
             get() = coroutineScope
 
@@ -73,6 +81,17 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarFragmentProvider: Provider<CollapsedStatusBarFragment>
             get() = Provider<CollapsedStatusBarFragment> { mock<CollapsedStatusBarFragment>() }
+
+        override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
+            get() =
+                object : HomeStatusBarViewModelFactory {
+                    override fun create(): HomeStatusBarViewModel {
+                        return homeStatusBarViewModelFactory.invoke(testableContext.displayId)
+                    }
+                }
+
+        override val homeStatusBarViewBinder: HomeStatusBarViewBinder
+            get() = homeStatusBarViewBinder
     }
 }
 

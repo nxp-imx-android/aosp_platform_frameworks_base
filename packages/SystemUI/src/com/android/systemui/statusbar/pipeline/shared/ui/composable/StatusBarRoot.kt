@@ -45,9 +45,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
+import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
@@ -95,8 +97,6 @@ import javax.inject.Named
 class StatusBarRootFactory
 @Inject
 constructor(
-    private val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory,
-    private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
     private val notificationIconsBinder: NotificationIconContainerStatusBarViewBinder,
     private val iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
     private val darkIconManagerFactory: DarkIconManager.Factory,
@@ -106,18 +106,22 @@ constructor(
     private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
     @Named(POPUP) private val mediaHost: MediaHost,
+    private val displaySubcomponentRepository:
+        PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
-        val darkIconDispatcher =
-            darkIconDispatcherStore.forDisplay(root.context.displayId) ?: return composeView
+        val displayId = root.context.displayId
+        val darkIconDispatcher = darkIconDispatcherStore.forDisplay(displayId) ?: return composeView
+        val displaySubcomponent = displaySubcomponentRepository[displayId] ?: return composeView
         composeView.apply {
             setContent {
                 PlatformTheme {
                     StatusBarRoot(
                         parent = root,
-                        statusBarViewModelFactory = homeStatusBarViewModelFactory,
-                        statusBarViewBinder = homeStatusBarViewBinder,
+                        statusBarViewModelFactory =
+                            displaySubcomponent.homeStatusBarViewModelFactory,
+                        statusBarViewBinder = displaySubcomponent.homeStatusBarViewBinder,
                         notificationIconsBinder = notificationIconsBinder,
                         iconViewStoreFactory = iconViewStoreFactory,
                         darkIconManagerFactory = darkIconManagerFactory,
@@ -167,7 +171,7 @@ fun StatusBarRoot(
 ) {
     val displayId = parent.context.displayId
     val statusBarViewModel =
-        rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create(displayId) }
+        rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create() }
     val iconViewStore: NotificationIconContainerViewBinder.IconViewStore? =
         if (StatusBarConnectedDisplays.isEnabled) {
             rememberViewModel("HomeStatusBar.IconViewStore[$displayId]") {

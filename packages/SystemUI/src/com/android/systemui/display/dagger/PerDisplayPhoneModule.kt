@@ -19,14 +19,18 @@ package com.android.systemui.display.dagger
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
+import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
+import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinderImpl
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl.HomeStatusBarViewModelFactoryImpl
 import dagger.Binds
 import dagger.Module
 
 /**
  * "Phone" specific module for SysUI classes that should be instantiated once per display.
  *
- * If the classes are common to all SysUI flavors, they should be added to
- * [PerDisplayCommonModule] instead.
+ * If the classes are common to all SysUI flavors, they should be added to [PerDisplayCommonModule]
+ * instead.
  */
 @Module(subcomponents = [HomeStatusBarComponent::class])
 interface PerDisplayPhoneModule {
@@ -40,4 +44,14 @@ interface PerDisplayPhoneModule {
     @Binds
     @DisplayAware
     fun statusBarFragmentProvider(fragment: CollapsedStatusBarFragment): CollapsedStatusBarFragment
+
+    @Binds
+    @DisplayAware
+    fun homeStatusBarViewModelFactory(
+        impl: HomeStatusBarViewModelFactoryImpl
+    ): HomeStatusBarViewModelFactory
+
+    @Binds
+    @DisplayAware
+    fun homeStatusBarViewBinder(impl: HomeStatusBarViewBinderImpl): HomeStatusBarViewBinder
 }
