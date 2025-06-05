@@ -2249,6 +2249,14 @@ public final class PowerManagerService extends SystemService
         }
     }
 
+    // whether a wake lock summary means device is being kept asleep.
+    // will prevent power groups from leaving state of being asleep
+    private boolean hasWakeLockKeepingGroupAsleep(int wakeLockSummary) {
+        Slog.i(TAG, "Preventing waking device, due to wakelocks: 0x"
+                + Integer.toHexString(wakeLockSummary));
+        return (wakeLockSummary & (WAKE_LOCK_PARTIAL_SLEEP)) != 0;
+    }
+
     @GuardedBy("mLock")
     private void wakePowerGroupLocked(final PowerGroup powerGroup, long eventTime,
             @WakeReason int reason, String details, int uid, String opPackageName, int opUid) {
@@ -2257,11 +2265,20 @@ public final class PowerManagerService extends SystemService
                     + ", groupId=" + powerGroup.getGroupId()
                     + ", reason=" + PowerManager.wakeReasonToString(reason) + ", uid=" + uid);
         }
-        if (mForceSuspendActive || !mSystemReady || (powerGroup == null)) {
+        if (mForceSuspendActive || !mSystemReady || (powerGroup == null)
+                || hasWakeLockKeepingGroupAsleep(powerGroup.getWakeLockSummaryLocked())) {
             return;
         }
         powerGroup.wakeUpLocked(eventTime, reason, details, uid, opPackageName, opUid,
                 LatencyTracker.getInstance(mContext));
+    }
+
+    @VisibleForTesting
+    void dreamPowerGroupLocked(int groupId, long eventTime, int uid, boolean allowWake) {
+        PowerGroup powerGroup = mPowerGroups.get(groupId);
+        if (powerGroup != null) {
+            dreamPowerGroupLocked(powerGroup, eventTime, uid, allowWake);
+        }
     }
 
     @GuardedBy("mLock")
@@ -2271,7 +2288,8 @@ public final class PowerManagerService extends SystemService
             Slog.d(TAG, "dreamPowerGroup: groupId=" + powerGroup.getGroupId() + ", eventTime="
                     + eventTime + ", uid=" + uid);
         }
-        if (!mBootCompleted || !mSystemReady) {
+        if (!mBootCompleted || !mSystemReady
+                || hasWakeLockKeepingGroupAsleep(powerGroup.getWakeLockSummaryLocked())) {
             return false;
         }
         return powerGroup.dreamLocked(eventTime, uid, allowWake);
@@ -2318,7 +2336,8 @@ public final class PowerManagerService extends SystemService
                     + ", reason=" + PowerManager.sleepReasonToString(reason) + ", uid=" + uid);
         }
 
-        if (!mSystemReady || !mBootCompleted) {
+        if (!mSystemReady || !mBootCompleted
+                || hasWakeLockKeepingGroupAsleep(powerGroup.getWakeLockSummaryLocked())) {
             return false;
         }
 
@@ -2937,6 +2956,16 @@ public final class PowerManagerService extends SystemService
             if (wakefulness == WAKEFULNESS_ASLEEP) {
                 wakeLockSummary &= ~WAKE_LOCK_PROXIMITY_SCREEN_OFF;
             }
+        }
+        if (wakefulness != WAKEFULNESS_ASLEEP) {
+            // remove this wakelock if we're not already asleep
+            wakeLockSummary &= ~WAKE_LOCK_PARTIAL_SLEEP;
+        }
+
+        // this wakelock supersedes others - and is not compatible with others - so remove them.
+        // this wakelock also holds cpu awake in conjunction with it.
+        if ((wakeLockSummary & WAKE_LOCK_PARTIAL_SLEEP) != 0) {
+            wakeLockSummary = WAKE_LOCK_PARTIAL_SLEEP | WAKE_LOCK_CPU;
         }
 
         // Infer implied wake locks where necessary based on the current state.
