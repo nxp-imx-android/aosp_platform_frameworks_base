@@ -17,7 +17,6 @@ package com.android.wm.shell.common.pip
 
 import android.app.ActivityTaskManager
 import android.app.RemoteAction
-import android.app.TaskInfo
 import android.app.WindowConfiguration
 import android.content.ComponentName
 import android.content.Context
@@ -233,12 +232,6 @@ object PipUtils {
             (actEndBounds.top - taskEndBounds.top) - hintRect.top * hintToEndScaleY
         outScale.set(hintToEndScaleX, hintToEndScaleY)
         outPos.set(startActPosInTaskEndX, startActPosInTaskEndY)
-    }
-
-    @JvmStatic
-    fun isContentPip(pipTaskInfo: TaskInfo?): Boolean {
-        if (pipTaskInfo == null) return false
-        return pipTaskInfo.launchIntoPipHostTaskId != -1
     }
 
     /**
