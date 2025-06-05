@@ -1128,7 +1128,7 @@ public final class MediaRouter2 {
             @NonNull MediaRoute2Info route,
             long managerRequestId) {
 
-        if (Flags.fixTransferFromUserRouteToUnselectedSystemRoute() && route.isSystemRoute()) {
+        if (route.isSystemRoute()) {
             notifyTransfer(controller, getSystemController());
             controller.release();
             return;
@@ -3065,8 +3065,7 @@ public final class MediaRouter2 {
             } else {
                 RoutingSessionInfo systemSessionInfo = mSystemController.getRoutingSessionInfo();
                 boolean isTransferFromUserRouteToUnselectedSystemRoute =
-                        Flags.fixTransferFromUserRouteToUnselectedSystemRoute()
-                                && !sessionInfo.isSystemSession()
+                        !sessionInfo.isSystemSession()
                                 && route.isSystemRoute()
                                 && !systemSessionInfo.getSelectedRoutes().contains(route.getId());
                 if (isTransferFromUserRouteToUnselectedSystemRoute) {
