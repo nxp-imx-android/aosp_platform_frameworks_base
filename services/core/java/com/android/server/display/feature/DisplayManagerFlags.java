@@ -280,6 +280,11 @@ public class DisplayManagerFlags {
             Flags::separateTimeouts
     );
 
+    private final FlagState mSetBrightnessByUnit = new FlagState(
+            Flags.FLAG_SET_BRIGHTNESS_BY_UNIT,
+            Flags::setBrightnessByUnit
+    );
+
     private final FlagState mDelayImplicitRrRegistrationUntilRrAccessed = new FlagState(
             Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
             Flags::delayImplicitRrRegistrationUntilRrAccessed
@@ -703,6 +708,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mRefreshRateEventForForegroundApps);
         pw.println(" " + mCommittedStateSeparateEvent);
         pw.println(" " + mSeparateTimeouts);
+        pw.println(" " + mSetBrightnessByUnit);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
         pw.println(" " + mHdrBrightnessSetting);
         pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);

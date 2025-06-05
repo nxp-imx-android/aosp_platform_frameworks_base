@@ -503,6 +503,14 @@ flag {
 }
 
 flag {
+    name: "set_brightness_by_unit"
+    namespace: "display_manager"
+    description: "Feature flag for the API to set brightness in different units"
+    bug: "319865623"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "delay_implicit_rr_registration_until_rr_accessed"
     namespace: "display_manager"
     description: "Feature flag for clients to subscribe to RR changes by either explicitly subscribing for refresh rate changes or request for refresh rate data"

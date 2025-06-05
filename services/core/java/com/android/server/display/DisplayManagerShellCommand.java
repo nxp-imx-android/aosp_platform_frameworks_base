@@ -16,6 +16,7 @@
 
 package com.android.server.display;
 
+import static android.hardware.display.DisplayManager.brightnessUnitToString;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.Display.TYPE_OVERLAY;
@@ -148,6 +149,11 @@ class DisplayManagerShellCommand extends ShellCommand {
         pw.println("    Show notification for one of the following types: " + NOTIFICATION_TYPES);
         pw.println("  cancel-notifications");
         pw.println("    Cancel notifications.");
+        pw.println("  get-brightness DISPLAY_ID UNIT(optional)");
+        pw.println("    Gets the current brightness of the specified display. If no unit is "
+                + "specified, the returned value is in the float scale [0, 1]. The unit can be '"
+                + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE) + "' which "
+                + "will return the value displayed on the brightness slider.");
         pw.println("  set-brightness BRIGHTNESS");
         pw.println("    Sets the current brightness to BRIGHTNESS (a number between 0 and 1).");
         pw.println("  reset-brightness-configuration");
@@ -386,6 +392,7 @@ class DisplayManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    @SuppressLint("AndroidFrameworkRequiresPermission")
     private int getBrightness() {
         String displayIdString = getNextArg();
         if (displayIdString == null) {
@@ -399,12 +406,31 @@ class DisplayManagerShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error: invalid displayId=" + displayIdString + " not int");
             return 1;
         }
+
         final Context context = mService.getContext();
         final DisplayManager dm = context.getSystemService(DisplayManager.class);
-        getOutPrintWriter().println(dm.getBrightness(displayId));
+
+        String brightnessUnitString = getNextArg();
+        float brightness;
+        if (brightnessUnitString == null) {
+            brightness = dm.getBrightness(displayId);
+        } else {
+            int unit;
+            if (brightnessUnitString.equals(
+                    brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE))) {
+                unit = DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+            } else {
+                getErrPrintWriter().println("Unexpected brightness unit: " + brightnessUnitString);
+                return 1;
+            }
+            brightness = dm.getBrightness(displayId, unit);
+        }
+
+        getOutPrintWriter().println(brightness);
         return 0;
     }
 
+    @SuppressLint("AndroidFrameworkRequiresPermission")
     private int setBrightness() {
         String brightnessText = getNextArg();
         if (brightnessText == null) {

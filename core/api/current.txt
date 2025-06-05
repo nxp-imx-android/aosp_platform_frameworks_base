@@ -21052,8 +21052,10 @@ package android.hardware.display {
     method public void registerDisplayListener(android.hardware.display.DisplayManager.DisplayListener, android.os.Handler);
     method @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public void registerDisplayListener(@NonNull java.util.concurrent.Executor, long, @NonNull android.hardware.display.DisplayManager.DisplayListener);
     method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public void registerTopologyListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.hardware.display.DisplayTopology>);
+    method @FlaggedApi("com.android.server.display.feature.flags.set_brightness_by_unit") @RequiresPermission(android.Manifest.permission.WRITE_SETTINGS) public void setBrightness(int, float, int);
     method public void unregisterDisplayListener(android.hardware.display.DisplayManager.DisplayListener);
     method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public void unregisterTopologyListener(@NonNull java.util.function.Consumer<android.hardware.display.DisplayTopology>);
+    field @FlaggedApi("com.android.server.display.feature.flags.set_brightness_by_unit") public static final int BRIGHTNESS_UNIT_PERCENTAGE = 0; // 0x0
     field @FlaggedApi("com.android.server.display.feature.flags.display_category_built_in") public static final String DISPLAY_CATEGORY_BUILT_IN_DISPLAYS = "android.hardware.display.category.BUILT_IN_DISPLAYS";
     field public static final String DISPLAY_CATEGORY_PRESENTATION = "android.hardware.display.category.PRESENTATION";
     field @FlaggedApi("com.android.server.display.feature.flags.display_listener_performance_improvements") public static final long EVENT_TYPE_DISPLAY_ADDED = 1L; // 0x1L
