@@ -3089,7 +3089,9 @@ public class NotificationStackScrollLayout
         if (!mChildTransferInProgress) {
             if (NotificationMinimalism.isEnabled()
                     && mAmbientState.isOnKeyguard()
-                    && this.mOnKeyguardTopLevelNotificationRemovedRunnable != null) {
+                    && this.mOnKeyguardTopLevelNotificationRemovedRunnable != null
+                    && expandableView instanceof ExpandableNotificationRow
+            ) {
                 mOnKeyguardTopLevelNotificationRemovedRunnable.run();
             }
             onViewRemovedInternal(expandableView, this);
