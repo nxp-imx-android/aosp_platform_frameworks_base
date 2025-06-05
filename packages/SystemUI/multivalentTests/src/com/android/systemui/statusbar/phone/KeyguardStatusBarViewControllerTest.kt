@@ -39,9 +39,18 @@ import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.dreams.ui.viewmodel.dreamViewModel
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.keyguard.shared.model.TransitionState.CANCELED
+import com.android.systemui.keyguard.shared.model.TransitionState.FINISHED
+import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
+import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
+import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGlanceableHubTransitionViewModel
 import com.android.systemui.kosmos.Kosmos
@@ -71,6 +80,7 @@ import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.time.FakeSystemClock
+import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -221,6 +231,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             kosmos.communalSceneInteractor,
             kosmos.glanceableHubToLockscreenTransitionViewModel,
             kosmos.lockscreenToGlanceableHubTransitionViewModel,
+            kosmos.dreamViewModel,
             kosmos.keyguardInteractor,
         )
     }
@@ -945,6 +956,175 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             }
         }
 
+    @Test
+    @DisableSceneContainer
+    fun lockscreenToDreaming_affectsAlpha() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+                updateStateToKeyguard()
+
+                val transitionSteps =
+                    listOf(
+                        lockscreenToDreamTransitionStep(0.0f, STARTED),
+                        lockscreenToDreamTransitionStep(.1f),
+                    )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isIn(Range.open(0f, 1f))
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    listOf(
+                        lockscreenToDreamTransitionStep(1f),
+                        lockscreenToDreamTransitionStep(1f, FINISHED),
+                    ),
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun dreamingToLockscreen_affectsAlpha() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+                updateStateToKeyguard()
+
+                val transitionSteps =
+                    listOf(
+                        dreamToLockscreenTransitionStep(0.0f, STARTED),
+                        dreamToLockscreenTransitionStep(.3f),
+                    )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isIn(Range.open(0f, 1f))
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun dreamingToLockscreen_resetAlphaOnFinished() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+                updateStateToKeyguard()
+
+                val transitionSteps =
+                    listOf(
+                        dreamToLockscreenTransitionStep(0.0f, STARTED),
+                        dreamToLockscreenTransitionStep(.3f),
+                    )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                val explicitAlpha = keyguardStatusBarView.alpha
+                assertThat(explicitAlpha).isIn(Range.open(0f, 1f))
+
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    listOf(dreamToLockscreenTransitionStep(1f, FINISHED)),
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isNotEqualTo(explicitAlpha)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun goneToDreaming_affectsAlpha() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+                updateStateToKeyguard()
+
+                val transitionSteps =
+                    listOf(goneToDreamTransitionStep(0.0f, STARTED), goneToDreamTransitionStep(.1f))
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun resetAlpha_onTransitionToDreamingInterrupted() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+                updateStateToKeyguard()
+
+                // Transition to dreaming
+                var transitionSteps =
+                    listOf(
+                        lockscreenToDreamTransitionStep(0.0f, STARTED),
+                        lockscreenToDreamTransitionStep(.1f),
+                    )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                val explicitAlphaByDream = keyguardStatusBarView.alpha
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+
+                // Transition is interrupted and goes to AOD
+                controller.setDozing(true)
+                transitionSteps =
+                    listOf(
+                        lockscreenToDreamTransitionStep(.1f, CANCELED),
+                        dreamToAodTransitionStep(0.1f, STARTED),
+                        dreamToAodTransitionStep(.5f),
+                        dreamToAodTransitionStep(1f, FINISHED),
+                    )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isNotEqualTo(explicitAlphaByDream)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
     /**
      * Calls [com.android.keyguard.KeyguardUpdateMonitorCallback.onFinishedGoingToSleep] to ensure
      * values are updated properly.
@@ -996,4 +1176,49 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             this.mShouldHeadsUpBeVisible = shouldHeadsUpBeVisible
         }
     }
+
+    private fun lockscreenToDreamTransitionStep(
+        value: Float,
+        transitionState: TransitionState = RUNNING,
+    ) =
+        TransitionStep(
+            from = KeyguardState.LOCKSCREEN,
+            to = KeyguardState.DREAMING,
+            value = value,
+            transitionState = transitionState,
+            ownerName = "KeyguardStatusBarViewControllerTest",
+        )
+
+    private fun dreamToLockscreenTransitionStep(
+        value: Float,
+        transitionState: TransitionState = RUNNING,
+    ) =
+        TransitionStep(
+            from = KeyguardState.DREAMING,
+            to = KeyguardState.LOCKSCREEN,
+            value = value,
+            transitionState = transitionState,
+            ownerName = "KeyguardStatusBarViewControllerTest",
+        )
+
+    private fun goneToDreamTransitionStep(
+        value: Float,
+        transitionState: TransitionState = RUNNING,
+    ) =
+        TransitionStep(
+            from = KeyguardState.GONE,
+            to = KeyguardState.DREAMING,
+            value = value,
+            transitionState = transitionState,
+            ownerName = "KeyguardStatusBarViewControllerTest",
+        )
+
+    private fun dreamToAodTransitionStep(value: Float, transitionState: TransitionState = RUNNING) =
+        TransitionStep(
+            from = KeyguardState.DREAMING,
+            to = KeyguardState.AOD,
+            value = value,
+            transitionState = transitionState,
+            ownerName = "KeyguardStatusBarViewControllerTest",
+        )
 }

@@ -55,6 +55,7 @@ import com.android.systemui.battery.BatteryMeterViewController;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToLockscreenTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenToGlanceableHubTransitionViewModel;
@@ -160,6 +161,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final CommunalSceneInteractor mCommunalSceneInteractor;
     private final GlanceableHubToLockscreenTransitionViewModel mHubToLockscreenTransitionViewModel;
     private final LockscreenToGlanceableHubTransitionViewModel mLockscreenToHubTransitionViewModel;
+    private final DreamViewModel mDreamViewModel;
     private final KeyguardInteractor mKeyguardInteractor;
 
     private ViewGroup mSystemIconsContainer;
@@ -381,6 +383,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                     glanceableHubToLockscreenTransitionViewModel,
             LockscreenToGlanceableHubTransitionViewModel
                     lockscreenToGlanceableHubTransitionViewModel,
+            DreamViewModel dreamViewModel,
             KeyguardInteractor keyguardInteractor
     ) {
         super(view);
@@ -414,6 +417,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mCommunalSceneInteractor = communalSceneInteractor;
         mHubToLockscreenTransitionViewModel = glanceableHubToLockscreenTransitionViewModel;
         mLockscreenToHubTransitionViewModel = lockscreenToGlanceableHubTransitionViewModel;
+        mDreamViewModel = dreamViewModel;
         mKeyguardInteractor = keyguardInteractor;
 
         mFirstBypassAttempt = mKeyguardBypassController.getBypassEnabled();
@@ -507,6 +511,8 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             collectFlow(mView, mHubToLockscreenTransitionViewModel.getStatusBarAlpha(),
                     mFromGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
         }
+        collectFlow(mView, mDreamViewModel.getStatusBarAlpha(),
+                this::setAlpha, mCoroutineDispatcher);
         if (Flags.bouncerUiRevamp()) {
             collectFlow(mView, mKeyguardInteractor.primaryBouncerShowing, x -> updateViewState());
         }
