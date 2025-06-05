@@ -2031,3 +2031,9 @@ flag {
     }
 }
 
+flag {
+    name: "ongoing_activity_chips_on_dream"
+    namespace: "systemui"
+    description: "Enables ongoing activity chips in dream status bar"
+    bug: "418243972"
+}

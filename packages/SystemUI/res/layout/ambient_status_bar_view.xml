@@ -35,6 +35,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/dream_overlay_ongoing_activity_chips"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/dream_overlay_extra_items"
         android:layout_width="wrap_content"
