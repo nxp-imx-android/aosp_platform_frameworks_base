@@ -7043,6 +7043,16 @@ package android.app {
     field public static final int MEANING_WEATHER_UV_INDEX = 327682; // 0x50002
   }
 
+  public static final class Notification.Metric.FixedDate extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedDate(@NonNull java.time.LocalDate);
+    ctor public Notification.Metric.FixedDate(@NonNull java.time.LocalDate, int);
+    method public int getFormat();
+    method @NonNull public java.time.LocalDate getValue();
+    field public static final int FORMAT_AUTOMATIC = 0; // 0x0
+    field public static final int FORMAT_LONG_DATE = 1; // 0x1
+    field public static final int FORMAT_SHORT_DATE = 2; // 0x2
+  }
+
   public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedFloat(float);
     ctor public Notification.Metric.FixedFloat(float, @Nullable String);
@@ -7051,21 +7061,6 @@ package android.app {
     method @IntRange(from=0, to=6) public int getMinFractionDigits();
     method @Nullable public String getUnit();
     method public float getValue();
-  }
-
-  public static final class Notification.Metric.FixedInstant extends android.app.Notification.Metric.MetricValue {
-    ctor public Notification.Metric.FixedInstant(@NonNull java.time.Instant);
-    ctor public Notification.Metric.FixedInstant(@NonNull java.time.Instant, int);
-    ctor public Notification.Metric.FixedInstant(@NonNull java.time.Instant, int, @Nullable java.util.TimeZone);
-    method public int getFormat();
-    method @Nullable public java.util.TimeZone getTimeZone();
-    method @NonNull public java.time.Instant getValue();
-    field public static final int FORMAT_AUTOMATIC = 0; // 0x0
-    field public static final int FORMAT_LONG_DATE = 1; // 0x1
-    field public static final int FORMAT_LONG_DATE_TIME = 3; // 0x3
-    field public static final int FORMAT_SHORT_DATE = 2; // 0x2
-    field public static final int FORMAT_SHORT_DATE_TIME = 4; // 0x4
-    field public static final int FORMAT_TIME = 5; // 0x5
   }
 
   public static final class Notification.Metric.FixedInt extends android.app.Notification.Metric.MetricValue {
@@ -7078,6 +7073,11 @@ package android.app {
   public static final class Notification.Metric.FixedString extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedString(@NonNull String);
     method @NonNull public String getValue();
+  }
+
+  public static final class Notification.Metric.FixedTime extends android.app.Notification.Metric.MetricValue {
+    ctor public Notification.Metric.FixedTime(@NonNull java.time.LocalTime);
+    method @NonNull public java.time.LocalTime getValue();
   }
 
   public abstract static class Notification.Metric.MetricValue {
@@ -7094,9 +7094,8 @@ package android.app {
     method public boolean isStopwatch();
     method public boolean isTimer();
     field public static final int FORMAT_ADAPTIVE = 1; // 0x1
-    field public static final int FORMAT_CHRONOMETER_AUTOMATIC = 0; // 0x0
-    field public static final int FORMAT_CHRONOMETER_MINUTES = 2; // 0x2
-    field public static final int FORMAT_CHRONOMETER_SECONDS = 3; // 0x3
+    field public static final int FORMAT_AUTOMATIC = 0; // 0x0
+    field public static final int FORMAT_CHRONOMETER = 3; // 0x3
   }
 
   @FlaggedApi("android.app.api_metric_style") public static class Notification.MetricStyle extends android.app.Notification.Style {

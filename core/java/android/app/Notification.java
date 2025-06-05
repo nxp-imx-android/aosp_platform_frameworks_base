@@ -32,6 +32,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import static com.android.internal.util.Preconditions.checkArgument;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.ColorInt;
@@ -75,6 +76,11 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.icu.number.NumberFormatter;
+import android.icu.number.Precision;
+import android.icu.text.MeasureFormat;
+import android.icu.util.Measure;
+import android.icu.util.MeasureUnit;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.PlayerBase;
@@ -97,6 +103,7 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
@@ -132,12 +139,19 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.InstantSource;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.function.Consumer;
 
 /**
@@ -1828,6 +1842,16 @@ public class Notification implements Parcelable
     @FlaggedApi(Flags.FLAG_API_METRIC_STYLE)
     static final String EXTRA_METRICS = "android.metrics";
 
+    /**
+     * {@link InstantSource} used for obtaining "now". Normally {@link InstantSource#system()},
+     * but overridable for testing.
+     *
+     * @hide
+     */
+    @Nullable
+    @VisibleForTesting
+    public static InstantSource sSystemClock = InstantSource.system();
+
     @UnsupportedAppUsage
     private Icon mSmallIcon;
     @UnsupportedAppUsage
@@ -3105,6 +3129,17 @@ public class Notification implements Parcelable
         if (!heavy) {
             that.lightenPayload(); // will clean out extras
         }
+    }
+
+    @NonNull
+    private static InstantSource getSystemClock() {
+        return sSystemClock != null ? sSystemClock : InstantSource.system();
+    }
+
+    private static LocalDate getToday() {
+        return getSystemClock().instant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 
     private static void visitIconUri(@NonNull Consumer<Uri> visitor, @Nullable Icon icon) {
@@ -11629,9 +11664,11 @@ public class Notification implements Parcelable
                     Bundle.class);
             if (bundles != null) {
                 for (Bundle bundle : bundles) {
-                    Metric metric = Metric.fromBundle(bundle);
-                    if (metric != null) {
-                        addMetric(metric);
+                    if (bundle != null) {
+                        Metric metric = Metric.fromBundle(bundle);
+                        if (metric != null) {
+                            addMetric(metric);
+                        }
                     }
                 }
             }
@@ -11665,9 +11702,54 @@ public class Notification implements Parcelable
         /** @hide */
         @Override
         public RemoteViews makeExpandedContentView() {
-            return null;
-            // TODO(b/415828647): Implement for MetricStyle
-            // Remember: Add new layout resources to isStandardLayout()
+            // TODO: b/415828647 - Implement properly; this is a temporary version using
+            //  InboxStyle, for prototyping.
+            // And remember: Add new layout resources to isStandardLayout()
+            StandardTemplateParams p = mBuilder.mParams.reset()
+                    .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
+                    .fillTextsFrom(mBuilder).text(null);
+            TemplateBindResult result = new TemplateBindResult();
+            RemoteViews contentView = getStandardView(mBuilder.getInboxLayoutResource(), p, result);
+
+            int[] rowIds = {R.id.inbox_text0, R.id.inbox_text1, R.id.inbox_text2, R.id.inbox_text3,
+                    R.id.inbox_text4, R.id.inbox_text5, R.id.inbox_text6};
+
+            // Make sure all rows are gone in case we reuse a view.
+            for (int rowId : rowIds) {
+                contentView.setViewVisibility(rowId, View.GONE);
+            }
+
+            int i = 0;
+            int topPadding = mBuilder.mContext.getResources().getDimensionPixelSize(
+                    R.dimen.notification_inbox_item_top_padding);
+            boolean first = true;
+            int onlyViewId = 0;
+            while (i < mMetrics.size() && i < MAX_METRICS) {
+                Metric metric = mMetrics.get(i);
+                contentView.setViewVisibility(rowIds[i], View.VISIBLE);
+                Metric.MetricValue.ValueString valueString = metric.getValue().toValueString(
+                        mBuilder.mContext);
+                contentView.setTextViewText(rowIds[i],
+                        metric.getLabel() + ": " + valueString.text
+                                + (valueString.subtext != null ? " " + valueString.subtext : ""));
+                mBuilder.setTextViewColorSecondary(contentView, rowIds[i], p);
+                contentView.setViewPadding(rowIds[i], 0, topPadding, 0, 0);
+                if (first) {
+                    onlyViewId = rowIds[i];
+                } else {
+                    onlyViewId = 0;
+                }
+                first = false;
+                i++;
+            }
+            if (onlyViewId != 0) {
+                // We only have 1 entry, lets make it look like the normal Text of a Bigtext
+                topPadding = mBuilder.mContext.getResources().getDimensionPixelSize(
+                        R.dimen.notification_text_margin_top);
+                contentView.setViewPadding(onlyViewId, 0, topPadding, 0, 0);
+            }
+
+            return contentView;
         }
     }
 
@@ -11751,8 +11833,9 @@ public class Notification implements Parcelable
         // Fixed-time-related meanings.
 
         /**
-         * Point-in-time-related metric. Generally associated with {@link FixedInstant}
-         * values. Use when none of the specific {@code MEANING_EVENT_} options are a good fit.
+         * Point-in-time-related metric. Generally associated with {@link FixedDate} or
+         * {@link FixedTime} values. Use when none of the specific {@code MEANING_EVENT_} options
+         * are a good fit.
          */
         public static final int MEANING_EVENT = 3 << 16;
 
@@ -11956,7 +12039,7 @@ public class Notification implements Parcelable
         /**
          * Creates a Metric with the specified value, meaning, and label.
          *
-         * @param value   one of the subclasses of {@link MetricValue}, such as {@link FixedInstant}
+         * @param value   one of the subclasses of {@link MetricValue}, such as {@link FixedInt}
          * @param label   metric label -- should be 10 characters or fewer
          * @param meaning recommended so that Notification Listeners can judge the importance
          *                (and required freshness) of the metric
@@ -12076,10 +12159,11 @@ public class Notification implements Parcelable
 
             private static final String KEY_TYPE = "_type";
             private static final int TYPE_TIME_DIFFERENCE = 1;
-            private static final int TYPE_FIXED_INSTANT = 2;
-            private static final int TYPE_FIXED_INT = 3;
-            private static final int TYPE_FIXED_FLOAT = 4;
-            private static final int TYPE_FIXED_STRING = 5;
+            private static final int TYPE_FIXED_DATE = 2;
+            private static final int TYPE_FIXED_TIME = 3;
+            private static final int TYPE_FIXED_INT = 4;
+            private static final int TYPE_FIXED_FLOAT = 5;
+            private static final int TYPE_FIXED_STRING = 6;
 
             // Restrict inheritance to inner classes of Notification.
             private MetricValue() { }
@@ -12089,7 +12173,8 @@ public class Notification implements Parcelable
                 int type = bundle.getInt(KEY_TYPE);
                 return switch (type) {
                     case TYPE_TIME_DIFFERENCE -> TimeDifference.fromBundle(bundle);
-                    case TYPE_FIXED_INSTANT -> FixedInstant.fromBundle(bundle);
+                    case TYPE_FIXED_DATE -> FixedDate.fromBundle(bundle);
+                    case TYPE_FIXED_TIME -> FixedTime.fromBundle(bundle);
                     case TYPE_FIXED_INT -> FixedInt.fromBundle(bundle);
                     case TYPE_FIXED_FLOAT -> FixedFloat.fromBundle(bundle);
                     case TYPE_FIXED_STRING -> FixedString.fromBundle(bundle);
@@ -12102,8 +12187,10 @@ public class Notification implements Parcelable
                 Bundle bundle = new Bundle();
                 if (value instanceof TimeDifference) {
                     bundle.putInt(KEY_TYPE, TYPE_TIME_DIFFERENCE);
-                } else if (value instanceof FixedInstant) {
-                    bundle.putInt(KEY_TYPE, TYPE_FIXED_INSTANT);
+                } else if (value instanceof FixedDate) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_DATE);
+                } else if (value instanceof FixedTime) {
+                    bundle.putInt(KEY_TYPE, TYPE_FIXED_TIME);
                 } else if (value instanceof FixedInt) {
                     bundle.putInt(KEY_TYPE, TYPE_FIXED_INT);
                 } else if (value instanceof FixedFloat) {
@@ -12119,6 +12206,26 @@ public class Notification implements Parcelable
 
             /** @hide */
             protected abstract void toBundle(Bundle bundle);
+
+            /** @hide */
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public record ValueString(String text, @Nullable String subtext) {
+                public ValueString(String text) {
+                    this(text, null);
+                }
+            }
+
+            /**
+             * Returns a string representation of the {@link MetricValue}, in the format of a pair
+             * of text / nullable subtext. Note that for some kinds of values, notably
+             * {@link TimeDifference}, this string representation may change over subsequent calls,
+             * even though the object itself is immutable.
+             *
+             * @hide
+             */
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public abstract ValueString toValueString(Context context);
         }
 
         /**
@@ -12138,32 +12245,20 @@ public class Notification implements Parcelable
          */
         public static final class TimeDifference extends MetricValue {
 
-            /**
-             * Formatting option: chronometer-style (e.g. 1:05:00; 15:00; 1:00, 0:00), with
-             * precision chosen by the system.
-             */
-            public static final int FORMAT_CHRONOMETER_AUTOMATIC = 0;
+            /** Formatting option: automatically chosen by the system. */
+            public static final int FORMAT_AUTOMATIC = 0;
 
             /** Formatting option: adaptive (e.g. 1h 5m; 15m; 1m; now). */
             public static final int FORMAT_ADAPTIVE = 1;
 
-            /**
-             * Formatting option: chronometer-style, showing minutes but not including seconds
-             * (i.e. two hours = "2:00").
-             */
-            public static final int FORMAT_CHRONOMETER_MINUTES = 2;
-
-            /**
-             * Formatting option: chronometer-style, including seconds (i.e. two hours = "2:00").
-             */
-            public static final int FORMAT_CHRONOMETER_SECONDS = 3;
+            /** Formatting option: chronometer-style, (e.g. two hours = "2:00:00"). */
+            public static final int FORMAT_CHRONOMETER = 3;
 
             /** @hide */
             @IntDef(prefix = { "FORMAT_" }, value = {
-                    FORMAT_CHRONOMETER_AUTOMATIC,
+                    FORMAT_AUTOMATIC,
                     FORMAT_ADAPTIVE,
-                    FORMAT_CHRONOMETER_MINUTES,
-                    FORMAT_CHRONOMETER_SECONDS
+                    FORMAT_CHRONOMETER
             })
             @Retention(RetentionPolicy.SOURCE)
             public @interface Format {}
@@ -12229,8 +12324,8 @@ public class Notification implements Parcelable
                         "Either zeroTime or pausedDuration must be present, and not both. "
                                 + "Received %s,%s",
                         zeroTime, pausedDuration);
-                checkArgument(format >= FORMAT_CHRONOMETER_AUTOMATIC
-                        && format <= FORMAT_CHRONOMETER_SECONDS, "Invalid format: %s", format);
+                checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_CHRONOMETER,
+                        "Invalid format: %s", format);
                 mZeroTime = zeroTime;
                 mPausedDuration = pausedDuration;
                 mCountDown = countDown;
@@ -12246,7 +12341,7 @@ public class Notification implements Parcelable
                 if (zeroTime != null || pausedDuration != null) {
                     return new TimeDifference(zeroTime, pausedDuration,
                             bundle.getBoolean(KEY_COUNT_DOWN),
-                            bundle.getInt(KEY_FORMAT, FORMAT_CHRONOMETER_AUTOMATIC));
+                            bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC));
                 } else {
                     return null;
                 }
@@ -12338,102 +12433,130 @@ public class Notification implements Parcelable
             public int getFormat() {
                 return mFormat;
             }
+
+            /** @hide */
+            @Override
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public ValueString toValueString(Context context) {
+                Duration duration;
+                if (mPausedDuration != null) {
+                    duration = mPausedDuration;
+                } else {
+                    // If the timer/stopwatch is running we likely want a Chronometer view, so this
+                    // path is mostly for debugging/completeness.
+                    Instant now = getSystemClock().instant();
+                    if (isStopwatch()) {
+                        duration = Duration.between(mZeroTime, now);
+                    } else {
+                        duration = Duration.between(now, mZeroTime);
+                    }
+                }
+
+                duration = duration.truncatedTo(SECONDS); // ms are ignored and we don't want -0:00
+                Duration absDuration = duration.abs();
+                Measure hours = new Measure(absDuration.toHours(), MeasureUnit.HOUR);
+                Measure minutes = new Measure(absDuration.toMinutesPart(), MeasureUnit.MINUTE);
+                Measure seconds = new Measure(absDuration.toSecondsPart(), MeasureUnit.SECOND);
+
+                String absText = formatAbsoluteDuration(mFormat, hours, minutes, seconds);
+                String text = duration.isNegative()
+                        ? context.getString(R.string.negative_duration, absText)
+                        : absText;
+
+                return new ValueString(text, null);
+            }
+
+            private static String formatAbsoluteDuration(@Format int format, Measure hours,
+                    Measure minutes, Measure seconds) {
+                if (format == FORMAT_ADAPTIVE) {
+                    MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                            MeasureFormat.FormatWidth.NARROW);
+                    ArrayList<Measure> partsList = new ArrayList<>();
+                    if (hours.getNumber().intValue() != 0) {
+                        partsList.add(hours);
+                    }
+                    if (minutes.getNumber().intValue() != 0) {
+                        partsList.add(minutes);
+                    }
+                    if (seconds.getNumber().intValue() != 0 || partsList.isEmpty()) {
+                        partsList.add(seconds);
+                    }
+                    return formatter.formatMeasures(partsList.toArray(new Measure[0]));
+                } else {
+                    // FORMAT_AUTOMATIC / FORMAT_CHRONOMETER
+                    MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                            MeasureFormat.FormatWidth.NUMERIC);
+                    return hours.getNumber().intValue() != 0
+                            ? formatter.formatMeasures(hours, minutes, seconds)
+                            : formatter.formatMeasures(minutes, seconds);
+                }
+            }
         }
 
-        /** A metric value for showing a clock time. */
-        public static final class FixedInstant extends MetricValue {
+        /** A metric value for showing a date. */
+        public static final class FixedDate extends MetricValue {
 
             /**
-             * Formatting option. The system will decide how to format the date and time, and
-             * whether to omit any pieces, depending on available space, the relationship between
-             * the {@link Instant} and the current date and time of day, etc.
+             * Formatting option. The system will decide how to format the date, and whether to omit
+             * any pieces, depending on available space, the relationship between the
+             * {@link LocalDate} and the current date, etc.
              */
             public static final int FORMAT_AUTOMATIC = 0;
 
-            /** Formatting option. Only the date will be shown, in long format. */
+            /**
+             * Formatting option. The date will be shown in a longer format, e.g. "Aug 13 2025"
+             * (according to the device's locale).
+             */
             public static final int FORMAT_LONG_DATE = 1;
 
-            /** Formatting option. Only the date will be shown, in short format. */
+            /**
+             * Formatting option. The date will be shown in a shorter format, e.g. "13/8/25"
+             * (according to the device's locale).
+             */
             public static final int FORMAT_SHORT_DATE = 2;
-
-            /**
-             * Formatting option. Both the date (in long format) and the time of day will be
-             * shown.
-             */
-            public static final int FORMAT_LONG_DATE_TIME = 3;
-
-            /**
-             * Formatting option. Both the date (in short format) and the time of day will be
-             * shown.
-             */
-            public static final int FORMAT_SHORT_DATE_TIME = 4;
-
-            /** Formatting option. Only the time of day will be shown. */
-            public static final int FORMAT_TIME = 5;
 
             /** @hide */
             @IntDef(prefix = { "FORMAT_" }, value = {
                     FORMAT_AUTOMATIC,
                     FORMAT_LONG_DATE,
                     FORMAT_SHORT_DATE,
-                    FORMAT_LONG_DATE_TIME,
-                    FORMAT_SHORT_DATE_TIME,
-                    FORMAT_TIME
             })
             @Retention(RetentionPolicy.SOURCE)
             public @interface Format {}
 
             private static final String KEY_VALUE = "value";
             private static final String KEY_FORMAT = "format";
-            private static final String KEY_TIMEZONE = "timezone";
 
-            private final Instant mValue;
+            private final LocalDate mValue;
             private final @Format int mFormat;
-            private final TimeZone mTimeZone;
 
             /**
-             * Creates a {@link FixedInstant} where the {@link Instant} will be displayed with
-             * {@link #FORMAT_AUTOMATIC} and in the device's {@link TimeZone}.
+             * Creates a {@link FixedDate} where the {@link LocalDate} will be displayed with
+             * {@link #FORMAT_AUTOMATIC}.
              */
-            public FixedInstant(@NonNull Instant value) {
+            public FixedDate(@NonNull LocalDate value) {
                 this(value, FORMAT_AUTOMATIC);
             }
 
             /**
-             * Creates a {@link FixedInstant} where the {@link Instant} will be displayed in the
-             * device's {@link TimeZone}.
+             * Creates a {@link FixedDate} where the {@link LocalDate} will be displayed in the
+             * specified formatting option.
              */
-            public FixedInstant(@NonNull Instant value, @Format int format) {
-                this(value, format, /* timeZone= */ null);
-            }
-
-            /**
-             * Creates a {@link FixedInstant} where the {@link Instant} will be displayed in the
-             * specified {@link TimeZone}.
-             *
-             * @param timeZone this should be used <em>only</em> for situations where the user
-             *                 would understand that the explicit timezone differs from the
-             *                 device's, e.g. the estimated arrival time of a plane in a different
-             *                 timezone
-             */
-            public FixedInstant(@NonNull Instant value, @Format int format,
-                    @Nullable TimeZone timeZone) {
+            public FixedDate(@NonNull LocalDate value, @Format int format) {
                 mValue = requireNonNull(value);
-                checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_TIME,
+                checkArgument(format >= FORMAT_AUTOMATIC && format <= FORMAT_SHORT_DATE,
                         "Invalid format: %s", format);
                 mFormat = format;
-                mTimeZone = timeZone;
             }
 
             @Nullable
-            private static FixedInstant fromBundle(Bundle bundle) {
-                Instant value = bundle.containsKey(KEY_VALUE)
-                        ? Instant.ofEpochMilli(bundle.getLong(KEY_VALUE)) : null;
+            private static FixedDate fromBundle(Bundle bundle) {
+                LocalDate value = bundle.containsKey(KEY_VALUE)
+                        ? LocalDate.ofEpochDay(bundle.getLong(KEY_VALUE)) : null;
                 if (value != null) {
                     int format = bundle.getInt(KEY_FORMAT, FORMAT_AUTOMATIC);
-                    TimeZone timeZone = bundle.containsKey(KEY_TIMEZONE)
-                            ? TimeZone.getTimeZone(bundle.getString(KEY_TIMEZONE)) : null;
-                    return new FixedInstant(value, format, timeZone);
+                    return new FixedDate(value, format);
                 } else {
                     return null;
                 }
@@ -12442,25 +12565,21 @@ public class Notification implements Parcelable
             /** @hide */
             @Override
             protected void toBundle(Bundle bundle) {
-                bundle.putLong(KEY_VALUE, mValue.toEpochMilli());
+                bundle.putLong(KEY_VALUE, mValue.toEpochDay());
                 bundle.putInt(KEY_FORMAT, mFormat);
-                if (mTimeZone != null) {
-                    bundle.putString(KEY_TIMEZONE, mTimeZone.getID());
-                }
             }
 
             @Override
             public boolean equals(Object obj) {
-                if (!(obj instanceof FixedInstant that)) return false;
+                if (!(obj instanceof FixedDate that)) return false;
                 if (this == that) return true;
                 return Objects.equals(this.mValue, that.mValue)
-                        && this.mFormat == that.mFormat
-                        && Objects.equals(this.mTimeZone, that.mTimeZone);
+                        && this.mFormat == that.mFormat;
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(mValue, mFormat, mTimeZone);
+                return Objects.hash(mValue, mFormat);
             }
 
             @Override
@@ -12468,30 +12587,148 @@ public class Notification implements Parcelable
                 return getClass().getSimpleName() + "{"
                         + "mValue=" + mValue
                         + ", mFormat=" + mFormat
-                        + ", mTimeZone=" + mTimeZone
                         + "}";
             }
 
-            /** The {@link Instant} value. */
-            public @NonNull Instant getValue() {
+            /** The {@link LocalDate} value. */
+            public @NonNull LocalDate getValue() {
                 return mValue;
             }
 
-            /** The formatting option for the {@link Instant} value. */
+            /** The formatting option for the {@link LocalDate} value. */
             public @Format int getFormat() {
                 return mFormat;
             }
 
+            /** @hide */
+            @Override
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public ValueString toValueString(Context context) {
+                // DateUtils.formatDateTime expects epoch millis, so make up a time.
+                LocalDateTime localDateTime = mValue.atStartOfDay();
+
+                String formatted = DateUtils.formatDateTime(context,
+                        localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                        getFormatFlags(mFormat, mValue));
+
+                return new ValueString(formatted, null);
+            }
+
+            private static int getFormatFlags(@Format int format, LocalDate date) {
+                switch (format) {
+                    case FORMAT_LONG_DATE:
+                        return DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH
+                                | DateUtils.FORMAT_SHOW_YEAR;
+                    case FORMAT_SHORT_DATE:
+                        return DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NUMERIC_DATE
+                                | DateUtils.FORMAT_SHOW_YEAR;
+                    case FORMAT_AUTOMATIC:
+                    default:
+                        return getAutomaticFormatFlags(date);
+                }
+            }
+
+            // Whole-month interval in either direction of the current month in which a date is
+            // considered "close to today" (e.g. if today is Feb 10 2025 then any date in
+            // Nov 1 2024 .. May 31 2025 is considered "close").
+            private static final int CLOSE_DATE_MONTH_SPAN = 3;
+
+            private static int getAutomaticFormatFlags(LocalDate date) {
+                YearMonth currentMonth = YearMonth.from(getToday());
+                YearMonth dateMonth = YearMonth.from(date);
+                long monthsBetween = Math.abs(ChronoUnit.MONTHS.between(currentMonth, dateMonth));
+
+                if (monthsBetween <= CLOSE_DATE_MONTH_SPAN) {
+                    // Date is "close" to today -> FORMAT_SHORT_DATE but without year
+                    return DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NUMERIC_DATE
+                            | DateUtils.FORMAT_NO_YEAR;
+                } else {
+                    // Otherwise -> same as FORMAT_SHORT_DATE
+                    return DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NUMERIC_DATE
+                            | DateUtils.FORMAT_SHOW_YEAR;
+                }
+            }
+        }
+
+        /**
+         * A metric value for showing a clock time.
+         *
+         * <p>Only hour and minutes will be displayed (according to the user's preference for 12-
+         * or 24- hour time, e.g. 14:30 or 2:30 PM); seconds and lower are truncated.
+         *
+         * <p>The time should be in a user-understandable timezone (most likely the device's own,
+         * unless it's clear from context that it would be different, such as a flight's arrival
+         * time on a different city).
+         */
+        public static final class FixedTime extends MetricValue {
+
+            private static final String KEY_VALUE = "value";
+
+            private final LocalTime mValue;
+
             /**
-             * (Optional) The time zone to use. Defaults to the device’s local timezone.
-             * This may not be shown to the user.
-             *
-             * <p>This should be used <em>only</em> for situations where the user would understand
-             * that the explicit timezone differs from the current one, e.g. estimated
-             * arrival time of a plane in a different timezone.
+             * Creates a {@link FixedTime} with the specified {@link LocalTime}.
              */
-            @Nullable public TimeZone getTimeZone() {
-                return mTimeZone;
+            public FixedTime(@NonNull LocalTime value) {
+                mValue = requireNonNull(value).truncatedTo(ChronoUnit.SECONDS);
+            }
+
+            @Nullable
+            private static FixedTime fromBundle(Bundle bundle) {
+                LocalTime value = bundle.containsKey(KEY_VALUE)
+                        ? LocalTime.ofSecondOfDay(bundle.getLong(KEY_VALUE)) : null;
+                if (value != null) {
+                    return new FixedTime(value);
+                } else {
+                    return null;
+                }
+            }
+
+            /** @hide */
+            @Override
+            protected void toBundle(Bundle bundle) {
+                bundle.putLong(KEY_VALUE, mValue.toSecondOfDay());
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (!(obj instanceof FixedTime that)) return false;
+                if (this == that) return true;
+                return Objects.equals(this.mValue, that.mValue);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(mValue);
+            }
+
+            @Override
+            public String toString() {
+                return getClass().getSimpleName() + "{"
+                        + "mValue=" + mValue
+                        + "}";
+            }
+
+            /** The {@link LocalTime} value. */
+            public @NonNull LocalTime getValue() {
+                return mValue;
+            }
+
+            /** @hide */
+            @Override
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public ValueString toValueString(Context context) {
+                // DateUtils.formatDateTime expects epoch millis, so make up a date.
+                LocalDateTime localDateTime = mValue.atDate(getToday());
+
+                String formatted = DateUtils.formatDateTime(context,
+                        localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                        DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_NO_NOON
+                                | DateUtils.FORMAT_NO_MIDNIGHT);
+
+                return new ValueString(formatted, null);
             }
         }
 
@@ -12571,6 +12808,14 @@ public class Notification implements Parcelable
             @Nullable
             public String getUnit() {
                 return mUnit;
+            }
+
+            /** @hide */
+            @Override
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public ValueString toValueString(Context context) {
+                return new ValueString(String.valueOf(mValue), mUnit);
             }
         }
 
@@ -12710,6 +12955,18 @@ public class Notification implements Parcelable
             public int getMaxFractionDigits() {
                 return mMaxFractionDigits;
             }
+
+            /** @hide */
+            @Override
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public ValueString toValueString(Context context) {
+                String formatted = NumberFormatter.withLocale(Locale.getDefault())
+                        .precision(Precision.minMaxFraction(mMinFractionDigits, mMaxFractionDigits))
+                        .format(mValue)
+                        .toString();
+                return new ValueString(formatted, mUnit);
+            }
         }
 
         /** Metric corresponding to a string value. */
@@ -12757,6 +13014,14 @@ public class Notification implements Parcelable
             /** The string value. */
             @NonNull public String getValue() {
                 return mValue;
+            }
+
+            /** @hide */
+            @Override
+            @NonNull
+            @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+            public ValueString toValueString(Context context) {
+                return new ValueString(mValue, null);
             }
         }
     }
