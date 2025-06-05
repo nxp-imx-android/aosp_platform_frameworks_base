@@ -27,7 +27,7 @@ import javax.inject.Qualifier
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class OnboardingAffordanceManager(
-    label: String,
+    private val label: String,
     private val sectionHeaderVisibilityProvider: SectionHeaderVisibilityProvider,
 ) {
     val view = MutableStateFlow<OnboardingAffordanceView?>(null)
@@ -35,20 +35,20 @@ class OnboardingAffordanceManager(
     val addAffordanceToStack: Boolean
         get() = view.value != null && sectionHeaderVisibilityProvider.sectionHeadersVisible
 
-    val controller: NodeController =
-        object : NodeController {
-            override val nodeLabel: String
-                get() = label
+    val controller: NodeController
+        get() =
+            object : NodeController {
+                override val nodeLabel: String
+                    get() = label
 
-            override val view: View
-                get() = this@OnboardingAffordanceManager.view.value!!
+                override val view: View = this@OnboardingAffordanceManager.view.value!!
 
-            override fun offerToKeepInParentForAnimation(): Boolean = false
+                override fun offerToKeepInParentForAnimation(): Boolean = false
 
-            override fun removeFromParentIfKeptForAnimation(): Boolean = false
+                override fun removeFromParentIfKeptForAnimation(): Boolean = false
 
-            override fun resetKeepInParentForAnimation() {}
-        }
+                override fun resetKeepInParentForAnimation() {}
+            }
 }
 
 @Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class Summarization
