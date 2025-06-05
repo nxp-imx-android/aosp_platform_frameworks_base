@@ -124,6 +124,7 @@ private constructor(
     private val configurationListener =
         object : ConfigurationController.ConfigurationListener {
             override fun onDensityOrFontScaleChanged() {
+                ShadeWindowGoesAround.assertInLegacyMode()
                 clock.onDensityOrFontScaleChanged()
             }
         }
@@ -154,7 +155,10 @@ private constructor(
         }
 
         progressProvider?.setReadyToHandleTransition(true)
-        configurationController.addCallback(configurationListener)
+        if (!ShadeWindowGoesAround.isEnabled) {
+            // the clock handles the config change itself.
+            configurationController.addCallback(configurationListener)
+        }
     }
 
     private fun addCursorSupportToIconContainers() {
@@ -191,7 +195,9 @@ private constructor(
         startSideContainer.setOnHoverListener(null)
         endSideContainer.setOnHoverListener(null)
         progressProvider?.setReadyToHandleTransition(false)
-        configurationController.removeCallback(configurationListener)
+        if (!ShadeWindowGoesAround.isEnabled) {
+            configurationController.removeCallback(configurationListener)
+        }
     }
 
     init {

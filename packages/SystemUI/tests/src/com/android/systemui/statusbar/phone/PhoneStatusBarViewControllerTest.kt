@@ -36,6 +36,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.battery.BatteryMeterView
@@ -178,12 +179,23 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     fun onViewAttachedAndDrawn_addStatusBarConfigurationControllerCallback() {
         val view = createViewMock(view)
 
         controller = createAndInitController(view)
 
         verify(mStatusBarConfigurationController).addCallback(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun onViewAttachedAndDrawn_doesNotAddStatusBarConfigurationControllerCallback() {
+        val view = createViewMock(view)
+
+        controller = createAndInitController(view)
+
+        verify(mStatusBarConfigurationController, never()).addCallback(any())
     }
 
     @Test

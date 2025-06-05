@@ -2391,7 +2391,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         }
     };
 
-    private ContentObserver mGlobalActionsTimeoutObserver = new ContentObserver(new Handler()) {
+    private ContentObserver mGlobalActionsTimeoutObserver = new ContentObserver(mMainHandler) {
         @Override
         public void onChange(boolean selfChange) {
             onGlobalActionsTimeoutChanged();

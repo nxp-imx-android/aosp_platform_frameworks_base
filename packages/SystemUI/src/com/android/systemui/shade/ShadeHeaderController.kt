@@ -343,7 +343,10 @@ constructor(
                 lastInsets?.let { updateConstraintsForInsets(header, it) }
                 updateResources()
                 updateCarrierGroupPadding()
-                clock.onDensityOrFontScaleChanged()
+                if (!ShadeWindowGoesAround.isEnabled) {
+                    // the clock handles the config change itself.
+                    clock.onDensityOrFontScaleChanged()
+                }
             }
 
             override fun onThemeChanged() {
@@ -352,10 +355,6 @@ constructor(
 
             override fun onUiModeChanged() {
                 updateColors()
-            }
-
-            override fun onLocaleListChanged() {
-                clock.onLocaleListChanged()
             }
         }
 
