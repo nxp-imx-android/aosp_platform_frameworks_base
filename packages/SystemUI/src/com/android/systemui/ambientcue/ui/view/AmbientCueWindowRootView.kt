@@ -26,6 +26,7 @@ import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.tracing.trace
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.ambientcue.ui.compose.AmbientCueContainer
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
@@ -95,12 +96,16 @@ constructor(
     }
 
     override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        ComposeInitializer.onAttachedToWindow(this)
+        trace("AmbientCue onAttachedToWindow") {
+            super.onAttachedToWindow()
+            ComposeInitializer.onAttachedToWindow(this)
+        }
     }
 
     override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        ComposeInitializer.onDetachedFromWindow(this)
+        trace("AmbientCue onDetachedFromWindow") {
+            super.onDetachedFromWindow()
+            ComposeInitializer.onDetachedFromWindow(this)
+        }
     }
 }
