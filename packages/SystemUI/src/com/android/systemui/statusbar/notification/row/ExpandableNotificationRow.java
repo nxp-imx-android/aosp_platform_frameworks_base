@@ -108,6 +108,7 @@ import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
+import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
@@ -216,6 +217,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private MetricsLogger mMetricsLogger;
     private NotificationChildrenContainerLogger mChildrenContainerLogger;
     private ColorUpdateLogger mColorUpdateLogger;
+    private BundleInteractionLogger mBundleInteractionLogger;
     private NotificationDismissibilityProvider mDismissibilityProvider;
     private int mIconTransformContentShift;
     private int mMaxHeadsUpHeightBeforeN;
@@ -422,6 +424,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 if (shouldLogExpandClickMetric) {
                     mMetricsLogger.action(
                             MetricsEvent.ACTION_NOTIFICATION_GROUP_EXPANDER, nowExpanded);
+                }
+                if (isBundle()) {
+                    mBundleInteractionLogger.logBundleExpansionChanged(
+                            mEntryAdapter.getBundleType(), nowExpanded);
                 }
                 onExpansionChanged(true /* userAction */, wasExpanded);
             } else {
@@ -2273,7 +2279,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             SmartReplyController smartReplyController,
             IStatusBarService statusBarService,
             UiEventLogger uiEventLogger,
-            NotificationRebindingTracker notificationRebindingTracker) {
+            NotificationRebindingTracker notificationRebindingTracker,
+            BundleInteractionLogger bundleInteractionLogger) {
 
         if (NotificationBundleUi.isEnabled()) {
             mEntryAdapter = entryAdapter;
@@ -2322,6 +2329,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mChildrenContainerLogger = childrenContainerLogger;
         mColorUpdateLogger = colorUpdateLogger;
         mDismissibilityProvider = dismissibilityProvider;
+        mBundleInteractionLogger = bundleInteractionLogger;
         setHapticFeedbackEnabled(!Flags.msdlFeedback());
     }
 
