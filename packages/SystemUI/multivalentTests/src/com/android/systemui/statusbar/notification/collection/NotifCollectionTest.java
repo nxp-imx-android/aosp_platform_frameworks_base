@@ -41,6 +41,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -569,7 +570,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 notif2.sbn.getKey(),
                 stats.dismissalSurface,
                 stats.dismissalSentiment,
-                stats.notificationVisibility);
+                stats.notificationVisibility,
+                false);
     }
 
     @Test
@@ -718,7 +720,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 notif.sbn.getKey(),
                 stats.dismissalSurface,
                 stats.dismissalSentiment,
-                stats.notificationVisibility);
+                stats.notificationVisibility,
+                false);
     }
 
     @Test
@@ -754,7 +757,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 eq(notif.sbn.getKey()),
                 anyInt(),
                 anyInt(),
-                eq(stats.notificationVisibility));
+                eq(stats.notificationVisibility),
+                anyBoolean());
     }
 
     @Test
@@ -784,7 +788,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 eq(notif.sbn.getKey()),
                 anyInt(),
                 anyInt(),
-                eq(stats.notificationVisibility));
+                eq(stats.notificationVisibility),
+                anyBoolean());
     }
 
     @Test
@@ -1323,7 +1328,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 notif1.sbn.getKey(),
                 stats1.dismissalSurface,
                 stats1.dismissalSentiment,
-                stats1.notificationVisibility);
+                stats1.notificationVisibility,
+                false);
 
         verify(mStatusBarService).onNotificationClear(
                 notif2.sbn.getPackageName(),
@@ -1331,7 +1337,8 @@ public class NotifCollectionTest extends SysuiTestCase {
                 notif2.sbn.getKey(),
                 stats2.dismissalSurface,
                 stats2.dismissalSentiment,
-                stats2.notificationVisibility);
+                stats2.notificationVisibility,
+                false);
     }
 
     @Test
@@ -1684,7 +1691,7 @@ public class NotifCollectionTest extends SysuiTestCase {
         onDismiss.run();
         FakeExecutor.exhaustExecutors(mBgExecutor);
         verify(mStatusBarService).onNotificationClear(any(), anyInt(), eq(notifEvent.key),
-                anyInt(), anyInt(), any());
+                anyInt(), anyInt(), any(), anyBoolean());
         verifyNoMoreInteractions(mStatusBarService);
         verifyNoMoreInteractions(mCollectionListener);
     }

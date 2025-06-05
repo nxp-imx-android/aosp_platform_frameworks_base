@@ -89,8 +89,17 @@ flag {
   bug: "387528442"
 }
 
+# Start: API flags
 
+flag {
+  name: "nm_classification_nls"
+  namespace: "systemui"
+  description: "New api for notification_classification_ui"
+  bug: "416144530"
+  is_exported: true
+}
 
+# End: API flags
 
 # Start: Flags that have been cleaned up in code but need to remain for CTS
 

@@ -42669,6 +42669,7 @@ package android.service.notification {
     field public static final int REASON_APP_CANCEL = 8; // 0x8
     field public static final int REASON_APP_CANCEL_ALL = 9; // 0x9
     field public static final int REASON_ASSISTANT_CANCEL = 22; // 0x16
+    field @FlaggedApi("android.service.notification.nm_classification_nls") public static final int REASON_BUNDLE_DISMISSED = 24; // 0x18
     field public static final int REASON_CANCEL = 2; // 0x2
     field public static final int REASON_CANCEL_ALL = 3; // 0x3
     field public static final int REASON_CHANNEL_BANNED = 17; // 0x11
