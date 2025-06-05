@@ -104,6 +104,7 @@ import static com.android.server.am.ProcessList.SERVICE_ADJ;
 import static com.android.server.am.ProcessList.TAG_PROCESS_OBSERVERS;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
+import static com.android.server.am.ProcessList.VISIBLE_APP_MAX_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
@@ -950,6 +951,7 @@ public abstract class OomAdjuster {
     @GuardedBy({"mService", "mProcLock"})
     protected void applyLruAdjust(ArrayList<ProcessRecord> lruList) {
         final int numLru = lruList.size();
+        int nextVisibleAppAdj = VISIBLE_APP_ADJ;
         int nextPreviousAppAdj = PREVIOUS_APP_ADJ;
         if (mConstants.USE_TIERED_CACHED_ADJ) {
             final long now = mInjector.getUptimeMillis();
@@ -961,7 +963,10 @@ public abstract class OomAdjuster {
                 final ProcessStateRecord state = app.mState;
                 final ProcessCachedOptimizerRecord opt = app.mOptRecord;
                 final int curAdj = state.getCurAdj();
-                if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
+                if (VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ) {
+                    state.setCurAdj(nextVisibleAppAdj);
+                    nextVisibleAppAdj = Math.min(nextVisibleAppAdj + 1, VISIBLE_APP_MAX_ADJ);
+                } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
                     state.setCurAdj(nextPreviousAppAdj);
                     nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
                 } else if (!app.isKilledByAm() && app.getThread() != null && (curAdj >= UNKNOWN_ADJ
@@ -1033,7 +1038,10 @@ public abstract class OomAdjuster {
                 ProcessRecord app = lruList.get(i);
                 final ProcessStateRecord state = app.mState;
                 final int curAdj = state.getCurAdj();
-                if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
+                if (VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ) {
+                    state.setCurAdj(nextVisibleAppAdj);
+                    nextVisibleAppAdj = Math.min(nextVisibleAppAdj + 1, VISIBLE_APP_MAX_ADJ);
+                } else if (PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ) {
                     state.setCurAdj(nextPreviousAppAdj);
                     nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
                 } else if (!app.isKilledByAm() && app.getThread() != null
@@ -1568,10 +1576,20 @@ public abstract class OomAdjuster {
                 onOtherActivity(ts);
             }
 
-            if (mAdj == ProcessList.VISIBLE_APP_ADJ) {
-                final int taskLayer = flags & ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
-                final int minLayer = Math.min(ProcessList.VISIBLE_APP_LAYER_MAX, taskLayer);
-                mAdj += minLayer;
+            if (Flags.oomadjusterVisLaddering() && Flags.removeLruSpamPrevention()) {
+                // Do nothing.
+                // When these flags are enabled, processes within the vis oom score range will
+                // have vis+X oom scores according their position in the LRU list with respect
+                // to the other vis processes, rather than their activity's taskLayer, which is
+                // not handling all the cases for apps with multi-activities and multi-processes,
+                // because there is no direct connection between the activities and bindings
+                // (processes) of an app.
+            } else {
+                if (mAdj == ProcessList.VISIBLE_APP_ADJ) {
+                    final int taskLayer = flags & ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
+                    final int minLayer = Math.min(ProcessList.VISIBLE_APP_LAYER_MAX, taskLayer);
+                    mAdj += minLayer;
+                }
             }
 
             mState.setCachedAdj(mAdj);
