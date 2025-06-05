@@ -132,7 +132,7 @@ class PreferenceSetterApiHandler(
         val key = request.key
         val metadata =
             usePreferenceHierarchyScope {
-                screenMetadata.getPreferenceHierarchy(application, this).find(key)
+                screenMetadata.getPreferenceHierarchy(application, this).findAsync(key)
             } ?: return notFound()
 
         fun <T> PreferenceMetadata.checkWritePermit(value: T): Int {

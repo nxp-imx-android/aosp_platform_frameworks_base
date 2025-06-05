@@ -52,9 +52,9 @@ fun <P : Preference> PreferenceMetadata.createAndBindWidget(
     }
 }
 
-/** Launches fragment for given [PreferenceScreenCreator]. */
+/** Launches fragment for given [PreferenceScreenMetadata]. */
 @Suppress("UNCHECKED_CAST")
-fun PreferenceScreenCreator.launchFragmentScenario() =
+fun PreferenceScreenMetadata.launchFragmentScenario() =
     FragmentScenario.launchInContainer(
         fragmentClass() as Class<out PreferenceFragmentCompat>,
         Bundle(2).also {

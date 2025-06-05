@@ -16,8 +16,9 @@ android_robolectric_test {
         "kotlin-parcelize-runtime",
         "truth",
     ],
-    kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
-    instrumentation_for: "SettingsLibMetadataShell",
+    associates: ["SettingsLibMetadata"],
     coverage_libs: ["SettingsLibMetadata"],
+    instrumentation_for: "SettingsLibMetadataShell",
+    kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
     upstream: true,
 }

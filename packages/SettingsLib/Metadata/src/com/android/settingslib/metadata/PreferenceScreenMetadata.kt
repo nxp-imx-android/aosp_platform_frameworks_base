@@ -31,11 +31,11 @@ import kotlinx.coroutines.flow.Flow
  * For parameterized preference screen that relies on additional information (e.g. package name,
  * language code) to build its content, the subclass must:
  * - override [arguments] in constructor
- * - add a static method `fun parameters(context: Context): List<Bundle>` (context is optional) to
+ * - add a static method `fun parameters(context: Context): Flow<Bundle>` (context is optional) to
  *   provide all possible arguments
  */
 @AnyThread
-interface PreferenceScreenMetadata : PreferenceMetadata {
+interface PreferenceScreenMetadata : PreferenceGroup {
     /** Arguments to build the screen content. */
     val arguments: Bundle?
         get() = null
@@ -122,7 +122,11 @@ interface PreferenceHierarchyGenerator<T> {
     val defaultType: T
 
     /** Generates [PreferenceHierarchy] with given type. */
-    suspend fun generatePreferenceHierarchy(context: Context, type: T): PreferenceHierarchy
+    suspend fun generatePreferenceHierarchy(
+        context: Context,
+        coroutineScope: CoroutineScope,
+        type: T,
+    ): PreferenceHierarchy
 }
 
 /**

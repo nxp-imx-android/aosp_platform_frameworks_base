@@ -20,4 +20,5 @@ android_robolectric_test {
     associates: ["SettingsLibUtils"],
     coverage_libs: ["SettingsLibUtils"],
     instrumentation_for: "SettingsLibUtilsShell",
+    upstream: true,
 }

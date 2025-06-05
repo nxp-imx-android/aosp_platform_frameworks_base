@@ -19,11 +19,14 @@ package com.android.settingslib.preference
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.XmlRes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceScreen
+import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_KEY
 import com.android.settingslib.metadata.PreferenceScreenBindingKeyProvider
@@ -57,8 +60,11 @@ open class PreferenceFragment :
         factory: PreferenceScreenFactory,
         coroutineScope: CoroutineScope,
     ): PreferenceScreen? {
-        preferenceScreenBindingHelper?.onDestroy()
-        preferenceScreenBindingHelper = null
+        val isUiThread = Looper.getMainLooper().thread === Thread.currentThread()
+        if (isUiThread) {
+            preferenceScreenBindingHelper?.onDestroy()
+            preferenceScreenBindingHelper = null
+        }
 
         val context = factory.context
         fun createPreferenceScreenFromResource() =
@@ -70,27 +76,31 @@ open class PreferenceFragment :
             getPreferenceScreenCreator(context) ?: return createPreferenceScreenFromResource()
         val preferenceBindingFactory = screenCreator.preferenceBindingFactory
         val preferenceHierarchy = screenCreator.getPreferenceHierarchy(context, coroutineScope)
+        var storages: MutableMap<KeyValueStore, PreferenceDataStore>
         val preferenceScreen =
             if (screenCreator.hasCompleteHierarchy()) {
                 Log.i(TAG, "Load screen " + screenCreator.key + " from hierarchy")
                 factory.getOrCreatePreferenceScreen().apply {
-                    inflatePreferenceHierarchy(preferenceBindingFactory, preferenceHierarchy)
+                    storages =
+                        inflatePreferenceHierarchy(preferenceBindingFactory, preferenceHierarchy)
                 }
             } else {
                 Log.i(TAG, "Screen " + screenCreator.key + " is hybrid")
                 createPreferenceScreenFromResource()?.also {
-                    bindRecursively(it, preferenceBindingFactory, preferenceHierarchy)
+                    storages = bindRecursively(it, preferenceBindingFactory, preferenceHierarchy)
                 } ?: return null
             }
 
-        preferenceScreenBindingHelper =
-            PreferenceScreenBindingHelper(
-                context,
-                this,
-                preferenceBindingFactory,
-                preferenceScreen,
-                preferenceHierarchy,
-            )
+        if (isUiThread) {
+            preferenceScreenBindingHelper =
+                PreferenceScreenBindingHelper(
+                    this,
+                    preferenceBindingFactory,
+                    preferenceScreen,
+                    preferenceHierarchy,
+                    storages,
+                )
+        }
         return preferenceScreen
     }
 
