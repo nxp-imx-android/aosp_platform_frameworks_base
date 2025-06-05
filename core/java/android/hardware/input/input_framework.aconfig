@@ -22,6 +22,13 @@ flag {
 
 flag {
     namespace: "input_native"
+    name: "touchpad_visualizer"
+    description: "Enables a developer overlay that displays raw touchpad input data and gesture recognition status in real-time."
+    bug: "286551975"
+}
+
+flag {
+    namespace: "input_native"
     name: "manage_key_gestures"
     description: "Manage key gestures through Input APIs"
     is_exported: true
