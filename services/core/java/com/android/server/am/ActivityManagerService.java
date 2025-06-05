@@ -9277,13 +9277,9 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onWarningThresholdReached(int uid) {
-            if (Flags.logExcessiveBinderProxies()) {
-                Slog.w(TAG, "Uid " + uid + " sent too many ("
-                        + BINDER_PROXY_WARNING_WATERMARK + ") Binders to uid " + Process.myUid());
-                FrameworkStatsLog.write(
-                        FrameworkStatsLog.EXCESSIVE_BINDER_PROXY_COUNT_REPORTED,
-                        uid);
-            }
+            Slog.w(TAG, "Uid " + uid + " sent too many ("
+                    + BINDER_PROXY_WARNING_WATERMARK + ") Binders to uid " + Process.myUid());
+            FrameworkStatsLog.write(FrameworkStatsLog.EXCESSIVE_BINDER_PROXY_COUNT_REPORTED, uid);
         }
     }
 

@@ -49,13 +49,6 @@ flag {
 }
 
 flag {
-    namespace: "backstage_power"
-    name: "log_excessive_binder_proxies"
-    description: "Log the excessive incoming binder proxies into statsd"
-    bug: "298263955"
-}
-
-flag {
     name: "skip_unimportant_connections"
     namespace: "backstage_power"
     description: "Avoid OomAdjuster calculations for connections that won't change importance"
