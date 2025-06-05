@@ -17,6 +17,7 @@ package android {
     field @FlaggedApi("android.multiuser.enable_permission_to_access_hidden_profiles") public static final String ACCESS_HIDDEN_PROFILES_FULL = "android.permission.ACCESS_HIDDEN_PROFILES_FULL";
     field public static final String ACCESS_INSTANT_APPS = "android.permission.ACCESS_INSTANT_APPS";
     field @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final String ACCESS_LAST_KNOWN_CELL_ID = "android.permission.ACCESS_LAST_KNOWN_CELL_ID";
+    field @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public static final String ACCESS_LOCATION_BYPASS_ALLOWLIST = "android.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST";
     field public static final String ACCESS_LOCUS_ID_USAGE_STATS = "android.permission.ACCESS_LOCUS_ID_USAGE_STATS";
     field public static final String ACCESS_MOCK_LOCATION = "android.permission.ACCESS_MOCK_LOCATION";
     field public static final String ACCESS_MTP = "android.permission.ACCESS_MTP";
