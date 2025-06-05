@@ -30,8 +30,6 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
-import static android.view.Surface.ROTATION_0;
-import static android.view.Surface.ROTATION_180;
 
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -44,7 +42,6 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.os.RemoteException;
 import android.util.Slog;
-import android.view.DisplayInfo;
 import android.view.Surface;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -72,6 +69,8 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
     private final AppCompatCameraStateSource mCameraStateNotifier;
     @NonNull
     private final CameraStateMonitor mCameraStateMonitor;
+    @NonNull
+    private final AppCompatCameraRotationState mCameraDisplayRotationProvider;
 
     // TODO(b/380840084): Clean up after flag is launched.
     @Nullable
@@ -90,29 +89,32 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
         mCameraStateMonitor = cameraStateMonitor;
         mCameraStateNotifier = cameraStateNotifier;
         mActivityRefresher = activityRefresher;
+        mCameraDisplayRotationProvider = new AppCompatCameraRotationState(displayContent);
     }
 
     void start() {
         mCameraStateNotifier.addCameraStatePolicy(this);
         mActivityRefresher.addEvaluator(this);
+        mCameraDisplayRotationProvider.start();
         mIsRunning = true;
-    }
-
-    int getCameraDeviceRotation() {
-        // TODO(b/276432441): Check device orientation when running on an external display.
-        return mDisplayContent.getRotation();
     }
 
     /** Releases camera callback listener. */
     void dispose() {
         mCameraStateNotifier.removeCameraStatePolicy(this);
         mActivityRefresher.removeEvaluator(this);
+        mCameraDisplayRotationProvider.dispose();
         mIsRunning = false;
     }
 
     @VisibleForTesting
     boolean isRunning() {
         return mIsRunning;
+    }
+
+    @Surface.Rotation
+    int getCameraDeviceRotation() {
+        return mCameraDisplayRotationProvider.getCameraDeviceRotation();
     }
 
     // Refreshing only when configuration changes after applying camera compat treatment.
@@ -297,35 +299,32 @@ final class CameraCompatFreeformPolicy implements AppCompatCameraStatePolicy,
         if (!isTreatmentEnabledForActivity(topActivity, /* shouldCheckOrientation= */ true)) {
             return CAMERA_COMPAT_FREEFORM_NONE;
         }
-        final int appOrientation = topActivity.getRequestedConfigurationOrientation();
-        // It is very important to check the original (actual) display rotation, and not the
-        // sandboxed rotation that camera compat treatment sets.
-        final DisplayInfo displayInfo = topActivity.mWmService.mDisplayManagerInternal
-                .getDisplayInfo(topActivity.getDisplayId());
+
         // This treatment targets only devices with portrait natural orientation, which most tablets
         // have.
-        // TODO(b/365725400): handle landscape natural orientation.
-        if (displayInfo.getNaturalHeight() > displayInfo.getNaturalWidth()) {
-            if (appOrientation == ORIENTATION_PORTRAIT) {
-                if (isDisplayRotationPortrait(displayInfo.rotation)) {
-                    return CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_PORTRAIT;
-                } else {
-                    return CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE;
-                }
-            } else if (appOrientation == ORIENTATION_LANDSCAPE) {
-                if (isDisplayRotationPortrait(displayInfo.rotation)) {
-                    return CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT;
-                } else {
-                    return CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_LANDSCAPE;
-                }
+        if (!mCameraDisplayRotationProvider.isCameraDeviceNaturalOrientationPortrait()) {
+            // TODO(b/365725400): handle landscape natural orientation.
+            return CAMERA_COMPAT_FREEFORM_NONE;
+        }
+
+        final int appOrientation = topActivity.getRequestedConfigurationOrientation();
+        final boolean isDisplayRotationPortrait = mCameraDisplayRotationProvider
+                .isCameraDeviceOrientationPortrait();
+        if (appOrientation == ORIENTATION_PORTRAIT) {
+            if (isDisplayRotationPortrait) {
+                return CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_PORTRAIT;
+            } else {
+                return CAMERA_COMPAT_FREEFORM_PORTRAIT_DEVICE_IN_LANDSCAPE;
+            }
+        } else if (appOrientation == ORIENTATION_LANDSCAPE) {
+            if (isDisplayRotationPortrait) {
+                return CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_PORTRAIT;
+            } else {
+                return CAMERA_COMPAT_FREEFORM_LANDSCAPE_DEVICE_IN_LANDSCAPE;
             }
         }
 
         return CAMERA_COMPAT_FREEFORM_NONE;
-    }
-
-    private static boolean isDisplayRotationPortrait(@Surface.Rotation int displayRotation) {
-        return displayRotation == ROTATION_0 || displayRotation == ROTATION_180;
     }
 
     /**

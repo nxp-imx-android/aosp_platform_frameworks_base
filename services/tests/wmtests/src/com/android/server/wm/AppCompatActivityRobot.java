@@ -24,6 +24,7 @@ import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.pm.ApplicationInfo.CATEGORY_GAME;
 import static android.content.pm.ApplicationInfo.CATEGORY_UNDEFINED;
+import static android.view.Display.TYPE_INTERNAL;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -136,7 +137,11 @@ class AppCompatActivityRobot {
     }
 
     void createActivityWithComponentInNewTaskAndDisplay() {
-        createActivityWithComponentInNewTask(/* inNewTask */ true, /* inNewDisplay */ true);
+        createActivityWithComponentInNewTaskAndDisplay(TYPE_INTERNAL);
+    }
+    void createActivityWithComponentInNewTaskAndDisplay(int displayType) {
+        createActivityWithComponentInNewTask(/* inNewTask */ true, /* inNewDisplay */ true,
+                displayType);
     }
 
     void configureTopActivity(float minAspect, float maxAspect, int screenOrientation,
@@ -358,7 +363,11 @@ class AppCompatActivityRobot {
     }
 
     void createNewDisplay() {
+        createNewDisplay(TYPE_INTERNAL);
+    }
+    void createNewDisplay(int type) {
         mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayWidth, mDisplayHeight)
+                .setType(type)
                 .build();
         onPostDisplayContentCreation(mDisplayContent);
     }
@@ -569,8 +578,13 @@ class AppCompatActivityRobot {
     }
 
     private void createActivityWithComponentInNewTask(boolean inNewTask, boolean inNewDisplay) {
+        createActivityWithComponentInNewTask(inNewTask, inNewDisplay, TYPE_INTERNAL);
+    }
+
+    private void createActivityWithComponentInNewTask(boolean inNewTask, boolean inNewDisplay,
+            int displayType) {
         if (inNewDisplay) {
-            createNewDisplay();
+            createNewDisplay(displayType);
         }
         if (inNewTask) {
             createNewTask();
