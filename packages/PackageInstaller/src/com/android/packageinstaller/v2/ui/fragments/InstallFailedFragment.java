@@ -23,12 +23,12 @@ import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_RESULT_INTE
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_SHOULD_RETURN_RESULT;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_STATUS_CODE;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -43,6 +43,7 @@ import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallFailed;
 import com.android.packageinstaller.v2.model.PackageUtil.AppSnippet;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
+import com.android.packageinstaller.v2.ui.UiUtil;
 
 /**
  * Dialog to show when the installation failed. Depending on the failure code, an appropriate
@@ -93,62 +94,62 @@ public class InstallFailedFragment extends DialogFragment {
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
 
-        View dialogView = getLayoutInflater().inflate(R.layout.install_fragment_layout, null);
+        View dialogView = getLayoutInflater().inflate(
+                UiUtil.getInstallationLayoutResId(requireContext()), null);
         dialogView.requireViewById(R.id.custom_message).setVisibility(View.VISIBLE);
         dialogView.requireViewById(R.id.app_snippet).setVisibility(View.VISIBLE);
         ((ImageView) dialogView.requireViewById(R.id.app_icon))
             .setImageDrawable(mDialogData.getAppIcon());
         ((TextView) dialogView.requireViewById(R.id.app_label)).setText(mDialogData.getAppLabel());
 
-
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(requireContext())
-                .setView(dialogView)
-                .setNegativeButton(R.string.button_close,
-                    (dialogInt, which) -> mInstallActionListener.onNegativeResponse(
-                        mDialogData.getStageCode()));
-        setDialogStringsFromErrorCode(mDialogData.getLegacyCode(), dialogBuilder, dialogView);
-
-        return dialogBuilder.create();
+        return getDialog(mDialogData.getLegacyCode(), dialogView);
     }
 
     /**
-     * Set corresponding dialog title and message for the failure statusCode.
+     * Get the dialog with corresponding dialog title and message for the failure statusCode.
      *
      * @param statusCode The status code from the package installer.
      */
-    private void setDialogStringsFromErrorCode(int statusCode, AlertDialog.Builder builder,
-                                               View dialogView) {
+    private Dialog getDialog(int statusCode, View dialogView) {
         Log.i(LOG_TAG, "Installation status code: " + statusCode);
 
-        TextView customMessage = dialogView.requireViewById(R.id.custom_message);
+        final TextView customMessage = dialogView.requireViewById(R.id.custom_message);
+        int titleResId = R.string.title_install_failed_not_installed;
+        int positiveButtonResId = Resources.ID_NULL;
+        DialogInterface.OnClickListener positiveButtonListener = null;
         switch (statusCode) {
             case PackageInstaller.STATUS_FAILURE_BLOCKED -> {
                 customMessage.setText(R.string.message_install_failed_blocked);
-                builder.setTitle(R.string.title_install_failed_blocked);
+                titleResId = R.string.title_install_failed_blocked;
             }
             case PackageInstaller.STATUS_FAILURE_CONFLICT -> {
                 customMessage.setText(R.string.message_install_failed_conflict);
-                builder.setTitle(R.string.title_cant_install_app);
+                titleResId = R.string.title_cant_install_app;
             }
             case PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> {
                 customMessage.setText(R.string.message_install_failed_incompatible);
-                builder.setTitle(R.string.title_install_failed_incompatible);
+                titleResId = R.string.title_install_failed_incompatible;
             }
             case PackageInstaller.STATUS_FAILURE_INVALID -> {
                 customMessage.setText(R.string.message_install_failed_invalid);
-                builder.setTitle(R.string.title_cant_install_app);
+                titleResId = R.string.title_cant_install_app;
             }
             case PackageInstaller.STATUS_FAILURE_STORAGE -> {
                 customMessage.setText(R.string.message_install_failed_less_storage);
-                builder.setTitle(R.string.title_install_failed_less_storage)
-                        .setPositiveButton(R.string.button_manage_apps, (dialog, which) ->
-                            mInstallActionListener.sendManageAppsIntent());
+                titleResId = R.string.title_install_failed_less_storage;
+                positiveButtonResId = R.string.button_manage_apps;
+                positiveButtonListener = (dialog, which) ->
+                            mInstallActionListener.sendManageAppsIntent();
             }
             default -> {
                 customMessage.setVisibility(View.GONE);
-                builder.setTitle(R.string.title_install_failed_not_installed);
             }
         }
+
+        return UiUtil.getAlertDialog(requireContext(), getString(titleResId), dialogView,
+                positiveButtonResId, R.string.button_close, positiveButtonListener,
+                (dialogInt, which) -> mInstallActionListener.onNegativeResponse(
+                        mDialogData.getStageCode()));
     }
 
     @Override
