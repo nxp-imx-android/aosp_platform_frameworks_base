@@ -93,7 +93,7 @@ flag {
 }
 
 flag {
-    name: "sleeplocks"
+    name: "partial_sleep_wakelocks"
     namespace: "power"
     description: "Enable new wakelock to keep device asleep - for the user, but ensure that the CPU remains awake."
     bug: "401624085"

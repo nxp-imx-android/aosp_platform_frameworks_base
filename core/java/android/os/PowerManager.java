@@ -207,6 +207,16 @@ public final class PowerManager {
             OsProtoEnums.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK; // 0x00000100
 
     /**
+     * Wake lock level: Keep the device asleep - for the user, but ensure that the CPU
+     * remains awake.
+     * This level supersedes all other wakelocks - others will be ignored if this is held,
+     * and the device is asleep.
+     * @hide
+     */
+    public static final int PARTIAL_SLEEP_WAKE_LOCK =
+            OsProtoEnums.PARTIAL_SLEEP_WAKE_LOCK; // 0x00000200
+
+    /**
      * Mask for the wake lock level component of a combined wake lock level and flags integer.
      *
      * @hide
@@ -1499,6 +1509,12 @@ public final class PowerManager {
             case DRAW_WAKE_LOCK:
             case SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK:
                 break;
+            case PARTIAL_SLEEP_WAKE_LOCK:
+                if (com.android.server.power.feature.flags.Flags.partialSleepWakelocks()) {
+                    break;
+                }
+                throw new IllegalArgumentException(
+                        "Partial sleep wake lock flag not rolled out yet");
             default:
                 throw new IllegalArgumentException("Must specify a valid wake lock level.");
         }
