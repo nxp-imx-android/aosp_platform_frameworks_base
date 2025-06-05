@@ -30,6 +30,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.AuthenticationStateListener;
 import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.events.AuthenticationAcquiredInfo;
 import android.hardware.biometrics.events.AuthenticationErrorInfo;
 import android.hardware.biometrics.events.AuthenticationFailedInfo;
@@ -97,6 +98,7 @@ public class AuthenticationPolicyService extends SystemService {
     private final WindowManagerInternal mWindowManager;
     private final UserManagerInternal mUserManager;
     private SecureLockDeviceServiceInternal mSecureLockDeviceService;
+    private WatchRangingServiceInternal mWatchRangingService;
     @VisibleForTesting
     final SparseIntArray mFailedAttemptsForUser = new SparseIntArray();
     private final SparseLongArray mLastLockedTimestamp = new SparseLongArray();
@@ -120,6 +122,10 @@ public class AuthenticationPolicyService extends SystemService {
         if (android.security.Flags.secureLockdown()) {
             mSecureLockDeviceService = Objects.requireNonNull(
                     LocalServices.getService(SecureLockDeviceServiceInternal.class));
+        }
+        if (Flags.identityCheckWatch()) {
+            mWatchRangingService = Objects.requireNonNull(LocalServices.getService(
+                    WatchRangingServiceInternal.class));
         }
     }
 
@@ -497,11 +503,20 @@ public class AuthenticationPolicyService extends SystemService {
 
         @Override
         @EnforcePermission(USE_BIOMETRIC_INTERNAL)
-        public void startWatchRangingForIdentityCheck(
-                IProximityResultCallback resultCallback) {
+        public void startWatchRangingForIdentityCheck(long authenticationRequestId,
+                @NonNull IProximityResultCallback proximityResultCallback) {
             startWatchRangingForIdentityCheck_enforcePermission();
-            Slog.d(TAG, "startWatchRangingForIdentityCheck");
-            //TODO (b/397954948) : Bind to IProximityProviderService and start ranging
+
+            mWatchRangingService.startWatchRangingForIdentityCheck(authenticationRequestId,
+                    proximityResultCallback);
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public void cancelWatchRangingForRequestId(long authenticationRequestId) {
+            cancelWatchRangingForRequestId_enforcePermission();
+
+            mWatchRangingService.cancelWatchRangingForRequestId(authenticationRequestId);
         }
     };
 }
