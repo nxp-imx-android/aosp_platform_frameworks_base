@@ -50,5 +50,6 @@
         <option name="directory-keys"
             value="/data/user/0/com.android.systemui.tests/files"/>
         <option name="collect-on-run-ended-only" value="true"/>
+        <option name="clean-up" value="false" />
     </metrics_collector>
 </configuration>
