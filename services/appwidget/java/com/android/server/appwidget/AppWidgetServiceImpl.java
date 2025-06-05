@@ -17,6 +17,7 @@
 package com.android.server.appwidget;
 
 import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
+import static android.appwidget.flags.Flags.playStorePinWidgets;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.removeAppWidgetServiceIoFromCriticalPath;
@@ -138,6 +139,7 @@ import android.widget.RemoteViews;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.SuspendedAppActivity;
 import com.android.internal.app.UnlaunchableAppActivity;
 import com.android.internal.appwidget.IAppWidgetHost;
@@ -349,6 +351,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     // and package events, as well as various internal events within
     // AppWidgetService.
     private Handler mCallbackHandler;
+    // ServiceThread on which the callback handler runs
+    private ServiceThread mServiceThread;
     // Map of user id to the next app widget id (monotonically increasing integer)
     // that can be allocated for a new app widget.
     // See {@link AppWidgetHost#allocateAppWidgetId}.
@@ -392,10 +396,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             mSaveStateHandler = BackgroundThread.getHandler();
         }
         mSavePreviewsHandler = new Handler(BackgroundThread.get().getLooper());
-        final ServiceThread serviceThread = new ServiceThread(TAG,
-                android.os.Process.THREAD_PRIORITY_FOREGROUND, false /* allowIo */);
-        serviceThread.start();
-        mCallbackHandler = new CallbackHandler(serviceThread.getLooper());
+        mServiceThread = new ServiceThread(TAG,
+            android.os.Process.THREAD_PRIORITY_FOREGROUND, false /* allowIo */);
+        mServiceThread.start();
+        mCallbackHandler = new CallbackHandler(mServiceThread.getLooper());
         mBackupRestoreController = new BackupRestoreController();
         mSecurityPolicy = new SecurityPolicy();
         mIsCombinedBroadcastEnabled = DeviceConfig.getBoolean(NAMESPACE_SYSTEMUI,
@@ -441,6 +445,11 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     @Override
     public int getMaxBitmapMemory() {
         return mMaxWidgetBitmapMemory;
+    }
+
+    @VisibleForTesting
+    ServiceThread getServiceThread() {
+        return mServiceThread;
     }
 
     /**
@@ -2537,7 +2546,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             if (!mPackageManagerInternal.isSameApp(pkg, callingUid, userId)) {
                 // If the calling process is requesting to pin appwidgets from another process,
                 // check if the calling process has the necessary permission.
-                if (!injectHasAccessWidgetsPermission(Binder.getCallingPid(), callingUid)) {
+                if (!injectHasPinWidgetsPermission(Binder.getCallingPid(), callingUid)) {
                     return false;
                 }
                 id = new ProviderId(mPackageManagerInternal.getPackageUid(
@@ -2563,9 +2572,14 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     /**
      * Returns true if the caller has the proper permission to access app widgets.
      */
-    private boolean injectHasAccessWidgetsPermission(int callingPid, int callingUid) {
-        return mContext.checkPermission(Manifest.permission.CLEAR_APP_USER_DATA,
-                callingPid, callingUid) == PackageManager.PERMISSION_GRANTED;
+    private boolean injectHasPinWidgetsPermission(int callingPid, int callingUid) {
+        boolean hasClearAppUserData = mContext.checkPermission(
+                Manifest.permission.CLEAR_APP_USER_DATA, callingPid, callingUid)
+                == PackageManager.PERMISSION_GRANTED;
+        boolean hasInstallPackages = playStorePinWidgets() && mContext.checkPermission(
+                Manifest.permission.INSTALL_PACKAGES, callingPid, callingUid)
+                == PackageManager.PERMISSION_GRANTED;
+        return hasClearAppUserData || hasInstallPackages;
     }
 
     /**
