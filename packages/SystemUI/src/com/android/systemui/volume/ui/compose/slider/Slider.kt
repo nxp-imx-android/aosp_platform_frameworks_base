@@ -87,6 +87,8 @@ fun Slider(
     val coroutineScope = rememberCoroutineScope()
     var animationJob: Job? by remember { mutableStateOf(null) }
     val sliderState = remember(valueRange) { SliderState(value = value, valueRange = valueRange) }
+    val hapticsViewModel =
+        haptics.rememberViewModel(sliderState.value, valueRange, interactionSource)
     LaunchedEffect(value) {
         if (!sliderState.isDragging && sliderState.value != value) {
             animationJob =
@@ -97,19 +99,23 @@ fun Slider(
                         animationSpec = animationSpec,
                     ) { animatedValue, _ ->
                         sliderState.value = animatedValue
+                        if (haptics is Haptics.Enabled && !haptics.isDiscrete()) {
+                            hapticsViewModel?.onValueChange(animatedValue)
+                        }
                     }
                 }
         }
     }
 
-    val hapticsViewModel =
-        haptics.rememberViewModel(sliderState.value, valueRange, interactionSource)
     val valueChange: (Float) -> Unit = { newValue ->
         if (sliderState.isDragging) {
             animationJob?.cancel()
             sliderState.value = newValue
         }
         hapticsViewModel?.addVelocityDataPoint(newValue)
+        if (haptics is Haptics.Enabled && !haptics.isDiscrete()) {
+            hapticsViewModel?.onValueChange(newValue)
+        }
         onValueChanged(newValue)
     }
     val semantics =
@@ -224,17 +230,14 @@ private fun Haptics.rememberViewModel(
                         )
                     }
                     .also { hapticsViewModel ->
-                        var lastValue by remember { mutableFloatStateOf(value) }
-                        LaunchedEffect(value) {
-                            val roundedValue =
-                                if (hapticConfigs.hapticFeedbackConfig.sliderStepSize != 0f) {
-                                    round(value)
-                                } else {
-                                    value
+                        if (isDiscrete()) {
+                            var lastValue by remember { mutableFloatStateOf(value) }
+                            LaunchedEffect(value) {
+                                val roundedValue = round(value)
+                                if (roundedValue != lastValue) {
+                                    lastValue = roundedValue
+                                    hapticsViewModel.onValueChange(roundedValue)
                                 }
-                            if (roundedValue != lastValue) {
-                                lastValue = roundedValue
-                                hapticsViewModel.onValueChange(roundedValue)
                             }
                         }
                     }
@@ -255,5 +258,7 @@ sealed interface Haptics {
         val hapticsViewModelFactory: SliderHapticsViewModel.Factory,
         val hapticConfigs: VolumeHapticsConfigs,
         val orientation: Orientation,
-    ) : Haptics
+    ) : Haptics {
+        fun isDiscrete(): Boolean = hapticConfigs.hapticFeedbackConfig.sliderStepSize != 0f
+    }
 }
