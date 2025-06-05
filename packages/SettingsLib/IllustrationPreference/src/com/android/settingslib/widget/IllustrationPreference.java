@@ -138,11 +138,14 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         ImageView backgroundViewTablet =
                 (ImageView) holder.findViewById(R.id.background_view_tablet);
 
+        boolean isExpressive = SettingsThemeHelper.isExpressiveTheme(getContext());
         if (backgroundView != null) {
-            backgroundView.setVisibility(mIsTablet ? View.GONE : View.VISIBLE);
+            backgroundView.setVisibility(
+                    isExpressive || mIsTablet ? View.GONE : View.VISIBLE);
         }
         if (backgroundViewTablet != null) {
-            backgroundViewTablet.setVisibility(mIsTablet ? View.VISIBLE : View.GONE);
+            backgroundViewTablet.setVisibility(
+                    isExpressive || !mIsTablet ? View.GONE : View.VISIBLE);
         }
         if (mIsTablet) {
             backgroundView = backgroundViewTablet;
