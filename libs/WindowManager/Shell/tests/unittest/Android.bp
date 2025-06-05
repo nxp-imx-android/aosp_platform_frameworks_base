@@ -52,7 +52,6 @@ android_test {
         "dagger2",
         "flag-junit",
         "frameworks-base-testutils",
-        "guava-android-testlib",
         "junit",
         "kotlin-test",
         "kotlinx-coroutines-android",
