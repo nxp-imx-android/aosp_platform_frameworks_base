@@ -70,6 +70,13 @@ class RemoteDeviceTaskList {
     }
 
     /**
+     * Removes a task from the list of tasks currently available on the remote device.
+     */
+    void removeTask(int taskId) {
+        mTasks.removeIf(task -> task.getId() == taskId);
+    }
+
+    /**
      * Gets the most recently used task on this device, or null if there are no
      * tasks.
      */

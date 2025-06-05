@@ -26,6 +26,7 @@ import android.content.Context;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
@@ -106,6 +107,11 @@ public final class TaskContinuityManagerService extends SystemService {
                 mRemoteTaskStore.setTasks(
                     associationId,
                     continuityDeviceConnected.getRemoteTasks());
+                break;
+            case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
+                mRemoteTaskStore.removeTask(
+                    associationId,
+                    remoteTaskRemovedMessage.taskId());
                 break;
             default:
                 Slog.w(TAG, "Received unknown message from device: " + associationId);

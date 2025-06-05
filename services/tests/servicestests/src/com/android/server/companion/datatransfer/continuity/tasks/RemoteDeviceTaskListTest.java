@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.ActivityManager;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
@@ -95,6 +96,23 @@ public class RemoteDeviceTaskListTest {
 
         assertThat(taskList.getMostRecentTask())
             .isEqualTo(expectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+    }
+
+    @Test
+    public void testRemoveTask_removesTask() {
+        RemoteTaskInfo mostRecentTaskInfo = createNewRemoteTaskInfo(1, "task2", 200);
+        RemoteTask mostRecentTask = mostRecentTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        RemoteTaskInfo secondMostRecentTaskInfo = createNewRemoteTaskInfo(2, "task1", 100);
+        RemoteTask secondMostRecentTask
+            = secondMostRecentTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+
+        taskList.setTasks(Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
+        assertThat(taskList.getMostRecentTask())
+            .isEqualTo(mostRecentTask);
+
+        taskList.removeTask(mostRecentTask.getId());
+        assertThat(taskList.getMostRecentTask())
+            .isEqualTo(secondMostRecentTask);
     }
 
     @Test

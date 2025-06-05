@@ -26,6 +26,7 @@ import static com.android.server.companion.datatransfer.continuity.TaskContinuit
 
 import android.app.ActivityManager;
 import android.companion.AssociationInfo;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
@@ -73,7 +74,7 @@ public class RemoteTaskStoreTest {
         taskStore.onTransportConnected(associationInfo);
 
         // Add tasks to the new association.
-        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo("task1", 100L);
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
         taskStore.setTasks(
             associationInfo.getId(),
             Collections.singletonList(remoteTaskInfo));
@@ -88,13 +89,37 @@ public class RemoteTaskStoreTest {
         when(mMockConnectedAssociationStore.getConnectedAssociationById(0))
             .thenReturn(null);
 
-        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo("task1", 100L);
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
 
         // Add the task. Since ConnectedAssociationStore does not have this
         // association, this should be ignored.
         taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
+    }
+
+    @Test
+    public void removeTask_removesTask() {
+        // Setup an association.
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        taskStore.onTransportConnected(associationInfo);
+
+        // Add two tasks
+        RemoteTaskInfo mostRecentTaskInfo = createNewRemoteTaskInfo(1, "task1", 200);
+        RemoteTask mostRecentTask
+            = mostRecentTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+        RemoteTaskInfo secondMostRecentTaskInfo = createNewRemoteTaskInfo(2, "task2", 100);
+        RemoteTask secondMostRecentTask
+            = secondMostRecentTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+        taskStore.setTasks(
+            associationInfo.getId(),
+            Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
+
+        assertThat(taskStore.getMostRecentTasks())
+            .containsExactly(mostRecentTask);
+
+        taskStore.removeTask(associationInfo.getId(), mostRecentTaskInfo.getId());
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(secondMostRecentTask);
     }
 
     @Test
@@ -106,7 +131,7 @@ public class RemoteTaskStoreTest {
                 .thenReturn(associationInfo);
 
         // Set tasks for the association.
-        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo("task1", 100L);
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
         taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
 
         // Simulate the association being disconnected.
@@ -117,11 +142,12 @@ public class RemoteTaskStoreTest {
     }
 
     private RemoteTaskInfo createNewRemoteTaskInfo(
+        int id,
         String label,
         long lastUsedTimeMillis) {
 
         ActivityManager.RunningTaskInfo runningTaskInfo
-            = createRunningTaskInfo(1, label, lastUsedTimeMillis);
+            = createRunningTaskInfo(id, label, lastUsedTimeMillis);
 
         return new RemoteTaskInfo(runningTaskInfo);
     }
