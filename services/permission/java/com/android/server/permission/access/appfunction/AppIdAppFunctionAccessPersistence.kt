@@ -94,7 +94,7 @@ class AppIdAppFunctionAccessPersistence {
         appIdAppFunctionAccessFlags: MutableAppIdAppFunctionAccessFlags
     ) {
         val appId = getAttributeIntOrThrow(ATTR_ID)
-        val appFunctionAccessFlags = MutableIntMap<Int>()
+        val appFunctionAccessFlags = MutableIntIntMap()
         appIdAppFunctionAccessFlags.put(appId, appFunctionAccessFlags)
         forEachTag {
             when (tagName) {
@@ -109,7 +109,7 @@ class AppIdAppFunctionAccessPersistence {
     }
 
     private fun BinaryXmlPullParser.parseAppFunctionAccess(
-        appFunctionAccessFlags: MutableIntMap<Int>
+        appFunctionAccessFlags: MutableIntIntMap
     ) {
         val targetUid = getAttributeIntOrThrow(ATTR_TARGET_UID)
         val flags = getAttributeIntOrThrow(ATTR_FLAGS)
@@ -130,7 +130,7 @@ class AppIdAppFunctionAccessPersistence {
         }
     }
 
-    private fun BinaryXmlSerializer.serializeAppId(appId: Int, accessFlags: IntMap<Int>) {
+    private fun BinaryXmlSerializer.serializeAppId(appId: Int, accessFlags: IntIntMap) {
         tag(TAG_APP_ID) {
             attributeInt(ATTR_ID, appId)
             accessFlags.forEachIndexed { _, targetUid, flags ->

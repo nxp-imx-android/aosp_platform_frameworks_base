@@ -361,11 +361,9 @@ typealias MutableAppIdPermissionFlags =
 private typealias AppIdPermissionFlagsReference =
     MutableReference<AppIdPermissionFlags, MutableAppIdPermissionFlags>
 
-// TODO b/413093675: create IntInt map
-typealias AppIdAppFunctionAccessFlags = IntReferenceMap<IntMap<Int>, MutableIntMap<Int>>
+typealias AppIdAppFunctionAccessFlags = IntReferenceMap<IntIntMap, MutableIntIntMap>
 
-typealias MutableAppIdAppFunctionAccessFlags =
-    MutableIntReferenceMap<IntMap<Int>, MutableIntMap<Int>>
+typealias MutableAppIdAppFunctionAccessFlags = MutableIntReferenceMap<IntIntMap, MutableIntIntMap>
 
 private typealias AppIdAppFunctionAccessFlagsReference =
     MutableReference<AppIdAppFunctionAccessFlags, MutableAppIdAppFunctionAccessFlags>

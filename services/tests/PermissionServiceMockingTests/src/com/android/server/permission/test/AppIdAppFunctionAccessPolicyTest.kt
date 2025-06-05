@@ -94,7 +94,7 @@ class AppIdAppFunctionAccessPolicyTest {
         state
             .mutateUserState(userId)!!
             .mutateAppIdAppFunctionAccessFlags()
-            .mutateOrPut(agentAppId) { MutableIntMap() }
+            .mutateOrPut(agentAppId) { MutableIntIntMap() }
             .put(targetUid, flags)
 
     private fun addPackageState(
