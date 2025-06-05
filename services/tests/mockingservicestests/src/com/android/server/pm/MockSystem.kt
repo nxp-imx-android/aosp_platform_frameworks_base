@@ -355,7 +355,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
             android.util.Pair(PackageAbiHelper.Abis("", ""),
                     PackageAbiHelper.NativeLibraryPaths("", false, "", ""))
         }
-        whenever(mocks.userManagerInternal.getUsers(true, false, false)).thenReturn(DEFAULT_USERS)
+        whenever(mocks.userManagerInternal.getUsers(false)).thenReturn(DEFAULT_USERS)
         whenever(mocks.userManagerService.userIds).thenReturn(intArrayOf(0))
         whenever(mocks.userManagerService.exists(0)).thenReturn(true)
         whenever(mocks.packageAbiHelper.deriveNativeLibraryPaths(any(AndroidPackage::class.java),
