@@ -7691,14 +7691,16 @@ public class NotificationManagerService extends SystemService {
             autbundledGroupKey = pkg;
         }
         ArrayMap<String, String> summaries = mAutobundledSummaries.get(userId);
+        final NotificationRecord autogroupSummary;
         if (summaries != null && summaries.containsKey(autbundledGroupKey)) {
-            final NotificationRecord removed = findNotificationByKeyLocked(
-                    summaries.remove(autbundledGroupKey));
-            if (removed != null) {
-                final StatusBarNotification sbn = removed.getSbn();
-                cancelNotification(MY_UID, MY_PID, pkg, sbn.getTag(), sbn.getId(), 0, 0, false,
+            autogroupSummary = findNotificationByKeyLocked(summaries.remove(autbundledGroupKey));
+        } else {
+            autogroupSummary = mSummaryByGroupKey.get(autbundledGroupKey);
+        }
+        if (autogroupSummary != null) {
+            final StatusBarNotification sbn = autogroupSummary.getSbn();
+            cancelNotification(MY_UID, MY_PID, pkg, sbn.getTag(), sbn.getId(), 0, 0, false,
                     userId, REASON_UNAUTOBUNDLED, null);
-            }
         }
     }
 

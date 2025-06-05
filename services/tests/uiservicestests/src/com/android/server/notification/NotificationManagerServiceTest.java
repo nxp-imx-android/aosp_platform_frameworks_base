@@ -2830,6 +2830,28 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testUngroupingAggregateSummary_missingFromAutobundledSummaries() throws Exception {
+        final String aggregateGroupName = "Aggregate_Test";
+        NotificationRecord summary =
+                generateNotificationRecord(mTestNotificationChannel, 0, aggregateGroupName, false);
+        mService.addNotification(summary);
+        final String fullAggregateGroupKey = summary.getGroupKey();
+
+        // Check that only mSummaryByGroupKey contains the summary
+        assertThat(mService.mSummaryByGroupKey.containsKey(fullAggregateGroupKey)).isTrue();
+        assertThat(mService.mAutobundledSummaries.get(summary.getUser().getIdentifier())).isNull();
+
+        // Check that the autogroup summary is removed
+        mService.clearAutogroupSummaryLocked(summary.getUserId(), summary.getSbn().getPackageName(),
+                fullAggregateGroupKey);
+        waitForIdle();
+
+        // Make sure the summary was removed and not re-posted
+        assertThat(mService.getNotificationRecordCount()).isEqualTo(0);
+    }
+
+    @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testCancelGroupChildrenForCanceledSummary_singletonGroup() throws Exception {
