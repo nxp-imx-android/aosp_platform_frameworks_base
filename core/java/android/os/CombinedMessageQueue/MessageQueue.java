@@ -1272,7 +1272,6 @@ public final class MessageQueue {
         int mBarrierToken;
 
         MatchBarrierToken(int token) {
-            super();
             mBarrierToken = token;
         }
 
