@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
@@ -44,6 +45,7 @@ import com.android.systemui.util.kotlin.ActivatableFlowDumperImpl
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.function.Consumer
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -64,6 +66,7 @@ constructor(
     remoteInputInteractor: RemoteInputInteractor,
     featureFlags: FeatureFlagsClassic,
     dumpManager: DumpManager,
+    @Main private val mainContext: CoroutineContext,
 ) :
     ExclusiveActivatable(),
     ActivatableFlowDumper by ActivatableFlowDumperImpl(
@@ -110,7 +113,7 @@ constructor(
         coroutineScope {
             launch { hydrator.activate() }
 
-            launch {
+            launch(context = mainContext) {
                 shadeInteractor.isAnyExpanded
                     .filter { it }
                     .collect { headsUpNotificationInteractor.unpinAll(true) }
