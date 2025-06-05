@@ -96,7 +96,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
         if (mCustomOutline) {
             return mOutlineRect.bottom;
         }
-        return getActualHeight();
+        return getActualHeight() - getClipBottomAmount();
     }
 
     protected Path getClipPath(boolean ignoreTranslation) {
