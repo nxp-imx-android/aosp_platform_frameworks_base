@@ -2893,7 +2893,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // contains another opaque activity.
         if (mFixedRotationLaunchingApp != null && mFixedRotationLaunchingApp.isVisible()
                 && !mTransitionController.isCollecting()
-                && !mTransitionController.isPlayingTarget(mFixedRotationLaunchingApp)
+                && !mTransitionController.inPlayingTransition(mFixedRotationLaunchingApp)
                 && !mAtmService.mBackNavigationController.isMonitoringFinishTransition()) {
             final Transition finishTransition = mTransitionController.mFinishingTransition;
             if (finishTransition == null || !finishTransition.mParticipants.contains(
