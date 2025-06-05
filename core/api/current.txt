@@ -24648,13 +24648,13 @@ package android.media {
   public final class MediaMetadata implements android.os.Parcelable {
     method public boolean containsKey(String);
     method public int describeContents();
-    method public android.graphics.Bitmap getBitmap(String);
+    method @Nullable public android.graphics.Bitmap getBitmap(String);
     method @IntRange(from=1) public int getBitmapDimensionLimit();
     method @NonNull public android.media.MediaDescription getDescription();
     method public long getLong(String);
-    method public android.media.Rating getRating(String);
-    method public String getString(String);
-    method public CharSequence getText(String);
+    method @Nullable public android.media.Rating getRating(String);
+    method @Nullable public String getString(String);
+    method @Nullable public CharSequence getText(String);
     method public java.util.Set<java.lang.String> keySet();
     method public int size();
     method public void writeToParcel(android.os.Parcel, int);
@@ -24694,11 +24694,11 @@ package android.media {
     ctor public MediaMetadata.Builder();
     ctor public MediaMetadata.Builder(android.media.MediaMetadata);
     method public android.media.MediaMetadata build();
-    method public android.media.MediaMetadata.Builder putBitmap(String, android.graphics.Bitmap);
+    method public android.media.MediaMetadata.Builder putBitmap(String, @Nullable android.graphics.Bitmap);
     method public android.media.MediaMetadata.Builder putLong(String, long);
-    method public android.media.MediaMetadata.Builder putRating(String, android.media.Rating);
-    method public android.media.MediaMetadata.Builder putString(String, String);
-    method public android.media.MediaMetadata.Builder putText(String, CharSequence);
+    method public android.media.MediaMetadata.Builder putRating(String, @Nullable android.media.Rating);
+    method public android.media.MediaMetadata.Builder putString(String, @Nullable String);
+    method public android.media.MediaMetadata.Builder putText(String, @Nullable CharSequence);
     method @NonNull public android.media.MediaMetadata.Builder setBitmapDimensionLimit(@IntRange(from=1) int);
   }
 
