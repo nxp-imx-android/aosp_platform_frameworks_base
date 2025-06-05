@@ -19,11 +19,11 @@ package android.service.notification;
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
-import android.annotation.UiThread;
 import android.app.ActivityManager;
 import android.app.INotificationManager;
 import android.app.Notification;
@@ -491,7 +491,7 @@ public abstract class NotificationListenerService extends Service {
      *            object as well as its identifying information (tag and id) and source
      *            (package name).
      */
-    @UiThread
+    @MainThread
     public void onNotificationPosted(StatusBarNotification sbn) {
         // optional
     }
@@ -505,7 +505,7 @@ public abstract class NotificationListenerService extends Service {
      * @param rankingMap The current ranking map that can be used to retrieve ranking information
      *                   for active notifications, including the newly posted one.
      */
-    @UiThread
+    @MainThread
     public void onNotificationPosted(StatusBarNotification sbn, RankingMap rankingMap) {
         onNotificationPosted(sbn);
     }
@@ -524,7 +524,7 @@ public abstract class NotificationListenerService extends Service {
      *            and source (package name) used to post the {@link android.app.Notification} that
      *            was just removed.
      */
-    @UiThread
+    @MainThread
     public void onNotificationRemoved(StatusBarNotification sbn) {
         // optional
     }
@@ -546,7 +546,7 @@ public abstract class NotificationListenerService extends Service {
      *                   for active notifications.
      *
      */
-    @UiThread
+    @MainThread
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap) {
         onNotificationRemoved(sbn);
     }
@@ -568,7 +568,7 @@ public abstract class NotificationListenerService extends Service {
      * @param rankingMap The current ranking map that can be used to retrieve ranking information
      *                   for active notifications.
      */
-    @UiThread
+    @MainThread
     public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap,
             @NotificationCancelReason int reason) {
         onNotificationRemoved(sbn, rankingMap);
@@ -580,7 +580,7 @@ public abstract class NotificationListenerService extends Service {
      *
      * @hide
      */
-    @UiThread
+    @MainThread
     @SystemApi
     public void onNotificationRemoved(@NonNull StatusBarNotification sbn,
             @NonNull RankingMap rankingMap, @NonNull NotificationStats stats, int reason) {
@@ -592,7 +592,7 @@ public abstract class NotificationListenerService extends Service {
      * the notification manager.  You are safe to call {@link #getActiveNotifications()}
      * at this time.
      */
-    @UiThread
+    @MainThread
     public void onListenerConnected() {
         // optional
     }
@@ -602,7 +602,7 @@ public abstract class NotificationListenerService extends Service {
      * notification manager.You will not receive any events after this call, and may only
      * call {@link #requestRebind(ComponentName)} at this time.
      */
-    @UiThread
+    @MainThread
     public void onListenerDisconnected() {
         // optional
     }
@@ -613,7 +613,7 @@ public abstract class NotificationListenerService extends Service {
      * @param rankingMap The current ranking map that can be used to retrieve ranking information
      *                   for active notifications.
      */
-    @UiThread
+    @MainThread
     public void onNotificationRankingUpdate(RankingMap rankingMap) {
         // optional
     }
@@ -624,7 +624,7 @@ public abstract class NotificationListenerService extends Service {
      *
      * @param hints The current {@link #getCurrentListenerHints() listener hints}.
      */
-    @UiThread
+    @MainThread
     public void onListenerHintsChanged(int hints) {
         // optional
     }
@@ -636,7 +636,7 @@ public abstract class NotificationListenerService extends Service {
      * @param hideSilentStatusIcons whether or not status bar icons should be hidden for silent
      *                              notifications
      */
-    @UiThread
+    @MainThread
     public void onSilentStatusBarIconsVisibilityChanged(boolean hideSilentStatusIcons) {
         // optional
     }
@@ -654,7 +654,7 @@ public abstract class NotificationListenerService extends Service {
      *                   {@link #NOTIFICATION_CHANNEL_OR_GROUP_UPDATED},
      *                   {@link #NOTIFICATION_CHANNEL_OR_GROUP_DELETED}.
      */
-    @UiThread
+    @MainThread
     public void onNotificationChannelModified(String pkg, UserHandle user,
             NotificationChannel channel, @ChannelOrGroupModificationTypes int modificationType) {
         // optional
@@ -673,7 +673,7 @@ public abstract class NotificationListenerService extends Service {
      *                   {@link #NOTIFICATION_CHANNEL_OR_GROUP_UPDATED},
      *                   {@link #NOTIFICATION_CHANNEL_OR_GROUP_DELETED}.
      */
-    @UiThread
+    @MainThread
     public void onNotificationChannelGroupModified(String pkg, UserHandle user,
             NotificationChannelGroup group, @ChannelOrGroupModificationTypes int modificationType) {
         // optional
@@ -686,7 +686,7 @@ public abstract class NotificationListenerService extends Service {
      * @param interruptionFilter The current
      *     {@link #getCurrentInterruptionFilter() interruption filter}.
      */
-    @UiThread
+    @MainThread
     public void onInterruptionFilterChanged(int interruptionFilter) {
         // optional
     }
