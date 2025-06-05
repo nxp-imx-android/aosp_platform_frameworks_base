@@ -66,6 +66,16 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
         }
     }
 
+   public void removeTask(int associationId, int taskId) {
+        synchronized (mRemoteDeviceTaskLists) {
+            if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
+                return;
+            }
+
+            mRemoteDeviceTaskLists.get(associationId).removeTask(taskId);
+        }
+    }
+
     /**
      * Returns the most recent tasks from all devices in the task store.
      *
