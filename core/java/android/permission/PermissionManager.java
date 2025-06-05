@@ -1329,7 +1329,7 @@ public final class PermissionManager {
         // Lazily initialize the usage helper
         initializeUsageHelper();
         boolean includeMicrophoneUsage = !micMuted;
-        return mUsageHelper.getOpUsageDataByDevice(includeMicrophoneUsage,
+        return mUsageHelper.getOpUsageDataForIndicatorsByDevice(includeMicrophoneUsage,
                 VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT);
     }
 

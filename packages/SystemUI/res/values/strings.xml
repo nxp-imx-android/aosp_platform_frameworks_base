@@ -3913,7 +3913,7 @@
     <string name="connected_display_icon_desc">Display connected</string>
 
     <!-- Title of the privacy dialog, shown for active / recent app usage of some phone sensors [CHAR LIMIT=30] -->
-    <string name="privacy_dialog_title">Microphone &amp; Camera</string>
+    <string name="privacy_dialog_title">Microphone, Camera &amp; Location</string>
     <!-- Subtitle of the privacy dialog, shown for active / recent app usage of some phone sensors [CHAR LIMIT=NONE] -->
     <string name="privacy_dialog_summary">Recent app use</string>
     <!-- Label of the secondary button of the privacy dialog, used to check recent app usage of phone sensors [CHAR LIMIT=30] -->
