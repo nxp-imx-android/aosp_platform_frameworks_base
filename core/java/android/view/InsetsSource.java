@@ -16,12 +16,12 @@
 
 package android.view;
 
-import static android.view.InsetsSourceProto.ATTACHED_INSETS;
-import static android.view.InsetsSourceProto.FRAME;
-import static android.view.InsetsSourceProto.TYPE;
-import static android.view.InsetsSourceProto.TYPE_NUMBER;
-import static android.view.InsetsSourceProto.VISIBLE;
-import static android.view.InsetsSourceProto.VISIBLE_FRAME;
+import static android.internal.perfetto.protos.Insetssource.InsetsSourceProto.ATTACHED_INSETS;
+import static android.internal.perfetto.protos.Insetssource.InsetsSourceProto.FRAME;
+import static android.internal.perfetto.protos.Insetssource.InsetsSourceProto.TYPE;
+import static android.internal.perfetto.protos.Insetssource.InsetsSourceProto.TYPE_NUMBER;
+import static android.internal.perfetto.protos.Insetssource.InsetsSourceProto.VISIBLE;
+import static android.internal.perfetto.protos.Insetssource.InsetsSourceProto.VISIBLE_FRAME;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.ime;
 
