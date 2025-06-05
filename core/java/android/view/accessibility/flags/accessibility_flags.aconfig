@@ -118,6 +118,14 @@ flag {
 }
 
 flag {
+    name: "enable_refresh_window_info"
+    namespace: "accessibility"
+    is_exported: true
+    description: "Makes AccessibilityWindowInfo#refresh public for window state checks"
+    bug: "405371739"
+}
+
+flag {
     name: "enable_system_pinch_zoom_gesture"
     namespace: "accessibility"
     description: "Feature flag for system pinch zoom gesture detector and related opt-out apis"
