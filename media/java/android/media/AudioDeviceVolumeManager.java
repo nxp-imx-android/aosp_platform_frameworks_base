@@ -17,6 +17,9 @@
 package android.media;
 
 import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+import static android.media.AudioManager.ADJUST_LOWER;
+import static android.media.AudioManager.ADJUST_RAISE;
+import static android.media.audio.Flags.FLAG_DEVICE_VOLUME_APIS;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 
 import static com.android.media.flags.Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL;
@@ -154,6 +157,15 @@ public class AudioDeviceVolumeManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AbsoluteDeviceVolumeBehavior {}
+
+    /** @hide */
+    @IntDef(flag = false, prefix = "ADJUST", value = {
+            ADJUST_RAISE,
+            ADJUST_LOWER
+    }
+    )
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface VolumeAdjustmentNoMute {}
 
     /**
      * @hide
@@ -696,7 +708,12 @@ public class AudioDeviceVolumeManager {
 
     /**
      * @hide
-     * Sets the volume on the given audio device
+     * Changes the volume setting for an audio device, without affecting the current volume for the
+     * corresponding use case, regardless of the current audio path.
+     *
+     * <p>Note: if you need to control volume on a given audio device (e.g. to change volume during
+     * playback), use {@link #setVolumeForDevice}.
+     *
      * @param vi the volume information, only stream-based volumes are supported
      * @param ada the device for which volume is to be modified
      */
@@ -708,6 +725,50 @@ public class AudioDeviceVolumeManager {
     public void setDeviceVolume(@NonNull VolumeInfo vi, @NonNull AudioDeviceAttributes ada) {
         try {
             getService().setDeviceVolume(vi, ada, mPackageName);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     * Sets the volume on the given audio device
+     *
+     * @param vi the volume information, only stream-based volumes are supported
+     * @param ada the device for which volume is to be modified
+     */
+    @SystemApi
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    @FlaggedApi(FLAG_DEVICE_VOLUME_APIS)
+    public void setVolumeForDevice(@NonNull VolumeInfo vi, @NonNull AudioDeviceAttributes ada) {
+        try {
+            getService().setVolumeForDevice(vi, ada, mPackageName);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     * Adjusts the volume on the given audio device
+     *
+     * @param vi the volume information, only stream-based volume infos are supported
+     * @param direction to describe the adjustment
+     * @param ada the device for which volume is to be modified
+     */
+    @SystemApi
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    @FlaggedApi(FLAG_DEVICE_VOLUME_APIS)
+    public void adjustVolumeForDevice(@NonNull VolumeInfo vi, @VolumeAdjustmentNoMute int
+            direction, @NonNull AudioDeviceAttributes ada) {
+        try {
+            getService().adjustVolumeForDevice(vi, direction, ada, mPackageName);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
