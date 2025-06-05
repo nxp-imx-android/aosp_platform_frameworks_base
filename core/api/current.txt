@@ -9342,6 +9342,8 @@ package android.app.job {
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int BACKOFF_POLICY_EXPONENTIAL = 1; // 0x1
     field public static final int BACKOFF_POLICY_LINEAR = 0; // 0x0
+    field @FlaggedApi("android.app.job.job_category_apis") public static final int CATEGORY_BACKUP = 1; // 0x1
+    field @FlaggedApi("android.app.job.job_category_apis") public static final int CATEGORY_UNKNOWN = 0; // 0x0
     field @NonNull public static final android.os.Parcelable.Creator<android.app.job.JobInfo> CREATOR;
     field public static final long DEFAULT_INITIAL_BACKOFF_MILLIS = 30000L; // 0x7530L
     field public static final long MAX_BACKOFF_DELAY_MILLIS = 18000000L; // 0x112a880L
@@ -9364,8 +9366,10 @@ package android.app.job {
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder addDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder addTriggerContentUri(@NonNull android.app.job.JobInfo.TriggerContentUri);
     method public android.app.job.JobInfo build();
+    method @FlaggedApi("android.app.job.job_category_apis") public int getCategory();
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder removeDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder setBackoffCriteria(long, int);
+    method @FlaggedApi("android.app.job.job_category_apis") @NonNull public android.app.job.JobInfo.Builder setCategory(int);
     method public android.app.job.JobInfo.Builder setClipData(@Nullable android.content.ClipData, int);
     method public android.app.job.JobInfo.Builder setEstimatedNetworkBytes(long, long);
     method @NonNull public android.app.job.JobInfo.Builder setExpedited(boolean);
