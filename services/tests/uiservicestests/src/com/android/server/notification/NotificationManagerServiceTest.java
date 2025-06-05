@@ -81,6 +81,7 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_SCREEN_OFF;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_SCREEN_ON;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BAR;
+import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_MUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
@@ -18087,6 +18088,80 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         r.applyAdjustments();
         // Then the adjustment is not applied.
         assertThat(r.getChannel().getId()).isEqualTo(NEWS_ID);
+    }
+
+    @Test
+    @EnableFlags({android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION,
+            android.app.Flags.FLAG_NOTIFICATION_CLASSIFICATION_UI,
+            FLAG_NOTIFICATION_FORCE_GROUPING,
+            FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION})
+    public void testApplyAdjustment_keyType_storesOriginalChannelVisibility() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+
+        NotificationChannel secret = new NotificationChannel("secretChannelId", "secret channel",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        mBinderService.createNotificationChannels(mPkg, new ParceledListSlice(List.of(secret)));
+
+        // Need to set the visibility as an update since this isn't a field typically set by apps
+        secret.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+        mBinderService.updateNotificationChannelForPackage(mPkg, mUid, secret);
+
+        final NotificationRecord r = generateNotificationRecord(secret);
+        mService.addNotification(r);
+
+        Bundle signals = new Bundle();
+        signals.putInt(KEY_TYPE, TYPE_NEWS);
+        Adjustment adjustment = new Adjustment(
+                r.getSbn().getPackageName(), r.getKey(), signals, "", r.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r.applyAdjustments();
+
+        // The notification should be bundled now
+        assertThat(r.getChannel().getId()).isEqualTo(NEWS_ID);
+
+        // but the original channel visibility is stored
+        assertThat(r.getOriginalChannelVisibility()).isEqualTo(Notification.VISIBILITY_SECRET);
+
+        // check that the information made it to the ranking update too, via the stored channel:
+        // it's still the "news" channel, but with the stricter visibility applied
+        ManagedServices.ManagedServiceInfo info = mock(ManagedServices.ManagedServiceInfo.class);
+        when(info.enabledAndUserMatches(anyInt())).thenReturn(true);
+        when(info.isSameUser(anyInt())).thenReturn(true);
+        NotificationRankingUpdate nru = mService.makeRankingUpdateLocked(info);
+        NotificationListenerService.Ranking ranking =
+                nru.getRankingMap().getRawRankingObject(r.getKey());
+        assertThat(ranking.getChannel().getId()).isEqualTo(NEWS_ID);
+        assertThat(ranking.getChannel().getLockscreenVisibility()).isEqualTo(
+                Notification.VISIBILITY_SECRET);
+
+        // Now un-classify
+        doAnswer(invocationOnMock -> {
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).applyAdjustments();
+            ((NotificationRecord) invocationOnMock.getArguments()[0]).calculateImportance();
+            return null;
+        }).when(mRankingHelper).extractSignals(any(NotificationRecord.class));
+        mService.unclassifyNotification(r.getKey());
+        mService.handleRankingSort();
+
+        // confirm it's unclassified
+        assertThat(r.getChannel().getId()).isEqualTo(secret.getId());
+
+        // and that the original channel visibility is reset
+        assertThat(r.getOriginalChannelVisibility()).isEqualTo(VISIBILITY_NO_OVERRIDE);
+
+        // and the ranking objects will be updated accordingly (the ranking's channel should be the
+        // notification's original channel)
+        NotificationRankingUpdate nru2 = mService.makeRankingUpdateLocked(info);
+        NotificationListenerService.Ranking ranking2 =
+                nru2.getRankingMap().getRawRankingObject(r.getKey());
+        assertThat(ranking2.getChannel()).isEqualTo(secret);
     }
 
     @Test
