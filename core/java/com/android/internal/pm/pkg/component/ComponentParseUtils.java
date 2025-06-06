@@ -29,7 +29,6 @@ import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.permission.flags.Flags;
 import android.text.TextUtils;
-import android.util.ArraySet;
 
 import com.android.internal.R;
 import com.android.internal.pm.pkg.parsing.ParsingPackage;
@@ -41,7 +40,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @hide
@@ -66,7 +66,7 @@ public class ComponentParseUtils {
                 Flags.purposeDeclarationEnabled()
                         && component instanceof ParsedPermissionImpl
                         && "android".equals(pkg.getPackageName());
-        final Set<String> validPurposes = new ArraySet<>();
+        final List<ParsedValidPurpose> validPurposes = new ArrayList<>();
         final int depth = parser.getDepth();
         int type;
         while ((type = parser.next()) != XmlPullParser.END_DOCUMENT
@@ -83,10 +83,10 @@ public class ComponentParseUtils {
             if ("meta-data".equals(parser.getName())) {
                 result = ParsedComponentUtils.addMetaData(component, pkg, res, parser, input);
             } else if (shouldParseValidPurposes && "valid-purpose".equals(parser.getName())) {
-                final ParseResult<String> validPurposeResult =
+                final ParseResult<ParsedValidPurpose> validPurposeResult =
                         parseValidPurpose(res, parser, input);
                 result = validPurposeResult;
-                if (validPurposeResult.isSuccess() && validPurposeResult.getResult() != null) {
+                if (validPurposeResult.isSuccess()) {
                     validPurposes.add(validPurposeResult.getResult());
                 }
             } else {
@@ -111,12 +111,21 @@ public class ComponentParseUtils {
         return input.success(component);
     }
 
-    private static ParseResult<String> parseValidPurpose(
+    private static ParseResult<ParsedValidPurpose> parseValidPurpose(
             Resources res, XmlResourceParser parser, ParseInput input) {
         TypedArray sa = res.obtainAttributes(parser, R.styleable.AndroidManifestValidPurpose);
         try {
-            final String validPurpose = sa.getString(R.styleable.AndroidManifestValidPurpose_name);
-            return input.success(TextUtils.isEmpty(validPurpose) ? null : validPurpose);
+            final String name = sa.getString(R.styleable.AndroidManifestValidPurpose_name);
+            if (TextUtils.isEmpty(name)) {
+                return input.error(
+                        "The android:name attribute for <valid-purpose> cannot be null or empty!");
+            }
+            final int maxTargetSdkVersion =
+                    ParsingPackageUtils.parseMinOrMaxSdkVersion(
+                            sa,
+                            R.styleable.AndroidManifestValidPurpose_maxTargetSdkVersion,
+                            /* defaultValue= */ Integer.MAX_VALUE);
+            return input.success(new ParsedValidPurposeImpl(name, maxTargetSdkVersion));
         } finally {
             sa.recycle();
         }
