@@ -56,13 +56,6 @@ object MagneticDividerUtils {
     @JvmStatic val SNAP_POSITION_KEY = SemanticKey<Int?>()
 
     /**
-     * Key used for identity regions which don't have drop zones associated with them. Need to keep
-     * this key separate for the SemanticKeys we create with null values as it seems like this
-     * overwrites the semantics created with real snapTarget values
-     */
-    @JvmStatic private val SNAP_POSITION_KEY_IDENTITY = SemanticKey<Int?>()
-
-    /**
      * Create a MotionSpec that has "snap zones" for each of the SnapTargets provided.
      *
      * NOTE: This exists for Java/View interoperability only
@@ -87,7 +80,7 @@ object MagneticDividerUtils {
             // "effects" movement).
             spatialDirectionalMotionSpec(
                 initialMapping = Mapping.Fixed(topLeftDismissPosition),
-                semantics = listOf(SNAP_POSITION_KEY_IDENTITY with null),
+                semantics = listOf(SNAP_POSITION_KEY with topLeftDismissTarget.snapPosition),
                 defaultSpring = MagneticSpring,
             ) {
                 // NOTE: This block is a trailing lambda passed in as the "init" parameter.
@@ -145,7 +138,7 @@ object MagneticDividerUtils {
                     // Create another identity zone.
                     identity(
                         breakpoint = targetPosition + snapThreshold,
-                        semantics = listOf(SNAP_POSITION_KEY_IDENTITY with null),
+                        semantics = listOf(SNAP_POSITION_KEY with null),
                     )
                 }
 
@@ -156,7 +149,8 @@ object MagneticDividerUtils {
                 fixedValue(
                     breakpoint = bottomRightDismissPosition,
                     value = bottomRightDismissPosition,
-                    semantics = listOf(SNAP_POSITION_KEY_IDENTITY with null),
+                    semantics = listOf(SNAP_POSITION_KEY with
+                            bottomRightDismissTarget.snapPosition),
                 )
             }
         )
