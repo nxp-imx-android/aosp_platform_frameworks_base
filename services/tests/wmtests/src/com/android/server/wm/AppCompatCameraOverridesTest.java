@@ -68,6 +68,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldRefreshActivityForCameraCompat_flagIsDisabled_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(false);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
             robot.activity().createActivityWithComponentInNewTask();
 
             robot.checkShouldRefreshActivityForCameraCompat(false);
@@ -125,6 +126,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     public void testShouldRefreshActivityViaPauseForCameraCompat_flagIsDisabled_returnsFalse() {
         runTestScenario((robot) -> {
             robot.conf().enableCameraCompatForceRotateTreatment(false);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
             robot.activity().createActivityWithComponentInNewTask();
 
             robot.checkShouldRefreshActivityViaPauseForCameraCompat(false);
@@ -311,6 +313,22 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    public void testShouldApplyCameraCompatFreeformTreatment_disabledViaConfig_returnsFalse() {
+        runTestScenario((robot) -> {
+            robot.conf().enableCameraCompatForceRotateTreatment(true);
+            robot.conf().enableCameraCompatSimulateRequestedOrientationTreatment(false);
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponentInNewTask();
+                robot.prop().enable(PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION);
+            });
+
+            robot.checkShouldApplyFreeformTreatmentForCameraCompat(false);
+        });
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testShouldApplyCameraCompatFreeformTreatment_enabledByShellCommand_returnsTrue() {
         runTestScenario((robot) -> {
@@ -446,7 +464,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
 
         void setCameraCompatTreatmentEnabledViaShellCommand(boolean enabled) {
             activity().top().mWmService.mAppCompatConfiguration
-                    .setIsCameraCompatFreeformWindowingTreatmentEnabled(enabled);
+                    .setIsCameraCompatSimReqOrientationTreatmentForceEnabled(enabled);
         }
 
         void checkShouldRefreshActivityForCameraCompat(boolean expected) {

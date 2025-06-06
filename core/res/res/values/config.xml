@@ -6501,6 +6501,13 @@
         is enabled and activity is connected to the camera in fullscreen. -->
     <bool name="config_isWindowManagerCameraCompatSplitScreenAspectRatioEnabled">false</bool>
 
+    <!-- Whether camera compat treatment which simulates app's requested orientation is enabled. The
+        purpose of the treatment is to mitigate issues caused by orientation mismatch between camera
+        buffer and an app window. This includes letterboxing fixed orientation activities connected
+        to the camera, cropping the camera buffer (rotate-and-crop) and sandboxing display rotation
+        to match what the apps most likely expect in their requested orientation. -->
+    <bool name="config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled">true</bool>
+
     <!-- Which aspect ratio to use when camera compat treatment is enabled and an activity eligible
         for treatment is connected to the camera. -->
     <item name="config_windowManagerCameraCompatAspectRatio" format="float" type="dimen">1.0</item>

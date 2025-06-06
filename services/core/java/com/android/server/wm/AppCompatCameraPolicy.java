@@ -56,7 +56,9 @@ class AppCompatCameraPolicy {
                 .isCameraCompatForceRotateTreatmentEnabledAtBuildTime();
         final boolean needsCameraCompatFreeformPolicy =
                 DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
-                        && DesktopModeHelper.canEnterDesktopMode(wmService.mContext);
+                        && DesktopModeHelper.canEnterDesktopMode(wmService.mContext)
+                        && wmService.mAppCompatConfiguration
+                        .isCameraCompatSimulateRequestedOrientationTreatmentEnabled();
         if (needsDisplayRotationCompatPolicy || needsCameraCompatFreeformPolicy) {
             final AppCompatCameraStateSource cameraStateListenerDelegate =
                     new AppCompatCameraStateSource();
