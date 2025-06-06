@@ -44,6 +44,7 @@ import static com.android.server.am.BroadcastRecord.getReceiverPackageName;
 import static com.android.server.am.BroadcastRecord.getReceiverProcessName;
 import static com.android.server.am.BroadcastRecord.getReceiverUid;
 import static com.android.server.am.BroadcastRecord.isDeliveryStateTerminal;
+import static com.android.window.flags.Flags.balCheckBroadcastWhenDispatched;
 
 import android.annotation.CheckResult;
 import android.annotation.NonNull;
@@ -1149,7 +1150,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
             queue.setTimeoutScheduled(false);
         }
 
-        if (r.mBackgroundStartPrivileges.allowsAny()) {
+        if (r.mBackgroundStartPrivileges.allowsAny()
+                && (r.callingUid != app.uid || !balCheckBroadcastWhenDispatched())) {
+            // allow the broadcast receiver potential privileges if it is not sent to itself
             app.addOrUpdateBackgroundStartPrivileges(r, r.mBackgroundStartPrivileges);
 
             final long timeout = r.isForeground() ? mFgConstants.ALLOW_BG_ACTIVITY_START_TIMEOUT
