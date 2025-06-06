@@ -32,6 +32,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.sysui.ShellController
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,6 +56,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     private lateinit var desktopTaskChangeListener: DesktopTaskChangeListener
 
     private val desktopUserRepositories = mock<DesktopUserRepositories>()
+    private val shellController = mock<ShellController>()
     private val desktopRepository = mock<DesktopRepository>()
     private val desktopState =
         FakeDesktopState().apply {
@@ -64,7 +66,8 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        desktopTaskChangeListener = DesktopTaskChangeListener(desktopUserRepositories, desktopState)
+        desktopTaskChangeListener =
+            DesktopTaskChangeListener(desktopUserRepositories, desktopState, shellController)
 
         whenever(desktopUserRepositories.current).thenReturn(desktopRepository)
         whenever(desktopUserRepositories.getProfile(anyInt())).thenReturn(desktopRepository)
