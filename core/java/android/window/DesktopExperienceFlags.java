@@ -188,7 +188,7 @@ public enum DesktopExperienceFlags {
             Flags::enableSizeCompatModeImprovementsForConnectedDisplays, true,
             Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS),
     ENABLE_SYS_DECORS_CALLBACKS_VIA_WM(Flags::enableSysDecorsCallbacksViaWm,
-            false, Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM),
+            true, Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM),
     ENABLE_TALL_APP_HEADERS(Flags::enableTallAppHeaders, false, Flags.FLAG_ENABLE_TALL_APP_HEADERS),
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, true,
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
