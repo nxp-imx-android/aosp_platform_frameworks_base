@@ -395,7 +395,7 @@ public class MediaSessionService extends SystemService implements Monitor {
             // MediaSession2 case
             return record.checkPlaybackActiveState(/* expected= */ true);
         }
-        return playbackState.isActive() && record.isActive();
+        return playbackState.isActive();
     }
 
     // Currently only media1 can become global priority session.

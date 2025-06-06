@@ -259,24 +259,24 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
     private static final int USER_ENGAGEMENT_UNSET = -1;
 
     /**
-     * Indicates that the session is {@linkplain MediaSession#isActive() active} and in one of the
-     * {@linkplain PlaybackState#isActive() active states}.
+     * Indicates that the session is in one of the {@linkplain PlaybackState#isActive() active
+     * states}.
      *
      * @see #updateUserEngagedStateIfNeededLocked(boolean, boolean)
      */
     private static final int USER_PERMANENTLY_ENGAGED = 0;
 
     /**
-     * Indicates that the session is {@linkplain MediaSession#isActive() active} and has recently
-     * switched to one of the {@linkplain PlaybackState#isActive() inactive states}.
+     * Indicates that the session has recently switched to one of the {@linkplain
+     * PlaybackState#isActive() inactive states}.
      *
      * @see #updateUserEngagedStateIfNeededLocked(boolean, boolean)
      */
     private static final int USER_TEMPORARILY_ENGAGED = 1;
 
     /**
-     * Indicates that the session is either not {@linkplain MediaSession#isActive() active} or in
-     * one of the {@linkplain PlaybackState#isActive() inactive states}.
+     * Indicates that the session is in one of the {@linkplain PlaybackState#isActive() inactive
+     * states}.
      *
      * @see #updateUserEngagedStateIfNeededLocked(boolean, boolean)
      */
@@ -1299,11 +1299,8 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
                             callingUid,
                             callingPid);
         }
-        boolean isGlobalPrioritySessionActive = mService.isGlobalPrioritySessionActive();
         synchronized (mLock) {
             mIsActive = active;
-            updateUserEngagedStateIfNeededLocked(
-                    /* isTimeoutExpired= */ false, isGlobalPrioritySessionActive);
         }
         final long token = Binder.clearCallingIdentity();
         try {
@@ -1597,7 +1594,7 @@ public class MediaSessionRecord extends MediaSessionRecordImpl implements IBinde
         }
         int oldUserEngagedState = mUserEngagementState;
         int newUserEngagedState;
-        if (isActive() && mPlaybackState != null && mPlaybackState.isActive()) {
+        if (mPlaybackState != null && mPlaybackState.isActive()) {
             newUserEngagedState = USER_PERMANENTLY_ENGAGED;
         } else if (oldUserEngagedState == USER_PERMANENTLY_ENGAGED
                 || oldUserEngagedState == USER_ENGAGEMENT_UNSET
