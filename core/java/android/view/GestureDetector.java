@@ -250,7 +250,6 @@ public class GestureDetector {
     private int mTapTimeout;
     private int mDoubleTapTimeout;
     private int mDoubleTapMinTime;
-    private int mLongPressTimeoutMillis;
 
     // constants for Message.what used by GestureHandler below
     private static final int SHOW_PRESS = 1;
@@ -515,12 +514,10 @@ public class GestureDetector {
                 mTapTimeout = configuration.getTapTimeoutMillis();
                 mDoubleTapTimeout = configuration.getDoubleTapTimeoutMillis();
                 mDoubleTapMinTime = configuration.getDoubleTapMinTimeMillis();
-                mLongPressTimeoutMillis = configuration.getLongPressTimeoutMillis();
             } else {
                 mTapTimeout = ViewConfiguration.getTapTimeout();
                 mDoubleTapTimeout = ViewConfiguration.getDoubleTapTimeout();
                 mDoubleTapMinTime = ViewConfiguration.getDoubleTapMinTime();
-                mLongPressTimeoutMillis = ViewConfiguration.getLongPressTimeout();
             }
         }
         mTouchSlopSquare = touchSlop * touchSlop;
@@ -690,7 +687,7 @@ public class GestureDetector {
                                     TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS,
                                     0 /* arg2 */),
                             mCurrentDownEvent.getDownTime()
-                                    + mLongPressTimeoutMillis);
+                                    + ViewConfiguration.getLongPressTimeout());
                 }
                 mHandler.sendEmptyMessageAtTime(SHOW_PRESS,
                         mCurrentDownEvent.getDownTime() + mTapTimeout);
@@ -731,14 +728,14 @@ public class GestureDetector {
                             // will happen in response to user input. To prevent this,
                             // reschedule long press with a modified timeout.
                             mHandler.removeMessages(LONG_PRESS);
+                            final long longPressTimeout = ViewConfiguration.getLongPressTimeout();
                             mHandler.sendMessageAtTime(
                                     mHandler.obtainMessage(
                                             LONG_PRESS,
                                             TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS,
                                             0 /* arg2 */),
                                     ev.getDownTime()
-                                        + (long) (mLongPressTimeoutMillis
-                                            * mAmbiguousGestureMultiplier));
+                                        + (long) (longPressTimeout * mAmbiguousGestureMultiplier));
                         }
                         // Inhibit default scroll. If a gesture is ambiguous, we prevent scroll
                         // until the gesture is resolved.
