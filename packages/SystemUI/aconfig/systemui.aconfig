@@ -2037,3 +2037,13 @@ flag {
     description: "Enables ongoing activity chips in dream status bar"
     bug: "418243972"
 }
+
+flag {
+    name: "instant_hide_shade"
+    namespace: "systemui"
+    description: "Enables the Shade to hide instantaneously at the end of a launch animation, preventing flickers."
+    bug: "419304171"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
