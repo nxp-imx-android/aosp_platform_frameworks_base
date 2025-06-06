@@ -168,6 +168,7 @@ private fun customizeView(listView: ListView) {
     val entryBackgroundEnd = context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_end)
     val entryBackgroundMiddle =
         context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off_middle)
+    val entryBackgroundSingle = context.getDrawable(SystemUiR.drawable.settingslib_entry_bg_off)
 
     // This code will run after the ListView has had a chance to complete its layout.
     listView.post {
@@ -185,9 +186,10 @@ private fun customizeView(listView: ListView) {
             if (adapterPosition != ListView.INVALID_POSITION) {
                 val entry = child.getChildAt(0) as LinearLayout
                 entry.background =
-                    when (adapterPosition) {
-                        0 -> entryBackgroundStart
-                        totalItemCount - 1 -> entryBackgroundEnd
+                    when {
+                        totalItemCount == 1 -> entryBackgroundSingle
+                        adapterPosition == 0 -> entryBackgroundStart
+                        adapterPosition == totalItemCount - 1 -> entryBackgroundEnd
                         else -> entryBackgroundMiddle
                     }
                 setPadding(context, child)
