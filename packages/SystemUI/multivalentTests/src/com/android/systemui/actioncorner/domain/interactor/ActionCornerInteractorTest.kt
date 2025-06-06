@@ -35,7 +35,6 @@ import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RI
 import com.android.systemui.actioncorner.data.model.ActionCornerState.ActiveActionCorner
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.actioncorner.data.repository.FakeActionCornerRepository
-import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.runTest
@@ -43,18 +42,12 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.scene.domain.interactor.sceneInteractor
-import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.shade.domain.interactor.enableDualShade
-import com.android.systemui.shade.domain.interactor.shadeInteractor
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
-import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.HOME
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.OVERVIEW
+import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
-import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
@@ -63,7 +56,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
 @SmallTest
-@EnableSceneContainer
 @RunWith(AndroidJUnit4::class)
 class ActionCornerInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -75,21 +67,20 @@ class ActionCornerInteractorTest : SysuiTestCase() {
     }
 
     private val Kosmos.launcherProxyService by Fixture { mock<LauncherProxyService>() }
+    private val Kosmos.commandQueue by Fixture { mock<CommandQueue>() }
+
     private val Kosmos.underTest by Fixture {
         ActionCornerInteractor(
-            testScope.coroutineContext,
             actionCornerRepository,
             launcherProxyService,
-            shadeModeInteractor,
-            shadeInteractor,
             actionCornerSettingRepository,
             fakeUserSetupRepository,
+            commandQueue,
         )
     }
 
     @Before
     fun setUp() {
-        kosmos.enableDualShade()
         kosmos.fakeUserSetupRepository.setUserSetUp(true)
         kosmos.underTest.activateIn(kosmos.testScope)
     }
@@ -114,71 +105,33 @@ class ActionCornerInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun shadeCollapsed_topLeftCornerActivated_notificationsActionConfigured_expandNotificationShade() =
+    fun topLeftCornerActivated_notificationsActionConfigured_toggleNotificationShade() =
         kosmos.runTest {
             settingsRepository.setInt(
                 ACTION_CORNER_TOP_LEFT_ACTION,
                 ACTION_CORNER_ACTION_NOTIFICATIONS,
             )
-            shadeTestUtil.setShadeExpansion(0f)
 
             actionCornerRepository.addState(
                 ActiveActionCorner(ActionCornerRegion.TOP_LEFT, DEFAULT_DISPLAY)
             )
 
-            assertThat(sceneInteractor.currentOverlays.value)
-                .containsExactly(Overlays.NotificationsShade)
+            verify(commandQueue).toggleNotificationsPanel()
         }
 
     @Test
-    fun shadeExpanded_topLeftCornerActivated_notificationsActionConfigured_collapseNotificationShade() =
-        kosmos.runTest {
-            settingsRepository.setInt(
-                ACTION_CORNER_TOP_LEFT_ACTION,
-                ACTION_CORNER_ACTION_NOTIFICATIONS,
-            )
-            shadeTestUtil.setShadeExpansion(1f)
-
-            actionCornerRepository.addState(
-                ActiveActionCorner(ActionCornerRegion.TOP_LEFT, DEFAULT_DISPLAY)
-            )
-
-            assertThat(sceneInteractor.currentOverlays.value)
-                .doesNotContain(Overlays.NotificationsShade)
-        }
-
-    @Test
-    fun qsCollapsed_topRightCornerActivated_qsActionConfigured_expandQsPanel() =
+    fun topRightCornerActivated_qsActionConfigured_toggleQsPanel() =
         kosmos.runTest {
             settingsRepository.setInt(
                 ACTION_CORNER_TOP_RIGHT_ACTION,
                 ACTION_CORNER_ACTION_QUICK_SETTINGS,
             )
-            shadeTestUtil.setQsExpansion(0f)
 
             actionCornerRepository.addState(
                 ActiveActionCorner(ActionCornerRegion.TOP_RIGHT, DEFAULT_DISPLAY)
             )
 
-            assertThat(sceneInteractor.currentOverlays.value)
-                .containsExactly(Overlays.QuickSettingsShade)
-        }
-
-    @Test
-    fun qsExpanded_topRightCornerActivated_qsActionConfigured_collapseQsPanel() =
-        kosmos.runTest {
-            settingsRepository.setInt(
-                ACTION_CORNER_TOP_RIGHT_ACTION,
-                ACTION_CORNER_ACTION_QUICK_SETTINGS,
-            )
-            shadeTestUtil.setQsExpansion(1f)
-
-            actionCornerRepository.addState(
-                ActiveActionCorner(ActionCornerRegion.TOP_RIGHT, DEFAULT_DISPLAY)
-            )
-
-            assertThat(sceneInteractor.currentOverlays.value)
-                .doesNotContain(Overlays.QuickSettingsShade)
+            verify(commandQueue).toggleQuickSettingsPanel()
         }
 
     @Test
