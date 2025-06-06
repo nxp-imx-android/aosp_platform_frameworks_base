@@ -271,11 +271,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     private boolean mIsSystemExpanded;
 
-    /**
-     * Whether the notification is on the keyguard and the expansion is disabled.
-     */
-    private boolean mOnKeyguard;
-
     private Animator mTranslateAnim;
     private ArrayList<View> mTranslateableViews;
     private NotificationContentView mPublicLayout;
@@ -1802,14 +1797,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         return mPrivateLayout.getSingleLineView();
     }
 
-    /**
-     * Whether this row is displayed over the unoccluded lockscreen. Returns false on the
-     * locked shade.
-     */
-    public boolean isOnKeyguard() {
-        return mOnKeyguard;
-    }
-
     @Override
     public void dismiss(boolean refocusOnDismiss) {
         super.dismiss(refocusOnDismiss);
@@ -3254,29 +3241,30 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
-    /** @see #isOnKeyguard() */
+    @Override
     public void setOnKeyguard(boolean onKeyguard) {
-        if (onKeyguard != mOnKeyguard) {
-            boolean wasAboveShelf = isAboveShelf();
-            final boolean wasExpanded = isExpanded();
-            mOnKeyguard = onKeyguard;
-            onExpansionChanged(false /* userAction */, wasExpanded);
-            if (wasExpanded != isExpanded()) {
-                if (mIsSummaryWithChildren) {
-                    mChildrenContainer.updateGroupOverflow();
-                }
-                notifyHeightChanged(/* needsAnimation= */ false);
+        if (onKeyguard == mOnKeyguard) {
+            return;
+        }
+
+        boolean wasAboveShelf = isAboveShelf();
+        final boolean wasExpanded = isExpanded();
+
+        super.setOnKeyguard(onKeyguard);
+
+        onExpansionChanged(false /* userAction */, wasExpanded);
+        if (wasExpanded != isExpanded()) {
+            if (mIsSummaryWithChildren) {
+                mChildrenContainer.updateGroupOverflow();
             }
-            if (isAboveShelf() != wasAboveShelf) {
-                mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
-            }
-            if (SceneContainerFlag.isEnabled()) {
-                if (mIsSummaryWithChildren) {
-                    mChildrenContainer.setOnKeyguard(onKeyguard);
-                }
-            }
-            if (notificationRowTransparency()) {
-                updateBackgroundTint();
+            notifyHeightChanged(/* needsAnimation= */ false);
+        }
+        if (isAboveShelf() != wasAboveShelf) {
+            mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
+        }
+        if (SceneContainerFlag.isEnabled()) {
+            if (mIsSummaryWithChildren) {
+                mChildrenContainer.setOnKeyguard(onKeyguard);
             }
         }
     }
@@ -4889,7 +4877,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         return super.usesTransparentBackground()
                 && !mustStayOnScreen()
                 && !(isChildInGroup() && !mNotificationParent.usesTransparentBackground())
-                && !mHeadsupDisappearRunning
-                && !mOnKeyguard;
+                && !mHeadsupDisappearRunning;
     }
 }
