@@ -17,7 +17,9 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.window.TransitionInfo.Change
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 
 /**
  * [LetterboxLifecycleEventFactory] implementation which creates a [LetterboxLifecycleEvent] from
@@ -26,27 +28,36 @@ import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
 class ActivityLetterboxLifecycleEventFactory(
     private val taskRepository: LetterboxTaskInfoRepository
 ) : LetterboxLifecycleEventFactory {
+
+    companion object {
+        @JvmStatic
+        private val TAG = "ActivityLetterboxLifecycleEventFactory"
+    }
+
     override fun canHandle(change: Change): Boolean = change.activityTransitionInfo != null
 
-    override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent {
+    override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? {
         val activityTransitionInfo = change.activityTransitionInfo
         val taskBounds = change.endAbsBounds
 
         val letterboxBoundsTmp = activityTransitionInfo?.appCompatTransitionInfo?.letterboxBounds
         val taskId = activityTransitionInfo?.taskId ?: -1
-
-        val isLetterboxed = letterboxBoundsTmp != taskBounds
-        // Letterbox bounds are null when the activity is not letterboxed.
-        val letterboxBounds = if (isLetterboxed) letterboxBoundsTmp else null
-        val taskToken = taskRepository.find(taskId)?.containerToken
-        val taskLeash = taskRepository.find(taskId)?.containerLeash
-        return LetterboxLifecycleEvent(
-            type = change.asLetterboxLifecycleEventType(),
-            taskId = taskId,
-            taskBounds = taskBounds,
-            letterboxBounds = letterboxBounds,
-            taskLeash = taskLeash,
-            containerToken = taskToken
-        )
+        taskRepository.find(taskId)?.let {
+            val isLetterboxed = letterboxBoundsTmp != taskBounds
+            // Letterbox bounds are null when the activity is not letterboxed.
+            val letterboxBounds = if (isLetterboxed) letterboxBoundsTmp else null
+            val taskToken = it.containerToken
+            val taskLeash = it.containerLeash
+            return LetterboxLifecycleEvent(
+                type = change.asLetterboxLifecycleEventType(),
+                taskId = taskId,
+                taskBounds = taskBounds,
+                letterboxBounds = letterboxBounds,
+                taskLeash = taskLeash,
+                containerToken = taskToken
+            )
+        }
+        ProtoLog.w(WM_SHELL_APP_COMPAT, "$TAG: Task not found for taskId: $taskId")
+        return null
     }
 }
