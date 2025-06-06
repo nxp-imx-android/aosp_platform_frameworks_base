@@ -6822,11 +6822,12 @@ public class UserManagerService extends IUserManager.Stub {
         if (!isProfile) {
             Pair<Integer, Integer> currentAndTargetUserIds = getCurrentAndTargetUserIds();
             if (userId == currentAndTargetUserIds.first) {
-                Slog.w(LOG_TAG, "Current user cannot be removed.");
+                Slogf.w(LOG_TAG, "Current user (%d) cannot be removed.", userId);
                 return false;
             }
             if (userId == currentAndTargetUserIds.second) {
-                Slog.w(LOG_TAG, "Target user of an ongoing user switch cannot be removed.");
+                Slogf.w(LOG_TAG, "Target user (%d) of an ongoing user switch (from user %d) cannot "
+                        + "be removed.", userId, currentAndTargetUserIds.first);
                 return false;
             }
             for (int i = profileIds.size() - 1; i >= 0; i--) {
@@ -6835,16 +6836,16 @@ public class UserManagerService extends IUserManager.Stub {
                     //Remove the associated profiles first and then remove the user
                     continue;
                 }
-                Slog.i(LOG_TAG, "removing profile:" + profileId
-                        + " associated with user:" + userId);
+                Slogf.i(LOG_TAG, "removing profile: %d associated with user: %d",
+                        profileId, userId);
                 if (!removeUserUnchecked(profileId)) {
                     // If the profile was not immediately removed, make sure it is marked as
                     // ephemeral. Don't mark as disabled since, per UserInfo.FLAG_DISABLED
                     // documentation, an ephemeral user should only be marked as disabled
                     // when its removal is in progress.
-                    Slog.i(LOG_TAG, "Unable to immediately remove profile " + profileId
-                            + "associated with user " + userId + ". User is set as ephemeral "
-                            + "and will be removed on user switch or reboot.");
+                    Slogf.i(LOG_TAG, "Unable to immediately remove profile %d associated with user "
+                            + "%d. User is set as ephemeral and will be removed on user switch or "
+                            + "reboot.", profileId, userId);
                     synchronized (mPackagesLock) {
                         UserData profileData = getUserDataNoChecks(userId);
                         profileData.info.flags |= UserInfo.FLAG_EPHEMERAL;
