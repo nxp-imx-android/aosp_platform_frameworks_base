@@ -3917,6 +3917,10 @@ public class WindowManagerService extends IWindowManager.Stub
                     }
                 }
             }
+
+            // This call is crucial on user switch to ensure the Magnify IME state
+            // is correctly re-evaluated and applied for the new user.
+            mSettingsObserver.updateMagnifyIme();
             mAtmService.mChainTracker.end();
         }
     }
