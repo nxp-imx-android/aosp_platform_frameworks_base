@@ -724,96 +724,97 @@ public class FullBackup {
             int event;
             while ((event = parser.next()) != XmlPullParser.END_DOCUMENT
                     && !parser.getName().equals(endingTag)) {
-                switch (event) {
-                    case XmlPullParser.START_TAG:
-                        validateInnerTagContents(parser);
-                        final String domainFromXml = parser.getAttributeValue(null, "domain");
-                        final File domainDirectory = getDirectoryForCriteriaDomain(domainFromXml);
-                        if (domainDirectory == null) {
-                            if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
-                                Log.v(
-                                        TAG_XML_PARSER,
-                                        "...parsing \""
-                                                + parser.getName()
-                                                + "\": "
-                                                + "domain=\""
-                                                + domainFromXml
-                                                + "\" invalid; skipping");
-                            }
-                            break;
-                        }
-                        final File canonicalFile =
-                                extractCanonicalFile(
-                                        domainDirectory, parser.getAttributeValue(null, "path"));
-                        if (canonicalFile == null) {
-                            break;
-                        }
+                if (event != XmlPullParser.START_TAG) {
+                    continue;
+                }
+                validateInnerTagContents(parser);
+                parseIncludeExcludeTag(parser, excludes, includes, maybeRequiredFlags);
+            }
+        }
 
-                        int requiredFlags = getRequiredFlagsForRule(parser, maybeRequiredFlags);
+        private void parseIncludeExcludeTag(
+                XmlPullParser parser,
+                Set<PathWithRequiredFlags> excludes,
+                Map<String, Set<PathWithRequiredFlags>> includes,
+                Optional<Integer> maybeRequiredFlags)
+                throws XmlPullParserException, IOException {
+            final String domainFromXml = parser.getAttributeValue(null, "domain");
+            final File domainDirectory = getDirectoryForCriteriaDomain(domainFromXml);
+            if (domainDirectory == null) {
+                if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
+                    Log.v(
+                            TAG_XML_PARSER,
+                            "...parsing \""
+                                    + parser.getName()
+                                    + "\": "
+                                    + "domain=\""
+                                    + domainFromXml
+                                    + "\" invalid; skipping");
+                }
+                return;
+            }
+            final File canonicalFile =
+                    extractCanonicalFile(domainDirectory, parser.getAttributeValue(null, "path"));
+            if (canonicalFile == null) {
+                return;
+            }
 
-                        // retrieve the include/exclude set we'll be adding this rule to
-                        Set<PathWithRequiredFlags> activeSet =
-                                parseCurrentTagForDomain(parser, excludes, includes, domainFromXml);
-                        activeSet.add(
-                                new PathWithRequiredFlags(
-                                        canonicalFile.getCanonicalPath(), requiredFlags));
-                        if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
-                            Log.v(
-                                    TAG_XML_PARSER,
-                                    "...parsed "
-                                            + canonicalFile.getCanonicalPath()
-                                            + " for domain \""
-                                            + domainFromXml
-                                            + "\", requiredFlags + \""
-                                            + requiredFlags
-                                            + "\"");
-                        }
+            int requiredFlags = getRequiredFlagsForRule(parser, maybeRequiredFlags);
 
-                        // Special case journal files (not dirs) for sqlite database. frowny-face.
-                        // Note that for a restore, the file is never a directory (b/c it doesn't
-                        // exist). We have no way of knowing a priori whether or not to expect a
-                        // dir, so we add the -journal anyway to be safe.
-                        if ("database".equals(domainFromXml) && !canonicalFile.isDirectory()) {
-                            final String canonicalJournalPath =
-                                    canonicalFile.getCanonicalPath() + "-journal";
-                            activeSet.add(
-                                    new PathWithRequiredFlags(canonicalJournalPath, requiredFlags));
-                            if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
-                                Log.v(
-                                        TAG_XML_PARSER,
-                                        "...automatically generated "
-                                                + canonicalJournalPath
-                                                + ". Ignore if nonexistent.");
-                            }
-                            final String canonicalWalPath =
-                                    canonicalFile.getCanonicalPath() + "-wal";
-                            activeSet.add(
-                                    new PathWithRequiredFlags(canonicalWalPath, requiredFlags));
-                            if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
-                                Log.v(
-                                        TAG_XML_PARSER,
-                                        "...automatically generated "
-                                                + canonicalWalPath
-                                                + ". Ignore if nonexistent.");
-                            }
-                        }
+            // retrieve the include/exclude set we'll be adding this rule to
+            Set<PathWithRequiredFlags> activeSet =
+                    parseCurrentTagForDomain(parser, excludes, includes, domainFromXml);
+            activeSet.add(
+                    new PathWithRequiredFlags(canonicalFile.getCanonicalPath(), requiredFlags));
+            if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
+                Log.v(
+                        TAG_XML_PARSER,
+                        "...parsed "
+                                + canonicalFile.getCanonicalPath()
+                                + " for domain \""
+                                + domainFromXml
+                                + "\", requiredFlags + \""
+                                + requiredFlags
+                                + "\"");
+            }
 
-                        // Special case for sharedpref files (not dirs) also add ".xml" suffix file.
-                        if ("sharedpref".equals(domainFromXml)
-                                && !canonicalFile.isDirectory()
-                                && !canonicalFile.getCanonicalPath().endsWith(".xml")) {
-                            final String canonicalXmlPath =
-                                    canonicalFile.getCanonicalPath() + ".xml";
-                            activeSet.add(
-                                    new PathWithRequiredFlags(canonicalXmlPath, requiredFlags));
-                            if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
-                                Log.v(
-                                        TAG_XML_PARSER,
-                                        "...automatically generated "
-                                                + canonicalXmlPath
-                                                + ". Ignore if nonexistent.");
-                            }
-                        }
+            // Special case journal files (not dirs) for sqlite database. frowny-face.
+            // Note that for a restore, the file is never a directory (b/c it doesn't
+            // exist). We have no way of knowing a priori whether or not to expect a
+            // dir, so we add the -journal anyway to be safe.
+            if ("database".equals(domainFromXml) && !canonicalFile.isDirectory()) {
+                final String canonicalJournalPath = canonicalFile.getCanonicalPath() + "-journal";
+                activeSet.add(new PathWithRequiredFlags(canonicalJournalPath, requiredFlags));
+                if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
+                    Log.v(
+                            TAG_XML_PARSER,
+                            "...automatically generated "
+                                    + canonicalJournalPath
+                                    + ". Ignore if nonexistent.");
+                }
+                final String canonicalWalPath = canonicalFile.getCanonicalPath() + "-wal";
+                activeSet.add(new PathWithRequiredFlags(canonicalWalPath, requiredFlags));
+                if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
+                    Log.v(
+                            TAG_XML_PARSER,
+                            "...automatically generated "
+                                    + canonicalWalPath
+                                    + ". Ignore if nonexistent.");
+                }
+            }
+
+            // Special case for sharedpref files (not dirs) also add ".xml" suffix file.
+            if ("sharedpref".equals(domainFromXml)
+                    && !canonicalFile.isDirectory()
+                    && !canonicalFile.getCanonicalPath().endsWith(".xml")) {
+                final String canonicalXmlPath = canonicalFile.getCanonicalPath() + ".xml";
+                activeSet.add(new PathWithRequiredFlags(canonicalXmlPath, requiredFlags));
+                if (Log.isLoggable(TAG_XML_PARSER, Log.VERBOSE)) {
+                    Log.v(
+                            TAG_XML_PARSER,
+                            "...automatically generated "
+                                    + canonicalXmlPath
+                                    + ". Ignore if nonexistent.");
                 }
             }
         }
