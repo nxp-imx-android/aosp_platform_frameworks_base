@@ -2095,6 +2095,25 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun setDeskActive_alreadyActive_doesNotUpdateListenerTwice() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 1, deskId = 1)
+        repo.setActiveDesk(displayId = 1, deskId = 1)
+
+        repo.setActiveDesk(displayId = 1, deskId = 1)
+        executor.flushAll()
+
+        assertThat(listener.activationChanges.size).isEqualTo(1)
+        val lastActivationChange = assertNotNull(listener.lastActivationChange)
+        assertThat(lastActivationChange.displayId).isEqualTo(1)
+        assertThat(lastActivationChange.oldActive).isEqualTo(-1)
+        assertThat(lastActivationChange.newActive).isEqualTo(1)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskInactive_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2142,8 +2161,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         var lastRemoval: LastRemoval? = null
             private set
 
-        var lastActivationChange: LastActivationChange? = null
-            private set
+        val activationChanges = mutableListOf<ActivationChange>()
+        val lastActivationChange: ActivationChange?
+            get() = activationChanges.lastOrNull()
 
         var lastCanCreateDesks: Boolean? = null
             private set
@@ -2161,8 +2181,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             newActiveDeskId: Int,
             oldActiveDeskId: Int,
         ) {
-            lastActivationChange =
-                LastActivationChange(
+            activationChanges +=
+                ActivationChange(
                     displayId = displayId,
                     oldActive = oldActiveDeskId,
                     newActive = newActiveDeskId,
@@ -2177,7 +2197,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         data class LastRemoval(val displayId: Int, val deskId: Int)
 
-        data class LastActivationChange(val displayId: Int, val oldActive: Int, val newActive: Int)
+        data class ActivationChange(val displayId: Int, val oldActive: Int, val newActive: Int)
     }
 
     class TestListener : DesktopRepository.ActiveTasksListener {
