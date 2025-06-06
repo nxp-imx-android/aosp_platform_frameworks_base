@@ -40,6 +40,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
+import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
@@ -156,7 +157,7 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
         wct.reorder(pipTaskToken, false);
 
         final TaskInfo pipTaskInfo = mPipTransitionState.getPipTaskInfo();
-        if (pipTaskInfo.launchIntoPipHostTaskId != -1) {
+        if (PipUtils.isContentPip(pipTaskInfo)) {
             // If the current PiP session was entered through content-PiP,
             // then relaunch the original host task too.
             wct.startTask(pipTaskInfo.launchIntoPipHostTaskId, null /* ActivityOptions */);
