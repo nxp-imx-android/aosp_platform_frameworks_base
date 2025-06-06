@@ -18,6 +18,8 @@ package com.android.server.input;
 
 import static android.text.TextUtils.formatSimple;
 
+import static com.android.hardware.input.Flags.disableSettingsForVirtualDevices;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.StringDef;
@@ -227,6 +229,9 @@ class VirtualInputDeviceController {
         mNativeWrapper.closeUinput(inputDeviceDescriptor.getNativePointer());
         String phys = inputDeviceDescriptor.getPhys();
         mService.removeUniqueIdAssociationByPort(phys);
+        if (disableSettingsForVirtualDevices()) {
+            mService.removeVirtualDevice(phys);
+        }
         // Type associations are added in the case of navigation touchpads. Those should be removed
         // once the input device gets closed.
         if (inputDeviceDescriptor.getType() == InputDeviceDescriptor.TYPE_NAVIGATION_TOUCHPAD) {
@@ -780,7 +785,13 @@ class VirtualInputDeviceController {
                     if (id.getVendorId() != vendorId || id.getProductId() != productId) {
                         return false;
                     }
-                    return device.getAssociatedDisplayId() == associatedDisplayId;
+                    if (device.getAssociatedDisplayId() != associatedDisplayId) {
+                        return false;
+                    }
+                    if (disableSettingsForVirtualDevices() && device.isPhysicalDevice()) {
+                        return false;
+                    }
+                    return true;
                 }
             };
             // TODO(b/419493538): Switch to IInputDevicesChangedListener directly with mService
@@ -858,6 +869,9 @@ class VirtualInputDeviceController {
         final int inputDeviceId;
 
         setUniqueIdAssociation(displayId, phys);
+        if (disableSettingsForVirtualDevices()) {
+            mService.addVirtualDevice(phys);
+        }
         try (WaitForDevice waiter = new WaitForDevice(deviceName, vendorId, productId, displayId)) {
             ptr = deviceOpener.get();
             // See INVALID_PTR in libs/input/VirtualInputDevice.cpp.
@@ -884,6 +898,9 @@ class VirtualInputDeviceController {
             }
         } catch (DeviceCreationException e) {
             mService.removeUniqueIdAssociationByPort(phys);
+            if (disableSettingsForVirtualDevices()) {
+                mService.removeVirtualDevice(phys);
+            }
             throw e;
         }
 

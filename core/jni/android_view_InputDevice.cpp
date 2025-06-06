@@ -83,12 +83,13 @@ jobject android_view_InputDevice_create(JNIEnv* env, const InputDeviceInfo& devi
                                           static_cast<int32_t>(ident.vendor),
                                           static_cast<int32_t>(ident.product),
                                           static_cast<int32_t>(ident.bus), descriptorObj.get(),
-                                          deviceInfo.isExternal(), deviceInfo.getSources(),
-                                          deviceInfo.getKeyboardType(), kcmObj.get(),
-                                          keyboardLanguageTagObj.get(), keyboardLayoutTypeObj.get(),
-                                          deviceInfo.hasVibrator(), deviceInfo.hasMic(),
-                                          deviceInfo.hasSensor(), deviceInfo.hasBattery(),
-                                          usiVersion.majorVersion, usiVersion.minorVersion,
+                                          deviceInfo.isExternal(), deviceInfo.isVirtualDevice(),
+                                          deviceInfo.getSources(), deviceInfo.getKeyboardType(),
+                                          kcmObj.get(), keyboardLanguageTagObj.get(),
+                                          keyboardLayoutTypeObj.get(), deviceInfo.hasVibrator(),
+                                          deviceInfo.hasMic(), deviceInfo.hasSensor(),
+                                          deviceInfo.hasBattery(), usiVersion.majorVersion,
+                                          usiVersion.minorVersion,
                                           deviceInfo.getAssociatedDisplayId(),
                                           deviceInfo.isEnabled()));
     // Note: We do not populate the Bluetooth address into the InputDevice object to avoid leaking
@@ -125,7 +126,7 @@ int register_android_view_InputDevice(JNIEnv* env)
 
     gInputDeviceClassInfo.ctor = GetMethodIDOrDie(env, gInputDeviceClassInfo.clazz, "<init>",
                                                   "(IIILjava/lang/String;IIILjava/lang/"
-                                                  "String;ZIILandroid/view/KeyCharacterMap;Ljava/"
+                                                  "String;ZZIILandroid/view/KeyCharacterMap;Ljava/"
                                                   "lang/String;Ljava/lang/String;ZZZZIIIZ)V");
 
     gInputDeviceClassInfo.addMotionRange =

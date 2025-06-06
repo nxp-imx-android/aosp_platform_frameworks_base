@@ -236,3 +236,10 @@ flag {
     description: "Adds an accessibility setting to disable touchpads"
     bug: "372857036"
 }
+
+flag {
+    name: "disable_settings_for_virtual_devices"
+    namespace: "input"
+    description: "Disable settings pages for virtual devices created using VDM or InputManager"
+    bug: "402596982"
+}
