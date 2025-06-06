@@ -149,10 +149,7 @@ public class HandwritingInitiator {
     public HandwritingInitiator(@NonNull ViewConfiguration viewConfiguration,
             @NonNull InputMethodManager inputMethodManager) {
         mHandwritingSlop = viewConfiguration.getScaledHandwritingSlop();
-        mHandwritingTimeoutInMillis =
-                android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
-                        ? viewConfiguration.getLongPressTimeoutMillis()
-                        : ViewConfiguration.getLongPressTimeout();
+        mHandwritingTimeoutInMillis = ViewConfiguration.getLongPressTimeout();
         mImm = inputMethodManager;
     }
 

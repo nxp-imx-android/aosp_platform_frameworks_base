@@ -16,7 +16,6 @@
 
 package com.android.systemui.keyguard.ui.view
 
-import android.companion.virtualdevice.flags.Flags
 import android.content.Context
 import android.graphics.drawable.AnimatedStateListDrawable
 import android.graphics.drawable.AnimatedVectorDrawable
@@ -49,11 +48,7 @@ constructor(
         TouchHandlingView(
             context = context,
             attrs = attrs,
-            longPressDuration = {
-                if (Flags.viewconfigurationApis())
-                    ViewConfiguration.get(context).longPressTimeoutMillis.toLong()
-                else ViewConfiguration.getLongPressTimeout().toLong()
-            },
+            longPressDuration = { ViewConfiguration.getLongPressTimeout().toLong() },
             allowedTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop(),
             logger = logger,
         )
