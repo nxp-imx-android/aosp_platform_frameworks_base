@@ -187,33 +187,23 @@ public class ResourcesManager {
                 collector.appendKey(libraryKey);
             }
         }
-        if (collector.isSameAsOriginal()) {
-            return new Pair<>(assets, size);
+        if (!collector.isSameAsOriginal()) {
+            // The right way to do this if we're not allowed to reuse the assets would be to create
+            // a new AssetManager object and set the required asset paths in it, leaving the old
+            // one intact. This would guarantee that the existing users of that object wouldn't be
+            // affected, and any currently running operation on it won't see inconsistent results,
+            // e.g. when we do a reference lookup and then resolution as a two-step operation from
+            // the Java layer.
+            // Unfortunately, several popular apps somehow link their internal state to the
+            // AssetManager object, I guess by using it as a key in a map, and replacing it makes
+            // them bug out in their resources customizations. That's why instead we have to
+            // perform an update to the existing object instead, using the more heavyweight full
+            // recalculation under its lock (preset = false), and hope that the newly added assets
+            // won't cause that bad issues for the non-atomic lookups.
+            // See b/412905284 and many of its duplicates.
+            assets.addApkKeys(extractApkKeys(collector.collectedKey()), reuseAssets);
         }
-        if (reuseAssets) {
-            assets.addPresetApkKeys(extractApkKeys(collector.collectedKey()));
-            return new Pair<>(assets, size);
-        }
-        final var newAssetsBuilder = new AssetManager.Builder().setNoInit();
-        for (final var asset : assets.getApkAssets()) {
-            // Skip everything that's either default, or will get added by the collector (builder
-            // doesn't check for duplicates at all).
-            if (asset.isSystem() || asset.isForLoader() || asset.isOverlay()
-                    || asset.isSharedLib()) {
-                continue;
-            }
-            newAssetsBuilder.addApkAssets(asset);
-        }
-        for (final var key : extractApkKeys(collector.collectedKey())) {
-            try {
-                final var asset = loadApkAssets(key);
-                newAssetsBuilder.addApkAssets(asset);
-            } catch (IOException e) {
-                Log.e(TAG, "Couldn't load assets for key " + key, e);
-            }
-        }
-        assets.getLoaders().forEach(newAssetsBuilder::addLoader);
-        return new Pair<>(newAssetsBuilder.build(), size);
+        return new Pair<>(assets, size);
     }
 
     public static class ApkKey {
