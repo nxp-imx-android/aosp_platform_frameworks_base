@@ -145,7 +145,7 @@ public class AmbientDisplaySuppressionController {
         try {
             synchronized (mSuppressionTokens) {
                 getStatusBar().suppressAmbientDisplay(
-                        (suppressionFlags & PowerManager.FLAG_AMBIENT_SUPPRESSION_AOD)
+                        (currentSuppression & PowerManager.FLAG_AMBIENT_SUPPRESSION_AOD)
                                 == PowerManager.FLAG_AMBIENT_SUPPRESSION_AOD);
             }
         } catch (RemoteException e) {
