@@ -45,7 +45,6 @@ import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_RARE;
 import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_RESTRICTED;
 import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_WORKING_SET;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import static com.android.server.usage.AppStandbyController.DEFAULT_ELAPSED_TIME_THRESHOLDS;
 import static com.android.server.usage.AppStandbyController.DEFAULT_SCREEN_TIME_THRESHOLDS;
@@ -58,12 +57,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.intThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -245,6 +243,7 @@ public class AppStandbyControllerTests {
         List<UserHandle> mCrossProfileTargets = Collections.emptyList();
         boolean mDeviceIdleMode = false;
         Set<Pair<String, Integer>> mClockApps = new ArraySet<>();
+        Set<Pair<String, Integer>> mBgLocationGrantedApps = new ArraySet<>();
         DeviceConfig.Properties.Builder mSettingsBuilder =
                 new DeviceConfig.Properties.Builder(DeviceConfig.NAMESPACE_APP_STANDBY)
                         .setLong("screen_threshold_active", 0)
@@ -281,11 +280,6 @@ public class AppStandbyControllerTests {
         }
 
         @Override
-        long currentTimeMillis() {
-            return mElapsedRealtime;
-        }
-
-        @Override
         boolean isAppIdleEnabled() {
             return mIsAppIdleEnabled;
         }
@@ -308,6 +302,11 @@ public class AppStandbyControllerTests {
         @Override
         boolean shouldGetExactAlarmBucketElevation(String packageName, int uid) {
             return mClockApps.contains(Pair.create(packageName, uid));
+        }
+
+        @Override
+        boolean isBackgroundLocationPermissionGranted(String packageName, int userId) {
+            return mBgLocationGrantedApps.contains(Pair.create(packageName, userId));
         }
 
         @Override
@@ -392,6 +391,10 @@ public class AppStandbyControllerTests {
         }
 
         // Internal methods
+
+        void addBgLocationGrantedApps(String packageName, int userId) {
+            mBgLocationGrantedApps.add(Pair.create(packageName, userId));
+        }
 
         void setDisplayOn(boolean on) {
             mDisplayOn = on;
@@ -484,17 +487,8 @@ public class AppStandbyControllerTests {
                 doReturn(pkg.applicationInfo).when(mockPm)
                         .getApplicationInfo(eq(pkg.packageName), anyInt());
 
-                if (pkg.packageName.equals(PACKAGE_BACKGROUND_LOCATION)) {
-                    doReturn(PERMISSION_GRANTED).when(mockPm).checkPermission(
-                            eq(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION),
-                            eq(pkg.packageName));
-                    doReturn(PERMISSION_DENIED).when(mockPm).checkPermission(
-                            not(eq(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)),
-                            eq(pkg.packageName));
-                } else {
-                    doReturn(PERMISSION_DENIED).when(mockPm).checkPermission(anyString(),
-                            eq(pkg.packageName));
-                }
+                doReturn(PERMISSION_DENIED).when(mockPm).checkPermission(anyString(),
+                        eq(pkg.packageName));
             }
         } catch (PackageManager.NameNotFoundException nnfe) {}
     }
@@ -2077,6 +2071,7 @@ public class AppStandbyControllerTests {
      */
     @Test
     public void testBackgroundLocationBucket() throws Exception {
+        mInjector.addBgLocationGrantedApps(PACKAGE_BACKGROUND_LOCATION, USER_ID);
         reportEvent(mController, USER_INTERACTION, mInjector.mElapsedRealtime,
                 PACKAGE_BACKGROUND_LOCATION);
         waitAndAssertBucket(STANDBY_BUCKET_ACTIVE, PACKAGE_BACKGROUND_LOCATION);

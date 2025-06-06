@@ -58,6 +58,7 @@ import static com.android.server.SystemService.PHASE_BOOT_COMPLETED;
 import static com.android.server.SystemService.PHASE_SYSTEM_SERVICES_READY;
 import static com.android.server.usage.AppIdleHistory.STANDBY_BUCKET_UNKNOWN;
 
+import android.Manifest;
 import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
@@ -100,6 +101,7 @@ import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.permission.PermissionManager;
 import android.provider.DeviceConfig;
 import android.provider.Settings.Global;
 import android.telephony.TelephonyManager;
@@ -1523,8 +1525,8 @@ public class AppStandbyController
             return STANDBY_BUCKET_ACTIVE;
         }
 
-        if (mPackageManager.checkPermission(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                packageName) == PERMISSION_GRANTED) {
+        if (mSystemServicesReady
+                && mInjector.isBackgroundLocationPermissionGranted(packageName, userId)) {
             return STANDBY_BUCKET_FREQUENT;
         }
 
@@ -2636,6 +2638,7 @@ public class AppStandbyController
         private IBatteryStats mBatteryStats;
         private BatteryManager mBatteryManager;
         private PackageManagerInternal mPackageManagerInternal;
+        private PermissionManager mPermissionManager;
         private DisplayManager mDisplayManager;
         private PowerManager mPowerManager;
         private IDeviceIdleController mDeviceIdleController;
@@ -2675,6 +2678,7 @@ public class AppStandbyController
                 mBatteryStats = IBatteryStats.Stub.asInterface(
                         ServiceManager.getService(BatteryStats.SERVICE_NAME));
                 mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+                mPermissionManager = mContext.getSystemService(PermissionManager.class);
                 mDisplayManager = (DisplayManager) mContext.getSystemService(
                         Context.DISPLAY_SERVICE);
                 mPowerManager = mContext.getSystemService(PowerManager.class);
@@ -2708,10 +2712,6 @@ public class AppStandbyController
          */
         long elapsedRealtime() {
             return SystemClock.elapsedRealtime();
-        }
-
-        long currentTimeMillis() {
-            return System.currentTimeMillis();
         }
 
         boolean isAppIdleEnabled() {
@@ -2752,6 +2752,14 @@ public class AppStandbyController
 
         boolean shouldGetExactAlarmBucketElevation(String packageName, int uid) {
             return mAlarmManagerInternal.shouldGetBucketElevation(packageName, uid);
+        }
+
+        boolean isBackgroundLocationPermissionGranted(@NonNull String packageName,
+                @UserIdInt int userId) {
+            final int result = mPermissionManager.checkPackageNamePermission(
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    packageName, Context.DEVICE_ID_DEFAULT, userId);
+            return result == PERMISSION_GRANTED;
         }
 
         void updatePowerWhitelistCache() {
