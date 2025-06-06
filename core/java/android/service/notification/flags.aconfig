@@ -75,6 +75,13 @@ flag {
 }
 
 flag {
+  name: "report_nls_start_and_end"
+  namespace: "backstage_power"
+  description: "Reports NLS calls start and end to ActivityManager for process capability adjustments"
+  bug: "398072400"
+}
+
+flag {
   name: "notification_get_original_importance"
   is_exported: true
   namespace: "systemui"
