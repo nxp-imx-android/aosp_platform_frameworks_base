@@ -326,6 +326,7 @@ constructor(
                         val entryView = child.requireViewById<LinearLayout>(R.id.wifi_list)
                         val background =
                             when {
+                                itemCount == 1 -> entryBackgroundInactive
                                 adapterPosition == 0 -> entryBackgroundStart
                                 adapterPosition == itemCount - 1 && !hasMoreWifiEntries ->
                                     entryBackgroundEnd
