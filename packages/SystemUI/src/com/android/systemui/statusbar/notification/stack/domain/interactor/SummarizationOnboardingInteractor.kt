@@ -16,19 +16,20 @@
 
 package com.android.systemui.statusbar.notification.stack.domain.interactor
 
-import android.app.NotificationManager
+import android.app.INotificationManager
 import android.service.notification.Adjustment.KEY_SUMMARIZATION
 import androidx.core.content.edit
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.SharedPreferencesExt.observeBoolean
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -39,7 +40,8 @@ class SummarizationOnboardingInteractor
 constructor(
     notifListRepo: ActiveNotificationListRepository,
     private val sharedPreferencesInteractor: NotificationsSharedPreferencesInteractor,
-    private val notificationManager: NotificationManager,
+    private val notificationManager: INotificationManager,
+    userInteractor: SelectedUserInteractor,
     @Background private val bgDispatcher: CoroutineDispatcher,
 ) {
     private val notifsPresent: Flow<Boolean> =
@@ -54,9 +56,8 @@ constructor(
             }
             .distinctUntilChanged()
 
-    private val summarizationAvailableAndDisabled: Flow<Boolean> = flow {
-        emit(isAvailableAndDisabled())
-    }
+    private val summarizationAvailableAndDisabled: Flow<Boolean> =
+        userInteractor.selectedUser.mapLatestConflated { userId -> isAvailableAndDisabled(userId) }
 
     val onboardingNeeded: Flow<Boolean> =
         allOf(onboardingUnseen, summarizationAvailableAndDisabled, notifsPresent)
@@ -69,10 +70,11 @@ constructor(
         }
     }
 
-    private suspend fun isAvailableAndDisabled(): Boolean =
+    private suspend fun isAvailableAndDisabled(userId: Int): Boolean =
         withContext(bgDispatcher) {
             KEY_SUMMARIZATION !in notificationManager.unsupportedAdjustmentTypes &&
-                KEY_SUMMARIZATION !in notificationManager.allowedAssistantAdjustments
+                KEY_SUMMARIZATION !in
+                    notificationManager.getAllowedAssistantAdjustmentsForUser(userId)
         }
 }
 

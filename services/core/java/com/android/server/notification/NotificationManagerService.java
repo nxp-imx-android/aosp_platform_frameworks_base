@@ -5518,7 +5518,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public List<String> getAllowedAssistantAdjustmentsForUser(@UserIdInt int userId) {
-            checkCallerIsSystem();
+            checkCallerIsSystemOrSystemUi();
             return new ArrayList<>(mAssistants.getAllowedAssistantAdjustments(userId));
         }
 
@@ -11958,6 +11958,13 @@ public class NotificationManagerService extends SystemService {
 
     private void checkCallerIsSystem() {
         if (isCallerSystemOrPhone()) {
+            return;
+        }
+        throw new SecurityException("Disallowed call for uid " + Binder.getCallingUid());
+    }
+
+    private void checkCallerIsSystemOrSystemUi() {
+        if (isCallerSystemOrSystemUi()) {
             return;
         }
         throw new SecurityException("Disallowed call for uid " + Binder.getCallingUid());

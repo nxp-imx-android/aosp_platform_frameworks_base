@@ -16,17 +16,20 @@
 
 package com.android.systemui.statusbar.notification.stack.domain.interactor
 
+import android.app.iNotificationManager
 import android.app.notificationManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
+import com.android.systemui.user.domain.interactor.selectedUserInteractor
 
 val Kosmos.summarizationOnboardingInteractor by
     Kosmos.Fixture {
         SummarizationOnboardingInteractor(
             notifListRepo = activeNotificationListRepository,
             sharedPreferencesInteractor = notificationsSharedPreferencesInteractor,
-            notificationManager = notificationManager,
+            userInteractor = selectedUserInteractor,
+            notificationManager = iNotificationManager,
             bgDispatcher = testDispatcher,
         )
     }

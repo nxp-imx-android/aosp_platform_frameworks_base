@@ -20,3 +20,5 @@ import com.android.systemui.kosmos.Kosmos
 import org.mockito.kotlin.mock
 
 var Kosmos.notificationManager: NotificationManager by Kosmos.Fixture { mock {} }
+
+var Kosmos.iNotificationManager: INotificationManager by Kosmos.Fixture { mock {} }
