@@ -363,7 +363,7 @@ class MediaDataProcessor(
             }
             // Update last active if media was still active.
             if (it.active) {
-                it.lastActive = systemClock.elapsedRealtime()
+                it.lastActive = getActiveTimestamp(systemClock)
             }
             it.active = !timedOut
             if (DEBUG) Log.d(TAG, "Updating $key timedOut: $timedOut")
@@ -397,9 +397,13 @@ class MediaDataProcessor(
                             it.copy(
                                 semanticActions = actions,
                                 isPlaying = isPlayingState(state.state),
+                                lastActive = getActiveTimestamp(systemClock),
                             )
                         } else {
-                            it.copy(isPlaying = isPlayingState(state.state))
+                            it.copy(
+                                isPlaying = isPlayingState(state.state),
+                                lastActive = getActiveTimestamp(systemClock),
+                            )
                         }
                     if (DEBUG) Log.d(TAG, "State updated outside of notification")
                     withContext(mainDispatcher) { onMediaDataLoaded(key, key, data) }
@@ -458,7 +462,7 @@ class MediaDataProcessor(
         packageName: String,
     ) =
         withContext(backgroundDispatcher) {
-            val lastActive = systemClock.elapsedRealtime()
+            val lastActive = getActiveTimestamp(systemClock)
             val currentEntry = mediaDataRepository.mediaEntries.value[packageName]
             val createdTimestampMillis = currentEntry?.createdTimestampMillis ?: 0L
             val result =
@@ -524,7 +528,7 @@ class MediaDataProcessor(
         isConvertingToActive: Boolean = false,
     ) =
         withContext(backgroundDispatcher) {
-            val lastActive = systemClock.elapsedRealtime()
+            val lastActive = getActiveTimestamp(systemClock)
             val result = mediaDataLoader.get().loadMediaData(key, sbn, isConvertingToActive)
             if (result == null) {
                 Log.d(TAG, "No result from loadMediaData")
@@ -744,7 +748,7 @@ class MediaDataProcessor(
             }
         val lastActive =
             if (data.active) {
-                systemClock.elapsedRealtime()
+                getActiveTimestamp(systemClock)
             } else {
                 data.lastActive
             }

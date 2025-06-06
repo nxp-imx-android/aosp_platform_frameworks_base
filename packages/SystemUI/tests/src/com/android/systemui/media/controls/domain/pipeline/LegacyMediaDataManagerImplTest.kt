@@ -1273,7 +1273,7 @@ class LegacyMediaDataManagerImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun testPlaybackState_PauseWhenFlagTrue_keyExists_callsListener() {
+    fun testPlaybackState_Pause_keyExists_callsListener() {
         val state = PlaybackState.Builder().setState(PlaybackState.STATE_PAUSED, 0L, 1f).build()
         whenever(controller.playbackState).thenReturn(state)
 
@@ -1343,6 +1343,22 @@ class LegacyMediaDataManagerImplTest : SysuiTestCase() {
         verify(listener).onMediaDataLoaded(eq(KEY), eq(KEY), capture(mediaDataCaptor), eq(true))
         assertThat(mediaDataCaptor.value.isPlaying).isFalse()
         assertThat(mediaDataCaptor.value.semanticActions).isNull()
+    }
+
+    @Test
+    fun testPlaybackStateChange_updatesLastActiveTime() {
+        // Notification has been added
+        val currentTime = clock.elapsedRealtime()
+        addNotificationAndLoad()
+
+        // Callback gets an updated state
+        clock.advanceTime(1000)
+        val state = PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0L, 1f).build()
+        onStateUpdated(KEY, state)
+
+        // Last active time is updated
+        verify(listener).onMediaDataLoaded(eq(KEY), eq(KEY), capture(mediaDataCaptor), eq(true))
+        assertThat(mediaDataCaptor.value.lastActive).isAtLeast(currentTime + 1000)
     }
 
     @Test
