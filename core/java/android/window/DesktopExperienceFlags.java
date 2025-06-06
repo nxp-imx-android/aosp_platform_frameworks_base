@@ -194,6 +194,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_RESTRICT_FREEFORM_HIDDEN_SYSTEM_BARS_TO_FILLING_TASKS),
     ENABLE_SEE_THROUGH_TASK_FRAGMENTS(Flags::enableSeeThroughTaskFragments,
             true, Flags.FLAG_ENABLE_SEE_THROUGH_TASK_FRAGMENTS),
+    ENABLE_SHRINK_WINDOW_BOUNDS_AFTER_DRAG(Flags::enableShrinkWindowBoundsAfterDrag, false,
+            Flags.FLAG_ENABLE_SHRINK_WINDOW_BOUNDS_AFTER_DRAG),
     ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS(
             Flags::enableSizeCompatModeImprovementsForConnectedDisplays, true,
             Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS),

@@ -1031,6 +1031,16 @@ flag {
 }
 
 flag {
+    name: "enable_shrink_window_bounds_after_drag"
+    namespace: "lse_desktop_experience"
+    description: "Enables shrinking oversize windows after dragged to a smaller display."
+    bug: "403486903"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_size_compat_mode_improvements_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enable some improvements in size compat mode for connected displays."
