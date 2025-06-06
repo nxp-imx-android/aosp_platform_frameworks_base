@@ -23,6 +23,7 @@ import android.hardware.input.InputManager
 import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.KeyGestureEvent
 import android.os.IBinder
+import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
@@ -40,6 +41,7 @@ class DesktopModeKeyGestureHandler(
     private val context: Context,
     private val desktopModeWindowDecorViewModel: Optional<DesktopModeWindowDecorViewModel>,
     private val desktopTasksController: Optional<DesktopTasksController>,
+    private val desktopUserRepositories: DesktopUserRepositories,
     inputManager: InputManager,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val focusTransitionObserver: FocusTransitionObserver,
@@ -67,7 +69,7 @@ class DesktopModeKeyGestureHandler(
         when (event.keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY -> {
                 logV("Key gesture MOVE_TO_NEXT_DISPLAY is handled")
-                getGloballyFocusedFreeformTask()?.let {
+                getGloballyFocusedDesktopTask()?.let {
                     mainExecutor.execute {
                         desktopTasksController.get().moveToNextDesktopDisplay(it.taskId)
                     }
@@ -91,7 +93,7 @@ class DesktopModeKeyGestureHandler(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_LEFT_FREEFORM_WINDOW -> {
                 logV("Key gesture SNAP_LEFT_FREEFORM_WINDOW is handled")
-                getGloballyFocusedFreeformTask()?.let {
+                getGloballyFocusedDesktopTask()?.let {
                     mainExecutor.execute {
                         desktopModeWindowDecorViewModel
                             .get()
@@ -106,7 +108,7 @@ class DesktopModeKeyGestureHandler(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_RIGHT_FREEFORM_WINDOW -> {
                 logV("Key gesture SNAP_RIGHT_FREEFORM_WINDOW is handled")
-                getGloballyFocusedFreeformTask()?.let {
+                getGloballyFocusedDesktopTask()?.let {
                     mainExecutor.execute {
                         desktopModeWindowDecorViewModel
                             .get()
@@ -121,7 +123,7 @@ class DesktopModeKeyGestureHandler(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW -> {
                 logV("Key gesture TOGGLE_MAXIMIZE_FREEFORM_WINDOW is handled")
-                getGloballyFocusedFreeformTask()?.let { taskInfo ->
+                getGloballyFocusedDesktopTask()?.let { taskInfo ->
                     mainExecutor.execute {
                         desktopTasksController
                             .get()
@@ -139,7 +141,7 @@ class DesktopModeKeyGestureHandler(
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW -> {
                 logV("Key gesture MINIMIZE_FREEFORM_WINDOW is handled")
-                getGloballyFocusedFreeformTask()?.let {
+                getGloballyFocusedDesktopTask()?.let {
                     mainExecutor.execute {
                         desktopTasksController.get().minimizeTask(it, MinimizeReason.KEY_GESTURE)
                     }
@@ -151,11 +153,22 @@ class DesktopModeKeyGestureHandler(
     //  TODO: b/364154795 - wait for the completion of moveToNextDisplay transition, otherwise it
     //  will pick a wrong task when a user quickly perform other actions with keyboard shortcuts
     //  after moveToNextDisplay, and move this to FocusTransitionObserver class.
-    private fun getGloballyFocusedFreeformTask(): RunningTaskInfo? =
-        shellTaskOrganizer.getRunningTasks().find { taskInfo ->
-            taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
+    private fun getGloballyFocusedDesktopTask(): RunningTaskInfo? {
+        if (
+            !DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue ||
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            return shellTaskOrganizer.getRunningTasks().find { taskInfo ->
+                taskInfo.windowingMode == WINDOWING_MODE_FREEFORM &&
+                    focusTransitionObserver.hasGlobalFocus(taskInfo)
+            }
+        }
+        val repository = desktopUserRepositories.current
+        return shellTaskOrganizer.getRunningTasks().find { taskInfo ->
+            repository.isActiveTask(taskInfo.taskId) &&
                 focusTransitionObserver.hasGlobalFocus(taskInfo)
         }
+    }
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
