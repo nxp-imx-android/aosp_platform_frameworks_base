@@ -147,11 +147,9 @@ public class GetRequestSession extends RequestSession<GetCredentialRequest,
         if (response != null) {
             mRequestSessionMetric.collectChosenProviderStatus(
                     ProviderStatusForMetrics.FINAL_SUCCESS.getMetricCode());
-            if (Flags.fixMetricDuplicationEmits()) {
-                if (response.getCredential() != null) {
-                    mRequestSessionMetric.collectChosenClassType(response.getCredential()
-                            .getType());
-                }
+            if (response.getCredential() != null) {
+                mRequestSessionMetric.collectChosenClassType(response.getCredential()
+                        .getType());
             }
             respondToClientWithResponseAndFinish(response);
         } else {
