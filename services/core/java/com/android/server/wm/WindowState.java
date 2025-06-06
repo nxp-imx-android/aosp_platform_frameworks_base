@@ -3280,8 +3280,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
     }
 
+    boolean isPublicPresentation() {
+        return mAttrs.type == TYPE_PRESENTATION;
+    }
+
     boolean isPresentation() {
-        return mAttrs.type == TYPE_PRESENTATION || mAttrs.type == TYPE_PRIVATE_PRESENTATION;
+        return isPublicPresentation() || mAttrs.type == TYPE_PRIVATE_PRESENTATION;
     }
 
     private boolean isOnVirtualDisplay() {
@@ -5588,7 +5592,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     void setViewVisibility(int viewVisibility) {
         mViewVisibility = viewVisibility;
 
-        if (isPresentation()
+        if (isPublicPresentation()
                 && (viewVisibility == View.INVISIBLE || viewVisibility == View.GONE)) {
             mWmService.mPresentationController.removePresentation(getDisplayId(),
                     "setViewVisibility");
