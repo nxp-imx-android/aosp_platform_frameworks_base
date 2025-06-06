@@ -757,6 +757,13 @@ flag {
 }
 
 flag {
+    name: "enable_fullscreen_window_controls"
+    namespace: "lse_desktop_experience"
+    description: "Enables fullscreen window app header."
+    bug: "411673197"
+}
+
+flag {
     name: "enable_fully_immersive_in_desktop"
     namespace: "lse_desktop_experience"
     description: "Enabled the fully immersive experience from desktop"
