@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"ចូលដំណើរការទិន្នន័យឧបករណ៍ចាប់សញ្ញាអំពីស្ថានភាពសុខភាពរបស់អ្នក"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"ការ​ជូនដំណឹង"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"បង្ហាញ​ការជូនដំណឹង"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"ទិន្នន័យតាមដាន XR"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"ចូលប្រើទិន្នន័យ XR អំពីអ្នក និងមជ្ឈដ្ឋានជុំវិញអ្នក"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"ទិន្នន័យតាមដាន XR ដែលរសើប"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"ចូលប្រើទិន្នន័យតាមដានដែលរសើប ដូចជាការសម្លឹងមើល"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ទាញយក​ខ្លឹមសារ​វិនដូ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ពិនិត្យ​ខ្លឹមសារវិនដូ​ដែល​អ្នក​កំពុង​ធ្វើអន្តរកម្ម​ជា​មួយ។"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"បើក​ការ​រក​មើល​​ដោយ​ប៉ះ"</string>

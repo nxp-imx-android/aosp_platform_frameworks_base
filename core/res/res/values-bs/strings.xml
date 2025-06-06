@@ -254,7 +254,7 @@
     <string name="shutdown_confirm" product="tv" msgid="7975942887313518330">"Vaš Android TV uređaj će se isključiti."</string>
     <string name="shutdown_confirm" product="watch" msgid="2977299851200240146">"Sat će se isključiti."</string>
     <string name="shutdown_confirm" product="default" msgid="136816458966692315">"Telefon će se isključiti."</string>
-    <string name="shutdown_confirm_question" msgid="796151167261608447">"Želite li ugasiti telefon?"</string>
+    <string name="shutdown_confirm_question" msgid="796151167261608447">"Želite li isključiti?"</string>
     <string name="reboot_safemode_title" msgid="5853949122655346734">"Ponovo pokreni uređaj u sigurnom načinu rada"</string>
     <string name="reboot_safemode_confirm" msgid="1658357874737219624">"Želite li ponovo pokrenuti uređaj u sigurnom načinu rada? To će onemogućiti sve aplikacije trećih strana koje ste instalirali. Obnovit će se kada još jednom ponovo pokrenete uređaj."</string>
     <string name="recent_tasks_title" msgid="8183172372995396653">"Nedavni zadaci"</string>
@@ -355,10 +355,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"pristupa podacima senzora o vašim vitalnim funkcijama"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Obavještenja"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"prikaz obavještenja"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"podaci o XR praćenju"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"pristup XR podacima o vama i vašoj okolini"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"osjetljivi podaci o XR praćenju"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"pristup osjetljivim podacima o praćenju, npr. praćenju pogleda"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"preuzimati sadržaj prozora"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Pregleda sadržaj prozora koji trenutno koristite."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"uključiti Istraživanje dodirom"</string>
@@ -383,7 +389,7 @@
     <string name="permdesc_expandStatusBar" msgid="7180756900448498536">"Dozvoljava aplikaciji proširivanje ili sužavanje statusne trake."</string>
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"prikaz obavještenja kao aktivnosti preko cijelog ekrana na zaključanom uređaju"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Dozvoljava aplikaciji da prikazuje obavještenja kao aktivnosti preko cijelog ekrana na zaključanom uređaju"</string>
-    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Prikazuje novosti uživo"</string>
+    <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Prikazuje obavještenja uživo"</string>
     <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Dozvoljava aplikaciji da prikazuje kontinuirana, vremenski osjetljiva obavještenja na statusnoj traci i zaključanom ekranu"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Instaliranje prečica"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Omogućava aplikaciji dodavanje prečice za početni ekran bez intervencije korisnika."</string>
