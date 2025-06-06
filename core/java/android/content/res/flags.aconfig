@@ -126,6 +126,15 @@ flag {
 }
 
 flag {
+    name: "resource_readwrite_flags"
+    is_exported: false
+    namespace: "resource_manager"
+    description: "Feature flag for allowing read/write flags on individual resources"
+    bug: "420720496"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "resources_minor_version_support"
     is_exported: true
     namespace: "resource_manager"
