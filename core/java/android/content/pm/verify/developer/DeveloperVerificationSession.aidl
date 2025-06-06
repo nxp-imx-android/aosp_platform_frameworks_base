@@ -14,18 +14,7 @@
  * limitations under the License.
  */
 
-package android.content.pm.verify.pkg;
+package android.content.pm.verify.developer;
 
-import android.content.pm.verify.pkg.VerificationSession;
-
-/**
- * Oneway interface that allows the system to communicate to the verifier service agent.
- * @hide
- */
-oneway interface IVerifierService {
-    void onPackageNameAvailable(in String packageName);
-    void onVerificationCancelled(in String packageName);
-    void onVerificationRequired(in VerificationSession session);
-    void onVerificationRetry(in VerificationSession session);
-    void onVerificationTimeout(int verificationId);
-}
+/** @hide */
+parcelable DeveloperVerificationSession;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.content.pm.verify.pkg;
+package android.content.pm.verify.developer;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -29,13 +29,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
- * This class is used by the verifier to describe the status of the verification request, whether
- * it's successful or it has failed along with any relevant details.
+ * This class is used by the developer verifier to describe the status of the verification request,
+ * whether it's successful or it has failed along with any relevant details.
  * @hide
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-public final class  VerificationStatus implements Parcelable {
+public final class DeveloperVerificationStatus implements Parcelable {
     /**
      * The ASL status has not been determined.
      * <p>This happens in situations where the verification
@@ -43,12 +43,12 @@ public final class  VerificationStatus implements Parcelable {
      * can't be trusted.
      * </p>
      */
-    public static final int VERIFIER_STATUS_ASL_UNDEFINED = 0;
+    public static final int DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED = 0;
 
     /**
      * The app's ASL data is considered to be in a good state.
      */
-    public static final int VERIFIER_STATUS_ASL_GOOD = 1;
+    public static final int DEVELOPER_VERIFIER_STATUS_ASL_GOOD = 1;
 
     /**
      * There is something bad in the app's ASL data.
@@ -57,25 +57,25 @@ public final class  VerificationStatus implements Parcelable {
      * the ASL data and/or appropriate decisions made about the use of this data by the platform.
      * </p>
      */
-    public static final int VERIFIER_STATUS_ASL_BAD = 2;
+    public static final int DEVELOPER_VERIFIER_STATUS_ASL_BAD = 2;
 
     /** @hide */
-    @IntDef(prefix = {"VERIFIER_STATUS_ASL_"}, value = {
-            VERIFIER_STATUS_ASL_UNDEFINED,
-            VERIFIER_STATUS_ASL_GOOD,
-            VERIFIER_STATUS_ASL_BAD,
+    @IntDef(prefix = {"DEVELOPER_VERIFIER_STATUS_ASL_"}, value = {
+            DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED,
+            DEVELOPER_VERIFIER_STATUS_ASL_GOOD,
+            DEVELOPER_VERIFIER_STATUS_ASL_BAD,
     })
     @Retention(RetentionPolicy.SOURCE)
-    public @interface VerifierStatusAsl {}
+    public @interface DeveloperVerifierStatusAsl {}
 
     private final boolean mIsVerified;
     private final boolean mIsLite;
-    private final @VerifierStatusAsl int mAslStatus;
+    private final @DeveloperVerifierStatusAsl int mAslStatus;
     @NonNull
     private final String mFailuresMessage;
 
-    private VerificationStatus(boolean isVerified, boolean isLite, @VerifierStatusAsl int aslStatus,
-            @NonNull String failuresMessage) {
+    private DeveloperVerificationStatus(boolean isVerified, boolean isLite,
+            @DeveloperVerifierStatusAsl int aslStatus, @NonNull String failuresMessage) {
         mIsVerified = isVerified;
         mIsLite = isLite;
         mAslStatus = aslStatus;
@@ -107,17 +107,18 @@ public final class  VerificationStatus implements Parcelable {
     /**
      * @return the asl status.
      */
-    public @VerifierStatusAsl int getAslStatus() {
+    public @DeveloperVerifierStatusAsl int getAslStatus() {
         return mAslStatus;
     }
 
     /**
-     * Builder to construct a {@link VerificationStatus} object.
+     * Builder to construct a {@link DeveloperVerificationStatus} object.
      */
     public static final class Builder {
         private boolean mIsVerified = false;
         private boolean mIsLite = false;
-        private @VerifierStatusAsl int mAslStatus = VERIFIER_STATUS_ASL_UNDEFINED;
+        private @DeveloperVerifierStatusAsl int mAslStatus =
+                DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED;
         private String mFailuresMessage = "";
 
         /**
@@ -150,10 +151,10 @@ public final class  VerificationStatus implements Parcelable {
         }
 
         /**
-         * Set the ASL status, as defined in {@link VerifierStatusAsl}.
+         * Set the ASL status, as defined in {@link DeveloperVerifierStatusAsl}.
          */
         @NonNull
-        public Builder setAslStatus(@VerifierStatusAsl int aslStatus) {
+        public Builder setAslStatus(@DeveloperVerifierStatusAsl int aslStatus) {
             mAslStatus = aslStatus;
             return this;
         }
@@ -162,12 +163,13 @@ public final class  VerificationStatus implements Parcelable {
          * Build the status object.
          */
         @NonNull
-        public VerificationStatus build() {
-            return new VerificationStatus(mIsVerified, mIsLite, mAslStatus, mFailuresMessage);
+        public DeveloperVerificationStatus build() {
+            return new DeveloperVerificationStatus(mIsVerified, mIsLite, mAslStatus,
+                    mFailuresMessage);
         }
     }
 
-    private VerificationStatus(Parcel in) {
+    private DeveloperVerificationStatus(Parcel in) {
         mIsVerified = in.readBoolean();
         mIsLite = in.readBoolean();
         mAslStatus = in.readInt();
@@ -188,15 +190,15 @@ public final class  VerificationStatus implements Parcelable {
     }
 
     @NonNull
-    public static final Creator<VerificationStatus> CREATOR = new Creator<>() {
+    public static final Creator<DeveloperVerificationStatus> CREATOR = new Creator<>() {
         @Override
-        public VerificationStatus createFromParcel(@NonNull Parcel in) {
-            return new VerificationStatus(in);
+        public DeveloperVerificationStatus createFromParcel(@NonNull Parcel in) {
+            return new DeveloperVerificationStatus(in);
         }
 
         @Override
-        public VerificationStatus[] newArray(int size) {
-            return new VerificationStatus[size];
+        public DeveloperVerificationStatus[] newArray(int size) {
+            return new DeveloperVerificationStatus[size];
         }
     };
 }

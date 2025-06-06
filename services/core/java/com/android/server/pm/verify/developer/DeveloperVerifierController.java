@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.server.pm.verify.pkg;
+package com.android.server.pm.verify.developer;
 
-import static android.content.pm.verify.pkg.VerificationSession.VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
-import static android.content.pm.verify.pkg.VerificationSession.VERIFICATION_INCOMPLETE_UNKNOWN;
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
+import static android.content.pm.verify.developer.DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN;
 import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 import static android.provider.DeviceConfig.NAMESPACE_PACKAGE_MANAGER_SERVICE;
@@ -32,10 +32,11 @@ import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.SigningInfo;
-import android.content.pm.verify.pkg.IVerificationSessionInterface;
-import android.content.pm.verify.pkg.IVerifierService;
-import android.content.pm.verify.pkg.VerificationSession;
-import android.content.pm.verify.pkg.VerificationStatus;
+import android.content.pm.verify.developer.DeveloperVerificationSession;
+import android.content.pm.verify.developer.DeveloperVerificationStatus;
+import android.content.pm.verify.developer.DeveloperVerifierService;
+import android.content.pm.verify.developer.IDeveloperVerificationSessionInterface;
+import android.content.pm.verify.developer.IDeveloperVerifierService;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.PersistableBundle;
@@ -58,9 +59,9 @@ import java.util.function.Supplier;
 
 /**
  * This class manages the bind to the verifier agent installed on the device that implements
- * {@link android.content.pm.verify.pkg.VerifierService} and handles all its interactions.
+ * {@link DeveloperVerifierService} and handles all its interactions.
  */
-public class VerifierController {
+public class DeveloperVerifierController {
     private static final String TAG = "VerifierController";
     private static final boolean DEBUG = false;
 
@@ -110,7 +111,7 @@ public class VerifierController {
      */
     private static final long DISCONNECT_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(10);
 
-    private static VerifierController sInstance;
+    private static DeveloperVerifierController sInstance;
 
     private final Context mContext;
     private final Handler mHandler;
@@ -131,8 +132,8 @@ public class VerifierController {
     // Repository of active verification sessions and their status (map of id -> tracker).
     @NonNull
     @GuardedBy("mVerificationStatusTrackers")
-    private final SparseArray<VerificationStatusTracker> mVerificationStatusTrackers =
-            new SparseArray<>();
+    private final SparseArray<DeveloperVerificationRequestStatusTracker>
+            mVerificationStatusTrackers = new SparseArray<>();
 
     @GuardedBy("mVerificationStatusTrackers")
     // Counter of active verification sessions per user; must be synced with the trackers map.
@@ -141,17 +142,17 @@ public class VerifierController {
     /**
      * Get an instance of VerifierController.
      */
-    public static VerifierController getInstance(@NonNull Context context, @NonNull Handler handler,
-            @Nullable String verifierPackageName) {
+    public static DeveloperVerifierController getInstance(@NonNull Context context,
+            @NonNull Handler handler, @Nullable String verifierPackageName) {
         if (sInstance == null) {
-            sInstance = new VerifierController(
+            sInstance = new DeveloperVerifierController(
                     context, handler, verifierPackageName, new Injector());
         }
         return sInstance;
     }
 
     @VisibleForTesting
-    public VerifierController(@NonNull Context context, @NonNull Handler handler,
+    public DeveloperVerifierController(@NonNull Context context, @NonNull Handler handler,
             @Nullable String defaultVerifierPackageName, @NonNull Injector injector) {
         mContext = context;
         mHandler = handler;
@@ -226,7 +227,7 @@ public class VerifierController {
         remoteService.setServiceLifecycleCallbacks(
                 new ServiceConnector.ServiceLifecycleCallbacks<>() {
                     @Override
-                    public void onConnected(@NonNull IVerifierService service) {
+                    public void onConnected(@NonNull IDeveloperVerifierService service) {
                         Slog.i(TAG, "Verifier " + verifierPackageName + " is connected"
                                 + " on user " + userId);
                         // Aggressively auto-disconnect until verification requests are sent out
@@ -235,7 +236,7 @@ public class VerifierController {
                     }
 
                     @Override
-                    public void onDisconnected(@NonNull IVerifierService service) {
+                    public void onDisconnected(@NonNull IDeveloperVerifierService service) {
                         Slog.w(TAG,
                                 "Verifier " + verifierPackageName + " is disconnected"
                                         + " on user " + userId);
@@ -262,7 +263,7 @@ public class VerifierController {
             Slog.i(TAG, "Connecting to a qualified verifier: " + verifierPackageName
                     + " on user " + userId);
         }
-        AndroidFuture<IVerifierService> unusedFuture = remoteService.connect();
+        AndroidFuture<IDeveloperVerifierService> unusedFuture = remoteService.connect();
         return true;
     }
 
@@ -313,7 +314,7 @@ public class VerifierController {
 
     /**
      * Called to notify the bound verifier agent that a package previously notified via
-     * {@link android.content.pm.verify.pkg.VerifierService#onPackageNameAvailable(String)}
+     * {@link DeveloperVerifierService#onPackageNameAvailable(String)}
      * will no longer be requested for verification, possibly because the installation is canceled.
      */
     public void notifyVerificationCancelled(@NonNull String packageName, int userId) {
@@ -351,7 +352,7 @@ public class VerifierController {
             int installationSessionId, String packageName,
             Uri stagedPackageUri, SigningInfo signingInfo,
             List<SharedLibraryInfo> declaredLibraries,
-            @PackageInstaller.VerificationPolicy int verificationPolicy,
+            @PackageInstaller.DeveloperVerificationPolicy int verificationPolicy,
             @Nullable PersistableBundle extensionParams,
             PackageInstallerSession.VerifierCallback callback,
             boolean retry) {
@@ -372,11 +373,11 @@ public class VerifierController {
                 // installation session so it can finish with a verification failure.
                 return false;
             }
-            final VerificationSession session = new VerificationSession(
+            final DeveloperVerificationSession session = new DeveloperVerificationSession(
                     /* id= */ verificationId,
                     /* installSessionId= */ installationSessionId,
                     packageName, stagedPackageUri, signingInfo, declaredLibraries, extensionParams,
-                    verificationPolicy, new VerificationSessionInterface(callback));
+                    verificationPolicy, new DeveloperVerificationSessionInterface(callback));
             AndroidFuture<Void> unusedFuture = remoteService.getService().post(service -> {
                 if (!retry) {
                     if (DEBUG) {
@@ -407,7 +408,8 @@ public class VerifierController {
         // Keep track of the session status with the ID. Start counting down the session timeout.
         final long defaultTimeoutMillis = mInjector.getVerificationRequestTimeoutMillis();
         final long maxExtendedTimeoutMillis = mInjector.getMaxVerificationExtendedTimeoutMillis();
-        final VerificationStatusTracker tracker = new VerificationStatusTracker(
+        final DeveloperVerificationRequestStatusTracker
+                tracker = new DeveloperVerificationRequestStatusTracker(
                 defaultTimeoutMillis, maxExtendedTimeoutMillis, mInjector, userId);
         synchronized (mVerificationStatusTrackers) {
             mVerificationStatusTrackers.put(verificationId, tracker);
@@ -421,7 +423,8 @@ public class VerifierController {
         return true;
     }
 
-    private void startTimeoutCountdown(int verificationId, VerificationStatusTracker tracker,
+    private void startTimeoutCountdown(int verificationId,
+            DeveloperVerificationRequestStatusTracker tracker,
             PackageInstallerSession.VerifierCallback callback, long delayMillis) {
         mHandler.postDelayed(() -> {
             if (DEBUG) {
@@ -482,7 +485,7 @@ public class VerifierController {
             Slog.i(TAG, "Removing status tracking for verification " + verificationId);
         }
         synchronized (mVerificationStatusTrackers) {
-            final VerificationStatusTracker trackerRemoved =
+            final DeveloperVerificationRequestStatusTracker trackerRemoved =
                     mVerificationStatusTrackers.removeReturnOld(verificationId);
             if (trackerRemoved != null) {
                 // Stop the request timeout countdown
@@ -533,10 +536,11 @@ public class VerifierController {
     }
 
     // This class handles requests from the remote verifier
-    private class VerificationSessionInterface extends IVerificationSessionInterface.Stub {
+    private class DeveloperVerificationSessionInterface extends
+            IDeveloperVerificationSessionInterface.Stub {
         private final PackageInstallerSession.VerifierCallback mCallback;
 
-        VerificationSessionInterface(PackageInstallerSession.VerifierCallback callback) {
+        DeveloperVerificationSessionInterface(PackageInstallerSession.VerifierCallback callback) {
             mCallback = callback;
         }
 
@@ -544,7 +548,7 @@ public class VerifierController {
         public @CurrentTimeMillisLong long getTimeoutTime(int verificationId) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatusTrackers) {
-                final VerificationStatusTracker tracker =
+                final DeveloperVerificationRequestStatusTracker tracker =
                         mVerificationStatusTrackers.get(verificationId);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + verificationId
@@ -559,7 +563,7 @@ public class VerifierController {
                 @DurationMillisLong long additionalMs) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatusTrackers) {
-                final VerificationStatusTracker tracker =
+                final DeveloperVerificationRequestStatusTracker tracker =
                         mVerificationStatusTrackers.get(verificationId);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + verificationId
@@ -571,10 +575,10 @@ public class VerifierController {
 
         @Override
         public boolean setVerificationPolicy(int verificationId,
-                @PackageInstaller.VerificationPolicy int policy) {
+                @PackageInstaller.DeveloperVerificationPolicy int policy) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatusTrackers) {
-                final VerificationStatusTracker tracker =
+                final DeveloperVerificationRequestStatusTracker tracker =
                         mVerificationStatusTrackers.get(verificationId);
                 if (tracker == null) {
                     throw new IllegalStateException("Verification session " + verificationId
@@ -586,14 +590,14 @@ public class VerifierController {
 
         @Override
         public void reportVerificationIncomplete(int id,
-                @VerificationSession.VerificationIncompleteReason int reason) {
+                @DeveloperVerificationSession.DeveloperVerificationIncompleteReason int reason) {
             assertCallerIsCurrentVerifier(getCallingUid());
-            if (reason < VERIFICATION_INCOMPLETE_UNKNOWN
-                    || reason > VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE) {
+            if (reason < DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN
+                    || reason > DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE) {
                 throw new IllegalArgumentException("Verification session " + id
                         + " reported invalid incomplete_reason code " + reason);
             }
-            final VerificationStatusTracker tracker;
+            final DeveloperVerificationRequestStatusTracker tracker;
             synchronized (mVerificationStatusTrackers) {
                 tracker = mVerificationStatusTrackers.get(id);
                 if (tracker == null) {
@@ -607,10 +611,11 @@ public class VerifierController {
         }
 
         @Override
-        public void reportVerificationComplete(int id, VerificationStatus verificationStatus,
+        public void reportVerificationComplete(int id,
+                DeveloperVerificationStatus verificationStatus,
                 @Nullable PersistableBundle extensionResponse) {
             assertCallerIsCurrentVerifier(getCallingUid());
-            final VerificationStatusTracker tracker;
+            final DeveloperVerificationRequestStatusTracker tracker;
             synchronized (mVerificationStatusTrackers) {
                 tracker = mVerificationStatusTrackers.get(id);
                 if (tracker == null) {
@@ -626,21 +631,21 @@ public class VerifierController {
 
     private static class ServiceConnectorWrapper {
         // Remote service that receives verification requests
-        private final @NonNull ServiceConnector<IVerifierService> mRemoteService;
+        private final @NonNull ServiceConnector<IDeveloperVerifierService> mRemoteService;
         // UID of the remote service which includes the userId as part of it
         private final int mUid;
         // Package name of the verifier that was bound to. This can be different from the verifier
         // originally specified by the system.
         private final @NonNull String mVerifierPackageName;
         private final @NonNull Runnable mAutoDisconnectCallback;
-        ServiceConnectorWrapper(@NonNull ServiceConnector<IVerifierService> service, int uid,
-                @NonNull String verifierPackageName) {
+        ServiceConnectorWrapper(@NonNull ServiceConnector<IDeveloperVerifierService> service,
+                int uid, @NonNull String verifierPackageName) {
             mRemoteService = service;
             mUid = uid;
             mVerifierPackageName = verifierPackageName;
             mAutoDisconnectCallback = mRemoteService::unbind;
         }
-        ServiceConnector<IVerifierService> getService() {
+        ServiceConnector<IDeveloperVerifierService> getService() {
             return mRemoteService;
         }
         int getUid() {
@@ -660,14 +665,14 @@ public class VerifierController {
          * Mock this method to inject the remote service to enable unit testing.
          */
         @NonNull
-        public ServiceConnector<IVerifierService> getRemoteService(
+        public ServiceConnector<IDeveloperVerifierService> getRemoteService(
                 @NonNull String verifierPackageName, @NonNull Context context, int userId,
                 @NonNull Handler handler) {
-            final Intent intent = new Intent(PackageManager.ACTION_VERIFY_PACKAGE);
+            final Intent intent = new Intent(PackageManager.ACTION_VERIFY_DEVELOPER);
             intent.setPackage(verifierPackageName);
             return new ServiceConnector.Impl<>(
                     context, intent, Context.BIND_AUTO_CREATE, userId,
-                    IVerifierService.Stub::asInterface) {
+                    IDeveloperVerifierService.Stub::asInterface) {
                 @Override
                 protected Handler getJobHandler() {
                     return handler;

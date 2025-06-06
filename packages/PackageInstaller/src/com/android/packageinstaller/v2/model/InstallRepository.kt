@@ -31,8 +31,8 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageInstaller.SessionParams
-import android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_ERROR
-import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import android.net.Uri
@@ -156,7 +156,7 @@ class InstallRepository(private val context: Context) {
             PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL == intent.action
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
                 || (Flags.verificationService()
-                && PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE == intent.action)
+                && PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == intent.action)
 
         sessionId = if (isSessionInstall)
             intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
@@ -328,7 +328,7 @@ class InstallRepository(private val context: Context) {
         val uri = intent.data
         val action = intent.action
 
-        if (PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE == action) {
+        if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == action) {
             _stagingResult.value = InstallVerificationConfirmationRequired()
             return
         }
@@ -558,7 +558,7 @@ class InstallRepository(private val context: Context) {
             // mOriginatingURI = null;
             // mReferrerURI = null;
             pendingUserActionReason = info.getPendingUserActionReason()
-        } else if (PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE == intent.action) {
+        } else if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == intent.action) {
             val info = packageInstaller.getSessionInfo(sessionId)
             val resolvedPath = info?.resolvedBaseApkPath
             if (info == null || !info.isSealed || resolvedPath == null) {
@@ -821,18 +821,18 @@ class InstallRepository(private val context: Context) {
         var confirmationSnippet: InstallStage = generateConfirmationSnippet()
 
         if (confirmationSnippet.stageCode == InstallStage.STAGE_ABORTED) {
-            packageInstaller.setVerificationUserResponse(
-                sessionId, VERIFICATION_USER_RESPONSE_ERROR
+            packageInstaller.setDeveloperVerificationUserResponse(
+                sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
             )
             return confirmationSnippet
         }
 
-        val verificationInfo: VerificationUserConfirmationInfo? =
-            packageInstaller.getVerificationUserConfirmationInfo(sessionId)
+        val verificationInfo: DeveloperVerificationUserConfirmationInfo? =
+            packageInstaller.getDeveloperVerificationUserConfirmationInfo(sessionId)
         if (verificationInfo == null) {
             Log.e(LOG_TAG, "Could not get VerificationInfo for sessionId $sessionId")
-            packageInstaller.setVerificationUserResponse(
-                sessionId, VERIFICATION_USER_RESPONSE_ERROR
+            packageInstaller.setDeveloperVerificationUserResponse(
+                sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
             )
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
@@ -1103,12 +1103,12 @@ class InstallRepository(private val context: Context) {
     }
 
     fun setUserVerificationResponse(responseCode: Int) {
-        if (PackageInstaller.ACTION_NOTIFY_VERIFICATION_INCOMPLETE != intent.action) {
+        if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE != intent.action) {
             Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
             _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
             return
         }
-        packageInstaller.setVerificationUserResponse(sessionId, responseCode)
+        packageInstaller.setDeveloperVerificationUserResponse(sessionId, responseCode)
         _installResult.value = InstallAborted(
             ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
         )

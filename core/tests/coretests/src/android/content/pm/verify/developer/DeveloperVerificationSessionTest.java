@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package android.content.pm.verify;
+package android.content.pm.verify.developer;
 
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -32,9 +32,6 @@ import static org.mockito.Mockito.when;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.SigningInfo;
 import android.content.pm.VersionedPackage;
-import android.content.pm.verify.pkg.IVerificationSessionInterface;
-import android.content.pm.verify.pkg.VerificationSession;
-import android.content.pm.verify.pkg.VerificationStatus;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.PersistableBundle;
@@ -56,7 +53,7 @@ import java.util.List;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class VerificationSessionTest {
+public class DeveloperVerificationSessionTest {
     private static final int TEST_ID = 100;
     private static final int TEST_INSTALL_SESSION_ID = 33;
     private static final String TEST_PACKAGE_NAME = "com.foo";
@@ -76,13 +73,13 @@ public class VerificationSessionTest {
     private static final long TEST_EXTEND_TIME = 2000L;
     private static final String TEST_KEY = "test key";
     private static final String TEST_VALUE = "test value";
-    private static final int TEST_POLICY = VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+    private static final int TEST_POLICY = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 
     private final ArrayList<SharedLibraryInfo> mTestDeclaredLibraries = new ArrayList<>();
     private final PersistableBundle mTestExtensionParams = new PersistableBundle();
     @Mock
-    private IVerificationSessionInterface mTestSessionInterface;
-    private VerificationSession mTestSession;
+    private IDeveloperVerificationSessionInterface mTestSessionInterface;
+    private DeveloperVerificationSession mTestSession;
 
     @Before
     public void setUp() {
@@ -90,7 +87,7 @@ public class VerificationSessionTest {
         mTestDeclaredLibraries.add(TEST_SHARED_LIBRARY_INFO1);
         mTestDeclaredLibraries.add(TEST_SHARED_LIBRARY_INFO2);
         mTestExtensionParams.putString(TEST_KEY, TEST_VALUE);
-        mTestSession = new VerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
+        mTestSession = new DeveloperVerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
                 TEST_PACKAGE_NAME, TEST_PACKAGE_URI, TEST_SIGNING_INFO, mTestDeclaredLibraries,
                 mTestExtensionParams, TEST_POLICY, mTestSessionInterface);
     }
@@ -100,8 +97,8 @@ public class VerificationSessionTest {
         Parcel parcel = Parcel.obtain();
         mTestSession.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        VerificationSession sessionFromParcel =
-                VerificationSession.CREATOR.createFromParcel(parcel);
+        DeveloperVerificationSession sessionFromParcel =
+                DeveloperVerificationSession.CREATOR.createFromParcel(parcel);
         assertThat(sessionFromParcel.getId()).isEqualTo(TEST_ID);
         assertThat(sessionFromParcel.getInstallSessionId()).isEqualTo(TEST_INSTALL_SESSION_ID);
         assertThat(sessionFromParcel.getPackageName()).isEqualTo(TEST_PACKAGE_NAME);
@@ -125,14 +122,15 @@ public class VerificationSessionTest {
 
     @Test
     public void testParcelWithNullExtensionParams() {
-        VerificationSession session = new VerificationSession(TEST_ID, TEST_INSTALL_SESSION_ID,
+        DeveloperVerificationSession session = new DeveloperVerificationSession(TEST_ID,
+                TEST_INSTALL_SESSION_ID,
                 TEST_PACKAGE_NAME, TEST_PACKAGE_URI, TEST_SIGNING_INFO, mTestDeclaredLibraries,
                 /* extensionParams= */ null, TEST_POLICY, mTestSessionInterface);
         Parcel parcel = Parcel.obtain();
         session.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
-        VerificationSession sessionFromParcel =
-                VerificationSession.CREATOR.createFromParcel(parcel);
+        DeveloperVerificationSession sessionFromParcel =
+                DeveloperVerificationSession.CREATOR.createFromParcel(parcel);
         assertThat(sessionFromParcel.getExtensionParams().isEmpty()).isTrue();
     }
 
@@ -150,8 +148,8 @@ public class VerificationSessionTest {
 
         PersistableBundle response = new PersistableBundle();
         response.putString("test key", "test value");
-        final VerificationStatus status =
-                new VerificationStatus.Builder().setVerified(true).build();
+        final DeveloperVerificationStatus status =
+                new DeveloperVerificationStatus.Builder().setVerified(true).build();
         mTestSession.reportVerificationComplete(status);
         verify(mTestSessionInterface, times(1)).reportVerificationComplete(
                 eq(TEST_ID), eq(status), eq(null));
@@ -160,7 +158,7 @@ public class VerificationSessionTest {
                 .reportVerificationComplete(
                         eq(TEST_ID), eq(status), eq(response));
 
-        final int reason = VerificationSession.VERIFICATION_INCOMPLETE_UNKNOWN;
+        final int reason = DeveloperVerificationSession.DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN;
         mTestSession.reportVerificationIncomplete(reason);
         verify(mTestSessionInterface, times(1)).reportVerificationIncomplete(
                 eq(TEST_ID), eq(reason));
@@ -177,7 +175,7 @@ public class VerificationSessionTest {
 
     @Test
     public void testPolicyOverrideFail() throws Exception {
-        final int newPolicy = VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+        final int newPolicy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
         when(mTestSessionInterface.setVerificationPolicy(anyInt(), anyInt())).thenReturn(false);
         assertThat(mTestSession.setVerificationPolicy(newPolicy)).isFalse();
         verify(mTestSessionInterface, times(1))
@@ -189,7 +187,7 @@ public class VerificationSessionTest {
 
     @Test
     public void testPolicyOverrideSuccess() throws Exception {
-        final int newPolicy = VERIFICATION_POLICY_BLOCK_FAIL_WARN;
+        final int newPolicy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
         when(mTestSessionInterface.setVerificationPolicy(anyInt(), anyInt())).thenReturn(true);
         assertThat(mTestSession.setVerificationPolicy(newPolicy)).isTrue();
         verify(mTestSessionInterface, times(1))

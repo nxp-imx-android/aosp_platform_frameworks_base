@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.content.pm.verify.pkg;
+package android.content.pm.verify.developer;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -27,26 +27,27 @@ import android.content.pm.PackageManager;
 import android.os.IBinder;
 
 /**
- * A base service implementation for the verifier agent to implement.
+ * A base service implementation for the developer verifier agent to implement.
  * <p></p>
- * The verifier agent app should register the implemented {@link VerifierService} in the manifest.
+ * The developer verifier agent app should register the implemented {@link DeveloperVerifierService}
+ * in the manifest.
  * Example:
  * <pre>{@code
  *     <service android:name=".MyVerifierService"
- *         permission="android.permission.BIND_VERIFICATION_AGENT">
+ *         permission="android.permission.BIND_DEVELOPER_VERIFICATION_AGENT">
  *       <intent-filter>
- *         <action android:name="android.content.pm.action.VERIFY_PACKAGE" />
+ *         <action android:name="android.content.pm.action.VERIFY_DEVELOPER" />
  *       </intent-filter>
  *     </service>
  * }</pre>
  * <p></p>
- * Notice that the verifier agent app should also declare {@code android:forceQueryable="true"} to
- * make itself visible to the installers.
+ * Notice that the developer verifier agent app should also declare
+ * {@code android:forceQueryable="true"} to make itself visible to the installers.
  * @hide
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-public abstract class VerifierService extends Service {
+public abstract class DeveloperVerifierService extends Service {
     /**
      * Called when a package name is available for a pending verification,
      * giving the verifier opportunity to pre-fetch any relevant information
@@ -70,9 +71,9 @@ public abstract class VerifierService extends Service {
      * Called when an application needs to be verified.
      * <p>Details about the
      * verification and actions that can be taken on it will be encapsulated in
-     * the provided {@link VerificationSession} parameter.</p>
+     * the provided {@link DeveloperVerificationSession} parameter.</p>
      */
-    public abstract void onVerificationRequired(@NonNull VerificationSession session);
+    public abstract void onVerificationRequired(@NonNull DeveloperVerificationSession session);
 
     /**
      * Called when a verification needs to be retried.
@@ -83,9 +84,9 @@ public abstract class VerifierService extends Service {
      * </p>
      * <p>Details about the
      * verification and actions that can be taken on it will be encapsulated in
-     * the provided {@link VerificationSession} parameter.</p>
+     * the provided {@link DeveloperVerificationSession} parameter.</p>
      */
-    public abstract void onVerificationRetry(@NonNull VerificationSession session);
+    public abstract void onVerificationRetry(@NonNull DeveloperVerificationSession session);
 
     /**
      * Called in the case that an active verification has failed because of the timeout.
@@ -96,33 +97,33 @@ public abstract class VerifierService extends Service {
      * Called when the verifier service is bound to the system.
      */
     public @Nullable IBinder onBind(@Nullable Intent intent) {
-        if (intent == null || !PackageManager.ACTION_VERIFY_PACKAGE.equals(intent.getAction())) {
+        if (intent == null || !PackageManager.ACTION_VERIFY_DEVELOPER.equals(intent.getAction())) {
             return null;
         }
-        return new IVerifierService.Stub() {
+        return new IDeveloperVerifierService.Stub() {
             @Override
             public void onPackageNameAvailable(@NonNull String packageName) {
-                VerifierService.this.onPackageNameAvailable(packageName);
+                DeveloperVerifierService.this.onPackageNameAvailable(packageName);
             }
 
             @Override
             public void onVerificationCancelled(@NonNull String packageName) {
-                VerifierService.this.onVerificationCancelled(packageName);
+                DeveloperVerifierService.this.onVerificationCancelled(packageName);
             }
 
             @Override
-            public void onVerificationRequired(@NonNull VerificationSession session) {
-                VerifierService.this.onVerificationRequired(session);
+            public void onVerificationRequired(@NonNull DeveloperVerificationSession session) {
+                DeveloperVerifierService.this.onVerificationRequired(session);
             }
 
             @Override
-            public void onVerificationRetry(@NonNull VerificationSession session) {
-                VerifierService.this.onVerificationRetry(session);
+            public void onVerificationRetry(@NonNull DeveloperVerificationSession session) {
+                DeveloperVerifierService.this.onVerificationRetry(session);
             }
 
             @Override
             public void onVerificationTimeout(int verificationId) {
-                VerifierService.this.onVerificationTimeout(verificationId);
+                DeveloperVerifierService.this.onVerificationTimeout(verificationId);
             }
         };
     }

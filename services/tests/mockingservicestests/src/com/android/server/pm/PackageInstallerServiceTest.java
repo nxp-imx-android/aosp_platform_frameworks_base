@@ -34,7 +34,7 @@ import android.util.ArrayMap;
 
 import com.android.server.LocalServices;
 import com.android.server.SystemServiceManager;
-import com.android.server.pm.verify.pkg.VerifierController;
+import com.android.server.pm.verify.developer.DeveloperVerifierController;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,7 +50,7 @@ public class PackageInstallerServiceTest {
     private PackageManagerServiceTestParams mTestParams;
     private @Mock PermissionEnforcer mMockPermissionEnforcer;
     private @Mock SystemServiceManager mMockSystemServiceManager;
-    private @Mock VerifierController mMockVerifierController;
+    private @Mock DeveloperVerifierController mMockDeveloperVerifierController;
     private String mPackageName;
     private PackageManagerService mPms;
 
@@ -66,12 +66,12 @@ public class PackageInstallerServiceTest {
         mTestParams.packages = new ArrayMap<>();
         when(rule.mocks().getContext().getSystemService(Context.PERMISSION_ENFORCER_SERVICE))
                 .thenReturn(mMockPermissionEnforcer);
-        doReturn(mMockVerifierController).when(
-                () -> VerifierController.getInstance(any(), any(), eq(mPackageName))
+        doReturn(mMockDeveloperVerifierController).when(
+                () -> DeveloperVerifierController.getInstance(any(), any(), eq(mPackageName))
         );
         doReturn(mMockSystemServiceManager).when(
                 () -> LocalServices.getService(SystemServiceManager.class));
-        when(mMockVerifierController.getVerifierPackageName()).thenReturn(mPackageName);
+        when(mMockDeveloperVerifierController.getVerifierPackageName()).thenReturn(mPackageName);
         mPms = new PackageManagerService(rule.mocks().getInjector(), mTestParams);
     }
 
@@ -79,47 +79,50 @@ public class PackageInstallerServiceTest {
     public void testVerificationPolicyPerUser() {
         PackageInstallerService service = new PackageInstallerService(
                 rule.mocks().getContext(), mPms, null, mPackageName);
-        final int defaultPolicy = service.getVerificationPolicy(
+        final int defaultPolicy = service.getDeveloperVerificationPolicy(
                 /* userId= */ UserHandle.USER_SYSTEM);
-        assertThat(defaultPolicy).isAtLeast(PackageInstaller.VERIFICATION_POLICY_NONE);
-        assertThat(service.setVerificationPolicy(
-                /* policy= */ PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+        assertThat(defaultPolicy).isAtLeast(PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE);
+        assertThat(service.setDeveloperVerificationPolicy(
+                /* policy= */ PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                 /* userId= */ UserHandle.USER_SYSTEM)).isTrue();
         // Test with a non-existing user
         final int newUserId = 1;
-        assertThrows(IllegalStateException.class, () -> service.getVerificationPolicy(
+        assertThrows(IllegalStateException.class, () -> service.getDeveloperVerificationPolicy(
                 /* userId= */ newUserId));
         assertThrows(IllegalStateException.class,
-                () -> service.setVerificationPolicy(
-                /* policy= */ PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+                () -> service.setDeveloperVerificationPolicy(
+                /* policy= */ PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                 /* userId= */ newUserId));
         // Add a user
         service.onUserAdded(newUserId);
-        assertThat(service.getVerificationPolicy(newUserId)).isEqualTo(defaultPolicy);
-        assertThat(service.setVerificationPolicy(
-                PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_WARN, newUserId)).isTrue();
-        assertThat(service.getVerificationPolicy(newUserId)).isEqualTo(
-                PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_WARN);
+        assertThat(service.getDeveloperVerificationPolicy(newUserId)).isEqualTo(defaultPolicy);
+        assertThat(service.setDeveloperVerificationPolicy(
+                PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN, newUserId)
+        ).isTrue();
+        assertThat(service.getDeveloperVerificationPolicy(newUserId)).isEqualTo(
+                PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN);
         // Remove a user
         service.onUserRemoved(newUserId);
-        assertThrows(IllegalStateException.class, () -> service.getVerificationPolicy(
+        assertThrows(IllegalStateException.class, () -> service.getDeveloperVerificationPolicy(
                 /* userId= */ newUserId));
-        assertThrows(IllegalStateException.class,
-                () -> service.setVerificationPolicy(
-                        /* policy= */ PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.setDeveloperVerificationPolicy(
+                        /* policy= */
+                        PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                         /* userId= */ newUserId));
     }
 
     @Test
     public void testVerifierIsNull() {
-        doReturn(mMockVerifierController).when(
-                () -> VerifierController.getInstance(any(), any(), eq(null))
+        doReturn(mMockDeveloperVerifierController).when(
+                () -> DeveloperVerifierController.getInstance(any(), any(), eq(null))
         );
-        when(mMockVerifierController.getVerifierPackageName()).thenReturn(null);
+        when(mMockDeveloperVerifierController.getVerifierPackageName()).thenReturn(null);
         PackageInstallerService service = new PackageInstallerService(
                 rule.mocks().getContext(), mPms, null, null);
-        assertThat(service.setVerificationPolicy(
-                /* policy= */ PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+        assertThat(service.setDeveloperVerificationPolicy(
+                /* policy= */ PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
                 /* userId= */ UserHandle.USER_SYSTEM)).isFalse();
     }
 }

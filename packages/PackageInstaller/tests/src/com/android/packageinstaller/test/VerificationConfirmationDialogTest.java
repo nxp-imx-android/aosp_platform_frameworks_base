@@ -16,21 +16,21 @@
 
 package com.android.packageinstaller.test;
 
-import static android.content.pm.PackageInstaller.VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
-import static android.content.pm.PackageInstaller.VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED;
-import static android.content.pm.PackageInstaller.VERIFICATION_FAILED_REASON_UNKNOWN;
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
-import static android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
 
-import static com.android.packageinstaller.ConfirmVerification.FLAG_VERIFICATION_FAILED_MAY_BYPASS;
-import static com.android.packageinstaller.ConfirmVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY;
-import static com.android.packageinstaller.ConfirmVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS;
+import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_BYPASS;
+import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY;
+import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo;
+import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
 
-import com.android.packageinstaller.ConfirmVerification;
+import com.android.packageinstaller.ConfirmDeveloperVerification;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,54 +41,60 @@ public class VerificationConfirmationDialogTest {
 
     @Test
     public void policyOpen_packageBlocked_onlyAck() {
-        int flag = ConfirmVerification.getUserConfirmationDialogFlag(
-                new VerificationUserConfirmationInfo(VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-                        VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED));
+        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+                new DeveloperVerificationUserConfirmationInfo(
+                        DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
+                        DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
 
         assertThat(flag).isEqualTo(0);
     }
 
     @Test
     public void policyOpen_noNetwork_mayRetryMayBypass() {
-        int flag = ConfirmVerification.getUserConfirmationDialogFlag(
-                new VerificationUserConfirmationInfo(VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-                        VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
+        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+                new DeveloperVerificationUserConfirmationInfo(
+                        DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
+                        DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
 
         assertThat(flag).isEqualTo(FLAG_VERIFICATION_FAILED_MAY_RETRY_MAY_BYPASS);
     }
 
     @Test
     public void policyOpen_unknown_mayBypass() {
-        int flag = ConfirmVerification.getUserConfirmationDialogFlag(
-                new VerificationUserConfirmationInfo(VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-                        VERIFICATION_FAILED_REASON_UNKNOWN));
+        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+                new DeveloperVerificationUserConfirmationInfo(
+                        DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
+                        DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
 
         assertThat(flag).isEqualTo(FLAG_VERIFICATION_FAILED_MAY_BYPASS);
     }
 
     @Test
     public void policyClosed_packageBlocked_onlyAck() {
-        int flag = ConfirmVerification.getUserConfirmationDialogFlag(
-                new VerificationUserConfirmationInfo(VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                        VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED));
+        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+                new DeveloperVerificationUserConfirmationInfo(
+                        DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+                        DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED));
 
         assertThat(flag).isEqualTo(0);
     }
 
     @Test
     public void policyClosed_noNetwork_mayRetry() {
-        int flag = ConfirmVerification.getUserConfirmationDialogFlag(
-                new VerificationUserConfirmationInfo(VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                        VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
+        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+                new DeveloperVerificationUserConfirmationInfo(
+                        DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+                        DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE));
 
         assertThat(flag).isEqualTo(FLAG_VERIFICATION_FAILED_MAY_RETRY);
     }
 
     @Test
     public void policyClosed_unknown_onlyAck() {
-        int flag = ConfirmVerification.getUserConfirmationDialogFlag(
-                new VerificationUserConfirmationInfo(VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                        VERIFICATION_FAILED_REASON_UNKNOWN));
+        int flag = ConfirmDeveloperVerification.getUserConfirmationDialogFlag(
+                new DeveloperVerificationUserConfirmationInfo(
+                        DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+                        DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN));
 
         assertThat(flag).isEqualTo(0);
     }

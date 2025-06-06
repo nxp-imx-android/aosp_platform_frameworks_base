@@ -21,8 +21,8 @@ import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageInstaller.SessionParams.PERMISSION_STATE_DEFAULT
 import android.content.pm.PackageInstaller.SessionParams.PERMISSION_STATE_DENIED
 import android.content.pm.PackageInstaller.SessionParams.PERMISSION_STATE_GRANTED
-import android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
-import android.content.pm.PackageInstaller.VERIFICATION_POLICY_BLOCK_FAIL_OPEN
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
 import android.content.pm.PackageManager
 import android.content.pm.verify.domain.DomainSet
 import android.os.Parcel
@@ -33,7 +33,7 @@ import android.util.AtomicFile
 import android.util.Slog
 import android.util.Xml
 import com.android.internal.os.BackgroundThread
-import com.android.server.pm.verify.pkg.VerifierController
+import com.android.server.pm.verify.developer.DeveloperVerifierController
 import com.android.server.testutils.whenever
 import com.google.common.truth.Truth.assertThat
 import java.io.File
@@ -205,9 +205,9 @@ class PackageInstallerSessionTest {
             /* stagedSessionErrorCode */ PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE,
             /* stagedSessionErrorMessage */ "some error",
             /* preVerifiedDomains */ DomainSet(setOf("com.foo", "com.bar")),
-            /* VerifierController */ mock(VerifierController::class.java),
-            /* initialVerificationPolicy */ VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
-            /* currentVerificationPolicy */ VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+            /* VerifierController */ mock(DeveloperVerifierController::class.java),
+            /* initialVerificationPolicy */ DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
+            /* currentVerificationPolicy */ DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
             /* installDependencyHelper */ null
         )
     }
@@ -263,7 +263,7 @@ class PackageInstallerSessionTest {
                                 mTmpDir,
                                 mock(PackageSessionProvider::class.java),
                                 mock(SilentUpdatePolicy::class.java),
-                                mock(VerifierController::class.java),
+                                mock(DeveloperVerifierController::class.java),
                                 mock(InstallDependencyHelper::class.java)
                             )
                             ret.add(session)

@@ -89,7 +89,7 @@
                 android:exported="false"
                 android:enableOnBackInvokedCallback="false" />
 
-        <activity android:name=".ConfirmVerification"
+        <activity android:name=".ConfirmDeveloperVerification"
             android:exported="false" />
 
         <activity android:name=".InstallInstalling"

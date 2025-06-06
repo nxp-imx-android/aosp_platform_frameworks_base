@@ -22,7 +22,7 @@ import android.content.pm.IPackageDeleteObserver2;
 import android.content.pm.IPackageInstallerCallback;
 import android.content.pm.IPackageInstallerSession;
 import android.content.pm.PackageInstaller;
-import android.content.pm.PackageInstaller.VerificationUserConfirmationInfo;
+import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.VersionedPackage;
 import android.content.IntentSender;
@@ -95,15 +95,15 @@ interface IPackageInstaller {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(anyOf={android.Manifest.permission.INSTALL_PACKAGES,android.Manifest.permission.REQUEST_INSTALL_PACKAGES})")
     void reportUnarchivalStatus(int unarchiveId, int status, long requiredStorageBytes, in PendingIntent userActionIntent, in UserHandle userHandle);
 
-    @EnforcePermission("VERIFICATION_AGENT")
-    int getVerificationPolicy(int userId);
-    @EnforcePermission("VERIFICATION_AGENT")
-    boolean setVerificationPolicy(int policy, int userId);
-    String getVerificationServiceProvider();
+    @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")
+    int getDeveloperVerificationPolicy(int userId);
+    @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")
+    boolean setDeveloperVerificationPolicy(int policy, int userId);
+    String getDeveloperVerificationServiceProvider();
 
-    @EnforcePermission("SET_VERIFICATION_USER_RESPONSE")
-    void setVerificationUserResponse(int sessionId, int verificationUserResponse);
+    @EnforcePermission("SET_DEVELOPER_VERIFICATION_USER_RESPONSE")
+    void setDeveloperVerificationUserResponse(int sessionId, int developerVerificationUserResponse);
 
-    @EnforcePermission("SET_VERIFICATION_USER_RESPONSE")
-    VerificationUserConfirmationInfo getVerificationUserConfirmationInfo(int sessionId);
+    @EnforcePermission("SET_DEVELOPER_VERIFICATION_USER_RESPONSE")
+    DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int sessionId);
 }
