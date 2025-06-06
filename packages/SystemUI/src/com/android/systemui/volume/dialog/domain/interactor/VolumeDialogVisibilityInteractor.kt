@@ -17,10 +17,14 @@
 package com.android.systemui.volume.dialog.domain.interactor
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import com.android.systemui.accessibility.data.repository.AccessibilityRepository
 import com.android.systemui.plugins.VolumeDialogController
+import com.android.systemui.qs.flags.QsDetailedView
+import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.volume.Events
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogPlugin
@@ -30,6 +34,7 @@ import com.android.systemui.volume.dialog.domain.model.VolumeDialogEventModel
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogSafetyWarningModel
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel.Dismissed
+import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel.Invisible
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel.Visible
 import com.android.systemui.volume.dialog.utils.VolumeTracer
 import javax.inject.Inject
@@ -42,6 +47,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -60,6 +66,7 @@ import kotlinx.coroutines.flow.stateIn
 class VolumeDialogVisibilityInteractor
 @Inject
 constructor(
+    context: Context,
     @VolumeDialogPlugin coroutineScope: CoroutineScope,
     callbacksInteractor: VolumeDialogCallbacksInteractor,
     private val stateInteractor: VolumeDialogStateInteractor,
@@ -68,17 +75,22 @@ constructor(
     private val accessibilityRepository: AccessibilityRepository,
     private val controller: VolumeDialogController,
     private val secureSettingsRepository: SecureSettingsRepository,
+    private val shadeInteractor: ShadeInteractor,
 ) {
 
     /** @see computeTimeout */
     private val defaultTimeout = 3.seconds
+
+    private val showVolumeSliderInQsShade =
+        QsDetailedView.isEnabled &&
+            context.resources.getBoolean(R.bool.config_enableDesktopAudioTileDetailsView)
 
     @SuppressLint("SharedFlowCreation")
     private val mutableDismissDialogEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val dialogVisibility: Flow<VolumeDialogVisibilityModel> =
         repository.dialogVisibility
             .onEach { controller.notifyVisible(it is Visible) }
-            .stateIn(coroutineScope, SharingStarted.Eagerly, VolumeDialogVisibilityModel.Invisible)
+            .stateIn(coroutineScope, SharingStarted.Eagerly, Invisible)
 
     init {
         merge(
@@ -88,7 +100,27 @@ constructor(
                 },
                 callbacksInteractor.event,
             )
-            .mapNotNull { it.toVisibilityModel() }
+            .mapNotNull { event ->
+                val visibilityModel = event.toVisibilityModel()
+
+                // If volume slider in QS is not supposed to be shown, or if the event doesn't map
+                // to a Visible state, then we don't need to check for QS visibility.
+                if (!showVolumeSliderInQsShade || visibilityModel !is Visible) {
+                    return@mapNotNull visibilityModel
+                }
+
+                // At this point, showVolumeSliderInQsShade is true AND visibilityModel is Visible.
+                // Now check if Quick Settings is expanded.
+                val isQsExpanded = shadeInteractor.isQsExpanded.first()
+
+                if (isQsExpanded) {
+                    // Suppress volume dialog
+                    null
+                } else {
+                    // Show volume dialog
+                    visibilityModel
+                }
+            }
             .onEach { model ->
                 updateVisibility { model }
                 if (model is Visible) {
@@ -96,6 +128,20 @@ constructor(
                 }
             }
             .launchIn(coroutineScope)
+
+        if (showVolumeSliderInQsShade) {
+            // Dismiss the volume dialog if QS becomes expanded while the dialog is visible
+            combine(shadeInteractor.isQsExpanded, dialogVisibility) {
+                    isQsExpandedNow,
+                    currentDialogVisibility ->
+                    when {
+                        isQsExpandedNow && currentDialogVisibility is Visible -> {
+                            dismissDialog(Events.DISMISS_REASON_QUICK_SETTINGS_EXPANDED)
+                        }
+                    }
+                }
+                .launchIn(coroutineScope)
+        }
     }
 
     /**
