@@ -63,9 +63,17 @@ public final class DesktopModeHelper {
     }
 
     /**
+     * Return {@code true} if desktop mode is unrestricted on the current device or it can host
+     * desktop sessions on its internal display.
+     */
+    public static boolean isDesktopModeSupportedOnInternalDisplay(@NonNull Context context) {
+        return !shouldEnforceDeviceRestrictions() ||  canInternalDisplayHostDesktops(context);
+    }
+
+    /**
      * Return {@code true} if the current device can hosts desktop sessions on its internal display.
      */
-    public static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+    private static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
     }
 

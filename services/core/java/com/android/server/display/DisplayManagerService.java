@@ -885,9 +885,9 @@ public final class DisplayManagerService extends SystemService {
             }
 
             if (mFlags.isDefaultDisplayInTopologySwitchEnabled()) {
-                mIncludeDefaultDisplayInTopology = mInjector.canInternalDisplayHostDesktops(
-                        mContext) || (Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                        INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY, 0, UserHandle.USER_CURRENT) != 0);
+                mIncludeDefaultDisplayInTopology =
+                        mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)
+                                || getIncludeDefaultDisplayInTopologySetting();
             }
         }
 
@@ -1247,7 +1247,7 @@ public final class DisplayManagerService extends SystemService {
             }
 
             if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                    && !mInjector.canInternalDisplayHostDesktops(mContext)) {
+                    && !mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
                 mContext.getContentResolver().registerContentObserver(
                         Settings.Secure.getUriFor(
                                 Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY),
@@ -1278,7 +1278,7 @@ public final class DisplayManagerService extends SystemService {
             if (Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY).equals(uri)) {
                 synchronized (mSyncRoot) {
                     if (mFlags.isDefaultDisplayInTopologySwitchEnabled()
-                            && !mInjector.canInternalDisplayHostDesktops(mContext)) {
+                            && !mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)) {
                         handleIncludeDefaultDisplayInTopologySettingChangeLocked();
                     }
                 }
@@ -1320,9 +1320,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void handleIncludeDefaultDisplayInTopologySettingChangeLocked() {
-        ContentResolver resolver = mContext.getContentResolver();
-        final boolean includeDefaultDisplayInTopology = Settings.Secure.getIntForUser(resolver,
-                INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY, 0, UserHandle.USER_CURRENT) != 0;
+        final boolean includeDefaultDisplayInTopology = getIncludeDefaultDisplayInTopologySetting();
 
         if (mIncludeDefaultDisplayInTopology == includeDefaultDisplayInTopology) {
             return;
@@ -1347,6 +1345,12 @@ public final class DisplayManagerService extends SystemService {
                 }
             }
         }
+    }
+
+    private boolean getIncludeDefaultDisplayInTopologySetting() {
+        ContentResolver resolver = mContext.getContentResolver();
+        return Settings.Secure.getIntForUser(resolver, INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY, 0,
+                UserHandle.USER_CURRENT) != 0;
     }
 
     private void restoreResolutionFromBackup() {
@@ -2502,7 +2506,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     boolean shouldIncludeDefaultDisplayInTopology() {
-        return mInjector.canInternalDisplayHostDesktops(mContext)
+        return mInjector.isDesktopModeSupportedOnInternalDisplay(mContext)
                 || mIncludeDefaultDisplayInTopology;
     }
 
@@ -4108,8 +4112,8 @@ public final class DisplayManagerService extends SystemService {
                     onBrightnessChangeRunnable, hbmMetadata, bootCompleted, flags);
         }
 
-        boolean canInternalDisplayHostDesktops(Context context) {
-            return DesktopModeHelper.canInternalDisplayHostDesktops(context);
+        boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
+            return DesktopModeHelper.isDesktopModeSupportedOnInternalDisplay(context);
         }
 
         PersistentDataStore getPersistentDataStore() {
