@@ -896,7 +896,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mTouchHandler = new TouchHandler();
         mView.setTouchHandler(mTouchHandler);
         mView.setResetUserExpandedStatesRunnable(mNotificationsController::resetUserExpandedStates);
-        mView.setActivityStarter(mActivityStarter);
         mView.setClearAllAnimationListener(this::onAnimationEnd);
         mView.setClearAllListener((selection) -> mUiEventLogger.log(
                 NotificationPanelEvent.fromSelection(selection)));
