@@ -21045,6 +21045,7 @@ package android.hardware.display {
     method public android.hardware.display.VirtualDisplay createVirtualDisplay(@NonNull String, @IntRange(from=1) int, @IntRange(from=1) int, @IntRange(from=1) int, @Nullable android.view.Surface, int, @Nullable android.hardware.display.VirtualDisplay.Callback, @Nullable android.os.Handler);
     method @Nullable public android.hardware.display.VirtualDisplay createVirtualDisplay(@NonNull android.hardware.display.VirtualDisplayConfig);
     method @Nullable public android.hardware.display.VirtualDisplay createVirtualDisplay(@NonNull android.hardware.display.VirtualDisplayConfig, @Nullable android.os.Handler, @Nullable android.hardware.display.VirtualDisplay.Callback);
+    method @FlaggedApi("com.android.server.display.feature.flags.set_brightness_by_unit") public float getBrightness(int, int);
     method public android.view.Display getDisplay(int);
     method @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") @Nullable @RequiresPermission("android.permission.MANAGE_DISPLAYS") public android.hardware.display.DisplayTopology getDisplayTopology();
     method public android.view.Display[] getDisplays();
