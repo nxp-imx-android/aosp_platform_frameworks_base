@@ -16,10 +16,7 @@
 
 package com.android.settingslib.spa.restricted
 
-import android.content.Context
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.isOff
@@ -28,20 +25,16 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.spy
 
 @RunWith(AndroidJUnit4::class)
 class RestrictedSwitchPreferenceTest {
     @get:Rule val composeTestRule = createComposeRule()
-
-    private val context: Context = spy(ApplicationProvider.getApplicationContext()) {}
 
     private val switchPreferenceModel =
         object : SwitchPreferenceModel {
@@ -148,14 +141,12 @@ class RestrictedSwitchPreferenceTest {
         ifBlockedOverrideCheckedTo: Boolean? = null,
     ) {
         composeTestRule.setContent {
-            CompositionLocalProvider(LocalContext provides context) {
-                RestrictedSwitchPreference(
-                    model = switchPreferenceModel,
-                    restrictions = restrictions,
-                    repository = testRestrictedRepository,
-                    ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
-                )
-            }
+            RestrictedSwitchPreference(
+                model = switchPreferenceModel,
+                restrictions = restrictions,
+                repository = testRestrictedRepository,
+                ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
+            )
         }
     }
 

@@ -17,7 +17,6 @@
 package com.android.settingslib.spa.restricted
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -59,7 +58,7 @@ internal class RestrictedSwitchPreferenceModel(
         }
 
     @Composable
-    fun RestrictionWrapper(content: @Composable (SwitchPreferenceModel) -> Unit) {
+    fun RestrictionWrapper(content: @Composable (SwitchPreferenceModel, Modifier) -> Unit) {
         val modifier =
             when (restrictedMode) {
                 is BlockedWithDetails -> {
@@ -72,7 +71,7 @@ internal class RestrictedSwitchPreferenceModel(
 
                 else -> Modifier
             }
-        Box(modifier) { content(this@RestrictedSwitchPreferenceModel) }
+        content(this, modifier)
     }
 
     companion object {

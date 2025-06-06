@@ -17,7 +17,6 @@
 package com.android.settingslib.spa.widget.preference
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -33,14 +32,13 @@ import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
 @Composable
 fun MainSwitchPreference(model: SwitchPreferenceModel) {
+    MainSwitchPreference(model = model, modifier = Modifier)
+}
+
+@Composable
+internal fun MainSwitchPreference(model: SwitchPreferenceModel, modifier: Modifier) {
     Surface(
-        modifier =
-            Modifier.padding(SettingsDimension.itemPaddingEnd)
-                .then(
-                    if (isSpaExpressiveEnabled)
-                        Modifier.heightIn(min = SettingsDimension.preferenceMinHeight)
-                    else Modifier
-                ),
+        modifier = Modifier.padding(SettingsDimension.itemPaddingEnd),
         color =
             when (model.checked()) {
                 true -> MaterialTheme.colorScheme.primaryContainer
@@ -50,6 +48,7 @@ fun MainSwitchPreference(model: SwitchPreferenceModel) {
     ) {
         InternalSwitchPreference(
             title = model.title,
+            modifier = modifier,
             checked = model.checked(),
             changeable = model.changeable(),
             onCheckedChange = model.onCheckedChange,
