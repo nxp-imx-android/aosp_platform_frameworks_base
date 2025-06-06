@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard.domain.interactor
 
 import android.animation.ValueAnimator
-import android.util.Log
 import android.util.MathUtils
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -53,7 +52,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 
 @SysUISingleton
@@ -303,12 +301,8 @@ constructor(
             // When the refactor is enabled, we no longer use isKeyguardGoingAway.
             scope.launch("$TAG#listenForLockscreenToGoneDragging") {
                 swipeToDismissInteractor.dismissFling
-                    .onEach { Log.d(TAG, "Dismiss fling emitting - filtering.") }
                     .filterNotNull()
-                    .filterRelevantKeyguardStateAnd {
-                        Log.d(TAG, "dismissFling emitting - elevant keyguard state, proceeding.")
-                        true
-                    }
+                    .filterRelevantKeyguardState()
                     .collect { _ ->
                         startTransitionTo(KeyguardState.GONE, ownerReason = "dismissFling != null")
                     }
