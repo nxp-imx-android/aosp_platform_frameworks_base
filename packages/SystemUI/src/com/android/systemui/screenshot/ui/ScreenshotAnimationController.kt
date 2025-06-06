@@ -26,6 +26,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.Rect
+import android.util.Log
 import android.util.MathUtils
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -275,6 +276,12 @@ class ScreenshotAnimationController(
     private fun getPreviewAnimator(bounds: Rect): Animator {
         val targetPosition = Rect()
         screenshotPreview.getHitRect(targetPosition)
+        if (targetPosition.width() == 0 || targetPosition.height() == 0) {
+            Log.wtf(TAG, "screenshot preview target rect was empty, skipping animation")
+            val nullAnimator = AnimatorSet()
+            nullAnimator.doOnStart { screenshotPreview.visibility = View.VISIBLE }
+            return nullAnimator
+        }
         val startXScale = bounds.width() / targetPosition.width().toFloat()
         val startYScale = bounds.height() / targetPosition.height().toFloat()
         val startPos = PointF(bounds.exactCenterX(), bounds.exactCenterY())
@@ -327,6 +334,7 @@ class ScreenshotAnimationController(
     }
 
     companion object {
+        private const val TAG = "ScreenshotAnimationController"
         private const val MINIMUM_VELOCITY = 1.5f // pixels per second
         private const val FLASH_IN_DURATION_MS: Long = 133
         private const val FLASH_OUT_DURATION_MS: Long = 217
