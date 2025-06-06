@@ -70,7 +70,7 @@ public abstract class AppServiceFinder<TServiceType, TServiceInterfaceType exten
     }
 
     /** Whether this service should really be enabled. */
-    protected boolean isEnabled(AppBindingConstants constants) {
+    protected boolean isEnabled(AppBindingConstants constants, int userId) {
         return true;
     }
 
@@ -102,7 +102,7 @@ public abstract class AppServiceFinder<TServiceType, TServiceInterfaceType exten
             mTargetServices.put(userId, null);
             mLastMessages.put(userId, null);
 
-            if (!isEnabled(constants)) {
+            if (!isEnabled(constants, userId)) {
                 final String message = "feature disabled";
                 mLastMessages.put(userId, message);
                 Slog.i(TAG, getAppDescription() + " " + message);

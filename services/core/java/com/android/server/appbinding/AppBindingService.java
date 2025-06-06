@@ -19,6 +19,7 @@ package com.android.server.appbinding;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppGlobals;
+import android.app.supervision.SupervisionManager;
 import android.app.supervision.flags.Flags;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -214,6 +215,28 @@ public class AppBindingService extends Binder {
             case SystemService.PHASE_THIRD_PARTY_APPS_CAN_START:
                 onPhaseThirdPartyAppsCanStart();
                 break;
+            case SystemService.PHASE_SYSTEM_SERVICES_READY:
+                if (Flags.enableSupervisionAppService()) {
+                    registerSupervisionListener();
+                }
+                break;
+        }
+    }
+
+    private void registerSupervisionListener() {
+        SupervisionManager supervisionManager =
+                mContext.getSystemService(SupervisionManager.class);
+        if (supervisionManager != null) {
+            SupervisionManager.SupervisionListener listener =
+                    new SupervisionManager.SupervisionListener() {
+                        @Override
+                        public void onSupervisionDisabled(int userId) {
+                            synchronized (mLock) {
+                                unbindServicesLocked(userId, null, "supervision disabled");
+                            }
+                        }
+                    };
+            supervisionManager.registerSupervisionListener(listener);
         }
     }
 
