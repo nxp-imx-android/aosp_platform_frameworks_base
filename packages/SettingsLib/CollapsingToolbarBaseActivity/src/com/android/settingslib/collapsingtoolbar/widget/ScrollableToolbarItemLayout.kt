@@ -52,6 +52,10 @@ class ScrollableToolbarItemLayout(context: Context, attrs: AttributeSet?) :
         onItemSelectedListener = listener
     }
 
+    fun removeOnItemSelectedListener() {
+        onItemSelectedListener = null
+    }
+
     fun onItemSelected(dataList: List<ToolbarItem>) {
         toolbarItemList = dataList.take(MAX_ITEMS)
         setupItems()

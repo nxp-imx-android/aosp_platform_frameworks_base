@@ -46,4 +46,9 @@ interface FloatingToolbarHandler {
      * [ToolbarItem] is selected.
      */
     fun setOnItemSelectedListener(listener: ScrollableToolbarItemLayout.OnItemSelectedListener)
+
+    /**
+     * Stops listening to [ToolbarItem] selection changes
+     */
+    fun removeOnItemSelectedListener()
 }
