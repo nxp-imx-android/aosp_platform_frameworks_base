@@ -92,7 +92,8 @@ import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileHeight
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabel
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelMoreDetails
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelSettings
 import com.android.systemui.qs.panels.ui.viewmodel.AccessibilityUiState
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.IconProvider
@@ -397,7 +398,8 @@ fun Modifier.tileCombinedClickable(
     iconOnly: Boolean,
     isDualTarget: Boolean,
 ): Modifier {
-    val longPressLabel = longPressLabel()
+    val longPressLabel =
+        if (iconOnly && isDualTarget) longPressLabelMoreDetails() else longPressLabelSettings()
     return combinedClickable(
             onClick = onClick,
             onLongClick = onLongClick,

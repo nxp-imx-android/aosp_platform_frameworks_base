@@ -42,7 +42,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -104,7 +103,7 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileLabelBlurWidth
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileStartPadding
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabel
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabelSettings
 import com.android.systemui.qs.panels.ui.viewmodel.AccessibilityUiState
 import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
@@ -137,7 +136,7 @@ fun LargeTileContent(
         modifier = modifier,
     ) {
         // Icon
-        val longPressLabel = longPressLabel().takeIf { onLongClick != null }
+        val longPressLabel = longPressLabelSettings().takeIf { onLongClick != null }
         val animatedBackgroundColor by
             animateColorAsState(colors.iconBackground, label = "QSTileDualTargetBackgroundColor")
         val focusBorderColor = MaterialTheme.colorScheme.secondary
@@ -422,7 +421,12 @@ object CommonTileDefaults {
     const val TILE_MARQUEE_ITERATIONS = 1
     const val TILE_INITIAL_DELAY_MILLIS = 2000
 
-    @Composable fun longPressLabel() = stringResource(id = R.string.accessibility_long_click_tile)
+    @Composable
+    fun longPressLabelSettings() = stringResource(id = R.string.accessibility_long_click_tile)
+
+    @Composable
+    fun longPressLabelMoreDetails() =
+        stringResource(id = R.string.accessibility_long_click_tile_details)
 }
 
 /** Same as Image, but it doesn't clip its content. */
