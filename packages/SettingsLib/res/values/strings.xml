@@ -214,6 +214,17 @@
     <string name="bluetooth_battery_level_untethered_left">Left: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g> battery</string>
     <!-- Connected devices settings. Message when Bluetooth is connected but not in use, showing remote device battery level for the right part of the untethered headset. [CHAR LIMIT=NONE] -->
     <string name="bluetooth_battery_level_untethered_right">Right: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g> battery</string>
+    <!-- Connected devices settings. Message when bluetooth device is disconnected, showing battery level for the left part of the BATT device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_battery_level_untethered_case">Case: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g> battery</string>
+    <!-- Connected devices settings. Message when bluetooth device is discoonected, showing remote device status and battery level for the left part and case of the BATT device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_battery_level_untethered_left_case">Left: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, Case: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery</string>
+    <!-- Connected devices settings. Message when bluetooth device is discoonected, showing remote device status and battery level for the right part and case of the BATT device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_battery_level_untethered_right_case">Right: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, Case: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery</string>
+    <!-- Connected devices settings. Message when bluetooth device is discoonected, showing remote device status and battery level for the left and right parts of the BATT device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_battery_level_untethered_left_right">Left: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, Right: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g> battery</string>
+    <!-- Connected devices settings. Message when bluetooth device is discoonected, showing remote device status and battery level for the left, case, and right parts of the BATT device. [CHAR LIMIT=NONE] -->
+    <string name="bluetooth_battery_level_untethered_left_case_right">L: <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g>, C: <xliff:g id="battery_level_as_percentage" example="25%">%2$s</xliff:g>, R: <xliff:g id="battery_level_as_percentage" example="25%">%3$s</xliff:g> battery</string>
+
     <!-- Connected devices settings. Message when Bluetooth is connected, showing remote device battery level for the left part of the untethered headset. [CHAR LIMIT=NONE] -->
     <string name="tv_bluetooth_battery_level_untethered_left">Left <xliff:g id="battery_level_as_percentage" example="25%">%1$s</xliff:g></string>
     <!-- Connected devices settings. Message when Bluetooth is connected, showing remote device battery level for the right part of the untethered headset. [CHAR LIMIT=NONE] -->

@@ -1712,6 +1712,12 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                     stringRes = getHearingDeviceSummaryRes(leftBattery, rightBattery, shortSummary);
                 }
             }
+        } else if (Flags.fixBatteryLevelInConnectionSummary()
+                && BluetoothUtils.isBatteryAllTheTimeSupported(mDevice)) {
+            batteryLevelsInfo = getBatteryLevelsInfo();
+            if (batteryLevelsInfo != null) {
+                return getBatteryAllTheTimeInfo(batteryLevelsInfo);
+            }
         }
 
         if (stringRes == R.string.bluetooth_pairing
@@ -1747,6 +1753,60 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         } else {
             return mContext.getString(stringRes, batteryLevelPercentageString);
         }
+    }
+
+    @VisibleForTesting
+    String getBatteryAllTheTimeInfo(BatteryLevelsInfo batteryLevels) {
+        Log.d(TAG, "Battery levels: " + batteryLevels);
+
+        final int leftLevel = batteryLevels.getLeftBatteryLevel();
+        final int caseLevel = batteryLevels.getCaseBatteryLevel();
+        final int rightLevel = batteryLevels.getRightBatteryLevel();
+
+        final boolean isLeftKnown = leftLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        final boolean isCaseKnown = caseLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        final boolean isRightKnown = rightLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+
+        // Case 1: All three battery levels are known
+        if (isLeftKnown && isCaseKnown && isRightKnown) {
+            return mContext.getString(
+                    R.string.bluetooth_battery_level_untethered_left_case_right,
+                    Utils.formatPercentage(leftLevel),
+                    Utils.formatPercentage(caseLevel),
+                    Utils.formatPercentage(rightLevel));
+        }
+
+        // Case 2: Two battery levels are known
+        if (isLeftKnown && isCaseKnown) {
+            return mContext.getString(R.string.bluetooth_battery_level_untethered_left_case,
+                    Utils.formatPercentage(leftLevel),
+                    Utils.formatPercentage(caseLevel));
+        }
+        if (isLeftKnown && isRightKnown) {
+            return mContext.getString(R.string.bluetooth_battery_level_untethered_left_right,
+                    Utils.formatPercentage(leftLevel),
+                    Utils.formatPercentage(rightLevel));
+        }
+        if (isCaseKnown && isRightKnown) {
+            return mContext.getString(R.string.bluetooth_battery_level_untethered_right_case,
+                    Utils.formatPercentage(rightLevel), // Assuming R.string expects right then case
+                    Utils.formatPercentage(caseLevel));
+        }
+
+        // Case 3: Only one battery level is known
+        if (isLeftKnown) {
+            return mContext.getString(R.string.bluetooth_battery_level_untethered_left,
+                    Utils.formatPercentage(leftLevel));
+        }
+        if (isCaseKnown) {
+            return mContext.getString(R.string.bluetooth_battery_level_untethered_case,
+                    Utils.formatPercentage(caseLevel));
+        }
+        if (isRightKnown) {
+            return mContext.getString(R.string.bluetooth_battery_level_untethered_right,
+                    Utils.formatPercentage(rightLevel));
+        }
+        return "";
     }
 
     /**

@@ -52,6 +52,7 @@ import android.util.LruCache;
 import android.view.InputDevice;
 
 import com.android.settingslib.R;
+import com.android.settingslib.Utils;
 import com.android.settingslib.media.flags.Flags;
 import com.android.settingslib.testutils.shadow.ShadowBluetoothAdapter;
 import com.android.settingslib.utils.ThreadUtils;
@@ -89,6 +90,10 @@ public class CachedBluetoothDeviceTest {
     private static final String MAIN_BATTERY = "80";
     private static final String TEMP_BOND_METADATA =
             "<TEMP_BOND_TYPE>le_audio_sharing</TEMP_BOND_TYPE>";
+    private static final String BATTERY_ALL_THE_TIME_METADATA_SUPPORTED =
+            "<BATT>true</BATT>";
+    private static final String BATTERY_ALL_THE_TIME_METADATA_NOT_SUPPORTED =
+            "<BATT>false</BATT>";
     private static final short RSSI_1 = 10;
     private static final short RSSI_2 = 11;
     private static final boolean JUSTDISCOVERED_1 = true;
@@ -2629,6 +2634,263 @@ public class CachedBluetoothDeviceTest {
 
         verify(mBluetoothAdapter).removeOnMetadataChangedListener(eq(mDevice), any());
         verify(mBluetoothAdapter).addOnMetadataChangedListener(eq(mSubDevice), any(), any());
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_allKnown_returnsAllThree() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                50,
+                60,
+                70,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_left_case_right,
+                Utils.formatPercentage(50),
+                Utils.formatPercentage(70),
+                Utils.formatPercentage(60));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_leftAndCaseKnown_returnsLeftAndCase() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                50,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                70,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_left_case,
+                Utils.formatPercentage(50),
+                Utils.formatPercentage(70));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_leftAndRightKnown_returnsLeftAndRight() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                50,
+                60,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_left_right,
+                Utils.formatPercentage(50),
+                Utils.formatPercentage(60));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_rightAndCaseKnown_returnsRightAndCase() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                60,
+                70,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_right_case,
+                Utils.formatPercentage(60),
+                Utils.formatPercentage(70));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_onlyLeftKnown_returnsLeft() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                50,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_left,
+                Utils.formatPercentage(50));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_onlyCaseKnown_returnsCase() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                70,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_case,
+                Utils.formatPercentage(70));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_onlyRightKnown_returnsRight() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                60,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_right,
+                Utils.formatPercentage(60));
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    public void getBatteryAllTheTimeInfo_allUnknown_returnsEmptyString() {
+        // Arrange
+        BatteryLevelsInfo batteryLevelsInfo = new BatteryLevelsInfo(
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+        );
+
+        // Act
+        String actualSummary = mCachedDevice.getBatteryAllTheTimeInfo(batteryLevelsInfo);
+
+        // Assert
+        assertThat(actualSummary).isEmpty();
+    }
+
+    @Test
+    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_FIX_BATTERY_LEVEL_IN_CONNECTION_SUMMARY)
+    public void getConnectionSummary_notConnectedWithAllTimeBattery_returnsAllTimeBatteryInfo() {
+        // Arrange: device is not connected, supports battery all the time, and has battery info
+        updateProfileStatus(mPanProfile, BluetoothProfile.STATE_DISCONNECTED);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(BATTERY_ALL_THE_TIME_METADATA_SUPPORTED.getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET)).thenReturn(
+                "true".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY)).thenReturn(
+                "50".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY)).thenReturn(
+                "60".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY)).thenReturn(
+                "70".getBytes());
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered_left_case_right,
+                Utils.formatPercentage(50),
+                Utils.formatPercentage(70),
+                Utils.formatPercentage(60));
+
+        // Act
+        CharSequence summary = mCachedDevice.getConnectionSummary();
+
+        // Assert
+        assertThat(summary.toString()).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_FIX_BATTERY_LEVEL_IN_CONNECTION_SUMMARY)
+    public void getConnectionSummary_connectedWithAllTimeBattery_returnsStandardSummary() {
+        // Arrange
+        updateProfileStatus(mLeAudioProfile, BluetoothProfile.STATE_CONNECTED);
+        String expectedSummary = mContext.getString(
+                R.string.bluetooth_battery_level_untethered, "50%", "60%");
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(BATTERY_ALL_THE_TIME_METADATA_SUPPORTED.getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET)).thenReturn(
+                "true".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY)).thenReturn(
+                "50".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY)).thenReturn(
+                "60".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY)).thenReturn(
+                "70".getBytes());
+
+        // Act
+        CharSequence summary = mCachedDevice.getConnectionSummary();
+
+        // Assert
+        assertThat(summary.toString()).isEqualTo(expectedSummary);
+    }
+
+    @Test
+    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_FIX_BATTERY_LEVEL_IN_CONNECTION_SUMMARY)
+    public void getConnectionSummary_notConnectedAndNotSupportAllTimeBattery_returnsNull() {
+        // Arrange
+        when(mCachedDevice.getProfiles()).thenReturn(new ArrayList<>());
+        when(mDevice.isConnected()).thenReturn(false);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(BATTERY_ALL_THE_TIME_METADATA_NOT_SUPPORTED.getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET)).thenReturn(
+                "true".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY)).thenReturn(
+                "50".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY)).thenReturn(
+                "60".getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY)).thenReturn(
+                "70".getBytes());
+
+
+        // Act
+        CharSequence summary = mCachedDevice.getConnectionSummary();
+
+        // Assert
+        assertThat(summary).isNull();
+    }
+
+    @Test
+    @EnableFlags(com.android.settingslib.flags.Flags.FLAG_FIX_BATTERY_LEVEL_IN_CONNECTION_SUMMARY)
+    public void getConnectionSummary_notConnectedWithAllTimeBatteryButNoLevels_returnsNull() {
+        // Arrange
+        updateProfileStatus(mPanProfile, BluetoothProfile.STATE_DISCONNECTED);
+        when(mDevice.isConnected()).thenReturn(false);
+        when(mDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(BATTERY_ALL_THE_TIME_METADATA_SUPPORTED.getBytes());
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET)).thenReturn(
+                "true".getBytes());
+        // Act
+        CharSequence summary = mCachedDevice.getConnectionSummary();
+
+        // Assert
+        assertThat(summary).isNull();
     }
 
     private void updateProfileStatus(LocalBluetoothProfile profile, int status) {
