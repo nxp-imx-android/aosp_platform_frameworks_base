@@ -100,6 +100,8 @@ public class AuthenticationPolicyServiceTest {
     private UserManagerInternal mUserManager;
     @Mock
     private SecureLockDeviceServiceInternal mSecureLockDeviceService;
+    @Mock
+    private WatchRangingServiceInternal mWatchRangingService;
 
     @Captor
     ArgumentCaptor<LockSettingsStateListener> mLockSettingsStateListenerCaptor;
@@ -124,6 +126,8 @@ public class AuthenticationPolicyServiceTest {
         LocalServices.addService(WindowManagerInternal.class, mWindowManager);
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUserManager);
+        LocalServices.removeServiceForTest(WatchRangingServiceInternal.class);
+        LocalServices.addService(WatchRangingServiceInternal.class, mWatchRangingService);
         if (android.security.Flags.secureLockdown()) {
             LocalServices.removeServiceForTest(SecureLockDeviceServiceInternal.class);
             LocalServices.addService(SecureLockDeviceServiceInternal.class,

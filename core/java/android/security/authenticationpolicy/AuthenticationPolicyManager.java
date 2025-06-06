@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.proximity.IProximityResultCallback;
 import android.util.Log;
+import android.util.Slog;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -511,15 +512,67 @@ public final class AuthenticationPolicyManager {
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     @FlaggedApi(FLAG_IDENTITY_CHECK_WATCH)
-    public void startWatchRangingForIdentityCheck(
-            @NonNull IProximityResultCallback resultCallback, Handler handler) {
-        //TODO (b/397954948) : Update callback results to trigger in the handler
-        handler.post(() -> {
-            try {
-                mAuthenticationPolicyService.startWatchRangingForIdentityCheck(resultCallback);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
-        });
+    public void startWatchRangingForIdentityCheck(long authenticationRequestId,
+            @NonNull IProximityResultCallback resultCallback, @NonNull Handler handler) {
+        try {
+            mAuthenticationPolicyService.startWatchRangingForIdentityCheck(
+                    authenticationRequestId, new ProximityResultCallbackWrapper(
+                            handler, resultCallback));
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @FlaggedApi(FLAG_IDENTITY_CHECK_WATCH)
+    public void cancelWatchRangingForRequestId(long authenticationRequestId) {
+        try {
+            mAuthenticationPolicyService.cancelWatchRangingForRequestId(authenticationRequestId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    private static final class ProximityResultCallbackWrapper
+            extends IProximityResultCallback.Stub {
+        private final Handler mHandler;
+        private final IProximityResultCallback mProximityResultCallback;
+
+        ProximityResultCallbackWrapper(Handler handler,
+                IProximityResultCallback proximityResultCallback) {
+            mHandler = handler;
+            mProximityResultCallback = proximityResultCallback;
+        }
+
+        @Override
+        public void onError(int error) {
+            mHandler.post(() -> {
+                final long id = Binder.clearCallingIdentity();
+                try {
+                    mProximityResultCallback.onError(error);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Remote exception thrown when proximity callback invoked " + e);
+                } finally {
+                    Binder.restoreCallingIdentity(id);
+                }
+            });
+        }
+
+        @Override
+        public void onSuccess(int result) {
+            mHandler.post(() -> {
+                final long id = Binder.clearCallingIdentity();
+                try {
+                    mProximityResultCallback.onSuccess(result);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Remote exception thrown when proximity callback invoked " + e);
+                } finally {
+                    Binder.restoreCallingIdentity(id);
+                }
+            });
+        }
     }
 }

@@ -7600,4 +7600,9 @@
 
     <!-- Whether the system package installer supports the material design. -->
     <bool name="config_enableMaterialDesignInPackageInstaller">true</bool>
+
+    <!-- Package and class info to bind to ProximityProviderService -->
+    <string name="proximity_provider_service_package_name" translatable="false"></string>
+    <string name="proximity_provider_service_class_name" translatable="false"></string>
+
 </resources>

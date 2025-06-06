@@ -28,6 +28,7 @@ import static com.android.server.biometrics.BiometricServiceStateProto.STATE_AUT
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.IActivityManager;
@@ -76,7 +77,6 @@ import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
-import android.proximity.IProximityResultCallback;
 import android.security.GateKeeper;
 import android.security.KeyStoreAuthorization;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
@@ -127,7 +127,6 @@ public class BiometricService extends SystemService {
     @NonNull private final Supplier<Long> mRequestCounter;
     @NonNull private final BiometricContext mBiometricContext;
     private final UserManager mUserManager;
-    private final AuthenticationPolicyManager mAuthenticationPolicyManager;
 
     @VisibleForTesting
     IStatusBarService mStatusBarService;
@@ -1440,8 +1439,7 @@ public class BiometricService extends SystemService {
         }
 
         public AuthenticationPolicyManager getAuthenticationPolicyManager(Context context) {
-            return (AuthenticationPolicyManager)
-                    context.getSystemService(Context.AUTHENTICATION_POLICY_SERVICE);
+            return context.getSystemService(AuthenticationPolicyManager.class);
         }
     }
 
@@ -1477,7 +1475,6 @@ public class BiometricService extends SystemService {
         mKeyStoreAuthorization = injector.getKeyStoreAuthorization();
         mGateKeeper = injector.getGateKeeperService();
         mBiometricNotificationLogger = injector.getNotificationLogger();
-        mAuthenticationPolicyManager = mInjector.getAuthenticationPolicyManager(context);
 
         try {
             injector.getActivityManagerService().registerUserSwitchObserver(
@@ -1625,6 +1622,7 @@ public class BiometricService extends SystemService {
         session.onAcquired(sensorId, acquiredInfo, vendorCode);
     }
 
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     private void handleOnDismissed(long requestId, @BiometricPrompt.DismissedReason int reason,
             @Nullable byte[] credentialAttestation) {
         final AuthSession session = getAuthSessionIfCurrent(requestId);
@@ -1728,6 +1726,7 @@ public class BiometricService extends SystemService {
         session.onCookieReceived(cookie);
     }
 
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     private void handleAuthenticate(IBinder token, long requestId, long operationId, int userId,
             IBiometricServiceReceiver receiver, String opPackageName, PromptInfo promptInfo) {
         mHandler.post(() -> {
@@ -1807,6 +1806,7 @@ public class BiometricService extends SystemService {
      * Note that this path is NOT invoked when the BiometricPrompt "Try again" button is pressed.
      * In that case, see {@link #handleOnTryAgainPressed()}.
      */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     private void authenticateInternal(IBinder token, long requestId, long operationId, int userId,
             IBiometricServiceReceiver receiver, String opPackageName, PromptInfo promptInfo,
             PreAuthInfo preAuthInfo) {
@@ -1829,8 +1829,8 @@ public class BiometricService extends SystemService {
                 createClientDeathReceiver(requestId), preAuthInfo, token, requestId,
                 operationId, userId, createBiometricSensorReceiver(requestId), receiver,
                 opPackageName, promptInfo, debugEnabled,
-                mInjector.getFingerprintSensorProperties(getContext()));
-        startWatchRangingIfIdentityCheckActive(promptInfo);
+                mInjector.getFingerprintSensorProperties(getContext()),
+                mInjector.getAuthenticationPolicyManager(getContext()), mHandler);
 
         try {
             mAuthSession.goToInitialState();
@@ -1839,42 +1839,7 @@ public class BiometricService extends SystemService {
         }
     }
 
-    /**
-     * This is invoked only if Identity Check is active and the device is considered at risk. If the
-     * watch is in range, it will re-enable device credential if it was originally requested.
-     *
-     * @param promptInfo biometric prompt info
-     */
     @SuppressLint("MissingPermission")
-    private void startWatchRangingIfIdentityCheckActive(PromptInfo promptInfo) {
-        if (android.hardware.biometrics.Flags.identityCheckWatch()
-                && promptInfo.isIdentityCheckActive() && promptInfo.isDeviceCredentialAllowed()) {
-            if (mAuthenticationPolicyManager == null) {
-                Slog.e(TAG, "Authentication policy manager is null. Skipping watch ranging");
-                return;
-            }
-
-            //TODO (b/397954948) : Update callback results to handle System UI changes
-            mAuthenticationPolicyManager.startWatchRangingForIdentityCheck(
-                    new IProximityResultCallback() {
-                        @Override
-                        public void onError(int error) throws RemoteException {
-
-                        }
-
-                        @Override
-                        public void onSuccess(int result) throws RemoteException {
-
-                        }
-
-                        @Override
-                        public IBinder asBinder() {
-                            return null;
-                        }
-                    }, mHandler);
-        }
-    }
-
     private void handleCancelAuthentication(long requestId) {
         final AuthSession session = getAuthSessionIfCurrent(requestId);
         if (session == null) {
