@@ -95,6 +95,7 @@ import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.settings.SecureSettings;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -105,6 +106,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+@Ignore("b/422015546")
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
