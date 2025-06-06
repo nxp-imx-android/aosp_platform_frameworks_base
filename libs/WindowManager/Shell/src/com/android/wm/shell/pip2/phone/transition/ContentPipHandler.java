@@ -33,7 +33,6 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
@@ -96,7 +95,7 @@ public class ContentPipHandler implements Transitions.TransitionHandler {
         if (pipChange == null || pipChange.getTaskInfo() == null) {
             return false;
         }
-        return PipUtils.isContentPip(pipChange.getTaskInfo())
+        return pipChange.getTaskInfo().launchIntoPipHostTaskId != -1
                 && TransitionUtil.isOpeningMode(pipChange.getMode());
     }
 

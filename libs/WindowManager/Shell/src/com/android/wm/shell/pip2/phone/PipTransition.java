@@ -255,10 +255,6 @@ public class PipTransition extends PipTransitionController implements
     @Override
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
-        if (mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP) {
-            // An enter PiP transition has already been scheduled and is waiting to be played.
-            return null;
-        }
         if (isAutoEnterInButtonNavigation(request) || isEnterPictureInPictureModeRequest(request)) {
             mEnterTransition = transition;
             mPipTransitionState.setState(PipTransitionState.SCHEDULED_ENTER_PIP);

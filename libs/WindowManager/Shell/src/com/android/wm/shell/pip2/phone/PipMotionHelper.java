@@ -48,7 +48,6 @@ import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipPerfHintController;
 import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
-import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
@@ -362,7 +361,9 @@ public class PipMotionHelper implements PipAppOpsListener.Callback,
         cancelPhysicsAnimation();
         mMenuController.hideMenu(ANIM_TYPE_NONE, false /* resize */);
 
-        if (PipUtils.isContentPip(mPipTransitionState.getPipTaskInfo())) {
+        boolean isContentPip = mPipTransitionState.getPipTaskInfo() != null
+                && mPipTransitionState.getPipTaskInfo().launchIntoPipHostTaskId != -1;
+        if (isContentPip) {
             mPipScheduler.scheduleRemovePip(true /* withFadeout */);
         } else {
             mPipScheduler.scheduleExitPipViaExpand();
