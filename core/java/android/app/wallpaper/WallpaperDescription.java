@@ -564,6 +564,7 @@ public final class WallpaperDescription implements Parcelable {
 
     private static List<Pair<Integer, String>> screenDimensionPairs() {
         return List.of(
+                new Pair<>(WallpaperManager.ORIENTATION_UNKNOWN, "Unknown"),
                 new Pair<>(WallpaperManager.ORIENTATION_PORTRAIT, "Portrait"),
                 new Pair<>(WallpaperManager.ORIENTATION_LANDSCAPE, "Landscape"),
                 new Pair<>(WallpaperManager.ORIENTATION_SQUARE_PORTRAIT, "SquarePortrait"),
