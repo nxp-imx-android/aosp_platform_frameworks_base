@@ -26,6 +26,8 @@ import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -80,7 +82,6 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityMo
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
-import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import javax.inject.Provider
@@ -216,14 +217,14 @@ interface HomeStatusBarViewModel : Activatable {
 
     /** Interface for the assisted factory, to allow for providing a fake in tests */
     interface HomeStatusBarViewModelFactory {
-        fun create(displayId: Int): HomeStatusBarViewModel
+        fun create(): HomeStatusBarViewModel
     }
 }
 
 class HomeStatusBarViewModelImpl
 @AssistedInject
 constructor(
-    @Assisted thisDisplayId: Int,
+    @DisplayId thisDisplayId: Int,
     override val batteryNextToPercentViewModel: BatteryNextToPercentViewModel.Factory,
     override val unifiedBatteryViewModel: BatteryViewModel.BasedOnUserSetting.Factory,
     override val systemStatusIconsViewModelFactory: SystemStatusIconsViewModel.Factory,
@@ -246,7 +247,7 @@ constructor(
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
     animations: SystemStatusEventAnimationInteractor,
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
-    @Background bgScope: CoroutineScope,
+    @DisplayAware bgDisplayScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
     private val uiEventLogger: StatusBarChipsUiEventLogger,
@@ -267,7 +268,7 @@ constructor(
                 columnName = COL_LOCK_TO_OCCLUDED,
                 initialValue = false,
             )
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
+            .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     override val transitionFromLockscreenToDreamStartedEvent: Flow<Unit> =
         keyguardTransitionInteractor
@@ -298,7 +299,7 @@ constructor(
                 columnName = COL_SHADE_EXPANDED_ENOUGH,
                 initialValue = false,
             )
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
+            .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     /**
      * Whether the display of this statusbar has the shade window (that is hosting shade container
@@ -428,7 +429,7 @@ constructor(
                 columnName = COL_ALLOWED_LEGACY,
                 initialValue = false,
             )
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
+            .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     // "Compat" to cover both legacy and Scene container case in one flow.
     private val isHomeStatusBarAllowedCompat =
@@ -441,7 +442,7 @@ constructor(
     override val isHomeStatusBarAllowed =
         isHomeStatusBarAllowedCompat
             .traceEach(trackGroup(TRACK_GROUP, "isHomeStatusBarAllowed"), logcat = true)
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
+            .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     private val shouldHomeStatusBarBeVisible =
         combine(
@@ -477,7 +478,7 @@ constructor(
                 columnName = COL_VISIBLE,
                 initialValue = false,
             )
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
+            .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     /**
      * True if we need to hide the usual start side content in order to show the heads up
@@ -534,7 +535,7 @@ constructor(
                 "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
             }
             .stateIn(
-                bgScope,
+                bgDisplayScope,
                 SharingStarted.WhileSubscribed(),
                 ChipsVisibilityModel(
                     chips = MultipleOngoingActivityChipsModel(),
@@ -640,7 +641,7 @@ constructor(
                     SystemInfoCombinedVisibilityModel(VisibilityModel(View.VISIBLE, false), Idle),
             )
             .stateIn(
-                bgScope,
+                bgDisplayScope,
                 SharingStarted.WhileSubscribed(),
                 SystemInfoCombinedVisibilityModel(VisibilityModel(View.VISIBLE, false), Idle),
             )
@@ -676,7 +677,7 @@ constructor(
     @AssistedFactory
     interface HomeStatusBarViewModelFactoryImpl :
         HomeStatusBarViewModel.HomeStatusBarViewModelFactory {
-        override fun create(displayId: Int): HomeStatusBarViewModelImpl
+        override fun create(): HomeStatusBarViewModelImpl
     }
 
     companion object {
