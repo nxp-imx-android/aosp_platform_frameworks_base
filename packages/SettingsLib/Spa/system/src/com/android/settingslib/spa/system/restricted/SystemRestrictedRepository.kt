@@ -19,17 +19,20 @@ package com.android.settingslib.spa.system.restricted
 import android.Manifest.permission.INTERACT_ACROSS_USERS
 import android.Manifest.permission.MANAGE_USERS
 import android.content.Context
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.UserManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.os.bundleOf
+import com.android.settingslib.spa.flow.broadcastReceiverFlow
 import com.android.settingslib.spa.restricted.NoRestricted
 import com.android.settingslib.spa.restricted.RestrictedMode
 import com.android.settingslib.spa.restricted.RestrictedRepository
 import com.android.settingslib.spa.restricted.Restrictions
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 /**
  * To use this, please register in [com.android.settingslib.spa.framework.common.SpaEnvironment].
@@ -50,14 +53,18 @@ class SystemRestrictedRepository(private val context: Context) : RestrictedRepos
     @RequiresPermission(anyOf = [MANAGE_USERS, INTERACT_ACROSS_USERS])
     override fun restrictedModeFlow(restrictions: Restrictions): Flow<RestrictedMode> {
         check(restrictions is SystemRestrictions)
-        return flow { emit(getRestrictedMode(restrictions)) }
+        return context
+            .broadcastReceiverFlow(IntentFilter(UserManager.ACTION_USER_RESTRICTIONS_CHANGED))
+            .map {}
+            .onStart { emit(Unit) }
+            .map { getRestrictedMode(restrictions) }
     }
 
     @RequiresPermission(anyOf = [MANAGE_USERS, INTERACT_ACROSS_USERS])
     private fun getRestrictedMode(restrictions: SystemRestrictions): RestrictedMode {
         val userRestrictions = getUserRestrictions()
-        if (restrictions.keys.any { key -> userRestrictions.getBoolean(key) }) {
-            return SystemBlockedByAdmin(context)
+        for (key in restrictions.keys) {
+            if (userRestrictions.getBoolean(key)) return SystemBlockedByAdmin(context, key)
         }
         return NoRestricted
     }
