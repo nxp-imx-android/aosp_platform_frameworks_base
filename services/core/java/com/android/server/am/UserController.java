@@ -623,7 +623,7 @@ class UserController implements Handler.Callback {
         final List<UserInfo> users = mInjector.getUserManager().getUsers(true);
         for (int i = 0; i < users.size(); i++) {
             final int userId = users.get(i).id;
-            if (isAlwaysVisibleUser(userId)) {
+            if (isUserVisible(userId)) {
                 exemptedUsers.add(userId);
             } else if (avoidStoppingUserRightNow(userId)) {
                 avoidUsers.add(userId);
@@ -2760,14 +2760,15 @@ class UserController implements Handler.Callback {
             return false;
         }
         if (UserManager.isVisibleBackgroundUsersEnabled()) {
-            // Feature is not enabled on this device.
+            // Feature is not enabled on this device. Consider enabling it after testing it.
             return false;
         }
         if (userId == UserHandle.USER_SYSTEM) {
             // Never stop system user
             return false;
         }
-        if (isAlwaysVisibleUser(userId)) {
+        if (isUserVisible(userId)) {
+            // User is visible, possibly on a background display or as an alwaysVisibleUser.
             return false;
         }
         synchronized(mLock) {
@@ -3598,10 +3599,12 @@ class UserController implements Handler.Callback {
         return userId == getCurrentOrTargetUserIdLU();
     }
 
-    /** Returns whether the user is always-visible (such as a communal profile). */
-    private boolean isAlwaysVisibleUser(@UserIdInt int userId) {
-        final UserProperties properties = getUserProperties(userId);
-        return properties != null && properties.getAlwaysVisible();
+    /**
+     * Returns whether the user is currently visible, including users visible on a background
+     * display and always-visible users (e.g. the communal profile).
+     */
+    private boolean isUserVisible(@UserIdInt int userId) {
+        return mInjector.getUserManagerInternal().isUserVisible(userId);
     }
 
     int[] getUsers() {

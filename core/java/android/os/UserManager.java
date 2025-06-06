@@ -3798,7 +3798,7 @@ public class UserManager {
      *   <li>(Running) profiles of the current foreground user.
      *   <li>Background users assigned to secondary displays (for example, passenger users on
      *   automotive builds, using the display associated with their seats).
-     *   <li>A communal profile, if present.
+     *   <li>A user that is always considered visible, such as a communal profile, if present.
      * </ol>
      *
      * @return whether the user is visible at the moment, as defined above.
