@@ -16,7 +16,6 @@
 
 package android.app;
 
-import static android.app.Flags.FLAG_PIC_ISOLATE_CACHE_BY_UID;
 import static android.app.PropertyInvalidatedCache.NONCE_UNSET;
 import static android.app.PropertyInvalidatedCache.MODULE_ADSERVICES;
 import static android.app.PropertyInvalidatedCache.MODULE_BLUETOOTH;
@@ -39,7 +38,6 @@ import android.app.PropertyInvalidatedCache.NonceStore;
 import android.app.PropertyInvalidatedCache.NonceWatcher;
 import android.os.Binder;
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
@@ -667,7 +665,6 @@ public class PropertyInvalidatedCacheTests {
     }
 
     // Verify that a cache created with isolatedUids(true) separates out the results.
-    @RequiresFlagsEnabled(FLAG_PIC_ISOLATE_CACHE_BY_UID)
     @Test
     public void testIsolatedUids() {
         TestCache cache = new TestCache(new Args(MODULE_TEST)

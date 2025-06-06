@@ -11886,25 +11886,13 @@ public abstract class PackageManager {
         sPackageInfoCache.uncorkInvalidations();
     }
 
-    // This auto-corker is obsolete once the separate permission notifications feature is
-    // committed.
-    private static final PropertyInvalidatedCache.AutoCorker sCacheAutoCorker =
-            PropertyInvalidatedCache.separatePermissionNotificationsEnabled()
-            ? null
-            : new PropertyInvalidatedCache
-                    .AutoCorker(PermissionManager.CACHE_KEY_PACKAGE_INFO_CACHE);
-
     /**
      * Invalidate caches of package and permission information system-wide.
      *
      * @hide
      */
     public static void invalidatePackageInfoCache() {
-        if (PropertyInvalidatedCache.separatePermissionNotificationsEnabled()) {
-            sPackageInfoCache.invalidateCache();
-        } else {
-            sCacheAutoCorker.autoCork();
-        }
+        sPackageInfoCache.invalidateCache();
     }
 
     /**
