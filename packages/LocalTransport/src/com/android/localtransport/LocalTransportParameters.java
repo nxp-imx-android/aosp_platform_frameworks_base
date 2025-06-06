@@ -98,12 +98,18 @@ public class LocalTransportParameters extends KeyValueSettingObserver {
 
     @Override
     public String toString() {
-        return "LocalTransportParameters[mFakeEncryptionFlag=" + mFakeEncryptionFlag
-                + ", mIsNonIncrementalOnly=" + mIsNonIncrementalOnly
-                + ", mIsDeviceTransfer=" + mIsDeviceTransfer
-                + ", mIsEncrypted=" + mIsEncrypted
-                + ", mLogAgentResults=" + mLogAgentResults
-                + ", noRestrictedModePackages()=" + noRestrictedModePackages()
+        return "LocalTransportParameters[mFakeEncryptionFlag="
+                + mFakeEncryptionFlag
+                + ", mIsNonIncrementalOnly="
+                + mIsNonIncrementalOnly
+                + ", mIsDeviceTransfer="
+                + mIsDeviceTransfer
+                + ", mIsEncrypted="
+                + mIsEncrypted
+                + ", mLogAgentResults="
+                + mLogAgentResults
+                + ", noRestrictedModePackages()="
+                + noRestrictedModePackages()
                 + "]";
     }
 }
