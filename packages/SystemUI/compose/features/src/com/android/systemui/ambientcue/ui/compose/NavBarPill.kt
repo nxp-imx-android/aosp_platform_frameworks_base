@@ -48,7 +48,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -82,7 +81,6 @@ fun NavBarPill(
 ) {
     val configuration = LocalConfiguration.current
     val maxPillWidth = (configuration.screenWidthDp * 0.65f).dp
-    val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
 
     val density = LocalDensity.current
@@ -121,7 +119,7 @@ fun NavBarPill(
             }
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val closeButtonSize = 28.dp
@@ -170,7 +168,7 @@ fun NavBarPill(
                                 expandedChip = true
                                 val hasBackground = actions.size > 1
                                 Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                                     modifier =
                                         Modifier.padding(end = 3.dp)
                                             .clip(RoundedCornerShape(16.dp))
@@ -197,16 +195,6 @@ fun NavBarPill(
                                         color = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
                                     )
-                                    if (hasAttribution) {
-                                        Text(
-                                            text = action.attribution!!,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.alpha(0.4f),
-                                        )
-                                    }
                                 }
                             } else {
                                 Image(
@@ -222,7 +210,7 @@ fun NavBarPill(
                                                     Modifier
                                                 }
                                             )
-                                            .padding(3.5.dp)
+                                            .padding(3.dp)
                                             .size(16.dp)
                                             .then(iconBorder)
                                             .clip(CircleShape),
@@ -247,15 +235,15 @@ fun NavBarPill(
                 modifier =
                     Modifier.size(closeButtonSize)
                         .clip(CircleShape)
-                        .background(backgroundColor.copy(alpha = 0.7f))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(6.dp),
                 iconResource = R.drawable.ic_close_white_rounded,
                 colors =
                     IconButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = outlineColor,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                         disabledContainerColor = Color.Transparent,
-                        disabledContentColor = outlineColor,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                 contentDescription =
                     stringResource(id = R.string.underlay_close_button_content_description),
