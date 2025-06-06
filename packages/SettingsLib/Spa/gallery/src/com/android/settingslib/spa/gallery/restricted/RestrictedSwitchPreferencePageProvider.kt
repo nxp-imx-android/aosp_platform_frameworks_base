@@ -25,10 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.settingslib.spa.framework.common.SettingsPageProvider
 import com.android.settingslib.spa.framework.compose.navigator
+import com.android.settingslib.spa.restricted.RestrictedMainSwitchPreference
 import com.android.settingslib.spa.restricted.RestrictedSwitchPreference
+import com.android.settingslib.spa.widget.preference.MainSwitchPreference
 import com.android.settingslib.spa.widget.preference.Preference
 import com.android.settingslib.spa.widget.preference.PreferenceModel
-import com.android.settingslib.spa.widget.preference.SwitchPreference
 import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
 import com.android.settingslib.spa.widget.scaffold.RegularScaffold
 import com.android.settingslib.spa.widget.ui.Category
@@ -41,8 +42,13 @@ object RestrictedSwitchPreferencePageProvider : SettingsPageProvider {
     @Composable
     override fun Page(arguments: Bundle?) {
         RegularScaffold(TITLE) {
+            EnableRestrictionsSwitchPreference()
+
+            SampleRestrictedMainSwitchPreference(ifBlockedOverrideCheckedTo = null)
+            SampleRestrictedMainSwitchPreference(ifBlockedOverrideCheckedTo = true)
+            SampleRestrictedMainSwitchPreference(ifBlockedOverrideCheckedTo = false)
+
             Category {
-                EnableRestrictionsSwitchPreference()
                 SampleRestrictedSwitchPreference(ifBlockedOverrideCheckedTo = null)
                 SampleRestrictedSwitchPreference(ifBlockedOverrideCheckedTo = true)
                 SampleRestrictedSwitchPreference(ifBlockedOverrideCheckedTo = false)
@@ -65,7 +71,7 @@ object RestrictedSwitchPreferencePageProvider : SettingsPageProvider {
 private fun EnableRestrictionsSwitchPreference() {
     val enableRestrictions by
         GalleryRestrictedRepository.enableRestrictionsFlow.collectAsStateWithLifecycle()
-    SwitchPreference(
+    MainSwitchPreference(
         model =
             object : SwitchPreferenceModel {
                 override val title = "Enable restrictions"
@@ -78,19 +84,41 @@ private fun EnableRestrictionsSwitchPreference() {
 }
 
 @Composable
-private fun SampleRestrictedSwitchPreference(ifBlockedOverrideCheckedTo: Boolean?) {
-    var checked by rememberSaveable { mutableStateOf(false) }
-    RestrictedSwitchPreference(
+private fun SampleRestrictedMainSwitchPreference(ifBlockedOverrideCheckedTo: Boolean?) {
+    RestrictedMainSwitchPreference(
         model =
-            object : SwitchPreferenceModel {
-                override val title = "RestrictedSwitchPreference"
-                override val summary = {
-                    "ifBlockedOverrideCheckedTo = $ifBlockedOverrideCheckedTo"
-                }
-                override val checked = { checked }
-                override val onCheckedChange = { newChecked: Boolean -> checked = newChecked }
-            },
+            createSwitchPreferenceModel(
+                title = "RestrictedMainSwitchPreference",
+                ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
+            ),
         restrictions = GalleryRestrictions(isRestricted = true),
         ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
     )
+}
+
+@Composable
+private fun SampleRestrictedSwitchPreference(ifBlockedOverrideCheckedTo: Boolean?) {
+    RestrictedSwitchPreference(
+        model =
+            createSwitchPreferenceModel(
+                title = "RestrictedSwitchPreference",
+                ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
+            ),
+        restrictions = GalleryRestrictions(isRestricted = true),
+        ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
+    )
+}
+
+@Composable
+private fun createSwitchPreferenceModel(
+    title: String,
+    ifBlockedOverrideCheckedTo: Boolean?,
+): SwitchPreferenceModel {
+    var checked by rememberSaveable { mutableStateOf(false) }
+    return object : SwitchPreferenceModel {
+        override val title = title
+        override val summary = { "ifBlockedOverrideCheckedTo = $ifBlockedOverrideCheckedTo" }
+        override val checked = { checked }
+        override val onCheckedChange = { newChecked: Boolean -> checked = newChecked }
+    }
 }
