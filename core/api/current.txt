@@ -47800,7 +47800,7 @@ package android.telephony {
     method @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE") public long getSupportedRadioAccessFamily();
     method @Nullable public String getTypeAllocationCode();
     method @Nullable public String getTypeAllocationCode(int);
-    method @NonNull @RequiresPermission("android.permission.READ_PRIVILEGED_PHONE_STATE") public java.util.List<android.telephony.UiccCardInfo> getUiccCardsInfo();
+    method @FlaggedApi("com.android.internal.telephony.flags.macro_based_opportunistic_networks") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.READ_BASIC_PHONE_STATE, "android.permission.READ_PRIVILEGED_PHONE_STATE", "carrier privileges"}) public java.util.List<android.telephony.UiccCardInfo> getUiccCardsInfo();
     method @Nullable @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public String getVisualVoicemailPackageName();
     method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public String getVoiceMailAlphaTag();
     method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public String getVoiceMailNumber();
