@@ -6676,16 +6676,11 @@ public class NotificationManagerService extends SystemService {
             }
         }
 
-        private boolean checkPackagePolicyAccess(String pkg) {
-            return mConditionProviders.isPackageOrComponentAllowed(
-                    pkg, getCallingUserHandle().getIdentifier());
-        }
-
         private boolean checkPolicyAccess(String pkg) {
             final int uid;
+            final int userId = UserHandle.getCallingUserId();
             try {
-                uid = getContext().getPackageManager().getPackageUidAsUser(pkg,
-                        UserHandle.getCallingUserId());
+                uid = getContext().getPackageManager().getPackageUidAsUser(pkg, userId);
                 if (PERMISSION_GRANTED == checkComponentPermission(
                         android.Manifest.permission.MANAGE_NOTIFICATIONS, uid,
                         -1, true)) {
@@ -6695,17 +6690,19 @@ public class NotificationManagerService extends SystemService {
                 return false;
             }
             if (managedServicesConcurrentMultiuser()) {
-                return checkPackagePolicyAccess(pkg)
-                        || mListeners.isComponentEnabledForPackage(pkg,
-                            UserHandle.getCallingUserId())
+                return mConditionProviders.isPackageOrComponentAllowed(pkg, userId)
+                        || (!Flags.skipPolicyAccessNlsCheck()
+                            && mListeners.isComponentEnabledForPackage(pkg, userId))
+                        || (mDpm != null
+                            && (mDpm.isActiveProfileOwner(uid) || mDpm.isActiveDeviceOwner(uid)));
+            } else {
+                // TODO(b/169395065) Figure out if this flow makes sense in Device Owner mode.
+                return mConditionProviders.isPackageOrComponentAllowed(pkg, userId)
+                        || (!Flags.skipPolicyAccessNlsCheck()
+                            && mListeners.isComponentEnabledForPackage(pkg))
                         || (mDpm != null
                             && (mDpm.isActiveProfileOwner(uid) || mDpm.isActiveDeviceOwner(uid)));
             }
-            //TODO(b/169395065) Figure out if this flow makes sense in Device Owner mode.
-            return checkPackagePolicyAccess(pkg)
-                    || mListeners.isComponentEnabledForPackage(pkg)
-                    || (mDpm != null && (mDpm.isActiveProfileOwner(uid)
-                                || mDpm.isActiveDeviceOwner(uid)));
         }
 
         @Override
