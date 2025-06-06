@@ -21,6 +21,7 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
@@ -39,6 +40,8 @@ class ZeroStatePreference @JvmOverloads constructor(
     )
     private var tintedIcon: Drawable? = null
 
+    private var layoutHeight: Int = ViewGroup.LayoutParams.WRAP_CONTENT
+
     init {
         isSelectable = false
         layoutResource = R.layout.settingslib_expressive_preference_zerostate
@@ -53,8 +56,23 @@ class ZeroStatePreference @JvmOverloads constructor(
         holder.itemView.isFocusable = false
         holder.itemView.isClickable = false
 
+        holder.itemView.layoutParams.height = layoutHeight
+
         (holder.findViewById(android.R.id.icon) as? ImageView)?.apply {
             setImageDrawable(tintedIcon ?: icon)
+        }
+    }
+
+    /**
+     * Center ZeroStatePreference in the middle of the screen.
+     *
+     * @param isScreenCentered whether to center or not
+     */
+    fun setScreenCentering(isScreenCentered: Boolean) {
+        layoutHeight = if (isScreenCentered) {
+            ViewGroup.LayoutParams.MATCH_PARENT
+        } else {
+            ViewGroup.LayoutParams.WRAP_CONTENT
         }
     }
 
