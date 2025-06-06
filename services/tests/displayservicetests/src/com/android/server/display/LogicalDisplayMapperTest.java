@@ -1231,7 +1231,7 @@ public class LogicalDisplayMapperTest {
                 spy(new DisplayGroupAllocator(mContextMock, new DisplayGroupAllocator.Injector() {
 
                     @Override
-                    boolean canInternalDisplayHostDesktops(Context context) {
+                    boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
                         return simulateExtendedMode;
                     }
 

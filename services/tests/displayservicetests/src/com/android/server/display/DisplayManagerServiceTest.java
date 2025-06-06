@@ -398,7 +398,7 @@ public class DisplayManagerServiceTest {
         }
 
         @Override
-        boolean canInternalDisplayHostDesktops(Context context) {
+        boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
             return false;
         }
 
@@ -4459,7 +4459,7 @@ public class DisplayManagerServiceTest {
         DisplayManagerService displayManager = new DisplayManagerService(
                 mContext, new BasicInjector() {
             @Override
-            boolean canInternalDisplayHostDesktops(Context context) {
+            boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
                 return true;
             }
         });
