@@ -324,9 +324,7 @@ constructor(
     private fun StatusBarNotification.skeletonAppIcon(packageContext: Context): NotifIcon.AppIcon? {
         if (!android.app.Flags.notificationsRedesignAppIcons()) return null
         if (!notificationIconStyleProvider.shouldShowAppIcon(this, packageContext)) return null
-        return NotifIcon.AppIcon(
-            appIconProvider.getOrFetchSkeletonAppIcon(packageName, packageContext)
-        )
+        return NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, user))
     }
 
     private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)

@@ -123,11 +123,8 @@ constructor(
         return try {
             appIconProvider.getOrFetchAppIcon(
                 packageName = appData.packageName,
-                // TODO(b/416126107) remove context and withWorkProfileBadge after we add them to
-                //  AppIconProvider
-                context = context,
-                withWorkProfileBadge = false,
-                themed = false,
+                userHandle = appData.user,
+                instanceKey = "bundle:${repository.bundleType}",
             )
         } catch (e: NameNotFoundException) {
             Log.w(TAG, "Failed to load app icon for ${appData.packageName}", e)
