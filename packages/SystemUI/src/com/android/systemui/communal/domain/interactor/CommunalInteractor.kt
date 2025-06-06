@@ -42,7 +42,6 @@ import com.android.systemui.communal.shared.model.CommunalContentSize.FixedSize.
 import com.android.systemui.communal.shared.model.CommunalContentSize.FixedSize.THIRD
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalWidgetContentModel
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.widgets.EditWidgetsActivityStarter
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.dagger.SysUISingleton
@@ -369,7 +368,6 @@ constructor(
 
     /** Show the widget editor Activity. */
     fun showWidgetEditor(shouldOpenWidgetPickerOnStart: Boolean = false) {
-        communalSceneInteractor.setEditModeState(EditModeState.STARTING)
         editWidgetsActivityStarter.startActivity(shouldOpenWidgetPickerOnStart)
     }
 
