@@ -37,6 +37,7 @@ android_test {
     ],
 
     static_libs: [
+        "//frameworks/libs/systemui/mechanics:mechanics-testing",
         "TestParameterInjector",
         "WMShellTests-utils",
         "WindowManager-Shell",
