@@ -17,7 +17,9 @@
 package com.android.settingslib.enterprise;
 
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ADMIN_COMPONENT;
+import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ADMIN_PACKAGE_NAME;
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCED_ADMIN;
+import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCING_ADMIN;
 import static com.android.settingslib.enterprise.ActionDisabledByAdminControllerTestUtils.ENFORCEMENT_ADMIN_USER_ID;
 import static com.android.settingslib.enterprise.FakeDeviceAdminStringProvider.DEFAULT_DEVICE_ADMIN_STRING_PROVIDER;
 
@@ -85,6 +87,28 @@ public class SupervisedDeviceActionDisabledByAdminControllerTest {
                 nextIntent.getAction());
         assertEquals(restrictionUri, nextIntent.getData());
         assertEquals(ADMIN_COMPONENT.getPackageName(), nextIntent.getPackage());
+    }
+
+    @Test
+    public void buttonClicked_enforcingAdmin() {
+        Uri restrictionUri = Uri.parse("policy:/user_restrictions/no_add_user");
+        Intent intent = new Intent(Settings.ACTION_MANAGE_SUPERVISOR_RESTRICTED_SETTING)
+                .setData(restrictionUri)
+                .setPackage(ADMIN_PACKAGE_NAME);
+        ResolveInfo resolveInfo = ShadowResolveInfo.newResolveInfo("Admin Activity",
+                ADMIN_COMPONENT.getPackageName(), "InfoActivity");
+        shadowOf(mContext.getPackageManager()).addResolveInfoForIntent(intent, resolveInfo);
+
+        DialogInterface.OnClickListener listener =
+                mController.getPositiveButtonListener(mContext, ENFORCING_ADMIN);
+        assertNotNull("Supervision controller must supply a non-null listener", listener);
+        listener.onClick(mock(DialogInterface.class), 0 /* which */);
+
+        Intent nextIntent = shadowOf(RuntimeEnvironment.application).getNextStartedActivity();
+        assertEquals(Settings.ACTION_MANAGE_SUPERVISOR_RESTRICTED_SETTING,
+                nextIntent.getAction());
+        assertEquals(restrictionUri, nextIntent.getData());
+        assertEquals(ADMIN_PACKAGE_NAME, nextIntent.getPackage());
     }
 
     @Test
