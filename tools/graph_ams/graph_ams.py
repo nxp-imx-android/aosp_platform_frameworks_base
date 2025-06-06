@@ -22,6 +22,7 @@
 # dot -Tpng -Gdpii=100 activity.dot -o activity.png
 
 import argparse
+import json
 import re
 import sys
 
@@ -48,8 +49,44 @@ def make_name(p):
   """Make a pretty process name."""
   return f"{p.pid}:{p.process_name}/{p.uid}"
 
+def flag_str(flag):
+  """Convert bind flags into a string."""
+  return activitymanagerservice_pb2.ConnectionRecordProto.Flag.Name(flag)
+
+def make_nodes(procs):
+  """Make a list of all the nodes."""
+  nodes = [{"id": str(p.pid), "name": make_name(p)} for p in procs]
+  return nodes
+
+def make_edges(services):
+  """Make a list of all the edges."""
+  edges = []
+  SKIP_FLAGS = { "AUTO_CREATE" }
+  for sbu in services.active_services.services_by_users:
+    for s in sbu.service_records:
+      src = f"{s.pid}"
+      for c in s.connections:
+        dst = c.client_pid
+        attrs = []
+
+        flags_full = [flag_str(f) for f in c.flags]
+        flags = [f for f in flags_full if f not in SKIP_FLAGS]
+        flags_str = '|'.join(flags)
+
+        # Note that these are "reversed".  AMS tracks and dumps the connections
+        # from the client perspective, while people more often think of the
+        # bindings in the other direction.
+        edge = {
+            "source": str(dst),
+            "target": str(src),
+            "flags_full": flags_full,
+            "flags": flags_str,
+        }
+        edges.append(edge)
+  return edges
+
 def make_attr(name, value):
-  """Make a dot attrbute string."""
+  """Make a dot attribute string."""
   return f"{name}=\"{value}\""
 
 def colourize_name(name):
@@ -67,11 +104,11 @@ def colourize_name(name):
       return colour
   return None
 
-def print_nodes(procs):
+def print_dot_nodes(nodes):
   """Print all the nodes based on processes."""
   # Label all the process nodes.
-  for p in procs:
-    name = make_name(p)
+  for n in nodes:
+    name = n["name"]
     attrs = [
       make_attr("label", name)
     ]
@@ -79,38 +116,44 @@ def print_nodes(procs):
     if colour:
       attrs.append(make_attr("fillcolor", colour))
       attrs.append(make_attr("style", "filled"))
+    print(f"  {n["id"]} [" + " ".join(attrs) + "]")
 
-    print(f"  {p.pid} [" + " ".join(attrs) + "]")
-
-def flag_str(flag):
-  """Convert bind flags into a string."""
-  return activitymanagerservice_pb2.ConnectionRecordProto.Flag.Name(flag)
-
-def print_edges(services, bindflags, highlight):
+def print_dot_edges(edges, bindflags, highlight):
   """Print all the edges based on service connections."""
-  SKIP_FLAGS = { "AUTO_CREATE" }
-  for sbu in services.active_services.services_by_users:
-    for s in sbu.service_records:
-      src = f"{s.pid}"
-      for c in s.connections:
-        dst = c.client_pid
-        attrs = []
+  for e in edges:
+    source = e["source"]
+    target = e["target"]
+    attrs = []
+    if bindflags:
+      attrs.append(make_attr("label", e["flags"]))
+    if highlight:
+      flags = e["flags"].split("|")
+      if 'IMPORTANT' in flags:
+        attrs.append(make_attr("color", RED))
+      elif 'WAIVE_PRIORITY' in flags:
+        attrs.append(make_attr("color", LIGHT_YELLOW))
 
-        flags = [flag_str(f) for f in c.flags]
-        if bindflags:
-          flags = [f for f in flags if f not in SKIP_FLAGS]
-          flags_str = '|'.join(flags)
-          attrs.append(make_attr("label", flags_str))
-        if highlight:
-          if 'IMPORTANT' in flags:
-            attrs.append(make_attr("color", RED))
-          elif 'WAIVE_PRIORITY' in flags:
-            attrs.append(make_attr("color", LIGHT_YELLOW))
+    print(f"  {source} -> {target} [" + " ".join(attrs) + "]")
 
-        # Note that these are "reversed".  AMS tracks and dumps the connections
-        # from the client perspective, while people more often think of the
-        # bindings in the other direction.
-        print(f"  {dst} -> {src} [" + " ".join(attrs) + "]")
+def print_dot(nodes, edges, args):
+  """Print dot file of process graph."""
+  print("digraph processes {")
+  print(f"  layout={args.layout};")
+  print("  overlap=false;")
+  print("  splines=true;")
+
+  print_dot_nodes(nodes)
+  print_dot_edges(edges, bindflags=args.bindflags, highlight=args.highlight)
+
+  print("}")
+
+def print_json(nodes, edges):
+  """Print json file of process graph."""
+  data = {
+    "nodes": nodes,
+    "links": edges,
+  }
+  print(json.dumps(data, indent=2))
 
 def parse_args():
   """Parse command-line arguments."""
@@ -121,6 +164,8 @@ def parse_args():
                       help="Label bind flags", action="store_true")
   parser.add_argument("--no-highlight", dest="highlight",
                       help="Highlight connections", action="store_false")
+  parser.add_argument("--format", help="Format type", default="dot",
+                      choices=["dot", "json"])
   parser.add_argument("filename", help="Input file dumpsys activity --proto")
   return parser.parse_args()
 
@@ -128,18 +173,14 @@ def main():
   """Generate a dot graph from an AMS protobuf dump."""
   args = parse_args()
   ams = read_activity_proto(args.filename)
-  services = ams.services
-  procs = ams.processes.procs
 
-  print("digraph processes {")
-  print(f"  layout={args.layout};")
-  print("  overlap=false;")
-  print("  splines=true;")
+  nodes = make_nodes(ams.processes.procs)
+  edges = make_edges(ams.services)
 
-  print_nodes(procs)
-  print_edges(services, bindflags=args.bindflags, highlight=args.highlight)
-
-  print("}")
+  if args.format == "dot":
+    print_dot(nodes, edges, args)
+  elif args.format == "json":
+    print_json(nodes, edges)
 
 if __name__ == "__main__":
   main()
