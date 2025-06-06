@@ -183,9 +183,10 @@ public class DeveloperVerifierController {
      * If the verifier agent exists but cannot be started for some reason, all the notify* methods
      * in this class will fail asynchronously and quietly. The system will learn about the failure
      * after receiving the failure from
-     * {@link PackageInstallerSession.VerifierCallback#onConnectionFailed}.
+     * {@link PackageInstallerSession.DeveloperVerifierCallback#onConnectionFailed}.
      */
-    public boolean bindToVerifierServiceIfNeeded(Supplier<Computer> snapshotSupplier, int userId) {
+    public boolean bindToVerifierServiceIfNeeded(Supplier<Computer> snapshotSupplier, int userId,
+            PackageInstallerSession.DeveloperVerifierCallback callback) {
         if (DEBUG) {
             Slog.i(TAG, "Requesting to bind to the verifier service for user " + userId);
         }
@@ -230,6 +231,8 @@ public class DeveloperVerifierController {
                     public void onConnected(@NonNull IDeveloperVerifierService service) {
                         Slog.i(TAG, "Verifier " + verifierPackageName + " is connected"
                                 + " on user " + userId);
+                        // Logging the success of connecting to the verifier.
+                        callback.onConnectionEstablished(verifierUid);
                         // Aggressively auto-disconnect until verification requests are sent out
                         startAutoDisconnectCountdown(
                                 remoteServiceWrapper.getAutoDisconnectCallback());
@@ -354,10 +357,10 @@ public class DeveloperVerifierController {
             List<SharedLibraryInfo> declaredLibraries,
             @PackageInstaller.DeveloperVerificationPolicy int verificationPolicy,
             @Nullable PersistableBundle extensionParams,
-            PackageInstallerSession.VerifierCallback callback,
+            PackageInstallerSession.DeveloperVerifierCallback callback,
             boolean retry) {
         // Try connecting to the verifier if not already connected
-        if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId)) {
+        if (!bindToVerifierServiceIfNeeded(snapshotSupplier, userId, callback)) {
             return false;
         }
         // For now, the verification id is the same as the installation session id.
@@ -425,7 +428,7 @@ public class DeveloperVerifierController {
 
     private void startTimeoutCountdown(int verificationId,
             DeveloperVerificationRequestStatusTracker tracker,
-            PackageInstallerSession.VerifierCallback callback, long delayMillis) {
+            PackageInstallerSession.DeveloperVerifierCallback callback, long delayMillis) {
         mHandler.postDelayed(() -> {
             if (DEBUG) {
                 Slog.i(TAG, "Checking request timeout for " + verificationId);
@@ -538,9 +541,10 @@ public class DeveloperVerifierController {
     // This class handles requests from the remote verifier
     private class DeveloperVerificationSessionInterface extends
             IDeveloperVerificationSessionInterface.Stub {
-        private final PackageInstallerSession.VerifierCallback mCallback;
+        private final PackageInstallerSession.DeveloperVerifierCallback mCallback;
 
-        DeveloperVerificationSessionInterface(PackageInstallerSession.VerifierCallback callback) {
+        DeveloperVerificationSessionInterface(
+                PackageInstallerSession.DeveloperVerifierCallback callback) {
             mCallback = callback;
         }
 
@@ -569,6 +573,7 @@ public class DeveloperVerifierController {
                     throw new IllegalStateException("Verification session " + verificationId
                             + " doesn't exist or has finished");
                 }
+                mCallback.onTimeoutExtensionRequested();
                 return tracker.extendTimeRemaining(additionalMs);
             }
         }
@@ -585,7 +590,7 @@ public class DeveloperVerifierController {
                             + " doesn't exist or has finished");
                 }
             }
-            return mCallback.setVerificationPolicy(policy);
+            return mCallback.onVerificationPolicyOverridden(policy);
         }
 
         @Override
