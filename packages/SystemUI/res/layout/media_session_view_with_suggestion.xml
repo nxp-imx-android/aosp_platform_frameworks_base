@@ -87,14 +87,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.6" />
 
-    <!-- Guideline for device suggestions -->
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/device_suggestions_vertical_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.3" />
-
     <!-- Guideline for action buttons (collapsed view only) -->
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/action_button_guideline"
@@ -125,7 +117,7 @@
         android:layout_marginStart="@dimen/qs_center_guideline_padding"
         app:layout_constraintEnd_toStartOf="@+id/media_seamless"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toEndOf="@id/device_suggestions_vertical_guideline"
+        app:layout_constraintStart_toEndOf="@id/icon"
         app:layout_constraintHorizontal_bias="1"
         app:layout_constrainedWidth="true"
         app:layout_constraintWidth_min="@dimen/min_clickable_item_size"
