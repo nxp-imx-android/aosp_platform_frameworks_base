@@ -38,6 +38,7 @@ import static android.internal.perfetto.protos.TracePacketOuterClass.TracePacket
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.os.WorkSource;
 import android.tracing.perfetto.CreateIncrementalStateArgs;
 import android.tracing.perfetto.DataSource;
@@ -100,9 +101,9 @@ final class WakelockTracer
      * are protected by the Perfetto mutex. All other accesses to instance state must be
      * guarded by the Perfetto mutex.
      *
-     * Calls to onWakelockEvent should be strictly sequenced (nanoTime should monotonically
-     * increase). This is accomplished in Notifier.java by enqueuing the changes on a handler
-     * (which is FIFO) while holding the PowerManagerService lock.
+     * Calls to onWakelockEvent should be strictly sequenced. A release event must be sent
+     * after the acquire event. This is done in Notifier.java by recording events while
+     * holding the PowerManagerService lock.
      *
      * @param acquired Whether or not this is a acquire or release event.
      * @param tag The wakelock tag provided by the application.
@@ -110,7 +111,6 @@ final class WakelockTracer
      * @param pid The pid of the process requesting the wakelock.
      * @param flags The wakelock flag bitmask (such as PowerManager.PARTIAL_WAKE_LOCK).
      * @param ws The Worksource attached to the wakelock (or null if there is none).
-     * @param nanoTime The System.nanoTime() when the event occurred.
      */
     public void onWakelockEvent(
             boolean acquired,
@@ -118,12 +118,12 @@ final class WakelockTracer
             int uid,
             int pid,
             int flags,
-            WorkSource ws,
-            long nanoTime) {
+            WorkSource ws) {
         trace((ctx) -> {
             try (Instance instance = ctx.getDataSourceInstanceLocked()) {
                 if (instance == null) return;
-                instance.onWakelockEvent(acquired, tag, uid, pid, flags, ws, nanoTime);
+                instance.onWakelockEvent(acquired, tag, uid, pid, flags, ws,
+                        SystemClock.elapsedRealtimeNanos());
             }
         });
     }
@@ -133,7 +133,8 @@ final class WakelockTracer
         trace((ctx) -> {
             try (Instance instance = ctx.getDataSourceInstanceLocked()) {
                 if (instance != target) return;
-                instance.write(ctx.newTracePacket(), ctx.getIncrementalState(), System.nanoTime());
+                instance.write(ctx.newTracePacket(), ctx.getIncrementalState(),
+                        SystemClock.elapsedRealtimeNanos());
             }
         });
     }

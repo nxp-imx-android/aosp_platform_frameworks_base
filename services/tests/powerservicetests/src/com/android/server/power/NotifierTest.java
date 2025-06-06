@@ -112,8 +112,6 @@ public class NotifierTest {
     private static final int OWNER_WORK_SOURCE_UID_2 = 3457;
     private static final int PID = 5678;
 
-    private static final int FAKE_NANO_TIME = 123456;
-
     @Mock private BatterySaverStateMachine mBatterySaverStateMachineMock;
     @Mock private PowerManagerService.NativeWrapper mNativeWrapperMock;
     @Mock private Notifier mNotifierMock;
@@ -901,7 +899,7 @@ public class NotifierTest {
 
         // Tracing is done synchronously.
         verify(mWakelockTracer).onWakelockEvent(false, "wakelockTag", uid, pid,
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK, null, FAKE_NANO_TIME);
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK, null);
 
         // No interaction because we expect that to happen in async
         verifyNoMoreInteractions(mWakeLockLog, mBatteryStats, mAppOpsManager);
@@ -923,7 +921,7 @@ public class NotifierTest {
 
         // Tracing is done synchronously.
         verify(mWakelockTracer).onWakelockEvent(true, "wakelockTag", uid, pid,
-                PowerManager.SCREEN_BRIGHT_WAKE_LOCK, null, FAKE_NANO_TIME);
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK, null);
 
         // No interaction because we expect that to happen in async
         verifyNoMoreInteractions(mWakeLockLog, mBatteryStats, mAppOpsManager);
@@ -1327,11 +1325,6 @@ public class NotifierTest {
                     @Override
                     public long currentTimeMillis() {
                         return 1;
-                    }
-
-                    @Override
-                    public long nanoTime() {
-                        return FAKE_NANO_TIME;
                     }
 
                     @Override
