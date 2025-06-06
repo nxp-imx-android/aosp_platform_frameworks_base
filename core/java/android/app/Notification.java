@@ -12900,13 +12900,13 @@ public class Notification implements Parcelable
             }
 
             /** Minimum number of fractional digits to display. */
-            @IntRange(from = 0, to = 6)
+            @IntRange(from = LOWER_BOUND_FRACTION_DIGITS, to = UPPER_BOUND_FRACTION_DIGITS)
             public int getMinFractionDigits() {
                 return mMinFractionDigits;
             }
 
             /** Maximum number of fractional digits to display. */
-            @IntRange(from = 0, to = 6)
+            @IntRange(from = LOWER_BOUND_FRACTION_DIGITS, to = UPPER_BOUND_FRACTION_DIGITS)
             public int getMaxFractionDigits() {
                 return mMaxFractionDigits;
             }
