@@ -39,38 +39,22 @@
     <string name="bubble_not_supported_text" msgid="8843806122229754809">"La app no admite la burbuja"</string>
     <string name="accessibility_divider" msgid="6407584574218956849">"Divisor de pantalla dividida"</string>
     <string name="divider_title" msgid="1963391955593749442">"Divisor de pantalla dividida"</string>
-    <!-- no translation found for accessibility_action_divider_left_full (1857937769498651238) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_left_10 (8237692006159749086) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_left_30 (5033298971212011735) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_left_50 (170317638773112190) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_left_70 (3986621081137830158) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_left_90 (3525922058426249817) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_right_full (4162106720432709858) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_swap_vertical (8673406394251984853) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_swap_horizontal (588604748596242580) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_top_full (3986693999427747701) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_top_10 (6898920573675831044) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_top_30 (6515643651303176050) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_top_50 (1038204315880066213) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_top_70 (5125673390883238862) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_top_90 (7662868544020662698) -->
-    <skip />
-    <!-- no translation found for accessibility_action_divider_bottom_full (6437134983210745664) -->
-    <skip />
+    <string name="accessibility_action_divider_left_full" msgid="1857937769498651238">"Mostrar la app de la izquierda en pantalla completa"</string>
+    <string name="accessibility_action_divider_left_10" formatted="false" msgid="8237692006159749086">"Izquierda 10%; derecha 90%"</string>
+    <string name="accessibility_action_divider_left_30" formatted="false" msgid="5033298971212011735">"Izquierda 30%; derecha 70%"</string>
+    <string name="accessibility_action_divider_left_50" formatted="false" msgid="170317638773112190">"Izquierda 50%; derecha 50%"</string>
+    <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"Izquierda 70%; derecha 30%"</string>
+    <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"Izquierda 90%; derecha 10%"</string>
+    <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"Mostrar la app de la derecha en pantalla completa"</string>
+    <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Intercambiar la app superior con la inferior, manteniendo la división actual"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Intercambiar la app de la izquierda con la de la derecha, manteniendo la división actual"</string>
+    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"Mostrar la app superior en pantalla completa"</string>
+    <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"Superior 10%; inferior 90%"</string>
+    <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"Superior 30%; inferior 70%"</string>
+    <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"Superior 50%; inferior 50%"</string>
+    <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"Superior 70%; inferior 30%"</string>
+    <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"Superior 90%; inferior 10%"</string>
+    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"Mostrar la app inferior en pantalla completa"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"Dividir a la izquierda"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"Dividir a la derecha"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"Dividir en la parte superior"</string>
