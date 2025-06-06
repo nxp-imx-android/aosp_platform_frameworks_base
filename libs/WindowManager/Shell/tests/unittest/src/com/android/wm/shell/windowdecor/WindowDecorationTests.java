@@ -82,6 +82,7 @@ import android.window.WindowContainerTransaction;
 import androidx.test.filters.SmallTest;
 
 import com.android.window.flags.Flags;
+import com.android.wm.shell.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestHandler;
@@ -909,7 +910,7 @@ public class WindowDecorationTests extends ShellTestCase {
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
         mInsetsState.getOrCreateSource(STATUS_BAR_INSET_SOURCE_ID, captionBar()).setVisible(true);
-        final WindowContainerToken token = TestRunningTaskInfoBuilder.createMockWCToken();
+        final WindowContainerToken token = new MockToken().token();
         final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
                 .setDisplayId(Display.DEFAULT_DISPLAY)
                 .setVisible(true);
@@ -935,7 +936,7 @@ public class WindowDecorationTests extends ShellTestCase {
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
         mInsetsState.getOrCreateSource(STATUS_BAR_INSET_SOURCE_ID, captionBar()).setVisible(true);
-        final WindowContainerToken token = TestRunningTaskInfoBuilder.createMockWCToken();
+        final WindowContainerToken token = new MockToken().token();
         final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
                 .setDisplayId(Display.DEFAULT_DISPLAY)
                 .setVisible(true);
@@ -960,7 +961,7 @@ public class WindowDecorationTests extends ShellTestCase {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)
                 .getDisplay(Display.DEFAULT_DISPLAY);
-        final WindowContainerToken token = TestRunningTaskInfoBuilder.createMockWCToken();
+        final WindowContainerToken token = new MockToken().token();
         final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
                 .setDisplayId(Display.DEFAULT_DISPLAY)
                 .setVisible(true);
@@ -983,7 +984,7 @@ public class WindowDecorationTests extends ShellTestCase {
     public void testRelayout_setAppBoundsIfNeeded() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController).getDisplay(Display.DEFAULT_DISPLAY);
-        final WindowContainerToken token = TestRunningTaskInfoBuilder.createMockWCToken();
+        final WindowContainerToken token = new MockToken().token();
         final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
                 .setDisplayId(Display.DEFAULT_DISPLAY)
                 .setVisible(true);
@@ -1005,7 +1006,7 @@ public class WindowDecorationTests extends ShellTestCase {
     public void testRelayout_setAppBoundsIfNeeded_reset() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController).getDisplay(Display.DEFAULT_DISPLAY);
-        final WindowContainerToken token = TestRunningTaskInfoBuilder.createMockWCToken();
+        final WindowContainerToken token = new MockToken().token();
         final TestRunningTaskInfoBuilder builder = new TestRunningTaskInfoBuilder()
                 .setDisplayId(Display.DEFAULT_DISPLAY)
                 .setVisible(true);

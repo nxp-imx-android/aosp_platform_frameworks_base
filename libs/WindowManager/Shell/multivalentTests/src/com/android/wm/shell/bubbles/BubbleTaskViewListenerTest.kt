@@ -25,7 +25,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.graphics.drawable.Icon
-import android.os.IBinder
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
@@ -33,7 +32,6 @@ import android.service.notification.NotificationListenerService.Ranking
 import android.service.notification.StatusBarNotification
 import android.view.View
 import android.widget.FrameLayout
-import android.window.IWindowContainerToken
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
@@ -45,6 +43,7 @@ import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+import com.android.wm.shell.MockToken
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleMetadataFlagListener
@@ -87,9 +86,7 @@ class BubbleTaskViewListenerTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
     private val taskOrganizer = mock<ShellTaskOrganizer>()
-    private val taskViewTaskToken = WindowContainerToken(mock<IWindowContainerToken> {
-        on { asBinder() } doReturn mock<IBinder>()
-    })
+    private val taskViewTaskToken: WindowContainerToken = MockToken.token()
     private var taskViewController = mock<TaskViewController>()
     private val taskInfo = mock<ActivityManager.RunningTaskInfo>()
     private val taskViewTaskController = mock<TaskViewTaskController> {

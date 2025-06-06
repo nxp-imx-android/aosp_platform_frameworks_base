@@ -54,7 +54,6 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.view.ViewRootImpl;
-import android.window.IWindowContainerToken;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -64,6 +63,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.launcher3.icons.BubbleIconFactory;
+import com.android.wm.shell.MockToken;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
@@ -166,7 +166,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     private ActivityManager.RunningTaskInfo setupBubble() {
         final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        final WindowContainerToken token = createMockToken();
+        final WindowContainerToken token = new MockToken().token();
         taskInfo.token = token;
         when(mTaskViewTaskController.getTaskInfo()).thenReturn(taskInfo);
         when(mTaskView.getController()).thenReturn(mTaskViewTaskController);
@@ -211,13 +211,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
         return info;
-    }
-
-    private WindowContainerToken createMockToken() {
-        final IWindowContainerToken itoken = mock(IWindowContainerToken.class);
-        final IBinder asBinder = mock(IBinder.class);
-        when(itoken.asBinder()).thenReturn(asBinder);
-        return new WindowContainerToken(itoken);
     }
 
     @Test
