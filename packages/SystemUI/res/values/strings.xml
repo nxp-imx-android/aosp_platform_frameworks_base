@@ -2075,6 +2075,8 @@
     <string name="satellite_connected_carrier_text">Satellite SOS</string>
     <!-- Text displayed indicating that the user might be able to use satellite SOS. -->
     <string name="satellite_emergency_only_carrier_text">Emergency calls or SOS only</string>
+    <!-- Text displayed indicating current network is satellite network. -->
+    <string name="satellite_network_title_text">Satellite network</string>
 
     <!-- Content description skeleton. Input strings should be carrier name and signal bar description [CHAR LIMIT=NONE]-->
     <string name="accessibility_phone_string_format"><xliff:g id="carrier_name" example="Carrier Name">%1$s</xliff:g>, <xliff:g id="signal_strength_description" example="two bars">%2$s</xliff:g>.</string>

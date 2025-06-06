@@ -1020,6 +1020,10 @@ constructor(
             override fun onWifiScan(isScan: Boolean) {
                 setProgressBarVisible(isScan)
             }
+
+            override fun onSatelliteModemStateChanged(state: Int) {
+                updateContent(shouldUpdateMobileNetwork = true)
+            }
         }
 
     enum class InternetDetailsEvent(private val id: Int) : UiEventLogger.UiEventEnum {
