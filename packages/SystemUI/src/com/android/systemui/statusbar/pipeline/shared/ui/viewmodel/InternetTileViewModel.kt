@@ -26,6 +26,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tileimpl.QSTileImpl.ResourceIcon
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
@@ -59,6 +60,7 @@ constructor(
     connectivityRepository: ConnectivityRepository,
     ethernetInteractor: EthernetInteractor,
     mobileIconsInteractor: MobileIconsInteractor,
+    mobileContextProvider: MobileContextProvider,
     wifiInteractor: WifiInteractor,
     private val context: Context,
     @Background scope: CoroutineScope,
@@ -91,7 +93,9 @@ constructor(
                 flowOf(null)
             } else {
                 combine(it.isRoaming, it.networkTypeIconGroup) { isRoaming, networkTypeIconGroup ->
-                    val cd = loadString(networkTypeIconGroup.contentDescription)
+                    val mobileContext =
+                        mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                    val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
                     if (isRoaming) {
                         val roaming = context.getString(R.string.data_connection_roaming)
                         if (cd != null) {
@@ -165,7 +169,7 @@ constructor(
         )
     }
 
-    private fun loadString(resId: Int): CharSequence? =
+    private fun loadString(resId: Int, context: Context): CharSequence? =
         if (resId > 0) {
             context.getString(resId)
         } else {

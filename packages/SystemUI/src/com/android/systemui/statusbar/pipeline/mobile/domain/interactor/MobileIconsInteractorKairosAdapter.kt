@@ -212,6 +212,7 @@ constructor(
 
     override fun getMobileConnectionInteractorForSubId(subId: Int): MobileIconInteractor =
         object : MobileIconInteractor {
+            override val subscriptionId = subId
             override val tableLogBuffer: TableLogBuffer =
                 logFactory.getOrCreate(tableBufferLogName(subId), MOBILE_CONNECTION_BUFFER_SIZE)
             override val activity: Flow<DataActivityModel> = latest { activity }
