@@ -105,10 +105,15 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     private DistanceGestureContext mDistanceGestureContext;
     private ViewMotionValue mViewMotionValue;
     /**
-     * The @SnapPosition where the user started dragging from. Used for mid-drag calculations, null
-     * otherwise.
+     * The @SnapPosition where the user started dragging from. Assigned at the beginning of a drag
+     * and set back to null once the drag ends.
      */
     @Nullable private Integer mDragStartingSnapPosition;
+    /**
+     * When the divider is dragged out of the starting region {@link #mDragStartingSnapPosition}
+     * for the first time, this is flipped to true. Used for tooltip logic.
+     */
+    private boolean mDraggedOutOfStartingRegion = false;
     @Nullable private Integer mLastHoveredOverSnapPosition;
 
     /**
@@ -446,6 +451,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                                 mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
                                 "dividerView::pos" /* label */);
                         mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
+                        // Set a "starting region" in which we don't want to show the tooltip yet.
                         mDragStartingSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
                         mViewMotionValue.addUpdateCallback(viewMotionValue -> {
                             int snappedPosition = (int) viewMotionValue.getOutput();
@@ -464,7 +470,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                             // - Update the last-hovered-over snap zone
                             mLastHoveredOverSnapPosition = currentlyHoveredOverSnapZone;
                             // - Update tooltip state if needed
-                            if (SHOW_DRAG_TOOLTIP && changedSnapPosition) {
+                            if (SHOW_DRAG_TOOLTIP) {
                                 // - Update internal state for closest snap position (i.e. where the
                                 // user will end up if drag is released)
                                 final float velocity = isLeftRightSplit
@@ -474,10 +480,16 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                                         .findSnapTarget(snappedPosition,
                                                 velocity, false /* hardDismiss */)
                                         .snapPosition;
-                                if (closestSnapPosition != mDragStartingSnapPosition) {
+                                // If we are still in the starting zone, wait until the user drags
+                                // to a point where the closest snap position is a different one.
+                                if (!mDraggedOutOfStartingRegion
+                                        && closestSnapPosition != mDragStartingSnapPosition) {
+                                    mDraggedOutOfStartingRegion = true;
+                                }
+                                // Afterwards, always show the tooltip, updating to reflect the
+                                // nearest snap point.
+                                if (mDraggedOutOfStartingRegion) {
                                     showTooltip(snapPositionToUIString(closestSnapPosition));
-                                } else {
-                                    hideTooltip();
                                 }
                             }
                         });
@@ -573,6 +585,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
         mViewMotionValue = null;
         mLastHoveredOverSnapPosition = null;
         mDragStartingSnapPosition = null;
+        mDraggedOutOfStartingRegion = false;
         hideTooltip();
     }
 
