@@ -90,6 +90,7 @@ import android.telephony.emergency.EmergencyNumber;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
+import android.util.Log;
 import android.util.MutableLong;
 import android.util.Pair;
 import android.util.Slog;
@@ -315,7 +316,7 @@ public class DeviceIdleController extends SystemService
     private static final String USER_ALLOWLIST_REMOVAL_METRIC_ID =
             "battery.value_app_removed_from_power_allowlist";
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private static final boolean COMPRESS_TIME = false;
 
