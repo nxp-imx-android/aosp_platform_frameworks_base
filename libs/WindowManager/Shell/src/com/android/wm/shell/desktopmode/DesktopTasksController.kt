@@ -2797,7 +2797,7 @@ class DesktopTasksController(
             TransitionUtil.isOpeningType(request.type) &&
             taskRepository.isActiveTask(triggerTask.taskId))
 
-    /** Returns whether a visible fullscreen task is being relaunched on the same display or not. */
+    /** Returns whether a fullscreen task is being relaunched on the same display or not. */
     private fun isFullscreenRelaunch(
         triggerTask: RunningTaskInfo,
         @WindowManager.TransitionType requestType: Int,
@@ -2809,7 +2809,6 @@ class DesktopTasksController(
         return triggerTask.isFullscreen &&
             TransitionUtil.isOpeningType(requestType) &&
             existingTask.isFullscreen &&
-            existingTask.isVisible &&
             existingTask.displayId == triggerTask.displayId
     }
 
@@ -3246,21 +3245,27 @@ class DesktopTasksController(
         task: RunningTaskInfo,
         @WindowManager.TransitionType requestType: Int,
     ): Boolean {
+        val isDesktopFirst = rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(task.displayId)
         if (
             DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
+                isDesktopFirst &&
                 isFullscreenRelaunch(task, requestType)
         ) {
-            logV("shouldFullscreenTaskLaunchSwitchToDesktop: no switch as fullscreen relaunch")
+            logV(
+                "shouldFullscreenTaskLaunchSwitchToDesktop: no switch as fullscreen relaunch on" +
+                    " desktop-first display#%s",
+                task.displayId,
+            )
             return false
         }
+
         val isAnyDeskActive = isAnyDeskActive(task.displayId)
-        val forceEnterDesktop = forceEnterDesktop(task.displayId)
         logV(
-            "shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s, forceEnterDesktop=%s",
+            "shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s, isDesktopFirst=%s",
             isAnyDeskActive,
-            forceEnterDesktop,
+            isDesktopFirst,
         )
-        return isAnyDeskActive || forceEnterDesktop
+        return isAnyDeskActive || isDesktopFirst
     }
 
     /**
