@@ -278,6 +278,7 @@ import android.content.pm.VersionedPackage;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.drawable.Icon;
+import android.hardware.display.DisplayManager;
 import android.metrics.LogMaker;
 import android.net.Uri;
 import android.os.Binder;
@@ -334,6 +335,8 @@ import android.service.notification.ZenModeProto;
 import android.service.notification.ZenPolicy;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
+import android.text.Annotation;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArrayMap;
@@ -352,8 +355,7 @@ import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
-import android.text.Spanned;
-import android.text.Annotation;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -683,6 +685,7 @@ public class NotificationManagerService extends SystemService {
 
     // Can be null for wear
     @Nullable StatusBarManagerInternal mStatusBar;
+    private DisplayManager mDisplayManager;
     private WindowManagerInternal mWindowManagerInternal;
     private AlarmManager mAlarmManager;
     @VisibleForTesting
@@ -3466,6 +3469,7 @@ public class NotificationManagerService extends SystemService {
     @VisibleForTesting
     void onBootPhase(int phase, Looper mainLooper) {
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
+            mDisplayManager = getContext().getSystemService(DisplayManager.class);
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
             mZenModeHelper.onSystemReady();
             RoleObserver roleObserver = new RoleObserver(getContext(),
@@ -4156,6 +4160,20 @@ public class NotificationManagerService extends SystemService {
                                 userDisplayId, userId);
                     }
                     displayId = userDisplayId;
+                }
+            }
+
+            // If the display cannot host tasks (such as a display used for mirroring), show the
+            // toast on default display instead.
+            if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+                Display display = mDisplayManager.getDisplay(displayId);
+                if (display != null && !display.canHostTasks()) {
+                    if (DBG) {
+                        Slogf.d(TAG, "Changing display id from %d to %d, because display %d "
+                                        + "cannot host tasks",
+                                displayId, Display.DEFAULT_DISPLAY, displayId);
+                    }
+                    displayId = Display.DEFAULT_DISPLAY;
                 }
             }
 
