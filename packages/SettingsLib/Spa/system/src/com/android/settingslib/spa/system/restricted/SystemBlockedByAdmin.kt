@@ -16,15 +16,21 @@
 
 package com.android.settingslib.spa.system.restricted
 
+import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import com.android.settingslib.spa.restricted.BlockedWithDetails
 
-internal class SystemBlockedByAdmin(private val context: Context) : BlockedWithDetails {
+internal class SystemBlockedByAdmin(private val context: Context, private val key: String) :
+    BlockedWithDetails {
     override val canOverrideSwitchChecked = true
 
     override fun showDetails() {
-        context.startActivity(Intent(Settings.ACTION_SHOW_ADMIN_SUPPORT_DETAILS))
+        context.startActivity(
+            Intent(Settings.ACTION_SHOW_ADMIN_SUPPORT_DETAILS).apply {
+                putExtra(DevicePolicyManager.EXTRA_RESTRICTION, key)
+            }
+        )
     }
 }
