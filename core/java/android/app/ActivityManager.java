@@ -4312,7 +4312,6 @@ public class ActivityManager {
      *         the order from most recent to least recent.
      */
     @NonNull
-    @FlaggedApi(Flags.FLAG_APP_START_INFO)
     public List<ApplicationStartInfo> getHistoricalProcessStartReasons(
             @IntRange(from = 0) int maxNum) {
         try {
@@ -4346,7 +4345,6 @@ public class ActivityManager {
      */
     @NonNull
     @SystemApi
-    @FlaggedApi(Flags.FLAG_APP_START_INFO)
     @RequiresPermission(Manifest.permission.DUMP)
     public List<ApplicationStartInfo> getExternalHistoricalProcessStartReasons(
             @NonNull String packageName, @IntRange(from = 0) int maxNum) {
@@ -4399,7 +4397,6 @@ public class ActivityManager {
      *
      * @throws IllegalArgumentException if executor or listener are null.
      */
-    @FlaggedApi(Flags.FLAG_APP_START_INFO)
     public void addApplicationStartInfoCompletionListener(@NonNull final Executor executor,
             @NonNull final Consumer<ApplicationStartInfo> listener) {
         Preconditions.checkNotNull(executor, "executor cannot be null");
@@ -4450,7 +4447,6 @@ public class ActivityManager {
     /**
      * Removes the provided callback set by {@link #addApplicationStartInfoCompletionListener}.
      */
-    @FlaggedApi(Flags.FLAG_APP_START_INFO)
     public void removeApplicationStartInfoCompletionListener(
             @NonNull final Consumer<ApplicationStartInfo> listener) {
         Preconditions.checkNotNull(listener, "listener cannot be null");
@@ -4490,7 +4486,6 @@ public class ActivityManager {
      *                    Will thow {@link java.lang.IllegalArgumentException} if not in range.
      * @param timestampNs Clock monotonic time in nanoseconds of event to be recorded.
      */
-    @FlaggedApi(Flags.FLAG_APP_START_INFO)
     public void addStartInfoTimestamp(@IntRange(
             from = ApplicationStartInfo.START_TIMESTAMP_RESERVED_RANGE_DEVELOPER_START,
             to = ApplicationStartInfo.START_TIMESTAMP_RESERVED_RANGE_DEVELOPER) int key,
