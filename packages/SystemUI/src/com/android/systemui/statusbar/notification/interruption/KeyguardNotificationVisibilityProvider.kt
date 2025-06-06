@@ -11,6 +11,7 @@ import android.provider.Settings
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.CoreStartable
+import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlagsClassic
@@ -186,6 +187,9 @@ constructor(
 
     override fun shouldHideNotification(entry: NotificationEntry): Boolean =
         when {
+            // Don't hide notifications if we're in a dream. The dream status bar needs
+            // notifications to render ongoing call chip.
+            OngoingActivityChipsOnDream.isEnabled && keyguardUpdateMonitor.isDreaming -> false
             // Keyguard state doesn't matter if the keyguard is not showing.
             !isLockedOrLocking -> false
             // Notifications not allowed on the lockscreen, always hide.
