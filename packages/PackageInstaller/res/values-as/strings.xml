@@ -21,6 +21,12 @@
     <string name="update" msgid="3932142540719227615">"আপডে’ট কৰক"</string>
     <string name="done" msgid="6632441120016885253">"সম্পন্ন হ’ল"</string>
     <string name="cancel" msgid="1018267193425558088">"বাতিল কৰক"</string>
+    <!-- no translation found for try_again (3754399538069264237) -->
+    <skip />
+    <!-- no translation found for install_anyway (8794642873773384969) -->
+    <skip />
+    <!-- no translation found for dont_install (414055123295505225) -->
+    <skip />
     <string name="installing" msgid="4921993079741206516">"ইনষ্টল কৰি থকা হৈছে…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> ইনষ্টল কৰি থকা হৈছে…"</string>
     <string name="install_done" msgid="5987363587661783896">"এপ্ ইনষ্টল কৰা হ’ল।"</string>
@@ -43,6 +49,14 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"আপোনাৰ প্ৰশাসকে অজ্ঞাত উৎসৰ পৰা পোৱা এপ্ ইনষ্টল কৰাৰ অনুমতি দিয়া নাই"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"এই ব্যৱহাৰকাৰীয়ে অজ্ঞাত উৎসৰপৰা পোৱা এপ্‌সমূহ ইনষ্টল কৰিব নোৱাৰে"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"এই ব্যৱহাৰকাৰীজনৰ এপ্ ইনষ্টল কৰাৰ অনুমতি নাই"</string>
+    <!-- no translation found for verification_incomplete_summary (40478808885845735) -->
+    <skip />
+    <!-- no translation found for cannot_install_verification_unavailable_summary (2469994565312971465) -->
+    <skip />
+    <!-- no translation found for cannot_install_package_summary (3358675485628657234) -->
+    <skip />
+    <!-- no translation found for lite_verification_summary (3211866126230002977) -->
+    <skip />
     <string name="ok" msgid="7871959885003339302">"ঠিক আছে"</string>
     <string name="archive" msgid="4447791830199354721">"আৰ্কাইভ কৰক"</string>
     <string name="update_anyway" msgid="8792432341346261969">"যিকোনো প্ৰকাৰে আপডে’ট কৰক"</string>
