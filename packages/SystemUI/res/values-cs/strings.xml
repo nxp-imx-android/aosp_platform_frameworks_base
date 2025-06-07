@@ -263,10 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Sbalit skupinu."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Přidat zařízení do skupiny."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Odstranit zařízení ze skupiny."</string>
-    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
-    <skip />
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"Přidat zařízení <xliff:g id="DEVICE_NAME">%s</xliff:g> do skupiny."</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"Odebrat zařízení <xliff:g id="DEVICE_NAME">%s</xliff:g> ze skupiny."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Otevřít aplikaci."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Nepřipojeno."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -304,6 +302,12 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"Kratší doba"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"Odesílání obrazovky zastaveno."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"Jas displeje"</string>
+    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
+    <skip />
+    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
+    <skip />
+    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
+    <skip />
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"Mobilní data byla pozastavena"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"Data jsou pozastavena"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"Byl dosažen limit dat. Mobilní datové připojení již nepoužíváte.\n\nPokud jej obnovíte, mohou vám být účtovány poplatky za využití dat."</string>
@@ -653,6 +657,8 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Vypnout"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Starší oznámení se zobrazí po odemknutí"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Toto zařízení spravuje rodič"</string>
+    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
+    <skip />
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Toto zařízení vlastní vaše organizace, která může sledovat síťový provoz"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Toto zařízení spravuje organizace <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>, která může sledovat síťový provoz"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"Toto zařízení poskytuje <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -693,6 +699,8 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Otevřít nastavení VPN"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Toto zařízení spravuje rodič. Rodič může zobrazit údaje, jako jsou používané aplikace, tvá poloha a čas strávený na zařízení."</string>
+    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Odemknutí udržováno funkcí TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Zařízení bylo uzamčeno, příliš mnoho pokusů o ověření"</string>
@@ -796,6 +804,8 @@
     <string name="status_bar_work" msgid="5238641949837091056">"Pracovní profil"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Režim Letadlo"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Rodičovská kontrola"</string>
+    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
+    <skip />
     <string name="zen_alarm_warning" msgid="7844303238486849503">"Svůj další budík <xliff:g id="WHEN">%1$s</xliff:g> neuslyšíte"</string>
     <string name="alarm_template" msgid="2234991538018805736">"v <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -806,6 +816,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, připojení je k dispozici"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS přes satelit"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Pouze tísňové hovory nebo SOS"</string>
+    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"není signál"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"jedna čárka"</string>
@@ -826,19 +838,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Zapnout"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Zapnuto – podle obličeje"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Ztlumení a seskupená oznámení"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Používejte organizátor oznámení"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Pro aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Prodej, nové funkce atd."</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Top příběhy, úvodníky atd."</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Lajky, příspěvky atd."</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Zpravodaje, doporučená média atd."</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Zapnout"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Delší konverzace si teď můžete nechat shrnout do stručné rekapitulace"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Organizátor oznámení seskupí a ztlumí oznámení s nižší prioritou"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Hotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Použít"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Vypnout"</string>

@@ -263,10 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"그룹을 접습니다."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"기기를 그룹에 추가합니다."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"그룹에서 기기를 삭제합니다."</string>
-    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
-    <skip />
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> 기기를 그룹에 추가합니다."</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"그룹에서 <xliff:g id="DEVICE_NAME">%s</xliff:g> 기기를 삭제합니다."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"애플리케이션을 엽니다."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"연결되지 않았습니다."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"로밍"</string>
@@ -302,6 +300,12 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"시간 줄이기"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"화면 전송이 중지되었습니다."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"디스플레이 밝기"</string>
+    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
+    <skip />
+    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
+    <skip />
+    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
+    <skip />
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"모바일 데이터가 일시중지됨"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"데이터 사용 중지됨"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"설정한 데이터 한도에 도달했습니다. 더 이상 모바일 데이터를 사용하지 않습니다.\n\n계속하면 데이터 사용량에 따라 요금이 부과될 수 있습니다."</string>
@@ -651,6 +655,8 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"사용 중지"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"잠금 해제하여 이전 알림 보기"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"부모님이 관리하는 기기입니다."</string>
+    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
+    <skip />
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"내 조직에서 이 기기를 소유하며 네트워크 트래픽을 모니터링할 수 있습니다."</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>에서 이 기기를 소유하며 네트워크 트래픽을 모니터링할 수 있습니다."</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>에서 제공하는 기기"</string>
@@ -691,6 +697,8 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN 설정 열기"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"부모님이 관리하는 기기입니다. 부모님이 내가 사용하는 앱, 내 위치, 기기 사용 시간과 같은 정보를 보고 관리할 수 있습니다."</string>
+    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent가 잠금 해제함"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"인증 시도 횟수가 너무 많아 기기가 잠겼습니다."</string>
@@ -794,6 +802,8 @@
     <string name="status_bar_work" msgid="5238641949837091056">"직장 프로필"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"비행기 모드"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"자녀 보호 기능"</string>
+    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
+    <skip />
     <string name="zen_alarm_warning" msgid="7844303238486849503">"<xliff:g id="WHEN">%1$s</xliff:g>에 다음 알람을 들을 수 없습니다."</string>
     <string name="alarm_template" msgid="2234991538018805736">"시간: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"일시: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -804,6 +814,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"위성, 연결 가능"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"위성 긴급 SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"긴급 전화 또는 SOS만"</string>
+    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"신호가 없습니다"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"신호 막대가 1개입니다"</string>
@@ -824,19 +836,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"사용"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"켜짐 - 얼굴 기준"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"알림 음소거 및 번들"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"알림 정리 도구 사용"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>용"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"할인, 새로운 기능 등"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"주요 뉴스, 사설 등"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"좋아요, 게시물 등"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"뉴스레터, 추천 미디어 등"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"사용"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"이제 긴 대화를 요약하여 빠르게 내용을 확인할 수 있습니다."</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"알림 정리 도구는 우선순위가 낮은 알림을 번들로 묶고 무음 처리합니다."</string>
     <string name="inline_done_button" msgid="6043094985588909584">"완료"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"적용"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"사용 중지"</string>

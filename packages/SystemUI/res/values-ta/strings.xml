@@ -263,10 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"குழுவைச் சுருக்கும்."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"குழுவில் சாதனத்தைச் சேர்க்கும்."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"குழுவிலிருந்து சாதனத்தை அகற்றும்."</string>
-    <!-- no translation found for accessibility_add_device_to_group_with_name (1042306202917036858) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group_with_name (5582015497111561027) -->
-    <skip />
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"குழுவில் <xliff:g id="DEVICE_NAME">%s</xliff:g> சாதனத்தைச் சேர்க்கும்."</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"குழுவிலிருந்து <xliff:g id="DEVICE_NAME">%s</xliff:g> சாதனத்தை அகற்றும்."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ஆப்ஸைத் திறக்கும்."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"இணைக்கப்படவில்லை."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ரோமிங்"</string>
@@ -302,6 +300,12 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"நேரத்தைக் குறை."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"திரையை அனுப்புதல் நிறுத்தப்பட்டது."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"திரை பிரகாசம்"</string>
+    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
+    <skip />
+    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
+    <skip />
+    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
+    <skip />
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"மொபைல் டேட்டா இடைநிறுத்தப்பட்டுள்ளது"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"தரவு இடைநிறுத்தப்பட்டது"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"நீங்கள் அமைத்த டேட்டா வரம்பை அடைந்துவிட்டீர்கள். இப்போது மொபைல் டேட்டாவைப் பயன்படுத்தவில்லை.\n\nமீண்டும் மொபைல் டேட்டாவைப் பயன்படுத்தத் தொடங்கினால், டேட்டா உபயோகத்திற்குக் கட்டணம் விதிக்கப்படலாம்."</string>
@@ -651,6 +655,8 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"முடக்கு"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"பழைய அறிவிப்பைப் பார்க்க அன்லாக் செய்க"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"இந்தச் சாதனம் உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது"</string>
+    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
+    <skip />
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"இந்த சாதனம் உங்கள் நிறுவனத்துக்கு உரியது, நெட்வொர்க் ட்ராஃபிக்கையும் நிறுவனமே கண்காணிக்கக்கூடும்"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"இந்த சாதனம் <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> நிறுவனத்துக்கு உரியது, நெட்வொர்க் ட்ராஃபிக்கையும் நிறுவனமே கண்காணிக்கக்கூடும்"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"இந்தச் சாதனம் <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> நிறுவனத்தால் வழங்கப்பட்டது"</string>
@@ -691,6 +697,8 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN அமைப்புகளைத் திற"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"இந்தச் சாதனம் உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது. நீங்கள் பயன்படுத்தும் ஆப்ஸ், இருப்பிடம், பயன்படுத்திய நேரம் ஆகியவற்றைப் பார்க்கவும் நிர்வகிக்கவும் உங்கள் பெற்றோரால் முடியும்."</string>
+    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent இதைத் திறந்தே வைத்துள்ளது"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"அளவுக்கதிகமான அங்கீகரிப்பு முயற்சிகளால் சாதனம் பூட்டப்பட்டது"</string>
@@ -794,6 +802,8 @@
     <string name="status_bar_work" msgid="5238641949837091056">"பணிக் கணக்கு"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"விமானப் பயன்முறை"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"பெற்றோர் கட்டுப்பாடுகள்"</string>
+    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
+    <skip />
     <string name="zen_alarm_warning" msgid="7844303238486849503">"அடுத்த அலாரத்தை <xliff:g id="WHEN">%1$s</xliff:g> மணிக்கு கேட்க மாட்டீர்கள்"</string>
     <string name="alarm_template" msgid="2234991538018805736">"<xliff:g id="WHEN">%1$s</xliff:g> மணிக்கு"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g> மணிக்கு"</string>
@@ -804,6 +814,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"சாட்டிலைட், இணைப்பு கிடைக்கிறது"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"சாட்டிலைட் SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"அவசர அழைப்புகள் அல்லது SOS மட்டும்"</string>
+    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"சிக்னல் இல்லை"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"ஒரு கோடு"</string>
@@ -824,19 +836,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"இயக்கு"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ஆன் - முகம் அடிப்படையிலானது"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ஒலியடக்குதல் மற்றும் தொகுப்பு"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"அறிவிப்பு ஒருங்கிணைப்பைப் பயன்படுத்துதல்"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>க்கானவை:"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"விற்பனை, புதிய அம்சங்கள் மற்றும் பல"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"முதன்மைச் செய்திகள், சிறப்புக் கட்டுரைகள் மற்றும் பல"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"விருப்பங்கள், பதிவுகள் மற்றும் பல"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"செய்திமடல்கள், பரிந்துரைக்கப்படும் மீடியா மற்றும் பல"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ஆன் செய்"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"உங்களின் நீண்ட உரையாடல்களை இப்போது சுருக்கி, விரைவு ரீகேப்களை உங்களுக்கு வழங்கலாம்"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"அறிவிப்பு ஒருங்கிணைப்பு குறைந்த முன்னுரிமை இருக்கும் அறிவிப்புகளைத் தொகுத்து ஒலியடக்குகிறது"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"முடிந்தது"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"பயன்படுத்து"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ஆஃப் செய்"</string>
