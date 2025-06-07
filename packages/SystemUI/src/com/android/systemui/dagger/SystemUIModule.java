@@ -67,7 +67,6 @@ import com.android.systemui.demomode.dagger.DemoModeModule;
 import com.android.systemui.desktop.dagger.DesktopModule;
 import com.android.systemui.deviceentry.DeviceEntryModule;
 import com.android.systemui.display.DisplayModule;
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.doze.dagger.DozeComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.flags.FeatureFlags;
@@ -314,7 +313,6 @@ import javax.inject.Named;
                 NavigationBarComponent.class,
                 NotificationRowComponent.class,
                 WindowRootViewComponent.class,
-                SystemUIDisplaySubcomponent.class,
                 BundleRowComponent.class,
         })
 public abstract class SystemUIModule {

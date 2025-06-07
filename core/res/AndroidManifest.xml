@@ -2184,6 +2184,14 @@
         android:featureFlag="android.location.flags.population_density_provider"
         android:protectionLevel="signature" />
 
+    <!-- @SystemApi @hide Allows an application to access location bypass allowlist.
+         <p>Not for use by third-party applications.
+         @FlaggedApi(android.location.flags.Flags.FLAG_CHANGE_GET_ADAS_ALLOWLIST_FROM_HIDDEN_TO_SYSTEM)
+    -->
+    <permission android:name="android.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.location.flags.change_get_adas_allowlist_from_hidden_to_system" />
+
     <!-- ======================================= -->
     <!-- Permissions for accessing networks -->
     <!-- ======================================= -->
@@ -5343,12 +5351,12 @@
                 android:featureFlag="android.xr.xr_manifest_entries" />
 
     <!-- Used for permissions that are associated with accessing
-         particularly sensitive XR tracking data.
+         sensitive XR eye tracking data.
 
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
-    <permission-group android:name="android.permission-group.XR_TRACKING_SENSITIVE"
-                      android:label="@string/permgrouplab_xr_tracking_sensitive"
-                      android:description="@string/permgroupdesc_xr_tracking_sensitive"
+    <permission-group android:name="android.permission-group.XR_EYE_SENSITIVE"
+                      android:label="@string/permgrouplab_xr_eye_sensitive"
+                      android:description="@string/permgroupdesc_xr_eye_sensitive"
                       android:priority="100"
                       android:featureFlag="android.xr.xr_manifest_entries" />
 
@@ -5363,6 +5371,16 @@
                 android:label="@string/permlab_eye_tracking_fine"
                 android:description="@string/permdesc_eye_tracking_fine"
                 android:featureFlag="android.xr.xr_manifest_entries" />
+
+    <!-- Used for permissions that are associated with accessing
+         sensitive XR tracking data.
+
+         @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
+    <permission-group android:name="android.permission-group.XR_TRACKING_SENSITIVE"
+                      android:label="@string/permgrouplab_xr_tracking_sensitive"
+                      android:description="@string/permgroupdesc_xr_tracking_sensitive"
+                      android:priority="100"
+                      android:featureFlag="android.xr.xr_manifest_entries" />
 
     <!-- Allows an application to get head tracking data.  Unmanaged
          activities (OpenXR activities with the manifest property
@@ -7453,6 +7471,14 @@
     <permission android:name="android.permission.USE_COLORIZED_NOTIFICATIONS"
                 android:protectionLevel="signature|setup|role" />
 
+    <!-- @hide @SystemApi Allows an application running a foreground service to hide the
+    notification icon from the status bar.
+    <p>Not for use by third-party applications.
+    @FlaggedApi(android.app.Flags.FLAG_HIDE_STATUS_BAR_NOTIFICATION)-->
+    <permission android:name="android.permission.HIDE_STATUS_BAR_NOTIFICATION"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.app.hide_status_bar_notification"/>
+
     <!-- Allows access to keyguard secure storage.  Only allowed for system processes.
         @hide -->
     <permission android:name="android.permission.ACCESS_KEYGUARD_SECURE_STORAGE"
@@ -8589,11 +8615,21 @@
     <!-- Allows an application to perform actions on behalf of users inside of
          applications.
          <p>This permission is currently only granted to privileged system apps.
-         <p>Protection level: internal|privileged
-         @FlaggedApi(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER)  -->
+         <p>Protection level: internal|privileged -->
     <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
-        android:featureFlag="android.app.appfunctions.flags.enable_app_function_manager"
+        android:featureFlag="!android.permission.flags.app_function_access_api_enabled"
         android:protectionLevel="internal|privileged" />
+
+    <!-- Allows an application to perform actions on behalf of users inside of
+     applications.
+     <p>To execute a function in another app, an application must first hold the
+        android.permission.EXECUTE_APP_FUNCTIONS permission. In addition, the application must be
+        on a device allowlist, and its ability to execute functions is subject to user approval or
+        disapproval.
+     <p>Protection level: normal -->
+    <permission android:name="android.permission.EXECUTE_APP_FUNCTIONS"
+        android:featureFlag="android.permission.flags.app_function_access_api_enabled"
+        android:protectionLevel="normal" />
 
     <!-- Allows an application to display its suggestions using the autofill framework.
          <p>For now, this permission is only granted to the Browser application.
@@ -9056,7 +9092,11 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.security.secure_lockdown" />
 
-    <!-- Allows app to enter trade-in-mode.
+    <!-- Allows app to enter trade-in-mode and fetch hardware diagnostics info.
+        The permission name was initially introduced to be used for the tradeinmode evaluate
+        command to enter evaluation mode. TradeInModeService which implements evaluation mode
+        was extended to gather diagnostic signals so this permission is also extended to cover
+        those use cases.
         <p>Protection level: signature
         @hide
     -->
@@ -9153,6 +9193,40 @@
     <permission android:name="android.permission.REPOSITION_SELF_WINDOWS"
         android:protectionLevel="internal|role"
         android:featureFlag="com.android.window.flags.enable_window_repositioning_api" />
+
+    <!-- @SystemApi
+        @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
+        Allows app to be the developer verification agent to verify packages.
+        <p>Protection level: signature|privileged
+        @hide
+    -->
+    <permission android:name="android.permission.DEVELOPER_VERIFICATION_AGENT"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.content.pm.verification_service" />
+
+    <!-- @SystemApi
+        @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
+        Must be required by a privileged {@link android.content.pm.verify.developer.DeveloperVerifierService}
+        to ensure that only the system can bind to it.
+        This permission should not be held by anything other than the system.
+        <p>Not for use by third-party applications. </p>
+        <p>Protection level: signature
+        @hide
+    -->
+    <permission android:name="android.permission.BIND_DEVELOPER_VERIFICATION_AGENT"
+        android:protectionLevel="internal"
+        android:featureFlag="android.content.pm.verification_service" />
+
+     <!-- @SystemApi
+        @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
+        Allows only the default PackageInstaller app to set user's response for
+        an incomplete developer verification.
+        <p>Protection level: internal|installer
+        @hide
+    -->
+    <permission android:name="android.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE"
+        android:protectionLevel="internal|installer"
+        android:featureFlag="android.content.pm.verification_service" />
 
     <!-- Attribution for Geofencing service. -->
     <attribution android:tag="GeofencingService" android:label="@string/geofencing_service"/>

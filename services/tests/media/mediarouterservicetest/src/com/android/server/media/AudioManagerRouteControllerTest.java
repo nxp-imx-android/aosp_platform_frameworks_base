@@ -105,7 +105,7 @@ public class AudioManagerRouteControllerTest {
     private AudioDeviceInfo mSelectedAudioDeviceInfo;
     private Set<AudioDeviceInfo> mAvailableAudioDeviceInfos;
     @Mock private AudioManager mMockAudioManager;
-    @Mock private DeviceRouteController.OnDeviceRouteChangedListener mOnDeviceRouteChangedListener;
+    @Mock private DeviceRouteController.EventListener mEventListener;
     private AudioManagerRouteController mControllerUnderTest;
     private AudioDeviceCallback mAudioDeviceCallback;
     private AudioProductStrategy mMediaAudioProductStrategy;
@@ -142,7 +142,7 @@ public class AudioManagerRouteControllerTest {
                         Looper.getMainLooper(),
                         mMediaAudioProductStrategy,
                         btAdapter);
-        mControllerUnderTest.registerRouteChangeListener(mOnDeviceRouteChangedListener);
+        mControllerUnderTest.registerRouteChangeListener(mEventListener);
         mControllerUnderTest.start(UserHandle.CURRENT_OR_SELF);
 
         ArgumentCaptor<AudioDeviceCallback> deviceCallbackCaptor =
@@ -152,7 +152,7 @@ public class AudioManagerRouteControllerTest {
         mAudioDeviceCallback = deviceCallbackCaptor.getValue();
 
         // We clear any invocations during setup.
-        clearInvocations(mOnDeviceRouteChangedListener);
+        clearInvocations(mEventListener);
     }
 
     @After
@@ -168,7 +168,7 @@ public class AudioManagerRouteControllerTest {
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP);
-        verify(mOnDeviceRouteChangedListener).onDeviceRouteChanged();
+        verify(mEventListener).onDeviceRouteChanged();
         assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
 
@@ -185,12 +185,12 @@ public class AudioManagerRouteControllerTest {
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP,
                 FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
-        verify(mOnDeviceRouteChangedListener).onDeviceRouteChanged();
+        verify(mEventListener).onDeviceRouteChanged();
 
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP,
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_INFO_BLUETOOTH_A2DP);
-        verify(mOnDeviceRouteChangedListener, times(2)).onDeviceRouteChanged();
+        verify(mEventListener, times(2)).onDeviceRouteChanged();
         assertThat(mControllerUnderTest.getSelectedRoutes().getFirst().getType())
                 .isEqualTo(MediaRoute2Info.TYPE_BLUETOOTH_A2DP);
 
@@ -226,7 +226,7 @@ public class AudioManagerRouteControllerTest {
         addAvailableAudioDeviceInfo(
                 /* newSelectedDevice= */ null, // Selected device doesn't change.
                 /* newAvailableDevices...= */ FAKE_AUDIO_DEVICE_BUILTIN_EARPIECE);
-        verifyNoMoreInteractions(mOnDeviceRouteChangedListener);
+        verifyNoMoreInteractions(mEventListener);
         assertThat(
                         mControllerUnderTest.getAvailableRoutes().stream()
                                 .map(MediaRoute2Info::getType)
@@ -244,7 +244,7 @@ public class AudioManagerRouteControllerTest {
                 FAKE_AUDIO_DEVICE_INFO_WIRED_HEADSET);
         MediaRoute2Info builtInSpeakerRoute =
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_BUILTIN_SPEAKER);
-        mControllerUnderTest.transferTo(builtInSpeakerRoute.getId());
+        mControllerUnderTest.transferTo(/* requestId= */ 0L, builtInSpeakerRoute.getId());
         verify(mMockAudioManager, Mockito.timeout(ASYNC_CALL_TIMEOUTS_MS))
                 .setPreferredDeviceForStrategy(
                         mMediaAudioProductStrategy,
@@ -253,7 +253,7 @@ public class AudioManagerRouteControllerTest {
 
         MediaRoute2Info wiredHeadsetRoute =
                 getAvailableRouteWithType(MediaRoute2Info.TYPE_WIRED_HEADSET);
-        mControllerUnderTest.transferTo(wiredHeadsetRoute.getId());
+        mControllerUnderTest.transferTo(/* requestId= */ 0L, wiredHeadsetRoute.getId());
         verify(mMockAudioManager, Mockito.timeout(ASYNC_CALL_TIMEOUTS_MS))
                 .setPreferredDeviceForStrategy(
                         mMediaAudioProductStrategy,

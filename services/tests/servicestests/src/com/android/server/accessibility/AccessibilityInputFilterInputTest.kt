@@ -202,6 +202,9 @@ class AccessibilityInputFilterInputTest {
         if (this::inputManagerGlobalSession.isInitialized) {
             inputManagerGlobalSession.close()
         }
+        if (this::ams.isInitialized) {
+            ams.unregisterObservers()
+        }
     }
 
     /**

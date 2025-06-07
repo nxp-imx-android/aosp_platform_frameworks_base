@@ -20,6 +20,7 @@ import static com.android.internal.util.function.pooled.PooledLambda.obtainMessa
 import static com.android.media.flags.Flags.FLAG_ENABLE_BUILT_IN_SPEAKER_ROUTE_SUITABILITY_STATUSES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_GET_TRANSFERABLE_ROUTES;
 import static com.android.media.flags.Flags.FLAG_ENABLE_PRIVILEGED_ROUTING_FOR_MEDIA_ROUTING_CONTROL;
+import static com.android.media.flags.Flags.FLAG_ENABLE_ROUTE_VISIBILITY_CONTROL_API;
 import static com.android.media.flags.Flags.FLAG_ENABLE_SCREEN_OFF_SCANNING;
 import static com.android.media.flags.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API;
 
@@ -35,6 +36,7 @@ import android.annotation.TestApi;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -839,7 +841,27 @@ public final class MediaRouter2 {
      * call is ignored because the app is in the background.
      */
     public boolean showSystemOutputSwitcher() {
-        return mImpl.showSystemOutputSwitcher();
+        return mImpl.showSystemOutputSwitcher(null);
+    }
+
+    /**
+     * Shows the system output switcher dialog for a specific {@link MediaSession}.
+     *
+     * <p>The {@link MediaSession.Token} argument allows the system to identify which
+     * {@link RoutingSessionInfo routing session} to display as active. This is done via
+     * {@link MediaSession#setPlaybackToRemote} and {@link VolumeProvider#getVolumeControlId} when
+     * playing remotely, and {@link MediaSession#setPlaybackToLocal} when playing on this device.
+     *
+     * <p>This method is preferred over {@link #showSystemOutputSwitcher()} to prevent the system
+     * from making wrong inferences about where playback is happening.
+     *
+     * @return {@code true} if the output switcher dialog is being shown, or {@code false} if the
+     * call is ignored because the app is in the background.
+     */
+    @FlaggedApi(FLAG_ENABLE_ROUTE_VISIBILITY_CONTROL_API)
+    public boolean showSystemOutputSwitcher(@NonNull MediaSession.Token sessionToken) {
+        Objects.requireNonNull(sessionToken, "sessionToken must not be null");
+        return mImpl.showSystemOutputSwitcher(sessionToken);
     }
 
     /**
@@ -1106,7 +1128,7 @@ public final class MediaRouter2 {
             @NonNull MediaRoute2Info route,
             long managerRequestId) {
 
-        if (Flags.fixTransferFromUserRouteToUnselectedSystemRoute() && route.isSystemRoute()) {
+        if (route.isSystemRoute()) {
             notifyTransfer(controller, getSystemController());
             controller.release();
             return;
@@ -2709,7 +2731,7 @@ public final class MediaRouter2 {
 
         void notifyDeviceSuggestionRequested();
 
-        boolean showSystemOutputSwitcher();
+        boolean showSystemOutputSwitcher(@Nullable MediaSession.Token token);
 
         List<MediaRoute2Info> getAllRoutes();
 
@@ -2941,9 +2963,10 @@ public final class MediaRouter2 {
         }
 
         @Override
-        public boolean showSystemOutputSwitcher() {
+        public boolean showSystemOutputSwitcher(MediaSession.Token sessionToken) {
             try {
-                return mMediaRouterService.showMediaOutputSwitcherWithProxyRouter(mClient);
+                return mMediaRouterService.showMediaOutputSwitcherWithProxyRouter(mClient,
+                        sessionToken);
             } catch (RemoteException ex) {
                 throw ex.rethrowFromSystemServer();
             }
@@ -3042,8 +3065,7 @@ public final class MediaRouter2 {
             } else {
                 RoutingSessionInfo systemSessionInfo = mSystemController.getRoutingSessionInfo();
                 boolean isTransferFromUserRouteToUnselectedSystemRoute =
-                        Flags.fixTransferFromUserRouteToUnselectedSystemRoute()
-                                && !sessionInfo.isSystemSession()
+                        !sessionInfo.isSystemSession()
                                 && route.isSystemRoute()
                                 && !systemSessionInfo.getSelectedRoutes().contains(route.getId());
                 if (isTransferFromUserRouteToUnselectedSystemRoute) {
@@ -3891,10 +3913,11 @@ public final class MediaRouter2 {
         }
 
         @Override
-        public boolean showSystemOutputSwitcher() {
+        public boolean showSystemOutputSwitcher(@Nullable MediaSession.Token sessionToken) {
             synchronized (mLock) {
                 try {
-                    return mMediaRouterService.showMediaOutputSwitcherWithRouter2(mPackageName);
+                    return mMediaRouterService.showMediaOutputSwitcherWithRouter2(mPackageName,
+                            sessionToken);
                 } catch (RemoteException ex) {
                     ex.rethrowFromSystemServer();
                 }

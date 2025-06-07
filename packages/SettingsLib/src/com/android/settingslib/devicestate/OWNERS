@@ -1,5 +1,2 @@
 # Default reviewers for this and subdirectories.
-alexflo@google.com
-chrisgollner@google.com
-nickchameyev@google.com
-dshivangi@google.com
+include platform/frameworks/base:/services/foldables/OWNERS

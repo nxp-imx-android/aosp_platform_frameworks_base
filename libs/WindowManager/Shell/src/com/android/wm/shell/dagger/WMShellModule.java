@@ -89,6 +89,7 @@ import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxCleanupAdapter;
+import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapter;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.pip.PipModule;
@@ -625,6 +626,7 @@ public abstract class WMShellModule {
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel,
             Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
             MultiInstanceHelper multiInstanceHelper,
             SplitState splitState,
             @ShellMainThread ShellExecutor mainExecutor,
@@ -652,6 +654,7 @@ public abstract class WMShellModule {
                 launchAdjacentController,
                 windowDecorViewModel,
                 desktopTasksController,
+                desktopUserRepositories,
                 null /* stageCoordinator */,
                 multiInstanceHelper,
                 splitState,
@@ -702,14 +705,16 @@ public abstract class WMShellModule {
             Transitions transitions,
             Optional<RecentTasksController> recentTasksController,
             HomeTransitionObserver homeTransitionObserver,
-            DisplayController displayController) {
+            DisplayController displayController,
+            DesksOrganizer desksOrganizer) {
         return new RecentsTransitionHandler(
                 shellInit,
                 shellTaskOrganizer,
                 transitions,
                 recentTasksController.orElse(null),
                 homeTransitionObserver,
-                displayController);
+                displayController,
+                desksOrganizer);
     }
 
     //
@@ -979,11 +984,12 @@ public abstract class WMShellModule {
     @Provides
     static Optional<TaskChangeListener> provideDesktopTaskChangeListener(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            ShellController shellController) {
         if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopTaskChangeListener(
-                    desktopUserRepositories, desktopState));
+                    desktopUserRepositories, desktopState, shellController));
         }
         return Optional.empty();
     }
@@ -1108,6 +1114,7 @@ public abstract class WMShellModule {
             Context context,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
             Optional<DesktopTasksController> desktopTasksController,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InputManager inputManager,
             ShellTaskOrganizer shellTaskOrganizer,
             FocusTransitionObserver focusTransitionObserver,
@@ -1119,6 +1126,7 @@ public abstract class WMShellModule {
                 || DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue())) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
+                    desktopUserRepositories,
                     inputManager, shellTaskOrganizer, focusTransitionObserver,
                     mainExecutor, displayController));
         }
@@ -1772,11 +1780,9 @@ public abstract class WMShellModule {
             DisplayController displayController,
             DisplayLayout displayLayout,
             @ShellMainThread ShellExecutor mainExecutor,
-            @ShellMainThread Handler mainHandler,
             InteractionJankMonitor interactionJankMonitor) {
         return AppZoomOutController.create(context, shellInit, shellTaskOrganizer,
-                displayController, displayLayout, mainExecutor, mainHandler,
-                interactionJankMonitor);
+                displayController, displayLayout, mainExecutor, interactionJankMonitor);
     }
 
     //
@@ -1842,6 +1848,7 @@ public abstract class WMShellModule {
             DragAndDropController dragAndDropController,
             @NonNull DelegateLetterboxTransitionObserver letterboxTransitionObserver,
             @NonNull LetterboxCommandHandler letterboxCommandHandler,
+            @NonNull LetterboxTaskListenerAdapter letterboxTaskListenerAdapter,
             @NonNull LetterboxCleanupAdapter letterboxCleanupAdapter,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserverOptional,
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,

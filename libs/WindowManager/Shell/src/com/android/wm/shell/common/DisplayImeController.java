@@ -563,7 +563,11 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             float seekValue = 0;
             if (mAnimation != null) {
                 if (mAnimation.isRunning()) {
-                    seekValue = (float) mAnimation.getAnimatedValue();
+                    seekValue = mAnimationDirection == DIRECTION_SHOW && !show
+                            // If we were showing previously (and now hiding), we need to use the
+                            // inverse.
+                            ? 1f - (float) mAnimation.getAnimatedValue()
+                            : (float) mAnimation.getAnimatedValue();
                     seek = true;
                 }
                 mAnimation.cancel();
@@ -578,7 +582,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             final float endY = show ? shownY : hiddenY;
             if (mAnimationDirection == DIRECTION_NONE && mImeShowing && show) {
                 // IME is already showing, so set seek to end
-                seekValue = shownY;
+                seekValue = 1f;
                 seek = true;
             }
             mAnimationDirection = show ? DIRECTION_SHOW : DIRECTION_HIDE;
@@ -589,7 +593,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             mAnimation.setDuration(
                     show ? ANIMATION_DURATION_SHOW_MS : ANIMATION_DURATION_HIDE_MS);
             if (seek) {
-                mAnimation.setCurrentFraction((seekValue - startY) / (endY - startY));
+                mAnimation.setCurrentFraction(seekValue);
             } else {
                 // In some cases the value in onAnimationStart is zero, therefore setting it
                 // explicitly to startY
@@ -600,13 +604,12 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                 SurfaceControl.Transaction t = mTransactionPool.acquire();
                 final float value = (float) animation.getAnimatedValue();
                 final int x = mImeSourceControl.getSurfacePosition().x;
-                final int y = (int) (mImeSourceControl.getSurfacePosition().y
-                        + (1f - value) * mImeFrame.height());
+                final int initialY = mImeSourceControl.getSurfacePosition().y;
+                final int y = (int) (initialY + (1f - value) * mImeFrame.height());
                 t.setPosition(animatingLeash, x, y);
-                final float alpha = (mAnimateAlpha || isFloating)
-                        ? (value - hiddenY) / (shownY - hiddenY) : 1f;
+                final float alpha = (mAnimateAlpha || isFloating) ? value : 1f;
                 t.setAlpha(animatingLeash, alpha);
-                dispatchPositionChanged(mDisplayId, imeTop(value, defaultY), t);
+                dispatchPositionChanged(mDisplayId, imeTop(y, initialY), t);
                 t.apply();
                 mTransactionPool.release(t);
             });
@@ -638,9 +641,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                             imeTop(shownY, defaultY), mAnimationDirection == DIRECTION_SHOW,
                             isFloating, t);
                     mAnimateAlpha = (flags & ImePositionProcessor.IME_ANIMATION_NO_ALPHA) == 0;
-                    final float alpha = (mAnimateAlpha || isFloating)
-                            ? (value - hiddenY) / (shownY - hiddenY)
-                            : 1.f;
+                    final float alpha = (mAnimateAlpha || isFloating) ? value : 1f;
                     t.setAlpha(animatingLeash, alpha);
                     if (mAnimationDirection == DIRECTION_SHOW) {
                         ImeTracker.forLogging().onProgress(mStatsToken,
@@ -681,7 +682,7 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         final int y = mImeSourceControl.getSurfacePosition().y
                                 + (show ? 0 : mImeFrame.height());
                         t.setPosition(animatingLeash, x, y);
-                        t.setAlpha(animatingLeash, 1.f);
+                        t.setAlpha(animatingLeash, 1f);
                     }
                     if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
                         setAnimating(false /* imeAnimationOngoing */,

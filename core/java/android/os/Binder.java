@@ -1260,6 +1260,26 @@ public class Binder implements IBinder {
     private final native void setExtensionNative(@Nullable IBinder extension);
 
     /**
+     * Set whether or not this binder node will inherit real-time priority.
+     * This should be called immediately when the object is created.
+     *
+     * @hide
+     */
+    public final native void setInheritRt(boolean inheritRt);
+
+    /**
+     * Set default RT inheritance for Binders in this process
+     *
+     * Any binder objects sent out of the process before this is called will
+     * not use the updated value. Can be overridden by setInheritRt. Defaults
+     * to false if this function is not called.
+     *
+     * @hide
+     */
+    @CriticalNative
+    public static final native void setGlobalInheritRt(boolean enabled);
+
+    /**
      * Default implementation rewinds the parcels and calls onTransact. On
      * the remote side, transact calls into the binder to do the IPC.
      */

@@ -15,8 +15,6 @@
  */
 package com.android.systemui.keyguard.ui
 
-import android.os.Build
-import android.util.Log
 import android.view.animation.Interpolator
 import com.android.app.animation.Interpolators.LINEAR
 import com.android.keyguard.logging.KeyguardTransitionAnimationLogger
@@ -133,9 +131,6 @@ constructor(
                 onStart = {
                     isShadeExpanded = shadeInteractor.get().isAnyFullyExpanded.value
                     if (onStart != null) onStart()
-                    if (DEBUG_LOG) {
-                        Log.d(TAG, "onStart isShadeExpanded=$isShadeExpanded")
-                    }
                 },
                 onCancel =
                     if (onCancel != null) {
@@ -262,11 +257,6 @@ constructor(
                 onFinish = { value },
             )
         }
-    }
-
-    private companion object {
-        const val TAG = "KeyguardTransitionAnim"
-        val DEBUG_LOG = Build.IS_DEBUGGABLE || Log.isLoggable(TAG, Log.DEBUG)
     }
 }
 

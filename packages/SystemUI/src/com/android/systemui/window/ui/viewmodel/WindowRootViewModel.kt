@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 
@@ -62,9 +61,7 @@ constructor(
         listOf(
                 *bouncerBlurRadiusFlows.toTypedArray(),
                 *glanceableHubBlurRadiusFlows.toTypedArray(),
-                blurInteractor.blurRadiusRequestedByShade
-                    .map { it.toFloat() }
-                    .logIfPossible("ShadeBlur"),
+                blurInteractor.blurRadiusRequestedByShade.logIfPossible("ShadeBlur"),
             )
             .merge()
 
@@ -135,7 +132,7 @@ constructor(
 
     private companion object {
         const val TAG = "WindowRootViewModel"
-        val isLoggable = Log.isLoggable(TAG, Log.VERBOSE) || Build.isDebuggable()
+        val isLoggable = Log.isLoggable(TAG, Log.VERBOSE) || Build.IS_ENG
 
         fun <T> Flow<T>.logIfPossible(loggingInfo: String): Flow<T> {
             return onEach { if (isLoggable) Log.v(TAG, "$loggingInfo $it") }

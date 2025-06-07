@@ -84,7 +84,7 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
         }
         long startTime = 0;
         if (Flags.sqliteDiscreteOpEventLoggingEnabled()) {
-            startTime = SystemClock.elapsedRealtime();
+            startTime = SystemClock.uptimeMillis();
         }
 
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "DiscreteOpsWrite");
@@ -137,7 +137,7 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
         }
         if (Flags.sqliteDiscreteOpEventLoggingEnabled()) {
-            long timeTaken = SystemClock.elapsedRealtime() - startTime;
+            long timeTaken = SystemClock.uptimeMillis() - startTime;
             FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_DISCRETE_OP_EVENT_REPORTED,
                     -1, timeTaken, getDatabaseFile().length());
         }
@@ -217,7 +217,7 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
                 ascending, limit);
         long startTime = 0;
         if (Flags.sqliteDiscreteOpEventLoggingEnabled()) {
-            startTime = SystemClock.elapsedRealtime();
+            startTime = SystemClock.uptimeMillis();
         }
         SQLiteDatabase db = getReadableDatabase();
         List<DiscreteOpsSqlRegistry.DiscreteOp> results = new ArrayList<>();
@@ -250,7 +250,7 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
         if (Flags.sqliteDiscreteOpEventLoggingEnabled()) {
-            long timeTaken = SystemClock.elapsedRealtime() - startTime;
+            long timeTaken = SystemClock.uptimeMillis() - startTime;
             FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_DISCRETE_OP_EVENT_REPORTED,
                     timeTaken, -1, getDatabaseFile().length());
         }

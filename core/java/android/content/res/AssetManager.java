@@ -504,8 +504,8 @@ public final class AssetManager implements AutoCloseable {
     /**
      * @hide
      */
-    public void addPresetApkKeys(@NonNull List<ApkKey> keys) {
-        addAssetPathInternal(keys, true);
+    public void addApkKeys(@NonNull List<ApkKey> keys, boolean presetAssets) {
+        addAssetPathInternal(keys, presetAssets);
     }
 
     private int addAssetPathInternal(List<ApkKey> apkKeys, boolean presetAssets) {

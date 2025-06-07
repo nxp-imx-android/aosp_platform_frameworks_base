@@ -37,6 +37,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.UserChangeListener
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionObserver
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 
 /**
  * Keeps track of minimized tasks and limits the number of tasks shown in Desktop Mode.
@@ -57,6 +58,7 @@ class DesktopTasksLimiter(
     @VisibleForTesting val leftoverMinimizedTasksRemover = LeftoverMinimizedTasksRemover()
 
     private var userId: Int
+    lateinit var snapEventHandler: SnapEventHandler
 
     init {
         maxTasksLimit?.let {
@@ -196,6 +198,7 @@ class DesktopTasksLimiter(
             logV("triggerMinimizeTransition, found running task -> start transition, %s", task)
             val wct = WindowContainerTransaction()
             addMinimizeChange(deskId, task, wct)
+            snapEventHandler.removeTaskIfTiled(task.displayId, task.taskId)
             val transition =
                 desktopMixedTransitionHandler.startTaskLimitMinimizeTransition(wct, task.taskId)
             addPendingMinimizeChange(

@@ -20,10 +20,8 @@ import android.app.ActivityManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.os.Binder
-import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
-import android.window.IWindowContainerToken
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,11 +32,13 @@ import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
+import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyExitBubbleTransaction
+import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewTaskController
-import com.android.wm.shell.splitscreen.SplitScreenController
+import java.util.Optional
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -51,8 +51,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
-import java.util.Optional
 
 /**
  * Unit tests for [BubbleTaskStackListener].
@@ -86,9 +84,7 @@ class BubbleTaskStackListenerTest {
         { Optional.of(splitScreenController) },
     )
     private val bubbleTaskId = 123
-    private val bubbleTaskToken = WindowContainerToken(mock<IWindowContainerToken> {
-        on { asBinder() } doReturn mock<IBinder>()
-    })
+    private val bubbleTaskToken: WindowContainerToken = MockToken.token()
     private val task = ActivityManager.RunningTaskInfo().apply {
         taskId = bubbleTaskId
         token = bubbleTaskToken
@@ -146,7 +142,9 @@ class BubbleTaskStackListenerTest {
     )
     fun onActivityRestartAttempt_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
         val captionInsetsOwner = Binder()
-        whenever(bubble.taskView.captionInsetsOwner).thenReturn(captionInsetsOwner)
+        mockTaskView.stub {
+            on { getCaptionInsetsOwner() } doReturn captionInsetsOwner
+        }
         task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         bubbleData.stub {
             on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble

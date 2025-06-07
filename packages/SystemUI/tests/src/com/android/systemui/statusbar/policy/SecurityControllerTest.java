@@ -21,10 +21,11 @@ import static android.net.NetworkCapabilities.TRANSPORT_VPN;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,8 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.supervision.data.model.SupervisionModel;
+import com.android.systemui.supervision.data.repository.FakeSupervisionRepository;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
 
@@ -95,6 +98,7 @@ public class SecurityControllerTest extends SysuiTestCase {
     private FakeExecutor mMainExecutor;
     private FakeExecutor mBgExecutor;
     private BroadcastReceiver mBroadcastReceiver;
+    private FakeSupervisionRepository mSupervisionRepository;
 
     @Before
     public void setUp() throws Exception {
@@ -121,6 +125,7 @@ public class SecurityControllerTest extends SysuiTestCase {
 
         mMainExecutor = new FakeExecutor(new FakeSystemClock());
         mBgExecutor = new FakeExecutor(new FakeSystemClock());
+        mSupervisionRepository = new FakeSupervisionRepository();
         mSecurityController = new SecurityControllerImpl(
                 mContext,
                 mUserTracker,
@@ -275,20 +280,75 @@ public class SecurityControllerTest extends SysuiTestCase {
 
     @Test
     @RequiresFlagsEnabled(android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS)
+    @RequiresFlagsDisabled(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void isParentalControlsEnabled_usingSupervisionManager_supervisionIsEnabled() {
+        mSupervisionRepository.setIsSupervisionEnabled(false);
         when(mSupervisionManager.isSupervisionEnabledForUser(anyInt()))
                 .thenReturn(true);
+        mSecurityController.setSupervisionModel(mSupervisionRepository.getSupervisionModel());
 
         assertTrue(mSecurityController.isParentalControlsEnabled());
     }
 
     @Test
     @RequiresFlagsEnabled(android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS)
+    @RequiresFlagsDisabled(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void isParentalControlsEnabled_usingSupervisionManager_supervisionIsNotEnabled() {
+        mSupervisionRepository.setIsSupervisionEnabled(true);
         when(mSupervisionManager.isSupervisionEnabledForUser(anyInt()))
                 .thenReturn(false);
+        mSecurityController.setSupervisionModel(mSupervisionRepository.getSupervisionModel());
 
         assertFalse(mSecurityController.isParentalControlsEnabled());
+    }
+
+    @Test
+    @RequiresFlagsEnabled({
+        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS,
+        android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE
+    })
+    public void isParentalControlsEnabled_usingSupervisionModel_supervisionIsEnabled() {
+        mSupervisionRepository.setIsSupervisionEnabled(true);
+        when(mSupervisionManager.isSupervisionEnabledForUser(anyInt()))
+                .thenReturn(false);
+        mSecurityController.setSupervisionModel(mSupervisionRepository.getSupervisionModel());
+
+        assertTrue(mSecurityController.isParentalControlsEnabled());
+    }
+
+    @Test
+    @RequiresFlagsEnabled({
+        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS,
+        android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE
+    })
+    public void isParentalControlsEnabled_usingSupervisionModel_supervisionIsNotEnabled() {
+        mSupervisionRepository.setIsSupervisionEnabled(false);
+        when(mSupervisionManager.isSupervisionEnabledForUser(anyInt()))
+                .thenReturn(true);
+        mSecurityController.setSupervisionModel(mSupervisionRepository.getSupervisionModel());
+
+        assertFalse(mSecurityController.isParentalControlsEnabled());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS)
+    @RequiresFlagsDisabled(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
+    public void getSupervisionModel_flagDisabled_returnsNull() {
+        mSecurityController.setSupervisionModel(mSupervisionRepository.getSupervisionModel());
+
+        assertNull(mSecurityController.getSupervisionModel());
+    }
+
+    @Test
+    @RequiresFlagsEnabled({
+        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS,
+        android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE
+    })
+    public void getSupervisionModel_returnsSupervisionModel() {
+        SupervisionModel supervisionModel = mSupervisionRepository.getSupervisionModel();
+        mSecurityController.setSupervisionModel(supervisionModel);
+
+        assertEquals(supervisionModel, mSecurityController.getSupervisionModel());
     }
 
     /**

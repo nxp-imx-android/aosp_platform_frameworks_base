@@ -37,7 +37,6 @@ import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -150,10 +149,12 @@ constructor(
     companion object {
         /** IDs for transitions and constraints for the [MotionLayout]. */
         @VisibleForTesting internal val HEADER_TRANSITION_ID = R.id.header_transition
+
         @VisibleForTesting
         internal val LARGE_SCREEN_HEADER_TRANSITION_ID = R.id.large_screen_header_transition
         @VisibleForTesting internal val QQS_HEADER_CONSTRAINT = R.id.qqs_header_constraint
         @VisibleForTesting internal val QS_HEADER_CONSTRAINT = R.id.qs_header_constraint
+
         @VisibleForTesting
         internal val LARGE_SCREEN_HEADER_CONSTRAINT = R.id.large_screen_header_constraint
 
@@ -343,7 +344,10 @@ constructor(
                 lastInsets?.let { updateConstraintsForInsets(header, it) }
                 updateResources()
                 updateCarrierGroupPadding()
-                clock.onDensityOrFontScaleChanged()
+                if (!ShadeWindowGoesAround.isEnabled) {
+                    // the clock handles the config change itself.
+                    clock.onDensityOrFontScaleChanged()
+                }
             }
 
             override fun onThemeChanged() {
@@ -352,10 +356,6 @@ constructor(
 
             override fun onUiModeChanged() {
                 updateColors()
-            }
-
-            override fun onLocaleListChanged() {
-                clock.onLocaleListChanged()
             }
         }
 
@@ -410,14 +410,14 @@ constructor(
 
     private fun getBgColor() =
         if (notificationShadeBlur()) {
-            header.context.getColor(com.android.internal.R.color.materialColorSurfaceDim)
+            header.context.getColor(R.color.shade_header_text_color_bg)
         } else {
             android.graphics.Color.BLACK
         }
 
     private fun getFgColor() =
         if (notificationShadeBlur()) {
-            header.context.getColor(com.android.internal.R.color.materialColorOnSurface)
+            header.context.getColor(R.color.shade_header_text_color)
         } else {
             android.graphics.Color.WHITE
         }
@@ -453,7 +453,8 @@ constructor(
                             viewModelFactory = unifiedBatteryViewModelFactory,
                             isDarkProvider = { IsAreaDark { dark } },
                             textColor =
-                                if (notificationShadeBlur()) MaterialTheme.colorScheme.onSurface
+                                if (notificationShadeBlur())
+                                    Color(context.getColor(R.color.shade_header_text_color))
                                 else Color.White,
                             showEstimate = showBatteryEstimate,
                         )

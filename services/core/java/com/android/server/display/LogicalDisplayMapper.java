@@ -835,6 +835,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                     .get(displayId, LOGICAL_DISPLAY_EVENT_BASE);
             boolean hasBasicInfoChanged =
                     !mTempDisplayInfo.equals(newDisplayInfo, /* compareOnlyBasicChanges */ true);
+
             // The display is no longer valid and needs to be removed.
             if (!display.isValidLocked()) {
                 // Remove from group
@@ -888,13 +889,13 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             } else if (hasBasicInfoChanged
                     || mTempDisplayInfo.getRefreshRate() != newDisplayInfo.getRefreshRate()
                     || mTempDisplayInfo.appVsyncOffsetNanos != newDisplayInfo.appVsyncOffsetNanos
+                    || mTempDisplayInfo.committedState != newDisplayInfo.committedState
                     || mTempDisplayInfo.presentationDeadlineNanos
                     != newDisplayInfo.presentationDeadlineNanos) {
                 // If only the hdr/sdr ratio changed, then send just the event for that case
                 if ((diff == DisplayDeviceInfo.DIFF_HDR_SDR_RATIO)) {
                     logicalDisplayEventMask |= LOGICAL_DISPLAY_EVENT_HDR_SDR_RATIO_CHANGED;
                 } else {
-
                     if (hasBasicInfoChanged) {
                         logicalDisplayEventMask |= LOGICAL_DISPLAY_EVENT_BASIC_CHANGED;
                     }
@@ -1099,14 +1100,12 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             decidedGroupId = calculateGroupId(requiredGroupType, mDisplayGroups);
             groupName = requiredGroupType;
         }
-
         // Get the new display group if a change is needed, if display group name is empty and
         // {@code DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP} is not set, and required group type
         // has not been decided, the display is assigned to the default display group.
         final boolean needsOwnDisplayGroup =
                 (displayDeviceInfo.flags & DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP) != 0
                         || !TextUtils.isEmpty(groupName);
-
         final boolean hasOwnDisplayGroup = groupId != Display.DEFAULT_DISPLAY_GROUP;
         final boolean needsDeviceDisplayGroup =
                 !needsOwnDisplayGroup && linkedDeviceUniqueId != null;
@@ -1117,7 +1116,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 || hasDeviceDisplayGroup != needsDeviceDisplayGroup
                 || decidedGroupId != Display.INVALID_DISPLAY_GROUP) {
             groupId =
-                    assignDisplayGroupIdLocked(needsOwnDisplayGroup,
+                    assignDisplayGroupIdLocked(needsDeviceDisplayGroup, needsOwnDisplayGroup,
                             display.getLayoutGroupNameLocked(), needsDeviceDisplayGroup,
                             linkedDeviceUniqueId, decidedGroupId);
         }
@@ -1131,8 +1130,15 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
 
             int reason = mDisplayGroupAllocator.getContentModeForDisplayLocked(
                     display, displayDeviceInfo.type);
-            if (reason == REASON_PROJECTED || reason == REASON_EXTENDED
-                    || reason == REASON_NON_DESKTOP) {
+
+            // We set the flag only if the group being created is a non-default group, is internal
+            // or external(We don't want to set FLAG_DEFAULT_GROUP_ADJACENT for virtual displays)
+            // and is in projected,extended or non desktop mode
+            if (groupId != Display.DEFAULT_DISPLAY_GROUP
+                    && (displayDeviceInfo.type == Display.TYPE_INTERNAL
+                            || displayDeviceInfo.type == Display.TYPE_EXTERNAL)
+                    && (reason == REASON_PROJECTED || reason == REASON_EXTENDED
+                    || reason == REASON_NON_DESKTOP)) {
                 newGroup.setFlags(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
             }
         }
@@ -1343,9 +1349,10 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         }
     }
 
-    private int assignDisplayGroupIdLocked(boolean isOwnDisplayGroup, String displayGroupName,
+    private int assignDisplayGroupIdLocked(boolean needsDeviceDisplayGroup,
+            boolean isOwnDisplayGroup, String displayGroupName,
             boolean isDeviceDisplayGroup, Integer linkedDeviceUniqueId, int decidedGroupId) {
-        if (decidedGroupId != Display.INVALID_DISPLAY_GROUP) {
+        if (decidedGroupId != Display.INVALID_DISPLAY_GROUP && !needsDeviceDisplayGroup) {
             return decidedGroupId;
         }
         if (isDeviceDisplayGroup && linkedDeviceUniqueId != null) {

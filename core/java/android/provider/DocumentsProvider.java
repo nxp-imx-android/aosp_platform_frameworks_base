@@ -27,6 +27,8 @@ import static android.provider.DocumentsContract.METHOD_IS_CHILD_DOCUMENT;
 import static android.provider.DocumentsContract.METHOD_MOVE_DOCUMENT;
 import static android.provider.DocumentsContract.METHOD_REMOVE_DOCUMENT;
 import static android.provider.DocumentsContract.METHOD_RENAME_DOCUMENT;
+import static android.provider.DocumentsContract.METHOD_RESTORE_DOCUMENT_FROM_TRASH;
+import static android.provider.DocumentsContract.METHOD_TRASH_DOCUMENT;
 import static android.provider.DocumentsContract.buildDocumentUri;
 import static android.provider.DocumentsContract.buildDocumentUriMaybeUsingTree;
 import static android.provider.DocumentsContract.buildTreeDocumentUri;
@@ -37,8 +39,10 @@ import static android.provider.DocumentsContract.isTreeUri;
 
 import android.Manifest;
 import android.annotation.CallSuper;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.app.AuthenticationRequiredException;
 import android.content.ClipDescription;
 import android.content.ContentProvider;
@@ -153,6 +157,7 @@ public abstract class DocumentsProvider extends ContentProvider {
     private static final int MATCH_CHILDREN = 6;
     private static final int MATCH_DOCUMENT_TREE = 7;
     private static final int MATCH_CHILDREN_TREE = 8;
+    private static final int MATCH_TRASH = 9;
 
     private String mAuthority;
 
@@ -200,6 +205,7 @@ public abstract class DocumentsProvider extends ContentProvider {
         mMatcher.addURI(mAuthority, "document/*/children", MATCH_CHILDREN);
         mMatcher.addURI(mAuthority, "tree/*/document/*", MATCH_DOCUMENT_TREE);
         mMatcher.addURI(mAuthority, "tree/*/document/*/children", MATCH_CHILDREN_TREE);
+        mMatcher.addURI(mAuthority, "trash", MATCH_TRASH);
     }
 
     /**
@@ -307,6 +313,66 @@ public abstract class DocumentsProvider extends ContentProvider {
     @SuppressWarnings("unused")
     public void deleteDocument(String documentId) throws FileNotFoundException {
         throw new UnsupportedOperationException("Delete not supported");
+    }
+
+    /**
+     * Trash the requested document.
+     * <p>
+     * Upon trashing a document, the document will be marked as trashed. It will not be accessible
+     * other then trash page until {@link #restoreDocumentFromTrash(String, String)}.
+     * Any URI permission grants for the given document will be revoked.
+     *
+     * @param documentId the document to trash.
+     * @return the document id of the trashed document or return {@code null} in case of failure.
+     * @throws AuthenticationRequiredException If authentication is required from
+     *            the user (such as login credentials), but it is not guaranteed
+     *            that the client will handle this properly.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    @Nullable
+    @SuppressLint("OnNameExpected")
+    public String trashDocument(@NonNull String documentId) throws FileNotFoundException {
+        throw new UnsupportedOperationException("Trash not supported");
+    }
+
+    /**
+     * @return a cursor of trashed documents. This will be called for each
+     * provider (for local just externalstorage provider) and combine the results.
+     * @param projection list of {@link Document} columns to put into the
+     *            cursor. If {@code null} all supported columns should be
+     *            included.
+     * @throws AuthenticationRequiredException If authentication is required from
+     *            the user (such as login credentials), but it is not guaranteed
+     *            that the client will handle this properly.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    @Nullable
+    @SuppressLint("OnNameExpected")
+    public Cursor queryTrashDocuments(@Nullable String[] projection) throws FileNotFoundException {
+        throw new UnsupportedOperationException("Query Trash not supported");
+    }
+
+    /**
+     * Restore the specified trash document.
+     * <p>
+     * Upon restoring a document, the document will be restored from trash to the
+     * specified target parent document.
+     *
+     * @param documentId             the document to restore.
+     * @param targetParentDocumentId the target location to restore the document to. If
+     *                               {@code null}, the restore path will be obtained
+     *                               from the {@code documentId}
+     * @return the document id of the restored document or return {@code null} in case of failure.
+     * @throws AuthenticationRequiredException If authentication is required from
+     *                                         the user (such as login credentials), but it is not
+     *                                         guaranteed that the client will handle this properly.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_DOCUMENTS_TRASH_API)
+    @Nullable
+    @SuppressLint("OnNameExpected")
+    public String restoreDocumentFromTrash(@NonNull String documentId,
+            @Nullable String targetParentDocumentId) throws FileNotFoundException {
+        throw new UnsupportedOperationException("Restore not supported");
     }
 
     /**
@@ -916,6 +982,10 @@ public abstract class DocumentsProvider extends ContentProvider {
                 case MATCH_RECENT:
                     return queryRecentDocuments(
                             getRootId(uri), projection, queryArgs, cancellationSignal);
+                case MATCH_TRASH:
+                    if (Flags.enableDocumentsTrashApi()) {
+                        return queryTrashDocuments(projection);
+                    }
                 case MATCH_SEARCH:
                     return querySearchDocuments(getRootId(uri), projection, queryArgs);
                 case MATCH_DOCUMENT:
@@ -1293,7 +1363,41 @@ public abstract class DocumentsProvider extends ContentProvider {
             out.putParcelable(DocumentsContract.EXTRA_RESULT, path);
         } else if (METHOD_GET_DOCUMENT_METADATA.equals(method)) {
             return getDocumentMetadata(documentId);
-        } else {
+        } else if (Flags.enableDocumentsTrashApi()) {
+            if (METHOD_TRASH_DOCUMENT.equals(method)) {
+                enforceWritePermissionInner(documentUri, getCallingAttributionSource());
+                final String newDocumentId = trashDocument(documentId);
+
+                if (newDocumentId != null) {
+                    final Uri newDocumentUri = buildDocumentUriMaybeUsingTree(documentUri,
+                            newDocumentId);
+
+                    out.putParcelable(DocumentsContract.EXTRA_URI, newDocumentUri);
+                }
+
+                // Document moved to trash, clean up any grants.
+                revokeDocumentPermission(documentId);
+            } else if (METHOD_RESTORE_DOCUMENT_FROM_TRASH.equals(method)) {
+                enforceReadPermissionInner(documentUri, getCallingAttributionSource());
+
+                String targetId = null;
+                if (extraTargetUri != null) {
+                    enforceWritePermissionInner(extraTargetUri, getCallingAttributionSource());
+                    targetId = DocumentsContract.getDocumentId(extraTargetUri);
+                }
+
+                final String newDocumentId = restoreDocumentFromTrash(documentId, targetId);
+                if (newDocumentId != null) {
+                    final Uri newDocumentUri = buildDocumentUriMaybeUsingTree(documentUri,
+                            newDocumentId);
+
+                    out.putParcelable(DocumentsContract.EXTRA_URI, newDocumentUri);
+                }
+            } else {
+                throw new UnsupportedOperationException("Method not supported " + method);
+            }
+        }
+        else {
             throw new UnsupportedOperationException("Method not supported " + method);
         }
 

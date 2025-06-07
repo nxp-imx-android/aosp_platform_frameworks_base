@@ -51,7 +51,10 @@ public final class DisplayBrightnessController {
     // The ID of the display tied to this DisplayBrightnessController
     private final int mDisplayId;
 
-    // The lock which is to be used to synchronize the resources being used in this class
+    // The lock which is to be used to synchronize the resources being used in this class.
+    // mLock can be synchronized on while holding DisplayManagerService.mSyncRoot, so never call
+    // methods that acquiring DisplayManagerService.mSyncRoot under mLock,
+    // e.g. some BrightnessSetting methods.
     private final Object mLock = new Object();
 
     // The default screen brightness to be used when no value is available in BrightnessSetting.

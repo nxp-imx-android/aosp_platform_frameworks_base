@@ -72,4 +72,6 @@ constructor(
             name = "GONE->DREAMING: lockscreenAlpha",
         )
     }
+
+    val statusBarAlpha: Flow<Float> = transitionAnimation.immediatelyTransitionTo(0f)
 }

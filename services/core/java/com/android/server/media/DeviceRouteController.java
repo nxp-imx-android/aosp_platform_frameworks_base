@@ -51,7 +51,7 @@ import java.util.List;
     /* package */ static DeviceRouteController createInstance(
             @NonNull Context context,
             @NonNull Looper looper,
-            @NonNull OnDeviceRouteChangedListener onDeviceRouteChangedListener) {
+            @NonNull EventListener eventListener) {
         AudioManager audioManager = context.getSystemService(AudioManager.class);
         AudioProductStrategy strategyForMedia = AudioRoutingUtils.getMediaAudioProductStrategy();
 
@@ -67,14 +67,14 @@ import java.util.List;
             AudioManagerRouteController controller =
                     AudioManagerRouteController.getInstance(
                             context, audioManager, looper, strategyForMedia, btAdapter);
-            controller.registerRouteChangeListener(onDeviceRouteChangedListener);
+            controller.registerRouteChangeListener(eventListener);
             return controller;
         } else {
             IAudioService audioService =
                     IAudioService.Stub.asInterface(
                             ServiceManager.getService(Context.AUDIO_SERVICE));
             return new LegacyDeviceRouteController(
-                    context, audioManager, audioService, onDeviceRouteChangedListener);
+                    context, audioManager, audioService, eventListener);
         }
     }
 
@@ -118,13 +118,46 @@ import java.util.List;
     List<MediaRoute2Info> getAvailableRoutes();
 
     /**
+     * Returns a list of currently selectable routes.
+     *
+     * <p>For example, BLE devices can be grouped and will show up here.
+     */
+    @NonNull
+    List<MediaRoute2Info> getSelectableRoutes();
+
+    /**
+     * Returns a list of currently deselectable routes.
+     *
+     * <p>For example, selected BLE devices in a broadcast session.
+     */
+    @NonNull
+    List<MediaRoute2Info> getDeselectableRoutes();
+
+    /**
      * Transfers device output to the given route.
      *
      * <p>If the route is {@code null} then active route will be deactivated.
      *
-     * @param routeId to switch to or {@code null} to unset the active device.
+     * @param requestId Identifies the request.
+     * @param routeId To switch to or {@code null} to unset the active device.
      */
-    void transferTo(@Nullable String routeId);
+    void transferTo(long requestId, @Nullable String routeId);
+
+    /**
+     * Adds the route with the given id to the current selected routes, making playback occur on all
+     * selected routes simultaneously.
+     *
+     * @param routeId route that audio would be playing on.
+     */
+    void selectRoute(long requestId, @NonNull String routeId);
+
+    /**
+     * Removes the route with the given id from the current selected routes, playback will be
+     * stopped for the related device.
+     *
+     * @param routeId route that audio would be stopped playing on.
+     */
+    void deselectRoute(long requestId, @NonNull String routeId);
 
     /**
      * Updates device route volume.
@@ -153,13 +186,14 @@ import java.util.List;
     /** Releases the routing session. */
     void releaseRoutingSession();
 
-    /**
-     * Interface for receiving events when device route has changed.
-     */
-    interface OnDeviceRouteChangedListener {
+    /** Interface for receiving route events. */
+    interface EventListener {
 
         /** Called when device route has changed. */
         void onDeviceRouteChanged();
+
+        /** Called when device route request is failed. */
+        void onDeviceRouteRequestFailed(long requestId, int reason);
     }
 
 }

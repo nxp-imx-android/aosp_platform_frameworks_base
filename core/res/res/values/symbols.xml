@@ -363,8 +363,10 @@
   <java-symbol type="bool" name="config_speed_up_audio_on_mt_calls" />
   <java-symbol type="bool" name="config_useFixedVolume" />
   <java-symbol type="bool" name="config_isMainUserPermanentAdmin"/>
+  <java-symbol type="bool" name="config_disallowRemovingLastAdminUser"/>
   <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
   <java-symbol type="bool" name="config_createInitialUser"/>
+  <java-symbol type="bool" name="config_designateMainUser"/>
   <java-symbol type="bool" name="config_canSwitchToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_enableMultiUserUI"/>
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
@@ -406,6 +408,7 @@
   <java-symbol type="bool" name="config_windowShowCircularMask" />
   <java-symbol type="bool" name="config_predictShowStartingSurface" />
   <java-symbol type="bool" name="config_windowEnableCircularEmulatorDisplayOverlay" />
+  <java-symbol type="bool" name="config_windowEnableScreenBrightnessEmulatorDisplayOverlay" />
   <java-symbol type="bool" name="config_supportMicNearUltrasound" />
   <java-symbol type="bool" name="config_supportSpeakerNearUltrasound" />
   <java-symbol type="bool" name="config_supportAudioSourceUnprocessed" />
@@ -6234,4 +6237,11 @@
   <java-symbol type="integer" name="def_accessibility_text_cursor_blink_interval_ms" />
   <java-symbol type="integer" name="no_blink_accessibility_text_cursor_blink_interval_ms" />
   <java-symbol type="array" name="accessibility_text_cursor_blink_intervals" />
+
+  <!-- Developer verification service provider -->
+  <java-symbol type="string" name="config_developerVerificationServiceProviderPackageName" />
+
+  <!-- Package and class info to bind to ProximityProviderService -->
+  <java-symbol type="string" name="proximity_provider_service_package_name" />
+  <java-symbol type="string" name="proximity_provider_service_class_name" />
 </resources>

@@ -37,6 +37,7 @@ android_test {
     ],
 
     static_libs: [
+        "//frameworks/libs/systemui/mechanics:mechanics-testing",
         "TestParameterInjector",
         "WMShellTests-utils",
         "WindowManager-Shell",
@@ -52,7 +53,6 @@ android_test {
         "dagger2",
         "flag-junit",
         "frameworks-base-testutils",
-        "guava-android-testlib",
         "junit",
         "kotlin-test",
         "kotlinx-coroutines-android",

@@ -18,16 +18,17 @@ package com.android.wm.shell.dagger;
 
 import android.annotation.NonNull;
 
-import com.android.wm.shell.common.transition.TransitionStateHolder;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy;
 import com.android.wm.shell.compatui.letterbox.MixedLetterboxController;
+import com.android.wm.shell.compatui.letterbox.lifecycle.ActivityLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleControllerImpl;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.MultiLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.SkipLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.TaskInfoLetterboxLifecycleEventFactory;
+import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.Transitions;
 
@@ -57,13 +58,16 @@ public abstract class LetterboxModule {
     @WMSingleton
     @Provides
     static LetterboxLifecycleEventFactory provideLetterboxLifecycleEventFactory(
-            @NonNull SkipLetterboxLifecycleEventFactory skipLetterboxLifecycleEventFactory
+            @NonNull SkipLetterboxLifecycleEventFactory skipLetterboxLifecycleEventFactory,
+            @NonNull LetterboxTaskInfoRepository letterboxTaskInfoRepository
     ) {
         // The order of the LetterboxLifecycleEventFactory implementation matters because the
         // first that can handle a Change will be chosen for the LetterboxLifecycleEvent creation.
         return new MultiLetterboxLifecycleEventFactory(List.of(
                 // Filters out transitions not related to Letterboxing.
                 skipLetterboxLifecycleEventFactory,
+                // Handle Transition for Activities
+                new ActivityLetterboxLifecycleEventFactory(letterboxTaskInfoRepository),
                 // Creates a LetterboxLifecycleEvent in case of Task transitions.
                 new TaskInfoLetterboxLifecycleEventFactory()
         ));
@@ -73,10 +77,9 @@ public abstract class LetterboxModule {
     @Provides
     static LetterboxLifecycleController provideLetterboxLifecycleController(
             @NonNull MixedLetterboxController letterboxController,
-            @NonNull TransitionStateHolder transitionStateHolder,
             @NonNull LetterboxControllerStrategy letterboxControllerStrategy
     ) {
-        return new LetterboxLifecycleControllerImpl(letterboxController, transitionStateHolder,
+        return new LetterboxLifecycleControllerImpl(letterboxController,
                 letterboxControllerStrategy);
     }
 }

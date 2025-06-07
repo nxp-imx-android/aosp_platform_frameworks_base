@@ -1560,6 +1560,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         IWindowContainerTransactionCallback mockCallback =
                 mock(IWindowContainerTransactionCallback.class);
         int id = mWm.mAtmService.mWindowOrganizerController.startSyncWithOrganizer(mockCallback);
+        mWm.mSyncEngine.setSyncMethod(id, BLASTSyncEngine.METHOD_BLAST);
 
         mWm.mAtmService.mWindowOrganizerController.addToSyncSet(id, task);
         mWm.mAtmService.mWindowOrganizerController.setSyncReady(id);
@@ -1575,15 +1576,12 @@ public class WindowOrganizerTests extends WindowTestsBase {
         mWm.mSyncEngine.onSurfacePlacement();
         verify(mockCallback, never()).onTransactionReady(anyInt(), any());
 
-        assertEquals(SYNC_STATE_READY, w2.mSyncState);
-        // Even though one Window finished drawing, both windows should still be using blast sync
+        // Both windows are using blast sync, so the top window is still waiting
         assertTrue(w1.syncNextBuffer());
-        assertTrue(w2.syncNextBuffer());
+        assertEquals(SYNC_STATE_READY, w2.mSyncState);
 
-        // A drawn window in non-explicit sync can complete the sync state automatically.
-        w1.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
-        w1.mPrepareSyncSeqId = 0;
-        makeLastConfigReportedToClient(w1, true /* visible */);
+        // Once both windows are done, it should finish
+        w1.immediatelyNotifyBlastSync();
         mWm.mSyncEngine.onSurfacePlacement();
         verify(mockCallback).onTransactionReady(anyInt(), any());
         assertFalse(w1.syncNextBuffer());

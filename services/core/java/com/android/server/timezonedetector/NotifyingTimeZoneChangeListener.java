@@ -26,6 +26,7 @@ import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGI
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_MANUAL;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_TELEPHONY;
 import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGIN_UNKNOWN;
+import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_LOW;
 
 import android.annotation.DurationMillisLong;
 import android.annotation.IntDef;
@@ -398,7 +399,10 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             if (changeEvent.getOrigin() == ORIGIN_MANUAL) {
                 // Just clear any existing notification.
                 clearNotificationForUser(currentUserId);
-            } else {
+            } else if (changeEvent.getOldConfidence() != TIME_ZONE_CONFIDENCE_LOW) {
+                // b/421857844 Only notify if the old confidence is not 0. This
+                // is to prevent notifying users when the time zone is first set
+                // after setup wizard.
                 notifyOfTimeZoneChange(currentUserId, trackedChangeEvent);
             }
         }
@@ -425,10 +429,17 @@ public class NotifyingTimeZoneChangeListener implements TimeZoneChangeListener {
             TimeZoneChangeEvent lastChangeEvent = lastTimeZoneChangeRecord.getEvent();
             if (!changeEvent.getOldZoneId().equals(lastChangeEvent.getNewZoneId())) {
                 int changeEventId = mNextChangeEventId.getAndIncrement();
-                TimeZoneChangeEvent syntheticChangeEvent = new TimeZoneChangeEvent(
-                        mEnvironment.elapsedRealtimeMillis(), mEnvironment.currentTimeMillis(),
-                        ORIGIN_UNKNOWN, UserHandle.USER_NULL, lastChangeEvent.getNewZoneId(),
-                        changeEvent.getOldZoneId(), 0, "Synthetic");
+                TimeZoneChangeEvent syntheticChangeEvent =
+                        new TimeZoneChangeEvent(
+                                mEnvironment.elapsedRealtimeMillis(),
+                                mEnvironment.currentTimeMillis(),
+                                ORIGIN_UNKNOWN,
+                                UserHandle.USER_NULL,
+                                /* oldZoneId= */ lastChangeEvent.getNewZoneId(),
+                                /* newZoneId= */ changeEvent.getOldZoneId(),
+                                /* oldConfidence= */ lastChangeEvent.getNewConfidence(),
+                                /* newConfidence= */ TIME_ZONE_CONFIDENCE_LOW,
+                                "Synthetic");
                 TimeZoneChangeRecord syntheticTrackedChangeEvent =
                         new TimeZoneChangeRecord(changeEventId, syntheticChangeEvent);
                 syntheticTrackedChangeEvent.setStatus(STATUS_SUPERSEDED, SIGNAL_TYPE_NONE);

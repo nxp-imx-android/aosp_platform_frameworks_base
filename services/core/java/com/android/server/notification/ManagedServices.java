@@ -23,6 +23,7 @@ import static android.content.Context.BIND_FOREGROUND_SERVICE;
 import static android.content.Context.DEVICE_POLICY_SERVICE;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_SYSTEM;
+import static android.service.notification.Flags.reportNlsStartAndEnd;
 import static android.service.notification.NotificationListenerService.META_DATA_DEFAULT_AUTOBIND;
 
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
@@ -33,11 +34,13 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.IBinderSession;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Context.BindServiceFlags;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
@@ -359,18 +362,11 @@ abstract public class ManagedServices {
         return userSet != null && userSet.remove(approvedValue);
     }
 
-    protected int getBindFlags() {
+    protected long getBindFlags() {
         return BIND_AUTO_CREATE | BIND_FOREGROUND_SERVICE | BIND_ALLOW_WHITELIST_MANAGEMENT;
     }
 
     protected void onServiceRemovedLocked(ManagedServiceInfo removed) { }
-
-    private ManagedServiceInfo newServiceInfo(IInterface service,
-            ComponentName component, int userId, boolean isSystem, ServiceConnection connection,
-            int targetSdkVersion, int uid) {
-        return new ManagedServiceInfo(service, component, userId, isSystem, connection,
-                targetSdkVersion, uid);
-    }
 
     public void onBootPhaseAppsCanStart() {}
 
@@ -1865,7 +1861,8 @@ abstract public class ManagedServices {
                 IInterface mService;
 
                 @Override
-                public void onServiceConnected(ComponentName name, IBinder binder) {
+                public void onServiceConnected(ComponentName name, IBinder binder,
+                        IBinderSession binderSession) {
                     Slog.v(TAG,  userid + " " + getCaption() + " service connected: " + name);
                     boolean added = false;
                     ManagedServiceInfo info = null;
@@ -1873,8 +1870,13 @@ abstract public class ManagedServices {
                         mServicesRebinding.remove(servicesBindingTag);
                         try {
                             mService = asInterface(binder);
-                            info = newServiceInfo(mService, name,
-                                userid, isSystem, this, targetSdkVersion, uid);
+                            if (reportNlsStartAndEnd()) {
+                                info = new ManagedServiceInfo(mService, name, userid, isSystem,
+                                        this, targetSdkVersion, uid, binderSession);
+                            } else {
+                                info = new ManagedServiceInfo(mService, name, userid, isSystem,
+                                        this, targetSdkVersion, uid);
+                            }
                             binder.linkToDeath(info, 0);
                             added = mServices.add(info);
                         } catch (RemoteException e) {
@@ -1884,6 +1886,14 @@ abstract public class ManagedServices {
                     if (added) {
                         onServiceAdded(info);
                     }
+                }
+
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    Slog.wtfStack(TAG,
+                            "onServiceConnected(ComponentName, IBinder) called even when "
+                                    + "onServiceConnected(ComponentName, IBinder, IBinderSession)"
+                                    + " was overridden");
                 }
 
                 @Override
@@ -1916,7 +1926,7 @@ abstract public class ManagedServices {
             };
             if (!mContext.bindServiceAsUser(intent,
                     serviceConnection,
-                    getBindFlags(),
+                    BindServiceFlags.of(getBindFlags()),
                     new UserHandle(userid))) {
                 mServicesBound.remove(servicesBindingTag);
                 Slog.w(TAG, "Unable to bind " + getCaption() + " service: " + intent
@@ -2002,7 +2012,7 @@ abstract public class ManagedServices {
 
     private ManagedServiceInfo registerServiceImpl(final IInterface service,
             final ComponentName component, final int userid, int targetSdk, int uid) {
-        ManagedServiceInfo info = newServiceInfo(service, component, userid,
+        ManagedServiceInfo info = new ManagedServiceInfo(service, component, userid,
                 true /*isSystem*/, null /*connection*/, targetSdk, uid);
         return registerServiceImpl(info);
     }
@@ -2105,10 +2115,17 @@ abstract public class ManagedServices {
         public int uid;
         @FlaggedApi(FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER)
         public boolean isVisibleBackgroundUserService;
+        public final IBinderSession mBinderSession;
 
         public ManagedServiceInfo(IInterface service, ComponentName component,
                 int userid, boolean isSystem, ServiceConnection connection, int targetSdkVersion,
                 int uid) {
+            this(service, component, userid, isSystem, connection, targetSdkVersion, uid, null);
+        }
+
+        public ManagedServiceInfo(IInterface service, ComponentName component,
+                int userid, boolean isSystem, ServiceConnection connection, int targetSdkVersion,
+                int uid, IBinderSession binderSession) {
             this.service = service;
             this.component = component;
             this.userid = userid;
@@ -2121,6 +2138,7 @@ abstract public class ManagedServices {
                         .getService(UserManagerInternal.class).isVisibleBackgroundFullUser(userid);
             }
             mKey = Pair.create(component, userid);
+            mBinderSession = binderSession;
         }
 
         public boolean isGuest(ManagedServices host) {

@@ -146,7 +146,7 @@ class LetterboxLifecycleEventTest : ShellTestCase() {
     }
 
     @Test
-    fun `Use correct Lash`() {
+    fun `Use correct Leash for creation`() {
         runTestScenario { r ->
             val testLeash: SurfaceControl = mock()
             r.configureChange(
@@ -154,7 +154,7 @@ class LetterboxLifecycleEventTest : ShellTestCase() {
                 leash = testLeash
             )
             r.createLetterboxLifecycleEvent()
-            r.checkLetterboxActivityLeash(expected = testLeash)
+            r.checkTaskLeash(expected = testLeash)
         }
     }
 
@@ -253,8 +253,8 @@ class LetterboxLifecycleEventTest : ShellTestCase() {
             assertEquals(expected, event?.containerToken)
         }
 
-        fun checkLetterboxActivityLeash(expected: SurfaceControl?) {
-            assertEquals(expected, event?.leash)
+        fun checkTaskLeash(expected: SurfaceControl?) {
+            assertEquals(expected, event?.taskLeash)
         }
 
         fun checkLetterboxKey(expected: LetterboxKey) {

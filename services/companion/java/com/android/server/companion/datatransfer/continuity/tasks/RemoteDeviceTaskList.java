@@ -16,6 +16,8 @@
 
 package com.android.server.companion.datatransfer.continuity.tasks;
 
+import android.companion.datatransfer.continuity.RemoteTask;
+
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
 import java.util.ArrayList;
@@ -68,10 +70,17 @@ class RemoteDeviceTaskList {
     }
 
     /**
+     * Removes a task from the list of tasks currently available on the remote device.
+     */
+    void removeTask(int taskId) {
+        mTasks.removeIf(task -> task.getId() == taskId);
+    }
+
+    /**
      * Gets the most recently used task on this device, or null if there are no
      * tasks.
      */
-    RemoteTaskInfo getMostRecentTask() {
+    RemoteTask getMostRecentTask() {
         if (mTasks.isEmpty()) {
             return null;
         }
@@ -85,6 +94,7 @@ class RemoteDeviceTaskList {
                 mostRecentTask = task;
             }
         }
-        return mostRecentTask;
+
+        return mostRecentTask.toRemoteTask(mAssociationId, mDeviceName);
     }
 }

@@ -59,6 +59,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -237,11 +238,8 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         // Only one desk attempt.
         verify(mockShellTaskOrganizer, times(1))
             .createRootTask(
-                displayId,
-                WINDOWING_MODE_FREEFORM,
-                organizer,
-                true,
-                DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
+                any(),
+                eq(organizer)
             )
     }
 
@@ -270,11 +268,8 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         // One for the warmup/first desk and one for the second desk.
         verify(mockShellTaskOrganizer, times(2))
             .createRootTask(
-                displayId,
-                WINDOWING_MODE_FREEFORM,
-                organizer,
-                true,
-                DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
+                any(),
+                eq(organizer)
             )
     }
 
@@ -1073,19 +1068,16 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         Mockito.reset(mockShellTaskOrganizer)
         whenever(
                 mockShellTaskOrganizer.createRootTask(
-                    displayId,
-                    WINDOWING_MODE_FREEFORM,
-                    organizer,
-                    true,
-                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
+                    any(),
+                    eq(organizer)
                 )
             )
             .thenAnswer { invocation ->
-                val listener = (invocation.arguments[2] as TaskListener)
+                val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(freeformRootTask, SurfaceControl())
             }
             .thenAnswer { invocation ->
-                val listener = (invocation.arguments[2] as TaskListener)
+                val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
             }
         val deskId = organizer.createDeskSuspending(displayId, userId)
@@ -1108,19 +1100,16 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         Mockito.reset(mockShellTaskOrganizer)
         whenever(
                 mockShellTaskOrganizer.createRootTask(
-                    displayId,
-                    WINDOWING_MODE_FREEFORM,
-                    organizer,
-                    true,
-                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue,
+                    any(),
+                    eq(organizer)
                 )
             )
             .thenAnswer { invocation ->
-                val listener = (invocation.arguments[2] as TaskListener)
+                val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(freeformRootTask, SurfaceControl())
             }
             .thenAnswer { invocation ->
-                val listener = (invocation.arguments[2] as TaskListener)
+                val listener = (invocation.arguments[1] as TaskListener)
                 listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
             }
         organizer.warmUpDefaultDesk(displayId, userId)

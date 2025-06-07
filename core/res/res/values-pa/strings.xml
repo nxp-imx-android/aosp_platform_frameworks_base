@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"ਆਪਣੇ ਸਰੀਰ ਦੇ ਅਹਿਮ ਚਿੰਨ੍ਹਾਂ ਬਾਰੇ ਸੰਵੇਦਕ ਡਾਟਾ ਤੱਕ ਪਹੁੰਚ ਕਰਨ"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"ਸੂਚਨਾਵਾਂ"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"ਸੂਚਨਾਵਾਂ ਦਿਖਾਓ"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ਟਰੈਕਿੰਗ ਡਾਟਾ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"ਆਪਣੇ ਅਤੇ ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦੇ ਵਾਤਾਵਰਨ ਬਾਰੇ XR ਡਾਟੇ ਤੱਕ ਪਹੁੰਚ ਕਰੋ"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"ਸੰਵੇਦਨਸ਼ੀਲ XR ਟਰੈਕਿੰਗ ਡਾਟਾ"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"ਸੰਵੇਦਨਸ਼ੀਲ ਟਰੈਕਿੰਗ ਡਾਟੇ ਤੱਕ ਪਹੁੰਚ ਕਰੋ, ਜਿਵੇਂ ਕਿ ਅੱਖਾਂ ਦੀ ਹਲਚਲ"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ਵਿੰਡੋ ਸਮੱਗਰੀ ਮੁੜ-ਪ੍ਰਾਪਤ ਕਰਨਾ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ਉਸ ਵਿੰਡੋ ਸਮੱਗਰੀ ਦੀ ਜਾਂਚ ਕਰੋ, ਜਿਸ ਨਾਲ ਤੁਸੀਂ ਅੰਤਰਕਿਰਿਆ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"\'ਸਪੱਰਸ਼ ਰਾਹੀਂ ਪੜਚੋਲ ਕਰੋ\' ਚਾਲੂ ਕਰਨਾ"</string>
@@ -2553,28 +2559,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ਐਪਲੀਕੇਸ਼ਨਾਂ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ਤੁਹਾਡੇ ਫਿੰਗਰਪ੍ਰਿੰਟਾਂ ਦੀ ਹੁਣ ਪਛਾਣ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ। ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਦਾ ਦੁਬਾਰਾ ਸੈੱਟਅੱਪ ਕਰੋ।"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"ਸੁਰੱਖਿਆ ਅਤੇ ਪਰਦੇਦਾਰੀ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB ਲਈ ਅਡਵਾਂਸ ਸੁਰੱਖਿਆ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ਡਾਟਾ ਟ੍ਰਾਂਸਫ਼ਰ ਕਰਨ ਲਈ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰੋ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"ਡਾਟਾ ਟ੍ਰਾਂਸਫ਼ਰ ਕਰਨ ਲਈ ਤੁਹਾਨੂੰ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰ ਕੇ ਮੁੜ-ਕਨੈਕਟ ਕਰਨ ਦੀ ਲੋੜ ਪੈ ਸਕਦੀ ਹੈ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"ਤੇਜ਼ ਚਾਰਜਿੰਗ ਅਤੇ ਡਾਟਾ ਟ੍ਰਾਂਸਫ਼ਰ ਕਰਨ ਲਈ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰੋ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"ਤੇਜ਼ ਚਾਰਜਿੰਗ ਅਤੇ ਡਾਟਾ ਟ੍ਰਾਂਸਫ਼ਰ ਕਰਨ ਲਈ ਤੁਹਾਨੂੰ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰ ਕੇ ਮੁੜ-ਕਨੈਕਟ ਕਰਨ ਦੀ ਲੋੜ ਪੈ ਸਕਦੀ ਹੈ"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"ਤੇਜ਼ ਚਾਰਜਿੰਗ ਲਈ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰੋ"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"ਤੇਜ਼ ਚਾਰਜਿੰਗ ਲਈ ਤੁਹਾਨੂੰ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਅਣਲਾਕ ਕਰ ਕੇ ਮੁੜ-ਕਨੈਕਟ ਕਰਨ ਦੀ ਲੋੜ ਪੈ ਸਕਦੀ ਹੈ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ਖਮੋਸ਼ੀ"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"ਸੂਚਨਾ ਨੂੰ ਖਮੋਸ਼ ਕਰ ਦਿੱਤਾ ਗਿਆ"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਆਪਣਾ ਡੀਵਾਈਸ ਮੁੜ-ਸ਼ੁਰੂ ਨਹੀਂ ਕਰਦੇ, ਉਦੋਂ ਤੱਕ ਖਮੋਸ਼ ਰਹੇਗਾ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ਸ਼ੱਕੀ USB ਸਰਗਰਮੀ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ਡਾਟਾ ਸਿਗਨਲ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ਕੀ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਸੰਬੰਧੀ ਕੋਈ ਸਮੱਸਿਆ ਆ ਰਹੀ ਹੈ?"</string>

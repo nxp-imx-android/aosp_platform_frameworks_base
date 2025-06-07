@@ -33,5 +33,5 @@ java_library {
         "com.android.systemui.retail.data-impl",
         "com.android.systemui.retail.domain-impl",
     ],
-    visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
+    visibility: ["//frameworks/base/packages/SystemUI:__subpackages__"],
 }

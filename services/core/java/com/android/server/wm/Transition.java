@@ -112,6 +112,8 @@ import android.view.Display;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ActivityTransitionInfo;
+import android.window.AppCompatTransitionInfo;
+import android.window.DesktopExperienceFlags;
 import android.window.ScreenCapture;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
@@ -2334,20 +2336,34 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         ArrayList<Task> onTopTasksEnd = new ArrayList<>();
         final DisplayContent onTopDisplayEnd =
                 mController.mAtm.mRootWindowContainer.getTopFocusedDisplayContent();
+        final boolean includeChildrenOfReportingTasks =
+                DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue();
         for (int d = 0; d < mTargetDisplays.size(); ++d) {
             addOnTopTasks(mTargetDisplays.get(d), onTopTasksEnd);
             final int displayId = mTargetDisplays.get(d).mDisplayId;
             ArrayList<Task> reportedOnTop = mController.mLatestOnTopTasksReported.get(displayId);
-            for (int i = onTopTasksEnd.size() - 1; i >= 0; --i) {
+            final List<Task> toTopTasksToReport = new ArrayList<>();
+            // Iterate from 0 to visit parents first.
+            for (int i = 0; i < onTopTasksEnd.size(); i++) {
                 final Task task = onTopTasksEnd.get(i);
                 if (task.getDisplayId() != displayId) continue;
-                if (reportedOnTop == null) {
-                    if (mOnTopTasksStart.contains(task)) continue;
-                } else if (reportedOnTop.contains(task)) {
-                    continue;
+                final boolean isParentInToTopTasksToReport = task.getParent() != null
+                        && toTopTasksToReport.contains(task.getParent());
+                if (Objects.requireNonNullElse(reportedOnTop, mOnTopTasksStart).contains(task)) {
+                    if (!(includeChildrenOfReportingTasks && isParentInToTopTasksToReport)) {
+                        // Don't report it if:
+                        // -It didn't change since the last report, AND
+                        // -It's not a child of a to-top task that did change since the last report.
+                        continue;
+                    }
                 }
+                // Add to front to report children first.
+                toTopTasksToReport.addFirst(task);
+            }
+            for (Task task : toTopTasksToReport) {
                 addToTopChange(task);
             }
+
             // Swap in the latest on-top tasks.
             mController.mLatestOnTopTasksReported.put(displayId, onTopTasksEnd);
             onTopTasksEnd = reportedOnTop != null ? reportedOnTop : new ArrayList<>();
@@ -2389,6 +2405,18 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             mStartTransaction.apply();
         }
         if (mFinishTransaction != null) {
+            Slog.i(TAG, "cleanUpOnFailure for #" + mSyncId);
+            // In case this is called from DeathRecipient of ITransitionPlayer, which usually means
+            // that the organizers are also dead. And when deposing the organizers, it will call
+            // WindowContainer#migrateToNewSurfaceControl to reset the containers which were
+            // organized. So make sure the finish transaction uses the new surface of parents.
+            for (int i = mTargets.size() - 1; i >= 0; --i) {
+                final WindowContainer<?> target = mTargets.get(i).mContainer;
+                if (target.getParent() == null) continue;
+                final SurfaceControl targetLeash = getLeashSurface(target, null /* t */);
+                final SurfaceControl origParent = getOrigParentSurface(target);
+                mFinishTransaction.reparent(targetLeash, origParent);
+            }
             mFinishTransaction.apply();
         }
         mController.finishTransition(mController.mAtm.mChainTracker.startFinish("clean-up", this));
@@ -3197,8 +3225,11 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             }
 
             if (activityRecord != null) {
-                change.setActivityTransitionInfo(new ActivityTransitionInfo(
-                        activityRecord.mActivityComponent, activityRecord.getTask().mTaskId));
+                final AppCompatTransitionInfo appCompatTransitionInfo =
+                        AppCompatUtils.createAppCompatTransitionInfo(activityRecord);
+                change.setActivityTransitionInfo(
+                        new ActivityTransitionInfo(activityRecord.mActivityComponent,
+                                activityRecord.getTask().mTaskId, appCompatTransitionInfo));
             }
 
             change.setRotation(info.mRotation, endRotation);

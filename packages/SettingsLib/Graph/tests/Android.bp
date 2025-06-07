@@ -15,7 +15,8 @@ android_robolectric_test {
         "androidx.test.ext.junit",
         "truth",
     ],
-    instrumentation_for: "SettingsLibGraphShell",
+    associates: ["SettingsLibGraph"],
     coverage_libs: ["SettingsLibGraph"],
+    instrumentation_for: "SettingsLibGraphShell",
     upstream: true,
 }

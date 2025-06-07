@@ -18,6 +18,8 @@ package com.android.server.wm.flicker.helpers
 
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Insets
 import android.graphics.Point
 import android.graphics.Rect
@@ -26,6 +28,7 @@ import android.os.SystemClock
 import android.platform.uiautomatorhelpers.DeviceHelpers
 import android.tools.PlatformConsts
 import android.tools.device.apphelpers.IStandardAppHelper
+import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.helpers.SYSTEMUI_PACKAGE
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.wm.WindowingMode
@@ -55,7 +58,7 @@ import kotlin.math.abs
  * Wrapper class around App helper classes. This class adds functionality to the apps that the
  * desktop apps would have.
  */
-open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
+open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     IStandardAppHelper by innerHelper {
 
     enum class Corners {
@@ -86,6 +89,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     ) {
         innerHelper.launchViaIntent(wmHelper)
         if (isInDesktopWindowingMode(wmHelper)) return
+
         if (shouldUseDragToDesktop) {
             enterDesktopModeWithDrag(
                 wmHelper = wmHelper,
@@ -103,6 +107,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         device: UiDevice,
         motionEventHelper: MotionEventHelper = MotionEventHelper(getInstrumentation(), TOUCH)
     ) {
+        if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
+
         dragToDesktop(
             wmHelper = wmHelper,
             device = device,
@@ -537,6 +543,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     fun enterDesktopModeViaKeyboard(
         wmHelper: WindowManagerStateHelper,
     ) {
+        if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
+
         val keyEventHelper = KeyEventHelper(getInstrumentation())
         keyEventHelper.press(KEYCODE_DPAD_DOWN, META_META_ON or META_CTRL_ON)
         waitForTransitionToFreeform(wmHelper)
@@ -554,6 +562,8 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         wmHelper: WindowManagerStateHelper,
         device: UiDevice
     ) {
+        if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
+
         val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
         val startX = windowRect.centerX()
         // Click a little under the top to prevent opening the notification shade.
@@ -602,6 +612,26 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         }.waitForAndVerify()
     }
 
+    /**
+     * Opens a specified number of the same application.
+     *
+     * This method iterates a number of times, defined by the {@code numTasks}, and on each
+     * iteration, it launches a new instance of an application.
+     *
+     * @param wmHelper The helper class that waits until some action (like app opening) is completed.
+     * @param numTasks The number of tasks to open from the same application.
+     */
+    fun openTasks(wmHelper: WindowManagerStateHelper, numTasks: Int) {
+        for (i in 0..<numTasks) {
+            launchViaIntent(
+                wmHelper = wmHelper,
+                intent = innerHelper.openAppIntent.apply {
+                    addFlags(FLAG_ACTIVITY_MULTIPLE_TASK or FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+        }
+    }
+
     private fun getDesktopAppViewByRes(viewResId: String): UiObject2 =
         DeviceHelpers.waitForObj(By.res(SYSTEMUI_PACKAGE, viewResId), TIMEOUT)
 
@@ -639,6 +669,9 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
     // Requirement of DesktopWindowingMode is having a minimum of 1 app in WINDOWING_MODE_FREEFORM.
     private fun isInDesktopWindowingMode(wmHelper: WindowManagerStateHelper) =
         wmHelper.getWindow(innerHelper)?.windowingMode == WINDOWING_MODE_FREEFORM
+
+    private fun isAnyDesktopWindowVisible(wmHelper: WindowManagerStateHelper) =
+        wmHelper.currentState.wmState.hasFreeformWindow()
 
     private fun areSnapWindowRegionsMatchingWithinThreshold(
         surfaceRegion: Region, expectedRegion: Region, toLeft: Boolean
@@ -697,6 +730,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         const val RESTART_DIALOG_RESTART_BUTTON: String = "letterbox_restart_dialog_restart_button"
         val caption: BySelector
             get() = By.res(SYSTEMUI_PACKAGE, CAPTION)
+
         // In DesktopMode, window snap can be done with just a single window. In this case, the
         // divider tiling between left and right window won't be shown, and hence its states are not
         // obtainable in test.

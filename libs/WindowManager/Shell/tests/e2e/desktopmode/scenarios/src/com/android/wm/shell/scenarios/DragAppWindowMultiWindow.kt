@@ -18,11 +18,8 @@ package com.android.wm.shell.scenarios
 
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
-import com.android.server.wm.flicker.helpers.ImeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
-import com.android.server.wm.flicker.helpers.NewTasksAppHelper
-import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
@@ -33,11 +30,11 @@ import org.junit.Test
 @Ignore("Test Base Class")
 abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase()
 {
-    private val imeAppHelper = ImeAppHelper(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val mailApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
-    private val newTasksApp = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
-    private val imeApp = DesktopModeAppHelper(ImeAppHelper(instrumentation))
+    private val mailAppHelper = MailAppHelper(instrumentation)
+    private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
+
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
+    private val maxNum = desktopConfig.maxTaskLimit
 
     @Before
     fun setup() {
@@ -45,26 +42,26 @@ abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase()
             DesktopState.fromContext(instrumentation.context)
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
-        testApp.enterDesktopMode(wmHelper, device)
-        mailApp.launchViaIntent(wmHelper)
-        newTasksApp.launchViaIntent(wmHelper)
-        imeApp.launchViaIntent(wmHelper)
+        mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
     }
 
     @Test
     override fun dragAppWindow() {
-        val (startXIme, startYIme) = getWindowDragStartCoordinate(imeAppHelper)
+        val (startX, startY) = getWindowDragStartCoordinate(mailAppHelper)
 
-        imeApp.dragWindow(startXIme, startYIme,
-            endX = startXIme + 150, endY = startYIme + 150,
-            wmHelper, device)
+        mailAppDesktopHelper.dragWindow(
+            startX,
+            startY,
+            endX = startX + 150,
+            endY = startY + 150,
+            wmHelper,
+            device
+        )
     }
 
     @After
     fun teardown() {
-        testApp.exit(wmHelper)
-        mailApp.exit(wmHelper)
-        newTasksApp.exit(wmHelper)
-        imeApp.exit(wmHelper)
+        mailAppDesktopHelper.exit(wmHelper)
     }
 }

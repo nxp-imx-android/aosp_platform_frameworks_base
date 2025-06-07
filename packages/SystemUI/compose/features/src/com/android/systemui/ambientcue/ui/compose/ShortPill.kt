@@ -26,6 +26,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,7 @@ import androidx.compose.ui.util.fastForEach
 import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
+import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
 
@@ -68,8 +70,8 @@ fun ShortPill(
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
 ) {
-    val outlineColor = MaterialTheme.colorScheme.onBackground
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
+    val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
     val minSize = 48.dp
     val closeButtonSize = 28.dp
     val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
@@ -172,14 +174,16 @@ private fun CloseButton(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val decreasedAlphaBackgroundColor = backgroundColor.copy(alpha = 0.7f)
     PlatformIconButton(
-        modifier = modifier.clip(CircleShape).background(backgroundColor).padding(8.dp),
+        modifier =
+            modifier.clip(CircleShape).background(decreasedAlphaBackgroundColor).padding(8.dp),
         iconResource = R.drawable.ic_close_white_rounded,
         colors =
             IconButtonColors(
-                containerColor = backgroundColor,
+                containerColor = Color.Transparent,
                 contentColor = outlineColor,
-                disabledContainerColor = backgroundColor,
+                disabledContainerColor = Color.Transparent,
                 disabledContentColor = outlineColor,
             ),
         contentDescription =
@@ -195,11 +199,17 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
         contentDescription = action.label,
         modifier =
             modifier
-                .size(18.dp)
-                .border(
-                    width = 0.75.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                    shape = CircleShape,
+                .then(
+                    if (action.actionType == ActionType.MR) {
+                        Modifier.size(18.dp)
+                    } else {
+                        Modifier.size(16.dp)
+                            .border(
+                                width = 0.75.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = CircleShape,
+                            )
+                    }
                 )
                 .padding(1.dp)
                 .clip(CircleShape)

@@ -42,6 +42,7 @@ import com.android.packageinstaller.v2.model.InstallRepository
 import com.android.packageinstaller.v2.model.InstallStage
 import com.android.packageinstaller.v2.model.InstallSuccess
 import com.android.packageinstaller.v2.model.InstallUserActionRequired
+import com.android.packageinstaller.v2.model.PackageUtil
 import com.android.packageinstaller.v2.model.PackageUtil.localLogv
 import com.android.packageinstaller.v2.ui.fragments.AnonymousSourceFragment
 import com.android.packageinstaller.v2.ui.fragments.ExternalSourcesBlockedFragment
@@ -52,6 +53,7 @@ import com.android.packageinstaller.v2.ui.fragments.InstallStagingFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallSuccessFragment
 import com.android.packageinstaller.v2.ui.fragments.ParseErrorFragment
 import com.android.packageinstaller.v2.ui.fragments.SimpleErrorFragment
+import com.android.packageinstaller.v2.ui.fragments.VerificationConfirmationFragment
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel
 import com.android.packageinstaller.v2.viewmodel.InstallViewModelFactory
 
@@ -85,8 +87,10 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
 
         // The base theme inherits a deviceDefault theme. Applying a material style on the base
         // theme to support the material design.
-        Log.d(LOG_TAG, "Apply material design")
-        theme.applyStyle(R.style.Theme_AlertDialogActivity_Material, /* force= */ true)
+        if (PackageUtil.isMaterialDesignEnabled(this)) {
+            Log.d(LOG_TAG, "Apply material design")
+            theme.applyStyle(R.style.Theme_AlertDialogActivity_Material, /* force= */ false)
+        }
 
         fragmentManager = supportFragmentManager
         appOpsManager = getSystemService(AppOpsManager::class.java)
@@ -159,6 +163,11 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                 when (uar.actionReason) {
                     InstallUserActionRequired.USER_ACTION_REASON_INSTALL_CONFIRMATION -> {
                         val actionDialog = InstallConfirmationFragment.newInstance(uar)
+                        showDialogInner(actionDialog)
+                    }
+
+                    InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION -> {
+                        val actionDialog = VerificationConfirmationFragment(uar)
                         showDialogInner(actionDialog)
                     }
 
@@ -348,6 +357,13 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         val intent = Intent("android.intent.action.MANAGE_PACKAGE_STORAGE")
         startActivity(intent)
         setResult(RESULT_FIRST_USER, null, true)
+    }
+
+    override fun setVerificationUserResponse(responseCode: Int) {
+        if (localLogv) {
+            Log.d(LOG_TAG, "Setting verification user response: $responseCode")
+        }
+        installViewModel!!.setVerificationUserResponse(responseCode)
     }
 
     private fun registerAppOpChangeListener(listener: UnknownSourcesListener, packageName: String) {

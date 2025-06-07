@@ -81,53 +81,59 @@ import java.util.Set;
  * A class that manages a user's synthetic password (SP) ({@link #SyntheticPassword}), along with a
  * set of SP protectors that are independent ways that the SP is protected.
  *
- * Invariants for SPs:
+ * <p>Invariants for SPs:
  *
- *  - A user's SP never changes, but SP protectors can be added and removed.  There is always a
- *    protector that protects the SP with the user's Lock Screen Knowledge Factor (LSKF), a.k.a.
- *    LockscreenCredential.  The LSKF may be empty (none).  There may be escrow token-based
- *    protectors as well, only for specific use cases such as enterprise-managed users.
+ * <ul>
+ *   <li>A user's SP never changes, but SP protectors can be added and removed. There is always a
+ *       protector that protects the SP with the user's Lock Screen Knowledge Factor (LSKF), a.k.a.
+ *       LockscreenCredential. The LSKF may be empty (none). There may be escrow token-based
+ *       protectors as well, only for specific use cases such as enterprise-managed users.
+ *   <li>The user's credential-encrypted storage is always protected by the SP.
+ *   <li>The user's Keystore superencryption keys are always protected by the SP. These in turn
+ *       protect the Keystore keys that require user authentication, an unlocked device, or both.
+ *   <li>A secret derived from the synthetic password is enrolled in Gatekeeper for the user, but
+ *       only while the user has a (nonempty) LSKF. This enrollment has an associated ID called the
+ *       Secure user ID or SID. This use of Gatekeeper, which is separate from the use of GateKeeper
+ *       that may be used in the LSKF-based protector, makes it so that unlocking the synthetic
+ *       password generates a HardwareAuthToken (but only when the user has LSKF). That
+ *       HardwareAuthToken can be provided to KeyMint to authorize the use of the user's
+ *       authentication-bound Keystore keys.
+ * </ul>
  *
- *  - The user's credential-encrypted storage is always protected by the SP.
+ * <p>Files stored on disk for each user:
  *
- *  - The user's Keystore superencryption keys are always protected by the SP.  These in turn
- *    protect the Keystore keys that require user authentication, an unlocked device, or both.
- *
- *  - A secret derived from the synthetic password is enrolled in Gatekeeper for the user, but only
- *    while the user has a (nonempty) LSKF.  This enrollment has an associated ID called the Secure
- *    user ID or SID.  This use of Gatekeeper, which is separate from the use of GateKeeper that may
- *    be used in the LSKF-based protector, makes it so that unlocking the synthetic password
- *    generates a HardwareAuthToken (but only when the user has LSKF).  That HardwareAuthToken can
- *    be provided to KeyMint to authorize the use of the user's authentication-bound Keystore keys.
- *
- * Files stored on disk for each user:
- *   For the SP itself, stored under NULL_PROTECTOR_ID:
- *     SP_HANDLE_NAME: GateKeeper password handle of a password derived from the SP.  Only exists
- *                     while the LSKF is nonempty.
- *     SP_E0_NAME, SP_P1_NAME: Information needed to create and use escrow token-based protectors.
- *                             Deleted when escrow token support is disabled for the user.
- *     VENDOR_AUTH_SECRET_NAME: A copy of the secret passed using the IAuthSecret interface,
- *                              encrypted using a secret derived from the SP using
- *                              PERSONALIZATION_AUTHSECRET_ENCRYPTION_KEY.
- *
- *     For each protector, stored under the corresponding protector ID:
- *       SP_BLOB_NAME: The encrypted SP secret (the SP itself or the P0 value).  Always exists.
- *       PASSWORD_DATA_NAME: Data used for LSKF verification, such as the scrypt salt and
- *                           parameters.  Only exists for LSKF-based protectors.  Doesn't exist when
- *                           the LSKF is empty, except in old protectors.
- *       PASSWORD_METRICS_NAME: Metrics about the LSKF, encrypted by a key derived from the SP.
- *                              Only exists for LSKF-based protectors.  Doesn't exist when the LSKF
- *                              is empty, except in old protectors.
- *       SECDISCARDABLE_NAME: A large number of random bytes that all need to be known in order to
- *                            decrypt SP_BLOB_NAME.  When the protector is deleted, this file is
- *                            overwritten and deleted as a "best-effort" attempt to support secure
- *                            deletion when hardware support for secure deletion is unavailable.
- *                            Doesn't exist for LSKF-based protectors that use Weaver.
- *       WEAVER_SLOT_NAME: Contains the Weaver slot number used by this protector.  Only exists if
- *                         the protector uses Weaver.
- *       WRONG_GUESS_COUNTER_NAME: Contains the wrong guess counter for the software rate-limiter.
- *                                 Only exists for LSKF-based protectors.  Does not affect the
- *                                 hardware rate-limiter which operates concurrently.
+ * <ul>
+ *   <li>For the SP itself, stored under NULL_PROTECTOR_ID:
+ *       <ul>
+ *         <li>SP_HANDLE_NAME: GateKeeper password handle of a password derived from the SP. Only
+ *             exists while the LSKF is nonempty.
+ *         <li>SP_E0_NAME, SP_P1_NAME: Information needed to create and use escrow token-based
+ *             protectors. Deleted when escrow token support is disabled for the user.
+ *         <li>VENDOR_AUTH_SECRET_NAME: A copy of the secret passed using the IAuthSecret interface,
+ *             encrypted using a secret derived from the SP using
+ *             PERSONALIZATION_AUTHSECRET_ENCRYPTION_KEY.
+ *       </ul>
+ *   <li>For each protector, stored under the corresponding protector ID:
+ *       <ul>
+ *         <li>SP_BLOB_NAME: The encrypted SP secret (the SP itself or the P0 value). Always exists.
+ *         <li>PASSWORD_DATA_NAME: Data used for LSKF verification, such as the scrypt salt and
+ *             parameters. Only exists for LSKF-based protectors. Doesn't exist when the LSKF is
+ *             empty, except in old protectors.
+ *         <li>PASSWORD_METRICS_NAME: Metrics about the LSKF, encrypted by a key derived from the
+ *             SP. Only exists for LSKF-based protectors. Doesn't exist when the LSKF is empty,
+ *             except in old protectors.
+ *         <li>SECDISCARDABLE_NAME: A large number of random bytes that all need to be known in
+ *             order to decrypt SP_BLOB_NAME. When the protector is deleted, this file is
+ *             overwritten and deleted as a "best-effort" attempt to support secure deletion when
+ *             hardware support for secure deletion is unavailable. Doesn't exist for LSKF-based
+ *             protectors that use Weaver.
+ *         <li>WEAVER_SLOT_NAME: Contains the Weaver slot number used by this protector. Only exists
+ *             if the protector uses Weaver.
+ *         <li>FAILURE_COUNTER_NAME: Contains the failure counter for the software rate-limiter.
+ *             Only exists for LSKF-based protectors. Does not affect the hardware rate-limiter
+ *             which operates concurrently.
+ *       </ul>
+ * </ul>
  */
 class SyntheticPasswordManager {
     private static final String SP_BLOB_NAME = "spblob";
@@ -140,8 +146,8 @@ class SyntheticPasswordManager {
     private static final String WEAVER_SLOT_NAME = "weaver";
     private static final String PASSWORD_METRICS_NAME = "metrics";
     private static final String VENDOR_AUTH_SECRET_NAME = "vendor_auth_secret";
-    @VisibleForTesting static final String WRONG_GUESS_COUNTER_NAME = "wrong_guess_counter";
-    @VisibleForTesting static final int WRONG_GUESS_COUNTER_FILE_SIZE = 2 * Integer.BYTES;
+    @VisibleForTesting static final String FAILURE_COUNTER_NAME = "failure_counter";
+    @VisibleForTesting static final int FAILURE_COUNTER_FILE_SIZE = 2 * Integer.BYTES;
 
     // used for files associated with the SP itself, not with a particular protector
     public static final long NULL_PROTECTOR_ID = 0L;
@@ -719,10 +725,24 @@ class SyntheticPasswordManager {
             case WeaverReadStatus.OK:
                 return VerifyCredentialResponse.OK;
             case WeaverReadStatus.THROTTLE:
+                // Either the credential could not be verified because a timeout is still active, or
+                // the credential was incorrect and there is a timeout before the next attempt will
+                // be allowed. INCORRECT_KEY is preferred in the latter case to avoid the ambiguity,
+                // but we still have to support implementations that use THROTTLE for both cases.
                 return responseFromTimeout(weaverResponse);
             case WeaverReadStatus.INCORRECT_KEY:
                 if (weaverResponse.timeout != 0) {
+                    // The credential was incorrect, and there is a timeout until the next attempt
+                    // will be allowed. This is reached if the Weaver implementation returns
+                    // INCORRECT_KEY in this case instead of THROTTLE.
+                    //
+                    // TODO(b/395976735): use RESPONSE_CRED_INCORRECT in this case, and update users
+                    // of VerifyCredentialResponse to be compatible with that.
                     return responseFromTimeout(weaverResponse);
+                }
+                if (android.security.Flags.softwareRatelimiter()) {
+                    return VerifyCredentialResponse.fromError(
+                            VerifyCredentialResponse.RESPONSE_CRED_INCORRECT);
                 }
                 break;
         }
@@ -2135,10 +2155,10 @@ class SyntheticPasswordManager {
         return (int) (n * 0x1E35A7BD);
     }
 
-    /** Reads a wrong guess counter. */
-    public int readWrongGuessCounter(LskfIdentifier id) {
-        byte[] bytes = loadState(WRONG_GUESS_COUNTER_NAME, id.protectorId, id.userId);
-        if (bytes == null || bytes.length != WRONG_GUESS_COUNTER_FILE_SIZE) {
+    /** Reads a failure counter. */
+    public int readFailureCounter(LskfIdentifier id) {
+        byte[] bytes = loadState(FAILURE_COUNTER_NAME, id.protectorId, id.userId);
+        if (bytes == null || bytes.length != FAILURE_COUNTER_FILE_SIZE) {
             // For a new protector, the counter is initially zero. Handle that by just returning
             // zero when the counter file does not exist. Of course, attackers who can delete the
             // file can reset the counter, but that is out of scope of the threat model of the
@@ -2154,7 +2174,7 @@ class SyntheticPasswordManager {
             Slogf.e(
                     TAG,
                     "%s file is corrupted! counter=%d, hash=0x%x",
-                    WRONG_GUESS_COUNTER_NAME,
+                    FAILURE_COUNTER_NAME,
                     counter,
                     hash);
             // Gracefully recover from a corrupted counter file by returning zero. This means that
@@ -2165,15 +2185,15 @@ class SyntheticPasswordManager {
         return counter;
     }
 
-    /** Synchronously writes a wrong guess counter. */
-    public void writeWrongGuessCounter(LskfIdentifier id, int count) {
-        ByteBuffer buffer = ByteBuffer.allocate(WRONG_GUESS_COUNTER_FILE_SIZE);
+    /** Synchronously writes a failure counter. */
+    public void writeFailureCounter(LskfIdentifier id, int count) {
+        ByteBuffer buffer = ByteBuffer.allocate(FAILURE_COUNTER_FILE_SIZE);
         buffer.putInt(count);
         // Add redundancy by also storing a hash of the counter. This makes it possible to
         // gracefully recover from file corruption such as bitflips, which otherwise could cause a
         // device lockout by making it seem like a lot of guesses have been made.
         buffer.putInt(hashInt(count));
-        saveState(WRONG_GUESS_COUNTER_NAME, buffer.array(), id.protectorId, id.userId);
+        saveState(FAILURE_COUNTER_NAME, buffer.array(), id.protectorId, id.userId);
         syncState(id.userId);
     }
 

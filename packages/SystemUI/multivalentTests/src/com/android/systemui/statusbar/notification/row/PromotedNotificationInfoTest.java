@@ -19,9 +19,6 @@ package com.android.systemui.statusbar.notification.row;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -55,11 +52,11 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
-import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
-import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
@@ -104,7 +101,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     @Mock
     private OnUserInteractionCallback mOnUserInteractionCallback;
     @Mock
-
     private ChannelEditorDialogController mChannelEditorDialogController;
     @Mock
     private PackageDemotionInteractor mPackageDemotionInteractor;
@@ -112,9 +108,6 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     private AssistantFeedbackController mAssistantFeedbackController;
     @Mock
     private TelecomManager mTelecomManager;
-
-    @Mock
-    NotificationInfo.OnSettingsClickListener mMockSettingsClickListener;
 
     @Before
     public void setUp() throws Exception {
@@ -178,7 +171,7 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 mSbn,
                 mEntry,
                 mEntryAdapter,
-                mMockSettingsClickListener,
+                null,
                 null,
                 null,
                 mUiEventLogger,
@@ -192,11 +185,9 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
         // Click demote button
         final View demoteButton = mInfo.findViewById(R.id.promoted_demote);
         demoteButton.performClick();
-        // TODO(b/417258670): restore original behavior when settings detour is removed.
         // verify that notiManager tried to demote
-        // verify(mMockINotificationManager, atLeastOnce()).setCanBePromoted(TEST_PACKAGE_NAME,
-        //        mSbn.getUid(), false, true);
-        verify(mMockSettingsClickListener, atLeastOnce()).onClick(any(), isNull(), 
-            eq(TEST_UID));
+        verify(mMockINotificationManager, atLeastOnce()).setCanBePromoted(TEST_PACKAGE_NAME,
+                mSbn.getUid(), false, true);
+
     }
 }

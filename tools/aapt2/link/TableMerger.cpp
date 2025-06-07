@@ -325,25 +325,38 @@ bool TableMerger::DoMerge(const android::Source& src, ResourceTablePackage* src_
 
       // disabled values
       for (auto& src_config_value : src_entry->flag_disabled_values) {
-        auto dst_config_value = dst_entry->FindOrCreateFlagDisabledValue(
-            src_config_value->value->GetFlag().value(), src_config_value->config,
-            src_config_value->product);
-        if (!dst_config_value->value) {
+        using CollisionResult = ResourceTable::CollisionResult;
+
+        ResourceConfigValue* dst_config_value =
+            dst_entry->FindFlagDisabledValue(src_config_value->value->GetFlag().value(),
+                                             src_config_value->config, src_config_value->product);
+        if (dst_config_value) {
+          CollisionResult collision_result = MergeConfigValue(
+              context_, res_name, overlay, options_.override_styles_instead_of_overlaying,
+              dst_config_value, src_config_value.get(), &main_table_->string_pool);
+          if (collision_result == CollisionResult::kConflict) {
+            context_->GetDiagnostics()->Error(
+                android::DiagMessage(src_config_value->value->GetSource())
+                << "duplicate value for resource '" << src_entry->name << "' " << "with config '"
+                << src_config_value->config << "' and flag '"
+                << (src_config_value->value->GetFlag()->negated ? "!" : "")
+                << src_config_value->value->GetFlag()->name << "'");
+            context_->GetDiagnostics()->Note(
+                android::DiagMessage(dst_config_value->value->GetSource())
+                << "resource previously defined here");
+            error = true;
+            continue;
+          } else if (collision_result == CollisionResult::kKeepOriginal) {
+            continue;
+          }
+        } else {
+          dst_config_value = dst_entry->FindOrCreateFlagDisabledValue(
+              src_config_value->value->GetFlag().value(), src_config_value->config,
+              src_config_value->product);
           // Resource does not exist, add it now.
           // Must clone the value since it might be in the values vector as well
           CloningValueTransformer cloner(&main_table_->string_pool);
           dst_config_value->value = src_config_value->value->Transform(cloner);
-        } else {
-          error = true;
-          context_->GetDiagnostics()->Error(
-              android::DiagMessage(src_config_value->value->GetSource())
-              << "duplicate value for resource '" << src_entry->name << "' " << "with config '"
-              << src_config_value->config << "' and flag '"
-              << (src_config_value->value->GetFlag()->negated ? "!" : "")
-              << src_config_value->value->GetFlag()->name << "'");
-          context_->GetDiagnostics()->Note(
-              android::DiagMessage(dst_config_value->value->GetSource())
-              << "resource previously defined here");
         }
       }
     }

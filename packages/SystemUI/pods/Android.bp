@@ -36,3 +36,14 @@ java_defaults {
     ],
     defaults_visibility: [":__subpackages__"],
 }
+
+// Have all pods in the same java_library so that new pods don't need to modify packages/SystemUI/Android.bp.
+java_library {
+    name: "com.android.systemui.pods-aosp-handheld",
+    static_libs: [
+        "com.android.systemui.dagger-api",
+        "com.android.systemui.retail-impl",
+        "com.android.systemui.util.settings-api",
+    ],
+    visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
+}

@@ -53,6 +53,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.CoroutineScope
@@ -99,6 +100,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     @Mock lateinit var userManager: UserManager
     @Mock lateinit var shellController: ShellController
     @Mock lateinit var desktopMixedTransitionHandler: DesktopMixedTransitionHandler
+    @Mock lateinit var snapEventHandler: SnapEventHandler
 
     private lateinit var desktopTasksLimiter: DesktopTasksLimiter
     private lateinit var userRepositories: DesktopUserRepositories
@@ -136,6 +138,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
                 desktopMixedTransitionHandler,
                 MAX_TASK_LIMIT,
             )
+        desktopTasksLimiter.snapEventHandler = snapEventHandler
     }
 
     @After
@@ -326,8 +329,18 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     fun removeLeftoverMinimizedTasks_activeNonMinimizedTasksStillAround_doesNothing() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.addTask(displayId = DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        desktopTaskRepo.addTask(displayId = DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        desktopTaskRepo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TASK_BOUNDS,
+        )
+        desktopTaskRepo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TASK_BOUNDS,
+        )
         desktopTaskRepo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 2)
 
         val wct = WindowContainerTransaction()
@@ -722,6 +735,8 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         verify(desktopMixedTransitionHandler).startTaskLimitMinimizeTransition(any(), any())
         assertThat(desktopTasksLimiter.getMinimizingTask(minimizeTransition)?.taskId)
             .isEqualTo(existingTasks.first().taskId)
+        verify(snapEventHandler)
+            .removeTaskIfTiled(existingTasks.first().displayId, existingTasks.first().taskId)
     }
 
     @Test
@@ -905,7 +920,7 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     private fun setUpFreeformTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {
         val task = createFreeformTask(displayId)
         `when`(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
-        desktopTaskRepo.addTask(displayId, task.taskId, task.isVisible)
+        desktopTaskRepo.addTask(displayId, task.taskId, task.isVisible, TASK_BOUNDS)
         return task
     }
 
@@ -955,15 +970,16 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         )
 
     private fun markTaskVisible(task: RunningTaskInfo) {
-        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = true)
+        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = true, TASK_BOUNDS)
     }
 
     private fun markTaskHidden(task: RunningTaskInfo) {
-        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = false)
+        desktopTaskRepo.updateTask(task.displayId, task.taskId, isVisible = false, TASK_BOUNDS)
     }
 
     private companion object {
         const val MAX_TASK_LIMIT = 6
         const val MAX_TASK_LIMIT2 = 9
+        val TASK_BOUNDS = Rect(100, 100, 300, 300)
     }
 }

@@ -77,7 +77,7 @@ public class SoftwareRateLimiterTest {
                 mInjector.advanceTime(Duration.ofMillis(1));
             }
             verifyUniqueWrongGuess(id, guess, delayTable[Math.min(i + 1, delayTable.length - 1)]);
-            verifyWrongGuessCounter(id, i + 1);
+            verifyFailureCounter(id, i + 1);
         }
         verifyRateLimited(id, newPassword("password"), delayTable[delayTable.length - 1]);
     }
@@ -95,7 +95,7 @@ public class SoftwareRateLimiterTest {
         final Duration expectedDelay = delayTable[numWrongGuesses];
 
         mInjector.setTime(Duration.ofSeconds(10));
-        mInjector.writeWrongGuessCounter(id, numWrongGuesses);
+        mInjector.writeFailureCounter(id, numWrongGuesses);
         mRateLimiter = new SoftwareRateLimiter(mInjector);
 
         mInjector.setTime(Duration.ofSeconds(1));
@@ -103,13 +103,13 @@ public class SoftwareRateLimiterTest {
     }
 
     @Test
-    public void testSuccessResetsWrongGuessCounter() {
+    public void testSuccessResetsFailureCounter() {
         final LskfIdentifier id = new LskfIdentifier(10, 1000);
         makeGuessesUntilRateLimited(id);
         mRateLimiter.reportSuccess(id);
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyUniqueWrongGuess(id, newPassword("password"));
-        verifyWrongGuessCounter(id, 1);
+        verifyFailureCounter(id, 1);
     }
 
     @Test
@@ -156,7 +156,7 @@ public class SoftwareRateLimiterTest {
                 verifyRateLimited(id, prevGuess);
                 return;
             }
-            mRateLimiter.reportWrongGuess(id, nextGuess);
+            mRateLimiter.reportFailure(id, nextGuess, /* isCertainlyWrongGuess= */ true);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -167,10 +167,10 @@ public class SoftwareRateLimiterTest {
         final LockscreenCredential guess = newPassword("password");
 
         verifyUniqueWrongGuess(id, guess);
-        verifyWrongGuessCounter(id, 1);
+        verifyFailureCounter(id, 1);
         for (int i = 0; i < 100; i++) {
             verifyDuplicateWrongGuess(id, guess);
-            verifyWrongGuessCounter(id, 1);
+            verifyFailureCounter(id, 1);
         }
     }
 
@@ -367,19 +367,19 @@ public class SoftwareRateLimiterTest {
         verifyUniqueWrongGuess(id, password);
     }
 
-    // For special credentials (e.g. FRP credential), the wrong guess counter is not currently being
+    // For special credentials (e.g. FRP credential), the failure counter is not currently being
     // stored persistently. But all the other logic should still work using the in-memory state.
     @Test
     public void testSpecialCredential() {
         LskfIdentifier id = new LskfIdentifier(-9999, SyntheticPasswordManager.NULL_PROTECTOR_ID);
         LockscreenCredential guess = newPassword("password");
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyUniqueWrongGuess(id, guess);
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyDuplicateWrongGuess(id, guess);
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         verifyCredentialTooShort(id, newPassword("abc"));
-        verifyWrongGuessCounter(id, 0);
+        verifyFailureCounter(id, 0);
         makeGuessesUntilRateLimited(id);
     }
 
@@ -418,6 +418,41 @@ public class SoftwareRateLimiterTest {
         }
     }
 
+    // Tests that if a generic failure (isCertainlyWrongGuess=false) is reported to the
+    // SoftwareRateLimiter, then the SoftwareRateLimiter does not match against that guess when
+    // detecting duplicate wrong guesses.
+    @Test
+    public void testReportGenericFailure_doesNotSaveWrongGuess() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+
+        for (int i = 0; i < 2; i++) {
+            SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
+            assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
+        }
+    }
+
+    // Tests that if a generic failure (isCertainlyWrongGuess=false) is reported to the
+    // SoftwareRateLimiter, then the failure counter is still incremented and the rate-limiter
+    // eventually kicks in.
+    @Test
+    public void testReportGenericFailure_incrementsFailureCounter() {
+        final LskfIdentifier id = new LskfIdentifier(10, 1000);
+        final LockscreenCredential guess = newPassword("password");
+
+        for (int i = 0; i < 100; i++) {
+            SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
+            if (result.code == RATE_LIMITED) {
+                return;
+            }
+            assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ false);
+            verifyFailureCounter(id, i + 1);
+        }
+        fail("Rate-limiter never kicked in");
+    }
+
     private void makeGuessesUntilRateLimited(LskfIdentifier id) {
         for (int i = 0; i < 100; i++) {
             final LockscreenCredential guess = newPassword("rate_limit_me" + i);
@@ -426,7 +461,7 @@ public class SoftwareRateLimiterTest {
                 assertThat(result.code).isEqualTo(RATE_LIMITED);
                 return;
             }
-            mRateLimiter.reportWrongGuess(id, guess);
+            mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
         }
         fail("Rate-limiter never kicked in");
     }
@@ -472,25 +507,26 @@ public class SoftwareRateLimiterTest {
     private void verifyUniqueWrongGuess(LskfIdentifier id, LockscreenCredential guess) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        mRateLimiter.reportWrongGuess(id, guess);
+        mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
     }
 
-    // Same as above but also verifies the next delay reported by reportWrongGuess().
+    // Same as above but also verifies the next delay reported by reportFailure().
     private void verifyUniqueWrongGuess(
             LskfIdentifier id, LockscreenCredential guess, Duration expectedNextDelay) {
         SoftwareRateLimiterResult result = mRateLimiter.apply(id, guess);
         assertThat(result.code).isEqualTo(CONTINUE_TO_HARDWARE);
-        Duration nextDelay = mRateLimiter.reportWrongGuess(id, guess);
+        Duration nextDelay =
+                mRateLimiter.reportFailure(id, guess, /* isCertainlyWrongGuess= */ true);
         assertThat(nextDelay).isEqualTo(expectedNextDelay);
     }
 
-    private void verifyWrongGuessCounter(LskfIdentifier id, int expectedValue) {
-        assertThat(mInjector.readWrongGuessCounter(id)).isEqualTo(expectedValue);
+    private void verifyFailureCounter(LskfIdentifier id, int expectedValue) {
+        assertThat(mInjector.readFailureCounter(id)).isEqualTo(expectedValue);
     }
 
     private static class TestInjector implements SoftwareRateLimiter.Injector {
 
-        private final Map<LskfIdentifier, Integer> mWrongGuessCounters = new HashMap<>();
+        private final Map<LskfIdentifier, Integer> mFailureCounters = new HashMap<>();
         private final List<WorkItem> mWorkList = new ArrayList<>();
         private Duration mTimeSinceBoot = Duration.ZERO;
 
@@ -507,13 +543,13 @@ public class SoftwareRateLimiterTest {
         }
 
         @Override
-        public int readWrongGuessCounter(LskfIdentifier id) {
-            return mWrongGuessCounters.getOrDefault(id, 0);
+        public int readFailureCounter(LskfIdentifier id) {
+            return mFailureCounters.getOrDefault(id, 0);
         }
 
         @Override
-        public void writeWrongGuessCounter(LskfIdentifier id, int counter) {
-            mWrongGuessCounters.put(id, counter);
+        public void writeFailureCounter(LskfIdentifier id, int counter) {
+            mFailureCounters.put(id, counter);
         }
 
         @Override

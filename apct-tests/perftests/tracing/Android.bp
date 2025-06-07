@@ -27,7 +27,9 @@ android_test {
         "src/**/*.kt",
     ],
     static_libs: [
+        "WindowManager-Shell",
         "androidx.annotation_annotation",
+        "androidx.test.ext.junit",
         "androidx.test.rules",
         "apct-perftests-utils",
         "collector-device-lib",
@@ -35,6 +37,7 @@ android_test {
         "flickerlib-parsers",
         "perfetto_trace_java_protos",
         "platform-test-annotations",
+        "services.core",
     ],
     test_suites: [
         "device-tests",

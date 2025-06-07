@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.policy
 import android.app.admin.DeviceAdminInfo
 import android.content.ComponentName
 import android.graphics.drawable.Drawable
+import com.android.systemui.supervision.data.model.SupervisionModel
 import java.io.PrintWriter
 
 /** A fake [SecurityController] to be used in tests. */
@@ -99,6 +100,12 @@ class FakeSecurityController(private val fakeState: FakeState = FakeState()) : S
 
     override fun getLabel(): CharSequence? = null
 
+    override fun getSupervisionModel(): SupervisionModel? = fakeState.supervisionModel
+
+    override fun setSupervisionModel(supervisionModel: SupervisionModel?) {
+        fakeState.supervisionModel = supervisionModel
+    }
+
     class FakeState(
         var isDeviceManaged: Boolean = false,
         var hasProfileOwner: Boolean = false,
@@ -120,5 +127,6 @@ class FakeSecurityController(private val fakeState: FakeState = FakeState()) : S
         var hasCACertInCurrentUser: Boolean = false,
         var hasCACertInWorkProfile: Boolean = false,
         var isParentalControlsEnabled: Boolean = false,
+        var supervisionModel: SupervisionModel? = null,
     )
 }

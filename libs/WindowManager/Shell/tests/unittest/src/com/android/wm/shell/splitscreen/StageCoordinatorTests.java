@@ -97,6 +97,8 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
+import com.android.wm.shell.desktopmode.DesktopRepository;
+import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreen.SplitScreenListener;
@@ -159,6 +161,10 @@ public class StageCoordinatorTests extends ShellTestCase {
     private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Mock
     private MSDLPlayer mMSDLPlayer;
+    @Mock
+    private DesktopUserRepositories mDesktopUserRepositories;
+    @Mock
+    private DesktopRepository mDesktopRepository;
     private FakeDesktopState mDesktopState;
     private IActivityTaskManager mIActivityTaskManager;
 
@@ -200,7 +206,9 @@ public class StageCoordinatorTests extends ShellTestCase {
                 mTaskOrganizer, mMainStage, mSideStage, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mSplitLayout, transitions, mTransactionPool,
                 mMainExecutor, mMainHandler, Optional.empty(), mLaunchAdjacentController,
-                Optional.empty(), mSplitState, Optional.empty(), mRootTDAOrganizer,
+                Optional.empty(), mSplitState, Optional.empty(),
+                Optional.of(mDesktopUserRepositories),
+                mRootTDAOrganizer,
                 mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager, mMSDLPlayer));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
@@ -217,6 +225,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mTaskOrganizer.startNewTransition(anyInt(), any())).thenReturn(new Binder());
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
         mDesktopState.setCanEnterDesktopMode(false);
+        when(mDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
 
         when(mSplitLayout.getTopLeftBounds()).thenReturn(mBounds1);
         when(mSplitLayout.getBottomRightBounds()).thenReturn(mBounds2);
@@ -516,11 +525,14 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_FULL_SCREEN_WINDOW_ON_REMOVING_SPLIT_SCREEN_STAGE_BUGFIX)
+    @EnableFlags({Flags.FLAG_ENABLE_FULL_SCREEN_WINDOW_ON_REMOVING_SPLIT_SCREEN_STAGE_BUGFIX,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND})
     public void startTasksOnSingleFreeformWindow_ensureWindowingModeClearedAndLaunchFullScreen() {
         mDisplayAreaInfo.configuration.windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_FREEFORM);
         when(mRunningTaskInfo.getWindowingMode()).thenReturn(WINDOWING_MODE_FREEFORM);
+        mDesktopRepository.addTask(DEFAULT_DISPLAY, mTaskId, false, mBounds1);
+        when(mDesktopRepository.isActiveTask(mTaskId)).thenReturn(true);
 
         mStageCoordinator.startTasks(mTaskId, null, INVALID_TASK_ID, null,
                 SPLIT_POSITION_TOP_OR_LEFT, SNAP_TO_2_50_50, mRemoteTransition,
@@ -529,6 +541,9 @@ public class StageCoordinatorTests extends ShellTestCase {
         verify(mSplitScreenTransitions).startFullscreenTransition(mWctCaptor.capture(), any());
         int windowingMode = mWctCaptor.getValue().getChanges().get(mBinder).getWindowingMode();
         assertEquals(windowingMode, WINDOWING_MODE_UNDEFINED);
+        assertThat(mWctCaptor.getValue().getHierarchyOps().stream().filter(
+                        WindowContainerTransaction.HierarchyOp::isReparent).findFirst().get()
+                .getNewParent()).isNull();
     }
 
     @Test

@@ -16,7 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
@@ -31,6 +31,7 @@ import android.util.Slog;
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
@@ -133,6 +134,14 @@ class TaskBroadcaster
         }
     }
 
+    @Override
+    public void onTaskRemoved(int taskId) throws RemoteException {
+        Slog.v(TAG, "onTaskRemoved: taskId=" + taskId);
+
+        RemoteTaskRemovedMessage taskRemovedMessage = new RemoteTaskRemovedMessage(taskId);
+        sendMessageToAllConnectedAssociations(taskRemovedMessage);
+    }
+
     private void sendDeviceConnectedMessage(int associationId) {
         Slog.v(
             TAG,
@@ -171,7 +180,7 @@ class TaskBroadcaster
                 .build();
 
         mCompanionDeviceManager.sendMessage(
-            CompanionDeviceManager.MESSAGE_TASK_CONTINUITY,
+            CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
             message.toBytes(),
             new int[] {associationId});
     }

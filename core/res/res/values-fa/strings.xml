@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"دسترسی به داده‌های حسگر در رابطه با علائم حیاتی شما"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"اعلان‌ها"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"نمایش اعلان"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"داده‌های ردگیری واقعیت گسترده"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"دسترسی به داده‌های واقعیت گسترده درباره شما و محیط اطرافتان"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"داده‌های حساس ردگیری واقعیت گسترده"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"دسترسی به داده‌های حساس ردگیری، مانند جهت نگاه"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"محتوای پنجره را بازیابی کند"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"محتوای پنجره‌ای را که درحال تعامل با آن هستید بررسی می‌کند."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"فعال‌سازی کاوش لمسی"</string>
@@ -2553,28 +2559,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"نقشه"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"برنامه‌ها"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"اثر انگشتانتان دیگر قابل‌شناسایی نیست. «قفل‌گشایی با اثر انگشت» را دوباره راه‌اندازی کنید."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"امنیت و حریم خصوصی"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"‏«محافظت پیشرفته» برای USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"برای انتقال داده، قفل دستگاه را باز کنید"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"شاید لازم باشد برای انتقال داده، قفل دستگاه را باز کنید و آن را دوباره متصل کنید"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"برای شارژ سریع و انتقال داده، قفل دستگاه را باز کنید"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"شاید لازم باشد برای شارژ سریع و انتقال داده، قفل دستگاه را باز کنید و آن را دوباره متصل کنید"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"برای شارژ سریع، قفل دستگاه را باز کنید"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"شاید لازم باشد برای شارژ سریع، قفل دستگاه را باز کنید و آن را دوباره متصل کنید"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"بی‌صدا کردن"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"اعلان بی‌صدا شد"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"تا زمانی که دستگاه را بازراه‌اندازی کنید، بی‌صدا شده است"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>

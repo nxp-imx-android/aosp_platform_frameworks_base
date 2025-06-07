@@ -193,7 +193,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
     private lateinit var multiRippleView: MultiRippleView
     private lateinit var turbulenceNoiseView: TurbulenceNoiseView
     private lateinit var loadingEffectView: LoadingEffectView
-    @Mock private lateinit var deviceSuggestionContainer: ViewGroup
+    private lateinit var deviceSuggestionContainer: ViewGroup
     private lateinit var deviceSuggestionText: TextView
     private lateinit var deviceSuggestionIcon: ImageView
     private lateinit var deviceSuggestionConnectingIcon: ProgressBar
@@ -377,7 +377,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
         multiRippleView = MultiRippleView(context, null)
         turbulenceNoiseView = TurbulenceNoiseView(context, null)
         loadingEffectView = LoadingEffectView(context, null)
-
+        deviceSuggestionContainer = FrameLayout(context)
         deviceSuggestionText = TextView(context)
         deviceSuggestionIcon = ImageView(context)
         deviceSuggestionConnectingIcon = ProgressBar(context)
@@ -1215,7 +1215,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
             .isEqualTo(mContext.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionConnectingIcon.visibility).isEqualTo(View.GONE)
-        assertThat(deviceSuggestionButton.isClickable).isTrue()
+        assertThat(deviceSuggestionContainer.isClickable).isTrue()
     }
 
     @Test
@@ -1237,7 +1237,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
             .isEqualTo(mContext.getString(R.string.media_suggestion_disconnected_text, DEVICE_NAME))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.GONE)
         assertThat(deviceSuggestionConnectingIcon.visibility).isEqualTo(View.VISIBLE)
-        assertThat(deviceSuggestionButton.isClickable).isFalse()
+        assertThat(deviceSuggestionContainer.isClickable).isFalse()
     }
 
     @Test
@@ -1259,7 +1259,7 @@ public class MediaControlPanelTest : SysuiTestCase() {
             .isEqualTo(mContext.getString(R.string.media_suggestion_failure_text))
         assertThat(deviceSuggestionIcon.visibility).isEqualTo(View.VISIBLE)
         assertThat(deviceSuggestionConnectingIcon.visibility).isEqualTo(View.GONE)
-        assertThat(deviceSuggestionButton.isClickable).isTrue()
+        assertThat(deviceSuggestionContainer.isClickable).isTrue()
     }
 
     @Test

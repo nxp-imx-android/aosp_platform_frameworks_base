@@ -47,10 +47,12 @@ class ParsedPermissionTest : ParsedComponentTest(
         ParsedPermission::getRequestRes,
         ParsedPermission::getProtectionLevel,
         ParsedPermission::isTree,
+        ParsedPermission::isPurposeRequired,
     )
 
     override fun subclassExtraParams() = listOf(
         getter(ParsedPermission::getKnownCerts, setOf("testCert")),
+        getter(ParsedPermission::getValidPurposes, setOf("purpose")),
         getSetByValue(
             ParsedPermission::getParsedPermissionGroup,
             ParsedPermissionImpl::setParsedPermissionGroup,

@@ -500,8 +500,11 @@ public class PipBoundsAlgorithm implements PipDisplayLayoutState.DisplayIdListen
         // is closest to the current position.
         final int newLeft = fromLeft < fromRight
                 ? movementBounds.left : movementBounds.right;
+        // Make sure that the PiP window vertically stays within the movement bounds
+        final int newTop = Math.max(movementBounds.top,
+                Math.min(bounds.top, movementBounds.bottom));
 
-        bounds.offsetTo(newLeft, bounds.top);
+        bounds.offsetTo(newLeft, newTop);
     }
     /**
      * Dumps internal states.

@@ -119,14 +119,9 @@ constructor(
 
                     if (!SceneContainerFlag.isEnabled) {
                         launch {
-                            viewModel
-                                .getLockscreenDisplayConfig(calculateMaxNotifications)
-                                .collect { (isOnLockscreen, maxNotifications) ->
-                                    if (SceneContainerFlag.isEnabled) {
-                                        controller.setOnLockscreen(isOnLockscreen)
-                                    }
-                                    controller.setMaxDisplayedNotifications(maxNotifications)
-                                }
+                            viewModel.getMaxNotifications(calculateMaxNotifications).collect {
+                                controller.setMaxDisplayedNotifications(it)
+                            }
                         }
                     }
 

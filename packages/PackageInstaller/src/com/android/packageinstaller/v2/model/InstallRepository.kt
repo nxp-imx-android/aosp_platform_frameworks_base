@@ -17,6 +17,7 @@
 package com.android.packageinstaller.v2.model
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AppOpsManager
 import android.app.PendingIntent
@@ -25,10 +26,13 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.Flags
 import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionInfo
 import android.content.pm.PackageInstaller.SessionParams
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+import android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 import android.net.Uri
@@ -51,6 +55,7 @@ import com.android.packageinstaller.v2.model.InstallAborted.Companion.DLG_PACKAG
 import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_ANONYMOUS_SOURCE
 import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_INSTALL_CONFIRMATION
 import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_UNKNOWN_SOURCE
+import com.android.packageinstaller.v2.model.InstallUserActionRequired.Companion.USER_ACTION_REASON_VERIFICATION_CONFIRMATION
 import com.android.packageinstaller.v2.model.PackageUtil.canPackageQuery
 import com.android.packageinstaller.v2.model.PackageUtil.generateStubPackageInfo
 import com.android.packageinstaller.v2.model.PackageUtil.getAppSnippet
@@ -68,6 +73,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
+@SuppressLint("MissingPermission")
 class InstallRepository(private val context: Context) {
 
     private val packageManager: PackageManager = context.packageManager
@@ -112,6 +118,12 @@ class InstallRepository(private val context: Context) {
      * apps.
      */
     private var originatingUid = Process.INVALID_UID
+    /**
+     * UID of the origin of the installation from the sessionInfo. This UID is used to fetch the
+     * update-ownership app-label of the source of the install, and also check whether the source
+     * app has the AppOp to install other apps.
+     */
+    private var originatingUidFromSessionInfo = Process.INVALID_UID
     private var callingPackage: String? = null
     private var sessionStager: SessionStager? = null
     private lateinit var intent: Intent
@@ -143,6 +155,8 @@ class InstallRepository(private val context: Context) {
         isSessionInstall =
             PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL == intent.action
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
+                || (Flags.verificationService()
+                && PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == intent.action)
 
         sessionId = if (isSessionInstall)
             intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
@@ -160,7 +174,20 @@ class InstallRepository(private val context: Context) {
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
+        // By default, the originatingUid is callingUid. If the caller is the system download
+        // provider or the documents manager, we parse the originatingUid from the
+        // Intent.EXTRA_ORIGINATING_UID. And we check the appOps permission for the originatingUid
+        // later.
         originatingUid = callingUid
+        if (PackageUtil.isDocumentsManager(context, callingUid)
+            || PackageUtil.getSystemDownloadsProviderInfo(
+                context.packageManager, callingUid) != null) {
+            // The originating uid from the intent. We only trust/use this if it comes from either
+            // the document manager app or the downloads provider. It may be Process.INVALID_UID if
+            // the original owner App is not installed on the device now.
+            originatingUid = intent.getIntExtra(Intent.EXTRA_ORIGINATING_UID, Process.INVALID_UID)
+        }
+
         val sessionInfo: SessionInfo? =
             if (sessionId != SessionInfo.INVALID_ID)
                 packageInstaller.getSessionInfo(sessionId)
@@ -168,7 +195,7 @@ class InstallRepository(private val context: Context) {
         if (sessionInfo != null) {
             callingAttributionTag = sessionInfo.installerAttributionTag
             if (sessionInfo.originatingUid != Process.INVALID_UID) {
-                originatingUid = sessionInfo.originatingUid
+                originatingUidFromSessionInfo = sessionInfo.originatingUid
             }
         }
 
@@ -186,6 +213,7 @@ class InstallRepository(private val context: Context) {
                     "calling package: $callingPackage\n" +
                     "callingUid: $callingUid\n" +
                     "originatingUid: $originatingUid\n" +
+                    "originatingUidFromSessionInfo: $originatingUidFromSessionInfo\n" +
                     "sourceInfo: $sourceInfo"
             )
         }
@@ -203,8 +231,14 @@ class InstallRepository(private val context: Context) {
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
-        isTrustedSource = isInstallRequestFromTrustedSource(sourceInfo, this.intent, callingUid)
-        if (!isInstallPermissionGrantedOrRequested(context, callingUid, isTrustedSource)) {
+        isTrustedSource = isInstallRequestFromTrustedSource(sourceInfo, this.intent, originatingUid)
+        // In general case, the originatingUid is callingUid. If callingUid is INVALID_UID, return
+        // InstallAborted in the check above. When the originatingUid is INVALID_UID here, it means
+        // the originatingUid is from the system download manager or the system documents manager,
+        // and the package doesn't exist on the device. For this case, we don't need to check the
+        // permission for the originatingUid. The package doesn't exist.
+        if (originatingUid != Process.INVALID_UID
+            && !isInstallPermissionGrantedOrRequested(context, originatingUid, isTrustedSource)) {
             return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
         }
 
@@ -241,8 +275,8 @@ class InstallRepository(private val context: Context) {
     ): Boolean {
         val isPrivilegedAndKnown = sourceInfo != null && sourceInfo.isPrivilegedApp &&
             intent.getBooleanExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, false)
-        val isInstallPkgPermissionGranted =
-            isPermissionGranted(context, Manifest.permission.INSTALL_PACKAGES, callingUid)
+        val isInstallPkgPermissionGranted = callingUid != Process.INVALID_UID
+                && isPermissionGranted(context, Manifest.permission.INSTALL_PACKAGES, callingUid)
 
         return isPrivilegedAndKnown || isInstallPkgPermissionGranted
     }
@@ -292,6 +326,12 @@ class InstallRepository(private val context: Context) {
     @OptIn(DelicateCoroutinesApi::class)
     fun stageForInstall() {
         val uri = intent.data
+        val action = intent.action
+
+        if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == action) {
+            _stagingResult.value = InstallVerificationConfirmationRequired()
+            return
+        }
         if (stagedSessionId != SessionInfo.INVALID_ID
             || isSessionInstall
             || (uri != null && SCHEME_PACKAGE == uri.scheme)
@@ -398,7 +438,9 @@ class InstallRepository(private val context: Context) {
         params.setOriginatingUri(
             intent.getParcelableExtra(Intent.EXTRA_ORIGINATING_URI, Uri::class.java)
         )
-        params.setOriginatingUid(originatingUid)
+        if (originatingUid != Process.INVALID_UID) {
+            params.setOriginatingUid(originatingUid)
+        }
         params.setInstallerPackageName(intent.getStringExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME))
         params.setInstallReason(PackageManager.INSTALL_REASON_USER)
         // Disable full screen intent usage by for sideloads.
@@ -515,6 +557,15 @@ class InstallRepository(private val context: Context) {
             packageSource = info
             // mOriginatingURI = null;
             // mReferrerURI = null;
+            pendingUserActionReason = info.getPendingUserActionReason()
+        } else if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == intent.action) {
+            val info = packageInstaller.getSessionInfo(sessionId)
+            val resolvedPath = info?.resolvedBaseApkPath
+            if (info == null || !info.isSealed || resolvedPath == null) {
+                Log.e(LOG_TAG, "Session $sessionId in funky state; ignoring")
+                return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+            }
+            packageSource = Uri.fromFile(File(resolvedPath))
             pendingUserActionReason = info.getPendingUserActionReason()
         } else {
             // Two possible origins:
@@ -690,8 +741,15 @@ class InstallRepository(private val context: Context) {
             !TextUtils.isEmpty(existingUpdateOwnerLabel) &&
             userActionReason == PackageInstaller.REASON_REMIND_OWNERSHIP
         ) {
+            // In the update-ownership case, the callingUid is not from the download manager
+            // or documents manager. The originatingUid should not be INVALID_UID, it should be
+            // callingUid in this case. It is not INVALID_UID.
+            var uid = originatingUidFromSessionInfo
+            if (uid == Process.INVALID_UID) {
+                uid = originatingUid
+            }
             val originatingPackageName =
-                getPackageNameForUid(context, originatingUid, callingPackage)
+                getPackageNameForUid(context, uid, callingPackage)
             getApplicationLabel(originatingPackageName)
         } else {
             null
@@ -757,6 +815,39 @@ class InstallRepository(private val context: Context) {
             return false
         }
         return true
+    }
+
+    fun requestVerificationConfirmation(): InstallStage {
+        var confirmationSnippet: InstallStage = generateConfirmationSnippet()
+
+        if (confirmationSnippet.stageCode == InstallStage.STAGE_ABORTED) {
+            packageInstaller.setDeveloperVerificationUserResponse(
+                sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+            )
+            return confirmationSnippet
+        }
+
+        val verificationInfo: DeveloperVerificationUserConfirmationInfo? =
+            packageInstaller.getDeveloperVerificationUserConfirmationInfo(sessionId)
+        if (verificationInfo == null) {
+            Log.e(LOG_TAG, "Could not get VerificationInfo for sessionId $sessionId")
+            packageInstaller.setDeveloperVerificationUserResponse(
+                sessionId, DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+            )
+            return InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+        }
+
+        confirmationSnippet = confirmationSnippet as InstallUserActionRequired
+        val appSnippet = PackageUtil.getAppSnippet(
+                context, confirmationSnippet.appLabel, confirmationSnippet.appIcon)
+
+        // Since InstallUserActionRequired returned by generateConfirmationSnippet is immutable,
+        // create a new InstallUserActionRequired with the required data
+        return InstallUserActionRequired(
+            actionReason = USER_ACTION_REASON_VERIFICATION_CONFIRMATION,
+            appSnippet = appSnippet,
+            verificationInfo = verificationInfo
+        )
     }
 
     /**
@@ -1009,6 +1100,18 @@ class InstallRepository(private val context: Context) {
         sessionStager!!.cancel()
         stagingJob.cancel()
         cleanupStagingSession()
+    }
+
+    fun setUserVerificationResponse(responseCode: Int) {
+        if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE != intent.action) {
+            Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
+            _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
+            return
+        }
+        packageInstaller.setDeveloperVerificationUserResponse(sessionId, responseCode)
+        _installResult.value = InstallAborted(
+            ABORT_REASON_DONE, activityResultCode = Activity.RESULT_OK
+        )
     }
 
     val stagingProgress: LiveData<Int>

@@ -128,6 +128,7 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.draganddrop.DragAndDropController
@@ -295,6 +296,9 @@ class DesktopTasksController(
     // A listener that is invoked after a desk has been remove from the system. */
     var onDeskRemovedListener: OnDeskRemovedListener? = null
 
+    // A handler for requests to preserve a disconnected display to potentially restore later.
+    var preserveDisplayRequestHandler: PreserveDisplayRequestHandler? = null
+
     private val toDesktopAnimationDurationMs =
         context.resources.getInteger(SharedR.integer.to_desktop_animation_duration_ms)
 
@@ -370,6 +374,7 @@ class DesktopTasksController(
     /** Setter to handle snap events */
     fun setSnapEventHandler(handler: SnapEventHandler) {
         snapEventHandler = handler
+        desktopTasksLimiter.ifPresent { it.snapEventHandler = snapEventHandler }
     }
 
     /** Returns the transition type for the given remote transition. */
@@ -451,11 +456,17 @@ class DesktopTasksController(
      * the home activity.
      */
     private fun getFocusedNonDesktopTasks(displayId: Int): List<RunningTaskInfo> =
-        shellTaskOrganizer.getRunningTasks(displayId).filter {
-            it.isFocused &&
-                (it.windowingMode == WINDOWING_MODE_FULLSCREEN ||
-                    it.windowingMode == WINDOWING_MODE_MULTI_WINDOW) &&
-                it.activityType != ACTIVITY_TYPE_HOME
+        shellTaskOrganizer.getRunningTasks(displayId).filter { taskInfo ->
+            val focused = taskInfo.isFocused
+            val isNotDesktop =
+                if (DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue) {
+                    !taskRepository.isActiveTask(taskInfo.taskId)
+                } else {
+                    taskInfo.windowingMode == WINDOWING_MODE_FULLSCREEN ||
+                        taskInfo.windowingMode == WINDOWING_MODE_MULTI_WINDOW
+                }
+            val isHome = taskInfo.activityType == ACTIVITY_TYPE_HOME
+            return@filter focused && isNotDesktop && !isHome
         }
 
     /** Returns child task from two focused tasks in split screen mode. */
@@ -679,6 +690,7 @@ class DesktopTasksController(
         destinationDisplayId: Int,
         transition: IBinder,
     ): WindowContainerTransaction {
+        preserveDisplayRequestHandler?.requestPreserveDisplay(disconnectedDisplayId)
         // TODO: b/406320371 - Verify this works with non-system users once the underlying bug is
         //  resolved.
         val wct = WindowContainerTransaction()
@@ -694,12 +706,9 @@ class DesktopTasksController(
             if (desktopModeSupportedOnDisplay) {
                 // Desktop supported on display; reparent desks, focused desk on top.
                 for (deskId in deskIds) {
-                    val toTop =
-                        desktopRepository
-                            .getActiveTasks(disconnectedDisplayId)
-                            .contains(focusTransitionObserver.globallyFocusedTaskId)
+                    val deskTasks = desktopRepository.getActiveTaskIdsInDesk(deskId)
                     // Remove desk if it's empty.
-                    if (desktopRepository.getActiveTasks(disconnectedDisplayId).isEmpty()) {
+                    if (deskTasks.isEmpty()) {
                         desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.RemoveDesk(
@@ -713,6 +722,8 @@ class DesktopTasksController(
                         )
                     } else {
                         // Otherwise, reparent it to the destination display.
+                        val toTop =
+                            deskTasks.contains(focusTransitionObserver.globallyFocusedTaskId)
                         desksOrganizer.moveDeskToDisplay(wct, deskId, destinationDisplayId, toTop)
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.ChangeDeskDisplay(
@@ -1180,6 +1191,22 @@ class DesktopTasksController(
         }
     }
 
+    /**
+     * Returns the task that will be focused next after the current task (the given [taskInfo]) is
+     * removed, due to being minimized or closed.
+     *
+     * @param taskInfo the task that is being removed.
+     * @return the taskId of the next focused task, or [INVALID_TASK_ID] if no task is found.
+     */
+    fun getNextFocusedTask(taskInfo: RunningTaskInfo): Int {
+        val deskId = getOrCreateDefaultDeskId(taskInfo.displayId) ?: return INVALID_TASK_ID
+        return taskRepository
+            .getExpandedTasksIdsInDeskOrdered(deskId)
+            // exclude current task since maximize/restore transition has not taken place yet.
+            .filterNot { it == taskInfo.taskId }
+            .firstOrNull { !taskRepository.isClosingTask(it) } ?: INVALID_TASK_ID
+    }
+
     fun minimizeTask(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val wct = WindowContainerTransaction()
         val taskId = taskInfo.taskId
@@ -1228,10 +1255,20 @@ class DesktopTasksController(
                 transitions.dispatchRequest(SYNTHETIC_TRANSITION, requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
-            // In multi-activity case, we explicitly reorder the parent task to the back so that it
-            // is not brought to the front and shown when the child task breaks off into PiP.
-            if (taskInfo.numActivities > 1) {
-                wct.reorder(taskInfo.token, /* onTop= */ false)
+            // In multi-activity case, we either explicitly minimize the parent task, or reorder the
+            // parent task to the back so that it is not brought to the front and shown when the
+            // child task breaks off into PiP.
+            val isMultiActivityPip = taskInfo.numActivities > 1
+            if (isMultiActivityPip) {
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    desksOrganizer.minimizeTask(
+                        wct = wct,
+                        deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                        task = taskInfo,
+                    )
+                } else {
+                    wct.reorder(taskInfo.token, /* onTop= */ false)
+                }
             }
 
             // If the task minimizing to PiP is the last task, modify wct to perform Desktop cleanup
@@ -1246,6 +1283,16 @@ class DesktopTasksController(
                     )
             }
             val transition = freeformTaskTransitionStarter.startPipTransition(wct)
+            if (isMultiActivityPip) {
+                desktopTasksLimiter.ifPresent {
+                    it.addPendingMinimizeChange(
+                        transition = transition,
+                        displayId = displayId,
+                        taskId = taskId,
+                        minimizeReason = minimizeReason,
+                    )
+                }
+            }
             desktopExitRunnable?.invoke(transition)
         } else {
             val willExitDesktop =
@@ -1353,7 +1400,7 @@ class DesktopTasksController(
 
     /** Enter fullscreen by moving the focused freeform task in given `displayId` to fullscreen. */
     fun enterFullscreen(displayId: Int, transitionSource: DesktopModeTransitionSource) {
-        getFocusedFreeformTask(displayId)?.let {
+        getFocusedDesktopTask(displayId)?.let {
             snapEventHandler.removeTaskIfTiled(displayId, it.taskId)
             moveToFullscreenWithAnimation(it, it.positionInParent, transitionSource)
         }
@@ -1545,19 +1592,8 @@ class DesktopTasksController(
     ) {
         val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
         logV("moveTaskToFront taskId=%s deskId=%s", taskInfo.taskId, deskId)
-        // If a task is tiled, another task should be brought to foreground with it so let
-        // tiling controller handle the request.
-        if (snapEventHandler.moveTaskToFrontIfTiled(taskInfo)) {
-            return
-        }
         val wct = WindowContainerTransaction()
-        if (deskId == null || !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            // Not a desktop task, just move to the front.
-            wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
-        } else {
-            // A desktop task with multiple desks enabled, reorder it within its desk.
-            desksOrganizer.reorderTaskToFront(wct, deskId, taskInfo)
-        }
+        addMoveTaskToFrontChanges(wct = wct, deskId = deskId, taskInfo = taskInfo)
         startLaunchTransition(
             transitionType = TRANSIT_TO_FRONT,
             wct = wct,
@@ -1567,6 +1603,27 @@ class DesktopTasksController(
             displayId = taskInfo.displayId,
             unminimizeReason = unminimizeReason,
         )
+    }
+
+    /** Applies the necessary [wct] changes to move [taskInfo] to front. */
+    fun addMoveTaskToFrontChanges(
+        wct: WindowContainerTransaction,
+        deskId: Int?,
+        taskInfo: RunningTaskInfo,
+    ) {
+        logV("addMoveTaskToFrontChanges taskId=%s deskId=%s", taskInfo.taskId, deskId)
+        // If a task is tiled, another task should be brought to foreground with it so let
+        // tiling controller handle the request.
+        if (snapEventHandler.moveTaskToFrontIfTiled(taskInfo)) {
+            return
+        }
+        if (deskId == null || !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            // Not a desktop task, just move to the front.
+            wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+        } else {
+            // A desktop task with multiple desks enabled, reorder it within its desk.
+            desksOrganizer.reorderTaskToFront(wct, deskId, taskInfo)
+        }
     }
 
     /**
@@ -2646,7 +2703,8 @@ class DesktopTasksController(
                 isIncompatibleTask(triggerTask) ->
                     handleIncompatibleTaskLaunch(triggerTask, transition)
                 // Check if fullscreen task should be updated
-                triggerTask.isFullscreen -> handleFullscreenTaskLaunch(triggerTask, transition)
+                triggerTask.isFullscreen ->
+                    handleFullscreenTaskLaunch(triggerTask, transition, request.type)
                 // Check if freeform task should be updated
                 triggerTask.isFreeform -> handleFreeformTaskLaunch(triggerTask, transition)
                 else -> {
@@ -2685,7 +2743,7 @@ class DesktopTasksController(
             triggerTask.isFullscreen -> {
                 // Trigger fullscreen task will enter desktop, so any existing immersive task
                 // should exit.
-                shouldFullscreenTaskLaunchSwitchToDesktop(triggerTask)
+                shouldFullscreenTaskLaunchSwitchToDesktop(triggerTask, info.type)
             }
             triggerTask.isFreeform -> {
                 // Trigger freeform task will enter desktop, so any existing immersive task should
@@ -2744,6 +2802,21 @@ class DesktopTasksController(
         (triggerTask.windowingMode == WINDOWING_MODE_FREEFORM &&
             TransitionUtil.isOpeningType(request.type) &&
             taskRepository.isActiveTask(triggerTask.taskId))
+
+    /** Returns whether a fullscreen task is being relaunched on the same display or not. */
+    private fun isFullscreenRelaunch(
+        triggerTask: RunningTaskInfo,
+        @WindowManager.TransitionType requestType: Int,
+    ): Boolean {
+        // Do not treat fullscreen-in-desktop as fullscreen.
+        if (taskRepository.isActiveTask(triggerTask.taskId)) return false
+
+        val existingTask = shellTaskOrganizer.getRunningTaskInfo(triggerTask.taskId) ?: return false
+        return triggerTask.isFullscreen &&
+            TransitionUtil.isOpeningType(requestType) &&
+            existingTask.isFullscreen &&
+            existingTask.displayId == triggerTask.displayId
+    }
 
     private fun isIncompatibleTask(task: RunningTaskInfo) =
         desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(task)
@@ -3086,9 +3159,10 @@ class DesktopTasksController(
     private fun handleFullscreenTaskLaunch(
         task: RunningTaskInfo,
         transition: IBinder,
+        @WindowManager.TransitionType requestType: Int,
     ): WindowContainerTransaction? {
         logV("handleFullscreenTaskLaunch")
-        if (shouldFullscreenTaskLaunchSwitchToDesktop(task)) {
+        if (shouldFullscreenTaskLaunchSwitchToDesktop(task, requestType)) {
             logD("Switch fullscreen task to freeform on transition: taskId=%d", task.taskId)
             return WindowContainerTransaction().also { wct ->
                 val deskId = getOrCreateDefaultDeskId(task.displayId) ?: return@also
@@ -3173,15 +3247,31 @@ class DesktopTasksController(
     private fun shouldFreeformTaskLaunchSwitchToFullscreen(task: RunningTaskInfo): Boolean =
         !isAnyDeskActive(task.displayId)
 
-    private fun shouldFullscreenTaskLaunchSwitchToDesktop(task: RunningTaskInfo): Boolean {
+    private fun shouldFullscreenTaskLaunchSwitchToDesktop(
+        task: RunningTaskInfo,
+        @WindowManager.TransitionType requestType: Int,
+    ): Boolean {
+        val isDesktopFirst = rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(task.displayId)
+        if (
+            DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
+                isDesktopFirst &&
+                isFullscreenRelaunch(task, requestType)
+        ) {
+            logV(
+                "shouldFullscreenTaskLaunchSwitchToDesktop: no switch as fullscreen relaunch on" +
+                    " desktop-first display#%s",
+                task.displayId,
+            )
+            return false
+        }
+
         val isAnyDeskActive = isAnyDeskActive(task.displayId)
-        val forceEnterDesktop = forceEnterDesktop(task.displayId)
         logV(
-            "shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s, forceEnterDesktop=%s",
+            "shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s, isDesktopFirst=%s",
             isAnyDeskActive,
-            forceEnterDesktop,
+            isDesktopFirst,
         )
-        return isAnyDeskActive || forceEnterDesktop
+        return isAnyDeskActive || isDesktopFirst
     }
 
     /**
@@ -4080,13 +4170,23 @@ class DesktopTasksController(
 
     /** Enter split by using the focused desktop task in given `displayId`. */
     fun enterSplit(displayId: Int, leftOrTop: Boolean) {
-        getFocusedFreeformTask(displayId)?.let { requestSplit(it, leftOrTop) }
+        getFocusedDesktopTask(displayId)?.let { requestSplit(it, leftOrTop) }
     }
 
-    private fun getFocusedFreeformTask(displayId: Int): RunningTaskInfo? =
-        shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo ->
-            taskInfo.isFocused && taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
+    private fun getFocusedDesktopTask(displayId: Int): RunningTaskInfo? {
+        if (
+            !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
+                !DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue
+        ) {
+            return shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo ->
+                taskInfo.isFocused && taskInfo.windowingMode == WINDOWING_MODE_FREEFORM
+            }
         }
+        val deskId = taskRepository.getActiveDeskId(displayId) ?: return null
+        return shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo ->
+            taskInfo.isFocused && taskRepository.isActiveTaskInDesk(taskInfo.taskId, deskId)
+        }
+    }
 
     /**
      * Requests a task be transitioned from desktop to split select. Applies needed windowing

@@ -16,8 +16,7 @@
 
 package com.android.settingslib.service
 
-import android.Manifest
-import android.app.AppOpsManager
+import android.Manifest.permission.WRITE_SYSTEM_PREFERENCES
 import android.os.Binder
 import android.os.Build
 import android.os.OutcomeReceiver
@@ -46,7 +45,7 @@ import kotlinx.coroutines.launch
 class SettingsPreferenceService
 @JvmOverloads
 constructor(
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
     metricsLogger: PreferenceRemoteOpMetricsLogger? = null,
 ) : android.service.settings.preferences.SettingsPreferenceService() {
 
@@ -62,10 +61,7 @@ constructor(
         setApiHandler =
             PreferenceSetterApiHandler(
                 2,
-                AppOpApiPermissionChecker(
-                    AppOpsManager.OP_WRITE_SYSTEM_PREFERENCES,
-                    Manifest.permission.WRITE_SYSTEM_PREFERENCES,
-                ),
+                AppOpApiPermissionChecker(OPSTR_WRITE_SYSTEM_PREFERENCES, WRITE_SYSTEM_PREFERENCES),
                 metricsLogger,
             )
         graphApi =
@@ -158,5 +154,7 @@ constructor(
 
     companion object {
         private const val TAG = "PrefServiceForGraph"
+        // AppOpsManager.OPSTR_WRITE_SYSTEM_PREFERENCES is hidden
+        private const val OPSTR_WRITE_SYSTEM_PREFERENCES = "android:write_system_preferences"
     }
 }

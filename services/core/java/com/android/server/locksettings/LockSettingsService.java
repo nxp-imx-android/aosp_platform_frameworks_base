@@ -661,13 +661,13 @@ public class LockSettingsService extends ILockSettings.Stub {
     private class SoftwareRateLimiterInjector implements SoftwareRateLimiter.Injector {
 
         @Override
-        public int readWrongGuessCounter(LskfIdentifier id) {
-            return mSpManager.readWrongGuessCounter(id);
+        public int readFailureCounter(LskfIdentifier id) {
+            return mSpManager.readFailureCounter(id);
         }
 
         @Override
-        public void writeWrongGuessCounter(LskfIdentifier id, int count) {
-            mSpManager.writeWrongGuessCounter(id, count);
+        public void writeFailureCounter(LskfIdentifier id, int count) {
+            mSpManager.writeFailureCounter(id, count);
         }
 
         @Override
@@ -2479,9 +2479,14 @@ public class LockSettingsService extends ILockSettings.Stub {
                     case SoftwareRateLimiterResult.RATE_LIMITED:
                         return VerifyCredentialResponse.fromTimeout(res.remainingDelay);
                     case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
+                        return VerifyCredentialResponse.fromError(
+                                VerifyCredentialResponse.RESPONSE_CRED_TOO_SHORT);
                     case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
+                        return VerifyCredentialResponse.fromError(
+                                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED);
                     default:
-                        return VerifyCredentialResponse.fromError();
+                        return VerifyCredentialResponse.fromError(
+                                VerifyCredentialResponse.RESPONSE_OTHER_ERROR);
                 }
             }
             if (isSpecialUserId(userId)) {
@@ -2544,8 +2549,12 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (response.isMatched()) {
                 mSoftwareRateLimiter.reportSuccess(lskfId);
             } else {
-                // TODO(b/395976735): don't count transient failures
-                Duration swTimeout = mSoftwareRateLimiter.reportWrongGuess(lskfId, credential);
+                boolean isCertainlyWrongGuess =
+                        response.getResponseCode()
+                                == VerifyCredentialResponse.RESPONSE_CRED_INCORRECT;
+                Duration swTimeout =
+                        mSoftwareRateLimiter.reportFailure(
+                                lskfId, credential, isCertainlyWrongGuess);
 
                 // The software rate-limiter may use longer delays than the hardware one. While the
                 // long-term solution is to update the hardware rate-limiter to match, for now this
@@ -2925,20 +2934,16 @@ public class LockSettingsService extends ILockSettings.Stub {
         return mRecoverableKeyStoreManager.getKey(alias);
     }
 
-    /**
-     * Starts a session to verify lock screen credentials provided by a remote device.
-     */
-    @NonNull
-    public RemoteLockscreenValidationSession startRemoteLockscreenValidation() {
+    /** Starts a session to verify lock screen credentials provided by a remote device. */
+    @Override
+    public @NonNull RemoteLockscreenValidationSession startRemoteLockscreenValidation() {
         return mRecoverableKeyStoreManager.startRemoteLockscreenValidation(this);
     }
 
-    /**
-     * Verifies encrypted credentials guess from a remote device.
-     */
-    @NonNull
-    public RemoteLockscreenValidationResult
-            validateRemoteLockscreen(@NonNull byte[] encryptedCredential) {
+    /** Verifies encrypted credentials guess from a remote device. */
+    @Override
+    public @NonNull RemoteLockscreenValidationResult validateRemoteLockscreen(
+            @NonNull byte[] encryptedCredential) {
         return mRecoverableKeyStoreManager.validateRemoteLockscreen(encryptedCredential, this);
     }
 

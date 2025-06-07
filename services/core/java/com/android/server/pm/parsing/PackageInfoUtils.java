@@ -780,6 +780,8 @@ public class PackageInfoUtils {
         pi.descriptionRes = p.getDescriptionRes();
         pi.flags = p.getFlags();
         pi.knownCerts = p.getKnownCerts();
+        pi.requiresPurpose = p.isPurposeRequired();
+        pi.validPurposes = p.getValidPurposes();
 
         if ((flags & PackageManager.GET_META_DATA) == 0) {
             pi.metaData = null;

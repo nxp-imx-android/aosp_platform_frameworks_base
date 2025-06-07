@@ -4576,14 +4576,14 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                         bindingController.getCurTokenDisplayId());
         mSoftInputShowHideHistory.addEntry(new SoftInputShowHideHistory.Entry(
                 userData.mImeBindingState.mFocusedWindowClient,
-                userData.mImeBindingState.mFocusedWindowEditorInfo,
-                info.focusedWindowName, userData.mImeBindingState.mFocusedWindowSoftInputMode,
-                reason, userData.mInFullscreenMode, info.requestWindowName,
-                info.imeControlTargetName, info.imeLayerTargetName, info.imeSurfaceParentName,
+                userData.mImeBindingState.mFocusedWindowEditorInfo, info.mFocusedWindowName,
+                userData.mImeBindingState.mFocusedWindowSoftInputMode, reason,
+                userData.mInFullscreenMode, info.mRequestWindowName, info.mImeLayeringTargetName,
+                info.mImeInputTargetName, info.mImeControlTargetName, info.mImeSurfaceParentName,
                 userId));
 
         if (statsToken != null) {
-            mImeTrackerService.onImmsUpdate(statsToken, info.requestWindowName);
+            mImeTrackerService.onImmsUpdate(statsToken, info.mRequestWindowName);
         }
     }
 

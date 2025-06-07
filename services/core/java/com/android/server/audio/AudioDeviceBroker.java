@@ -127,8 +127,8 @@ public class AudioDeviceBroker {
     // Delay before checking it music should be unmuted after processing an A2DP message
     private static final int BTA2DP_MUTE_CHECK_DELAY_MS = 200;
 
-    // Delay before unmuting call after HFP device switch
-    private static final int HFP_SWITCH_CALL_UNMUTE_DELAY_MS = 2000;
+    // Delay before unmuting call after HFP or LE Audio device switch
+    private static final int HS_SWITCH_CALL_UNMUTE_DELAY_MS = 2000;
 
     // Delay before attempting to restore devices again after audioserver died and a previous
     // restore attempt failed
@@ -369,7 +369,7 @@ public class AudioDeviceBroker {
         if (deviceSwitch && isBluetoothScoActive()) {
             mAudioService.setCallMute(true);
             sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
-                    0 /*unmute*/, HFP_SWITCH_CALL_UNMUTE_DELAY_MS);
+                    0 /*unmute*/, HS_SWITCH_CALL_UNMUTE_DELAY_MS);
         } else if (btDevice == null) {
             sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
                     0 /*unmute*/, 0 /*delay */);
@@ -1093,7 +1093,8 @@ public class AudioDeviceBroker {
 
     /*package*/ static BtDeviceInfo createBtDeviceInfo(@NonNull BtDeviceChangedData d,
             @NonNull BluetoothDevice device, int state) {
-        int audioDevice = BtHelper.getTypeFromProfile(d.mInfo.getProfile(), d.mInfo.isLeOutput());
+        int audioDevice = BtHelper.getTypeFromProfile(
+                d.mInfo.getProfile(), d.mInfo.isLeOutput(), device);
         return new BtDeviceInfo(d, device, state, audioDevice, AudioSystem.AUDIO_FORMAT_DEFAULT);
     }
 
@@ -1613,6 +1614,15 @@ public class AudioDeviceBroker {
     }
 
     /*package*/ void postBluetoothActiveDevice(BtDeviceInfo info, int delay) {
+        if (info.mProfile == BluetoothProfile.LE_AUDIO
+                && info.mState == BluetoothProfile.STATE_DISCONNECTED
+                && info.mIsDeviceSwitch
+                && isBluetoothLeAudioRequested()) {
+            sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                    1 /*mute*/, delay);
+            sendIMsg(MSG_I_MUTE_CALL, SENDMSG_QUEUE,
+                    0 /*unmute*/, delay + HS_SWITCH_CALL_UNMUTE_DELAY_MS);
+        }
         sendLMsg(MSG_L_SET_BT_ACTIVE_DEVICE, SENDMSG_QUEUE, info, delay);
     }
 
@@ -2676,6 +2686,7 @@ public class AudioDeviceBroker {
                     + ((mCommunicationStrategyId == -1)
                             ? "failure" : "success"))).printLog(ALOGW, TAG));
         }
+        AudioDeviceAttributes appliedCommunicationDevice = null;
         if (preferredCommunicationDevice == null) {
             AudioDeviceAttributes defaultDevice = getDefaultCommunicationDevice();
             if (defaultDevice != null) {
@@ -2689,13 +2700,22 @@ public class AudioDeviceBroker {
             }
             mDeviceInventory.applyConnectedDevicesRoles();
             mDeviceInventory.reapplyExternalDevicesRoles();
+            appliedCommunicationDevice = defaultDevice;
         } else {
             mDeviceInventory.setPreferredDevicesForStrategyInt(
                     mCommunicationStrategyId, Arrays.asList(preferredCommunicationDevice));
             mDeviceInventory.setPreferredDevicesForStrategyInt(
                     mAccessibilityStrategyId, Arrays.asList(preferredCommunicationDevice));
+            appliedCommunicationDevice = preferredCommunicationDevice;
         }
         onUpdatePhoneStrategyDevice(preferredCommunicationDevice);
+
+
+        if (appliedCommunicationDevice != null && AudioSystem.isBluetoothLeOutDevice(
+                appliedCommunicationDevice.getInternalType())) {
+            sendIMsg(MSG_I_MUTE_CALL, SENDMSG_REPLACE,
+                    0 /*unmute*/, 0 /*delay */);
+        }
     }
 
     // Pairs of input and output devices for duplex communication devices (headsets)

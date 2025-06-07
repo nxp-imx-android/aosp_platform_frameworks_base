@@ -23,7 +23,7 @@ import android.util.Log
 import java.util.concurrent.ConcurrentHashMap
 
 /** Base class of the Settings provider data stores. */
-abstract class SettingsStore(protected val contentResolver: ContentResolver) :
+sealed class SettingsStore(protected val contentResolver: ContentResolver) :
     AbstractKeyedDataObservable<String>(), KeyValueStore {
 
     private val defaultValues = ConcurrentHashMap<String, Any>()

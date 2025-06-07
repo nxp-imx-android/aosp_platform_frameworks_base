@@ -734,6 +734,35 @@ public final class MediaProjectionManagerService extends SystemService
         }
     }
 
+    /**
+     * Verifies whether the calling package name matches the calling app uid.
+     *
+     * @param context the context
+     * @param callingPackage the calling application package name
+     * @return {@code true} if the package name matches {@link Binder#getCallingUid()}, or
+     *   {@code false} otherwise
+     */
+    private static boolean validateCallingPackageName(Context context, String callingPackage) {
+        final int callingUid = Binder.getCallingUid();
+        final long token = Binder.clearCallingIdentity();
+        try {
+            int packageUid = context.getPackageManager()
+                    .getPackageUidAsUser(callingPackage, UserHandle.getUserId(callingUid));
+            if (packageUid != callingUid) {
+                Slog.e(TAG, "validatePackageName: App with package name " + callingPackage
+                        + " is UID " + packageUid + " but caller is " + callingUid);
+                return false;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Slog.e(TAG, "validatePackageName: App with package name " + callingPackage
+                    + " does not exist");
+            return false;
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        return true;
+    }
+
     private void dump(final PrintWriter pw) {
         pw.println("MEDIA PROJECTION MANAGER (dumpsys media_projection)");
         synchronized (mLock) {
@@ -1188,6 +1217,10 @@ public final class MediaProjectionManagerService extends SystemService
                     // again; ensure this start is counted in case they are re-using this token.
                     mCountStarts++;
                     return;
+                }
+                if (Flags.startUidCheck() && !validateCallingPackageName(mContext, packageName)) {
+                    throw new SecurityException(
+                            "This MediaProjection session was not granted to this application.");
                 }
 
                 if (REQUIRE_FG_SERVICE_FOR_PROJECTION

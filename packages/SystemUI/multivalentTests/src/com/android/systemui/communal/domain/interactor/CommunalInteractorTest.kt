@@ -50,7 +50,6 @@ import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.domain.model.CommunalTransitionProgressModel
 import com.android.systemui.communal.shared.model.CommunalContentSize
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -594,11 +593,8 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun testShowWidgetEditorStartsActivity() =
         kosmos.runTest {
-            val editModeState by collectLastValue(communalSceneInteractor.editModeState)
-
             underTest.showWidgetEditor()
 
-            assertThat(editModeState).isEqualTo(EditModeState.STARTING)
             verify(editWidgetsActivityStarter).startActivity()
         }
 

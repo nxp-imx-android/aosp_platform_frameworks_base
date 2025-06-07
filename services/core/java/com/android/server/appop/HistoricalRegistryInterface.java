@@ -65,7 +65,7 @@ public interface HistoricalRegistryInterface {
     void dump(String prefix, PrintWriter pw, int filterUid,
             @Nullable String filterPackage, @Nullable String filterAttributionTag, int filterOp,
             @AppOpsManager.HistoricalOpsRequestFilter int filter, @NonNull SimpleDateFormat sdf,
-            @NonNull Date date, boolean includeDiscreteOps, int limit);
+            @NonNull Date date, boolean includeDiscreteOps, int limit, boolean dumpHistory);
 
     /**
      * Record duration for given op.

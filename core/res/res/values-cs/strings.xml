@@ -356,10 +356,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"přístup k datům ze senzorů vašich životních funkcí"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Oznámení"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"zobrazovat oznámení"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"data pro rozšířenou realitu"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"přístup k datům o vás a okolním prostředí pro rozšířenou realitu"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"citlivá data pro rozšířenou realitu"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"přístup k citlivým datům o sledování, jako je například směr pohledu"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Načítat obsah oken"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Může prozkoumávat obsah oken, se kterými pracujete."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Zapnout funkci Prozkoumání dotykem"</string>
@@ -1728,7 +1734,7 @@
     <string name="kg_wrong_pattern" msgid="1342812634464179931">"Nesprávné gesto"</string>
     <string name="kg_wrong_password" msgid="2384677900494439426">"Nesprávné heslo"</string>
     <string name="kg_wrong_pin" msgid="3680925703673166482">"Nesprávný kód PIN"</string>
-    <string name="kg_pattern_instructions" msgid="8366024510502517748">"Nakreslete gesto"</string>
+    <string name="kg_pattern_instructions" msgid="8366024510502517748">"Zadejte gesto"</string>
     <string name="kg_sim_pin_instructions" msgid="6479401489471690359">"Zadejte kód PIN SIM karty"</string>
     <string name="kg_pin_instructions" msgid="7355933174673539021">"Zadejte kód PIN"</string>
     <string name="kg_password_instructions" msgid="7179782578809398050">"Zadejte heslo"</string>
@@ -2555,28 +2561,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapy"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikace"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaše otisky prstů se nedaří rozpoznat. Nastavte odemknutí otiskem prstu znovu."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Zabezpečení a ochrana soukromí"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Pokročilá ochrana pro USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Pro přenos dat zařízení odemkněte"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Pro přenos dat může být nutné zařízení odemknout a připojit znovu"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Pro rychlé nabíjení a přenos dat zařízení odemkněte"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Pro rychlé nabíjení a přenos dat může být nutné zařízení odemknout a připojit znovu"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Pro rychlé nabíjení zařízení odemkněte"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Pro rychlé nabíjení může být nutné zařízení odemknout a připojit znovu"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Ztlumit"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Oznámení ztlumeno"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Ztlumeno, dokud nerestartujete zařízení"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Podezřelá aktivita USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Datový signál USB byl deaktivován."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Máte s odemknutím otiskem prstu potíže?"</string>

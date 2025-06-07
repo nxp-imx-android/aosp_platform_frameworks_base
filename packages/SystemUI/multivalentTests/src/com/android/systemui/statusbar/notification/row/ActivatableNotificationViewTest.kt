@@ -101,4 +101,13 @@ class ActivatableNotificationViewTest : SysuiTestCase() {
         assertThat(mView.topRoundness).isEqualTo(1f)
         assertThat(mView.roundableState.hashCode()).isEqualTo(roundableState.hashCode())
     }
+
+    @Test
+    fun getBackgroundBottom_respects_clipBottomAmount() {
+        mView.actualHeight = 100
+        assertThat(mView.backgroundBottom).isEqualTo(100)
+
+        mView.clipBottomAmount = 10
+        assertThat(mView.backgroundBottom).isEqualTo(90)
+    }
 }

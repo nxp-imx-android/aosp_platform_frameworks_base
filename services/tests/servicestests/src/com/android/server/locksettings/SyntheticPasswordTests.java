@@ -26,8 +26,8 @@ import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSW
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD_OR_PIN;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
 import static com.android.internal.widget.LockPatternUtils.PIN_LENGTH_UNAVAILABLE;
-import static com.android.server.locksettings.SyntheticPasswordManager.WRONG_GUESS_COUNTER_FILE_SIZE;
-import static com.android.server.locksettings.SyntheticPasswordManager.WRONG_GUESS_COUNTER_NAME;
+import static com.android.server.locksettings.SyntheticPasswordManager.FAILURE_COUNTER_FILE_SIZE;
+import static com.android.server.locksettings.SyntheticPasswordManager.FAILURE_COUNTER_NAME;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -48,7 +48,10 @@ import static org.mockito.Mockito.when;
 import android.app.admin.PasswordMetrics;
 import android.content.pm.UserInfo;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -61,6 +64,7 @@ import com.android.server.locksettings.SyntheticPasswordManager.SyntheticPasswor
 
 import libcore.util.HexEncoding;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -75,6 +79,8 @@ import java.util.Arrays;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     public static final byte[] PAYLOAD = new byte[] {1, 2, -1, -2, 55};
     public static final byte[] PAYLOAD2 = new byte[] {2, 3, -2, -3, 44, 1};
@@ -179,6 +185,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testVerifyCredential() throws RemoteException {
         LockscreenCredential password = newPassword("password");
         LockscreenCredential badPassword = newPassword("badpassword");
@@ -186,6 +193,29 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         initSpAndSetCredential(PRIMARY_USER_ID, password);
         assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
                 password, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
+        verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
+
+        int expectedResponseCode =
+                mSpManager.isWeaverEnabled()
+                        ? VerifyCredentialResponse.RESPONSE_CRED_INCORRECT
+                        : VerifyCredentialResponse.RESPONSE_OTHER_ERROR;
+        assertEquals(
+                expectedResponseCode,
+                mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
+                        .getResponseCode());
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testVerifyCredential_softwareRateLimiterFlagDisabled() throws RemoteException {
+        LockscreenCredential password = newPassword("password");
+        LockscreenCredential badPassword = newPassword("badpassword");
+
+        initSpAndSetCredential(PRIMARY_USER_ID, password);
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_OK,
+                mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */)
+                        .getResponseCode());
         verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
 
         assertEquals(
@@ -873,7 +903,7 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
-    public void testWrongGuessCounter_initialStateIsAbsent() throws Exception {
+    public void testFailureCounter_initialStateIsAbsent() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential pin = newPin("1234");
         initSpAndSetCredential(userId, pin);
@@ -881,13 +911,12 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // Initially the counter file does not exist, and a missing counter file reads as 0.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
-        assertNull(
-                mStorage.readSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
+        assertNull(mStorage.readSyntheticPasswordState(userId, protectorId, FAILURE_COUNTER_NAME));
     }
 
     @Test
-    public void testWrongGuessCounter_canBeWrittenAndRead() throws Exception {
+    public void testFailureCounter_canBeWrittenAndRead() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential pin = newPin("1234");
         initSpAndSetCredential(userId, pin);
@@ -895,32 +924,31 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         for (int count = 0; count < 20; count++) {
-            mSpManager.writeWrongGuessCounter(lskfId, count);
-            assertEquals(count, mSpManager.readWrongGuessCounter(lskfId));
+            mSpManager.writeFailureCounter(lskfId, count);
+            assertEquals(count, mSpManager.readFailureCounter(lskfId));
         }
     }
 
     @Test
-    public void testDeletedWrongGuessCounter_readsAsZero() throws Exception {
+    public void testDeletedFailureCounter_readsAsZero() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential pin = newPin("1234");
         initSpAndSetCredential(userId, pin);
         final long protectorId = mService.getCurrentLskfBasedProtectorId(userId);
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
-        mSpManager.writeWrongGuessCounter(lskfId, 1);
-        assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        mSpManager.writeFailureCounter(lskfId, 1);
+        assertEquals(1, mSpManager.readFailureCounter(lskfId));
         assertNotNull(
-                mStorage.readSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME));
+                mStorage.readSyntheticPasswordState(userId, protectorId, FAILURE_COUNTER_NAME));
 
-        mStorage.deleteSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME);
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
-        assertNull(
-                mStorage.readSyntheticPasswordState(userId, protectorId, WRONG_GUESS_COUNTER_NAME));
+        mStorage.deleteSyntheticPasswordState(userId, protectorId, FAILURE_COUNTER_NAME);
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
+        assertNull(mStorage.readSyntheticPasswordState(userId, protectorId, FAILURE_COUNTER_NAME));
     }
 
     @Test
-    public void testCorruptedWrongGuessCounter_readsAsZero() throws Exception {
+    public void testCorruptedFailureCounter_readsAsZero() throws Exception {
         final int userId = PRIMARY_USER_ID;
         final LockscreenCredential pin = newPin("1234");
         initSpAndSetCredential(userId, pin);
@@ -928,17 +956,17 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // Test files both shorter and longer than the expected length.
-        for (int len = 0; len <= 2 * WRONG_GUESS_COUNTER_FILE_SIZE; len++) {
-            mSpManager.writeWrongGuessCounter(lskfId, 1);
-            assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        for (int len = 0; len <= 2 * FAILURE_COUNTER_FILE_SIZE; len++) {
+            mSpManager.writeFailureCounter(lskfId, 1);
+            assertEquals(1, mSpManager.readFailureCounter(lskfId));
 
             // Fill the file with all 1 bits, making it obviously corrupt. This assumes that the
             // checksum field doesn't just happen to be valid in this case, and indeed it isn't.
             final byte[] corruptedData = new byte[len];
             Arrays.fill(corruptedData, (byte) 0xff);
             mStorage.writeSyntheticPasswordState(
-                    userId, protectorId, WRONG_GUESS_COUNTER_NAME, corruptedData);
-            assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+                    userId, protectorId, FAILURE_COUNTER_NAME, corruptedData);
+            assertEquals(0, mSpManager.readFailureCounter(lskfId));
         }
     }
 

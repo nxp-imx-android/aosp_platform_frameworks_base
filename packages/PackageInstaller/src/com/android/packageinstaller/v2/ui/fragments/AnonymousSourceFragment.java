@@ -16,13 +16,13 @@
 
 package com.android.packageinstaller.v2.ui.fragments;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,6 +32,7 @@ import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallStage;
 import com.android.packageinstaller.v2.model.InstallUserActionRequired;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
+import com.android.packageinstaller.v2.ui.UiUtil;
 
 /**
  * Dialog to show when the source of apk can not be identified.
@@ -42,7 +43,7 @@ public class AnonymousSourceFragment extends DialogFragment {
     @NonNull
     private InstallActionListener mInstallActionListener;
     @NonNull
-    private AlertDialog mDialog;
+    private Dialog mDialog;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -55,21 +56,20 @@ public class AnonymousSourceFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "Creating " + LOG_TAG);
 
-        View dialogView = getLayoutInflater().inflate(R.layout.install_fragment_layout, null);
+        View dialogView = getLayoutInflater().inflate(
+                UiUtil.getInstallationLayoutResId(requireContext()), null);
         TextView customMessage = dialogView.requireViewById(R.id.custom_message);
         customMessage.setText(R.string.message_anonymous_source_warning);
         customMessage.setVisibility(View.VISIBLE);
 
-        mDialog = new AlertDialog.Builder(
-                requireContext(), R.style.Theme_MaterialAlertDialog_Variant)
-                .setTitle(R.string.title_anonymous_source_warning)
-                .setView(dialogView)
-                .setPositiveButton(R.string.button_continue,
-                        ((dialog, which) -> mInstallActionListener.onPositiveResponse(
-                                InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE)))
-                .setNegativeButton(R.string.button_cancel,
-                        ((dialog, which) -> mInstallActionListener.onNegativeResponse(
-                                InstallStage.STAGE_USER_ACTION_REQUIRED))).create();
+        mDialog = UiUtil.getAlertDialog(requireContext(),
+                getString(R.string.title_anonymous_source_warning), dialogView,
+                R.string.button_continue, R.string.button_cancel,
+                ((dialog, which) -> mInstallActionListener.onPositiveResponse(
+                        InstallUserActionRequired.USER_ACTION_REASON_ANONYMOUS_SOURCE)),
+                ((dialog, which) -> mInstallActionListener.onNegativeResponse(
+                        InstallStage.STAGE_USER_ACTION_REQUIRED)),
+                UiUtil.getTextButtonThemeResId(requireContext()));
         return mDialog;
     }
 
@@ -82,7 +82,10 @@ public class AnonymousSourceFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setFilterTouchesWhenObscured(true);
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setFilterTouchesWhenObscured(true);
+        }
     }
 
     @Override
@@ -90,12 +93,18 @@ public class AnonymousSourceFragment extends DialogFragment {
         super.onPause();
         // This prevents tapjacking since an overlay activity started in front of Pia will
         // cause Pia to be paused.
-        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setEnabled(false);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setEnabled(true);
+        }
     }
 }

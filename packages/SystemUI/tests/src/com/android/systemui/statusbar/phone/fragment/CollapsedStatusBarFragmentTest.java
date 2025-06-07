@@ -1156,7 +1156,7 @@ public class CollapsedStatusBarFragmentTest extends SysuiBaseFragmentTest {
                 new HomeStatusBarViewModelFactory() {
             @NonNull
             @Override
-            public HomeStatusBarViewModel create(int displayId) {
+            public HomeStatusBarViewModel create() {
                 return mCollapsedStatusBarViewModel;
             }
         };

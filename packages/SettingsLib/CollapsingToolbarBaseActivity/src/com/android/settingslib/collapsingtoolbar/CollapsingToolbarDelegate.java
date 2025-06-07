@@ -295,6 +295,16 @@ public class CollapsingToolbarDelegate {
     }
 
     /**
+     * Removes the item selected listener for the floating toolbar.
+     */
+    public void removeOnItemSelectedListener() {
+        var layout = getToolbarItemsLayout();
+        if (layout != null) {
+            layout.removeOnItemSelectedListener();
+        }
+    }
+
+    /**
      * Sets the selected toolbar item by its zero-based index.
      */
     public void setSelectedItem(int position) {

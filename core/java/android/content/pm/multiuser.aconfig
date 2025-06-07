@@ -508,6 +508,13 @@ flag {
 }
 
 flag {
+     name: "demote_main_user"
+     namespace: "multiuser"
+     description: "Remove the FLAG_MAIN on boot when the device doesn't support Main User anymore"
+     bug: "402486365"
+}
+
+flag {
     name: "setupwizard_username_population"
     namespace: "multiuser"
     description: "Ensures the user's account name is correctly populated and persisted during the Android Setup Wizard across all flows."
@@ -516,6 +523,7 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
 flag {
     name: "move_set_screen_lock_dialog_to_settings_app"
     namespace: "profile_experiences"
@@ -524,4 +532,11 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+     name: "disallow_removing_last_admin_user"
+     namespace: "multiuser"
+     description: "Disallow the removal of a user, if it is the last admin user"
+     bug: "394970894"
 }

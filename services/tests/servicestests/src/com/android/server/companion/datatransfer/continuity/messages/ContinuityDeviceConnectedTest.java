@@ -59,7 +59,7 @@ public class ContinuityDeviceConnectedTest {
     }
 
     @Test
-    public void testConstructor_fromProto_hasCurrentForegroundTaskId()
+    public void testConstructor_fromProto_readsValidProto()
         throws IOException, ProtoParseException {
 
         final int currentForegroundTaskId = 1234;
@@ -71,7 +71,7 @@ public class ContinuityDeviceConnectedTest {
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         final ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(pis);
+            = ContinuityDeviceConnected.readFromProto(pis);
 
         assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
             .isEqualTo(currentForegroundTaskId);
@@ -81,7 +81,7 @@ public class ContinuityDeviceConnectedTest {
     public void testConstructor_fromProto_setsToDefaultIfNoFieldsSet() throws Exception {
         final ProtoInputStream pis = new ProtoInputStream(new byte[0]);
         final ContinuityDeviceConnected continuityDeviceConnected
-            = new ContinuityDeviceConnected(pis);
+            = ContinuityDeviceConnected.readFromProto(pis);
 
         assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
             .isEqualTo(0);
@@ -140,7 +140,7 @@ public class ContinuityDeviceConnectedTest {
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         final ContinuityDeviceConnected actual
-            = new ContinuityDeviceConnected(pis);
+            = ContinuityDeviceConnected.readFromProto(pis);
 
         assertThat(actual.getCurrentForegroundTaskId())
             .isEqualTo(expected.getCurrentForegroundTaskId());
@@ -153,5 +153,14 @@ public class ContinuityDeviceConnectedTest {
             .isEqualTo(expectedLabel);
         assertThat(actualTaskInfo.getLastUsedTimeMillis())
             .isEqualTo(expectedLastActiveTime);
+    }
+
+    @Test
+    public void testGetFieldNumber_returnsCorrectValue() {
+        ContinuityDeviceConnected continuityDeviceConnected
+            = new ContinuityDeviceConnected(1234, new ArrayList<>());
+
+        assertThat(continuityDeviceConnected.getFieldNumber())
+            .isEqualTo(android.companion.TaskContinuityMessage.DEVICE_CONNECTED);
     }
 }

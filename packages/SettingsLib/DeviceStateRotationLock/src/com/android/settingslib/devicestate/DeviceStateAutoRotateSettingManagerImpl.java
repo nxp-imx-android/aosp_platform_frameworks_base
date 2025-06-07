@@ -162,8 +162,10 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
         RotationPolicy.requestDeviceStateAutoRotateSettingChange(deviceState, !rotationLock);
     }
 
+    @NonNull
     @Override
-    public void updateSetting(SparseIntArray proposedSetting, SparseIntArray currentSetting) {
+    public SparseIntArray updateSetting(@NonNull SparseIntArray proposedSetting,
+            @NonNull SparseIntArray currentSetting) {
         if (!areAllDefaultsPresent(proposedSetting) || !areAllDefaultsPresent(currentSetting)) {
             // Either the postures in proposed setting or current setting map do not match with
             // device postures defined in the default in configuration. We should still go ahead
@@ -221,6 +223,9 @@ public class DeviceStateAutoRotateSettingManagerImpl implements
                 convertIntArrayToSerializedSetting(proposedSetting);
         mSecureSettings.putStringForUser(DEVICE_STATE_ROTATION_LOCK,
                 serializedDeviceStateAutoRotateSetting, UserHandle.USER_CURRENT);
+
+        resolveIgnoredAutoRotateStates(proposedSetting);
+        return proposedSetting;
     }
 
     @Override

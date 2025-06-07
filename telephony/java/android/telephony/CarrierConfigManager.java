@@ -2071,6 +2071,22 @@ public class CarrierConfigManager {
             "nr_advanced_threshold_bandwidth_khz_int";
 
     /**
+     * Configures whether "NR Advanced" (e.g., for "5G+" branding) requires
+     * at least a single component carrier (CC) to meet the bandwidth threshold defined by
+     * {@link #KEY_NR_ADVANCED_THRESHOLD_BANDWIDTH_KHZ_INT} to qualify for "NR Advanced" status.
+     *
+     * <p> Otherwise, carrier aggregation (CA) is used for NR determination.
+     *
+     * <p>The default value is {@code false}.
+     *
+     * @see #KEY_NR_ADVANCED_THRESHOLD_BANDWIDTH_KHZ_INT
+     *
+     * @hide
+     */
+    public static final String KEY_NR_ADVANCED_REQUIRES_SINGLE_CC_ABOVE_BANDWIDTH_THRESHOLD_BOOL =
+            "nr_advanced_requires_single_cc_above_bandwidth_threshold";
+
+    /**
      * Indicating whether to include LTE cell bandwidths when determining whether the aggregated
      * cell bandwidth meets the required threshold for NR advanced.
      *
@@ -10732,6 +10748,16 @@ public class CarrierConfigManager {
     public static final String KEY_AVOID_BAD_WIFI_BOOL =
             "avoid_bad_wifi_bool";
 
+    /**
+     * Used to decide if the device's UI should present the "avoid bad Wi-Fi" from carrier config.
+     * This method effectively enables or disables the display of the relevant setting toggle.
+     * This is only used if KEY_AVOID_BAD_WIFI_BOOL is true.
+     * When KEY_AVOID_BAD_WIFI_BOOL is false, the setting is always shown even if this is false.
+     */
+    @FlaggedApi(FLAG_AVOID_BAD_WIFI_FROM_CARRIER_CONFIG)
+    public static final String KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL =
+            "show_avoid_bad_wifi_bool";
+
     /** The default value for every variable. */
     private static final PersistableBundle sDefaults;
 
@@ -11129,6 +11155,8 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_SHOW_5G_SLICE_ICON_BOOL, true);
         sDefaults.putInt(KEY_LTE_PLUS_THRESHOLD_BANDWIDTH_KHZ_INT, 20000);
         sDefaults.putInt(KEY_NR_ADVANCED_THRESHOLD_BANDWIDTH_KHZ_INT, 0);
+        sDefaults.putBoolean(
+                KEY_NR_ADVANCED_REQUIRES_SINGLE_CC_ABOVE_BANDWIDTH_THRESHOLD_BOOL, false);
         sDefaults.putBoolean(KEY_INCLUDE_LTE_FOR_NR_ADVANCED_THRESHOLD_BANDWIDTH_BOOL, false);
         sDefaults.putBoolean(KEY_RATCHET_NR_ADVANCED_BANDWIDTH_IF_RRC_IDLE_BOOL, false);
         sDefaults.putIntArray(KEY_CARRIER_NR_AVAILABILITIES_INT_ARRAY,
@@ -11340,12 +11368,7 @@ public class CarrierConfigManager {
         sDefaults.putAll(Iwlan.getDefaults());
         sDefaults.putStringArray(KEY_CARRIER_CERTIFICATE_STRING_ARRAY, new String[0]);
         sDefaults.putBoolean(KEY_FORMAT_INCOMING_NUMBER_TO_NATIONAL_FOR_JP_BOOL, false);
-        if (Flags.doNotOverridePreciseLabel()) {
-            sDefaults.putIntArray(KEY_DISCONNECT_CAUSE_PLAY_BUSYTONE_INT_ARRAY, new int[]{});
-        } else {
-            sDefaults.putIntArray(KEY_DISCONNECT_CAUSE_PLAY_BUSYTONE_INT_ARRAY,
-                    new int[]{4 /* BUSY */});
-        }
+        sDefaults.putIntArray(KEY_DISCONNECT_CAUSE_PLAY_BUSYTONE_INT_ARRAY, new int[]{});
         sDefaults.putBoolean(KEY_PREVENT_CLIR_ACTIVATION_AND_DEACTIVATION_CODE_BOOL, false);
         sDefaults.putLong(KEY_DATA_SWITCH_VALIDATION_TIMEOUT_LONG, 5000);
         sDefaults.putStringArray(KEY_MMI_TWO_DIGIT_NUMBER_PATTERN_STRING_ARRAY, new String[0]);
@@ -11568,6 +11591,7 @@ public class CarrierConfigManager {
         sDefaults.putInt(KEY_SATELLITE_SOS_MAX_DATAGRAM_SIZE_BYTES_INT, 255);
         if (avoidBadWifiFromCarrierConfig()) {
             sDefaults.putBoolean(KEY_AVOID_BAD_WIFI_BOOL, true);
+            sDefaults.putBoolean(KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL, false);
         }
     }
 

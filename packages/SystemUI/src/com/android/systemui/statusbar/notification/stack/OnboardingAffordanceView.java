@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
-import android.annotation.Nullable;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -24,19 +23,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
+import com.android.systemui.animation.LaunchableView;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 
 /**
  * Affordance view for notification summaries and bundles onboarding
  */
-public class OnboardingAffordanceView extends StackScrollerDecorView {
+public class OnboardingAffordanceView extends StackScrollerDecorView implements LaunchableView {
 
     private ViewGroup mContents;
     private TextView mTurnOnButton;
     private TextView mDismissButton;
     @Nullable private View.OnClickListener mTurnOnClickListener = null;
     @Nullable private View.OnClickListener mOnDismissClickListener = null;
+    @Nullable private Runnable mOnActivityLaunchEndListener = null;
 
     public OnboardingAffordanceView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -109,9 +112,24 @@ public class OnboardingAffordanceView extends StackScrollerDecorView {
         mTurnOnButton.setOnClickListener(listener);
     }
 
+    public void setOnActivityLaunchEndListener(@Nullable Runnable listener) {
+        mOnActivityLaunchEndListener = listener;
+    }
+
     @Override
     public boolean needsClippingToShelf() {
         return true;
     }
 
+    @Override
+    public void setShouldBlockVisibilityChanges(boolean block) {
+        // no-op
+    }
+
+    @Override
+    public void onActivityLaunchAnimationEnd() {
+        if (mOnActivityLaunchEndListener != null) {
+            mOnActivityLaunchEndListener.run();
+        }
+    }
 }

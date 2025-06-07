@@ -500,10 +500,8 @@ class DesktopTilingWindowDecoration(
         }
     }
 
-    private fun isMinimized(changeMode: Int, infoType: Int): Boolean {
-        return changeMode == TRANSIT_TO_BACK &&
-            (infoType == TRANSIT_MINIMIZE || infoType == TRANSIT_OPEN)
-    }
+    private fun isMinimized(changeMode: Int, infoType: Int): Boolean =
+        changeMode == TRANSIT_TO_BACK && infoType == TRANSIT_MINIMIZE
 
     private fun isEnteringPip(change: Change, transitType: Int): Boolean {
         if (change.taskInfo != null && change.taskInfo?.windowingMode == WINDOWING_MODE_PINNED) {

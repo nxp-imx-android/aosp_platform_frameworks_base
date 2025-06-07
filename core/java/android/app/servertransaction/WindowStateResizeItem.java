@@ -48,12 +48,13 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
     private final boolean mReportDraw;
     private final boolean mForceLayout;
     private final int mDisplayId;
+    private final boolean mSyncWithBuffers;
     private final boolean mDragResizing;
 
-    public WindowStateResizeItem(@NonNull IWindow window,
-            @NonNull ClientWindowFrames frames, boolean reportDraw,
-            @NonNull MergedConfiguration configuration, @NonNull InsetsState insetsState,
-            boolean forceLayout, int displayId, int syncSeqId, boolean dragResizing,
+    public WindowStateResizeItem(@NonNull IWindow window, @NonNull ClientWindowFrames frames,
+            boolean reportDraw, @NonNull MergedConfiguration configuration,
+            @NonNull InsetsState insetsState, boolean forceLayout, int displayId, int syncSeqId,
+            boolean syncWithBuffers, boolean dragResizing,
             @Nullable ActivityWindowInfo activityWindowInfo) {
         super(window);
         mLayout.frames.setTo(frames);
@@ -68,6 +69,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         mForceLayout = forceLayout;
         mDisplayId = displayId;
         mLayout.syncSeqId = syncSeqId;
+        mSyncWithBuffers = syncWithBuffers;
         mDragResizing = dragResizing;
     }
 
@@ -77,7 +79,8 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER,
                 mReportDraw ? "windowResizedReport" : "windowResized");
         try {
-            window.resized(mLayout, mReportDraw, mForceLayout, mDisplayId, mDragResizing);
+            window.resized(mLayout, mReportDraw, mForceLayout, mDisplayId, mSyncWithBuffers,
+                    mDragResizing);
         } catch (RemoteException e) {
             // Should be a local call.
             // An exception could happen if the process is restarted. It is safe to ignore since
@@ -97,6 +100,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         dest.writeBoolean(mReportDraw);
         dest.writeBoolean(mForceLayout);
         dest.writeInt(mDisplayId);
+        dest.writeBoolean(mSyncWithBuffers);
         dest.writeBoolean(mDragResizing);
     }
 
@@ -107,6 +111,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         mReportDraw = in.readBoolean();
         mForceLayout = in.readBoolean();
         mDisplayId = in.readInt();
+        mSyncWithBuffers = in.readBoolean();
         mDragResizing = in.readBoolean();
     }
 
@@ -136,6 +141,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
                 && mForceLayout == other.mForceLayout
                 && mDisplayId == other.mDisplayId
                 && mLayout.syncSeqId == other.mLayout.syncSeqId
+                && mSyncWithBuffers == other.mSyncWithBuffers
                 && mDragResizing == other.mDragResizing
                 && Objects.equals(mLayout.activityWindowInfo, other.mLayout.activityWindowInfo);
     }
@@ -151,6 +157,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         result = 31 * result + (mForceLayout ? 1 : 0);
         result = 31 * result + mDisplayId;
         result = 31 * result + mLayout.syncSeqId;
+        result = 31 * result + (mSyncWithBuffers ? 1 : 0);
         result = 31 * result + (mDragResizing ? 1 : 0);
         result = 31 * result + Objects.hashCode(mLayout.activityWindowInfo);
         return result;
@@ -160,6 +167,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
     public String toString() {
         return "WindowStateResizeItem{" + super.toString()
                 + ", reportDrawn=" + mReportDraw
+                + ", syncSeqId=" + mLayout.syncSeqId + (mSyncWithBuffers ? "+buf" : "")
                 + ", configuration=" + mLayout.mergedConfiguration
                 + ", activityWindowInfo=" + mLayout.activityWindowInfo
                 + "}";

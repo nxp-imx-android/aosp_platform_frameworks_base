@@ -174,6 +174,7 @@ public class SplitTransitionTests extends ShellTestCase {
                 mDisplayImeController, mDisplayInsetsController, mSplitLayout, mTransitions,
                 mTransactionPool, mMainExecutor, mMainHandler, Optional.empty(),
                 mLaunchAdjacentController, Optional.empty(), mSplitState, Optional.empty(),
+                Optional.empty(),
                 mRootTDAOrganizer, mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager,
                 mMSDLPlayer);
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);

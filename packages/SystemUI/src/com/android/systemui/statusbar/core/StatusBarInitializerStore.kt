@@ -16,8 +16,10 @@
 
 package com.android.systemui.statusbar.core
 
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
@@ -43,6 +45,8 @@ constructor(
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val darkIconDispatcherStore: DarkIconDispatcherStore,
+    private val displaySubComponentRepository:
+        PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
 ) :
     StatusBarInitializerStore,
     StatusBarPerDisplayStoreImpl<StatusBarInitializer>(
@@ -62,11 +66,14 @@ constructor(
         val statusBarConfigurationController =
             statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
         val darkIconDispatcher = darkIconDispatcherStore.forDisplay(displayId) ?: return null
+        val displaySubComponent = displaySubComponentRepository[displayId] ?: return null
         return factory.create(
             statusBarWindowController,
             statusBarModePerDisplayRepository,
             statusBarConfigurationController,
             darkIconDispatcher,
+            displaySubComponent.statusBarFragmentProvider,
+            displaySubComponent.homeStatusBarComponentFactory,
         )
     }
 

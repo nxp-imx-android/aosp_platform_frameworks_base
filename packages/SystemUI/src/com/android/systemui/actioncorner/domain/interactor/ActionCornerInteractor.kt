@@ -17,79 +17,78 @@
 package com.android.systemui.actioncorner.domain.interactor
 
 import com.android.systemui.LauncherProxyService
+import com.android.systemui.actioncorner.data.model.ActionCornerRegion
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_LEFT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RIGHT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_LEFT
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion.TOP_RIGHT
-import com.android.systemui.actioncorner.data.model.ActionCornerState
+import com.android.systemui.actioncorner.data.model.ActionCornerState.ActiveActionCorner
+import com.android.systemui.actioncorner.data.model.ActionType
+import com.android.systemui.actioncorner.data.model.ActionType.HOME
+import com.android.systemui.actioncorner.data.model.ActionType.NONE
+import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
+import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
+import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
+import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.model.ShadeMode.Dual
-import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.HOME
-import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.OVERVIEW
+import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
+import com.android.systemui.statusbar.CommandQueue
+import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.flatMapLatest
 
 @SysUISingleton
 class ActionCornerInteractor
 @Inject
 constructor(
-    @Main private val mainThreadContext: CoroutineContext,
     private val repository: ActionCornerRepository,
     private val launcherProxyService: LauncherProxyService,
-    private val shadeModeInteractor: ShadeModeInteractor,
-    private val shadeInteractor: ShadeInteractor,
+    private val actionCornerSettingRepository: ActionCornerSettingRepository,
+    private val userSetupRepository: UserSetupRepository,
+    private val commandQueue: CommandQueue,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
-        repository.actionCornerState
-            .filterIsInstance<ActionCornerState.ActiveActionCorner>()
+        userSetupRepository.isUserSetUp
+            .flatMapLatest {
+                if (it) {
+                    repository.actionCornerState.filterIsInstance<ActiveActionCorner>()
+                } else {
+                    emptyFlow()
+                }
+            }
             .collect {
-                // TODO(b/410791828): Read corresponding action from Action Corner Setting page
-                when (it.region) {
-                    TOP_LEFT -> {
-                        if (isDualShadeEnabled()) {
-                            withContext(mainThreadContext) {
-                                if (shadeInteractor.isShadeAnyExpanded.value) {
-                                    shadeInteractor.collapseNotificationsShade(LOGGING_REASON)
-                                } else {
-                                    shadeInteractor.expandNotificationsShade(LOGGING_REASON)
-                                }
-                            }
-                        }
-                    }
-                    TOP_RIGHT -> {
-                        if (isDualShadeEnabled()) {
-                            withContext(mainThreadContext) {
-                                if (shadeInteractor.isQsExpanded.value) {
-                                    shadeInteractor.collapseQuickSettingsShade(LOGGING_REASON)
-                                } else {
-                                    shadeInteractor.expandQuickSettingsShade(LOGGING_REASON)
-                                }
-                            }
-                        }
-                    }
-                    BOTTOM_LEFT ->
-                        launcherProxyService.onActionCornerActivated(OVERVIEW, it.displayId)
-                    BOTTOM_RIGHT -> launcherProxyService.onActionCornerActivated(HOME, it.displayId)
+                val action = getAction(it.region)
+                when (action) {
+                    HOME ->
+                        launcherProxyService.onActionCornerActivated(
+                            ActionCornerConstants.HOME,
+                            it.displayId,
+                        )
+                    OVERVIEW ->
+                        launcherProxyService.onActionCornerActivated(
+                            ActionCornerConstants.OVERVIEW,
+                            it.displayId,
+                        )
+                    NOTIFICATIONS -> commandQueue.toggleNotificationsPanel()
+                    QUICK_SETTINGS -> commandQueue.toggleQuickSettingsPanel()
+                    NONE -> {}
                 }
             }
         awaitCancellation()
     }
 
-    private fun isDualShadeEnabled(): Boolean {
-        return SceneContainerFlag.isEnabled && shadeModeInteractor.shadeMode.value == Dual
-    }
-
-    companion object {
-        private const val LOGGING_REASON = "Active action corner"
+    private fun getAction(region: ActionCornerRegion): ActionType {
+        return when (region) {
+            TOP_LEFT -> actionCornerSettingRepository.topLeftCornerAction.value
+            TOP_RIGHT -> actionCornerSettingRepository.topRightCornerAction.value
+            BOTTOM_LEFT -> actionCornerSettingRepository.bottomLeftCornerAction.value
+            BOTTOM_RIGHT -> actionCornerSettingRepository.bottomRightCornerAction.value
+        }
     }
 }

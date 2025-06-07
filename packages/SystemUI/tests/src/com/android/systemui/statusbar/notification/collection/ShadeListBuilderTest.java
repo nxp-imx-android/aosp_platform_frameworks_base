@@ -1084,11 +1084,34 @@ public class ShadeListBuilderTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testBundle_bundleChildrenAreSorted() {
+        mListBuilder.setBundler(TestBundler.INSTANCE);
+        // GIVEN a simple pipeline
+        // WHEN we three notifs in a bundle
+        addNotif(0, PACKAGE_1, BUNDLE_1).setRank(3);
+        addNotif(1, PACKAGE_1, BUNDLE_1).setRank(2);
+        addNotif(2, PACKAGE_1, BUNDLE_1).setRank(1);
+
+        dispatchBuild();
+
+        // THEN bundle children are sorted by rank
+        verifyBuiltList(
+                bundle(
+                        BUNDLE_1,
+                        notif(2),
+                        notif(1),
+                        notif(0)
+                )
+        );
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testBundle_groupChildrenAreSorted() {
         mListBuilder.setBundler(TestBundler.INSTANCE);
 
         // GIVEN a simple pipeline
-        // WHEN we add two groups
+        // WHEN we a group with three children
         addGroupChild(0, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(3);
         addGroupChild(1, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(2);
         addGroupChild(2, PACKAGE_1, GROUP_1, BUNDLE_1).setRank(1);

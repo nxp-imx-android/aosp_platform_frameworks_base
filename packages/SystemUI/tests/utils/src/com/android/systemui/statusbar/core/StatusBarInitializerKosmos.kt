@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.core
 
+import com.android.systemui.display.data.repository.displayPhoneSubcomponentPerDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -43,6 +44,7 @@ val Kosmos.multiDisplayStatusBarInitializerStore by
             fakeStatusBarModeRepository,
             statusBarConfigurationControllerStore,
             darkIconDispatcherStore,
+            displayPhoneSubcomponentPerDisplayRepository,
         )
     }
 

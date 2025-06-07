@@ -587,8 +587,9 @@ applications that come with the platform
         <!-- Permission required for CTS test IntentRedirectionTest -->
         <permission name="android.permission.QUERY_CLONED_APPS"/>
         <permission name="android.permission.GET_BINDING_UID_IMPORTANCE"/>
-        <!-- Permission required for CTS test NotificationManagerZenTest -->
+        <!-- Permission required for CTS test CtsNotificationTestCases -->
         <permission name="android.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS" />
+        <permission name="android.permission.HIDE_STATUS_BAR_NOTIFICATION" />
         <!-- Permission required for BinaryTransparencyService shell API and host test -->
         <permission name="android.permission.GET_BACKGROUND_INSTALLED_PACKAGES" />
         <permission name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"/>
@@ -599,6 +600,7 @@ applications that come with the platform
         <permission name="android.permission.READ_BLOCKED_NUMBERS" />
         <!-- Permission required for CTS test - PackageManagerTest -->
         <permission name="android.permission.DOMAIN_VERIFICATION_AGENT"/>
+        <permission name="android.permission.DEVELOPER_VERIFICATION_AGENT"/>
         <!-- Permission required for CTS test CtsInputTestCases -->
         <permission name="android.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW" />
         <!-- Permission required for CTS test - PackageManagerShellCommandInstallTest -->

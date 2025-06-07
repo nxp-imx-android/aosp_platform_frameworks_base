@@ -424,6 +424,8 @@ public class ViewConfiguration {
     private final int mMultiPressTimeoutMillis;
     private final float mScrollFriction;
 
+    private int mDeviceId = Context.DEVICE_ID_INVALID;
+
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123768915)
     private boolean sHasPermanentMenuKey;
     @UnsupportedAppUsage
@@ -626,11 +628,11 @@ public class ViewConfiguration {
         mDoubleTapMinTimeMillis = res.getInteger(R.integer.config_doubleTapMinTimeMillis);
         mScrollFriction = res.getFloat(R.dimen.config_scrollFriction);
 
-        int deviceId = context.getDeviceId();
+        mDeviceId = context.getDeviceId();
         mLongPressTimeoutMillis = AppGlobals.getIntCoreSetting(Settings.Secure.LONG_PRESS_TIMEOUT,
-                DEFAULT_LONG_PRESS_TIMEOUT, deviceId);
+                DEFAULT_LONG_PRESS_TIMEOUT, mDeviceId);
         mMultiPressTimeoutMillis = AppGlobals.getIntCoreSetting(Settings.Secure.MULTI_PRESS_TIMEOUT,
-                DEFAULT_MULTI_PRESS_TIMEOUT, deviceId);
+                DEFAULT_MULTI_PRESS_TIMEOUT, mDeviceId);
     }
 
     /**
@@ -814,9 +816,17 @@ public class ViewConfiguration {
      */
     @FlaggedApi(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
     public int getTextCursorBlinkIntervalMillis() {
-        int value = AppGlobals.getIntCoreSetting(
-                Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
-                sResourceCache.getDefaultTextCursorBlinkInterval());
+        int value;
+        if (mDeviceId != Context.DEVICE_ID_INVALID) {
+            value = AppGlobals.getIntCoreSetting(
+                    Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
+                    sResourceCache.getDefaultTextCursorBlinkInterval(),
+                    mDeviceId);
+        } else {
+            value = AppGlobals.getIntCoreSetting(
+                    Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
+                    sResourceCache.getDefaultTextCursorBlinkInterval());
+        }
 
         int noBlink = sResourceCache.getNoBlinkTextCursorBlinkInterval();
         int minBlink = sResourceCache.getMinTextCursorBlinkInterval();

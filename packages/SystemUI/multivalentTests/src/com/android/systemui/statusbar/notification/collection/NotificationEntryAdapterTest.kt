@@ -578,4 +578,60 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         underTest = factory.create(entry) as NotificationEntryAdapter
         assertThat(underTest.isBundled).isTrue()
     }
+
+    @Test
+    fun onBundleDisabled_individualNotification() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        underTest.onBundleDisabled()
+        assertThat(underTest.isMarkedForUserTriggeredMovement).isTrue()
+        verify(kosmos.mockVisualStabilityCoordinator)
+            .temporarilyAllowSectionChanges(eq(entry), anyLong())
+    }
+
+    @Test
+    fun onBundleDisabled_groupRoot() {
+        val summaryRow: ExpandableNotificationRow = mock()
+        val childRow: ExpandableNotificationRow = mock()
+        val summary: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .setGroupSummary(true)
+                .setGroup("key")
+                .build()
+
+        val child: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .setGroup("key")
+                .build()
+
+        val group = GroupEntryBuilder().setParent(GroupEntry.ROOT_ENTRY).build()
+
+        val summaryEntry =
+            NotificationEntryBuilder().setNotification(summary).setParent(group).build()
+        group.setSummary(summaryEntry)
+        summaryEntry.row = summaryRow
+
+        val childEntry = NotificationEntryBuilder().setNotification(child).setParent(group).build()
+        childEntry.row = childRow
+        val childAdapter = factory.create(childEntry) as NotificationEntryAdapter
+        whenever(childRow.entryAdapter).thenReturn(childAdapter)
+        whenever(summaryRow.attachedChildren).thenReturn(listOf(childRow))
+
+        underTest = factory.create(summaryEntry) as NotificationEntryAdapter
+        underTest.onBundleDisabled()
+        verify(kosmos.mockVisualStabilityCoordinator)
+            .temporarilyAllowSectionChanges(eq(summaryEntry), anyLong())
+        verify(kosmos.mockVisualStabilityCoordinator)
+            .temporarilyAllowSectionChanges(eq(childEntry), anyLong())
+    }
 }

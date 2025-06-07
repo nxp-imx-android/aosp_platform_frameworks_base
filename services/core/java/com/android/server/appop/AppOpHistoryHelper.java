@@ -22,9 +22,14 @@ import static android.app.AppOpsManager.ATTRIBUTION_FLAG_RECEIVER;
 import static android.app.AppOpsManager.ATTRIBUTION_FLAG_TRUSTED;
 import static android.app.AppOpsManager.HISTORY_FLAG_AGGREGATE;
 import static android.app.AppOpsManager.HISTORY_FLAG_DISCRETE;
+import static android.app.AppOpsManager.MAX_PRIORITY_UID_STATE;
+import static android.app.AppOpsManager.OP_FLAG_SELF;
+import static android.app.AppOpsManager.OP_FLAG_TRUSTED_PROXIED;
+import static android.app.AppOpsManager.UID_STATE_MAX_LAST_NON_RESTRICTED;
 import static android.app.AppOpsManager.flagsToString;
 import static android.app.AppOpsManager.getUidStateName;
 
+import static com.android.internal.util.FrameworkStatsLog.AGGREGATED_APP_OP_ACCESS_EVENT_REPORTED;
 import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL;
 import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION;
 import static com.android.internal.util.FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC;
@@ -43,8 +48,11 @@ import android.os.Process;
 import android.util.ArrayMap;
 import android.util.IntArray;
 import android.util.LongSparseArray;
+import android.util.Pair;
+import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.ServiceThread;
 
 import java.io.File;
@@ -52,12 +60,14 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Helper class to read/write aggregated app op access events.
@@ -91,6 +101,7 @@ public class AppOpHistoryHelper {
     private final Context mContext;
     private final AppOpHistoryDbHelper mDbHelper;
     private final SqliteWriteHandler mSqliteWriteHandler;
+    private final MetricHandler mMetricHandler;
     private final AppOpHistoryCache mCache = new AppOpHistoryCache(1024);
 
     AppOpHistoryHelper(@NonNull Context context, File databaseFile,
@@ -103,6 +114,7 @@ public class AppOpHistoryHelper {
                 new ServiceThread(TAG, Process.THREAD_PRIORITY_DEFAULT, true);
         thread.start();
         mSqliteWriteHandler = new SqliteWriteHandler(thread.getLooper());
+        mMetricHandler = new MetricHandler(thread.getLooper());
     }
 
     // Set parameters before using this class.
@@ -221,18 +233,25 @@ public class AppOpHistoryHelper {
                 opEvent.totalDurationMillis());
     }
 
+    private void insertAppOpHistory(@NonNull List<AggregatedAppOpAccessEvent> appOpEvents,
+            int writeSource) {
+        mDbHelper.insertAppOpHistory(appOpEvents, writeSource);
+        sendToMetricsHandler(appOpEvents);
+    }
+
     private List<AggregatedAppOpAccessEvent> getAppOpHistory(AppOpsManager.HistoricalOps result,
-            long beginTimeMillis, long endTimeMillis, int filter, int uidFilter,
+            long beginTimeMillis, long endTimeMillis,
+            @AppOpsManager.HistoricalOpsRequestFilter int filter, int uidFilter,
             @Nullable String packageNameFilter,
             @Nullable String[] opNamesFilter,
             @Nullable String attributionTagFilter, int opFlagsFilter) {
         IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNamesFilter);
         // flush the cache into database before read.
         if (opCodes != null) {
-            mDbHelper.insertAppOpHistory(mCache.evict(opCodes),
+            insertAppOpHistory(mCache.evict(opCodes),
                     SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         } else {
-            mDbHelper.insertAppOpHistory(mCache.evictAll(),
+            insertAppOpHistory(mCache.evictAll(),
                     SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         }
         // Adjust begin & end time to time window's boundary.
@@ -257,8 +276,11 @@ public class AppOpHistoryHelper {
 
     void shutdown() {
         mSqliteWriteHandler.removeAllPendingMessages();
-        mDbHelper.insertAppOpHistory(mCache.evictAll(),
+        insertAppOpHistory(mCache.evictAll(),
                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_SHUTDOWN);
+        // Remove pending delayed message.
+        mMetricHandler.removeMessages(MetricHandler.SEND_EVENTS);
+        mMetricHandler.sendEmptyMessage(MetricHandler.SEND_EVENTS);
         mDbHelper.close();
     }
 
@@ -287,6 +309,10 @@ public class AppOpHistoryHelper {
                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_MIGRATION);
     }
 
+    long getTotalRecordsCount() {
+        return mDbHelper.getTotalRecordsCount();
+    }
+
     @VisibleForTesting
     List<AggregatedAppOpAccessEvent> getAppOpHistory() {
         List<AggregatedAppOpAccessEvent> ops = new ArrayList<>();
@@ -306,10 +332,10 @@ public class AppOpHistoryHelper {
         IntArray opCodes = AppOpHistoryQueryHelper.getAppOpCodes(filter, opNamesFilter);
         // flush the cache into database before read.
         if (opCodes != null) {
-            mDbHelper.insertAppOpHistory(mCache.evict(opCodes),
+            insertAppOpHistory(mCache.evict(opCodes),
                     SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         } else {
-            mDbHelper.insertAppOpHistory(mCache.evictAll(),
+            insertAppOpHistory(mCache.evictAll(),
                     SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
         }
         // Adjust begin & end time to time window's boundary.
@@ -342,29 +368,24 @@ public class AppOpHistoryHelper {
         return chains;
     }
 
-    void dump(PrintWriter pw, int filterUid,
-            @Nullable String filterPackage, @Nullable String filterAttributionTag, int filterOp,
+    void dump(long beginTimeMillis, long endTimeMillis, PrintWriter pw, int filterUid,
+            @Nullable String filterPackage, @Nullable String filterAttributionTag, IntArray opCodes,
             @AppOpsManager.HistoricalOpsRequestFilter int filter, @NonNull SimpleDateFormat sdf,
             @NonNull Date date, int limit) {
         // flush caches to the database
-        mDbHelper.insertAppOpHistory(mCache.evictAll(),
+        insertAppOpHistory(mCache.evictAll(),
                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_READ);
-        long currentTime = System.currentTimeMillis();
-        long beginTimeMillis = discretizeTimestamp(currentTime - mHistoryRetentionMillis);
-        IntArray opCodes = new IntArray();
-        if ((filter & AppOpsManager.FILTER_BY_OP_NAMES) != 0
-                && filterOp != AppOpsManager.OP_NONE) {
-            opCodes.add(filterOp);
-        }
+        beginTimeMillis = discretizeTimestamp(beginTimeMillis);
 
         List<AggregatedAppOpAccessEvent> appOpHistoryAccesses = mDbHelper.getAppOpHistory(
-                filter, beginTimeMillis, currentTime, filterUid, filterPackage,
+                filter, beginTimeMillis, endTimeMillis, filterUid, filterPackage,
                 filterAttributionTag, opCodes, AppOpsManager.OP_FLAGS_ALL, limit,
                 AppOpHistoryTable.Columns.ACCESS_TIME, false);
 
         pw.println();
-        pw.println("UID|PACKAGE_NAME|DEVICE_ID|OP_NAME|ATTRIBUTION_TAG|UID_STATE|OP_FLAGS|"
-                + "ACCESS_TIME|ACCESS_COUNTS|REJECT_COUNTS|DURATION");
+        pw.println("UID|PACKAGE_NAME|DEVICE_ID|OP_NAME|ATTRIBUTION_TAG|ACCESS_TIME|ACCESS_COUNTS"
+                + "|REJECT_COUNTS|DURATION|UID_STATE|OP_FLAGS"
+                + "|ATTRIBUTION_CHAIN_ID|ATTRIBUTION_FLAGS");
         for (AggregatedAppOpAccessEvent aggAppOpAccess : appOpHistoryAccesses) {
             date.setTime(aggAppOpAccess.accessTimeMillis());
             pw.println(aggAppOpAccess.uid() + "|"
@@ -372,12 +393,14 @@ public class AppOpHistoryHelper {
                     + aggAppOpAccess.deviceId() + "|"
                     + AppOpsManager.opToName(aggAppOpAccess.opCode()) + "|"
                     + aggAppOpAccess.attributionTag() + "|"
-                    + getUidStateName(aggAppOpAccess.uidState()) + "|"
-                    + flagsToString(aggAppOpAccess.opFlags()) + "|"
                     + sdf.format(date) + "|"
                     + aggAppOpAccess.totalAccessCount() + "|"
                     + aggAppOpAccess.totalRejectCount() + "|"
-                    + aggAppOpAccess.durationMillis());
+                    + aggAppOpAccess.totalDurationMillis() + "|"
+                    + getUidStateName(aggAppOpAccess.uidState()) + "|"
+                    + flagsToString(aggAppOpAccess.opFlags()) + "|"
+                    + aggAppOpAccess.attributionChainId() + "|"
+                    + aggAppOpAccess.attributionFlags());
         }
         pw.println();
     }
@@ -406,7 +429,7 @@ public class AppOpHistoryHelper {
             switch (msg.what) {
                 case WRITE_DATABASE_PERIODIC -> {
                     try {
-                        mDbHelper.insertAppOpHistory(mCache.evict(),
+                        insertAppOpHistory(mCache.evict(),
                                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_PERIODIC);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
@@ -423,7 +446,7 @@ public class AppOpHistoryHelper {
                                 evictedEvents.addAll(mCache.evictAll());
                             }
                         }
-                        mDbHelper.insertAppOpHistory(evictedEvents,
+                        insertAppOpHistory(evictedEvents,
                                 SQLITE_APP_OP_EVENT_REPORTED__WRITE_TYPE__WRITE_CACHE_FULL);
                     } finally {
                         ensurePeriodicJobsAreScheduled();
@@ -433,8 +456,8 @@ public class AppOpHistoryHelper {
                     try {
                         long cutOffTimeStamp = System.currentTimeMillis() - mHistoryRetentionMillis;
                         mDbHelper.execSQL(
-                            AppOpHistoryTable.DELETE_TABLE_DATA_BEFORE_ACCESS_TIME,
-                            new Object[]{cutOffTimeStamp});
+                                AppOpHistoryTable.DELETE_TABLE_DATA_BEFORE_ACCESS_TIME,
+                                new Object[]{cutOffTimeStamp});
                     } finally {
                         ensurePeriodicJobsAreScheduled();
                     }
@@ -446,6 +469,178 @@ public class AppOpHistoryHelper {
             removeMessages(WRITE_DATABASE_PERIODIC);
             removeMessages(DELETE_EXPIRED_ENTRIES_PERIODIC);
             removeMessages(WRITE_DATABASE_CACHE_FULL);
+        }
+    }
+
+    void sendToMetricsHandler(@NonNull List<AggregatedAppOpAccessEvent> accessEvents) {
+        Message msg = mMetricHandler.obtainMessage(MetricHandler.RECEIVE_EVENTS, accessEvents);
+        mMetricHandler.sendMessage(msg);
+    }
+
+    private record AppOpMetricKey(
+            @NonNull String packageName,
+            int opCode,
+            @Nullable String attributionTag
+    ) {
+    }
+
+    private static class AppOpMetricValue {
+        private long mForegroundDurationMillis;
+        private int mForegroundAccessCount;
+        private int mForegroundRejectCount;
+        private long mBackgroundDurationMillis;
+        private int mBackgroundAccessCount;
+        private int mBackgroundRejectCount;
+
+        AppOpMetricValue(
+                long foregroundDurationMillis,
+                int foregroundAccessCount,
+                int foregroundRejectCount,
+                long backgroundDurationMillis,
+                int backgroundAccessCount,
+                int backgroundRejectCount
+        ) {
+            this.mForegroundDurationMillis = foregroundDurationMillis;
+            this.mForegroundAccessCount = foregroundAccessCount;
+            this.mForegroundRejectCount = foregroundRejectCount;
+            this.mBackgroundDurationMillis = backgroundDurationMillis;
+            this.mBackgroundAccessCount = backgroundAccessCount;
+            this.mBackgroundRejectCount = backgroundRejectCount;
+        }
+
+        void addForegroundDurationMillis(long foregroundDurationMillis) {
+            this.mForegroundDurationMillis += foregroundDurationMillis;
+        }
+
+        void addForegroundAccessCount(int foregroundAccessCount) {
+            this.mForegroundAccessCount += foregroundAccessCount;
+        }
+
+        void addForegroundRejectCount(int foregroundRejectCount) {
+            this.mForegroundRejectCount += foregroundRejectCount;
+        }
+
+        void addBackgroundDurationMillis(long backgroundDurationMillis) {
+            this.mBackgroundDurationMillis += backgroundDurationMillis;
+        }
+
+        void addBackgroundAccessCount(int backgroundAccessCount) {
+            this.mBackgroundAccessCount += backgroundAccessCount;
+        }
+
+        void addBackgroundRejectCount(int backgroundRejectCount) {
+            this.mBackgroundRejectCount += backgroundRejectCount;
+        }
+    }
+
+    /**
+     * This handler reports aggregated app op access events to StatsD.
+     */
+    private static class MetricHandler extends Handler {
+        // Process events after 2 minutes once received by metrics handler.
+        private static final long EVENT_PROCESSING_DELAY_MILLIS = Duration.ofMinutes(2).toMillis();
+        // Process events immediately when reaching capacity limits.
+        private static final int CACHE_CAPACITY = 128;
+        private static final int OP_FLAGS_REPORTED = OP_FLAG_SELF | OP_FLAG_TRUSTED_PROXIED;
+        static final int RECEIVE_EVENTS = 1;
+        static final int SEND_EVENTS = 2;
+        private final ArrayMap<AppOpMetricKey, AppOpMetricValue> mCache = new ArrayMap<>();
+
+        MetricHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            switch (msg.what) {
+                case RECEIVE_EVENTS -> {
+                    List<AggregatedAppOpAccessEvent> events =
+                            (List<AggregatedAppOpAccessEvent>) msg.obj;
+                    if (events.isEmpty()) {
+                        return;
+                    }
+
+                    synchronized (mCache) {
+                        for (AggregatedAppOpAccessEvent accessEvent : events) {
+                            if ((accessEvent.opFlags() & OP_FLAGS_REPORTED) == 0) {
+                                continue;
+                            }
+                            AppOpMetricKey metricKey =
+                                    new AppOpMetricKey(accessEvent.packageName(),
+                                    accessEvent.opCode(), accessEvent.attributionTag());
+                            boolean isUidStateInForeground =
+                                    accessEvent.uidState() >= MAX_PRIORITY_UID_STATE
+                                    && accessEvent.uidState() <= UID_STATE_MAX_LAST_NON_RESTRICTED;
+                            long foregroundDurationMillis = 0;
+                            int foregroundAccessCount = 0;
+                            int foregroundRejectCount = 0;
+                            long backgroundDurationMillis = 0;
+                            int backgroundAccessCount = 0;
+                            int backgroundRejectCount = 0;
+
+                            if (isUidStateInForeground) {
+                                foregroundDurationMillis = accessEvent.totalDurationMillis();
+                                foregroundAccessCount = accessEvent.totalAccessCount();
+                                foregroundRejectCount = accessEvent.totalRejectCount();
+                            } else {
+                                backgroundDurationMillis = accessEvent.totalDurationMillis();
+                                backgroundAccessCount = accessEvent.totalAccessCount();
+                                backgroundRejectCount = accessEvent.totalRejectCount();
+                            }
+
+                            AppOpMetricValue metricValue = mCache.get(metricKey);
+                            if (metricValue != null) {
+                                metricValue.addForegroundDurationMillis(foregroundDurationMillis);
+                                metricValue.addForegroundAccessCount(foregroundAccessCount);
+                                metricValue.addForegroundRejectCount(foregroundRejectCount);
+                                metricValue.addBackgroundDurationMillis(backgroundDurationMillis);
+                                metricValue.addBackgroundAccessCount(backgroundAccessCount);
+                                metricValue.addBackgroundRejectCount(backgroundRejectCount);
+                            } else {
+                                mCache.put(metricKey, new AppOpMetricValue(
+                                        foregroundDurationMillis,
+                                        foregroundAccessCount,
+                                        foregroundRejectCount,
+                                        backgroundDurationMillis,
+                                        backgroundAccessCount,
+                                        backgroundRejectCount
+                                ));
+                            }
+                        }
+
+                        if (mCache.size() >= CACHE_CAPACITY) {
+                            removeMessages(SEND_EVENTS); // Remove any pending delayed messages
+                            sendEmptyMessage(SEND_EVENTS);
+                        } else if (!hasMessages(SEND_EVENTS)) {
+                            sendEmptyMessageDelayed(SEND_EVENTS, EVENT_PROCESSING_DELAY_MILLIS);
+                        }
+                    }
+                }
+                case SEND_EVENTS -> {
+                    List<Pair<AppOpMetricKey, AppOpMetricValue>> events;
+                    synchronized (mCache) {
+                        if (mCache.isEmpty()) {
+                            return;
+                        }
+                        events = new ArrayList<>(mCache.size());
+                        for (Map.Entry<AppOpMetricKey, AppOpMetricValue> event: mCache.entrySet()) {
+                            events.add(new Pair<>(event.getKey(), event.getValue()));
+                        }
+                        mCache.clear();
+                    }
+                    Slog.d(TAG, "MetricHandler reporting " + events.size() + " records.");
+                    for (Pair<AppOpMetricKey, AppOpMetricValue> event : events) {
+                        AppOpMetricKey metricKey = event.first;
+                        AppOpMetricValue value = event.second;
+                        FrameworkStatsLog.write(AGGREGATED_APP_OP_ACCESS_EVENT_REPORTED,
+                                metricKey.packageName, metricKey.attributionTag,
+                                metricKey.opCode, value.mForegroundAccessCount,
+                                value.mBackgroundAccessCount, value.mForegroundRejectCount,
+                                value.mBackgroundRejectCount, value.mForegroundDurationMillis,
+                                value.mBackgroundDurationMillis);
+                    }
+                }
+            }
         }
     }
 
@@ -506,58 +701,38 @@ public class AppOpHistoryHelper {
          * Evict older events i.e. events from previous time windows.
          */
         private List<AggregatedAppOpAccessEvent> evict() {
-            synchronized (this) {
-                List<AggregatedAppOpAccessEvent> evictedEvents = new ArrayList<>();
-                ArrayMap<AppOpAccessEvent, AggregatedAppOpValues> snapshot =
-                        new ArrayMap<>(mCache);
-                long evictionTimestamp = System.currentTimeMillis() - mQuantizationMillis;
-                evictionTimestamp = discretizeTimestamp(evictionTimestamp);
-                for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> opEvent :
-                        snapshot.entrySet()) {
-                    if (opEvent.getKey().mAccessTime <= evictionTimestamp) {
-                        evictedEvents.add(
-                                getAggregatedAppOpEvent(opEvent.getKey(), opEvent.getValue()));
-                        mCache.remove(opEvent.getKey());
-                    }
-                }
-                return evictedEvents;
-            }
+            final long evictionTimestamp = discretizeTimestamp(
+                    System.currentTimeMillis() - mQuantizationMillis);
+            return evict(opAccessEvent -> opAccessEvent.mAccessTime <= evictionTimestamp);
         }
 
-        private AggregatedAppOpAccessEvent getAggregatedAppOpEvent(AppOpAccessEvent accessEvent,
-                AggregatedAppOpValues appOpValues) {
-            return new AggregatedAppOpAccessEvent(accessEvent.mUid, accessEvent.mPackageName,
-                    accessEvent.mOpCode, accessEvent.mDeviceId, accessEvent.mAttributionTag,
-                    accessEvent.mOpFlags, accessEvent.mUidState, accessEvent.mAttributionFlags,
-                    accessEvent.mAttributionChainId, accessEvent.mAccessTime,
-                    accessEvent.mDuration, appOpValues.mTotalDuration,
-                    appOpValues.mTotalAccessCount, appOpValues.mTotalRejectCount);
+        private List<AggregatedAppOpAccessEvent> evict(Predicate<AppOpAccessEvent> predicate) {
+            synchronized (this) {
+                if (mCache.isEmpty()) {
+                    return Collections.emptyList();
+                }
+
+                List<AggregatedAppOpAccessEvent> evictedOps = new ArrayList<>();
+                List<AppOpAccessEvent> keysToBeRemoved = new ArrayList<>();
+                for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> event :
+                        mCache.entrySet()) {
+                    if (predicate.test(event.getKey())) {
+                        keysToBeRemoved.add(event.getKey());
+                        evictedOps.add(getAggregatedAppOpEvent(event.getKey(), event.getValue()));
+                    }
+                }
+                for (AppOpAccessEvent eventKey : keysToBeRemoved) {
+                    mCache.remove(eventKey);
+                }
+                return evictedOps;
+            }
         }
 
         /**
          * Evict specified app ops from cache, and return the list of evicted ops.
          */
         private List<AggregatedAppOpAccessEvent> evict(IntArray ops) {
-            synchronized (this) {
-                List<AggregatedAppOpAccessEvent> cachedOps = new ArrayList<>();
-                List<AppOpAccessEvent> keysToBeRemoved = new ArrayList<>();
-                if (mCache.isEmpty()) {
-                    return cachedOps;
-                }
-                for (Map.Entry<AppOpAccessEvent, AggregatedAppOpValues> event :
-                        mCache.entrySet()) {
-                    if (ops.contains(event.getKey().mOpCode)) {
-                        keysToBeRemoved.add(event.getKey());
-                        cachedOps.add(getAggregatedAppOpEvent(event.getKey(), event.getValue()));
-                    }
-                }
-                if (!cachedOps.isEmpty()) {
-                    for (AppOpAccessEvent eventKey : keysToBeRemoved) {
-                        mCache.remove(eventKey);
-                    }
-                }
-                return cachedOps;
-            }
+            return evict(appOpAccessEvent -> ops.contains(appOpAccessEvent.mOpCode));
         }
 
         /**
@@ -571,6 +746,16 @@ public class AppOpHistoryHelper {
                 mCache.clear();
                 return cachedOps;
             }
+        }
+
+        private AggregatedAppOpAccessEvent getAggregatedAppOpEvent(AppOpAccessEvent accessEvent,
+                AggregatedAppOpValues appOpValues) {
+            return new AggregatedAppOpAccessEvent(accessEvent.mUid, accessEvent.mPackageName,
+                    accessEvent.mOpCode, accessEvent.mDeviceId, accessEvent.mAttributionTag,
+                    accessEvent.mOpFlags, accessEvent.mUidState, accessEvent.mAttributionFlags,
+                    accessEvent.mAttributionChainId, accessEvent.mAccessTime,
+                    accessEvent.mDuration, appOpValues.mTotalDuration,
+                    appOpValues.mTotalAccessCount, appOpValues.mTotalRejectCount);
         }
 
         /**
@@ -634,6 +819,12 @@ public class AppOpHistoryHelper {
         public AppOpAccessEvent {
             if (mPackageName != null) {
                 mPackageName = mPackageName.intern();
+            }
+            if (mAttributionTag != null) {
+                mAttributionTag = mAttributionTag.intern();
+            }
+            if (mDeviceId != null) {
+                mDeviceId = mDeviceId.intern();
             }
         }
 

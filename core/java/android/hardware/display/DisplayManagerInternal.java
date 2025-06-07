@@ -16,6 +16,7 @@
 
 package android.hardware.display;
 
+import android.annotation.FloatRange;
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.companion.virtual.IVirtualDevice;
@@ -281,6 +282,21 @@ public abstract class DisplayManagerInternal {
      * Persist brightness slider events and ambient brightness stats.
      */
     public abstract void persistBrightnessTrackerState();
+
+    /**
+     * Sets a maximum brightness cap for the display.
+     *
+     * <p>A cap of {@code 1f} will remove the cap.
+     *
+     * @param displayId id of the display to cap the maximum brightness for
+     * @param cap the brightness cap between {@code 0f} and {@code 1f}
+     * @param reason reason for capping brightness. Using the same reason again for a display
+     *     replaces the previous cap
+     */
+    public abstract void setBrightnessCap(
+            int displayId,
+            @FloatRange(from = 0f, to = 1f) float cap,
+            @BrightnessInfo.BrightnessMaxReason int reason);
 
     /**
      * Notifies the display manager that resource overlays have changed.

@@ -298,16 +298,6 @@ flag {
 }
 
 flag {
-    name: "fix_transfer_from_user_route_to_unselected_system_route"
-    namespace: "media_better_together"
-    description: "Fixes a bug causing the failure of transferring to a builtin speaker."
-    bug: "398527989"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "hide_bt_address_from_apps_without_bt_permission"
     namespace: "media_better_together"
     description: "Hides the BT address of media routes to apps without BT permission."

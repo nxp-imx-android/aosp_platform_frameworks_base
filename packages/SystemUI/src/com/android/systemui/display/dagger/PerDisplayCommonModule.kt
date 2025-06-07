@@ -29,6 +29,7 @@ import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.data.repository.DisplayStateRepositoryImpl
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
+import com.android.systemui.statusbar.dagger.StatusBarPerDisplayModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -37,7 +38,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 
 /** Module providing common dependencies for per-display singletons. */
-@Module
+@Module(includes = [StatusBarPerDisplayModule::class, PerDisplayConfigurationModule::class])
 interface PerDisplayCommonModule {
 
     @Multibinds

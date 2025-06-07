@@ -972,33 +972,40 @@ public abstract class WindowManagerInternal {
 
     /** The information of input method target when IME is requested to show or hide. */
     public static class ImeTargetInfo {
-        public final String focusedWindowName;
-        public final String requestWindowName;
 
-        /** The window name of IME Insets control target. */
-        public final String imeControlTargetName;
+        /** The name of the focused window. */
+        @NonNull
+        public final String mFocusedWindowName;
 
-        /**
-         * The current window name of the input method is on top of.
-         * <p>
-         * Note that the concept of this window is only used to reparent the target window behind
-         * the input method window, it may be different from the window reported by
-         * {@link com.android.server.inputmethod.InputMethodManagerService#reportStartInput} which
-         * has input connection.
-         */
-        public final String imeLayerTargetName;
+        /** The name of the window that requested the IME visibility change. */
+        @NonNull
+        public final String mRequestWindowName;
+
+        /** The name of the {@link DisplayContent#mImeLayeringTarget}. */
+        @NonNull
+        public final String mImeLayeringTargetName;
+
+        /** The name of the {@link DisplayContent#mImeInputTarget}. */
+        @NonNull
+        public final String mImeInputTargetName;
+
+        /** The name of the {@link DisplayContent#mImeControlTarget}. */
+        @NonNull
+        public final String mImeControlTargetName;
 
         /** The surface parent of the IME container. */
-        public final String imeSurfaceParentName;
+        @NonNull
+        public final String mImeSurfaceParentName;
 
-        public ImeTargetInfo(String focusedWindowName, String requestWindowName,
-                String imeControlTargetName, String imeLayerTargetName,
-                String imeSurfaceParentName) {
-            this.focusedWindowName = focusedWindowName;
-            this.requestWindowName = requestWindowName;
-            this.imeControlTargetName = imeControlTargetName;
-            this.imeLayerTargetName = imeLayerTargetName;
-            this.imeSurfaceParentName = imeSurfaceParentName;
+        public ImeTargetInfo(@NonNull String focusedWindowName, @NonNull String requestWindowName,
+                @NonNull String imeLayeringTargetName, @NonNull String imeInputTargetName,
+                @NonNull String imeControlTargetName, @NonNull String imeSurfaceParentName) {
+            mFocusedWindowName = focusedWindowName;
+            mRequestWindowName = requestWindowName;
+            mImeLayeringTargetName = imeLayeringTargetName;
+            mImeInputTargetName = imeInputTargetName;
+            mImeControlTargetName = imeControlTargetName;
+            mImeSurfaceParentName = imeSurfaceParentName;
         }
     }
 

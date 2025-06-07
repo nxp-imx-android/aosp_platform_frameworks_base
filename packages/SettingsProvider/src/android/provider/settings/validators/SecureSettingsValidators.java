@@ -302,6 +302,8 @@ public class SecureSettingsValidators {
         VALIDATORS.put(Secure.NAV_BAR_FORCE_VISIBLE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.NAV_BAR_KIDS_MODE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(
+                Secure.NAV_BAR_ORDER, new DiscreteValueValidator(new String[] {"0", "1"}));
+        VALIDATORS.put(
                 Secure.NAVIGATION_MODE, new DiscreteValueValidator(new String[] {"0", "1", "2"}));
         VALIDATORS.put(Secure.NAVIGATION_MODE_RESTORE,
                 new DiscreteValueValidator(new String[] {"-1", "0", "1", "2"}));
@@ -492,6 +494,7 @@ public class SecureSettingsValidators {
                 new InclusiveFloatRangeValidator(0, 1.0f));
         VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED,
                 new InclusiveIntegerRangeValidator(1, 10));
+        VALIDATORS.put(Secure.ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Secure.MANDATORY_BIOMETRICS, new InclusiveIntegerRangeValidator(0, 1));
         VALIDATORS.put(Secure.MANDATORY_BIOMETRICS_REQUIREMENTS_SATISFIED,
                 new InclusiveIntegerRangeValidator(0, 1));

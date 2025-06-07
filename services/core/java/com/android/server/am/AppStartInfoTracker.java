@@ -24,7 +24,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NA
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ApplicationStartInfo;
-import android.app.Flags;
 import android.app.IApplicationStartInfoCompleteListener;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -116,8 +115,6 @@ public final class AppStartInfoTracker {
     @VisibleForTesting static final String APP_START_INFO_FILE = "procstartinfo";
 
     @VisibleForTesting final Object mLock = new Object();
-
-    @VisibleForTesting boolean mEnabled = false;
 
     /**
      * Monotonic clock which does not reset on reboot.
@@ -219,11 +216,6 @@ public final class AppStartInfoTracker {
     }
 
     void onSystemReady() {
-        mEnabled = Flags.appStartInfo();
-        if (!mEnabled) {
-            return;
-        }
-
         registerForUserRemoval();
         registerForPackageRemoval();
         IoThread.getHandler().post(() -> {
@@ -300,9 +292,6 @@ public final class AppStartInfoTracker {
      */
     void onActivityIntentStarted(@NonNull Intent intent, long timestampNanos) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
             start.setIntent(intent);
@@ -331,9 +320,6 @@ public final class AppStartInfoTracker {
      */
     void onActivityIntentFailed(long id) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             int index = mInProgressRecords.indexOfKey(id);
             if (index < 0) {
                 return;
@@ -354,9 +340,6 @@ public final class AppStartInfoTracker {
      */
     void onActivityLaunched(long id, ComponentName name, long temperature, ProcessRecord app) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             int index = mInProgressRecords.indexOfKey(id);
             if (index < 0) {
                 return;
@@ -385,9 +368,6 @@ public final class AppStartInfoTracker {
      */
     void onActivityLaunchCancelled(long id) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             int index = mInProgressRecords.indexOfKey(id);
             if (index < 0) {
                 return;
@@ -409,9 +389,6 @@ public final class AppStartInfoTracker {
     void onActivityLaunchFinished(long id, ComponentName name, long timestampNanos,
             int launchMode) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             int index = mInProgressRecords.indexOfKey(id);
             if (index < 0) {
                 return;
@@ -436,9 +413,6 @@ public final class AppStartInfoTracker {
     @Nullable
     ApplicationStartInfo onActivityReportFullyDrawn(long id, long timestampNanos) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return null;
-            }
             int index = mInProgressRecords.indexOfKey(id);
             if (index < 0) {
                 return null;
@@ -458,9 +432,6 @@ public final class AppStartInfoTracker {
     public void handleProcessServiceStart(long startTimeNs, ProcessRecord app,
                 ServiceRecord serviceRecord) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
@@ -488,9 +459,6 @@ public final class AppStartInfoTracker {
     public void handleProcessBroadcastStart(long startTimeNs, ProcessRecord app, Intent intent,
                 boolean isAlarm) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
@@ -515,9 +483,6 @@ public final class AppStartInfoTracker {
     /** Process a content provider triggered app start. */
     public void handleProcessContentProviderStart(long startTimeNs, ProcessRecord app) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
@@ -537,9 +502,6 @@ public final class AppStartInfoTracker {
     public void handleProcessBackupStart(long startTimeNs, ProcessRecord app,
                 BackupRecord backupRecord, boolean cold) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
@@ -588,10 +550,6 @@ public final class AppStartInfoTracker {
      */
     void configureDetailedMonitoring(PrintWriter pw, String packageName, int userId) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
-
             forEachPackageLocked((name, records) -> {
                 for (int i = 0; i < records.size(); i++) {
                     records.valueAt(i).disableAppMonitoringMode();
@@ -621,9 +579,6 @@ public final class AppStartInfoTracker {
     }
 
     void addTimestampToStart(String packageName, int uid, long timeNs, int key) {
-        if (!mEnabled) {
-            return;
-        }
         synchronized (mLock) {
             AppStartInfoContainer container = mData.get(packageName, uid);
             if (container == null) {
@@ -696,9 +651,6 @@ public final class AppStartInfoTracker {
 
     void getStartInfo(String packageName, int filterUid, int filterPid,
             int maxNum, ArrayList<ApplicationStartInfo> results) {
-        if (!mEnabled) {
-            return;
-        }
         if (maxNum == 0) {
             maxNum = APP_START_INFO_HISTORY_LIST_SIZE;
         }
@@ -781,9 +733,6 @@ public final class AppStartInfoTracker {
     void addStartInfoCompleteListener(
             final IApplicationStartInfoCompleteListener listener, final int uid) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             ArrayList<ApplicationStartInfoCompleteCallback> callbacks = mCallbacks.get(uid);
             if (callbacks == null) {
                 mCallbacks.set(uid,
@@ -797,9 +746,6 @@ public final class AppStartInfoTracker {
             final IApplicationStartInfoCompleteListener listener, final int uid,
             boolean unlinkDeathRecipient) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             final ArrayList<ApplicationStartInfoCompleteCallback> callbacks = mCallbacks.get(uid);
             if (callbacks == null) {
                 return;
@@ -896,9 +842,6 @@ public final class AppStartInfoTracker {
     @VisibleForTesting
     void onUserRemoved(int userId) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             removeByUserIdLocked(userId);
             schedulePersistProcessStartInfo(true);
         }
@@ -906,9 +849,6 @@ public final class AppStartInfoTracker {
 
     @VisibleForTesting
     void onPackageRemoved(String packageName, int uid, boolean allUsers) {
-        if (!mEnabled) {
-            return;
-        }
         if (packageName != null) {
             final boolean removeUid =
                     TextUtils.isEmpty(mService.mPackageManagerInt.getNameForUid(uid));
@@ -968,9 +908,6 @@ public final class AppStartInfoTracker {
      */
     @VisibleForTesting
     void loadExistingProcessStartInfo() {
-        if (!mEnabled) {
-            return;
-        }
         if (!mProcStartInfoFile.canRead()) {
             // If file can't be read, mark complete so we can begin accepting new records.
             mAppStartInfoLoaded.set(true);
@@ -1060,9 +997,6 @@ public final class AppStartInfoTracker {
     /** Persist the existing {@link android.app.ApplicationStartInfo} records to storage. */
     @VisibleForTesting
     void persistProcessStartInfo() {
-        if (!mEnabled) {
-            return;
-        }
         AtomicFile af = new AtomicFile(mProcStartInfoFile);
         FileOutputStream out = null;
         boolean succeeded;
@@ -1127,9 +1061,6 @@ public final class AppStartInfoTracker {
     @VisibleForTesting
     void schedulePersistProcessStartInfo(boolean immediately) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             if (mAppStartInfoPersistTask == null || immediately) {
                 if (mAppStartInfoPersistTask != null) {
                     IoThread.getHandler().removeCallbacks(mAppStartInfoPersistTask);
@@ -1147,9 +1078,6 @@ public final class AppStartInfoTracker {
     @VisibleForTesting
     void clearProcessStartInfo(boolean removeFile) {
         synchronized (mLock) {
-            if (!mEnabled) {
-                return;
-            }
             if (mAppStartInfoPersistTask != null) {
                 IoThread.getHandler().removeCallbacks(mAppStartInfoPersistTask);
                 mAppStartInfoPersistTask = null;
@@ -1167,9 +1095,6 @@ public final class AppStartInfoTracker {
      * > adb shell dumpsys activity clear-start-info [package-name]
      */
     void clearHistoryProcessStartInfo(String packageName, int userId) {
-        if (!mEnabled) {
-            return;
-        }
         Optional<Integer> appId = Optional.empty();
         if (TextUtils.isEmpty(packageName)) {
             synchronized (mLock) {
@@ -1192,9 +1117,6 @@ public final class AppStartInfoTracker {
      * > adb shell dumpsys activity start-info [package-name]
      */
     void dumpHistoryProcessStartInfo(PrintWriter pw, String packageName) {
-        if (!mEnabled) {
-            return;
-        }
         pw.println("ACTIVITY MANAGER LRU PROCESSES (dumpsys activity start-info)");
         SimpleDateFormat sdf = new SimpleDateFormat();
         synchronized (mLock) {

@@ -156,7 +156,6 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
     @Test
     @EnableFlags(FLAG_DREAMS_V2)
     public void updateLayoutEngine_isCalled_onConfigurationChange_flagEnabled() {
-        mController.onViewAttached();
         // Attach the complication host view so flows collecting on it start running.
         ViewUtils.attachView(mComplicationHostView);
         mLooper.processAllMessages();
@@ -174,7 +173,6 @@ public class ComplicationHostViewControllerTest extends SysuiTestCase {
     @Test
     @DisableFlags(FLAG_DREAMS_V2)
     public void updateLayoutEngine_notCalled_onConfigurationChange_flagDisabled() {
-        mController.onViewAttached();
         // Attach the complication host view so flows collecting on it start running.
         ViewUtils.attachView(mComplicationHostView);
         mLooper.processAllMessages();

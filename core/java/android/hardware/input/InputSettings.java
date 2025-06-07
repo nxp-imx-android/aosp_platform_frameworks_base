@@ -1192,6 +1192,53 @@ public class InputSettings {
                 maxSpeed, UserHandle.USER_CURRENT);
     }
 
+     /**
+     * Returns true if the primary keys are selected to control the mouse key. Returns false if
+     * numpad keys are the only way to control the mouse key.
+     *
+     * <p>
+     * ‘Mouse keys’ is an accessibility feature to aid users who have physical disabilities,
+     * that allows the user to use the keys on the keyboard to control the mouse pointer and
+     * other perform other mouse functionality.
+     * </p>
+     * @param context The application context.
+     * @return Whether user can use primary keys to control the Mouse Key.
+     * @hide
+     */
+    @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    public static boolean isPrimaryKeysForMouseKeysEnabled(@NonNull Context context) {
+        if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
+            return false;
+        }
+
+        return Settings.Secure.getIntForUser(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS,
+                1, UserHandle.USER_CURRENT) != 0;
+    }
+
+    /**
+     * Whether primary keys are selected to control the Mouse Key.
+     *
+     * <p>
+     * ‘Mouse keys’ is an accessibility feature to aid users who have physical disabilities,
+     * that allows the user to use the keys on the keyboard to control the mouse pointer and
+     * other perform other mouse functionality.
+     * </p>
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    public static void setPrimaryKeysForMouseKeysEnabled(
+            @NonNull Context context, boolean enabled) {
+        if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {
+            return;
+        }
+
+        Settings.Secure.putIntForUser(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS,
+                enabled ? 1 : 0, UserHandle.USER_CURRENT);
+    }
+
     /**
      * Whether "Repeat keys" feature flag is enabled.
      *

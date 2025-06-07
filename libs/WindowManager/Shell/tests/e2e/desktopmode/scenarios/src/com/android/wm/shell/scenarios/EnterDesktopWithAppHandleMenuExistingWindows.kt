@@ -16,22 +16,23 @@
 
 package com.android.wm.shell.scenarios
 
-import android.platform.test.annotations.Postsubmit
 import android.app.Instrumentation
+import android.platform.test.annotations.Postsubmit
+import android.tools.NavBar
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
+import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
-import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.server.wm.flicker.helpers.ImeAppHelper
-import com.android.server.wm.flicker.helpers.NewTasksAppHelper
-import com.android.window.flags.Flags
+import com.android.server.wm.flicker.helpers.MailAppHelper
+import com.android.wm.shell.Utils
+import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
 import org.junit.Assume
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
@@ -43,9 +44,16 @@ open class EnterDesktopWithAppHandleMenuExistingWindows : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val imeApp = ImeAppHelper(instrumentation)
-    private val newTaskApp = NewTasksAppHelper(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    private val desktopConfig = DesktopConfig.fromContext(instrumentation.context)
+
+    private val mailAppHelper = MailAppHelper(instrumentation)
+    private val mailAppDesktopHelper = DesktopModeAppHelper(mailAppHelper)
+
+    private val maxNum = desktopConfig.maxTaskLimit
+
+    @Rule
+    @JvmField
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
     @Before
     fun setup() {
@@ -53,22 +61,18 @@ open class EnterDesktopWithAppHandleMenuExistingWindows : TestScenarioBase() {
             DesktopState.fromContext(instrumentation.context)
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
-        testApp.enterDesktopMode(wmHelper, device)
-        imeApp.launchViaIntent(wmHelper)
-        newTaskApp.launchViaIntent(wmHelper)
-        testApp.launchViaIntent(wmHelper)
-        testApp.exitDesktopWithDragToTopDragZone(wmHelper, device)
+        mailAppDesktopHelper.enterDesktopMode(wmHelper, device)
+        mailAppDesktopHelper.openTasks(wmHelper, numTasks = maxNum - 1)
+        mailAppDesktopHelper.exitDesktopWithDragToTopDragZone(wmHelper, device)
     }
 
     @Test
     open fun reenterDesktopWithAppHandleMenu() {
-        testApp.enterDesktopModeFromAppHandleMenu(wmHelper, device)
+        mailAppDesktopHelper.enterDesktopModeFromAppHandleMenu(wmHelper, device)
     }
 
     @After
     fun teardown() {
-        testApp.exit(wmHelper)
-        newTaskApp.exit(wmHelper)
-        imeApp.exit(wmHelper)
+        mailAppDesktopHelper.exit(wmHelper)
     }
 }

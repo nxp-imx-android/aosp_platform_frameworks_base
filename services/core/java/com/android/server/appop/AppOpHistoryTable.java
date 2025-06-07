@@ -90,7 +90,7 @@ final class AppOpHistoryTable {
             + Columns.ID + " INTEGER PRIMARY KEY,"
             + Columns.UID + " INTEGER,"
             + Columns.PACKAGE_NAME + " TEXT,"
-            + Columns.DEVICE_ID + " TEXT NOT NULL,"
+            + Columns.DEVICE_ID + " TEXT,"
             + Columns.OP_CODE + " INTEGER,"
             + Columns.ATTRIBUTION_TAG + " TEXT,"
             + Columns.UID_STATE + " INTEGER,"
@@ -166,6 +166,8 @@ final class AppOpHistoryTable {
 
     static final String SELECT_MAX_ATTRIBUTION_CHAIN_ID = "SELECT MAX(" + Columns.CHAIN_ID + ")"
             + " FROM " + TABLE_NAME;
+
+    static final String SELECT_RECORDS_COUNT = "SELECT COUNT(1) FROM " + TABLE_NAME;
 
     // Index on access time
     static final String CREATE_INDEX_SQL = "CREATE INDEX IF NOT EXISTS "

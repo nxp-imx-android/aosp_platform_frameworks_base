@@ -36,6 +36,7 @@ import com.android.settingslib.metadata.PreferenceRemoteOpMetricsLogger
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.metadata.usePreferenceHierarchyScope
 
 /** Request to set preference value. */
 class PreferenceSetterRequest(
@@ -130,7 +131,9 @@ class PreferenceSetterApiHandler(
             PreferenceScreenRegistry.create(application, request) ?: return notFound()
         val key = request.key
         val metadata =
-            screenMetadata.getPreferenceHierarchy(application).find(key) ?: return notFound()
+            usePreferenceHierarchyScope {
+                screenMetadata.getPreferenceHierarchy(application, this).findAsync(key)
+            } ?: return notFound()
 
         fun <T> PreferenceMetadata.checkWritePermit(value: T): Int {
             @Suppress("UNCHECKED_CAST") val preference = (this as PersistentPreference<T>)

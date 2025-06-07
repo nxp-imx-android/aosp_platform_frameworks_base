@@ -20,15 +20,12 @@ import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Context
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.Flags.FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.taskview.TaskView
 import com.google.common.truth.Truth.assertThat
@@ -84,32 +81,13 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP)
-    fun cleanup_flagOff_invalidTaskId_doesNotRemoveTask() {
-        bubbleTaskView.cleanup()
-        verify(taskView, never()).removeTask()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP)
-    fun cleanup_flagOn_invalidTaskId_removesTask() {
+    fun cleanup_invalidTaskId_removesTask() {
         bubbleTaskView.cleanup()
         verify(taskView).removeTask()
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP)
-    fun cleanup_flagOff_validTaskId_removesTask() {
-        bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
-
-        bubbleTaskView.cleanup()
-
-        verify(taskView).removeTask()
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP)
-    fun cleanup_flagOn_validTaskId_removesTask() {
+    fun cleanup_validTaskId_removesTask() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
 
         bubbleTaskView.cleanup()
@@ -153,7 +131,6 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         @Parameters(name = "{0}")
         fun getParams() = FlagsParameterization.allCombinationsOf(
             FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            FLAG_ENABLE_TASK_VIEW_CONTROLLER_CLEANUP,
             FLAG_EXCLUDE_TASK_FROM_RECENTS,
         )
     }

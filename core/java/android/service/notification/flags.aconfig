@@ -75,6 +75,13 @@ flag {
 }
 
 flag {
+  name: "report_nls_start_and_end"
+  namespace: "backstage_power"
+  description: "Reports NLS calls start and end to ActivityManager for process capability adjustments"
+  bug: "398072400"
+}
+
+flag {
   name: "notification_get_original_importance"
   is_exported: true
   namespace: "systemui"
@@ -89,8 +96,17 @@ flag {
   bug: "387528442"
 }
 
+# Start: API flags
 
+flag {
+  name: "nm_classification_nls"
+  namespace: "systemui"
+  description: "New api for notification_classification_ui"
+  bug: "416144530"
+  is_exported: true
+}
 
+# End: API flags
 
 # Start: Flags that have been cleaned up in code but need to remain for CTS
 

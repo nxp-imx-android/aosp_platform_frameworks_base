@@ -40,9 +40,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -175,7 +175,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
                     SparseIntArray proposedSettingMap = invocation.getArgument(0);
                     when(mMockAutoRotateSettingManager.getRotationLockSetting()).thenReturn(
                             proposedSettingMap);
-                    return null;
+                    return proposedSettingMap.clone();
                 }
 
         ).when(mMockAutoRotateSettingManager).updateSetting(any(), any());
@@ -208,7 +208,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
                 FOLDED.getIdentifier(), true);
         mTestLooper.dispatchAll();
 
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
 
     }
 
@@ -242,7 +243,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
                 USE_CURRENT_ROTATION);
         mTestLooper.dispatchAll();
 
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
     }
 
     @Test
@@ -253,7 +255,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mAccelerometerRotationSettingObserver.getValue().onChange(false);
         mTestLooper.dispatchAll();
 
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
     }
 
     @Test
@@ -300,7 +303,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
         mTestLooper.dispatchAll();
 
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_LOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 1);
     }
 
     @Test
@@ -316,7 +320,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mAccelerometerRotationSettingObserver.getValue().onChange(false);
         mTestLooper.dispatchAll();
 
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_LOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
 
         // Change device state auto rotate setting to unlocked for both states
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
@@ -324,7 +329,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
         mTestLooper.dispatchAll();
 
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 2);
     }
 
     @Test
@@ -371,7 +377,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
     }
 
     @Test
@@ -383,7 +390,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
     }
 
     @Test
@@ -399,7 +407,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_OFF);
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_LOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 3);
     }
 
     @Test
@@ -415,7 +424,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
-        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING);
+        verifyDeviceStateAutoRotateSettingSet(
+                FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 2);
     }
 
     @Test
@@ -613,15 +623,15 @@ public class DeviceStateAutoRotateSettingControllerTests {
     }
 
     private void verifyDeviceStateAutoRotateSettingSet(
-            SparseIntArray proposedSettingMap) {
+            SparseIntArray proposedSettingMap, int numberOfTimes) {
         final ArgumentCaptor<SparseIntArray> proposedSettingMapCaptor = ArgumentCaptor.forClass(
                 SparseIntArray.class);
-        verify(mMockAutoRotateSettingManager, atLeastOnce()).updateSetting(
+        verify(mMockAutoRotateSettingManager, times(numberOfTimes)).updateSetting(
                 proposedSettingMapCaptor.capture(), any());
-        compareSparseIntArray(proposedSettingMap, proposedSettingMapCaptor.getValue());
+        assertIntArrayEqual(proposedSettingMap, proposedSettingMapCaptor.getValue());
     }
 
-    private void compareSparseIntArray(SparseIntArray expectedIntArray,
+    private void assertIntArrayEqual(SparseIntArray expectedIntArray,
             SparseIntArray actualIntArray) {
         assertThat(expectedIntArray.size()).isEqualTo(actualIntArray.size());
         for (int i = 0; i < expectedIntArray.size(); i++) {

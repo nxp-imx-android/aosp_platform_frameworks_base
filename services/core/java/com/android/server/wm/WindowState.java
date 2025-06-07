@@ -36,6 +36,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.WindowContai
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ANIMATING_EXIT;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ANIMATOR;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.ATTRIBUTES;
+import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.BUFFER_SEQ_ID;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.DESTROYING;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.DIM_BOUNDS;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.DISPLAY_ID;
@@ -49,7 +50,6 @@ import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateP
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.IS_VISIBLE;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.KEEP_CLEAR_AREAS;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.MERGED_LOCAL_INSETS_SOURCES;
-import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.PREPARE_SYNC_SEQ_ID;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.REMOVED;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.REMOVE_ON_EXIT;
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowStateProto.REQUESTED_HEIGHT;
@@ -73,7 +73,6 @@ import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION;
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_VISIBLE;
 import static android.view.WindowInsets.Type.navigationBars;
-import static android.view.WindowInsets.Type.systemBars;
 import static android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
 import static android.view.WindowLayout.UNSPECIFIED_LENGTH;
 import static android.view.WindowManager.LayoutParams.FIRST_SUB_WINDOW;
@@ -388,7 +387,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     int mSyncSeqId = 0;
 
-    /** The last syncId associated with a BLAST prepareSync or 0 when no BLAST sync is active. */
+    /**
+     * The last syncId associated with a BLAST prepareSync or 0 when no BLAST sync is active.
+     * This is only used when flag always_seq_id_layout is disabled.
+     */
     int mPrepareSyncSeqId = 0;
 
     /**
@@ -741,8 +743,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     static final int BLAST_TIMEOUT_DURATION = 5000; /* milliseconds */
 
     class DrawHandler {
-        Consumer<SurfaceControl.Transaction> mConsumer;
-        int mSeqId;
+        final Consumer<SurfaceControl.Transaction> mConsumer;
+        final int mSeqId;
 
         DrawHandler(int seqId, Consumer<SurfaceControl.Transaction> consumer) {
             mSeqId = seqId;
@@ -2278,7 +2280,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     return false;
                 }, true);
             }
-            mTransitionController.mTransitionTracer.logRemovingStartingWindow(mStartingData);
+
+            if (mStartingData.mTransitionId != 0) {
+                mTransitionController.mTransitionTracer.logRemovingStartingWindow(mStartingData);
+            }
         } else if (mAttrs.type == TYPE_BASE_APPLICATION
                 && isSelfAnimating(0, ANIMATION_TYPE_STARTING_REVEAL)) {
             // Cancel the remove starting window animation in case the binder dead before remove
@@ -3174,7 +3179,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         try {
             if (DEBUG_VISIBILITY) Slog.v(TAG,
                     "Setting visibility of " + this + ": " + clientVisible);
-            mClient.dispatchAppVisibility(clientVisible);
+            final int seqId = -1;
+            mClient.dispatchAppVisibility(clientVisible, seqId);
         } catch (RemoteException e) {
             // The remote client fails to process the visibility message. That means it is in a
             // wrong state. E.g. the binder buffer is running out or the binder threads are dead.
@@ -3645,9 +3651,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 mLastReportedActivityWindowInfo, true /* useLatestConfig */,
                 false /* relayoutVisible */);
         fillInsetsState(mLastReportedInsetsState, false /* copySources */);
+        final boolean syncWithBuffers;
+        final boolean reportDraw;
+        final int seqIdToSend;
         final boolean syncRedraw = shouldSendRedrawForSync();
-        final boolean syncWithBuffers = syncRedraw && shouldSyncWithBuffers();
-        final boolean reportDraw = syncRedraw || drawPending;
+        syncWithBuffers = syncRedraw && shouldSyncWithBuffers();
+        reportDraw = syncRedraw || drawPending;
+        seqIdToSend = syncWithBuffers ? mSyncSeqId : -1;
         final boolean isDragResizeChanged = isDragResizeChanged();
         final boolean forceRelayout = syncWithBuffers || isDragResizeChanged;
         final DisplayContent displayContent = getDisplayContent();
@@ -3662,7 +3672,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         getProcess().scheduleClientTransactionItem(
                 new WindowStateResizeItem(mClient, mLastReportedFrames, reportDraw,
                         mLastReportedConfiguration, mLastReportedInsetsState, forceRelayout,
-                        displayId, syncWithBuffers ? mSyncSeqId : -1, isDragResizing,
+                        displayId, seqIdToSend, syncWithBuffers, isDragResizing,
                         mLastReportedActivityWindowInfo));
         onResizePostDispatched(drawPending, prevRotation, displayId);
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -3969,7 +3979,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
         }
         proto.write(SYNC_SEQ_ID, mSyncSeqId);
-        proto.write(PREPARE_SYNC_SEQ_ID, mPrepareSyncSeqId);
+        proto.write(BUFFER_SEQ_ID, mPrepareSyncSeqId);
         proto.end(token);
     }
 
@@ -5546,40 +5556,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mKeyInterceptionInfo.layoutParamsPrivateFlags != mAttrs.privateFlags
                 || mKeyInterceptionInfo.layoutParamsType != mAttrs.type
                 || mKeyInterceptionInfo.windowTitle != getWindowTag()
-                || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()) {
+                || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()
+                || mKeyInterceptionInfo.layoutParamsInputFeatures != mAttrs.inputFeatures) {
             mKeyInterceptionInfo = new KeyInterceptionInfo(mAttrs.type, mAttrs.privateFlags,
                     mAttrs.inputFeatures, getWindowTag().toString(), getOwningUid());
         }
         return mKeyInterceptionInfo;
-    }
-
-    @Override
-    void getAnimationFrames(Rect outFrame, Rect outInsets, Rect outStableInsets,
-            Rect outSurfaceInsets) {
-        // Containing frame will usually cover the whole screen, including dialog windows.
-        // For freeform workspace windows it will not cover the whole screen and it also
-        // won't exactly match the final freeform window frame (e.g. when overlapping with
-        // the status bar). In that case we need to use the final frame.
-        if (inFreeformWindowingMode()) {
-            outFrame.set(getFrame());
-        } else if (areAppWindowBoundsLetterboxed() || mToken.isFixedRotationTransforming()) {
-            // 1. The letterbox surfaces should be animated with the owner activity, so use task
-            //    bounds to include them.
-            // 2. If the activity has fixed rotation transform, its windows are rotated in activity
-            //    level. Because the animation runs before display is rotated, task bounds should
-            //    represent the frames in display space coordinates.
-            outFrame.set(getTask().getBounds());
-        } else {
-            outFrame.set(getParentFrame());
-        }
-        final Task task = getTask();
-        final Rect bounds = task == null ? getBounds() : task.getBounds();
-        outSurfaceInsets.set(mAttrs.surfaceInsets);
-        final InsetsState state = getInsetsStateWithVisibilityOverride();
-        outInsets.set(state.calculateInsets(outFrame, bounds, systemBars(),
-                false /* ignoreVisibility */).toRect());
-        outStableInsets.set(state.calculateInsets(outFrame, bounds, systemBars(),
-                true /* ignoreVisibility */).toRect());
     }
 
     void setViewVisibility(int viewVisibility) {
@@ -5819,16 +5801,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     /**
-     * This method is used to control whether we return the BLAST_SYNC flag
-     * from relayoutWindow calls on this window (triggering the client to redirect
-     * it's next draw in to a transaction). If we have pending draw handlers, we are
-     * looking for the client to sync.
+     * This method's name is outdated. It is used to check if we are currently waiting for the
+     * results of a resize request.
      *
      * See {@link WindowState#mDrawHandlers}
      */
-    @Override
     boolean syncNextBuffer() {
-        return super.syncNextBuffer() || (mDrawHandlers.size() != 0);
+        return mSyncState != SYNC_STATE_NONE || !mDrawHandlers.isEmpty();
     }
 
     /**
@@ -5982,7 +5961,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         dumpDebug(proto, fieldId, logLevel);
     }
 
-    public boolean cancelAndRedraw() {
+    public boolean cancelAndRedraw(int seqId) {
         // Cancel any draw requests during a sync.
         return mPrepareSyncSeqId > 0;
     }

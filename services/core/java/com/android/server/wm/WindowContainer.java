@@ -73,7 +73,6 @@ import android.util.RotationUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
-import android.view.DisplayInfo;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsState;
@@ -3248,26 +3247,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return mLastSurfacePosition;
     }
 
-    /**
-     * The {@code outFrame} retrieved by this method specifies where the animation will finish
-     * the entrance animation, as the next frame will display the window at these coordinates. In
-     * case of exit animation, this is where the animation will start, as the frame before the
-     * animation is displaying the window at these bounds.
-     *
-     * @param outFrame The bounds where entrance animation finishes or exit animation starts.
-     * @param outInsets Insets that are covered by system windows.
-     * @param outStableInsets Insets that determine the area covered by the stable system windows.
-     * @param outSurfaceInsets Positive insets between the drawing surface and window content.
-     */
-    void getAnimationFrames(Rect outFrame, Rect outInsets, Rect outStableInsets,
-            Rect outSurfaceInsets) {
-        final DisplayInfo displayInfo = getDisplayContent().getDisplayInfo();
-        outFrame.set(0, 0, displayInfo.appWidth, displayInfo.appHeight);
-        outInsets.setEmpty();
-        outStableInsets.setEmpty();
-        outSurfaceInsets.setEmpty();
-    }
-
     /** Gets the position of this container in its parent's coordinate. */
     void getRelativePosition(Point outPos) {
         getRelativePosition(getBounds(), outPos);
@@ -3511,10 +3490,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
         mSyncState = SYNC_STATE_READY;
         return true;
-    }
-
-    boolean syncNextBuffer() {
-        return mSyncState != SYNC_STATE_NONE;
     }
 
     /**
@@ -3835,11 +3810,28 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return mSyncTransactionCommitCallbackDepth;
     }
 
+    /**
+     * Sets whether this WindowContainer allows holding self-movable tasks. This WindowContainer
+     * must be either a TaskDisplayArea or a root Task for this setter to have effect.
+     */
     void setIsTaskMoveAllowed(boolean isTaskMoveAllowed) {
+        if (mIsTaskMoveAllowed == isTaskMoveAllowed) return;
+        if (!canHoldSelfMovableTasks()) {
+            Slog.e(TAG,
+                    "Tried to set isTaskMoveAllowed on a WindowContainer of unsuitable subtype: "
+                    + this);
+            return;
+        }
+
         mIsTaskMoveAllowed = isTaskMoveAllowed;
     }
 
     boolean getIsTaskMoveAllowed() {
         return mIsTaskMoveAllowed;
+    }
+
+    boolean canHoldSelfMovableTasks() {
+        // Is a TaskDisplayArea or a root Task.
+        return (asTaskDisplayArea() != null) || (asTask() != null && asTask().isRootTask());
     }
 }

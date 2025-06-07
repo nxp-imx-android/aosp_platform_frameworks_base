@@ -403,7 +403,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
     public void dump(String prefix, PrintWriter pw, int filterUid, @Nullable String filterPackage,
             @Nullable String filterAttributionTag, int filterOp, int filter,
             @NonNull SimpleDateFormat sdf, @NonNull Date date,
-            boolean includeDiscreteOps, int limit) {
+            boolean includeDiscreteOps, int limit, boolean dumpHistory) {
         // no-op, legacy registry dump discrete and aggregate data in separate methods.
     }
 

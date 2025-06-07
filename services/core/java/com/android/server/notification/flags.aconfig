@@ -186,3 +186,25 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "log_visually_changed_updates"
+  namespace: "systemui"
+  description: "Logs a notification update if it is visually changed"
+  bug: "420989666"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
+  name: "skip_policy_access_nls_check"
+  namespace: "systemui"
+  description: "When querying whether a caller has Notification Policy Access, don't explicitly look in the NLSes list. All NLSes are also ConditionProviders so this is unnecessary."
+  bug: "390441924"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+

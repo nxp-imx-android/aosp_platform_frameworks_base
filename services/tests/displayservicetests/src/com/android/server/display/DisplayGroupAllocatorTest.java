@@ -60,7 +60,7 @@ public class DisplayGroupAllocatorTest {
             }
 
             @Override
-            boolean canInternalDisplayHostDesktops(Context context) {
+            boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
                 return simulateExtendedMode;
             }
 

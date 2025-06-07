@@ -21,6 +21,7 @@ import static com.android.server.appop.HistoricalRegistry.AggregationTimeWindow;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManager;
+import android.companion.virtual.VirtualDeviceManager;
 import android.content.Context;
 import android.database.DatabaseErrorHandler;
 import android.database.DefaultDatabaseErrorHandler;
@@ -33,11 +34,13 @@ import android.os.Trace;
 import android.util.IntArray;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Sqlite database helper to read/write app op events.
@@ -86,7 +89,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         if (appOpEvents.isEmpty()) {
             return;
         }
-        long startTime = SystemClock.elapsedRealtime();
+        long startTime = SystemClock.uptimeMillis();
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
                 "AppOpHistoryDbHelper_" + mAggregationTimeWindow + "_Write");
         try {
@@ -100,7 +103,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                         bindTextOrNull(statement, AppOpHistoryTable.PACKAGE_NAME_INDEX,
                                 event.packageName());
                         bindTextOrNull(statement, AppOpHistoryTable.DEVICE_ID_INDEX,
-                                event.deviceId());
+                                getDeviceIdForDatabaseWrite(event.deviceId()));
                         statement.bindInt(AppOpHistoryTable.OP_CODE_INDEX, event.opCode());
                         bindTextOrNull(statement, AppOpHistoryTable.ATTRIBUTION_TAG_INDEX,
                                 event.attributionTag());
@@ -145,11 +148,23 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
             Slog.e(LOG_TAG, "Couldn't insert app op records in " + mDatabaseFile.getName(), ex);
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
-            long writeTimeMillis = SystemClock.elapsedRealtime() - startTime;
+            long writeTimeMillis = SystemClock.uptimeMillis() - startTime;
             FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED, /* read_time= */
                     -1, writeTimeMillis,
                     mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow), writeSource);
         }
+    }
+
+    // Save disk space, use null as almost all entries would be for default device only.
+    private @Nullable String getDeviceIdForDatabaseWrite(@NonNull String deviceId) {
+        Objects.requireNonNull(deviceId);
+        return Objects.equals(VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT, deviceId)
+                ? null : deviceId;
+    }
+
+    // Convert null back to default device.
+    private @NonNull String getDeviceIdForDatabaseRead(@Nullable String deviceId) {
+        return deviceId == null ? VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT : deviceId;
     }
 
     private int getDatabaseType(AggregationTimeWindow aggregationTimeWindow) {
@@ -173,7 +188,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         String sql = AppOpHistoryQueryHelper.buildSqlQuery(
                 AppOpHistoryTable.SELECT_TABLE_DATA, conditions, orderByColumn, ascending, limit);
 
-        long startTime = SystemClock.elapsedRealtime();
+        long startTime = SystemClock.uptimeMillis();
         try {
             SQLiteDatabase db = getReadableDatabase();
             db.beginTransactionReadOnly();
@@ -190,7 +205,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         } catch (Exception ex) {
             Slog.e(LOG_TAG, "Couldn't read app op records from " + mDatabaseFile.getName(), ex);
         } finally {
-            long readTimeMillis = SystemClock.elapsedRealtime() - startTime;
+            long readTimeMillis = SystemClock.uptimeMillis() - startTime;
             FrameworkStatsLog.write(FrameworkStatsLog.SQLITE_APP_OP_EVENT_REPORTED,
                     readTimeMillis, /* write_time= */ -1,
                     mDatabaseFile.length(), getDatabaseType(mAggregationTimeWindow),
@@ -223,11 +238,32 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
                 db.endTransaction();
             }
         } catch (SQLiteException exception) {
-            Slog.e(LOG_TAG, "Error reading attribution chain id", exception);
+            Slog.e(LOG_TAG, "Error reading chain id " + mDatabaseFile.getName(), exception);
         }
         return chainId;
     }
 
+    long getTotalRecordsCount() {
+        long count = 0;
+        try {
+            SQLiteDatabase db = getReadableDatabase();
+            db.beginTransactionReadOnly();
+            try (SQLiteRawStatement statement = db.createRawStatement(
+                    AppOpHistoryTable.SELECT_RECORDS_COUNT)) {
+                if (statement.step()) {
+                    count = statement.getColumnLong(0);
+                }
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+        } catch (SQLiteException exception) {
+            Slog.e(LOG_TAG, "Error reading records count " + mDatabaseFile.getName(), exception);
+        }
+        return count;
+    }
+
+    @VisibleForTesting
     List<AggregatedAppOpAccessEvent> getAppOpHistory() {
         List<AggregatedAppOpAccessEvent> results = new ArrayList<>();
 
@@ -273,7 +309,7 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
     private AggregatedAppOpAccessEvent readFromStatement(SQLiteRawStatement statement) {
         int uid = statement.getColumnInt(0);
         String packageName = statement.getColumnText(1);
-        String deviceId = statement.getColumnText(2);
+        String deviceId = getDeviceIdForDatabaseRead(statement.getColumnText(2));
         int opCode = statement.getColumnInt(3);
         String attributionTag = statement.getColumnText(4);
         int uidState = statement.getColumnInt(5);
@@ -287,7 +323,8 @@ class AppOpHistoryDbHelper extends SQLiteOpenHelper {
         int totalRejectCount = statement.getColumnInt(13);
 
         return new AggregatedAppOpAccessEvent(uid,
-                packageName, opCode, deviceId, attributionTag,
+                packageName != null ? packageName.intern() : null, opCode, deviceId.intern(),
+                attributionTag != null ? attributionTag.intern() : null,
                 opFlags, uidState, attributionFlags, attributionChainId, accessTime,
                 duration, totalDuration, totalAccessCount, totalRejectCount);
     }

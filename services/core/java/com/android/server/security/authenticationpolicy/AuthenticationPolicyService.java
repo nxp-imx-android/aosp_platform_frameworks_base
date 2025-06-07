@@ -20,6 +20,7 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_SECURE_LOCK_DEVICE;
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.security.Flags.disableAdaptiveAuthCounterLock;
+import static android.security.Flags.failedAuthLockToggle;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_ADAPTIVE_AUTH_REQUEST;
 
@@ -29,6 +30,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.AuthenticationStateListener;
 import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.events.AuthenticationAcquiredInfo;
 import android.hardware.biometrics.events.AuthenticationErrorInfo;
 import android.hardware.biometrics.events.AuthenticationFailedInfo;
@@ -81,6 +83,7 @@ public class AuthenticationPolicyService extends SystemService {
 
     @VisibleForTesting
     static final int MAX_ALLOWED_FAILED_AUTH_ATTEMPTS = 5;
+    private static final boolean DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK = false;
     private static final int MSG_REPORT_PRIMARY_AUTH_ATTEMPT = 1;
     private static final int MSG_REPORT_BIOMETRIC_AUTH_ATTEMPT = 2;
     private static final int AUTH_SUCCESS = 1;
@@ -95,6 +98,7 @@ public class AuthenticationPolicyService extends SystemService {
     private final WindowManagerInternal mWindowManager;
     private final UserManagerInternal mUserManager;
     private SecureLockDeviceServiceInternal mSecureLockDeviceService;
+    private WatchRangingServiceInternal mWatchRangingService;
     @VisibleForTesting
     final SparseIntArray mFailedAttemptsForUser = new SparseIntArray();
     private final SparseLongArray mLastLockedTimestamp = new SparseLongArray();
@@ -118,6 +122,10 @@ public class AuthenticationPolicyService extends SystemService {
         if (android.security.Flags.secureLockdown()) {
             mSecureLockDeviceService = Objects.requireNonNull(
                     LocalServices.getService(SecureLockDeviceServiceInternal.class));
+        }
+        if (Flags.identityCheckWatch()) {
+            mWatchRangingService = Objects.requireNonNull(LocalServices.getService(
+                    WatchRangingServiceInternal.class));
         }
     }
 
@@ -264,13 +272,21 @@ public class AuthenticationPolicyService extends SystemService {
             return;
         }
 
-        if (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE) {
+        //TODO(b/421051706): Remove the condition Build.IS_DEBUGGABLE after flags are ramped up
+        if (failedAuthLockToggle()
+                || (disableAdaptiveAuthCounterLock() && Build.IS_DEBUGGABLE)) {
+            // If userId is a profile, use its parent's settings to determine whether failed auth
+            // lock is enabled or disabled for the profile, irrespective of the profile's own
+            // settings. If userId is a main user (i.e. parentUserId equals to userId), use its own
+            // settings
+            final int parentUserId = mUserManager.getProfileParentId(userId);
             final boolean disabled = Settings.Secure.getIntForUser(
                     getContext().getContentResolver(),
                     Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK,
-                    0 /* default */, userId) != 0;
+                    DEFAULT_DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK ? 1 : 0, parentUserId) != 0;
             if (disabled) {
-                Slog.d(TAG, "not locking (disabled by user)");
+                Slog.i(TAG, "userId=" + userId + ", parentUserId=" + parentUserId
+                        + ", failed auth lock is disabled by user in settings");
                 return;
             }
         }
@@ -487,11 +503,20 @@ public class AuthenticationPolicyService extends SystemService {
 
         @Override
         @EnforcePermission(USE_BIOMETRIC_INTERNAL)
-        public void startWatchRangingForIdentityCheck(
-                IProximityResultCallback resultCallback) {
+        public void startWatchRangingForIdentityCheck(long authenticationRequestId,
+                @NonNull IProximityResultCallback proximityResultCallback) {
             startWatchRangingForIdentityCheck_enforcePermission();
-            Slog.d(TAG, "startWatchRangingForIdentityCheck");
-            //TODO (b/397954948) : Bind to IProximityProviderService and start ranging
+
+            mWatchRangingService.startWatchRangingForIdentityCheck(authenticationRequestId,
+                    proximityResultCallback);
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public void cancelWatchRangingForRequestId(long authenticationRequestId) {
+            cancelWatchRangingForRequestId_enforcePermission();
+
+            mWatchRangingService.cancelWatchRangingForRequestId(authenticationRequestId);
         }
     };
 }

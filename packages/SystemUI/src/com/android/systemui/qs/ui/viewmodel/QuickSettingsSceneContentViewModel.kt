@@ -19,6 +19,7 @@ package com.android.systemui.qs.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.LifecycleOwner
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -34,6 +35,8 @@ import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 
@@ -54,6 +57,7 @@ constructor(
     val mediaCarouselInteractor: MediaCarouselInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     private val sceneInteractor: SceneInteractor,
+    @Main private val mainDispatcher: CoroutineDispatcher,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickSettingsSceneContentViewModel.hydrator")
@@ -77,7 +81,7 @@ constructor(
         coroutineScope {
             launch { hydrator.activate() }
 
-            launch {
+            launch(context = mainDispatcher) {
                 shadeModeInteractor.shadeMode.collect { shadeMode ->
                     if (shadeMode is ShadeMode.Split) {
                         sceneInteractor.snapToScene(Scenes.Shade, "Unfold while on QS")

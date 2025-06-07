@@ -45,7 +45,8 @@ public final class DevicePresenceEvent implements Parcelable {
             EVENT_BT_CONNECTED,
             EVENT_BT_DISCONNECTED,
             EVENT_SELF_MANAGED_APPEARED,
-            EVENT_SELF_MANAGED_DISAPPEARED
+            EVENT_SELF_MANAGED_DISAPPEARED,
+            EVENT_ASSOCIATION_REMOVED
     })
 
     @Retention(RetentionPolicy.SOURCE)
@@ -98,6 +99,14 @@ public final class DevicePresenceEvent implements Parcelable {
      * that a device has disappeared on its own.
      */
     public static final int EVENT_SELF_MANAGED_DISAPPEARED = 5;
+
+    /**
+     * A companion app will receives the callback
+     * {@link CompanionDeviceService#onDevicePresenceEvent(DevicePresenceEvent)}
+     * with this event when the {@link AssociationInfo} is removed.
+     */
+    @FlaggedApi(Flags.FLAG_NOTIFY_ASSOCIATION_REMOVED)
+    public static final int EVENT_ASSOCIATION_REMOVED = 6;
     private final int mAssociationId;
     private final int mEvent;
     @Nullable

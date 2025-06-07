@@ -294,6 +294,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
             val task = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
             val transition = Binder()
             val change = Change(mock(), mock()).apply { taskInfo = task }
+            whenever(mockDesksOrganizer.isDeskChange(change, deskId = deskId)).thenReturn(true)
             whenever(mockDesksOrganizer.getDeskAtEnd(change)).thenReturn(deskId)
             val activateTransition =
                 DeskTransition.ActivateDeskWithTask(
@@ -312,6 +313,40 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
             assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(deskId)
             assertThat(repository.getActiveTaskIdsInDesk(deskId)).contains(task.taskId)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionReady_activateDeskWithTask_trampolineTask_updatesRepositoryForDesk() =
+        testScope.runTest {
+            val deskId = 5
+            val task = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
+            val task2 = createFreeformTask(DEFAULT_DISPLAY).apply { isVisibleRequested = true }
+            val transition = Binder()
+            val change = Change(mock(), mock()).apply { taskInfo = task2 }
+            whenever(mockDesksOrganizer.isDeskChange(change, deskId = deskId)).thenReturn(true)
+            whenever(mockDesksOrganizer.getDeskAtEnd(change)).thenReturn(deskId)
+            val activateTransition =
+                DeskTransition.ActivateDeskWithTask(
+                    transition,
+                    displayId = DEFAULT_DISPLAY,
+                    deskId = deskId,
+                    // Request was for |task|, but it will trampoline launch another task.
+                    enterTaskId = task.taskId,
+                )
+            repository.addDesk(DEFAULT_DISPLAY, deskId = deskId)
+
+            observer.addPendingTransition(activateTransition)
+            observer.onTransitionReady(
+                transition = transition,
+                info =
+                    TransitionInfo(TRANSIT_TO_FRONT, /* flags= */ 0)
+                        // Actual task in change is |task2|.
+                        .apply { addChange(change) },
+            )
+
+            // Desk is activated regardless of |task| not appearing in the transition.
+            assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(deskId)
         }
 
     @Test
@@ -437,6 +472,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
             deskId = 5,
             taskId = exitingTask.taskId,
             isVisible = true,
+            taskBounds = exitingTask.configuration.windowConfiguration.bounds,
         )
         assertThat(repository.isActiveTaskInDesk(deskId = 5, taskId = exitingTask.taskId)).isTrue()
 
@@ -655,7 +691,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
     fun independentDeskTransition_deskToBack_deactivatesSkippingReorder() =
         testScope.runTest {
             val deskId = 5
@@ -668,6 +707,11 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition = Binder(),
                 info =
                     buildTransitionInfo()
+                        .addHomeChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        )
                         .addDeskChange(
                             deskId = deskId,
                             mode = TRANSIT_TO_BACK,
@@ -686,7 +730,10 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
     fun independentDeskTransition_deskToBack_userSwitch_deactivatesKeepingRepoActive() =
         testScope.runTest {
             val deskId = 5
@@ -700,6 +747,11 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 transition = Binder(),
                 info =
                     buildTransitionInfo()
+                        .addHomeChange(
+                            mode = TRANSIT_TO_FRONT,
+                            userId = newUserRepository.userId,
+                            displayId = displayId,
+                        )
                         .addDeskChange(
                             deskId = deskId,
                             mode = TRANSIT_TO_BACK,
@@ -720,6 +772,37 @@ class DesksTransitionObserverTest : ShellTestCase() {
             // However, it should remain active (in the old user's repo) to allow restoring to it
             // when switching back.
             assertThat(oldUserRepository.getActiveDeskId(displayId)).isEqualTo(deskId)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
+    )
+    fun independentDeskTransition_deskToBackWithNothingInFront_keepsDeskActive() =
+        testScope.runTest {
+            val deskId = 5
+            val displayId = DEFAULT_DISPLAY
+            val repository = desktopUserRepositories.getProfile(USER_ID_1)
+            repository.addDesk(displayId, deskId)
+            repository.setActiveDesk(displayId, deskId)
+
+            observer.onTransitionReady(
+                transition = Binder(),
+                info =
+                    buildTransitionInfo()
+                        .addDeskChange(
+                            deskId = deskId,
+                            mode = TRANSIT_TO_BACK,
+                            userId = repository.userId,
+                            displayId = displayId,
+                        ),
+            )
+            runCurrent()
+
+            verify(mockDesksOrganizer, never())
+                .deactivateDesk(any(), deskId = eq(5), skipReorder = any())
+            assertThat(repository.getActiveDeskId(displayId)).isEqualTo(deskId)
         }
 
     @Test

@@ -66,7 +66,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
                 "$DEVICE_STATE_ROTATION_KEY_UNFOLDED",
         "$DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY:" +
                 "$DEVICE_STATE_ROTATION_LOCK_IGNORED:" +
-                "$DEVICE_STATE_ROTATION_KEY_UNFOLDED",
+                "$DEVICE_STATE_ROTATION_KEY_FOLDED",
         "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED",
         "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED",
     )
@@ -299,7 +299,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         expectedPairs[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
             DEVICE_STATE_ROTATION_LOCK_LOCKED
         expectedPairs[DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
 
         val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
 
@@ -433,6 +433,72 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         val expectedPairs = FOLDED_LOCKED_OPEN_LOCKED_SETTING_UNRESOLVED
         val persistedSetting = getPersistedDeviceStateAutoRotateSetting()
         assertThat(persistedSetting).isEqualTo(expectedPairs)
+    }
+
+    @Test
+    fun updateSettingMap_sendsMapsWithOneUpdatedSetting_returnsResolvedMap() {
+        val currentSettingMap = getDefaultResolvedMap()
+        val proposedSettingMap = getDefaultResolvedMap()
+        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_FOLDED] =
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        val expectedSettingIntArray = convertMapToSparseIntArray(proposedSettingMap)
+        expectedSettingIntArray.put(
+            DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY,
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        )
+
+        val actualProposedSettingIntArray = settingManager.updateSetting(
+            convertMapToSparseIntArray(proposedSettingMap),
+            convertMapToSparseIntArray(currentSettingMap)
+        )
+
+        assertIntArrayEqual(expectedSettingIntArray, actualProposedSettingIntArray)
+    }
+
+    @Test
+    fun updateSettingMap_sendsMapsWithTwoUpdatedSettings_returnsResolvedMap() {
+        val currentSettingMap = getDefaultResolvedMap()
+        val proposedSettingMap = getDefaultResolvedMap()
+        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_FOLDED] =
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_UNFOLDED] =
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        val expectedSettingIntArray = convertMapToSparseIntArray(proposedSettingMap)
+        expectedSettingIntArray.put(
+            DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY,
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        )
+        expectedSettingIntArray.put(
+            DEVICE_STATE_ROTATION_KEY_HALF_FOLDED,
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+
+        val actualProposedSettingIntArray = settingManager.updateSetting(
+            convertMapToSparseIntArray(proposedSettingMap),
+            convertMapToSparseIntArray(currentSettingMap)
+        )
+
+        assertIntArrayEqual(expectedSettingIntArray, actualProposedSettingIntArray)
+    }
+
+    @Test
+    fun updateSettingMap_settingValueForIgnoredChanged_returnsResolvedMap() {
+        val currentSettingMap = getDefaultResolvedMap()
+        val proposedSettingMap = getDefaultResolvedMap()
+        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        val expectedSettingIntArray = convertMapToSparseIntArray(proposedSettingMap)
+        expectedSettingIntArray.put(
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED,
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+
+        val actualProposedSettingIntArray = settingManager.updateSetting(
+            convertMapToSparseIntArray(proposedSettingMap),
+            convertMapToSparseIntArray(currentSettingMap)
+        )
+
+        assertIntArrayEqual(expectedSettingIntArray, actualProposedSettingIntArray)
     }
 
     @Test
@@ -577,7 +643,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         defaultSettingMap[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
             DEVICE_STATE_ROTATION_LOCK_UNLOCKED
         defaultSettingMap[DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
 
         return defaultSettingMap
     }
@@ -643,6 +709,19 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         ).thenReturn(DEVICE_STATE_REAR_DISPLAY)
     }
 
+    private fun assertIntArrayEqual(
+        expectedIntArray: SparseIntArray,
+        actualIntArray: SparseIntArray
+    ) {
+        assertThat(expectedIntArray.size()).isEqualTo(actualIntArray.size())
+        for (i in 0 until expectedIntArray.size()) {
+            val expectedKey = expectedIntArray.keyAt(i)
+            val expectedValue = expectedIntArray.valueAt(i)
+            assertThat(actualIntArray.indexOfKey(expectedKey)).isGreaterThan(-1)
+            assertThat(actualIntArray[expectedKey]).isEqualTo(expectedValue)
+        }
+    }
+
     private companion object {
         const val DEVICE_STATE_FOLDED = 0
         const val DEVICE_STATE_HALF_FOLDED = 1
@@ -654,7 +733,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         const val FOLDED_LOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED: String = "0:1:1:0:2:2:3:0"
         const val FOLDED_LOCKED_OPEN_LOCKED_SETTING_UNRESOLVED: String = "0:1:1:0:2:1:3:0"
         const val FOLDED_UNLOCKED_OPEN_LOCKED_SETTING_UNRESOLVED: String = "0:2:1:0:2:1:3:0"
-        const val FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING_RESOLVED: String = "0:1:1:2:2:2:3:0"
+        const val FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING_RESOLVED: String = "0:2:1:2:2:2:3:2"
         const val INVALID_AUTO_ROTATE_VALUE_FOR_FOLDED_SETTING: String = "0:4:1:0:2:2:3:0"
         const val MISSING_FOLDED_KEY_AND_VALUE_SETTING: String = "1:0:2:2:3:0"
         const val MISSING_VALUE_FOR_FOLDED_SETTING: String = "0:1:0:2:2:3:0"

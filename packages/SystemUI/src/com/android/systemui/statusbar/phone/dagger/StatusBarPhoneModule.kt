@@ -15,12 +15,14 @@
  */
 package com.android.systemui.statusbar.phone.dagger
 
+import android.view.Display
 import com.android.app.displaylib.DefaultDisplayOnlyInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Default
+import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.CommandQueueInitializer
 import com.android.systemui.statusbar.core.MultiDisplayStatusBarInitializerStore
@@ -113,12 +115,16 @@ interface StatusBarPhoneModule {
             statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
             statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
             darkIconDispatcherStore: DarkIconDispatcherStore,
+            displayComponentRepo: PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
         ): StatusBarInitializerImpl {
+            val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
             return implFactory.create(
                 statusBarWindowControllerStore.defaultDisplay,
                 statusBarModeRepositoryStore.defaultDisplay,
                 statusBarConfigurationControllerStore.defaultDisplay,
                 darkIconDispatcherStore.defaultDisplay,
+                systemUIDisplaySubcomponent.statusBarFragmentProvider,
+                systemUIDisplaySubcomponent.homeStatusBarComponentFactory,
             )
         }
 

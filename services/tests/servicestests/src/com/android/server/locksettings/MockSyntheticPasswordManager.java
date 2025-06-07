@@ -28,6 +28,7 @@ import junit.framework.AssertionFailedError;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.time.Duration;
 import java.util.Arrays;
 
 import javax.crypto.SecretKeyFactory;
@@ -145,7 +146,16 @@ public class MockSyntheticPasswordManager extends SyntheticPasswordManager {
         return mWeaverHidl;
     }
 
+    public boolean isWeaverEnabled() {
+        return mWeaverService != null;
+    }
+
     public int getSumOfWeaverFailureCounters() {
         return mWeaverService.getSumOfFailureCounters();
+    }
+
+    /** Injects a response to be returned by the next read from Weaver. */
+    public void injectWeaverReadResponse(int status, Duration timeout) {
+        mWeaverService.injectReadResponse(status, timeout);
     }
 }

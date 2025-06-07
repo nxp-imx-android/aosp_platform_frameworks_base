@@ -25,6 +25,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -46,7 +47,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -63,6 +65,7 @@ import androidx.compose.ui.util.lerp
 import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
+import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
 
@@ -78,8 +81,7 @@ fun NavBarPill(
 ) {
     val configuration = LocalConfiguration.current
     val maxPillWidth = (configuration.screenWidthDp * 0.65f).dp
-    val outlineColor = MaterialTheme.colorScheme.onBackground
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
 
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
@@ -117,129 +119,131 @@ fun NavBarPill(
             }
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val closeButtonSize = 28.dp
             Spacer(modifier = Modifier.size(closeButtonSize))
 
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier =
-                    Modifier.clip(RoundedCornerShape(16.dp))
-                        .widthIn(min = navBarWidth, max = maxPillWidth)
-                        .background(backgroundColor)
+            Box {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier =
+                        Modifier.clip(RoundedCornerShape(16.dp))
+                            .widthIn(min = navBarWidth, max = maxPillWidth)
+                            .background(backgroundColor)
+                            .animatedActionBorder(
+                                strokeWidth = 1.dp,
+                                cornerRadius = 16.dp,
+                                visible = visible,
+                            )
+                            .then(if (expanded) Modifier else Modifier.clickable { onClick() })
+                            .padding(2.dp)
+                            .onGloballyPositioned { expandedSize = it.size },
+                ) {
+                    // Should have at most 1 expanded chip
+                    var expandedChip = false
+                    actions.fastForEachIndexed { index, action ->
+                        val hasAttribution = action.attribution != null
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier =
+                                if (hasAttribution) Modifier.weight(1f, false)
+                                else Modifier.width(IntrinsicSize.Max),
+                        ) {
+                            val iconBorder =
+                                if (action.actionType == ActionType.MR) {
+                                    Modifier
+                                } else {
+                                    Modifier.border(
+                                        width = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.outline,
+                                        shape = CircleShape,
+                                    )
+                                }
+                            if ((actions.size == 1 || hasAttribution) && !expandedChip) {
+                                expandedChip = true
+                                val hasBackground = actions.size > 1
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier =
+                                        Modifier.padding(end = 3.dp)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(
+                                                if (hasBackground) {
+                                                    MaterialTheme.colorScheme.surfaceContainerLow
+                                                } else {
+                                                    Color.Transparent
+                                                }
+                                            )
+                                            .padding(4.dp),
+                                ) {
+                                    Image(
+                                        painter = rememberDrawablePainter(action.icon),
+                                        contentDescription = action.label,
+                                        modifier =
+                                            Modifier.size(16.dp).then(iconBorder).clip(CircleShape),
+                                    )
+                                    Text(
+                                        text = action.label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
+                                    )
+                                }
+                            } else {
+                                Image(
+                                    painter = rememberDrawablePainter(action.icon),
+                                    contentDescription = action.label,
+                                    modifier =
+                                        Modifier.then(
+                                                if (index == 0) {
+                                                    Modifier.padding(start = 5.dp)
+                                                } else if (index == actions.size - 1) {
+                                                    Modifier.padding(end = 5.dp)
+                                                } else {
+                                                    Modifier
+                                                }
+                                            )
+                                            .padding(3.dp)
+                                            .size(16.dp)
+                                            .then(iconBorder)
+                                            .clip(CircleShape),
+                                )
+                            }
+                        }
+                    }
+                }
+                Box(
+                    Modifier.matchParentSize()
+                        .padding(1.dp)
+                        .blur(4.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
                         .animatedActionBorder(
                             strokeWidth = 1.dp,
                             cornerRadius = 16.dp,
                             visible = visible,
                         )
-                        .then(if (expanded) Modifier else Modifier.clickable { onClick() })
-                        .padding(3.dp)
-                        .onGloballyPositioned { expandedSize = it.size },
-            ) {
-                // Should have at most 1 expanded chip
-                var expandedChip = false
-                actions.fastForEachIndexed { index, action ->
-                    val hasAttribution = action.attribution != null
-                    Row(
-                        horizontalArrangement =
-                            Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier =
-                            if (hasAttribution) Modifier.weight(1f, false)
-                            else Modifier.width(IntrinsicSize.Max),
-                    ) {
-                        if ((actions.size == 1 || hasAttribution) && !expandedChip) {
-                            expandedChip = true
-                            val hasBackground = actions.size > 1
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier =
-                                    Modifier.padding(end = 3.dp)
-                                        .clip(RoundedCornerShape(16.dp))
-                                        .background(
-                                            if (hasBackground) {
-                                                MaterialTheme.colorScheme.onSecondary
-                                            } else {
-                                                Color.Transparent
-                                            }
-                                        )
-                                        .padding(6.dp),
-                            ) {
-                                Image(
-                                    painter = rememberDrawablePainter(action.icon),
-                                    contentDescription = action.label,
-                                    modifier =
-                                        Modifier.size(16.dp)
-                                            .border(
-                                                width = 0.75.dp,
-                                                color = MaterialTheme.colorScheme.outline,
-                                                shape = CircleShape,
-                                            )
-                                            .clip(CircleShape),
-                                )
-                                Text(
-                                    text = action.label,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = outlineColor,
-                                    modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
-                                )
-                                if (hasAttribution) {
-                                    Text(
-                                        text = action.attribution!!,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = outlineColor,
-                                        modifier = Modifier.alpha(0.4f),
-                                    )
-                                }
-                            }
-                        } else {
-                            Image(
-                                painter = rememberDrawablePainter(action.icon),
-                                contentDescription = action.label,
-                                modifier =
-                                    Modifier.then(
-                                            if (index == 0) {
-                                                Modifier.padding(start = 5.dp)
-                                            } else if (index == actions.size - 1) {
-                                                Modifier.padding(end = 5.dp)
-                                            } else {
-                                                Modifier
-                                            }
-                                        )
-                                        .padding(3.dp)
-                                        .size(16.dp)
-                                        .border(
-                                            width = 0.75.dp,
-                                            color = MaterialTheme.colorScheme.outline,
-                                            shape = CircleShape,
-                                        )
-                                        .clip(CircleShape),
-                            )
-                        }
-                    }
-                }
+                )
             }
 
             PlatformIconButton(
                 modifier =
                     Modifier.size(closeButtonSize)
                         .clip(CircleShape)
-                        .background(backgroundColor.copy(alpha = 0.7f))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(6.dp),
                 iconResource = R.drawable.ic_close_white_rounded,
                 colors =
                     IconButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = outlineColor,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                         disabledContainerColor = Color.Transparent,
-                        disabledContentColor = outlineColor,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                 contentDescription =
                     stringResource(id = R.string.underlay_close_button_content_description),

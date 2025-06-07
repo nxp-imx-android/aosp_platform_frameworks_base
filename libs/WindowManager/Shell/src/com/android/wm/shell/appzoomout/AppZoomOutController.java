@@ -84,12 +84,12 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
     public static AppZoomOutController create(Context context, ShellInit shellInit,
             ShellTaskOrganizer shellTaskOrganizer, DisplayController displayController,
             DisplayLayout displayLayout, @ShellMainThread ShellExecutor mainExecutor,
-            @ShellMainThread Handler mainHandler, InteractionJankMonitor interactionJankMonitor) {
+            InteractionJankMonitor interactionJankMonitor) {
         AppZoomOutDisplayAreaOrganizer appDisplayAreaOrganizer = new AppZoomOutDisplayAreaOrganizer(
                 context, displayLayout, mainExecutor);
         TopLevelZoomOutDisplayAreaOrganizer topLevelDisplayAreaOrganizer =
                 new TopLevelZoomOutDisplayAreaOrganizer(displayLayout, context, mainExecutor,
-                        mainHandler, interactionJankMonitor);
+                        interactionJankMonitor);
         return new AppZoomOutController(context, shellInit, shellTaskOrganizer, displayController,
                 appDisplayAreaOrganizer, topLevelDisplayAreaOrganizer, mainExecutor);
     }
@@ -142,10 +142,12 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
      * {@link DisplayAreaOrganizer#FEATURE_WINDOWED_MAGNIFICATION} and applies a cropping.
      *
      * @param progress progress to be applied to the top-level zoom effect.
+     * @param vsyncId The vsync id to align the frame to.
+     * @param sysuiMainHandler The main handler from SystemUI (required for CUJ tracking)
      */
-    private void setTopLevelProgress(float progress) {
+    private void setTopLevelProgress(float progress, long vsyncId, Handler sysuiMainHandler) {
         if (enableLppAssistInvocationEffect()) {
-            mTopLevelDisplayAreaOrganizer.setProgress(progress);
+            mTopLevelDisplayAreaOrganizer.setProgress(progress, vsyncId, sysuiMainHandler);
         }
     }
 
@@ -201,8 +203,9 @@ public class AppZoomOutController implements RemoteCallable<AppZoomOutController
         }
 
         @Override
-        public void setTopLevelProgress(float progress) {
-            mMainExecutor.execute(() -> AppZoomOutController.this.setTopLevelProgress(progress));
+        public void setTopLevelProgress(float progress, long vsyncId, Handler sysuiMainHandler) {
+            mMainExecutor.execute(() -> AppZoomOutController.this.setTopLevelProgress(progress,
+                    vsyncId, sysuiMainHandler));
         }
     }
 }

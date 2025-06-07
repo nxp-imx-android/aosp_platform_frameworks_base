@@ -1436,7 +1436,9 @@ final class ActivityRecord extends WindowToken {
                 // PiP2 should handle sending out the configuration as a part of Shell Transitions.
                 ensureActivityConfiguration(true /* ignoreVisibility */);
             }
-            if (inPictureInPictureMode && findMainWindow() == null
+            if (inPictureInPictureMode
+                    // A window might not be added if the activity is directly launching-into-PiP.
+                    && findMainWindow() == null && !pictureInPictureArgs.isLaunchIntoPip()
                     && task.topRunningActivity() == this) {
                 // Prevent malicious app entering PiP without valid WindowState, which can in turn
                 // result a non-touchable PiP window since the InputConsumer for PiP requires it.
@@ -3310,6 +3312,10 @@ final class ActivityRecord extends WindowToken {
             return false;
         }
 
+        if (getOptions() != null && getOptions().isLaunchIntoPip()) {
+            return true;
+        }
+
         boolean isCurrentAppLocked =
                 mAtmService.getLockTaskModeState() != LOCK_TASK_MODE_NONE;
         final TaskDisplayArea taskDisplayArea = getDisplayArea();
@@ -4616,7 +4622,8 @@ final class ActivityRecord extends WindowToken {
             return true;
         } else if (fromActivity.mStartingData != null) {
             if (fromActivity.mStartingData instanceof SnapshotStartingData
-                    && !isStartingOrientationCompatible(fromActivity)) {
+                    && (!isStartingOrientationCompatible(fromActivity)
+                    || !(((SnapshotStartingData) fromActivity.mStartingData).isValid()))) {
                 // Do not transfer because the snapshot will be distorted in different orientation.
                 return false;
             }
@@ -9294,16 +9301,6 @@ final class ActivityRecord extends WindowToken {
     @Override
     boolean canCreateRemoteAnimationTarget() {
         return true;
-    }
-
-    @Override
-    void getAnimationFrames(Rect outFrame, Rect outInsets, Rect outStableInsets,
-            Rect outSurfaceInsets) {
-        final WindowState win = findMainWindow();
-        if (win == null) {
-            return;
-        }
-        win.getAnimationFrames(outFrame, outInsets, outStableInsets, outSurfaceInsets);
     }
 
     void setPictureInPictureParams(PictureInPictureParams p) {

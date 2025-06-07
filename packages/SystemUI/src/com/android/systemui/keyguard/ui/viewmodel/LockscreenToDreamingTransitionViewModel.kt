@@ -96,6 +96,8 @@ constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTra
             )
             .map { ScrimAlpha(behindAlpha = it) }
 
+    val statusBarAlpha: Flow<Float> = lockscreenAlpha
+
     companion object {
         @JvmField val DREAMING_ANIMATION_DURATION_MS = TO_DREAMING_DURATION.inWholeMilliseconds
     }

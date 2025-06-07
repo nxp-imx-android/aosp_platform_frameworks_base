@@ -17,6 +17,7 @@
 package android.app;
 
 import android.annotation.CallSuper;
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -214,6 +215,13 @@ public class Application extends ContextWrapper implements ComponentCallbacks2 {
          * @hide
          */
         default void onActivityConfigurationChanged(@NonNull Activity activity) {
+        }
+
+        /**
+         * Called when the Activity calls {@link Activity#onRestart super.onRestart()}
+         */
+        @FlaggedApi(Flags.FLAG_ON_RESTART_ACTIVITY_LIFECYCLE_CALLBACK)
+        default void onActivityRestarted(@NonNull Activity activity) {
         }
     }
 
@@ -582,6 +590,16 @@ public class Application extends ContextWrapper implements ComponentCallbacks2 {
             for (int i = 0; i < callbacks.length; i++) {
                 ((ActivityLifecycleCallbacks) callbacks[i]).onActivityConfigurationChanged(
                         activity);
+            }
+        }
+    }
+
+    @FlaggedApi(Flags.FLAG_ON_RESTART_ACTIVITY_LIFECYCLE_CALLBACK)
+    void dispatchActivityRestarted(@NonNull Activity activity) {
+        Object[] callbacks = collectActivityLifecycleCallbacks();
+        if (callbacks != null) {
+            for (int i = 0; i < callbacks.length; i++) {
+                ((ActivityLifecycleCallbacks) callbacks[i]).onActivityRestarted(activity);
             }
         }
     }

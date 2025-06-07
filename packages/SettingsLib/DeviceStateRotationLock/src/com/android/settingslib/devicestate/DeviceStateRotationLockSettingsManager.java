@@ -140,8 +140,9 @@ public final class DeviceStateRotationLockSettingsManager implements
     }
 
     @Override
-    public void updateSetting(SparseIntArray proposedSetting,
-            SparseIntArray currentSetting) {
+    @NonNull
+    public SparseIntArray updateSetting(@NonNull SparseIntArray proposedSetting,
+            @NonNull SparseIntArray currentSetting) {
         // This method is not supported in this implementation. Use updateSetting(int, boolean)
         // instead. This overload is intended for a refactored settings manager.
         throw new UnsupportedOperationException(

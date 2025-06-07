@@ -55,21 +55,18 @@ import junit.framework.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito.argThat
-import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.eq
-import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when` as whenever
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for [MultiDisplayVeiledResizeTaskPositioner].
@@ -80,27 +77,25 @@ import org.mockito.kotlin.argumentCaptor
 @RunWith(AndroidTestingRunner::class)
 class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
-    @Mock private lateinit var mockShellTaskOrganizer: ShellTaskOrganizer
-    @Mock private lateinit var mockDesktopWindowDecoration: DesktopModeWindowDecoration
-    @Mock
-    private lateinit var mockDragEventListener: DragPositioningCallbackUtility.DragEventListener
+    private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val mockDesktopWindowDecoration = mock<DesktopModeWindowDecoration>()
+    private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
 
-    @Mock private lateinit var taskToken: WindowContainerToken
-    @Mock private lateinit var taskBinder: IBinder
+    private val taskToken = mock<WindowContainerToken>()
+    private val taskBinder = mock<IBinder>()
 
-    @Mock private lateinit var mockDisplayController: DisplayController
-    @Mock private lateinit var mockDisplay: Display
-    @Mock private lateinit var mockTransactionFactory: Supplier<SurfaceControl.Transaction>
-    @Mock private lateinit var mockTransaction: SurfaceControl.Transaction
-    @Mock private lateinit var mockTransitionBinder: IBinder
-    @Mock private lateinit var mockTransitionInfo: TransitionInfo
-    @Mock private lateinit var mockFinishCallback: TransitionFinishCallback
-    @Mock private lateinit var mockTransitions: Transitions
-    @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
-    @Mock private lateinit var mockSurfaceControl: SurfaceControl
-    @Mock
-    private lateinit var mockMultiDisplayDragMoveIndicatorController:
-        MultiDisplayDragMoveIndicatorController
+    private val mockDisplayController = mock<DisplayController>()
+    private val mockDisplay = mock<Display>()
+    private val mockTransactionFactory = mock<Supplier<SurfaceControl.Transaction>>()
+    private val mockTransaction = mock<SurfaceControl.Transaction>()
+    private val mockTransitionBinder = mock<IBinder>()
+    private val mockTransitionInfo = mock<TransitionInfo>()
+    private val mockFinishCallback = mock<TransitionFinishCallback>()
+    private val mockTransitions = mock<Transitions>()
+    private val mockInteractionJankMonitor = mock<InteractionJankMonitor>()
+    private val mockSurfaceControl = mock<SurfaceControl>()
+    private val mockMultiDisplayDragMoveIndicatorController =
+        mock<MultiDisplayDragMoveIndicatorController>()
     private lateinit var resources: TestableResources
     private lateinit var spyDisplayLayout0: DisplayLayout
     private lateinit var spyDisplayLayout1: DisplayLayout
@@ -112,8 +107,6 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        MockitoAnnotations.initMocks(this)
-
         whenever(taskToken.asBinder()).thenReturn(taskBinder)
         mockDesktopWindowDecoration.mDisplay = mockDisplay
         mockDesktopWindowDecoration.mDecorWindowContext = mContext
@@ -142,12 +135,12 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 }
                 null
             }
-            .`when`(spyDisplayLayout0)
+            .whenever(spyDisplayLayout0)
             .getStableBounds(any())
-        `when`(mockTransactionFactory.get()).thenReturn(mockTransaction)
-        `when`(mockDesktopWindowDecoration.leash).thenReturn(mockSurfaceControl)
-        `when`(mockTransaction.setPosition(any(), any(), any())).thenReturn(mockTransaction)
-        `when`(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
+        whenever(mockTransactionFactory.get()).thenReturn(mockTransaction)
+        whenever(mockDesktopWindowDecoration.leash).thenReturn(mockSurfaceControl)
+        whenever(mockTransaction.setPosition(any(), any(), any())).thenReturn(mockTransaction)
+        whenever(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
         mockDesktopWindowDecoration.mTaskInfo =
             ActivityManager.RunningTaskInfo().apply {
                 taskId = TASK_ID
@@ -160,7 +153,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 configuration.windowConfiguration.displayRotation = ROTATION_90
                 isResizeable = true
             }
-        `when`(mockDesktopWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
+        whenever(mockDesktopWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
         mockDesktopWindowDecoration.mDisplay = mockDisplay
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID_0 }
 
@@ -687,26 +680,26 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testStartAnimation_updatesLeash() = runOnUiThread {
-        val changeMock = mock(TransitionInfo.Change::class.java)
-        val nonTaskChangeMock = mock(TransitionInfo.Change::class.java)
-        val taskLeash = mock(SurfaceControl::class.java)
-        val nonTaskLeash = mock(SurfaceControl::class.java)
-        val startTransaction = mock(Transaction::class.java)
-        val finishTransaction = mock(Transaction::class.java)
+        val changeMock = mock<TransitionInfo.Change>()
+        val nonTaskChangeMock = mock<TransitionInfo.Change>()
+        val taskLeash = mock<SurfaceControl>()
+        val nonTaskLeash = mock<SurfaceControl>()
+        val startTransaction = mock<Transaction>()
+        val finishTransaction = mock<Transaction>()
         val point = Point(10, 20)
         val bounds = Rect(1, 2, 3, 4)
-        `when`(changeMock.leash).thenReturn(taskLeash)
-        `when`(changeMock.endRelOffset).thenReturn(point)
-        `when`(changeMock.endAbsBounds).thenReturn(bounds)
-        `when`(changeMock.taskInfo).thenReturn(ActivityManager.RunningTaskInfo())
-        `when`(nonTaskChangeMock.leash).thenReturn(nonTaskLeash)
-        `when`(nonTaskChangeMock.endRelOffset).thenReturn(point)
-        `when`(nonTaskChangeMock.endAbsBounds).thenReturn(bounds)
-        `when`(nonTaskChangeMock.taskInfo).thenReturn(null)
-        `when`(mockTransitionInfo.changes).thenReturn(listOf(changeMock, nonTaskChangeMock))
-        `when`(startTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
+        whenever(changeMock.leash).thenReturn(taskLeash)
+        whenever(changeMock.endRelOffset).thenReturn(point)
+        whenever(changeMock.endAbsBounds).thenReturn(bounds)
+        whenever(changeMock.taskInfo).thenReturn(ActivityManager.RunningTaskInfo())
+        whenever(nonTaskChangeMock.leash).thenReturn(nonTaskLeash)
+        whenever(nonTaskChangeMock.endRelOffset).thenReturn(point)
+        whenever(nonTaskChangeMock.endAbsBounds).thenReturn(bounds)
+        whenever(nonTaskChangeMock.taskInfo).thenReturn(null)
+        whenever(mockTransitionInfo.changes).thenReturn(listOf(changeMock, nonTaskChangeMock))
+        whenever(startTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
             .thenReturn(startTransaction)
-        `when`(finishTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
+        whenever(finishTransaction.setWindowCrop(any(), eq(bounds.width()), eq(bounds.height())))
             .thenReturn(finishTransaction)
 
         taskPositioner.startAnimation(

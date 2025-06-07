@@ -27,6 +27,7 @@ import android.service.notification.StatusBarNotification;
 import android.text.SpannableStringBuilder;
 import android.text.style.ImageSpan;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -50,7 +51,6 @@ public class PromotedNotificationInfo extends NotificationInfo {
     private INotificationManager mNotificationManager;
     private PackageDemotionInteractor mPackageDemotionInteractor;
 
-    OnSettingsClickListener mOnSettingsClickListener;
     public PromotedNotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -88,7 +88,6 @@ public class PromotedNotificationInfo extends NotificationInfo {
 
         mNotificationManager = iNotificationManager;
 
-        mOnSettingsClickListener = onSettingsClick;
         mPackageDemotionInteractor = packageDemotionInteractor;
 
         bindDemote(sbn, pkg);
@@ -131,12 +130,13 @@ public class PromotedNotificationInfo extends NotificationInfo {
 
     private OnClickListener getDemoteClickListener(StatusBarNotification sbn, String packageName) {
         return ((View v) -> {
-            // TODO(b/417258670) Remove detour through settings by using specialized permission.
-            // mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
-            // mPackageDemotionInteractor.onPackageDemoted(packageName, sbn.getUid());
-            // mGutsContainer.closeControls(v, true);
-
-            mOnSettingsClickListener.onClick(v, null, sbn.getUid());
+            try {
+                mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
+                mPackageDemotionInteractor.onPackageDemoted(packageName, sbn.getUid());
+                mGutsContainer.closeControls(v, true);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Couldn't revoke live update permission", e);
+            }
         });
     }
 }

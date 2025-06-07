@@ -6271,7 +6271,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         boolean dumpHistory = false;
         boolean includeDiscreteOps = false;
         boolean dumpUidStateChangeLogs = false;
-        int historyLimit = 10;
+        int historyLimit = 100;
         @HistoricalOpsRequestFilter int dumpFilter = 0;
         boolean dumpAll = false;
 
@@ -6762,10 +6762,9 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
 
         if (Flags.enableAllSqliteAppopsAccesses()) {
-            if (dumpHistory && !dumpWatchers) {
-                mHistoricalRegistry.dump("  ", pw, dumpUid, dumpPackage, dumpAttributionTag,
-                        dumpOp, dumpFilter, sdf, date, includeDiscreteOps, historyLimit);
-            }
+            mHistoricalRegistry.dump("", pw, dumpUid, dumpPackage, dumpAttributionTag,
+                    dumpOp, dumpFilter, sdf, date, includeDiscreteOps, historyLimit,
+                    dumpHistory && !dumpWatchers);
         } else {
             // Must not hold the appops lock
             if (dumpHistory && !dumpWatchers) {

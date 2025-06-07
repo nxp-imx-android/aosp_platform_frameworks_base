@@ -714,6 +714,36 @@ public final class DisplayManager {
      */
     public static final long PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED = 1L << 3;
 
+    /**
+     * Brightness value type where the value is in the range [0, 100] and when set, the brightness
+     * UI slider will show the same value. It gets converted from the user-perception scale to
+     * the power scale and mapped to the current brightness range. The current brightness range may
+     * change over time depending on the device state (such as the brightness of the ambient
+     * environment). When this type of used, 0 and 100 map to the current brightness minimum and
+     * maximum respectively.
+     */
+    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
+    public static final int BRIGHTNESS_UNIT_PERCENTAGE = 0;
+
+    /**
+     * @hide
+     */
+    @IntDef(prefix = { "BRIGHTNESS_UNIT_" }, value = {
+            BRIGHTNESS_UNIT_PERCENTAGE
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface BrightnessUnit {}
+
+    /**
+     * @hide
+     */
+    public static String brightnessUnitToString(@BrightnessUnit int unit) {
+        if (Flags.setBrightnessByUnit() && unit == BRIGHTNESS_UNIT_PERCENTAGE) {
+            return "percentage";
+        } else {
+            throw new IllegalStateException("Unexpected value: " + unit);
+        }
+    }
 
     /** @hide */
     public DisplayManager(Context context) {
@@ -1549,6 +1579,18 @@ public final class DisplayManager {
         mGlobal.setBrightness(displayId, brightness);
     }
 
+    /**
+     * Sets the brightness of the specified display. Accepts different brightness units.
+     * @param displayId The logical display ID
+     * @param value The brightness value to set
+     * @param unit The unit of the brightness value
+     */
+    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
+    @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
+    public void setBrightness(int displayId, float value, @BrightnessUnit int unit) {
+        mGlobal.setBrightness(displayId, value, unit);
+    }
+
 
     /**
      * Gets the brightness of the specified display.
@@ -1565,6 +1607,17 @@ public final class DisplayManager {
     @FloatRange(from = 0f, to = 1f)
     public float getBrightness(int displayId) {
         return mGlobal.getBrightness(displayId);
+    }
+
+    /**
+     * Gets the brightness of the specified display in the specified brightness unit.
+     * @param displayId The display of which brightness value to get from.
+     * @param unit The unit of the brightness value
+     *
+     * @hide
+     */
+    public float getBrightness(int displayId, @BrightnessUnit int unit) {
+        return mGlobal.getBrightness(displayId, unit);
     }
 
 

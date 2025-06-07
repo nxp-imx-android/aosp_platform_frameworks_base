@@ -45,8 +45,8 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         if (SettingsThemeHelper.isExpressiveTheme(requireContext())) {
             // Don't allow any divider in between the preferences in expressive design.
             setDivider(null)
+            listView?.addItemDecoration(MarginItemDecoration())
         }
-        this.listView?.addItemDecoration(MarginItemDecoration())
     }
 
     override fun onCreateAdapter(preferenceScreen: PreferenceScreen): RecyclerView.Adapter<*> {

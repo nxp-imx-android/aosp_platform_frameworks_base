@@ -28,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformIconButton
 import com.android.systemui.res.R
 
@@ -38,6 +40,7 @@ fun Toolbar(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     colors: FloatingToolbarColors = defaultColors(),
+    elevation: Dp = 2.dp,
     content: @Composable RowScope.() -> Unit,
 ) {
     HorizontalFloatingToolbar(
@@ -45,10 +48,12 @@ fun Toolbar(
         modifier = modifier,
         colors = colors,
         shape = FloatingToolbarDefaults.ContainerShape,
+        expandedShadowElevation = elevation,
         leadingContent = {
             PlatformIconButton(
                 iconResource = R.drawable.ic_close,
                 colors = IconButtonDefaults.iconButtonColors(),
+                shape = IconButtonDefaults.smallSquareShape,
                 contentDescription =
                     stringResource(id = R.string.underlay_close_button_content_description),
                 onClick = onCloseClick,
@@ -61,6 +66,6 @@ fun Toolbar(
 @Composable
 private fun defaultColors(): FloatingToolbarColors {
     return FloatingToolbarDefaults.standardFloatingToolbarColors(
-        toolbarContainerColor = MaterialTheme.colorScheme.surfaceContainer
+        toolbarContainerColor = MaterialTheme.colorScheme.surfaceBright
     )
 }

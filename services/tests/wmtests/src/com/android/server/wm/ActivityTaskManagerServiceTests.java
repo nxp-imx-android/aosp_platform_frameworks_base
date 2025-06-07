@@ -16,14 +16,18 @@
 
 package com.android.server.wm;
 
+import static android.Manifest.permission.REPOSITION_SELF_WINDOWS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
@@ -36,6 +40,7 @@ import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM;
+import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,6 +52,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -86,6 +92,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.MockitoSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1351,5 +1358,45 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
         assertFalse(mAtm.mActivityClientController.enterPictureInPictureMode(record.token, params));
         assertFalse(record.inPinnedWindowingMode());
+    }
+
+    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @Test
+    public void testIsTaskMoveAllowedOnDisplay_permissionGranted() {
+        final int displayId = 73;
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(true).when(mRootWindowContainer).isTaskMoveAllowedOnDisplay(displayId);
+            doReturn(PERMISSION_GRANTED).when(() -> {
+                return ActivityTaskManagerService.checkPermission(
+                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+            });
+
+            assertTrue(mAtm.isTaskMoveAllowedOnDisplay(displayId));
+        } finally {
+            session.finishMocking();
+        }
+    }
+
+    @EnableFlags(FLAG_ENABLE_WINDOW_REPOSITIONING_API)
+    @Test
+    public void testIsTaskMoveAllowedOnDisplay_permissionDenied() {
+        final int displayId = 73;
+
+        MockitoSession session =
+                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
+        try {
+            doReturn(true).when(mRootWindowContainer).isTaskMoveAllowedOnDisplay(displayId);
+            doReturn(PERMISSION_DENIED).when(() -> {
+                return ActivityTaskManagerService.checkPermission(
+                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
+            });
+
+            assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
+        } finally {
+            session.finishMocking();
+        }
     }
 }

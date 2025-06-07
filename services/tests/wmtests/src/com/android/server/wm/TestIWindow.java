@@ -44,7 +44,7 @@ public class TestIWindow extends IWindow.Stub {
 
     @Override
     public void resized(WindowRelayoutResult result, boolean reportDraw, boolean forceLayout,
-            int displayId, boolean dragResizing) throws RemoteException {
+            int displayId, boolean syncWithBuffers, boolean dragResizing) throws RemoteException {
     }
 
     @Override
@@ -57,7 +57,7 @@ public class TestIWindow extends IWindow.Stub {
     }
 
     @Override
-    public void dispatchAppVisibility(boolean visible) throws RemoteException {
+    public void dispatchAppVisibility(boolean visible, int seqId) throws RemoteException {
     }
 
     @Override

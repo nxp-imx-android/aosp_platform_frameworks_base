@@ -27,7 +27,6 @@
 #include <binder/ProcessState.h>
 #include <binder/Stability.h>
 #include <binderthreadstate/CallerUtils.h>
-#include <cutils/atomic.h>
 #include <fcntl.h>
 #include <inttypes.h>
 #include <log/log.h>
@@ -180,7 +179,7 @@ static void gcIfManyNewRefs(JNIEnv* env)
 {
     uint32_t totalRefs = gNumLocalRefsCreated.load(std::memory_order_relaxed)
             + gNumDeathRefsCreated.load(std::memory_order_relaxed);
-    uint32_t collectedAtRefs = gCollectedAtRefs.load(memory_order_relaxed);
+    uint32_t collectedAtRefs = gCollectedAtRefs.load(std::memory_order_relaxed);
     // A bound on the number of threads that can have incremented gNum...RefsCreated before the
     // following check is executed. Effectively a bound on #threads. Almost any value will do.
     static constexpr uint32_t MAX_RACING = 100000;
@@ -360,7 +359,7 @@ protected:
     virtual ~JavaBBinder()
     {
         ALOGV("Destroying JavaBBinder %p\n", this);
-        gNumLocalRefsDeleted.fetch_add(1, memory_order_relaxed);
+        gNumLocalRefsDeleted.fetch_add(1, std::memory_order_relaxed);
         JNIEnv* env = javavm_to_jnienv(mVM);
         env->DeleteGlobalRef(mObject);
     }
@@ -496,6 +495,9 @@ public:
                     b.get()->setExtension(extensionFromJava);
                 }
             }
+            if (mInheritRt) {
+                b.get()->setInheritRt(mInheritRt);
+            }
             mBinder = b;
             ALOGV("Creating JavaBinder %p (refs %p) for Object %p, weakCount=%" PRId32 "\n",
                  b.get(), b->getWeakRefs(), obj, b->getWeakRefs()->getWeakCount());
@@ -529,6 +531,15 @@ public:
         }
     }
 
+    void setInheritRt(bool inheritRt) {
+        AutoMutex _l(mLock);
+        mInheritRt = inheritRt;
+        sp<JavaBBinder> b = mBinder.promote();
+        if (b != nullptr) {
+            b.get()->setInheritRt(inheritRt);
+        }
+    }
+
 private:
     Mutex           mLock;
     wp<JavaBBinder> mBinder;
@@ -538,6 +549,7 @@ private:
     // sp here (avoid recreating it)
     bool            mVintf = false;
     bool            mSetExtensionCalled = false;
+    bool            mInheritRt = false;
 };
 
 // ----------------------------------------------------------------------------
@@ -1262,6 +1274,15 @@ static void android_os_Binder_setExtension(JNIEnv* env, jobject obj, jobject ext
     jbh->setExtension(extension);
 }
 
+static void android_os_Binder_setInheritRt(JNIEnv* env, jobject obj, jboolean inheritRt) {
+    JavaBBinderHolder* jbh = (JavaBBinderHolder*) env->GetLongField(obj, gBinderOffsets.mObject);
+    jbh->setInheritRt(inheritRt);
+}
+
+static void android_os_Binder_setGlobalInheritRt(CRITICAL_JNI_PARAMS_COMMA jboolean enabled) {
+    BBinder::setGlobalInheritRt(enabled);
+}
+
 // ----------------------------------------------------------------------------
 
 // clang-format off
@@ -1290,6 +1311,8 @@ static const JNINativeMethod gBinderMethods[] = {
     { "getCallingWorkSourceUid", "()I", (void*)android_os_Binder_getCallingWorkSourceUid },
     // @CriticalNative
     { "clearCallingWorkSource", "()J", (void*)android_os_Binder_clearCallingWorkSource },
+    // @CriticalNative
+    { "setGlobalInheritRt", "(Z)V", (void*)android_os_Binder_setGlobalInheritRt },
     { "restoreCallingWorkSource", "(J)V", (void*)android_os_Binder_restoreCallingWorkSource },
     { "markVintfStability", "()V", (void*)android_os_Binder_markVintfStability},
     { "forceDowngradeToSystemStability", "()V", (void*)android_os_Binder_forceDowngradeToSystemStability},
@@ -1298,6 +1321,7 @@ static const JNINativeMethod gBinderMethods[] = {
     { "getNativeFinalizer", "()J", (void*)android_os_Binder_getNativeFinalizer },
     { "blockUntilThreadAvailable", "()V", (void*)android_os_Binder_blockUntilThreadAvailable },
     { "setExtensionNative", "(Landroid/os/IBinder;)V", (void*)android_os_Binder_setExtension },
+    { "setInheritRt", "(Z)V", (void*)android_os_Binder_setInheritRt },
 };
 // clang-format on
 

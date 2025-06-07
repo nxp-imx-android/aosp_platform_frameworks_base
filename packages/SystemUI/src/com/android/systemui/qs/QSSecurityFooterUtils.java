@@ -91,6 +91,7 @@ import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.policy.SecurityController;
+import com.android.systemui.supervision.data.model.SupervisionModel;
 import com.android.systemui.supervision.shared.DeprecateDpmSupervisionApis;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -208,7 +209,8 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
      * security button should be shown.
      */
     @Nullable
-    public SecurityButtonConfig getButtonConfig(SecurityModel securityModel) {
+    public SecurityButtonConfig getButtonConfig(
+            SecurityModel securityModel, @Nullable SupervisionModel supervisionModel) {
         final boolean isDeviceManaged = securityModel.isDeviceManaged();
         final UserInfo currentUser = mUserTracker.getUserInfo();
         final boolean isDemoDevice = UserManager.isDeviceInDemoMode(mContext) && currentUser != null
@@ -224,7 +226,10 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
                 securityModel.getWorkProfileOrganizationName();
         final boolean isProfileOwnerOfOrganizationOwnedDevice =
                 securityModel.isProfileOwnerOfOrganizationOwnedDevice();
-        final boolean isParentalControlsEnabled = securityModel.isParentalControlsEnabled();
+        final boolean isParentalControlsEnabled =
+                supervisionModel == null
+                        ? securityModel.isParentalControlsEnabled()
+                        : supervisionModel.isSupervisionEnabled();
         final boolean isWorkProfileOn = securityModel.isWorkProfileOn();
         final boolean hasDisclosableWorkProfilePolicy = hasCACertsInWorkProfile
                 || vpnNameWorkProfile != null || (hasWorkProfile && isNetworkLoggingEnabled);
@@ -246,15 +251,33 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
         boolean isClickable = !(isProfileOwnerOfOrganizationOwnedDevice
                 && (!hasDisclosableWorkProfilePolicy || !isWorkProfileOn));
 
-        String text = getFooterText(isDeviceManaged, hasWorkProfile,
-                hasCACerts, hasCACertsInWorkProfile, isNetworkLoggingEnabled, vpnName,
-                vpnNameWorkProfile, organizationName, workProfileOrganizationName,
-                isProfileOwnerOfOrganizationOwnedDevice, isParentalControlsEnabled,
-                isWorkProfileOn).toString();
+        String text =
+                (supervisionModel != null
+                                && supervisionModel.isSupervisionEnabled()
+                                && supervisionModel.getFooterText() != null)
+                        ? supervisionModel.getFooterText().toString()
+                        : getFooterText(
+                                        isDeviceManaged,
+                                        hasWorkProfile,
+                                        hasCACerts,
+                                        hasCACertsInWorkProfile,
+                                        isNetworkLoggingEnabled,
+                                        vpnName,
+                                        vpnNameWorkProfile,
+                                        organizationName,
+                                        workProfileOrganizationName,
+                                        isProfileOwnerOfOrganizationOwnedDevice,
+                                        isParentalControlsEnabled,
+                                        isWorkProfileOn)
+                                .toString();
 
         Icon icon;
         ContentDescription contentDescription = null;
-        if (isParentalControlsEnabled && securityModel.getDeviceAdminIcon() != null) {
+        if (isParentalControlsEnabled
+                && supervisionModel != null
+                && supervisionModel.getIcon() != null) {
+            icon = new Icon.Loaded(supervisionModel.getIcon(), contentDescription);
+        } else if (isParentalControlsEnabled && securityModel.getDeviceAdminIcon() != null) {
             icon = new Icon.Loaded(securityModel.getDeviceAdminIcon(), contentDescription);
         } else if (vpnName != null || vpnNameWorkProfile != null) {
             if (securityModel.isVpnBranded()) {
@@ -483,7 +506,8 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
     @VisibleForTesting
     View createDialogView(Context quickSettingsContext) {
         if (mSecurityController.isParentalControlsEnabled()) {
-            return createParentalControlsDialogView(quickSettingsContext);
+            return createParentalControlsDialogView(
+                    quickSettingsContext);
         }
         return createOrganizationDialogView(quickSettingsContext);
     }
@@ -587,8 +611,12 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
     }
 
     private View createParentalControlsDialogView(Context quickSettingsContext) {
-        View dialogView = LayoutInflater.from(quickSettingsContext)
-                .inflate(R.layout.quick_settings_footer_dialog_parental_controls, null, false);
+        View dialogView =
+                LayoutInflater.from(quickSettingsContext)
+                        .inflate(
+                                R.layout.quick_settings_footer_dialog_parental_controls,
+                                null,
+                                false);
 
         Drawable icon;
         CharSequence label;
@@ -610,6 +638,15 @@ public class QSSecurityFooterUtils implements DialogInterface.OnClickListener {
                 (TextView) dialogView.findViewById(R.id.parental_controls_title);
         parentalControlsTitle.setText(label);
 
+        if (mSecurityController.getSupervisionModel() != null) {
+            TextView parentalControlsDialogDescription =
+                    dialogView.findViewById(R.id.parental_controls_warning);
+            if (parentalControlsDialogDescription != null
+                    && mSecurityController.getSupervisionModel().getDisclaimerText() != null) {
+                parentalControlsDialogDescription.setText(
+                        mSecurityController.getSupervisionModel().getDisclaimerText());
+            }
+        }
         return dialogView;
     }
 

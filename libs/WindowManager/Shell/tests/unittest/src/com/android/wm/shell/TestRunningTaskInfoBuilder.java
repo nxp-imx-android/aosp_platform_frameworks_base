@@ -20,9 +20,6 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.WindowConfiguration;
@@ -30,16 +27,14 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.IBinder;
 import android.view.Display;
-import android.window.IWindowContainerToken;
 import android.window.WindowContainerToken;
 
 public final class TestRunningTaskInfoBuilder {
     static int sNextTaskId = 500;
     private Rect mBounds = new Rect(0, 0, 100, 100);
 
-    private WindowContainerToken mToken = createMockWCToken();
+    private WindowContainerToken mToken = new MockToken().token();
     private int mParentTaskId = INVALID_TASK_ID;
     private int mUid = INVALID_TASK_ID;
     private int mTaskId = INVALID_TASK_ID;
@@ -58,13 +53,6 @@ public final class TestRunningTaskInfoBuilder {
     private boolean mIsActivityStackTransparent = false;
     private int mNumActivities = 1;
     private long mLastActiveTime;
-
-    public static WindowContainerToken createMockWCToken() {
-        final IWindowContainerToken itoken = mock(IWindowContainerToken.class);
-        final IBinder asBinder = mock(IBinder.class);
-        doReturn(asBinder).when(itoken).asBinder();
-        return new WindowContainerToken(itoken);
-    }
 
     public TestRunningTaskInfoBuilder setToken(WindowContainerToken token) {
         mToken = token;

@@ -548,6 +548,9 @@ public final class WindowContainerTransaction implements Parcelable {
      *
      * <p>Initially after each boot-up no window containers can contain self-movable tasks.
      *
+     * <p>The container must be either a TaskDisplayArea or a root Task for this setting to have
+     * effect.
+     *
      * @param container The window container whose ability to contain self-movable tasks is set on.
      * @param isTaskMoveAllowed {@code true} to allow containing self-movable tasks, {@code
      *     false} otherwise.

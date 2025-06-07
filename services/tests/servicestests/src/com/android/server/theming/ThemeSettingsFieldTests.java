@@ -18,6 +18,7 @@ package com.android.server.theming;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeSettingsField;
 import android.content.theming.ThemeSettingsUpdater;
@@ -36,8 +37,13 @@ import java.util.function.Function;
 
 @RunWith(AndroidJUnit4.class)
 public class ThemeSettingsFieldTests {
-    static final ThemeSettings DEFAULTS = new ThemeSettings(1, 0xFF123456, 0xFF654321,
-            "home_wallpaper", ThemeStyle.VIBRANT, true);
+    public static final ThemeSettings DEFAULTS = new ThemeSettings(
+            /* colorIndex= */ 1,
+            /* systemPalette= */ 0xFF123456,
+            /* accentColor= */ 0xFF654321,
+            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
+            /* themeStyle= */ ThemeStyle.VIBRANT,
+            /* colorBoth= */ true);
     private ThemeSettingsUpdater mUpdater;
 
     @Before
@@ -89,7 +95,7 @@ public class ThemeSettingsFieldTests {
                 .colorIndex(10)
                 .systemPalette(0xFF123456)
                 .accentColor(0xFF654321)
-                .colorSource("home_wallpaper")
+                .colorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
                 .themeStyle(ThemeStyle.SPRITZ)
                 .colorBoth(true);
 

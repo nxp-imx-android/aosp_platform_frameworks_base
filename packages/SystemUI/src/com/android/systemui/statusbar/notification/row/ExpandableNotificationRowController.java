@@ -48,6 +48,7 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.SmartReplyController;
+import com.android.systemui.statusbar.notification.BundleInteractionLogger;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
@@ -103,6 +104,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final RowContentBindStage mRowContentBindStage;
     private final NotificationRowStatsLogger mStatsLogger;
     private final NotificationRowLogger mLogBufferLogger;
+    private final BundleInteractionLogger mBundleInteractionLogger;
     private final HeadsUpManager mHeadsUpManager;
     private final ExpandableNotificationRow.OnExpandClickListener mOnExpandClickListener;
     private final StatusBarStateController mStatusBarStateController;
@@ -292,7 +294,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
             MSDLPlayer msdlPlayer,
             NotificationRebindingTracker notificationRebindingTracker,
             EntryAdapterFactory entryAdapterFactory,
-            WindowRootViewBlurInteractor windowRootViewBlurInteractor) {
+            WindowRootViewBlurInteractor windowRootViewBlurInteractor,
+            BundleInteractionLogger bundleInteractionLogger) {
         mView = view;
         mContext = context;
         mListContainer = listContainer;
@@ -330,6 +333,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mMSDLPlayer = msdlPlayer;
         mEntryAdapterFactory = entryAdapterFactory;
         mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
+        mBundleInteractionLogger = bundleInteractionLogger;
     }
 
     String loadsGutsAppName(Context context, PipelineEntry pipelineEntry) {
@@ -394,7 +398,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 mSmartReplyController,
                 mStatusBarService,
                 mUiEventLogger,
-                mNotificationRebindingTracker
+                mNotificationRebindingTracker,
+                mBundleInteractionLogger
         );
         mView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         if (mAllowLongPress) {

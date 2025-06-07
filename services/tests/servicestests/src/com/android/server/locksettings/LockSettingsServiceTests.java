@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Intent;
+import android.hardware.weaver.WeaverReadStatus;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
@@ -57,9 +58,12 @@ import com.android.internal.widget.LockscreenCredential;
 import com.android.internal.widget.VerifyCredentialResponse;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.time.Duration;
 
 /**
  * atest FrameworksServicesTests:LockSettingsServiceTests
@@ -648,7 +652,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // The software and hardware counters start at 0.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
 
         // Try the same wrong PIN repeatedly.
@@ -656,10 +660,15 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             VerifyCredentialResponse response =
                     mService.verifyCredential(wrongPin, userId, 0 /* flags */);
             assertFalse(response.isMatched());
+            assertEquals(
+                    i == 0
+                            ? VerifyCredentialResponse.RESPONSE_CRED_INCORRECT
+                            : VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED,
+                    response.getResponseCode());
             assertEquals(0, response.getTimeout());
         }
         // The software and hardware counters should now be 1, for 1 unique guess.
-        assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(1, mSpManager.readFailureCounter(lskfId));
         assertEquals(1, mSpManager.getSumOfWeaverFailureCounters());
     }
 
@@ -677,7 +686,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // The software and hardware counters start at 0.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
 
         // Try the same wrong PIN repeatedly.
@@ -685,12 +694,135 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             VerifyCredentialResponse response =
                     mService.verifyCredential(wrongPin, userId, 0 /* flags */);
             assertFalse(response.isMatched());
+            assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
         }
         // The software counter should still be 0, since the software rate-limiter is fully disabled
         // and thus it should have never been told about the guesses at all. The hardware counter
         // should now be numGuesses, as all the (duplicate) guesses should have been sent to it.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(numGuesses, mSpManager.getSumOfWeaverFailureCounters());
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testVerifyCredentialTooShort() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        setCredential(userId, newPassword("password"));
+        VerifyCredentialResponse response =
+                mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_CRED_TOO_SHORT, response.getResponseCode());
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testVerifyCredentialTooShort_softwareRateLimiterFlagDisabled() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        setCredential(userId, newPassword("password"));
+        VerifyCredentialResponse response =
+                mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
+    }
+
+    // Tests that if verifyCredential is passed a wrong guess and Weaver reports INCORRECT_KEY with
+    // zero timeout (which indicates a certainly wrong guess), then LockSettingsService saves that
+    // guess as a recent wrong guess and rejects a repeat of it as a duplicate.
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testRepeatOfWrongGuessRejectedAsDuplicate_afterWeaverIncorrectKeyWithoutTimeout()
+            throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final LockscreenCredential wrongGuess = newPassword("wrong");
+
+        mSpManager.enableWeaver();
+        setCredential(userId, credential);
+
+        mSpManager.injectWeaverReadResponse(WeaverReadStatus.INCORRECT_KEY, Duration.ZERO);
+        VerifyCredentialResponse response =
+                mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_CRED_INCORRECT, response.getResponseCode());
+        assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
+
+        response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED, response.getResponseCode());
+        assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
+    }
+
+    // Same as preceding test case, but uses a nonzero timeout.
+    //
+    // TODO(b/395976735): currently the behavior in this scenario is wrong, so currently this test
+    // case is ignored. Fix the behavior and remove @Ignore.
+    @Ignore
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testRepeatOfWrongGuessRejectedAsDuplicate_afterWeaverIncorrectKeyWithTimeout()
+            throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final LockscreenCredential wrongGuess = newPassword("wrong");
+        final Duration timeout = Duration.ofSeconds(60);
+
+        mSpManager.enableWeaver();
+        setCredential(userId, credential);
+
+        mSpManager.injectWeaverReadResponse(WeaverReadStatus.INCORRECT_KEY, timeout);
+        VerifyCredentialResponse response =
+                mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_RETRY, response.getResponseCode());
+        assertEquals(timeout, response.getTimeoutAsDuration());
+
+        response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertEquals(
+                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED, response.getResponseCode());
+        assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
+    }
+
+    // Tests that if verifyCredential is passed a correct guess but it fails due to Weaver reporting
+    // a status of THROTTLE (which is the expected status when there is a remaining rate-limiting
+    // delay in Weaver), then LockSettingsService does not block the same guess from being
+    // re-attempted and in particular does not reject it as a duplicate wrong guess.
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testRepeatOfCorrectGuessAllowed_afterWeaverThrottle() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+        final Duration timeout = Duration.ofSeconds(60);
+
+        mSpManager.enableWeaver();
+        setCredential(userId, credential);
+
+        mSpManager.injectWeaverReadResponse(WeaverReadStatus.THROTTLE, timeout);
+        VerifyCredentialResponse response =
+                mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_RETRY, response.getResponseCode());
+        assertEquals(timeout, response.getTimeoutAsDuration());
+
+        response = mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertTrue(response.isMatched());
+    }
+
+    // Tests that if verifyCredential is passed a correct guess but it fails due to Weaver reporting
+    // a status of FAILED (which is the expected status when there is a transient error unrelated to
+    // the guess), then LockSettingsService does not block the same guess from being re-attempted
+    // and in particular does not reject it as a duplicate wrong guess.
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
+    public void testRepeatOfCorrectGuessAllowed_afterWeaverFailed() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential credential = newPassword("password");
+
+        mSpManager.enableWeaver();
+        setCredential(userId, credential);
+
+        mSpManager.injectWeaverReadResponse(WeaverReadStatus.FAILED, Duration.ZERO);
+        VerifyCredentialResponse response =
+                mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
+        assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
+
+        response = mService.verifyCredential(credential, userId, /* flags= */ 0);
+        assertTrue(response.isMatched());
     }
 
     private void checkRecordedFrpNotificationIntent() {

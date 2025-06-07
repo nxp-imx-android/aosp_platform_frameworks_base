@@ -35,9 +35,7 @@ import kotlinx.coroutines.flow.Flow
 @SysUISingleton
 class DreamingToLockscreenTransitionViewModel
 @Inject
-constructor(
-    animationFlow: KeyguardTransitionAnimationFlow,
-) : DeviceEntryIconTransition {
+constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTransition {
 
     private val transitionAnimation =
         animationFlow.setup(
@@ -56,10 +54,7 @@ constructor(
 
     /** Dream overlay views alpha - fade out */
     val dreamOverlayAlpha: Flow<Float> =
-        transitionAnimation.sharedFlow(
-            duration = 250.milliseconds,
-            onStep = { 1f - it },
-        )
+        transitionAnimation.sharedFlow(duration = 250.milliseconds, onStep = { 1f - it })
 
     /** Lockscreen views y-translation */
     fun lockscreenTranslationY(translatePx: Int): Flow<Float> {
@@ -97,4 +92,6 @@ constructor(
             onCancel = { 1f },
             onStep = { it },
         )
+
+    val statusBarAlpha: Flow<Float> = lockscreenAlpha
 }

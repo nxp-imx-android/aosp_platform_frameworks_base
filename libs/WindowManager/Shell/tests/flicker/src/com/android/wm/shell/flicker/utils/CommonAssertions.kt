@@ -99,6 +99,27 @@ fun LegacyFlickerTest.splitScreenDividerIsInvisibleAtStart() {
     assertLayersStart { this.isInvisible(SPLIT_SCREEN_DIVIDER_COMPONENT) }
 }
 
+fun LegacyFlickerTest.tilingDividerIsVisibleAtStart() {
+    assertLayersStart { this.isVisible(TILING_SPLIT_DIVIDER) }
+}
+
+fun LegacyFlickerTest.tilingDividerIsVisibleAtEnd() {
+    assertLayersEnd { this.isVisible(TILING_SPLIT_DIVIDER) }
+}
+
+fun LegacyFlickerTest.tilingDividerIsInvisibleAtEnd() {
+    assertLayersEnd { this.isInvisible(TILING_SPLIT_DIVIDER) }
+}
+
+fun LegacyFlickerTest.tilingDividerIsInvisibleAtStart() {
+    assertLayersStart { this.isInvisible(TILING_SPLIT_DIVIDER) }
+}
+
+
+fun LegacyFlickerTest.tilingScreenDividerIsInvisibleAtEnd() {
+    assertLayersEnd { this.isInvisible(TILING_SPLIT_DIVIDER) }
+}
+
 fun LegacyFlickerTest.splitScreenDividerIsInvisibleAtEnd() {
     assertLayersEnd { this.isInvisible(SPLIT_SCREEN_DIVIDER_COMPONENT) }
 }

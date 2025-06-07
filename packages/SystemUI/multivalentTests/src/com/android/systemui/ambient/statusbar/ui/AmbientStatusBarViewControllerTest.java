@@ -55,6 +55,7 @@ import com.android.systemui.privacy.PrivacyItemController;
 import com.android.systemui.privacy.PrivacyType;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore;
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository;
 import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController;
 import com.android.systemui.statusbar.policy.NextAlarmController;
@@ -114,6 +115,10 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
     UserTracker mUserTracker;
     @Mock
     PrivacyItemController mPrivacyItemController;
+    @Mock
+    AmbientStatusBarViewModel.Factory mAmbientStatusBarViewModelFactory;
+    @Mock
+    ConnectedDisplaysStatusBarNotificationIconViewStore.Factory mIconViewStoreFactory;
 
     LogBuffer mLogBuffer = FakeLogBuffer.Factory.Companion.create();
 
@@ -155,6 +160,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 mKosmos.getWifiInteractor(),
                 mPrivacyItemController,
                 mKosmos.getCommunalSceneInteractor(),
+                mAmbientStatusBarViewModelFactory,
+                mIconViewStoreFactory,
                 mLogBuffer);
         mController.onInit();
     }
@@ -276,14 +283,16 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testOnViewAttachedShowsMicCameraIconWhenDisabled() {
+    public void testOnViewAttachedShowsMicAndCameraIconWhenBothDisabled() {
         when(mSensorPrivacyController.isSensorBlocked(SensorPrivacyManager.Sensors.MICROPHONE))
                 .thenReturn(true);
         when(mSensorPrivacyController.isSensorBlocked(SensorPrivacyManager.Sensors.CAMERA))
                 .thenReturn(true);
         mController.onViewAttached();
         verify(mView).showIcon(
-                AmbientStatusBarView.STATUS_ICON_MIC_CAMERA_DISABLED, true, null);
+                AmbientStatusBarView.STATUS_ICON_MIC_DISABLED, true, null);
+        verify(mView).showIcon(
+                AmbientStatusBarView.STATUS_ICON_CAMERA_DISABLED, true, null);
     }
 
     @Test
@@ -331,6 +340,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 mKosmos.getWifiInteractor(),
                 mPrivacyItemController,
                 mKosmos.getCommunalSceneInteractor(),
+                mAmbientStatusBarViewModelFactory,
+                mIconViewStoreFactory,
                 mLogBuffer);
         controller.onViewAttached();
         verify(mView, never()).showIcon(
@@ -399,7 +410,7 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testMicCameraIconShownWhenSensorsBlocked() {
+    public void testMicAndCameraIconShownWhenSensorsBlocked() {
         mController.onViewAttached();
 
         when(mSensorPrivacyController.isSensorBlocked(SensorPrivacyManager.Sensors.MICROPHONE))
@@ -414,7 +425,9 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 SensorPrivacyManager.Sensors.MICROPHONE, true);
 
         verify(mView).showIcon(
-                AmbientStatusBarView.STATUS_ICON_MIC_CAMERA_DISABLED, true, null);
+                AmbientStatusBarView.STATUS_ICON_MIC_DISABLED, true, null);
+        verify(mView).showIcon(
+                AmbientStatusBarView.STATUS_ICON_CAMERA_DISABLED, true, null);
     }
 
     @Test

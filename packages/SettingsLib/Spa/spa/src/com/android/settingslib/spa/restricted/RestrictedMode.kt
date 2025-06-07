@@ -1,0 +1,38 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.settingslib.spa.restricted
+
+sealed interface RestrictedMode
+
+data object NoRestricted : RestrictedMode
+
+sealed interface Blocked : RestrictedMode {
+    /**
+     * Determines if the [RestrictedSwitchPreference]'s checked state will be forced to its param
+     * value of `ifBlockedOverrideCheckedTo` when the preference is blocked.
+     *
+     * Requires [RestrictedSwitchPreference]'s param `ifBlockedOverrideCheckedTo` to be set to a
+     * specific state (true or false).
+     */
+    val canOverrideSwitchChecked: Boolean
+        get() = false
+}
+
+interface BlockedWithDetails : Blocked {
+    /** Show the details of this restriction, usually a dialog will be displayed. */
+    fun showDetails()
+}

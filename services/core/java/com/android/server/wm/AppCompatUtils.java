@@ -18,8 +18,6 @@ package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
-import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_VR_HEADSET;
 
@@ -38,6 +36,7 @@ import android.graphics.Rect;
 import android.view.InsetsSource;
 import android.view.InsetsState;
 import android.view.WindowInsets;
+import android.window.AppCompatTransitionInfo;
 
 import com.android.window.flags.Flags;
 
@@ -82,14 +81,6 @@ final class AppCompatUtils {
             return 0;
         }
         return Math.max(width, height) / (float) Math.min(width, height);
-    }
-
-    /**
-     * Returns the orientation of the given {@code rect}.
-     */
-    static @Configuration.Orientation int computeConfigOrientation(@NonNull Rect rect) {
-        return rect.height() >= rect.width()
-                ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
     }
 
     /**
@@ -319,6 +310,23 @@ final class AppCompatUtils {
     static boolean isInDesktopMode(@NonNull Context context,
             @WindowingMode int parentWindowingMode) {
         return parentWindowingMode == WINDOWING_MODE_FREEFORM && canEnterDesktopMode(context);
+    }
+
+    /**
+     * Creates a {@link AppCompatTransitionInfo} which encapsulate the letterbox
+     * information if needed.
+     *
+     * @param activityRecord The {@link ActivityRecord} for the current activity.
+     * @return The {@link AppCompatTransitionInfo} encapsulating AppCompat related
+     * information if the activity is letterboxed or {@code null} otherwise.
+     */
+    @Nullable
+    static AppCompatTransitionInfo createAppCompatTransitionInfo(
+            @NonNull ActivityRecord activityRecord) {
+        if (activityRecord.areBoundsLetterboxed()) {
+            return new AppCompatTransitionInfo(new Rect(activityRecord.getBounds()));
+        }
+        return null;
     }
 
     private static void clearAppCompatTaskInfo(@NonNull AppCompatTaskInfo info) {

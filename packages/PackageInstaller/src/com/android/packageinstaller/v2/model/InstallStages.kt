@@ -21,6 +21,8 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import com.android.packageinstaller.v2.model.InstallAborted.Companion.ABORT_REASON_INTERNAL_ERROR
+import com.android.packageinstaller.v2.model.InstallAborted.Companion.ABORT_REASON_POLICY
 
 sealed class InstallStage(val stageCode: Int) {
 
@@ -33,6 +35,7 @@ sealed class InstallStage(val stageCode: Int) {
         const val STAGE_INSTALLING = 4
         const val STAGE_SUCCESS = 5
         const val STAGE_FAILED = 6
+        const val STAGE_VERIFICATION_CONFIRMATION_REQUIRED = 7
     }
 }
 
@@ -47,6 +50,7 @@ data class InstallUserActionRequired(
     val existingUpdateOwnerLabel: CharSequence? = null,
     val requestedUpdateOwnerLabel: CharSequence? = null,
     val unknownSourcePackageName: String? = null,
+    val verificationInfo: PackageInstaller.DeveloperVerificationUserConfirmationInfo? = null,
 ) : InstallStage(STAGE_USER_ACTION_REQUIRED) {
 
     val appIcon: Drawable?
@@ -59,6 +63,7 @@ data class InstallUserActionRequired(
         const val USER_ACTION_REASON_UNKNOWN_SOURCE = 0
         const val USER_ACTION_REASON_ANONYMOUS_SOURCE = 1
         const val USER_ACTION_REASON_INSTALL_CONFIRMATION = 2
+        const val USER_ACTION_REASON_VERIFICATION_CONFIRMATION = 3
     }
 }
 
@@ -144,3 +149,6 @@ data class InstallAborted(
         const val DLG_PACKAGE_ERROR = 1
     }
 }
+
+class InstallVerificationConfirmationRequired :
+    InstallStage(STAGE_VERIFICATION_CONFIRMATION_REQUIRED)

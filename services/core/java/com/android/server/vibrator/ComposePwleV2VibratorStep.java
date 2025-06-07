@@ -49,8 +49,7 @@ final class ComposePwleV2VibratorStep extends AbstractComposedVibratorStep {
     @Override
     public List<Step> play() {
         if (!Flags.normalizedPwleEffects()) {
-            // Skip this step and play the next one right away.
-            return nextSteps(/* segmentsPlayed= */ 1);
+            return skipStep();
         }
 
         Trace.traceBegin(Trace.TRACE_TAG_VIBRATOR, "ComposePwleV2Step");
@@ -63,8 +62,7 @@ final class ComposePwleV2VibratorStep extends AbstractComposedVibratorStep {
             if (pwles.isEmpty()) {
                 Slog.w(VibrationThread.TAG, "Ignoring wrong segment for a ComposeEnvelopeStep: "
                         + effect.getSegments().get(segmentIndex));
-                // Skip this step and play the next one right away.
-                return nextSteps(/* segmentsPlayed= */ 1);
+                return skipStep();
             }
 
             if (VibrationThread.DEBUG) {
@@ -76,9 +74,7 @@ final class ComposePwleV2VibratorStep extends AbstractComposedVibratorStep {
             long vibratorOnResult = controller.on(pwlesArray, getVibration().id, stepId);
             handleVibratorOnResult(vibratorOnResult);
             getVibration().stats.reportComposePwle(vibratorOnResult, pwlesArray);
-
-            // The next start and off times will be calculated from mVibratorOnResult.
-            return nextSteps(/* segmentsPlayed= */ pwles.size());
+            return vibratorOnNextSteps(/* segmentsPlayed= */ pwles.size());
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_VIBRATOR);
         }

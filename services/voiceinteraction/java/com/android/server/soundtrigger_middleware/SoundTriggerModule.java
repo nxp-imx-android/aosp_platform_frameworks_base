@@ -257,10 +257,9 @@ class SoundTriggerModule implements IBinder.DeathRecipient, ISoundTriggerHal.Glo
 
         @Override
         public int loadModel(@NonNull SoundModel model) {
-            SoundTriggerMiddlewareImpl.AudioSessionProvider.AudioSession audioSession = null;
+            final var audioSession = mAudioSessionProvider.acquireSession();
             try {
                 synchronized (SoundTriggerModule.this) {
-                    audioSession = mAudioSessionProvider.acquireSession();
                     checkValid();
                     Model loadedModel = new Model();
                     return loadedModel.load(model, audioSession);
@@ -279,10 +278,9 @@ class SoundTriggerModule implements IBinder.DeathRecipient, ISoundTriggerHal.Glo
 
         @Override
         public int loadPhraseModel(@NonNull PhraseSoundModel model) {
-            SoundTriggerMiddlewareImpl.AudioSessionProvider.AudioSession audioSession = null;
+            final var audioSession = mAudioSessionProvider.acquireSession();
             try {
                 synchronized (SoundTriggerModule.this) {
-                    audioSession = mAudioSessionProvider.acquireSession();
                     checkValid();
                     Model loadedModel = new Model();
                     int result = loadedModel.load(model, audioSession);

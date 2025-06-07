@@ -21,6 +21,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.IBinder;
@@ -462,10 +463,10 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
             return;
         }
         // Calculate bounds.
-        Rect maxClosingBounds = new Rect();
-        Rect maxOpeningBounds = new Rect();
+        RectF maxClosingBounds = new RectF();
+        RectF maxOpeningBounds = new RectF();
         for (int i = 0; i < info.getChanges().size(); i++) {
-            Rect bound = getBounds(states[i]);
+            RectF bound = getBounds(states[i]);
             if (bound == null) {
                 continue;
             }
@@ -489,13 +490,11 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
     }
 
     @Nullable
-    private static Rect getBounds(@Nullable WindowAnimationState state) {
+    private static RectF getBounds(@Nullable WindowAnimationState state) {
         if (state == null || state.bounds == null) {
             return null;
         }
-        Rect out = new Rect();
-        state.bounds.roundOut(out);
-        return out;
+        return state.bounds;
     }
 
     /** A {@link Runnable} that will only run once. */

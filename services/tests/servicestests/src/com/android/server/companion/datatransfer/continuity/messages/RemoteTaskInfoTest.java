@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.TaskInfo;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import org.junit.Before;
@@ -119,5 +120,33 @@ public class RemoteTaskInfoTest {
         assertThat(result.getLabel()).isEqualTo(expectedLabel);
         assertThat(result.getLastUsedTimeMillis())
             .isEqualTo(expectedLastActiveTime);
+    }
+
+    @Test
+    public void testToRemoteTask_works() {
+        // Setup the RemoteTaskInfo
+        int expectedId = 1;
+        String expectedLabel = "test";
+        long expectedLastActiveTime = 100;
+        String expectedDeviceName = "test_device";
+        int expectedDeviceId = 2;
+        TaskInfo taskInfo = createRunningTaskInfo(
+            expectedId,
+            expectedLabel,
+            expectedLastActiveTime);
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
+
+        // Convert to RemoteTask
+        RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(
+            expectedDeviceId,
+            expectedDeviceName);
+
+        // Verify the fields
+        assertThat(remoteTask.getId()).isEqualTo(expectedId);
+        assertThat(remoteTask.getLabel()).isEqualTo(expectedLabel);
+        assertThat(remoteTask.getLastUsedTimestampMillis())
+            .isEqualTo(expectedLastActiveTime);
+        assertThat(remoteTask.getDeviceId()).isEqualTo(expectedDeviceId);
+        assertThat(remoteTask.getSourceDeviceName()).isEqualTo(expectedDeviceName);
     }
 }

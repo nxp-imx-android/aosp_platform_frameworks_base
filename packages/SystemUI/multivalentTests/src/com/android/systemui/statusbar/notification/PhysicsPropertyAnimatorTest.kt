@@ -222,6 +222,38 @@ class PhysicsPropertyAnimatorTest : SysuiTestCase() {
     }
 
     @Test
+    fun testEndedBeforeStartingCleanupHandler() {
+        effectiveProperty.setValue(view, 100f)
+        val finishListener2 = Mockito.mock(DynamicAnimation.OnAnimationEndListener::class.java)
+        val animationProperties: AnimationProperties =
+            object : AnimationProperties() {
+                override fun getAnimationEndListener(
+                    property: Property<*, *>?
+                ): DynamicAnimation.OnAnimationEndListener {
+                    return finishListener2
+                }
+            }
+        animationProperties.setDelay(200)
+        PhysicsPropertyAnimator.setProperty(
+            view,
+            property,
+            200f,
+            animationProperties,
+            true,
+            finishListener,
+        )
+        val propertyData = ViewState.getChildTag(view, property.tag) as PropertyData
+        Assert.assertTrue(propertyData.endedBeforeStartingCleanupHandler != null)
+        propertyData.endedBeforeStartingCleanupHandler?.invoke(true)
+        Assert.assertTrue(propertyData.endedBeforeStartingCleanupHandler == null)
+        Assert.assertTrue(propertyData.offset == 0f)
+        Assert.assertTrue(propertyData.animator == null)
+        Assert.assertTrue(propertyData.doubleOvershootAvoidingListener == null)
+        Mockito.verify(finishListener)?.onAnimationEnd(any(), any(), any(), any())
+        Mockito.verify(finishListener2).onAnimationEnd(any(), any(), any(), any())
+    }
+
+    @Test
     fun testUsingListenerProperties() {
         val finishListener2 = Mockito.mock(DynamicAnimation.OnAnimationEndListener::class.java)
         val animationProperties: AnimationProperties =

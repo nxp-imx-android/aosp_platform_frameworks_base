@@ -98,6 +98,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.split.SplitScreenUtils;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
+import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.draganddrop.SplitDragPolicy;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
@@ -206,6 +207,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final LaunchAdjacentController mLaunchAdjacentController;
     private final Optional<WindowDecorViewModel> mWindowDecorViewModel;
     private final Optional<DesktopTasksController> mDesktopTasksController;
+    private final Optional<DesktopUserRepositories> mDesktopUserRepositories;
     private final MultiInstanceHelper mMultiInstanceHelpher;
     private final SplitState mSplitState;
     private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
@@ -239,6 +241,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel,
             Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
             @Nullable StageCoordinator stageCoordinator,
             MultiInstanceHelper multiInstanceHelper,
             SplitState splitState,
@@ -268,6 +271,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mLaunchAdjacentController = launchAdjacentController;
         mWindowDecorViewModel = windowDecorViewModel;
         mDesktopTasksController = desktopTasksController;
+        mDesktopUserRepositories = desktopUserRepositories;
         mStageCoordinator = stageCoordinator;
         mMultiInstanceHelpher = multiInstanceHelper;
         mSplitState = splitState;
@@ -319,7 +323,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mTaskOrganizer, mDisplayController, mDisplayImeController,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
-                mWindowDecorViewModel, mSplitState, mDesktopTasksController, mRootTDAOrganizer,
+                mWindowDecorViewModel, mSplitState, mDesktopTasksController,
+                mDesktopUserRepositories, mRootTDAOrganizer,
                 mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager, mMSDLPlayer);
     }
 

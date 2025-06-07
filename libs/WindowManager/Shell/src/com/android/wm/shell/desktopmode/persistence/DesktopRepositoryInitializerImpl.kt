@@ -134,6 +134,7 @@ class DesktopRepositoryInitializerImpl(
                                     deskId = newDeskId,
                                     taskId = task.taskId,
                                     isVisible = false,
+                                    taskBounds = null,
                                 )
 
                                 if (isVisible) {

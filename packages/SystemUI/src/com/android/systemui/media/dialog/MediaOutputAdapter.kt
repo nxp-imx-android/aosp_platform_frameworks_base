@@ -208,9 +208,6 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 R.dimen.media_output_item_content_vertical_margin_active
             )
 
-        private val mSubtitleAlpha =
-            mContext.resources.getFloat(R.dimen.media_output_item_subtitle_alpha)
-
         private val mButtonRippleBackground =
             AppCompatResources.getDrawable(
                 mContext,
@@ -241,7 +238,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             mLoadingIndicator.visibility = GONE
             mDivider.visibility = GONE
             mSubTitleText.visibility = GONE
-            mMainContent.setOnClickListener(null)
+            updateContentClickListener(null)
         }
 
         override fun renderDeviceItem(
@@ -374,7 +371,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
             } else {
                 mSubTitleText.text = subtitle
                 mSubTitleText.setTextColor(colorTheme.subtitleColor)
-                mSubTitleText.alpha = mSubtitleAlpha * colorTheme.contentAlpha
+                mSubTitleText.alpha = colorTheme.contentAlpha
                 mSubTitleText.visibility = VISIBLE
             }
         }
@@ -404,7 +401,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 updateSliderIconsVisibility(
                     deviceDrawable = deviceDrawable,
                     muteDrawable = muteDrawable,
-                    isMuted = currentVolume == 0,
+                    sliderVolume = currentVolume,
                 )
                 mSlider.stateDescription = getSliderStateDescription()
             }
@@ -466,7 +463,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     updateSliderIconsVisibility(
                         deviceDrawable = deviceDrawable,
                         muteDrawable = muteDrawable,
-                        isMuted = seekBarVolume == 0,
+                        sliderVolume = seekBarVolume,
                     )
                     if (seekBarVolume != currentVolume) {
                         setLatestVolumeRequest(seekBarVolume)
@@ -506,12 +503,11 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
         private fun updateSliderIconsVisibility(
             deviceDrawable: Drawable?,
             muteDrawable: Drawable?,
-            isMuted: Boolean,
+            sliderVolume: Int,
         ) {
-            mSlider.trackIconInactiveStart = if (isMuted) muteDrawable else null
-            // A workaround for the slider glitch that sometimes shows the active icon in inactive
-            // state.
-            mSlider.trackIconActiveStart = if (isMuted) null else deviceDrawable
+            mSlider.trackIconInactiveEnd = if (sliderVolume == 0) muteDrawable else deviceDrawable
+            mSlider.trackIconActiveEnd =
+                if (sliderVolume == mSlider.valueTo.toInt()) deviceDrawable else null
         }
 
         private fun updateTitleIcon(
@@ -603,8 +599,8 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                 } else {
                     R.string.accessibility_add_device_to_group_with_name
                 }
-            mGroupButton.contentDescription = mContext.getString(
-                    resId, BidiFormatter.getInstance().unicodeWrap(device.name))
+            mGroupButton.contentDescription =
+                mContext.getString(resId, BidiFormatter.getInstance().unicodeWrap(device.name))
             mGroupButton.setImageResource(
                 if (groupStatus.selected) {
                     R.drawable.ic_check_circle_filled
@@ -677,7 +673,7 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
                     else R.drawable.ic_expand_less_rounded,
                 )
             )
-            mExpandButtonIcon.contentDescription =
+            mExpandButton.contentDescription =
                 mContext.getString(
                     if (isCollapsed) R.string.accessibility_expand_group
                     else R.string.accessibility_collapse_group

@@ -40,6 +40,49 @@ import java.util.concurrent.Executor;
 @TestApi
 public class TaskOrganizer extends WindowOrganizer {
 
+    /**
+     * Data associated with a request to create a new root task.
+     * @hide
+     */
+    public static class CreateRootTaskRequest {
+        public int displayId;
+        public int windowingMode;
+        public boolean removeWithTaskOrganizer;
+        public boolean reparentOnDisplayRemoval;
+        public @Nullable IBinder launchCookie;
+        public @Nullable String name;
+
+        public CreateRootTaskRequest setDisplayId(int displayId) {
+            this.displayId = displayId;
+            return this;
+        }
+
+        public CreateRootTaskRequest setWindowingMode(int windowingMode) {
+            this.windowingMode = windowingMode;
+            return this;
+        }
+
+        public CreateRootTaskRequest setRemoveWithTaskOrganizer(boolean removeWithTaskOrganizer) {
+            this.removeWithTaskOrganizer = removeWithTaskOrganizer;
+            return this;
+        }
+
+        public CreateRootTaskRequest setReparentOnDisplayRemoval(boolean reparentOnDisplayRemoval) {
+            this.reparentOnDisplayRemoval = reparentOnDisplayRemoval;
+            return this;
+        }
+
+        public CreateRootTaskRequest setLaunchCookie(@NonNull IBinder launchCookie) {
+            this.launchCookie = launchCookie;
+            return this;
+        }
+
+        public CreateRootTaskRequest setName(@NonNull String name) {
+            this.name = name;
+            return this;
+        }
+    }
+
     private final ITaskOrganizerController mTaskOrganizerController;
     // Callbacks WM Core are posted on this executor if it isn't null, otherwise direct calls are
     // made on the incoming binder call.
@@ -143,39 +186,50 @@ public class TaskOrganizer extends WindowOrganizer {
     public void onImeDrawnOnTask(int taskId) {}
 
     /**
-     * Creates a persistent root task in WM for a particular windowing-mode.
-     * @param displayId The display to create the root task on.
-     * @param windowingMode Windowing mode to put the root task in.
-     * @param launchCookie Launch cookie to associate with the task so that is can be identified
-     *                     when the {@link ITaskOrganizer#onTaskAppeared} callback is called.
-     * @param removeWithTaskOrganizer True if this task should be removed when organizer destroyed.
-     * @param reparentOnDisplayRemoval True if this task should be reparented when its display
-     *                                is removed.
+     * @deprecated Use {@link #createRootTask(CreateRootTaskRequest)}
      * @hide
      */
+    @Deprecated
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie,
             boolean removeWithTaskOrganizer, boolean reparentOnDisplayRemoval) {
-        try {
-            mTaskOrganizerController.createRootTask(displayId, windowingMode, launchCookie,
-                    removeWithTaskOrganizer, reparentOnDisplayRemoval);
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+        createRootTask(new CreateRootTaskRequest()
+                        .setDisplayId(displayId)
+                        .setWindowingMode(windowingMode)
+                        .setLaunchCookie(launchCookie)
+                        .setRemoveWithTaskOrganizer(removeWithTaskOrganizer)
+                        .setReparentOnDisplayRemoval(reparentOnDisplayRemoval));
     }
 
     /**
      * Creates a persistent root task in WM for a particular windowing-mode.
-     * @param displayId The display to create the root task on.
-     * @param windowingMode Windowing mode to put the root task in.
-     * @param launchCookie Launch cookie to associate with the task so that is can be identified
-     *                     when the {@link ITaskOrganizer#onTaskAppeared} callback is called.
+     * This call is deprecated, use {@link #createRootTask(CreateRootTaskRequest)}.
      */
     @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
     @Nullable
     public void createRootTask(int displayId, int windowingMode, @Nullable IBinder launchCookie) {
-        createRootTask(displayId, windowingMode, launchCookie, false /* removeWithTaskOrganizer */,
-                false /* reparentOnDisplayRemoval */);
+        // TODO(b/378565144): Deprecate this method and expose CreateRootTaskRequest as TestApi
+        createRootTask(new CreateRootTaskRequest()
+                .setDisplayId(displayId)
+                .setWindowingMode(windowingMode)
+                .setLaunchCookie(launchCookie));
+    }
+
+    /**
+     * Creates a persistent root task in WM for a particular windowing-mode.
+     * @param request The data for this request
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public void createRootTask(@NonNull CreateRootTaskRequest request) {
+        try {
+            mTaskOrganizerController.createRootTask(request.displayId, request.windowingMode,
+                    request.launchCookie, request.removeWithTaskOrganizer,
+                    request.reparentOnDisplayRemoval, request.name);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /** Deletes a persistent root task in WM */

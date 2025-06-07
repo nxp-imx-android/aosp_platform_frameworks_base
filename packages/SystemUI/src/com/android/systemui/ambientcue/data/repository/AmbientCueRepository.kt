@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.data.repository
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.ActivityTaskManager
 import android.app.BroadcastOptions
@@ -31,18 +32,22 @@ import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
 import androidx.annotation.VisibleForTesting
 import androidx.tracing.trace
+import com.android.systemui.Dumpable
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.display.data.repository.FocusedDisplayRepository
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.shared.system.QuickStepContract
+import com.android.systemui.shared.system.TaskStackChangeListener
+import com.android.systemui.shared.system.TaskStackChangeListeners
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -95,11 +100,12 @@ constructor(
     private val autofillManager: AutofillManager?,
     private val activityStarter: ActivityStarter,
     private val navigationModeController: NavigationModeController,
+    dumpManager: DumpManager,
     @Background executor: Executor,
     @Application applicationContext: Context,
-    focusdDisplayRepository: FocusedDisplayRepository,
     launcherProxyService: LauncherProxyService,
-) : AmbientCueRepository {
+    private val taskStackChangeListeners: TaskStackChangeListeners,
+) : AmbientCueRepository, Dumpable {
 
     init {
         val callback =
@@ -113,6 +119,7 @@ constructor(
                 }
             }
         launcherProxyService.addCallback(callback)
+        dumpManager.registerNormalDumpable(this)
     }
 
     override val actions: StateFlow<List<ActionModel>> =
@@ -159,7 +166,7 @@ constructor(
                                                     EXTRA_AUTOFILL_ID
                                                 )
                                             val token = activityId?.token
-                                            Log.v(
+                                            Log.i(
                                                 TAG,
                                                 "Performing action: $activityId, $autofillId, " +
                                                     "$pendingIntent, $intent",
@@ -179,14 +186,14 @@ constructor(
                                         }
                                     },
                                     onPerformLongClick = {
-                                        Log.v(TAG, "AmbientCueRepositoryImpl: onPerformLongClick")
+                                        Log.i(TAG, "AmbientCueRepositoryImpl: onPerformLongClick")
                                         trace("performAmbientCueLongClick") {
                                             val pendingIntent =
                                                 chip.extras?.getParcelable<PendingIntent>(
                                                     EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT
                                                 )
                                             if (pendingIntent != null) {
-                                                Log.v(TAG, "Performing long click: $pendingIntent")
+                                                Log.i(TAG, "Performing long click: $pendingIntent")
                                                 launchPendingIntent(pendingIntent)
                                             }
                                         }
@@ -198,7 +205,7 @@ constructor(
                     if (DEBUG) {
                         Log.d(TAG, "SmartSpace OnTargetsAvailableListener $targets")
                     }
-                    Log.v(TAG, "SmartSpace actions $actions")
+                    Log.i(TAG, "SmartSpace actions $actions")
                     trySend(actions)
                 }
 
@@ -258,8 +265,17 @@ constructor(
 
     @OptIn(FlowPreview::class)
     override val globallyFocusedTaskId: StateFlow<Int> =
-        focusdDisplayRepository.globallyFocusedTask
-            .map { it?.taskId ?: INVALID_TASK_ID }
+        conflatedCallbackFlow {
+                val taskListener =
+                    object : TaskStackChangeListener {
+                        override fun onTaskMovedToFront(runningTaskInfo: RunningTaskInfo) {
+                            trySend(runningTaskInfo.taskId)
+                        }
+                    }
+
+                taskStackChangeListeners.registerTaskStackListener(taskListener)
+                awaitClose { taskStackChangeListeners.unregisterTaskStackListener(taskListener) }
+            }
             .distinctUntilChanged()
             // Filter out focused task quick change. For example, when user clicks ambient cue, the
             // click event will also be sent to NavBar, so it will cause a quick change of focused
@@ -287,6 +303,18 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = false,
             )
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        pw.println("isRootViewAttached: ${isRootViewAttached.value}")
+        pw.println("targetTaskId: ${targetTaskId.value}")
+        pw.println("globallyFocusedTaskId: ${globallyFocusedTaskId.value}")
+        pw.println("isDeactivated: ${isDeactivated.value}")
+        pw.println("isImeVisible: ${isImeVisible.value}")
+        pw.println("recentsButtonPosition: ${recentsButtonPosition.value}")
+        pw.println("isTaskBarVisible: ${isTaskBarVisible.value}")
+        pw.println("isGestureNav: ${isGestureNav.value}")
+        pw.println("actions: ${actions.value}")
+    }
 
     companion object {
         // Surface that PCC wants to push cards into

@@ -22,7 +22,6 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.ShadeTouchLog
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -31,6 +30,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.shade.TouchLogger.Companion.logTouchesTo
 import com.android.systemui.shade.data.repository.ShadeRepository
+import com.android.systemui.shade.domain.interactor.ShadeDisplayStateInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -67,10 +67,10 @@ constructor(
     private val sceneInteractorProvider: Provider<SceneInteractor>,
     private val shadeExpansionStateManager: ShadeExpansionStateManager,
     private val pulseExpansionHandler: PulseExpansionHandler,
-    private val displayStateInteractor: DisplayStateInteractor,
     private val nsslc: NotificationStackScrollLayoutController,
     private val scrimController: ScrimController,
     private val depthController: NotificationShadeDepthController,
+    private val shadeDisplayStateInteractor: ShadeDisplayStateInteractor,
 ) : CoreStartable {
 
     override fun start() {
@@ -114,7 +114,7 @@ constructor(
         applicationScope.launch {
             // TODO(b/354926927): `isShadeLayoutWide` should be deprecated in SceneContainer.
             if (SceneContainerFlag.isEnabled) {
-                    displayStateInteractor.isWideScreen
+                    shadeDisplayStateInteractor.isWideScreen
                 } else {
                     configurationRepository.onAnyConfigurationChange
                         // Force initial collection.
@@ -136,7 +136,7 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             val shadeModeInteractor = shadeModeInteractorProvider.get()
             applicationScope.launch {
-                combine(shadeModeInteractor.shadeMode, displayStateInteractor.isWideScreen) {
+                combine(shadeModeInteractor.shadeMode, shadeDisplayStateInteractor.isWideScreen) {
                         shadeMode,
                         isWideScreen ->
                         when (shadeMode) {

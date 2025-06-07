@@ -34,9 +34,9 @@ object WmCallbackForSysDecorFlag {
      * adb shell setprop persist.wm.debug.desktop_experience_devopts 1
      * ```
      */
-    private const val ENABLED_BY_DESKTOP_EXPERIENCE_DEV_OPTION = false
+    private const val ENABLED_BY_DESKTOP_EXPERIENCE_DEV_OPTION = true
 
-    val FLAG =
+    private val FLAG =
         DesktopExperienceFlags.DesktopExperienceFlag(
             Flags::enableSysDecorsCallbacksViaWm,
             /* shouldOverrideByDevOption= */ ENABLED_BY_DESKTOP_EXPERIENCE_DEV_OPTION,
@@ -45,8 +45,9 @@ object WmCallbackForSysDecorFlag {
 
     /** Is the refactor enabled */
     @JvmStatic
-    inline val isEnabled: Boolean
-        get() = FLAG.isTrue
+    val isEnabled: Boolean
+        get() =
+            FLAG.isTrue && DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

@@ -168,6 +168,10 @@ class DesksTransitionObserver(
                             deskChangeDisplayId,
                         )
                     }
+                    desktopRepository.setActiveDesk(
+                        displayId = deskTransition.displayId,
+                        deskId = deskTransition.deskId,
+                    )
                 } else {
                     logW("ActivateDeskWithTask: did not find desk change")
                 }
@@ -178,17 +182,18 @@ class DesksTransitionObserver(
                             desksOrganizer.getDeskAtEnd(change) == deskTransition.deskId
                     }
                 if (taskChange != null) {
-                    desktopRepository.setActiveDesk(
-                        displayId = deskTransition.displayId,
-                        deskId = deskTransition.deskId,
-                    )
                     desktopRepository.addTaskToDesk(
                         displayId = deskTransition.displayId,
                         deskId = deskTransition.deskId,
                         taskId = deskTransition.enterTaskId,
                         isVisible = true,
+                        taskBounds = taskChange.taskInfo?.configuration?.windowConfiguration?.bounds,
                     )
                 } else {
+                    // This is possible in cases where the task that was originally launched is a
+                    // trampoline and a new task ends up being the one that appeared. It's ok as
+                    // desktop task updates to the repository are handled by
+                    // [DesktopTaskChangeListener].
                     logW("ActivateDeskWithTask: did not find task change")
                 }
                 deskTransition.runOnTransitEnd?.invoke()
@@ -264,6 +269,7 @@ class DesksTransitionObserver(
         }
         val wct = WindowContainerTransaction()
         var hasSeenDesk = false
+        var hasSeenOpeningTask = false
         val openingUserIds = mutableListOf<Int>()
         val desksToActivate = mutableListOf<Int>()
         // Visit all task changes, not just desk/wallpaper changes because we're interested in
@@ -272,16 +278,18 @@ class DesksTransitionObserver(
             val taskInfo = checkNotNull(change.taskInfo) { "Expected non-null task info" }
             val taskId = taskInfo.taskId
             logD("Handle change for taskId=%d:", taskId)
-            if (TransitionUtil.isOpeningMode(change.mode) || change.isToTop()) {
+            if (change.isOpeningOrToTop()) {
                 logD("Opening/to-top change for userId=%d", taskInfo.userId)
                 openingUserIds += taskInfo.userId
+            }
+            if (change in deskChanges) {
+                hasSeenDesk = true
+            } else if (change.isOpeningOrToTop()) {
+                hasSeenOpeningTask = true
             }
             if (change !in deskChanges && change !in desktopWallpaperChanges) {
                 logD("Not desk or wallpaper, skipping")
                 continue
-            }
-            if (change in deskChanges) {
-                hasSeenDesk = true
             }
             val changeUserId = taskInfo.userId
             val userSwitch = getUserSwitch(change, openingUserIds)
@@ -389,6 +397,19 @@ class DesksTransitionObserver(
             )
             when {
                 change.isToBack() -> {
+                    if (
+                        !hasSeenOpeningTask &&
+                            DesktopExperienceFlags.SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT
+                                .isTrue
+                    ) {
+                        // In cases such as minimizing the last app, where we want to remain
+                        // in an empty desk, WM core may report BOTH the minimizing task and its
+                        // (former) parent root as TO_BACK changes. However, the root will still
+                        // remain in front (as it should), so do not interpret TO_BACK as it having
+                        // to be deactivated unless something else actually showed up in front.
+                        logD("desk=%d moved to back but nothing moved to front, skipping", deskId)
+                        continue
+                    }
                     if (
                         desksToActivate.contains(deskId) &&
                             DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue
@@ -498,6 +519,9 @@ class DesksTransitionObserver(
         (mode == TRANSIT_TO_FRONT) || hasFlags(FLAG_MOVED_TO_TOP)
 
     private fun TransitionInfo.Change.isToBack(): Boolean = mode == TRANSIT_TO_BACK
+
+    private fun TransitionInfo.Change.isOpeningOrToTop(): Boolean =
+        TransitionUtil.isOpeningMode(mode) || isToTop()
 
     private fun TransitionInfo.taskChanges(): List<TransitionInfo.Change> =
         changes.filter { c ->

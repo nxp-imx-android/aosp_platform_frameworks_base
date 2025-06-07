@@ -94,7 +94,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
@@ -2976,11 +2975,8 @@ public class BubblesTest extends SysuiTestCase {
         }
 
         @Override
-        public void onDragItemOverBubbleBarDragZone(@NonNull BubbleBarLocation location) {
-        }
+        public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
 
-        @Override
-        public void onItemDraggedOutsideBubbleBarDropZone() {
         }
     }
 }

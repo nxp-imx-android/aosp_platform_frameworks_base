@@ -2921,7 +2921,7 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      * to control zoom levels.</p>
      * <p>If set to AUTO, the camera device detects which capture request key the application uses
      * to do zoom, {@link CaptureRequest#SCALER_CROP_REGION android.scaler.cropRegion} or {@link CaptureRequest#CONTROL_ZOOM_RATIO android.control.zoomRatio}. If
-     * the application doesn't set android.scaler.zoomRatio or sets it to 1.0 in the capture
+     * the application doesn't set {@link CaptureRequest#CONTROL_ZOOM_RATIO android.control.zoomRatio} or sets it to 1.0 in the capture
      * request, the effective zoom level is reflected in {@link CaptureRequest#SCALER_CROP_REGION android.scaler.cropRegion} in capture
      * results. If {@link CaptureRequest#CONTROL_ZOOM_RATIO android.control.zoomRatio} is set to values other than 1.0, the effective
      * zoom level is reflected in {@link CaptureRequest#CONTROL_ZOOM_RATIO android.control.zoomRatio}. AUTO is the default value

@@ -16,7 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -111,7 +111,7 @@ public class TaskContinuityMessageReceiverTest {
         assertThat(mTaskContinuityMessageReceiver.startListening(this::onMessageReceived)).isTrue();
         verify(mMockCompanionDeviceManagerService, times(1))
             .addOnMessageReceivedListener(
-                eq(MESSAGE_TASK_CONTINUITY),
+                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
                 listenerCaptor.capture());
         IOnMessageReceivedListener listener = listenerCaptor.getValue();
         assertThat(listener).isNotNull();
@@ -141,7 +141,7 @@ public class TaskContinuityMessageReceiverTest {
         mTaskContinuityMessageReceiver.stopListening();
         verify(mMockCompanionDeviceManagerService, times(1))
             .removeOnMessageReceivedListener(
-                eq(MESSAGE_TASK_CONTINUITY),
+                eq(MESSAGE_ONEWAY_TASK_CONTINUITY),
                 eq(listener));
     }
 

@@ -11,6 +11,8 @@ android_library {
     static_libs: [
         "SettingsLibGraph",
     ],
+    sdk_version: "system_current",
+    min_sdk_version: "21",
     kotlincflags: ["-Xjvm-default=all"],
     flags_packages: [
         "aconfig_settingslib_flags",

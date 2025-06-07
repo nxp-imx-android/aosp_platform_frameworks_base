@@ -44,6 +44,9 @@ import com.android.systemui.statusbar.notification.PropertyData;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -801,7 +804,18 @@ public class ViewState implements Dumpable {
                 child.removeCallbacks(delayRunnable);
                 SpringAnimation animator = propertyData.getAnimator();
                 if (animator != null) {
+                    boolean wasRunning = animator.isRunning();
                     animator.cancel();
+                    if (!wasRunning) {
+                        // The animation was never started, so the cancel above doesn't do much.
+                        // We need to notify the endListeners manually that the animation has ended
+                        // since they need to reset some state.
+                        Function1<Boolean, Unit> listener =
+                                propertyData.getEndedBeforeStartingCleanupHandler();
+                        if (listener != null) {
+                            listener.invoke(true /* cancelled */);
+                        }
+                    }
                 }
             }
         }
@@ -818,7 +832,18 @@ public class ViewState implements Dumpable {
                 child.removeCallbacks(delayRunnable);
                 SpringAnimation animator = propertyData.getAnimator();
                 if (animator != null) {
+                    boolean wasRunning = animator.isRunning();
                     animator.skipToEnd();
+                    if (!wasRunning) {
+                        // The animation was ever started, so the skipToEnd above doesn't do much.
+                        // We need to notify the endListeners manually that the animation has ended
+                        // since they need to reset some state.
+                        Function1<Boolean, Unit> listener =
+                                propertyData.getEndedBeforeStartingCleanupHandler();
+                        if (listener != null) {
+                            listener.invoke(false /* cancelled */);
+                        }
+                    }
                 }
             }
         }

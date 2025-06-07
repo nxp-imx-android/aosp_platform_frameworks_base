@@ -890,8 +890,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mTaskSupervisor.onSystemReady();
             mActivityClientController.onSystemReady();
             mAppWarnings.onSystemReady();
-            // TODO(b/258792202) Cleanup once ASM is ready to launch
-            ActivitySecurityModelFeatureFlags.initialize(mContext.getMainExecutor());
             mGrammaticalManagerInternal = LocalServices.getService(
                     GrammaticalInflectionManagerInternal.class);
         }
@@ -1945,6 +1943,25 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 ActivityStarter.computeResolveFilterUid(callingUid, callingUid,
                         UserHandle.USER_NULL), callingPid);
         return mAmInternal.getActivityInfoForUser(aInfo, userId);
+    }
+
+    /**
+     * Checks if a task opened on the display with the given ID can be repositioned on screen using
+     * the {@link android.app.ActivityManager.AppTask#moveTaskTo} method.
+     * <p>
+     * This method does not guarantee that a subsequent call to reposition a task on the given
+     * display will succeed. Instead, it indicates whether the given display's windowing mode
+     * configuration allows for handling repositioning requests.
+     *
+     * @param displayId Target display ID
+     * @return Whether the windowing mode active on display with given ID allows task repositioning
+     */
+    public boolean isTaskMoveAllowedOnDisplay(int displayId) {
+        if (checkCallingPermission(Manifest.permission.REPOSITION_SELF_WINDOWS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        return mRootWindowContainer.isTaskMoveAllowedOnDisplay(displayId);
     }
 
     @Override
@@ -3799,21 +3816,28 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     /**
-     * Prepare to enter PiP mode after {@link TransitionController#requestStartDisplayTransition}.
+     * Sets a PiP candidate into an already collecting transition if needed.
      *
-     * @param r activity auto entering pip
-     * @return true if the activity is about to auto-enter pip or is already in pip mode.
+     * <p>Marking an activity as a PiP candidate in a collecting transition, will dispatch
+     * info about this activity to Shell when the transition is sent to Shell via
+     * requestStartTransition.</p>
+     *
+     * <p>This makes sense when an activity is either auto-enter PiP activity is requested to be
+     * launched into PiP as soon as the activity starts. For these cases, it makes sense to try and
+     * enter PiP in an already collecting transition instead of creating a separate TRANSIT_PIP.</p>
+     *
+     * @param r activity to be set as a PiP-ing candidate in an already collecting transition
      */
-    boolean prepareAutoEnterPictureAndPictureMode(ActivityRecord r) {
+    boolean setPipCandidateIfNeeded(@NonNull ActivityRecord r) {
         // If the activity is already in picture in picture mode, then just return early
         if (r.inPinnedWindowingMode()) {
             return true;
         }
 
         if (r.canAutoEnterPip() && getTransitionController().getCollectingTransition() != null) {
+            // If there is a collecting transition, try to signal a potential PiP candidate
+            // for Shell to consider when that transition is being requested.
             // This will be used later to construct TransitionRequestInfo for Shell to resolve.
-            // It will also be passed into a direct moveActivityToPinnedRootTask() call via
-            // startTransition()
             getTransitionController().getCollectingTransition().setPipActivity(r);
             return true;
         }

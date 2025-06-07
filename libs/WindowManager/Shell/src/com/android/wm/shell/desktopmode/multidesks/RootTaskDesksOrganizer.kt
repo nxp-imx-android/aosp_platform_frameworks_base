@@ -22,10 +22,12 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
+import android.app.WindowConfiguration.windowingModeToString
 import android.util.SparseArray
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DesktopExperienceFlags
+import android.window.TaskOrganizer
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
@@ -150,13 +152,15 @@ class RootTaskDesksOrganizer(
         logV("createDeskRoot in display: %d for user: %d", displayId, userId)
         createDeskRootRequests += CreateDeskRequest(displayId, userId, callback)
         shellTaskOrganizer.createRootTask(
-            displayId,
-            WINDOWING_MODE_FREEFORM,
-            /* listener = */ this,
-            /* removeWithTaskOrganizer = */ true,
-            /* reparentOnDisplayRemoval = */ DesktopExperienceFlags
-                .ENABLE_DISPLAY_DISCONNECT_INTERACTION
-                .isTrue,
+            TaskOrganizer.CreateRootTaskRequest()
+                .setName("Desk")
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setRemoveWithTaskOrganizer(true)
+                .setReparentOnDisplayRemoval(DesktopExperienceFlags
+                    .ENABLE_DISPLAY_DISCONNECT_INTERACTION
+                    .isTrue),
+            this,
         )
     }
 
@@ -482,6 +486,12 @@ class RootTaskDesksOrganizer(
             // Appearing root matches desk request.
             val deskId = taskInfo.taskId
             logV("Desk #$deskId appeared")
+            if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) {
+                logW(
+                    "Desk is not in FREEFORM mode: %s",
+                    windowingModeToString(taskInfo.windowingMode),
+                )
+            }
             deskRootsByDeskId[deskId] =
                 DeskRoot(
                     deskId = deskId,
@@ -520,6 +530,12 @@ class RootTaskDesksOrganizer(
                 taskInfo.isVisible,
                 deskRootsByDeskId[deskId].children,
             )
+            if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) {
+                logW(
+                    "Desk is not in FREEFORM mode: %s",
+                    windowingModeToString(taskInfo.windowingMode),
+                )
+            }
             return
         }
         val minimizationRoot =
@@ -603,13 +619,15 @@ class RootTaskDesksOrganizer(
         createDeskMinimizationRootRequests +=
             CreateDeskMinimizationRootRequest(displayId = displayId, deskId = deskId)
         shellTaskOrganizer.createRootTask(
-            displayId,
-            WINDOWING_MODE_FREEFORM,
-            /* listener = */ this,
-            /* removeWithTaskOrganizer = */ true,
-            /* reparentOnDisplayRemoval = */ DesktopExperienceFlags
-                .ENABLE_DISPLAY_DISCONNECT_INTERACTION
-                .isTrue,
+            TaskOrganizer.CreateRootTaskRequest()
+                .setName("MinimizedDesk_$deskId")
+                .setDisplayId(displayId)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setRemoveWithTaskOrganizer(true)
+                .setReparentOnDisplayRemoval(DesktopExperienceFlags
+                    .ENABLE_DISPLAY_DISCONNECT_INTERACTION
+                    .isTrue),
+            this,
         )
     }
 
@@ -722,14 +740,23 @@ class RootTaskDesksOrganizer(
             val minimizationRoot = deskMinimizationRootsByDeskId[deskId]
             pw.println("$innerPrefix  #$deskId visible=${root.taskInfo.isVisible}")
             pw.println("$innerPrefix    displayId=${root.taskInfo.displayId}")
+            pw.println(
+                "$innerPrefix    winMode=" + windowingModeToString(root.taskInfo.windowingMode)
+            )
             pw.println("$innerPrefix    isLaunchRootRequested=${root.isLaunchRootRequested}")
             pw.println("$innerPrefix    isTaskMoveAllowed=${root.isTaskMoveAllowed}")
             pw.println("$innerPrefix    children=${root.children}")
             pw.println("$innerPrefix    users=${root.users}")
-            pw.println("$innerPrefix    minimization root:")
-            pw.println("$innerPrefix      rootId=${minimizationRoot?.rootId}")
             if (minimizationRoot != null) {
+                pw.println("$innerPrefix    minimization root:")
+                pw.println("$innerPrefix      rootId=${minimizationRoot.rootId}")
+                pw.println(
+                    "$innerPrefix      winMode=" +
+                        windowingModeToString(minimizationRoot.taskInfo.windowingMode)
+                )
                 pw.println("$innerPrefix      children=${minimizationRoot.children}")
+            } else {
+                pw.println("$innerPrefix    minimization root=null")
             }
         }
     }

@@ -75,7 +75,7 @@ struct FeatureFlagAttribute {
   std::string name;
   bool negated = false;
 
-  std::string ToString() {
+  std::string ToString() const {
     return (negated ? "!" : "") + name;
   }
 

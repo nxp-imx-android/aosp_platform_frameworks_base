@@ -240,8 +240,9 @@ class DragZoneFactory(
                 dragZones.addAll(createBubbleHalfScreenDragZones(forBubbleBar = false))
             }
             is DraggedObject.LauncherIcon -> {
+                val showDropTarget = draggedObject.showDropTarget
                 val showSecondDropTarget = !draggedObject.bubbleBarHasBubbles
-                dragZones.addAll(createBubbleCornerDragZones(showSecondDropTarget))
+                dragZones.addAll(createBubbleCornerDragZones(showDropTarget, showSecondDropTarget))
             }
         }
         return dragZones
@@ -273,16 +274,19 @@ class DragZoneFactory(
         )
     }
 
-    private fun createBubbleCornerDragZones(showSecondDropTarget: Boolean = false): List<DragZone> {
+    private fun createBubbleCornerDragZones(
+        showDropTarget: Boolean = true,
+        showSecondDropTarget: Boolean = false
+    ): List<DragZone> {
         return listOf(
             DragZone.Bubble.Left(
                 bounds = RectZone(getBubbleBarDropRect(isLeftSide = true)),
-                dropTarget = expandedViewDropTargetLeft,
+                dropTarget = if (showDropTarget) expandedViewDropTargetLeft else null,
                 secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetLeft else null
             ),
             DragZone.Bubble.Right(
                 bounds = RectZone(getBubbleBarDropRect(isLeftSide = false)),
-                dropTarget = expandedViewDropTargetRight,
+                dropTarget = if (showDropTarget) expandedViewDropTargetRight else null,
                 secondDropTarget = if (showSecondDropTarget) bubbleBarDropTargetRight else null
             )
         )

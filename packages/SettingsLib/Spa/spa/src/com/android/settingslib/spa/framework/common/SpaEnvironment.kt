@@ -23,6 +23,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.android.settingslib.spa.framework.util.SystemProperties
+import com.android.settingslib.spa.restricted.RestrictedRepository
 
 private const val TAG = "SpaEnvironment"
 
@@ -111,6 +112,9 @@ abstract class SpaEnvironment(context: Context) {
     open val isSpaExpressiveEnabled by lazy {
         SystemProperties.getBoolean("is_expressive_design_enabled", false)
     }
+
+    /** Specify the [RestrictedRepository]. */
+    open fun getRestrictedRepository(context: Context): RestrictedRepository? = null
 
     companion object {
         /**

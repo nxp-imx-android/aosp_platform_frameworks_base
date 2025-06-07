@@ -136,7 +136,6 @@ import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionCont
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.util.settings.SecureSettings;
-import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -213,8 +212,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
     private final ActivityStarter mActivityStarter;
     private final SensitiveNotificationProtectionController
             mSensitiveNotificationProtectionController;
-
-    private final WallpaperInteractor mWallpaperInteractor;
 
     private View mLongPressedView;
 
@@ -725,9 +722,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 private boolean canHeadsUpBeCancelled(ExpandableNotificationRow row) {
-                    final boolean areGutsNotExposed =
-                            !Flags.skipCancellingHunsForGuts() || !row.areGutsExposed();
-
                     final boolean cannotFullScreen = NotificationBundleUi.isEnabled()
                             ? !row.getEntryAdapter().isFullScreenCapable()
                             : (row.getEntryLegacy().getSbn().getNotification().fullScreenIntent
@@ -736,7 +730,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     return row.isPinned()
                             && !canChildBeDismissed(row)
                             && cannotFullScreen
-                            && areGutsNotExposed;
+                            && !row.areGutsExposed();
                 }
 
                 @Override
@@ -834,7 +828,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             ActivityStarter activityStarter,
             SplitShadeStateController splitShadeStateController,
             SensitiveNotificationProtectionController sensitiveNotificationProtectionController,
-            WallpaperInteractor wallpaperInteractor,
             MagneticNotificationRowManager magneticNotificationRowManager,
             NotificationSectionsManager sectionsManager) {
         mView = view;
@@ -885,7 +878,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mDismissibilityProvider = dismissibilityProvider;
         mActivityStarter = activityStarter;
         mSensitiveNotificationProtectionController = sensitiveNotificationProtectionController;
-        mWallpaperInteractor = wallpaperInteractor;
         mView.passSplitShadeStateController(splitShadeStateController);
         mMagneticNotificationRowManager = magneticNotificationRowManager;
         mSectionsManager = sectionsManager;
@@ -990,8 +982,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 (changedRow, expanded) -> mView.onGroupExpandChanged(changedRow, expanded));
 
         mViewBinder.bindWhileAttached(mView, this);
-
-        mView.setWallpaperInteractor(mWallpaperInteractor);
     }
 
     private boolean isInVisibleLocation(NotificationEntry entry) {
@@ -1613,17 +1603,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         mView.setPulsing(pulsing, animatePulse);
     }
 
-    /** Sets whether the NSSL is displayed over the unoccluded Lockscreen. */
-    public void setOnLockscreen(boolean isOnLockscreen) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mNotificationListContainer.setOnLockscreen(isOnLockscreen);
-    }
-
     /**
      * Set the maximum number of notifications that can currently be displayed
      */
     public void setMaxDisplayedNotifications(int maxNotifications) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        SceneContainerFlag.assertInLegacyMode();
         mNotificationListContainer.setMaxDisplayedNotifications(maxNotifications);
     }
 
@@ -2029,11 +2013,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         @Override
         public void addContainerViewAt(View v, int index) {
             mView.addContainerViewAt(v, index);
-        }
-
-        @Override
-        public void setOnLockscreen(boolean isOnLockscreen) {
-            mView.setOnLockscreen(isOnLockscreen);
         }
 
         @Override

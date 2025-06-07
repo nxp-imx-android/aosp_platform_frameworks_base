@@ -572,7 +572,7 @@ constructor(
             // and children backgrounds / divider animations will look correct.
             expandView.isGroupExpansionChanging = true
             if (NotificationBundleUi.isEnabled) {
-                userId = expandView.entryAdapter?.sbn?.userId!!
+                expandView.entryAdapter.sbn?.userId?.let { userId = it }
             } else {
                 userId = expandView.entryLegacy.sbn.userId
             }

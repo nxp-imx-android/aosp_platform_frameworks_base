@@ -38,6 +38,7 @@ import com.android.settingslib.spa.gallery.page.LoadingBarPageProvider
 import com.android.settingslib.spa.gallery.page.ProgressBarPageProvider
 import com.android.settingslib.spa.gallery.page.SliderPageProvider
 import com.android.settingslib.spa.gallery.preference.PreferenceMainPageProvider
+import com.android.settingslib.spa.gallery.restricted.RestrictedSwitchPreferencePageProvider
 import com.android.settingslib.spa.gallery.scaffold.PagerMainPageProvider
 import com.android.settingslib.spa.gallery.scaffold.SearchScaffoldPageProvider
 import com.android.settingslib.spa.gallery.scaffold.GlifScaffoldPageProvider
@@ -61,6 +62,7 @@ object HomePageProvider : SettingsPageProvider {
         HomeScaffold(title) {
             Category {
                 PreferenceMainPageProvider.Entry()
+                RestrictedSwitchPreferencePageProvider.Entry()
             }
             Category {
                 SearchScaffoldPageProvider.Entry()

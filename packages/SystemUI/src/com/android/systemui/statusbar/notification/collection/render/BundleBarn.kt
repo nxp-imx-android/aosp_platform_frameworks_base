@@ -18,10 +18,17 @@ package com.android.systemui.statusbar.notification.collection.render
 
 import android.content.Context
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.ComposeView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.lifecycle.WindowLifecycleState
+import com.android.systemui.initOnBackPressedDispatcherOwner
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.lifecycle.viewModel
+import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.NotificationPresenter
@@ -34,6 +41,7 @@ import com.android.systemui.statusbar.notification.row.RowInflaterTask
 import com.android.systemui.statusbar.notification.row.RowInflaterTaskLogger
 import com.android.systemui.statusbar.notification.row.dagger.BundleRowComponent
 import com.android.systemui.statusbar.notification.row.dagger.ExpandableNotificationRowComponent
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import com.android.systemui.util.time.SystemClock
 import dagger.Lazy
@@ -84,25 +92,33 @@ constructor(
             val controller = component.expandableNotificationRowController
             controller.init(bundleEntry)
             keyToControllerMap[bundleEntry.key] = controller
-
-            val bundleRowComponent =
-                bundleRowComponentBuilder.bindBundleRepository(bundleEntry.bundleRepository).build()
-
-            row.repeatWhenAttached {
-                row.viewModel(
-                    traceName = "BundleHeaderViewModel",
-                    minWindowLifecycleState = WindowLifecycleState.ATTACHED,
-                    factory = bundleRowComponent.bundleViewModelFactory()::create,
-                ) { viewModel ->
-                    row.initBundleHeader(viewModel)
-                }
-            }
+            row.repeatWhenAttached { repeatOnLifecycle(Lifecycle.State.CREATED) { row.reset() } }
+            initBundleHeaderView(bundleEntry, row)
         }
         debugBundleLog(TAG) { "calling inflate: ${bundleEntry.key}" }
         keyToControllerMap[bundleEntry.key] = null
         rowInflaterTaskProvider
             .get()
             .inflate(context, parent, bundleEntry, inflationFinishedListener)
+    }
+
+    private fun initBundleHeaderView(bundleEntry: BundleEntry, row: ExpandableNotificationRow) {
+        val bundleRowComponent =
+            bundleRowComponentBuilder.bindBundleRepository(bundleEntry.bundleRepository).build()
+        val headerComposeView = ComposeView(context)
+        row.setBundleHeaderView(headerComposeView)
+        headerComposeView.repeatWhenAttached {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                headerComposeView.initOnBackPressedDispatcherOwner(lifecycle)
+                headerComposeView.setContent {
+                    HeaderComposeViewContent(
+                        row = row,
+                        bundleHeaderViewModelFactory =
+                            bundleRowComponent.bundleViewModelFactory()::create,
+                    )
+                }
+            }
+        }
     }
 
     /** Return true if finished inflating. */
@@ -139,6 +155,25 @@ constructor(
                 d.dump("Bundle key:$key", stateString)
             }
         }
+    }
+}
+
+@Composable
+private fun HeaderComposeViewContent(
+    row: ExpandableNotificationRow,
+    bundleHeaderViewModelFactory: () -> BundleHeaderViewModel,
+) {
+    PlatformTheme {
+        val viewModel =
+            rememberViewModel(
+                traceName = "BundleHeaderViewModel",
+                factory = bundleHeaderViewModelFactory,
+            )
+        DisposableEffect(viewModel) {
+            row.setBundleHeaderViewModel(viewModel)
+            onDispose { row.setBundleHeaderViewModel(null) }
+        }
+        BundleHeader(viewModel, onHeaderClicked = { row.expandNotification() })
     }
 }
 

@@ -184,6 +184,11 @@ public class CollapsingToolbarAppCompatActivity extends AppCompatActivity implem
     }
 
     @Override
+    public void removeOnItemSelectedListener() {
+        getToolbarDelegate().removeOnItemSelectedListener();
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStackImmediate();

@@ -16,7 +16,9 @@
 
 package com.android.systemui.topwindoweffects
 
+import android.os.Handler
 import android.os.SystemProperties
+import android.view.Choreographer
 import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
@@ -56,6 +58,7 @@ constructor(
     // TopUiControllerRefactor made it to nextfood
     private val notificationShadeWindowController: NotificationShadeWindowController,
     @Main private val mainExecutor: Executor,
+    @Main private val mainHandler: Handler,
 ) : CoreStartable {
 
     // The main animation is interruptible until power button long press has been detected. At this
@@ -155,7 +158,13 @@ constructor(
                 this.interpolator = interpolator
                 addUpdateListener {
                     squeezeProgress = animatedValue as Float
-                    appZoomOutOptional.ifPresent { it.setTopLevelProgress(squeezeProgress) }
+                    appZoomOutOptional.ifPresent {
+                        it.setTopLevelProgress(
+                            squeezeProgress,
+                            Choreographer.getInstance().vsyncId,
+                            mainHandler,
+                        )
+                    }
                 }
                 setListenerForNaturalCompletion { doOnEnd() }
                 start()

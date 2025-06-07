@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.helpers
 
+import android.app.ActivityOptions as ActivityOptionsForIntent
 import android.app.Instrumentation
 import android.tools.Rotation
 import android.tools.helpers.FIND_TIMEOUT
@@ -52,14 +53,16 @@ constructor(
         launchedAppComponentMatcherOverride: IComponentMatcher?,
         action: String?,
         stringExtras: Map<String, String>,
-        waitConditionsBuilder: WindowManagerStateHelper.StateSyncBuilder
+        waitConditionsBuilder: WindowManagerStateHelper.StateSyncBuilder,
+        options: ActivityOptionsForIntent?,
     ) {
         super.launchViaIntent(
             wmHelper,
             launchedAppComponentMatcherOverride,
             action,
             stringExtras,
-            waitConditionsBuilder
+            waitConditionsBuilder,
+            options,
         )
         waitIMEShown(wmHelper)
     }

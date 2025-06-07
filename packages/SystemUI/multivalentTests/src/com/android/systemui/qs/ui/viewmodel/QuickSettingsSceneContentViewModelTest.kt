@@ -24,6 +24,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
@@ -81,6 +82,7 @@ class QuickSettingsSceneContentViewModelTest : SysuiTestCase() {
                     mediaCarouselInteractor = mediaCarouselInteractor,
                     shadeModeInteractor = shadeModeInteractor,
                     sceneInteractor = sceneInteractor,
+                    mainDispatcher = testDispatcher,
                 )
             underTest.activateIn(testScope)
             disableDualShade()

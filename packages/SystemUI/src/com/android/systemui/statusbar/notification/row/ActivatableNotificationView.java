@@ -121,6 +121,12 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     protected Point mTargetPoint;
     private boolean mDismissed;
     private boolean mRefocusOnDismiss;
+    /**
+     * Whether the notification is on the keyguard. This is used to disable the transparent
+     * background, and the {@link ExpandableNotificationRow} additionally uses this to disable
+     * expansion.
+     */
+    protected boolean mOnKeyguard;
     protected boolean mIsBlurSupported;
 
     public ActivatableNotificationView(Context context, AttributeSet attrs) {
@@ -343,7 +349,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     }
 
     protected boolean usesTransparentBackground() {
-        return mIsBlurSupported && notificationRowTransparency();
+        return mIsBlurSupported && notificationRowTransparency() && !mOnKeyguard;
     }
 
     @Override
@@ -824,6 +830,30 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
 
     public void setTouchHandler(Gefingerpoken touchHandler) {
         mTouchHandler = touchHandler;
+    }
+
+    /**
+     * Sets whether this view is on the keyguard.
+     * Subclass implementations must set {@link #mOnKeyguard} to the given value.
+     * @see #isOnKeyguard()
+     */
+    public void setOnKeyguard(boolean onKeyguard) {
+        if (mOnKeyguard == onKeyguard) {
+            return;
+        }
+
+        mOnKeyguard = onKeyguard;
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
+        }
+    }
+
+    /**
+     * Whether this row is displayed over the unoccluded lockscreen. Returns false on the
+     * locked shade.
+     */
+    public boolean isOnKeyguard() {
+        return mOnKeyguard;
     }
 
     @Override

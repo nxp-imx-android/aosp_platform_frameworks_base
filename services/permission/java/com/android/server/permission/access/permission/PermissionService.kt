@@ -2722,7 +2722,16 @@ class PermissionService(private val service: AccessCheckingService) :
             runtimePermissionRevokedUids.clear()
 
             gidsChangedUids.forEachIndexed { _, uid ->
-                handler.post { killUid(uid, PermissionManager.KILL_APP_REASON_GIDS_CHANGED) }
+                // We must pass a non-null object to avoid matching the true/false being used by
+                // the code for runtimePermissionRevokedUids above.
+                if (!handler.hasMessages(uid, 0)) {
+                    handler
+                        .obtainMessage(uid, 0)
+                        .setCallback {
+                            killUid(uid, PermissionManager.KILL_APP_REASON_GIDS_CHANGED)
+                        }
+                        .sendToTarget()
+                }
             }
             gidsChangedUids.clear()
 

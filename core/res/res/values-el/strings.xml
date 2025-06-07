@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"πρόσβαση στα δεδομένα αισθητήρα σχετικά με τις ζωτικές ενδείξεις σας"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Ειδοποιήσεις"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"εμφάνιση ειδοποιήσεων"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"Δεδομένα παρακολούθησης XR"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"πρόσβαση σε δεδομένα XR για εσάς και το περιβάλλον γύρω σας"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"ευαίσθητα δεδομένα παρακολούθησης XR"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"πρόσβαση σε ευαίσθητα δεδομένα παρακολούθησης, όπως είναι η εστίαση των ματιών"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Ανάκτηση του περιεχομένου του παραθύρου"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Έλεγχος του περιεχομένου ενός παραθύρου με το οποίο αλληλεπιδράτε."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Ενεργοποίηση της \"Εξερεύνησης με άγγιγμα\""</string>
@@ -2553,28 +2559,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Χάρτες"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Εφαρμογές"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Δεν είναι δυνατή πλέον η αναγνώριση των δακτυλικών αποτυπωμάτων σας. Ρυθμίστε ξανά τη λειτουργία Ξεκλείδωμα με δακτυλικό αποτύπωμα."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Ασφάλεια και απόρρητο"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Ενισχυμένη προστασία για USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Ξεκλείδωμα συσκευής για μεταφορά δεδομένων"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Ίσως χρειαστεί να ξεκλειδώσετε και να επανασυνδέσετε τη συσκευή σας για μεταφορά δεδομένων"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Ξεκλείδωμα συσκευής για γρήγορη φόρτιση και μεταφορά δεδομένων"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Ίσως χρειαστεί να ξεκλειδώσετε και να επανασυνδέσετε τη συσκευή σας για γρήγορη φόρτιση και μεταφορά δεδομένων"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Ξεκλείδωμα συσκευής για γρήγορη φόρτιση"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Ίσως χρειαστεί να ξεκλειδώσετε και να επανασυνδέσετε τη συσκευή σας για γρήγορη φόρτιση"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Σίγαση"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Η ειδοποίηση τέθηκε σε σίγαση"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Σε σίγαση μέχρι την επανεκκίνηση της συσκευής"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Ύποπτη δραστηριότητα USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Το σήμα δεδομένων USB έχει απενεργοποιηθεί."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Αντιμετωπίζετε προβλήματα με τη λειτουργία Ξεκλείδωμα με δακτυλικό αποτύπωμα;"</string>

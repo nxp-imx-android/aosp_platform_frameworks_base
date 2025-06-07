@@ -28,7 +28,8 @@ import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_KEY
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
-import org.mockito.kotlin.mock
+import com.android.settingslib.metadata.preferenceHierarchy
+import kotlinx.coroutines.CoroutineScope
 
 /** Creates [Preference] widget and binds with metadata. */
 @Suppress("UNCHECKED_CAST")
@@ -36,7 +37,7 @@ import org.mockito.kotlin.mock
 fun <P : Preference> PreferenceMetadata.createAndBindWidget(
     context: Context,
     preferenceScreen: PreferenceScreen? = null,
-    preferenceScreenMetadata: PreferenceScreenMetadata = mock(),
+    preferenceScreenMetadata: PreferenceScreenMetadata = DummyPreferenceScreenMetadata,
 ): P {
     val binding = PreferenceBindingFactory.defaultFactory.getPreferenceBinding(this)!!
     return (binding.createWidget(context) as P).also {
@@ -52,9 +53,19 @@ fun <P : Preference> PreferenceMetadata.createAndBindWidget(
     }
 }
 
-/** Launches fragment for given [PreferenceScreenCreator]. */
+private object DummyPreferenceScreenMetadata : PreferenceScreenMetadata {
+    override val key: String
+        get() = ""
+
+    override fun fragmentClass() = null
+
+    override fun getPreferenceHierarchy(context: Context, coroutineScope: CoroutineScope) =
+        preferenceHierarchy(context) {}
+}
+
+/** Launches fragment for given [PreferenceScreenMetadata]. */
 @Suppress("UNCHECKED_CAST")
-fun PreferenceScreenCreator.launchFragmentScenario() =
+fun PreferenceScreenMetadata.launchFragmentScenario() =
     FragmentScenario.launchInContainer(
         fragmentClass() as Class<out PreferenceFragmentCompat>,
         Bundle(2).also {

@@ -28,13 +28,19 @@ import static android.net.IpSecAlgorithm.AUTH_HMAC_SHA512;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CBC;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CTR;
 
+import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_IPv4;
+import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_IPv4v6;
+import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_IPv6;
+import static com.android.server.connectivity.VpnConnectivityMetrics.IP_PROTOCOL_UNKNOWN;
 import static com.android.testutils.Cleanup.testAndCleanup;
 import static com.android.server.connectivity.VpnConnectivityMetrics.buildAllowedAlgorithmsBitmask;
+import static com.android.server.connectivity.VpnConnectivityMetrics.checkIpProtocol;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.net.Ikev2VpnProfile;
+import android.net.LinkAddress;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -70,5 +76,16 @@ public class VpnConnectivityMetricsTest {
             buildAllowedAlgorithmsBitmask(List.of("unknown"));
             assertTrue(hasFailed.get());
         }, () -> Log.setWtfHandler(originalHandler));
+    }
+
+    @Test
+    public void testCheckIpProtocol() {
+        final LinkAddress vpnClientIpv4 = new LinkAddress("192.0.2.1/32");
+        final LinkAddress vpnClientIpv6 = new LinkAddress("2001:db8:1:2::ffe/128");
+
+        assertEquals(IP_PROTOCOL_UNKNOWN, checkIpProtocol(List.of()));
+        assertEquals(IP_PROTOCOL_IPv4, checkIpProtocol(List.of(vpnClientIpv4)));
+        assertEquals(IP_PROTOCOL_IPv6, checkIpProtocol(List.of(vpnClientIpv6)));
+        assertEquals(IP_PROTOCOL_IPv4v6, checkIpProtocol(List.of(vpnClientIpv4, vpnClientIpv6)));
     }
 }

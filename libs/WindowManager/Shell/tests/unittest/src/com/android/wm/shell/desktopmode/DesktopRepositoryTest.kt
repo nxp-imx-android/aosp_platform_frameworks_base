@@ -27,6 +27,7 @@ import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE
 import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION
+import com.android.window.flags.Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION
 import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTestCase
@@ -124,7 +125,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
 
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(listener.activeChangesOnDefaultDisplay).isEqualTo(1)
     }
@@ -134,7 +135,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
 
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(repo.isActiveTask(1)).isTrue()
     }
@@ -144,8 +145,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
 
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(listener.activeChangesOnDefaultDisplay).isEqualTo(1)
     }
@@ -155,8 +156,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
 
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(listener.activeChangesOnDefaultDisplay).isEqualTo(2)
     }
@@ -167,9 +168,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
 
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
-        repo.addTask(SECOND_DISPLAY, taskId = 3, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(SECOND_DISPLAY, taskId = 3, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(listener.activeChangesOnDefaultDisplay).isEqualTo(2)
         assertThat(listener.activeChangesOnSecondaryDisplay).isEqualTo(1)
@@ -178,8 +179,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun addTask_multipleDisplays_moveToAnotherDisplay() {
         repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.addTask(SECOND_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(SECOND_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         assertThat(repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)).isEmpty()
         assertThat(repo.getFreeformTasksInZOrder(SECOND_DISPLAY)).containsExactly(1)
     }
@@ -190,7 +191,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.removeDesk(deskId = 0)
 
         assertThrows(Exception::class.java) {
-            repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 5, isVisible = true)
+            repo.addTask(
+                displayId = DEFAULT_DISPLAY,
+                taskId = 5,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
         }
     }
 
@@ -205,6 +211,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 deskId = 2,
                 taskId = 4,
                 isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
             )
         }
     }
@@ -214,10 +221,34 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun addTaskToDesk_addsToZOrderList() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(DEFAULT_DISPLAY, deskId = 3)
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 2, taskId = 5, isVisible = true)
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 2, taskId = 6, isVisible = true)
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 2, taskId = 7, isVisible = true)
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 3, taskId = 8, isVisible = true)
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 2,
+            taskId = 5,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 2,
+            taskId = 6,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 2,
+            taskId = 7,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 3,
+            taskId = 8,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         val orderedTasks = repo.getFreeformTasksIdsInDeskInZOrder(deskId = 2)
         assertThat(orderedTasks[0]).isEqualTo(7)
@@ -230,7 +261,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun addTaskToDesk_visible_addsToVisible() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 2)
 
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 2, taskId = 5, isVisible = true)
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 2,
+            taskId = 5,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.isVisibleTask(5)).isTrue()
     }
@@ -240,9 +277,21 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun addTaskToDesk_removesFromAllOtherDesks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(DEFAULT_DISPLAY, deskId = 3)
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 2, taskId = 7, isVisible = true)
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 2,
+            taskId = 7,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
-        repo.addTaskToDesk(displayId = DEFAULT_DISPLAY, deskId = 3, taskId = 7, isVisible = true)
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 3,
+            taskId = 7,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getActiveTaskIdsInDesk(2)).doesNotContain(7)
     }
@@ -251,7 +300,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun removeActiveTask_notifiesActiveTaskListener() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeActiveTask(1)
 
@@ -263,7 +312,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun removeActiveTask_marksTaskNotActive() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeActiveTask(1)
 
@@ -284,7 +333,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun remoteActiveTask_listenerForOtherDisplayNotNotified() {
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeActiveTask(1)
 
@@ -297,7 +346,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun removeActiveTask_excludingDesk_leavesTaskInDesk() {
         repo.addDesk(displayId = 2, deskId = 11)
         repo.addDesk(displayId = 3, deskId = 12)
-        repo.addTaskToDesk(displayId = 3, deskId = 12, taskId = 100, isVisible = true)
+        repo.addTaskToDesk(
+            displayId = 3,
+            deskId = 12,
+            taskId = 100,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         repo.removeActiveTask(taskId = 100, excludedDeskId = 12)
 
@@ -323,7 +378,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun updateTask_singleVisibleNonClosingTask_updatesTasksCorrectly() {
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.isVisibleTask(1)).isTrue()
         assertThat(repo.isClosingTask(1)).isFalse()
@@ -338,8 +398,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun updateTaskVisibility_multipleTasks_persistsVisibleTasks() =
         runTest(StandardTestDispatcher()) {
-            repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-            repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+            repo.updateTask(
+                DEFAULT_DISPLAY,
+                taskId = 1,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
+            repo.updateTask(
+                DEFAULT_DISPLAY,
+                taskId = 2,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
 
             inOrder(persistentRepository).run {
                 verify(persistentRepository)
@@ -367,7 +437,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun isOnlyVisibleNonClosingTask_singleVisibleClosingTask() {
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.addClosingTask(displayId = DEFAULT_DISPLAY, deskId = 0, taskId = 1)
 
         // A visible task that's closing
@@ -438,7 +513,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun isOnlyVisibleNonClosingTask_singleVisibleMinimizedTask() {
         val taskId = 1
-        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.minimizeTask(DEFAULT_DISPLAY, taskId)
 
         // The visible task that's closing
@@ -452,8 +527,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun isOnlyVisibleNonClosingTask_multipleVisibleNonClosingTasks() {
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         // Not the only task
         assertThat(repo.isVisibleTask(1)).isTrue()
@@ -475,9 +560,19 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun isOnlyVisibleNonClosingTask_multipleDisplays() {
         repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         repo.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
-        repo.updateTask(SECOND_DISPLAY, taskId = 3, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.updateTask(SECOND_DISPLAY, taskId = 3, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         // Not the only task on DEFAULT_DISPLAY
         assertThat(repo.isVisibleTask(1)).isTrue()
@@ -495,7 +590,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addVisibleTasksListener_notifiesVisibleFreeformTask() {
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         val listener = TestVisibilityListener()
         val executor = TestShellExecutor()
 
@@ -509,7 +609,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun addListener_tasksOnDifferentDisplay_doesNotNotify() {
         repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.updateTask(SECOND_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(SECOND_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         val listener = TestVisibilityListener()
         val executor = TestShellExecutor()
         repo.addVisibleTasksListener(listener, executor)
@@ -526,8 +626,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val executor = TestShellExecutor()
         repo.addVisibleTasksListener(listener, executor)
 
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
 
         assertThat(listener.visibleTasksCountOnDefaultDisplay).isEqualTo(2)
@@ -543,7 +653,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val executor = TestShellExecutor()
         repo.addVisibleTasksListener(listener, executor)
 
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
 
         assertThat(listener.visibleTasksCountOnDefaultDisplay).isEqualTo(1)
@@ -553,7 +668,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         // 1 for the registration.
         assertThat(listener.visibleChangesOnSecondaryDisplay).isEqualTo(1)
 
-        repo.updateTask(displayId = 1, taskId = 2, isVisible = true)
+        repo.updateTask(displayId = 1, taskId = 2, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         executor.flushAll()
 
         // Listener for secondary display is notified
@@ -572,12 +687,17 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val executor = TestShellExecutor()
         repo.addVisibleTasksListener(listener, executor)
 
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
         assertThat(listener.visibleTasksCountOnDefaultDisplay).isEqualTo(1)
 
         // Mark task 1 visible on secondary display
-        repo.updateTask(displayId = 1, taskId = 1, isVisible = true)
+        repo.updateTask(displayId = 1, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         executor.flushAll()
 
         // Default display should have 3 calls
@@ -597,18 +717,38 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestVisibilityListener()
         val executor = TestShellExecutor()
         repo.addVisibleTasksListener(listener, executor)
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
 
         assertThat(listener.visibleTasksCountOnDefaultDisplay).isEqualTo(2)
 
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = false)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
 
         assertThat(listener.visibleChangesOnDefaultDisplay).isEqualTo(4)
 
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = false)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
 
         assertThat(listener.visibleTasksCountOnDefaultDisplay).isEqualTo(0)
@@ -624,13 +764,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val listener = TestVisibilityListener()
         val executor = TestShellExecutor()
         repo.addVisibleTasksListener(listener, executor)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         executor.flushAll()
 
         assertThat(listener.visibleTasksCountOnDefaultDisplay).isEqualTo(2)
 
-        repo.updateTask(INVALID_DISPLAY, taskId = 1, isVisible = false)
+        repo.updateTask(
+            INVALID_DISPLAY,
+            taskId = 1,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         executor.flushAll()
 
         // 1 from registering, 1x3 for each update including the one to the invalid display.
@@ -644,30 +789,60 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(0)
 
         // New task increments count to 1
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(1)
 
         // Visibility update to same task does not increase count
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(1)
 
         // Second task visible increments count
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(2)
 
         // Hiding a task decrements count
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = false)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(1)
 
         // Hiding all tasks leaves count at 0
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 2, isVisible = false)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         assertThat(repo.getVisibleTaskCount(displayId = 9)).isEqualTo(0)
 
         // Hiding a not existing task, count remains at 0
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 999, isVisible = false)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 999,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(0)
     }
 
@@ -679,32 +854,47 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(repo.getVisibleTaskCount(SECOND_DISPLAY)).isEqualTo(0)
 
         // New task on default display increments count for that display only
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(1)
         assertThat(repo.getVisibleTaskCount(SECOND_DISPLAY)).isEqualTo(0)
 
         // New task on secondary display, increments count for that display only
-        repo.updateTask(SECOND_DISPLAY, taskId = 2, isVisible = true)
+        repo.updateTask(SECOND_DISPLAY, taskId = 2, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(1)
         assertThat(repo.getVisibleTaskCount(SECOND_DISPLAY)).isEqualTo(1)
 
         // Marking task visible on another display, updates counts for both displays
-        repo.updateTask(SECOND_DISPLAY, taskId = 1, isVisible = true)
+        repo.updateTask(SECOND_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(0)
         assertThat(repo.getVisibleTaskCount(SECOND_DISPLAY)).isEqualTo(2)
 
         // Marking task that is on secondary display, hidden on default display, does not affect
         // secondary display
-        repo.updateTask(DEFAULT_DISPLAY, taskId = 1, isVisible = false)
+        repo.updateTask(
+            DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(0)
         assertThat(repo.getVisibleTaskCount(SECOND_DISPLAY)).isEqualTo(2)
 
         // Hiding a task on that display, decrements count
-        repo.updateTask(SECOND_DISPLAY, taskId = 1, isVisible = false)
+        repo.updateTask(
+            SECOND_DISPLAY,
+            taskId = 1,
+            isVisible = false,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getVisibleTaskCount(DEFAULT_DISPLAY)).isEqualTo(0)
         assertThat(repo.getVisibleTaskCount(SECOND_DISPLAY)).isEqualTo(1)
@@ -712,9 +902,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addTask_didNotExist_addsToTop() {
-        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
         assertThat(tasks.size).isEqualTo(3)
@@ -727,9 +917,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun addTask_noTaskExists_persistenceEnabled_addsToTop() =
         runTest(StandardTestDispatcher()) {
-            repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true)
-            repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
-            repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true)
+            repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+            repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+            repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
             val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
             assertThat(tasks).containsExactly(7, 6, 5).inOrder()
@@ -769,11 +959,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addTask_alreadyExists_movesToTop() {
-        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
-        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
         assertThat(tasks.size).isEqualTo(3)
@@ -782,9 +972,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addTask_taskIsMinimized_unminimizesTask() {
-        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.minimizeTask(displayId = 0, taskId = 6)
 
         val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
@@ -796,9 +986,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun minimizeTask_persistenceEnabled_taskIsPersistedAsMinimized() =
         runTest(StandardTestDispatcher()) {
-            repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true)
-            repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
-            repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true)
+            repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+            repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+            repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
             repo.minimizeTask(displayId = 0, taskId = 6)
 
@@ -851,9 +1041,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addTask_taskIsUnminimized_noop() {
-        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true)
-        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, 5, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
+        repo.addTask(DEFAULT_DISPLAY, 7, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         val tasks = repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)
         assertThat(tasks).containsExactly(7, 6, 5).inOrder()
@@ -862,7 +1052,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun removeTask_invalidDisplay_removesTaskFromFreeformTasks() {
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeTask(taskId = 1)
 
@@ -874,7 +1064,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun removeTask_invalidDisplay_persistenceEnabled_removesTaskFromFreeformTasks() {
         runTest(StandardTestDispatcher()) {
-            repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+            repo.addTask(
+                DEFAULT_DISPLAY,
+                taskId = 1,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
 
             repo.removeTask(taskId = 1)
 
@@ -903,7 +1098,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun removeTask_validDisplay_removesTaskFromFreeformTasks() {
-        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeTask(taskId = 1)
 
@@ -915,7 +1110,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun removeTask_validDisplay_persistenceEnabled_removesTaskFromFreeformTasks() {
         runTest(StandardTestDispatcher()) {
-            repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+            repo.addTask(
+                DEFAULT_DISPLAY,
+                taskId = 1,
+                isVisible = true,
+                taskBounds = TEST_TASK_BOUNDS,
+            )
 
             repo.removeTask(taskId = 1)
 
@@ -945,7 +1145,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun removeTask_removesTaskBoundsBeforeMaximize() {
         val taskId = 1
-        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.saveBoundsBeforeMaximize(taskId, Rect(0, 0, 200, 200))
 
         repo.removeTask(taskId)
@@ -956,7 +1156,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun removeTask_removesTaskBoundsBeforeImmersive() {
         val taskId = 1
-        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.saveBoundsBeforeFullImmersive(taskId, Rect(0, 0, 200, 200))
 
         repo.removeTask(taskId)
@@ -970,7 +1170,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         val taskId = 1
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
-        repo.addTask(THIRD_DISPLAY, taskId, isVisible = true)
+        repo.addTask(THIRD_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeTask(taskId)
 
@@ -981,7 +1181,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun removeTask_unminimizesTask() {
         val taskId = 1
-        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true)
+        repo.addTask(DEFAULT_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.minimizeTask(DEFAULT_DISPLAY, taskId)
 
         repo.removeTask(taskId)
@@ -993,7 +1193,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     fun removeTask_updatesTaskVisibility() {
         repo.addDesk(displayId = THIRD_DISPLAY, deskId = THIRD_DISPLAY)
         val taskId = 1
-        repo.addTask(THIRD_DISPLAY, taskId, isVisible = true)
+        repo.addTask(THIRD_DISPLAY, taskId, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         repo.removeTask(taskId)
 
@@ -1061,7 +1261,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun minimizeTask_withInvalidDisplay_minimizesCorrectTask() {
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 0, isVisible = true)
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 0,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         repo.minimizeTask(displayId = INVALID_DISPLAY, taskId = 0)
 
@@ -1094,7 +1299,12 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun updateTask_minimizedTaskBecomesVisible_unminimizesTask() {
         repo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 2)
-        repo.updateTask(displayId = DEFAULT_DISPLAY, taskId = 2, isVisible = true)
+        repo.updateTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         val isMinimizedTask = repo.isMinimizedTask(taskId = 2)
 
@@ -1125,9 +1335,24 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun getExpandedTasksOrdered_returnsFreeformTasksInCorrectOrder() {
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 3, isVisible = true)
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 2, isVisible = true)
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 3,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         val tasks = repo.getExpandedTasksOrdered(displayId = 0)
 
@@ -1136,9 +1361,24 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun getExpandedTasksOrdered_excludesMinimizedTasks() {
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 3, isVisible = true)
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 2, isVisible = true)
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 3,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 2)
 
         val tasks = repo.getExpandedTasksOrdered(displayId = DEFAULT_DISPLAY)
@@ -1191,7 +1431,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setTaskInFullImmersiveState_inDesk_savedAsInImmersiveState() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         assertThat(repo.isTaskInFullImmersiveState(6)).isFalse()
 
         repo.setTaskInFullImmersiveStateInDesk(deskId = 6, taskId = 10, immersive = true)
@@ -1203,7 +1449,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskInFullImmersiveState_inDesk_removedAsInImmersiveState() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.setTaskInFullImmersiveStateInDesk(deskId = 6, taskId = 10, immersive = true)
 
         repo.setTaskInFullImmersiveStateInDesk(deskId = 6, taskId = 10, immersive = false)
@@ -1243,9 +1495,24 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     fun removeDesk_multipleTasks_removesAll() {
         // The front-most task will be the one added last through `addTask`.
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 3, isVisible = true)
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 2, isVisible = true)
-        repo.addTask(displayId = DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 3,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 2,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTask(
+            displayId = DEFAULT_DISPLAY,
+            taskId = 1,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = 2)
 
         val tasksBeforeRemoval = repo.removeDesk(deskId = DEFAULT_DISPLAY)
@@ -1330,7 +1597,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTask_deskDoesNotExists_createsDesk() {
-        repo.addTask(displayId = 999, taskId = 6, isVisible = true)
+        repo.addTask(displayId = 999, taskId = 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
         assertThat(repo.getActiveTaskIdsInDesk(999)).contains(6)
     }
@@ -1426,6 +1693,81 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+        FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+    )
+    fun preserveDisplay_storesDisplay() {
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
+        repo.addDesk(SECOND_DISPLAY, deskId = 7)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 11,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTaskToDesk(
+            SECOND_DISPLAY,
+            deskId = 7,
+            taskId = 12,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        val secondTaskBounds = Rect(TEST_TASK_BOUNDS)
+        secondTaskBounds.offset(100, 100)
+        repo.addTaskToDesk(
+            SECOND_DISPLAY,
+            deskId = 7,
+            taskId = 13,
+            isVisible = true,
+            taskBounds = secondTaskBounds,
+        )
+
+        repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+
+        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID))
+            .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
+        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).containsExactly(7)
+    }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+    )
+    fun preserveDisplay_noOpIfDisplayEmpty() {
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = DEFAULT_DISPLAY,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = DEFAULT_DISPLAY,
+            taskId = 11,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addDesk(SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+
+        repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
+
+        assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID)).isEmpty()
+        assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).isEmpty()
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskActive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
@@ -1450,7 +1792,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun getDeskIdForTask() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         assertThat(repo.getDeskIdForTask(10)).isEqualTo(6)
     }
@@ -1459,7 +1807,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_clearsBoundsBeforeMaximize() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.saveBoundsBeforeMaximize(taskId = 10, bounds = Rect(10, 10, 100, 100))
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
@@ -1471,7 +1825,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_clearsBoundsBeforeImmersive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.saveBoundsBeforeFullImmersive(taskId = 10, bounds = Rect(10, 10, 100, 100))
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
@@ -1483,7 +1843,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromZOrderList() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
 
@@ -1494,7 +1860,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromMinimized() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.minimizeTaskInDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10)
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
@@ -1506,7 +1878,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromImmersive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         repo.setTaskInFullImmersiveStateInDesk(deskId = 6, taskId = 10, immersive = true)
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
@@ -1518,7 +1896,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromActiveTasks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
 
@@ -1529,7 +1913,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromVisibleTasks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
 
@@ -1540,7 +1930,13 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun removeTaskFromDesk_updatesPersistence() = runTest {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
-        repo.addTaskToDesk(DEFAULT_DISPLAY, deskId = 6, taskId = 10, isVisible = true)
+        repo.addTaskToDesk(
+            DEFAULT_DISPLAY,
+            deskId = 6,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
         clearInvocations(persistentRepository)
 
         repo.removeTaskFromDesk(deskId = 6, taskId = 10)
@@ -1699,6 +2095,25 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun setDeskActive_alreadyActive_doesNotUpdateListenerTwice() {
+        val listener = TestDeskChangeListener()
+        val executor = TestShellExecutor()
+        repo.addDeskChangeListener(listener, executor)
+        repo.addDesk(displayId = 1, deskId = 1)
+        repo.setActiveDesk(displayId = 1, deskId = 1)
+
+        repo.setActiveDesk(displayId = 1, deskId = 1)
+        executor.flushAll()
+
+        assertThat(listener.activationChanges.size).isEqualTo(1)
+        val lastActivationChange = assertNotNull(listener.lastActivationChange)
+        assertThat(lastActivationChange.displayId).isEqualTo(1)
+        assertThat(lastActivationChange.oldActive).isEqualTo(-1)
+        assertThat(lastActivationChange.newActive).isEqualTo(1)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskInactive_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -1746,8 +2161,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         var lastRemoval: LastRemoval? = null
             private set
 
-        var lastActivationChange: LastActivationChange? = null
-            private set
+        val activationChanges = mutableListOf<ActivationChange>()
+        val lastActivationChange: ActivationChange?
+            get() = activationChanges.lastOrNull()
 
         var lastCanCreateDesks: Boolean? = null
             private set
@@ -1765,8 +2181,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             newActiveDeskId: Int,
             oldActiveDeskId: Int,
         ) {
-            lastActivationChange =
-                LastActivationChange(
+            activationChanges +=
+                ActivationChange(
                     displayId = displayId,
                     oldActive = oldActiveDeskId,
                     newActive = newActiveDeskId,
@@ -1781,7 +2197,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         data class LastRemoval(val displayId: Int, val deskId: Int)
 
-        data class LastActivationChange(val displayId: Int, val oldActive: Int, val newActive: Int)
+        data class ActivationChange(val displayId: Int, val oldActive: Int, val newActive: Int)
     }
 
     class TestListener : DesktopRepository.ActiveTasksListener {
@@ -1832,6 +2248,8 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         const val THIRD_DISPLAY = 345
         private const val DEFAULT_USER_ID = 1000
         private const val DEFAULT_DESKTOP_ID = 0
+        private const val UNIQUE_DISPLAY_ID = "uniqueDisplayId"
+        private val TEST_TASK_BOUNDS = Rect(100, 100, 200, 200)
 
         @JvmStatic
         @Parameters(name = "{0}")

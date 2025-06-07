@@ -17,6 +17,7 @@
 package com.android.systemui.topwindoweffects
 
 import android.os.VibrationEffect
+import android.os.fakeHandler
 import android.testing.TestableLooper.RunWithLooper
 import androidx.core.animation.AnimatorTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -97,6 +98,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 notificationShadeWindowController = notificationShadeWindowController,
                 topUiController = mockTopUiController,
                 mainExecutor = fakeExecutor,
+                mainHandler = kosmos.fakeHandler,
             )
         }
 

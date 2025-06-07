@@ -263,6 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"Csoport összecsukása."</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Eszköz hozzáadása csoporthoz."</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Eszköz eltávolítása csoportból."</string>
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"<xliff:g id="DEVICE_NAME">%s</xliff:g> hozzáadása a csoporthoz."</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"<xliff:g id="DEVICE_NAME">%s</xliff:g> eltávolítása a csoportból."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Alkalmazás megnyitása."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Nincs csatlakozva."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -298,6 +300,12 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"Kevesebb idő."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"A képernyő átküldése leállítva."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"A kijelző fényereje"</string>
+    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
+    <skip />
+    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
+    <skip />
+    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
+    <skip />
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"Mobiladatok szüneteltetve"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"Az adatforgalom szünetel"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"Elérte a beállított adatkorlátot. A továbbiakban nem használ mobiladat-forgalmat.\n\nHa a folytatást választja, szolgáltatója adathasználati díjat számíthat fel."</string>
@@ -647,6 +655,8 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Igen"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"A régebbiek feloldás után láthatók"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Az eszközt a szülőd felügyeli"</string>
+    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
+    <skip />
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Az eszköz az Ön szervezetének tulajdonában van, és lehetséges, hogy a hálózati forgalmat is figyelik"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Az eszköz a(z) <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> tulajdonában van, és lehetséges, hogy a hálózati forgalmat is figyelik"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"Ezt az eszközt a(z) <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> szervezet biztosítja"</string>
@@ -687,6 +697,8 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN-beállítások megnyitása"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Az eszközt a szülőd felügyeli. A szülőd megtekintheti és kezelheti például a használt alkalmazásokra, a tartózkodási helyre és a képernyőidőre vonatkozó adatokat."</string>
+    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Feloldva tartva TrustAgent által"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Az eszköz túl sok hitelesítési kísérlet miatt zárolva lett."</string>
@@ -790,6 +802,8 @@
     <string name="status_bar_work" msgid="5238641949837091056">"Munkahelyi profil"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Repülős üzemmód"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Szülői felügyelet"</string>
+    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
+    <skip />
     <string name="zen_alarm_warning" msgid="7844303238486849503">"Nem fogja hallani az ébresztést ekkor: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template" msgid="2234991538018805736">"ekkor: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"ezen a napon: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -800,6 +814,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Műhold, van rendelkezésre álló kapcsolat"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Műholdas SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Csak segélyhívás vagy SOS"</string>
+    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"nincs jel"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"egy sáv"</string>
@@ -820,19 +836,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Bekapcsolás"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Be: Arcalapú"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Némítás és csomagolás"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Az értesítésszervező használata"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> számára"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Értékesítés, új funkciók és egyebek"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Népszerű történetek, vezércikkek és egyebek"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Lájkok, bejegyzések és egyebek"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Hírlevelek, ajánlott médiatartalmak és egyebek"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Bekapcsolás"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Mostantól kérheti a hosszabb beszélgetések összefoglalását, hogy gyors áttekintést kaphasson"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Az értesítésszervező összevonja és elnémítja az alacsonyabb prioritású értesítéseket"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Kész"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Alkalmaz"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Kikapcsolás"</string>

@@ -135,7 +135,7 @@
     <string name="bluetooth_hearing_aid_media_only_left_and_right_active" msgid="1299913413062528417">"Aktivno (samo za medijski sadržaj), lijevo i desno"</string>
     <string name="bluetooth_profile_a2dp" msgid="4632426382762851724">"Zvuk medija"</string>
     <string name="bluetooth_profile_headset" msgid="5395952236133499331">"Telefonski pozivi"</string>
-    <string name="bluetooth_profile_opp" msgid="6692618568149493430">"Prenošenje fajla"</string>
+    <string name="bluetooth_profile_opp" msgid="6692618568149493430">"Prenos fajlova"</string>
     <string name="bluetooth_profile_hid" msgid="2969922922664315866">"Ulazni uređaj"</string>
     <string name="bluetooth_profile_pan" msgid="1006235139308318188">"Pristup internetu"</string>
     <string name="bluetooth_profile_pbap" msgid="2103406516858653017">"Dozvoli pristup kontaktima i historiji poziva"</string>

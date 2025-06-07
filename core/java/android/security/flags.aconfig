@@ -128,3 +128,10 @@ flag {
     description: "Flag to allow an adb secure setting to disable the adaptive auth lock"
     bug: "371057865"
 }
+
+flag {
+    name: "failed_auth_lock_toggle"
+    namespace: "biometrics"
+    description: "Feature flag to enable the toggle for failed authentication lock"
+    bug: "414605464"
+}

@@ -1869,6 +1869,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
         if (orientation == topOrientation || ar.inMultiWindowMode()
+                || ar.getTask().inMultiWindowMode()
                 || ar.getRequestedConfigurationOrientation() == ORIENTATION_UNDEFINED) {
             return;
         }
@@ -2893,7 +2894,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // contains another opaque activity.
         if (mFixedRotationLaunchingApp != null && mFixedRotationLaunchingApp.isVisible()
                 && !mTransitionController.isCollecting()
-                && !mTransitionController.isPlayingTarget(mFixedRotationLaunchingApp)
+                && !mTransitionController.inPlayingTransition(mFixedRotationLaunchingApp)
                 && !mAtmService.mBackNavigationController.isMonitoringFinishTransition()) {
             final Transition finishTransition = mTransitionController.mFinishingTransition;
             if (finishTransition == null || !finishTransition.mParticipants.contains(
@@ -3746,18 +3747,20 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         pw.println();
         super.dump(pw, prefix, dumpAll);
-        pw.print(prefix);
-        if (mHasSetIgnoreOrientationRequest) {
-            pw.print("mHasSetIgnoreOrientationRequest=true ");
-        }
-        pw.print("ignoreOrientationRequest="); pw.println(getIgnoreOrientationRequest());
+        pw.print(prefix); pw.print("mHasSetIgnoreOrientationRequest=");
+        pw.print(mHasSetIgnoreOrientationRequest);
+        pw.print(" ignoreOrientationRequest="); pw.println(getIgnoreOrientationRequest());
         pw.print(prefix); pw.print("mLayoutSeq="); pw.println(mLayoutSeq);
 
-        pw.print("  mCurrentFocus="); pw.println(mCurrentFocus);
-        pw.print("  mFocusedApp="); pw.println(mFocusedApp);
-        if (mFixedRotationLaunchingApp != null) {
-            pw.println("  mFixedRotationLaunchingApp=" + mFixedRotationLaunchingApp);
-        }
+        pw.print(prefix); pw.print("mImeLayeringTarget="); pw.println(mImeLayeringTarget);
+        pw.print(prefix); pw.print("mImeInputTarget="); pw.println(mImeInputTarget);
+        pw.print(prefix); pw.print("mImeControlTarget="); pw.println(mImeControlTarget);
+        pw.print(prefix); pw.print("mRemoteInsetsControlTarget=");
+        pw.println(mRemoteInsetsControlTarget);
+        pw.print(prefix); pw.print("mCurrentFocus="); pw.println(mCurrentFocus);
+        pw.print(prefix); pw.print("mFocusedApp="); pw.println(mFocusedApp);
+        pw.print(prefix); pw.print("mFixedRotationLaunchingApp=");
+        pw.println(mFixedRotationLaunchingApp);
         if (mAsyncRotationController != null) {
             mAsyncRotationController.dump(pw, prefix);
         }
@@ -7155,6 +7158,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
 
+        @Override
+        public String toString() {
+            return "RemoteInsetsControlTarget{" + Integer.toHexString(System.identityHashCode(this))
+                    + " displayId=" + mDisplayId
+                    + " requestedVisibleTypes=" + mRequestedVisibleTypes
+                    + " animatingTypes=" + mAnimatingTypes
+                    + "}";
+        }
+
         public void writeIdentifierToProto(ProtoOutputStream proto, long fieldId) {
             final long token = proto.start(fieldId);
             proto.write(HASH_CODE, System.identityHashCode(this));
@@ -7175,7 +7187,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             proto.write(ANIMATING_TYPES, mAnimatingTypes);
             proto.end(token);
         }
-
     }
 
     MagnificationSpec getMagnificationSpec() {
@@ -7233,5 +7244,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .reparent(mInputOverlayLayer, null)
                 .reparent(mA11yOverlayLayer, null)
                 .apply();
+    }
+
+    boolean isTaskMoveAllowedOnDisplay() {
+        // Keep the WindowContainer's subtypes we are traversing here in sync with
+        // WindowContainer#canHoldSelfMovableTasks.
+        return forAllTaskDisplayAreas(TaskDisplayArea::getIsTaskMoveAllowed)
+                || forAllRootTasks(Task::getIsTaskMoveAllowed);
     }
 }

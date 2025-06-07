@@ -114,7 +114,6 @@ public class ApplicationStartInfoTest {
         mHandler = new Handler(mHandlerThread.getLooper());
         mProcessList = spy(new ProcessList());
         mAppStartInfoTracker = spy(new AppStartInfoTracker());
-        mAppStartInfoTracker.mEnabled = true;
         setFieldValue(ProcessList.class, mProcessList, "mAppStartInfoTracker",
                 mAppStartInfoTracker);
         mInjector = new TestInjector(mContext);

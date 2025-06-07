@@ -95,6 +95,8 @@ public class SupervisionManager {
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
     public static final String ACTION_ENABLE_SUPERVISION =
             "android.app.supervision.action.ENABLE_SUPERVISION";
 
@@ -110,6 +112,8 @@ public class SupervisionManager {
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
     public static final String ACTION_DISABLE_SUPERVISION =
             "android.app.supervision.action.DISABLE_SUPERVISION";
 

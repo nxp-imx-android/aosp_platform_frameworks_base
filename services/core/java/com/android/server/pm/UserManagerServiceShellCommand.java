@@ -191,8 +191,7 @@ public class UserManagerServiceShellCommand extends ShellCommand {
         }
         final IActivityManager am = ActivityManager.getService();
         final List<UserInfo> users = mService.getUsersWithUnresolvedNames(
-                /* excludePartial= */ !all, /* excludeDying= */ false,
-                /* excludePreCreated= */ !all);
+                /* excludePartial= */ !all, /* excludeDying= */ false);
         if (users == null) {
             pw.println("Error: couldn't get users");
             return 1;

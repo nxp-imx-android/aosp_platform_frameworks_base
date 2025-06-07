@@ -17,6 +17,7 @@
 package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.app.TaskInfo;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 
@@ -94,5 +95,14 @@ public class RemoteTaskInfo {
                 mLastUsedTimeMillis);
         protoOutputStream
             .writeBytes(android.companion.RemoteTaskInfo.TASK_ICON, mTaskIcon);
+    }
+
+    public RemoteTask toRemoteTask(int deviceId, String deviceName) {
+        return new RemoteTask.Builder(getId())
+                .setLabel(mLabel)
+                .setDeviceId(deviceId)
+                .setLastUsedTimestampMillis((int) mLastUsedTimeMillis)
+                .setSourceDeviceName(deviceName)
+                .build();
     }
 }

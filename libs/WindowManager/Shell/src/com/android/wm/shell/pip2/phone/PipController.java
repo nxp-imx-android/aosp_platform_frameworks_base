@@ -151,11 +151,6 @@ public class PipController implements ConfigurationChangeListener,
          * Notifies the listener that user leaves PiP by tapping on the expand button.
          */
         void onExpandPip();
-
-        /**
-         * Notifies the listener that the PiP has exited.
-         */
-        void onExitPip();
     }
 
     private PipController(Context context,
@@ -616,6 +611,9 @@ public class PipController implements ConfigurationChangeListener,
                     mPipUiEventLogger.log(
                             PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_AUTO_ENTER);
                     mPipTransitionState.resetSwipePipToHomeState();
+                } else if (PipUtils.isContentPip(taskInfo)) {
+                    mPipUiEventLogger.log(
+                            PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_ENTER_CONTENT_PIP);
                 } else {
                     mPipUiEventLogger.log(PipUiEventLogger.PipUiEventEnum.PICTURE_IN_PICTURE_ENTER);
                 }
@@ -628,9 +626,6 @@ public class PipController implements ConfigurationChangeListener,
                 mPipUiEventLogger.setTaskInfo(null);
                 for (Consumer<Boolean> listener : mOnIsInPipStateChangedListeners) {
                     listener.accept(false /* inPip */);
-                }
-                if (mPipRecentsAnimationListener != null) {
-                    mPipRecentsAnimationListener.onExitPip();
                 }
                 break;
             case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
@@ -789,11 +784,6 @@ public class PipController implements ConfigurationChangeListener,
             @Override
             public void onExpandPip() {
                 mListener.call(l -> l.onExpandPip());
-            }
-
-            @Override
-            public void onExitPip() {
-                mListener.call(l -> l.onExitPip());
             }
         };
 

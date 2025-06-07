@@ -82,6 +82,7 @@ import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.TransitionUtil;
@@ -125,6 +126,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     private final HomeTransitionObserver mHomeTransitionObserver;
     private @Nullable Color mBackgroundColor;
     private final DisplayController mDisplayController;
+    private final DesksOrganizer mDesksOrganizer;
 
     public RecentsTransitionHandler(
             @NonNull ShellInit shellInit,
@@ -132,13 +134,15 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             @NonNull Transitions transitions,
             @Nullable RecentTasksController recentTasksController,
             @NonNull HomeTransitionObserver homeTransitionObserver,
-            @NonNull DisplayController displayController) {
+            @NonNull DisplayController displayController,
+            @NonNull DesksOrganizer desksOrganizer) {
         mShellTaskOrganizer = shellTaskOrganizer;
         mTransitions = transitions;
         mExecutor = transitions.getMainExecutor();
         mRecentTasksController = recentTasksController;
         mHomeTransitionObserver = homeTransitionObserver;
         mDisplayController = displayController;
+        mDesksOrganizer = desksOrganizer;
         if (recentTasksController == null) return;
         shellInit.addInitCallback(this::onInit, this);
     }
@@ -394,6 +398,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
          * These need to be ordered since the order must be restored if there is no task-switch.
          */
         private ArrayList<TaskState> mPausingTasks = null;
+        /**
+         * The desk that we are switching away from via this transition. Upon finish it will become
+         * invisible. It may be included in {@link RecentsController#mPausingTasks}.
+         */
+        private WindowContainerToken mPausingDesk = null;
 
         /**
          * List of tasks were pausing but closed in a subsequent merged transition. If a
@@ -579,6 +588,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             }
             mFinishTransaction = null;
             mPausingTasks = null;
+            mPausingDesk = null;
             mClosingTasks = null;
             mOpeningTasks = null;
             mInfo = null;
@@ -737,6 +747,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mFinishCB = finishCB;
             mFinishTransaction = finishT;
             mPausingTasks = new ArrayList<>();
+            mPausingDesk = null;
             mClosingTasks = new ArrayList<>();
             mOpeningTasks = new ArrayList<>();
             mLeashMap = new ArrayMap<>();
@@ -818,11 +829,19 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     // Root tasks
                     if (TransitionUtil.isClosingType(change.getMode())) {
                         final int layer = aboveLayers - i;
-                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "  adding pausing taskId=%d at layer=%d", taskInfo.taskId, layer);
                         // raise closing (pausing) task to "above" layer so it isn't covered
                         t.setLayer(change.getLeash(), layer);
                         mPausingTasks.add(new TaskState(change, null /* leash */));
+                        if (mDesksOrganizer.isDeskChange(change)) {
+                            mPausingDesk = change.getContainer();
+                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                    "  adding pausing deskId=%d at layer=%d", taskInfo.taskId,
+                                    layer);
+                        } else {
+                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                    "  adding pausing taskId=%d at layer=%d", taskInfo.taskId,
+                                    layer);
+                        }
                     } else if (TransitionUtil.isOpeningType(change.getMode())) {
                         final int layer = belowLayers - i;
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1014,6 +1033,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     "[%d] RecentsController.merge", mInstanceId);
             // Keep all tasks in one list because order matters.
             ArrayList<TransitionInfo.Change> openingTasks = null;
+            TransitionInfo.Change openingDesk = null;
             IntArray openingTaskIsLeafs = null;
             ArrayList<TransitionInfo.Change> closingTasks = null;
             mOpeningSeparateHome = false;
@@ -1059,8 +1079,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "[%d]   %s recents", mInstanceId, chgTypeMsg);
                         recentsOpening = change;
                     } else if (isRootTask || isLeafTask) {
-                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "[%d]   %s task", mInstanceId, chgTypeMsg);
+                        String containerTypeMsg = "task";
                         if (isLeafTask && taskInfo.topActivityType == ACTIVITY_TYPE_HOME) {
                             // This is usually a 3p launcher
                             mOpeningSeparateHome = true;
@@ -1070,7 +1089,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             openingTaskIsLeafs = new IntArray();
                         }
                         openingTasks.add(change);
+                        if (mDesksOrganizer.isDeskChange(change)) {
+                            openingDesk = change;
+                            containerTypeMsg = "desk";
+                        }
                         openingTaskIsLeafs.add(isLeafTask ? 1 : 0);
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                "[%d]   %s %s", mInstanceId, chgTypeMsg, containerTypeMsg);
                     }
                 } else if (TransitionUtil.isClosingType(change.getMode())) {
                     if (isRecentsTask) {
@@ -1200,7 +1225,14 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         break;
                     }
                 }
-                boolean onlyOpeningPausedTasks = true;
+
+                // An initially paused and now opening desk means we're returning to the desk. We
+                // save it here to identify whether any of the opening tasks below belong to the
+                // desk, and are thus part of a returning-to-desk operation.
+                final TransitionInfo.Change openingPausedDesk = mPausingDesk != null
+                        && openingDesk != null
+                        && mPausingDesk.equals(openingDesk.getContainer()) ? openingDesk : null;
+                boolean onlyOpeningPausedTasksOrPausedDesk = true;
                 for (int i = 0; i < openingTasks.size(); ++i) {
                     final TransitionInfo.Change change = openingTasks.get(i);
                     final boolean isLeaf = openingTaskIsLeafs.get(i) == 1;
@@ -1228,7 +1260,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         }
                         final TaskState pausingTask = mPausingTasks.remove(pausingIdx);
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "  opening pausing %staskId=%d", isLeaf ? "leaf " : "",
+                                "  opening pausing %staskId=%d", isLeaf ? "leaf " : "non-leaf ",
                                 pausingTask.mTaskInfo.taskId);
                         mOpeningTasks.add(pausingTask);
                         // Setup hides opening tasks initially, so make it visible again (since we
@@ -1259,11 +1291,24 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // Hide the animation leash, let the listener show it
                             startT.hide(target.leash);
                         }
-                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                "  opening new leaf taskId=%d wasClosing=%b",
-                                target.taskId, wasClosing);
                         mOpeningTasks.add(new TaskState(change, target.leash));
-                        onlyOpeningPausedTasks = false;
+                        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                    "  opening new leaf taskId=%d wasClosing=%b",
+                                    target.taskId, wasClosing);
+                            onlyOpeningPausedTasksOrPausedDesk = false;
+                        } else {
+                            final boolean childOfOpeningPausedDesk = openingPausedDesk != null
+                                     && change.getTaskInfo().parentTaskId
+                                    == openingPausedDesk.getTaskInfo().taskId;
+                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                    "  opening new leaf taskId=%d wasClosing=%b "
+                                            + "childOfOpeningPausedDesk=%b",
+                                    target.taskId, wasClosing, childOfOpeningPausedDesk);
+                            if (!childOfOpeningPausedDesk) {
+                                onlyOpeningPausedTasksOrPausedDesk = false;
+                            }
+                        }
                     } else {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                                 "  opening new taskId=%d", change.getTaskInfo().taskId);
@@ -1272,11 +1317,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         // is only animating the leafs.
                         startT.show(change.getLeash());
                         mOpeningTasks.add(new TaskState(change, null));
-                        onlyOpeningPausedTasks = false;
+                        onlyOpeningPausedTasksOrPausedDesk = false;
                     }
                 }
                 didMergeThings = true;
-                if (!onlyOpeningPausedTasks) {
+                if (!onlyOpeningPausedTasksOrPausedDesk) {
                     // If we are only opening paused leaf tasks, then we aren't actually quick
                     // switching or launching a new task from overview, and if Launcher requests to
                     // finish(toHome=false) as a response to the pausing tasks being opened again,

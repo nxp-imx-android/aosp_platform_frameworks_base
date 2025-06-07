@@ -218,6 +218,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                         notifyBroadcastStateChange(BROADCAST_STATE_OFF);
                         unregisterServiceCallBack(mBroadcastCallback);
                         mCachedBroadcastCallbackExecutorMap.clear();
+                        resetCacheInfo();
                     }
                     if ((profile == BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT)
                             && mIsBroadcastAssistantProfileReady) {

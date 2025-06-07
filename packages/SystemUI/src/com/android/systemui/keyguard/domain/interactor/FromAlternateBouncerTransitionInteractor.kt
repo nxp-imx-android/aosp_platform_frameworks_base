@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.domain.interactor
 
 import android.animation.ValueAnimator
+import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
@@ -199,6 +200,10 @@ constructor(
                         Flags.hubEditModeTransition() && editModeState == EditModeState.STARTING ||
                             editModeState == EditModeState.SHOWING
                     ) {
+                        Log.i(
+                            TAG,
+                            "Ignoring isKeyguardGoingAway due to editModeState: $editModeState",
+                        )
                         // If transitioning to hub edit mode, do nothing here. The keyguard state
                         // change to GONE happens as a result of moving away from the communal
                         // scene, which is triggered by the edit mode activity.

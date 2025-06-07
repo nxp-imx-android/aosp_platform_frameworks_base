@@ -23,11 +23,10 @@ import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.util.testLetterboxLifecycleEventFactory
+import java.util.function.Consumer
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
-import java.util.function.Consumer
-
 
 /**
  * Tests for [TaskInfoLetterboxLifecycleEventFactory].
@@ -135,7 +134,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                 }
                 validateCreateLifecycleEvent { event ->
                     assert(event != null)
-                    assert(event?.leash == inputLeash)
+                    assert(event?.taskLeash == inputLeash)
                 }
             }
         }

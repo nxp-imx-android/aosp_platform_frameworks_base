@@ -20,7 +20,6 @@ package com.android.systemui.shade.domain.startable
 
 import android.content.applicationContext
 import com.android.systemui.common.ui.data.repository.configurationRepository
-import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -28,6 +27,7 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.shade.domain.interactor.shadeDisplayStateInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.transition.ScrimShadeTransitionController
@@ -56,9 +56,9 @@ val Kosmos.shadeStartable by Fixture {
         sceneInteractorProvider = { sceneInteractor },
         shadeExpansionStateManager = shadeExpansionStateManager,
         pulseExpansionHandler = pulseExpansionHandler,
-        displayStateInteractor = displayStateInteractor,
         nsslc = notificationStackScrollLayoutController,
         scrimController = scrimController,
         depthController = notificationShadeDepthController,
+        shadeDisplayStateInteractor = shadeDisplayStateInteractor,
     )
 }

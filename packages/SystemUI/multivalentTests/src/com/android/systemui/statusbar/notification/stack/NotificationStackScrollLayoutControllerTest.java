@@ -20,7 +20,6 @@ import static com.android.server.notification.Flags.FLAG_SCREENSHARE_NOTIFICATIO
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
-import static com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.ROWS_ALL;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -101,7 +100,6 @@ import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.util.settings.SecureSettings;
-import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -139,7 +137,6 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Mock private SysuiStatusBarStateController mSysuiStatusBarStateController;
     @Mock private KeyguardBypassController mKeyguardBypassController;
     @Mock private PowerInteractor mPowerInteractor;
-    @Mock private WallpaperInteractor mWallpaperInteractor;
     @Mock private NotificationLockscreenUserManager mNotificationLockscreenUserManager;
     @Mock private MetricsLogger mMetricsLogger;
     @Mock private ColorUpdateLogger mColorUpdateLogger;
@@ -867,7 +864,6 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
                 mActivityStarter,
                 new ResourcesSplitShadeStateController(),
                 mSensitiveNotificationProtectionController,
-                mWallpaperInteractor,
                 mMagneticNotificationRowManager,
                 mSectionsManager);
     }

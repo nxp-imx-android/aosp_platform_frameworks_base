@@ -501,6 +501,7 @@ import android.util.AtomicFile;
 import android.util.DebugUtils;
 import android.util.IndentingPrintWriter;
 import android.util.IntArray;
+import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -1503,6 +1504,33 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    /**
+     * Check if the package hosting the given ActiveAdmin is still installed and well-formed.
+     */
+    @GuardedBy("getLockObject()")
+    private boolean isActiveAdminPackageValid(ActiveAdmin admin) throws RemoteException {
+        final String adminPackage = admin.info.getPackageName();
+        int userHandle = admin.getUserHandle().getIdentifier();
+        if (mIPackageManager.getPackageInfo(adminPackage, 0, userHandle) == null) {
+            Slogf.e(LOG_TAG, adminPackage + " no longer installed");
+            return false;
+        }
+        ActivityInfo ai = mIPackageManager.getReceiverInfo(admin.info.getComponent(),
+                GET_META_DATA | MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE,
+                userHandle);
+        if (ai == null) {
+            Slogf.e(LOG_TAG, adminPackage + " no longer has the receiver");
+            return false;
+        }
+        try {
+            new DeviceAdminInfo(mContext, ai);
+        } catch (Exception e) {
+            Slogf.e(LOG_TAG, adminPackage + " contains malformed metadata", e);
+            return false;
+        }
+        return true;
+    }
+
     private void handlePackagesChanged(@Nullable String packageName, int userHandle) {
         boolean removedAdmin = false;
         String removedAdminPackage = null;
@@ -1516,17 +1544,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 ActiveAdmin aa = policy.mAdminList.get(i);
                 try {
                     // If we're checking all packages or if the specific one we're checking matches,
-                    // then check if the package and receiver still exist.
+                    // then check if the package is still valid.
                     final String adminPackage = aa.info.getPackageName();
                     if (packageName == null || packageName.equals(adminPackage)) {
-                        if (mIPackageManager.getPackageInfo(adminPackage, 0, userHandle) == null
-                                || mIPackageManager.getReceiverInfo(aa.info.getComponent(),
-                                MATCH_DIRECT_BOOT_AWARE
-                                        | MATCH_DIRECT_BOOT_UNAWARE,
-                                userHandle) == null) {
-                            Slogf.e(LOG_TAG, String.format(
-                                    "Admin package %s not found for user %d, removing active admin",
-                                    packageName, userHandle));
+                        if (!isActiveAdminPackageValid(aa)) {
+                            Slogf.e(LOG_TAG, "Admin package %s not found or invalid for user %d,"
+                                            + " removing active admin",
+                                    packageName, userHandle);
                             removedAdmin = true;
                             removedAdminPackage = adminPackage;
                             policy.mAdminList.remove(i);
@@ -1687,39 +1711,31 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     // Used by DevicePolicyManagerServiceShellCommand
-    List<OwnerShellData> listAllOwners() {
+    void printAllOwners(PrintWriter pw) {
         Preconditions.checkCallAuthorization(
                 hasCallingOrSelfPermission(permission.MANAGE_DEVICE_ADMINS));
-        return mInjector.binderWithCleanCallingIdentity(() -> {
-            SparseArray<DevicePolicyData> userData;
-
-            // Gets the owners of "full users" first (device owner and profile owners)
-            List<OwnerShellData> owners = mOwners.listAllOwners();
-            synchronized (getLockObject()) {
-                for (int i = 0; i < owners.size(); i++) {
-                    OwnerShellData owner = owners.get(i);
-                    owner.isAffiliated = isUserAffiliatedWithDeviceLocked(owner.userId);
-                }
-                userData = mUserData;
+        synchronized (getLockObject()) {
+            if (getDeviceOwnerUserIdUncheckedLocked() != UserHandle.USER_NULL) {
+                pw.printf("User %d: admin=%s,DeviceOwner\n", getDeviceOwnerUserIdUncheckedLocked(),
+                        getDeviceOwnerAdminLocked().info.getComponent().flattenToShortString());
             }
-
-            // Then the owners of profile users (managed profiles)
-            for (int i = 0; i < userData.size(); i++) {
-                DevicePolicyData policyData = mUserData.valueAt(i);
-                int userId = userData.keyAt(i);
-                int parentUserId = mUserManagerInternal.getProfileParentId(userId);
-                boolean isProfile = parentUserId != userId;
-                if (!isProfile) continue;
-                for (int j = 0; j < policyData.mAdminList.size(); j++) {
-                    ActiveAdmin admin = policyData.mAdminList.get(j);
-                    OwnerShellData owner = OwnerShellData.forManagedProfileOwner(userId,
-                            parentUserId, admin.info.getComponent());
-                    owners.add(owner);
+            for (var userId : mOwners.getProfileOwnerKeys()) {
+                pw.printf("User %d: admin=%s,", userId, getProfileOwnerAdminLocked(userId).info
+                        .getComponent().flattenToShortString());
+                if (isManagedProfile(userId)) {
+                    pw.printf("ManagedProfileOwner(parentUserId=%d)", getProfileParentId(userId));
+                } else {
+                    pw.print("ProfileOwner");
                 }
+                if (isUserAffiliatedWithDeviceLocked(userId)) {
+                    pw.print(",Affiliated");
+                }
+                if (mOwners.isProfileOwnerOfOrganizationOwnedDevice(userId)) {
+                    pw.print(",OrganizationOwnedDevice");
+                }
+                pw.println();
             }
-
-            return owners;
-        });
+        }
     }
 
     /**
@@ -8731,10 +8747,15 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             Slogf.e(LOG_TAG, "Invalid proxy properties, ignoring: " + proxyProperties.toString());
             return;
         }
-        mInjector.settingsGlobalPutString(Global.GLOBAL_HTTP_PROXY_HOST, data[0]);
-        mInjector.settingsGlobalPutInt(Global.GLOBAL_HTTP_PROXY_PORT, proxyPort);
-        mInjector.settingsGlobalPutString(Global.GLOBAL_HTTP_PROXY_EXCLUSION_LIST,
-                exclusionList);
+        try {
+            mInjector.settingsGlobalPutString(Global.GLOBAL_HTTP_PROXY_HOST, data[0]);
+            mInjector.settingsGlobalPutInt(Global.GLOBAL_HTTP_PROXY_PORT, proxyPort);
+            mInjector.settingsGlobalPutString(Global.GLOBAL_HTTP_PROXY_EXCLUSION_LIST,
+                    exclusionList);
+        } catch (Exception e) {
+            //Ignore any potential errors from SettingsProvider, b/365975561
+            Slogf.w(LOG_TAG, "Fail to save proxy", e);
+        }
     }
 
     /**
@@ -10143,11 +10164,24 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
+    /**
+     * @deprecated TODO(b/420745998): the concept of main user is deprecated, callers should use
+     * other signals like checking if the user is admin, current user, system user, et.c..
+     */
+    @Deprecated
     private @UserIdInt int getMainUserId() {
+        boolean logIt = Log.isLoggable(LOG_TAG, Log.VERBOSE);
         int mainUserId = mUserManagerInternal.getMainUserId();
         if (mainUserId == UserHandle.USER_NULL) {
-            Slogf.d(LOG_TAG, "getMainUserId(): no main user, returning USER_SYSTEM");
+            if (logIt) {
+                Slogf.w(LOG_TAG, new Exception("getMainUserId() called when it's null:"));
+            } else {
+                Slogf.w(LOG_TAG, "getMainUserId(): no main user, returning USER_SYSTEM");
+            }
             return UserHandle.USER_SYSTEM;
+        }
+        if (logIt) {
+            Slogf.v(LOG_TAG, new Exception(), "getMainUserId() returning %d at:", mainUserId);
         }
         return mainUserId;
     }
@@ -12665,7 +12699,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         final int userHandle = user.getIdentifier();
         final long id = mInjector.binderClearCallingIdentity();
         try {
-            maybeInstallDevicePolicyManagementRoleHolderInUser(userHandle);
+            maybeInstallDevicePolicyManagementRoleHolderInUser(userHandle,
+                    caller);
 
             manageUserUnchecked(admin, profileOwner, userHandle, adminExtras,
                     /* showDisclaimer= */ true);
@@ -21514,7 +21549,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     startTime,
                     callerPackage);
 
-            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id);
+            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id,
+                    caller);
 
             installExistingAdminPackage(userInfo.id, admin.getPackageName());
             if (!enableAdminAndSetProfileOwner(userInfo.id, caller.getUserId(), admin)) {
@@ -21607,7 +21643,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     startTime,
                     caller.getPackageName());
 
-            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id);
+            maybeInstallDevicePolicyManagementRoleHolderInUser(userInfo.id, caller);
             installExistingAdminPackage(userInfo.id, admin.getPackageName());
 
             if (!enableAdminAndSetProfileOwner(userInfo.id, caller.getUserId(), admin)) {
@@ -21735,9 +21771,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     private void onCreateAndProvisionManagedProfileCompleted(
             ManagedProfileProvisioningParams provisioningParams) {}
 
-    private void maybeInstallDevicePolicyManagementRoleHolderInUser(int targetUserId) {
+    private void maybeInstallDevicePolicyManagementRoleHolderInUser(@UserIdInt int targetUserId,
+            CallerIdentity caller) {
         String devicePolicyManagerRoleHolderPackageName =
-                getRoleHolderPackageName(mContext, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT);
+                getRoleHolderPackageNameOnUser(mContext, RoleManager.ROLE_DEVICE_POLICY_MANAGEMENT,
+                        caller.getUserHandle());
         if (devicePolicyManagerRoleHolderPackageName == null) {
             Slogf.d(LOG_TAG, "No device policy management role holder specified.");
             return;
@@ -21761,14 +21799,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         } catch (RemoteException e) {
             // Does not happen, same process
         }
-    }
-
-    /**
-     * If multiple packages hold the role, returns the first package in the list.
-     */
-    @Nullable
-    private String getRoleHolderPackageName(Context context, String role) {
-        return getRoleHolderPackageNameOnUser(context, role, Process.myUserHandle());
     }
 
     /**

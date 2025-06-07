@@ -2460,19 +2460,11 @@ public final class ActiveServices {
                                 } else if (lastTimeOutAt > 0) {
                                     // Time limit was exhausted within the past 24 hours and the app
                                     // has not been in the TOP state since then, throw an exception.
-                                    final String exceptionMsg = "Time limit already exhausted for"
-                                            + " foreground service type "
-                                            + ServiceInfo.foregroundServiceTypeToLabel(
-                                                    foregroundServiceType);
-                                    // Only throw an exception if the new crashing logic gate
-                                    // is enabled; otherwise, reset the limit temporarily.
-                                    if (android.app.Flags.enableFgsTimeoutCrashBehavior()) {
-                                        throw new ForegroundServiceStartNotAllowedException(
-                                                    exceptionMsg);
-                                    } else {
-                                        Slog.wtf(TAG, exceptionMsg);
-                                        fgsTypeInfo.reset();
-                                    }
+                                    throw new ForegroundServiceStartNotAllowedException(
+                                            "Time limit already exhausted for "
+                                                    + "foreground service type "
+                                                    + ServiceInfo.foregroundServiceTypeToLabel(
+                                                            foregroundServiceType));
                                 }
                             }
                         } else {
@@ -3979,20 +3971,15 @@ public final class ActiveServices {
             final String reason = "A foreground service of type "
                     + ServiceInfo.foregroundServiceTypeToLabel(fgsType)
                     + " did not stop within its timeout: " + sr.getComponentName();
-            if (android.app.Flags.enableFgsTimeoutCrashBehavior()) {
-                // Crash the app
-                Slog.e(TAG_SERVICE, "FGS Crashed: " + sr);
-                traceInstant("FGS Crash: ", sr);
-                if (sr.app != null) {
-                    mAm.crashApplicationWithTypeWithExtras(sr.app.uid, sr.app.getPid(),
-                            sr.app.info.packageName, sr.app.userId, reason, false /*force*/,
-                            ForegroundServiceDidNotStopInTimeException.TYPE_ID,
-                            ForegroundServiceDidNotStopInTimeException
-                                    .createExtrasForService(sr.getComponentName()));
-                }
-            } else {
-                // Log a WTF instead of crashing the app while the new behavior is gated.
-                Slog.wtf(TAG, reason);
+            // Crash the app
+            Slog.e(TAG_SERVICE, "FGS Crashed: " + sr);
+            traceInstant("FGS Crash: ", sr);
+            if (sr.app != null) {
+                mAm.crashApplicationWithTypeWithExtras(sr.app.uid, sr.app.getPid(),
+                        sr.app.info.packageName, sr.app.userId, reason, false /*force*/,
+                        ForegroundServiceDidNotStopInTimeException.TYPE_ID,
+                        ForegroundServiceDidNotStopInTimeException
+                                .createExtrasForService(sr.getComponentName()));
             }
         }
     }

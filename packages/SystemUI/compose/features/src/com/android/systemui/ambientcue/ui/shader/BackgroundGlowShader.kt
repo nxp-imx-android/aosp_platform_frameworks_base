@@ -27,7 +27,6 @@ object BackgroundGlowShader {
     uniform float2 resolution;
     uniform half2 origin;
     uniform half radius;
-    uniform half alpha;
     uniform half turbulencePhase;
     uniform half turbulenceAmount;
     uniform half turbulenceSize;

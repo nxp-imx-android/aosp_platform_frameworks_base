@@ -95,6 +95,11 @@ public class AutoclickScrollPanel {
          * @param hovered Whether the button is being hovered or not.
          */
         void onHoverButtonChange(@ScrollDirection int direction, boolean hovered);
+
+        /**
+         * Called when the scroll panel should be exited.
+         */
+        void onExitScrollMode();
     }
 
     public AutoclickScrollPanel(Context context, WindowManager windowManager,
@@ -135,8 +140,12 @@ public class AutoclickScrollPanel {
         setupHoverListenerForButton(mDownButton, DIRECTION_DOWN);
         setupHoverListenerForButton(mExitButton, DIRECTION_EXIT);
 
-       // Add click listener for exit button.
-        mExitButton.setOnClickListener(v -> hide());
+        // Add click listener for exit button.
+        mExitButton.setOnClickListener(v -> {
+            if (mScrollPanelController != null) {
+                mScrollPanelController.onExitScrollMode();
+            }
+        });
     }
 
     /**

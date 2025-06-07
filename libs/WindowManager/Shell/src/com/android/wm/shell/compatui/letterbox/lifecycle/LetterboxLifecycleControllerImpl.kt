@@ -17,7 +17,6 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.view.SurfaceControl
-import com.android.wm.shell.common.transition.TransitionStateHolder
 import com.android.wm.shell.compatui.letterbox.LetterboxController
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy
 
@@ -26,7 +25,6 @@ import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy
  */
 class LetterboxLifecycleControllerImpl(
     private val letterboxController: LetterboxController,
-    private val transitionStateHolder: TransitionStateHolder,
     private val letterboxModeStrategy: LetterboxControllerStrategy
 ) : LetterboxLifecycleController {
 
@@ -36,40 +34,39 @@ class LetterboxLifecycleControllerImpl(
         finishTransaction: SurfaceControl.Transaction
     ) {
         val key = event.letterboxKey()
+        // Each [LetterboxController] will handle its own Surfaces and will be responsible to
+        // avoid the creation happens twice or that some visibility/size change operation
+        // happens on missing surfaces.
         with(letterboxController) {
-            when (event.type) {
-                LetterboxLifecycleEventType.CLOSE -> {
-                    if (!transitionStateHolder.isRecentsTransitionRunning()) {
-                        // For the other types of close we need to check recents.
-                        destroyLetterboxSurface(key, finishTransaction)
-                    }
+            if (event.letterboxBounds != null) {
+                // In this case the top Activity is letterboxed.
+                letterboxModeStrategy.configureLetterboxMode()
+                event.taskLeash?.let { taskLeash ->
+                    createLetterboxSurface(
+                        key,
+                        startTransaction,
+                        taskLeash,
+                        event.containerToken
+                    )
                 }
-                else -> {
-                    if (event.letterboxBounds != null) {
-                        // In this case the top Activity is letterboxed.
-                        letterboxModeStrategy.configureLetterboxMode()
-                        event.leash?.let { leash ->
-                            createLetterboxSurface(
-                                key,
-                                startTransaction,
-                                leash,
-                                event.containerToken
-                            )
-                        }
-                        updateLetterboxSurfaceBounds(
-                            key,
-                            startTransaction,
-                            event.taskBounds,
-                            event.letterboxBounds
-                        )
-                    } else {
-                        updateLetterboxSurfaceVisibility(
-                            key,
-                            startTransaction,
-                            visible = false
-                        )
-                    }
-                }
+            }
+            updateLetterboxSurfaceVisibility(
+                key,
+                startTransaction,
+                visible = event.letterboxBounds != null
+            )
+            // This happens after the visibility update because it needs to
+            // check if the surfaces to show have empty bounds. When that happens
+            // the clipAndCrop() doesn't actually work because cropping an empty
+            // Rect means "do not crop" with the result of a surface filling the
+            // task completely.
+            if (event.letterboxBounds != null) {
+                updateLetterboxSurfaceBounds(
+                    key,
+                    startTransaction,
+                    event.taskBounds,
+                    event.letterboxBounds
+                )
             }
         }
     }

@@ -57,17 +57,17 @@ sealed interface DragZone {
     /** Represents the bubble drag area on the screen. */
     sealed class Bubble(
         override val bounds: Bounds.RectZone,
-        override val dropTarget: DropTargetRect,
+        override val dropTarget: DropTargetRect?,
     ) : DragZone {
         data class Left(
             override val bounds: Bounds.RectZone,
-            override val dropTarget: DropTargetRect,
+            override val dropTarget: DropTargetRect?,
             override val secondDropTarget: DropTargetRect? = null,
         ) : Bubble(bounds, dropTarget)
 
         data class Right(
             override val bounds: Bounds.RectZone,
-            override val dropTarget: DropTargetRect,
+            override val dropTarget: DropTargetRect?,
             override val secondDropTarget: DropTargetRect? = null,
         ) : Bubble(bounds, dropTarget)
     }

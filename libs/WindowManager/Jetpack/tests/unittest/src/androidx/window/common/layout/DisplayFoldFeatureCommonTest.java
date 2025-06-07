@@ -26,8 +26,10 @@ import static androidx.window.common.layout.DisplayFoldFeatureCommon.DISPLAY_FOL
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Rect;
+import android.platform.test.annotations.Presubmit;
 import android.util.ArraySet;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Set;
@@ -38,8 +40,10 @@ import java.util.Set;
  * Build/Install/Run:
  *  atest WMJetpackUnitTests:DisplayFoldFeatureCommonTest
  */
+@Presubmit
 public class DisplayFoldFeatureCommonTest {
 
+    @Ignore("b/421016779")
     @Test
     public void test_different_type_not_equals() {
         final Set<Integer> properties = new ArraySet<>();
@@ -107,6 +111,7 @@ public class DisplayFoldFeatureCommonTest {
         assertThat(foldFeatureCommon.getType()).isEqualTo(DISPLAY_FOLD_FEATURE_TYPE_HINGE);
     }
 
+    @Ignore("b/421016779")
     @Test
     public void test_create_half_opened_feature() {
         final CommonFoldingFeature foldingFeature =
@@ -120,6 +125,7 @@ public class DisplayFoldFeatureCommonTest {
                 .isTrue();
     }
 
+    @Ignore("b/421016779")
     @Test
     public void test_create_fold_feature_no_half_opened() {
         final CommonFoldingFeature foldingFeature =

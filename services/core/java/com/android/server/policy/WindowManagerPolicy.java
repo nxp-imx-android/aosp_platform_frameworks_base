@@ -544,8 +544,18 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
             case TYPE_SYSTEM_DIALOG:
                 return  6;
             case TYPE_TOAST:
-                // toasts and the plugged-in battery thing
-                return  7;
+                if (Flags.bugToastsOnTopOfBubble()) {
+                    // system added toasts must be on top of any always-on-top windows.
+                    // toasts and the plugged-in battery thing
+                    // canAddInternalSystemWindow is to distinguish between legacy toasts and ones
+                    // managed by the system. A legacy toast can have an arbitrary view and tap jack
+                    // other views. Toasts are given low priority to prevent this. Toasts added by
+                    // the system are safe and can have higher visibility.
+                    return canAddInternalSystemWindow ? 27 : 7;
+                } else {
+                    // toasts and the plugged-in battery thing
+                    return 7;
+                }
             case TYPE_PRIORITY_PHONE:
                 // SIM errors and unlock.  Not sure if this really should be in a high layer.
                 return  8;

@@ -68,11 +68,14 @@ public interface DeviceStateAutoRotateSettingManager extends Dumpable {
      *
      * @param proposedSetting Settings maps desired to be written into persisted setting.
      * @param currentSetting  Current settings map
+     * @return Resolved proposedSetting map
      */
     @Discouraged(message = "This method is exclusively for internal use. The designated API for "
             + "updating settings is #updateSetting(int, boolean) in com.android.settingslib"
             + ".devicestate.DeviceStateAutoRotateSettingManager. Please use that method.")
-    void updateSetting(SparseIntArray proposedSetting, SparseIntArray currentSetting);
+    @NonNull
+    SparseIntArray updateSetting(@NonNull SparseIntArray proposedSetting,
+            @NonNull SparseIntArray currentSetting);
 
     /**
      * Get {@link DEVICE_STATE_ROTATION_LOCK} setting value for {@code deviceState}.

@@ -80,3 +80,11 @@ flag {
     description: "Enable association verification APIs"
     bug: "371198526"
 }
+
+flag {
+    name: "notify_association_removed"
+    is_exported: true
+    namespace: "companion"
+    description: "Enable association removed event API"
+    bug: "398042032"
+}

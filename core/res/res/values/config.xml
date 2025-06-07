@@ -3254,6 +3254,12 @@
          Note that HSUM devices without this enabled will not automatically have a main user. -->
     <bool name="config_isMainUserPermanentAdmin">true</bool>
 
+    <!-- Whether to disallow the removal of the last admin user on device. This generally has no
+         effect on non-HSUM devices, where the system user is always an admin and cannot be removed.
+         Note that if config_isMainUserPermanentAdmin is true, this config is generally irrelevant,
+         since then the main user is a permanent admin. -->
+    <bool name="config_disallowRemovingLastAdminUser">true</bool>
+
     <!-- Whether all secondary users (and the system user) are eligible to have profiles.
          If false, only the MainUser is eligible to have profiles. -->
     <bool name="config_supportProfilesOnNonMainUser">false</bool>
@@ -3262,6 +3268,18 @@
          Notice that if config_isMainUserPermanentAdmin is true, this config is
          ignored (as the initial user is the main user). -->
     <bool name="config_createInitialUser">false</bool>
+
+    <!-- Whether the system should "designate" the main user on boot:
+         - If it's true and the device doesn't have a main user (meaning it's the first boot or it
+           migrated from false to true), then the system will either promote the first admin
+           (migration) to be the main user, or create a main user (first boot).
+         - If it's false and the device has a main user (meaning it migrated from true to false),
+           then the main user will be "demoted" to just an admin.
+
+         Notice that if config_isMainUserPermanentAdmin is true, this config is
+         ignored (i.e, the system will act as it was true) as main user is required in this case.
+    -->
+    <bool name="config_designateMainUser">false</bool>
 
     <!-- Whether switch to headless system user is allowed. If allowed,
     headless system user can run in the foreground even though it is not a full user. -->
@@ -3856,6 +3874,9 @@
     <!-- default value for whether circular emulators (ro.boot.emulator.circular)
          should show a display overlay on the screen -->
     <bool name="config_windowEnableCircularEmulatorDisplayOverlay">false</bool>
+
+    <!-- Whether the emulator shows screen brightness dim in the overlay. -->
+    <bool name="config_windowEnableScreenBrightnessEmulatorDisplayOverlay">false</bool>
 
     <!-- Defines the default set of global actions. Actions may still be disabled or hidden based
          on the current state of the device.
@@ -7573,5 +7594,15 @@
         presented as a single "Device Settings" item rather than individually. -->
     <string-array name="config_appFunctionsDeviceSettingsPackages" translatable="false">
     </string-array>
+
+    <!-- Package name for developer verification service provider app [DO NOT TRANSLATE] -->
+    <string name="config_developerVerificationServiceProviderPackageName" translatable="false"></string>
+
+    <!-- Whether the system package installer supports the material design. -->
+    <bool name="config_enableMaterialDesignInPackageInstaller">true</bool>
+
+    <!-- Package and class info to bind to ProximityProviderService -->
+    <string name="proximity_provider_service_package_name" translatable="false"></string>
+    <string name="proximity_provider_service_class_name" translatable="false"></string>
 
 </resources>

@@ -21,17 +21,26 @@ import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageInstaller.SessionParams.PERMISSION_STATE_DEFAULT
 import android.content.pm.PackageInstaller.SessionParams.PERMISSION_STATE_DENIED
 import android.content.pm.PackageInstaller.SessionParams.PERMISSION_STATE_GRANTED
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED
+import android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN
 import android.content.pm.PackageManager
 import android.content.pm.verify.domain.DomainSet
 import android.os.Parcel
+import android.os.PersistableBundle
 import android.os.Process
 import android.platform.test.annotations.Presubmit
 import android.util.AtomicFile
 import android.util.Slog
 import android.util.Xml
 import com.android.internal.os.BackgroundThread
+import com.android.server.pm.verify.developer.DeveloperVerifierController
 import com.android.server.testutils.whenever
 import com.google.common.truth.Truth.assertThat
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 import libcore.io.IoUtils
 import org.junit.Before
 import org.junit.Rule
@@ -45,17 +54,14 @@ import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
 
 @Presubmit
 class PackageInstallerSessionTest {
 
     companion object {
         private const val TAG_SESSIONS = "sessions"
+        private const val TEST_KEY_FOR_EXTENSION_PARAMS = "testKey"
+        private const val TEST_VALUE_FOR_EXTENSION_PARAMS = "testValue"
     }
 
     @JvmField
@@ -153,9 +159,12 @@ class PackageInstallerSessionTest {
         childSessionIds: List<Int> = emptyList(),
         block: (SessionParams) -> Unit = {},
     ): PackageInstallerSession {
+        val bundle = PersistableBundle()
+        bundle.putString(TEST_KEY_FOR_EXTENSION_PARAMS, TEST_VALUE_FOR_EXTENSION_PARAMS)
         val params = SessionParams(SessionParams.MODE_FULL_INSTALL).apply {
             isStaged = staged
             isMultiPackage = multiPackage
+            extensionParams = bundle
             block(this)
         }
 
@@ -196,6 +205,9 @@ class PackageInstallerSessionTest {
             /* stagedSessionErrorCode */ PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE,
             /* stagedSessionErrorMessage */ "some error",
             /* preVerifiedDomains */ DomainSet(setOf("com.foo", "com.bar")),
+            /* VerifierController */ mock(DeveloperVerifierController::class.java),
+            /* initialVerificationPolicy */ DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
+            /* currentVerificationPolicy */ DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
             /* installDependencyHelper */ null
         )
     }
@@ -251,6 +263,7 @@ class PackageInstallerSessionTest {
                                 mTmpDir,
                                 mock(PackageSessionProvider::class.java),
                                 mock(SilentUpdatePolicy::class.java),
+                                mock(DeveloperVerifierController::class.java),
                                 mock(InstallDependencyHelper::class.java)
                             )
                             ret.add(session)
@@ -288,6 +301,11 @@ class PackageInstallerSessionTest {
         assertThat(expected.installerPackageName).isEqualTo(actual.installerPackageName)
         assertThat(expected.isMultiPackage).isEqualTo(actual.isMultiPackage)
         assertThat(expected.isStaged).isEqualTo(actual.isStaged)
+        assertThat(expected.forceVerification).isEqualTo(actual.forceVerification)
+        // We can't directly test with PersistableBundle.equals() because the parceled bundle's
+        // structure is different, but all the key/value pairs should be preserved as before.
+        assertThat(expected.extensionParams!!.getString(TEST_KEY_FOR_EXTENSION_PARAMS))
+            .isEqualTo(TEST_VALUE_FOR_EXTENSION_PARAMS)
     }
 
     private fun assertEquals(
@@ -338,6 +356,8 @@ class PackageInstallerSessionTest {
         assertThat(expected.childSessionIds).asList()
             .containsExactlyElementsIn(actual.childSessionIds.toList())
         assertThat(expected.preVerifiedDomains).isEqualTo(actual.preVerifiedDomains)
+        assertThat(expected.initialVerificationPolicy).isEqualTo(actual.initialVerificationPolicy)
+        assertThat(expected.currentVerificationPolicy).isEqualTo(actual.currentVerificationPolicy)
     }
 
     private fun assertInstallSourcesEquivalent(expected: InstallSource, actual: InstallSource) {

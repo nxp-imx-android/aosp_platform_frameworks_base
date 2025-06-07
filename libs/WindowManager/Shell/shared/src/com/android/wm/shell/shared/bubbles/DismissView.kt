@@ -147,10 +147,12 @@ class DismissView(context: Context) : FrameLayout(context) {
 
     /**
      * Animates this view in.
+     *
+     * @return `true` if the view was shown, `false` otherwise
      */
-    fun show() {
-        if (isShowing) return
-        val gradientDrawable = checkExists(gradientDrawable) ?: return
+    fun show(): Boolean {
+        if (isShowing) return false
+        val gradientDrawable = checkExists(gradientDrawable) ?: return false
         isShowing = true
         setVisibility(View.VISIBLE)
         val alphaAnim = ObjectAnimator.ofInt(gradientDrawable, GRADIENT_ALPHA,
@@ -162,6 +164,7 @@ class DismissView(context: Context) : FrameLayout(context) {
         animator
             .spring(DynamicAnimation.TRANSLATION_Y, 0f, spring)
             .start()
+        return true
     }
 
     /**

@@ -496,6 +496,119 @@ public final class ApplicationExitInfo implements Parcelable {
      */
     public static final int SUBREASON_EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED = 32;
 
+    /**
+     * The app itself due to its own internal logic or behavior has triggered an ANR.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_APP_TRIGGERED = 33;
+
+    /**
+     * The app took too long to start up.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_BIND_APPLICATION = 34;
+
+    /**
+     * The app's broadcast receiver took too long to process the message.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_BROADCAST_OF_INTENT = 35;
+
+    /**
+     * The app's content provider took too long to respond.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_CONTENT_PROVIDER_NOT_RESPONDING = 36;
+
+    /**
+     * The app's service took too long to finish Service.onCreate() and Service.onStartCommand() /
+     * Service.onBind()
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_EXECUTING_SERVICE = 37;
+
+    /**
+     * Foreground service took too long to respond to onTimeout().
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_FOREGROUND_SERVICE_TIMEOUT = 38;
+
+    /**
+     * A foreground short service took too long to respond to onTimeout().
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_FOREGROUND_SHORT_SERVICE_TIMEOUT = 39;
+
+    /**
+     * Triggered when BLASTbufferQueue processing is hung.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_GPU_HANG = 40;
+
+    /**
+     * The app took too long to respond to an input event.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_INPUT_DISPATCHING_TIMEOUT = 41;
+
+    /**
+     * The app took too long to respond to an input event because no window was focused.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_INPUT_DISPATCHING_TIMEOUT_NO_FOCUSED_WINDOW = 42;
+
+    /**
+     * Job service took too long to bind.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_JOB_SERVICE_BIND = 43;
+
+    /**
+     * The job service took too long to send a notification.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_JOB_SERVICE_NOTIFICATION_NOT_PROVIDED = 44;
+
+    /**
+     * The job service took too long to start.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_JOB_SERVICE_START = 45;
+
+    /**
+     * The job service took too long to stop.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_JOB_SERVICE_STOP = 46;
+
+    /**
+     * The foreground service took too long to start.
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_START_FOREGROUND_SERVICE = 47;
+
+    /**
+     * System server watchdog triggered ANR
+     *
+     * @hide
+     */
+    public static final int SUBREASON_ANR_TYPE_SYSTEM_SERVER_WATCHDOG_TIMEOUT = 48;
+
     // If there is any OEM code which involves additional app kill reasons, it should
     // be categorized in {@link #REASON_OTHER}, with subreason code starting from 1000.
 
@@ -691,6 +804,22 @@ public final class ApplicationExitInfo implements Parcelable {
         SUBREASON_OOM_KILL,
         SUBREASON_FREEZER_BINDER_ASYNC_FULL,
         SUBREASON_EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED,
+        SUBREASON_ANR_TYPE_APP_TRIGGERED,
+        SUBREASON_ANR_TYPE_BIND_APPLICATION,
+        SUBREASON_ANR_TYPE_BROADCAST_OF_INTENT,
+        SUBREASON_ANR_TYPE_CONTENT_PROVIDER_NOT_RESPONDING,
+        SUBREASON_ANR_TYPE_EXECUTING_SERVICE,
+        SUBREASON_ANR_TYPE_FOREGROUND_SERVICE_TIMEOUT,
+        SUBREASON_ANR_TYPE_FOREGROUND_SHORT_SERVICE_TIMEOUT,
+        SUBREASON_ANR_TYPE_GPU_HANG,
+        SUBREASON_ANR_TYPE_INPUT_DISPATCHING_TIMEOUT,
+        SUBREASON_ANR_TYPE_INPUT_DISPATCHING_TIMEOUT_NO_FOCUSED_WINDOW,
+        SUBREASON_ANR_TYPE_JOB_SERVICE_BIND,
+        SUBREASON_ANR_TYPE_JOB_SERVICE_NOTIFICATION_NOT_PROVIDED,
+        SUBREASON_ANR_TYPE_JOB_SERVICE_START,
+        SUBREASON_ANR_TYPE_JOB_SERVICE_STOP,
+        SUBREASON_ANR_TYPE_START_FOREGROUND_SERVICE,
+        SUBREASON_ANR_TYPE_SYSTEM_SERVER_WATCHDOG_TIMEOUT,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface SubReason {
@@ -1457,6 +1586,38 @@ public final class ApplicationExitInfo implements Parcelable {
                 return "FREEZER BINDER ASYNC FULL";
             case SUBREASON_EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED:
                 return "EXCESSIVE_OUTGOING_BROADCASTS_WHILE_CACHED";
+            case SUBREASON_ANR_TYPE_APP_TRIGGERED:
+                return "APP TRIGGERED ANR";
+            case SUBREASON_ANR_TYPE_BIND_APPLICATION:
+                return "BIND APPLICATION ANR";
+            case SUBREASON_ANR_TYPE_BROADCAST_OF_INTENT:
+                return "BROADCAST OF INTENT ANR";
+            case SUBREASON_ANR_TYPE_CONTENT_PROVIDER_NOT_RESPONDING:
+                return "CONTENT PROVIDER NOT RESPONDING ANR";
+            case SUBREASON_ANR_TYPE_EXECUTING_SERVICE:
+                return "EXECUTING SERVICE ANR";
+            case SUBREASON_ANR_TYPE_FOREGROUND_SERVICE_TIMEOUT:
+                return "FOREGROUND SERVICE TIMEOUT ANR";
+            case SUBREASON_ANR_TYPE_FOREGROUND_SHORT_SERVICE_TIMEOUT:
+                return "FOREGROUND SHORT SERVICE TIMEOUT ANR";
+            case SUBREASON_ANR_TYPE_GPU_HANG:
+                return "GPU HANG ANR";
+            case SUBREASON_ANR_TYPE_INPUT_DISPATCHING_TIMEOUT:
+                return "INPUT DISPATCHING TIMEOUT ANR";
+            case SUBREASON_ANR_TYPE_INPUT_DISPATCHING_TIMEOUT_NO_FOCUSED_WINDOW:
+                return "INPUT DISPATCHING TIMEOUT NO FOCUSED WINDOW ANR";
+            case SUBREASON_ANR_TYPE_JOB_SERVICE_BIND:
+                return "JOB SERVICE BIND ANR";
+            case SUBREASON_ANR_TYPE_JOB_SERVICE_NOTIFICATION_NOT_PROVIDED:
+                return "JOB SERVICE NOTIFICATION NOT PROVIDED ANR";
+            case SUBREASON_ANR_TYPE_JOB_SERVICE_START:
+                return "JOB SERVICE START ANR";
+            case SUBREASON_ANR_TYPE_JOB_SERVICE_STOP:
+                return "JOB SERVICE STOP ANR";
+            case SUBREASON_ANR_TYPE_START_FOREGROUND_SERVICE:
+                return "START FOREGROUND SERVICE ANR";
+            case SUBREASON_ANR_TYPE_SYSTEM_SERVER_WATCHDOG_TIMEOUT:
+                return "SYSTEM SERVER WATCHDOG TIMEOUT ANR";
             case SUBREASON_UNKNOWN:
             default:
                 return "UNKNOWN";

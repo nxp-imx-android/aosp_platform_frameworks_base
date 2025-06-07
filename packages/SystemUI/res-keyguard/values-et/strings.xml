@@ -80,9 +80,9 @@
     <string name="kg_face_locked_out" msgid="2751559491287575">"Näoga ei saa avada. Liiga palju katseid."</string>
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Sõrmejäljega ei saa avada. Liiga palju katseid."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Usaldusväärne agent pole saadaval"</string>
-    <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Liiga palju vale PIN-koodiga katseid"</string>
-    <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Liiga palju vale mustriga katseid"</string>
-    <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Liiga palju vale parooliga katseid"</string>
+    <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"Liiga palju vale PIN-koodiga katseid."</string>
+    <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Liiga palju vale mustriga katseid."</string>
+    <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Liiga palju vale parooliga katseid."</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Proovige uuesti # sekundi pärast.}other{Proovige uuesti # sekundi pärast.}}"</string>
     <string name="kg_sim_pin_instructions" msgid="1942424305184242951">"Sisestage SIM-kaardi PIN-kood."</string>
     <string name="kg_sim_pin_instructions_multi" msgid="3639863309953109649">"Sisestage operaatori „<xliff:g id="CARRIER">%1$s</xliff:g>” SIM-kaardi PIN-kood."</string>

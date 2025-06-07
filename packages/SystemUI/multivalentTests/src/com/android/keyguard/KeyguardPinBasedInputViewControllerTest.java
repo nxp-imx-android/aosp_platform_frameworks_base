@@ -17,11 +17,13 @@
 package com.android.keyguard;
 
 import static com.android.internal.widget.flags.Flags.FLAG_HIDE_LAST_CHAR_WITH_PHYSICAL_INPUT;
+import static com.android.systemui.Flags.FLAG_BOUNCER_LIFECYCLE_FIX;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -142,9 +144,18 @@ public class KeyguardPinBasedInputViewControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_BOUNCER_LIFECYCLE_FIX)
     public void onResume_requestsFocus() {
+        when(mPinBasedInputView.isVisibleToUser()).thenReturn(true);
         mKeyguardPinViewController.onResume(KeyguardSecurityView.SCREEN_ON);
         verify(mPasswordEntry).requestFocus();
+    }
+
+    @Test
+    public void onResume_doesNotRequestFocusIfNotVisible() {
+        when(mPinBasedInputView.isVisibleToUser()).thenReturn(false);
+        mKeyguardPinViewController.onResume(KeyguardSecurityView.SCREEN_ON);
+        verify(mPasswordEntry, never()).requestFocus();
     }
 
     @Test

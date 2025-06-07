@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.row.ui.viewmodel
 
 import android.graphics.drawable.Drawable
 import android.util.Log
-import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -55,8 +54,6 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
 
     var backgroundDrawable by mutableStateOf<Drawable?>(null)
 
-    var onExpandClickListener: View.OnClickListener? = null
-
     fun onHeaderClicked() {
         val targetScene =
             when (state?.currentScene) {
@@ -69,8 +66,6 @@ class BundleHeaderViewModel @AssistedInject constructor(private val interactor: 
                 else -> error("Unknown Scene.")
             }
         interactor.setTargetScene(targetScene)
-
-        onExpandClickListener?.onClick(null)
     }
 
     fun setExpansionState(isExpanded: Boolean) = interactor.setExpansionState(isExpanded)

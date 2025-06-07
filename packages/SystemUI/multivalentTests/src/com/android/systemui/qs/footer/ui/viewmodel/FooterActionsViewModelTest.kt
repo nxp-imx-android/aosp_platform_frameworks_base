@@ -53,7 +53,6 @@ import com.android.systemui.statusbar.policy.FakeSecurityController
 import com.android.systemui.statusbar.policy.FakeUserInfoController
 import com.android.systemui.statusbar.policy.FakeUserInfoController.FakeInfo
 import com.android.systemui.statusbar.policy.MockUserSwitcherControllerWrapper
-import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.nullable
 import com.android.systemui.util.settings.FakeGlobalSettings
@@ -70,6 +69,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.`when` as whenever
+import org.mockito.kotlin.any
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -211,7 +211,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         // Mock QSSecurityFooter to map a SecurityModel into a SecurityButtonConfig using the
         // logic in securityToConfig.
         var securityToConfig: (SecurityModel) -> SecurityButtonConfig? = { null }
-        whenever(qsSecurityFooterUtils.getButtonConfig(any())).thenAnswer {
+        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
             securityToConfig(it.arguments.first() as SecurityModel)
         }
 
@@ -269,7 +269,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         // Mock QSSecurityFooter to map a SecurityModel into a SecurityButtonConfig using the
         // logic in securityToConfig.
         var securityToConfig: (SecurityModel) -> SecurityButtonConfig? = { null }
-        whenever(qsSecurityFooterUtils.getButtonConfig(any())).thenAnswer {
+        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
             securityToConfig(it.arguments.first() as SecurityModel)
         }
 
@@ -484,7 +484,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         // Mock QSSecurityFooter to map a SecurityModel into a SecurityButtonConfig using the
         // logic in securityToConfig.
         val securityToConfig: (SecurityModel) -> SecurityButtonConfig? = { null }
-        whenever(qsSecurityFooterUtils.getButtonConfig(any())).thenAnswer {
+        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
             securityToConfig(it.arguments.first() as SecurityModel)
         }
         val fgsManagerController =
@@ -514,7 +514,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         assertThat(textFeedback)
             .isEqualTo(
                 TextFeedbackViewModel.LoadedTextFeedback(
-                    label = context.getString(config.uiConfig.labelRes),
+                    text = context.getString(config.uiConfig.labelRes),
                     icon =
                         Icon.Loaded(
                             drawable = context.getDrawable(config.uiConfig.iconRes)!!,

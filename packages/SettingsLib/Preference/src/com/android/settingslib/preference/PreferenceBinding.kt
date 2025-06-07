@@ -35,6 +35,7 @@ import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.getPreferenceScreenTitle
 import com.android.settingslib.metadata.getPreferenceSummary
 import com.android.settingslib.metadata.getPreferenceTitle
+import kotlinx.coroutines.CoroutineScope
 
 /** Binding of preference widget and preference metadata. */
 interface PreferenceBinding {
@@ -144,8 +145,14 @@ interface PreferenceScreenCreator : PreferenceScreenMetadata, PreferenceScreenPr
     val preferenceBindingFactory: PreferenceBindingFactory
         get() = PreferenceBindingFactory.defaultFactory
 
-    override fun createPreferenceScreen(factory: PreferenceScreenFactory) =
+    override fun createPreferenceScreen(
+        factory: PreferenceScreenFactory,
+        coroutineScope: CoroutineScope,
+    ) =
         factory.getOrCreatePreferenceScreen().apply {
-            inflatePreferenceHierarchy(preferenceBindingFactory, getPreferenceHierarchy(context))
+            inflatePreferenceHierarchy(
+                preferenceBindingFactory,
+                getPreferenceHierarchy(context, coroutineScope),
+            )
         }
 }

@@ -22,7 +22,9 @@ import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
 import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE;
+import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
+import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
 import static android.hardware.display.DisplayManager.SWITCHING_TYPE_NONE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR;
@@ -40,7 +42,12 @@ import static android.view.ContentRecordingSession.RECORD_CONTENT_TASK;
 import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.display.ExternalDisplayPolicy.ENABLE_ON_CONNECT;
+import static com.android.server.display.TestUtilsKt.createInMemoryPersistentDataStore;
+import static com.android.server.display.TestUtilsKt.createSensor;
+import static com.android.server.display.TestUtilsKt.createTestDisplayAddress;
+import static com.android.server.display.TestUtilsKt.TEST_SENSOR_TYPE;
 import static com.android.server.display.VirtualDisplayAdapter.UNIQUE_ID_PREFIX;
 import static com.android.server.display.config.DisplayDeviceConfigTestUtilsKt.createSensorData;
 
@@ -74,13 +81,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions.LaunchCookie;
 import android.app.PropertyInvalidatedCache;
+import android.app.job.JobScheduler;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager;
@@ -158,12 +165,12 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.FakeSettingsProviderRule;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.DisplayThread;
-import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.am.BatteryStatsService;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
@@ -181,6 +188,9 @@ import com.android.server.sensors.SensorManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import com.google.common.truth.Expect;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
@@ -215,7 +225,7 @@ import java.util.stream.LongStream;
 
 // TODO(b/297170420) Parameterize the test.
 @SmallTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(JUnitParamsRunner.class)
 public class DisplayManagerServiceTest {
     private static final int MSG_REGISTER_DEFAULT_DISPLAY_ADAPTERS = 1;
     private static final long SHORT_DEFAULT_DISPLAY_TIMEOUT_MILLIS = 10;
@@ -272,6 +282,7 @@ public class DisplayManagerServiceTest {
     private int mPreferredHdrOutputType;
     private TestLooperManager mPowerLooperManager;
     private TestLooperManager mDisplayLooperManager;
+    private TestLooperManager mBackgroundLooperManager;
     private UserManager mUserManager;
 
     private int[] mAllowedHdrOutputTypes;
@@ -387,13 +398,13 @@ public class DisplayManagerServiceTest {
         }
 
         @Override
-        boolean canInternalDisplayHostDesktops(Context context) {
+        boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
             return false;
         }
 
         @Override
         PersistentDataStore getPersistentDataStore() {
-            return TestUtilsKt.createInMemoryPersistentDataStore();
+            return createInMemoryPersistentDataStore();
         }
     }
 
@@ -435,6 +446,7 @@ public class DisplayManagerServiceTest {
             new ExtendedMockitoRule.Builder(this)
                     .setStrictness(Strictness.LENIENT)
                     .spyStatic(SystemProperties.class)
+                    .spyStatic(BatteryStatsService.class)
                     .build();
 
     private int mUniqueIdCount = 0;
@@ -459,6 +471,9 @@ public class DisplayManagerServiceTest {
                 DisplayManagerInternal.class, mMockDisplayManagerInternal);
         mLocalServiceKeeperRule.overrideLocalService(
                 ActivityManagerInternal.class, mMockActivityManagerInternal);
+        mLocalServiceKeeperRule.overrideLocalService(
+                WindowManagerPolicy.class, mMockedWindowManagerPolicy);
+        when(BatteryStatsService.getService()).thenReturn(null);
         Display display = mock(Display.class);
         when(display.getDisplayAdjustments()).thenReturn(new DisplayAdjustments());
         when(display.getBrightnessInfo()).thenReturn(mock(BrightnessInfo.class));
@@ -472,6 +487,9 @@ public class DisplayManagerServiceTest {
                 Looper.getMainLooper());
         mDisplayLooperManager = InstrumentationRegistry.getInstrumentation().acquireLooperManager(
                 DisplayThread.get().getLooper());
+        mBackgroundLooperManager =
+                InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                        BackgroundThread.getHandler().getLooper());
         manageDisplaysPermission(/* granted= */ false);
         when(mContext.getResources()).thenReturn(mResources);
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
@@ -480,6 +498,7 @@ public class DisplayManagerServiceTest {
                 eq(PermissionEnforcer.class));
         doReturn(mPermissionEnforcer).when(mContext).getSystemService(
                 eq(Context.PERMISSION_ENFORCER_SERVICE));
+        doReturn(mock(JobScheduler.class)).when(mContext).getSystemService(JobScheduler.class);
 
         VirtualDeviceManager vdm = new VirtualDeviceManager(mIVirtualDeviceManager, mContext);
         when(mContext.getSystemService(VirtualDeviceManager.class)).thenReturn(vdm);
@@ -494,6 +513,7 @@ public class DisplayManagerServiceTest {
         flushHandlers();
         mPowerLooperManager.release();
         mDisplayLooperManager.release();
+        mBackgroundLooperManager.release();
     }
 
     private void setUpDisplay() {
@@ -980,7 +1000,7 @@ public class DisplayManagerServiceTest {
                 Insets.of(0, 10, 0, 0),
                 zeroRect, new Rect(0, 0, 10, 10), zeroRect, zeroRect);
         displayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
-        displayDeviceInfo.address = new TestUtils.TestDisplayAddress();
+        displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);
         displayManager.getDisplayDeviceRepository()
                 .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
@@ -2872,7 +2892,7 @@ public class DisplayManagerServiceTest {
 
         String testSensorName = "testName";
         String testSensorType = "testType";
-        Sensor testSensor = TestUtils.createSensor(testSensorType, testSensorName);
+        Sensor testSensor = createSensor(TEST_SENSOR_TYPE, testSensorType, testSensorName);
 
         SensorData sensorData = createSensorData(testSensorType, testSensorName,
                 /* minRefreshRate= */ 10f, /* maxRefreshRate= */ 100f);
@@ -2904,7 +2924,7 @@ public class DisplayManagerServiceTest {
 
         String testSensorName = "testName";
         String testSensorType = "testType";
-        Sensor testSensor = TestUtils.createSensor(testSensorType, testSensorName);
+        Sensor testSensor = createSensor(TEST_SENSOR_TYPE, testSensorType, testSensorName);
 
         when(mMockDisplayDeviceConfig.getProximitySensor()).thenReturn(null);
         when(mSensorManager.getSensorList(Sensor.TYPE_ALL)).thenReturn(Collections.singletonList(
@@ -2982,7 +3002,6 @@ public class DisplayManagerServiceTest {
     public void testConnectExternalDisplay_allowsEnableAndDisableDisplay() {
         when(mMockFlags.isApplyDisplayChangedDuringDisplayAddedEnabled()).thenReturn(true);
         manageDisplaysPermission(/* granted= */ true);
-        LocalServices.addService(WindowManagerPolicy.class, mMockedWindowManagerPolicy);
         BatteryStatsService.overrideService(mMockedBatteryStats);
         DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerInternal localService = displayManager.new LocalService();
@@ -4440,7 +4459,7 @@ public class DisplayManagerServiceTest {
         DisplayManagerService displayManager = new DisplayManagerService(
                 mContext, new BasicInjector() {
             @Override
-            boolean canInternalDisplayHostDesktops(Context context) {
+            boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
                 return true;
             }
         });
@@ -4528,6 +4547,43 @@ public class DisplayManagerServiceTest {
         final ContentObserver observer = displayManager.getSettingsObserver();
         observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
         verify(mMockDisplayTopologyCoordinator, never()).onDisplayAdded(any());
+    }
+
+    @Test
+    @Parameters({"0", "13", "39.1f", "54.56f", "80", "97.31f", "100"})
+    public void testGetAndSetBrightness_unitPercentage(float percentage) {
+        mPermissionEnforcer.grant(WRITE_SETTINGS);
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mShortMockedInjector);
+        DisplayManagerInternal localService = displayManager.new LocalService();
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        registerDefaultDisplays(displayManager);
+        initDisplayPowerController(localService);
+
+        // Run DisplayPowerController.updatePowerState, initialize BrightnessInfo
+        localService.requestPowerState(Display.DEFAULT_DISPLAY_GROUP,
+                new DisplayManagerInternal.DisplayPowerRequest(),
+                /* waitForNegativeProximity= */ false);
+        flushHandlers();
+
+        displayManagerBinderService.setBrightnessByUnit(Display.DEFAULT_DISPLAY, percentage,
+                BRIGHTNESS_UNIT_PERCENTAGE);
+
+        float actualPercentage = displayManagerBinderService.getBrightnessByUnit(
+                Display.DEFAULT_DISPLAY, BRIGHTNESS_UNIT_PERCENTAGE);
+        assertEquals(percentage, actualPercentage, /* delta= */ 0.05);
+    }
+
+    @Test
+    public void testSetBrightnessByUnit_withoutPermission_shouldThrowException() {
+        DisplayManagerService displayManager =
+                new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService displayManagerBinderService =
+                displayManager.new BinderService();
+        assertThrows(SecurityException.class,
+                () -> displayManagerBinderService.setBrightnessByUnit(Display.DEFAULT_DISPLAY, 0.3f,
+                        BRIGHTNESS_UNIT_PERCENTAGE));
     }
 
     private void initDisplayPowerController(DisplayManagerInternal localService) {
@@ -4774,7 +4830,7 @@ public class DisplayManagerServiceTest {
                 Insets.of(0, 10, 0, 0),
                 zeroRect, new Rect(0, 0, 10, 10), zeroRect, zeroRect);
         displayDeviceInfo.flags = DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY;
-        displayDeviceInfo.address = new TestUtils.TestDisplayAddress();
+        displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);
         displayManager.getDisplayDeviceRepository()
                 .onDisplayDeviceEvent(displayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
@@ -4838,7 +4894,7 @@ public class DisplayManagerServiceTest {
         if (displayType == Display.TYPE_EXTERNAL) {
             displayDeviceInfo.flags |= DisplayDeviceInfo.FLAG_OWN_DISPLAY_GROUP;
         }
-        displayDeviceInfo.address = new TestUtils.TestDisplayAddress();
+        displayDeviceInfo.address = createTestDisplayAddress();
         displayDevice.setDisplayDeviceInfo(displayDeviceInfo);
 
         displayManager.getDisplayDeviceRepository()
@@ -4857,7 +4913,7 @@ public class DisplayManagerServiceTest {
 
     private void flushHandlers() {
         com.android.server.testutils.TestUtils.flushLoopers(mDisplayLooperManager,
-                mPowerLooperManager);
+                mPowerLooperManager, mBackgroundLooperManager);
     }
 
     private void resetConfigToIgnoreSensorManager() {

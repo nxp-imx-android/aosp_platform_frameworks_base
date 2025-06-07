@@ -26,6 +26,7 @@ import android.os.BadParcelableException
 import android.util.Log
 import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.media.controls.shared.model.MediaData
+import com.android.systemui.util.time.SystemClock
 
 private const val TAG = "MediaProcessingHelper"
 
@@ -62,6 +63,7 @@ fun isSameMediaData(
         new.resumption == old.resumption &&
         new.token == old.token &&
         new.resumeProgress == old.resumeProgress &&
+        new.active == old.active &&
         areClickIntentsEqual(new.clickIntent, old.clickIntent) &&
         areActionsEqual(context, newController, new, old) &&
         areIconsEqual(context, new.artwork, old.artwork) &&
@@ -131,7 +133,11 @@ private fun areIconsEqual(context: Context, new: Icon?, old: Icon?): Boolean {
             Log.e(TAG, "Cannot compare recycled bitmap")
             return false
         }
-        new.bitmap.sameAs(old.bitmap)
+        // Icon.sameAs checks for Bitmap reference equality - faster if its
+        // actually equal.
+        new.sameAs(old) || new.bitmap.sameAs(old.bitmap)
+    } else if (new.type == Icon.TYPE_DATA || new.type == Icon.TYPE_RESOURCE) {
+        return new.sameAs(old);
     } else {
         val newDrawable = new.loadDrawable(context)
         val oldDrawable = old.loadDrawable(context)
@@ -179,3 +185,5 @@ private fun areActionsEqual(
 private fun areClickIntentsEqual(newIntent: PendingIntent?, oldIntent: PendingIntent?): Boolean {
     return newIntent == oldIntent
 }
+
+fun getActiveTimestamp(clock: SystemClock) = clock.elapsedRealtime()

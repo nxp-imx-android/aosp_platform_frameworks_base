@@ -18,11 +18,9 @@ package com.android.wm.shell.bubbles
 
 import android.content.ComponentName
 import android.content.Context
-import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
-import android.window.IWindowContainerToken
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
@@ -32,11 +30,12 @@ import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER
+import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
 import com.android.wm.shell.taskview.TaskView
 import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
-import com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import org.junit.Before
@@ -68,9 +67,7 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
     private val componentName = ComponentName(context, "TestClass")
 
     private val taskOrganizer = mock<ShellTaskOrganizer>()
-    private val taskViewTaskToken = WindowContainerToken(mock<IWindowContainerToken> {
-        on { asBinder() } doReturn mock<IBinder>()
-    })
+    private val taskViewTaskToken: WindowContainerToken = MockToken.token()
     private var taskViewController = mock<TaskViewController>()
     private val taskViewTaskController = mock<TaskViewTaskController> {
         on { taskOrganizer } doReturn taskOrganizer

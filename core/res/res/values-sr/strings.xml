@@ -355,10 +355,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"приступа подацима сензора о виталним функцијама"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Обавештења"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"приказивање обавештења"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"подаци о праћењу проширене стварности"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"приступа подацима проширене стварности о вама и окружењу око вас"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"осетљиви подаци о XR праћењу"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"приступа осетљивим подацима о праћењу, на пример подацима о погледу"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"да преузима садржај прозора"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Проверава садржај прозора са којим остварујете интеракцију."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"да укључи Истраживања додиром"</string>
@@ -2554,28 +2560,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Мапе"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Апликације"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Отисци прстију више не могу да се препознају. Поново подесите откључавање отиском прста."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Безбедност и приватност"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Напредна заштита за USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Откључајте уређај ради преноса података"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Да бисте започели пренос података, можда ћете морати да откључате и поново повежете уређај"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Откључајте уређај ради брзог пуњења и преноса података"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Да бисте започели брзо пуњење и пренос података, можда ћете морати да откључате и поново повежете уређај"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Откључајте уређај ради брзог пуњења"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Да бисте започели брзо пуњење, можда ћете морати да откључате и поново повежете уређај"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Искључи звук"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Искључен је звук обавештења"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Звук ће бити искључен док не рестартујете уређај"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Сумњива USB активност"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигнал за пренос података са USB-а је онемогућен."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблема са откључавањем отиском прста?"</string>

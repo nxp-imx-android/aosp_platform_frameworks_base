@@ -98,6 +98,14 @@ flag {
 }
 
 flag {
+  name: "requested_formats_bgra_1010102"
+  is_exported: true
+  namespace: "core_graphics"
+  description: "Enable BGRA_1010102 in the SDK"
+  bug: "414794424"
+}
+
+flag {
   name: "draw_region"
   namespace: "core_graphics"
   description: "Add canvas#drawRegion API"

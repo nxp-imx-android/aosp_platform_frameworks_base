@@ -35,6 +35,7 @@ import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -59,12 +60,16 @@ class DesktopDisplayEventHandler(
     private val desktopDisplayModeController: DesktopDisplayModeController,
     private val desksTransitionObserver: DesksTransitionObserver,
     private val desktopState: DesktopState,
-) : OnDisplaysChangedListener, OnDeskRemovedListener {
+) : OnDisplaysChangedListener, OnDeskRemovedListener, PreserveDisplayRequestHandler {
 
     private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
         logV("displayAreaChanged in displayId=%d", displayId)
         createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
     }
+
+    // Mapping of display uniqueIds to displayId. Used to match a disconnected
+    // displayId to its uniqueId since we will not be able to fetch it after disconnect.
+    private val uniqueIdByDisplayId = mutableMapOf<Int, String>()
 
     init {
         shellInit.addInitCallback({ onInit() }, this)
@@ -84,6 +89,7 @@ class DesktopDisplayEventHandler(
                     }
                 }
             )
+            desktopTasksController.preserveDisplayRequestHandler = this
         }
     }
 
@@ -97,6 +103,13 @@ class DesktopDisplayEventHandler(
             // display. So updating the default display's windowing mode here.
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
+            // TODO - b/365873835: Restore a display if a uniqueId match is found in
+            //  the desktop repository.
+            displayController.getDisplay(displayId)?.uniqueId?.let { uniqueId ->
+                uniqueIdByDisplayId[displayId] = uniqueId
+            }
+        }
     }
 
     override fun onDisplayRemoved(displayId: Int) {
@@ -106,7 +119,14 @@ class DesktopDisplayEventHandler(
         if (displayId != DEFAULT_DISPLAY) {
             desktopDisplayModeController.updateDefaultDisplayWindowingMode()
         }
-        // TODO(b/391652399): store a persisted DesktopDisplay in DesktopRepository
+        uniqueIdByDisplayId.remove(displayId)
+    }
+
+    override fun requestPreserveDisplay(displayId: Int) {
+        logV("requestPreserveDisplay displayId=%d", displayId)
+        val uniqueId = uniqueIdByDisplayId.remove(displayId) ?: return
+        // TODO: b/365873835 - Preserve/restore bounds for other repositories.
+        desktopUserRepositories.current.preserveDisplay(displayId, uniqueId)
     }
 
     override fun onDesktopModeEligibleChanged(displayId: Int) {

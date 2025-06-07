@@ -344,7 +344,7 @@ public class SystemWindows {
 
         @Override
         public void resized(WindowRelayoutResult layout, boolean reportDraw, boolean forceLayout,
-                int displayId, boolean dragResizing) {}
+                int displayId, boolean syncWithBuffers, boolean dragResizing) {}
 
         @Override
         public void insetsControlChanged(InsetsState insetsState,
@@ -360,7 +360,7 @@ public class SystemWindows {
         public void moved(int newX, int newY) {}
 
         @Override
-        public void dispatchAppVisibility(boolean visible) {}
+        public void dispatchAppVisibility(boolean visible, int seqId) {}
 
         @Override
         public void dispatchGetNewSurface() {}

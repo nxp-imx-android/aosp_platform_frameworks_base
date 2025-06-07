@@ -129,6 +129,7 @@ import android.widget.Toast;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
+import android.window.TaskOrganizer;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
@@ -155,7 +156,9 @@ import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.common.split.SplitWindowManager;
+import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
+import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
@@ -245,6 +248,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private final LaunchAdjacentController mLaunchAdjacentController;
     private final Optional<WindowDecorViewModel> mWindowDecorViewModel;
     private final Optional<DesktopTasksController> mDesktopTasksController;
+    private final Optional<DesktopUserRepositories> mDesktopUserRepositories;
     /** Singleton source of truth for the current state of split screen on this device. */
     private final SplitState mSplitState;
     private final SplitStatusBarHider mStatusBarHider;
@@ -395,6 +399,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
@@ -411,6 +416,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mWindowDecorViewModel = windowDecorViewModel;
         mSplitState = splitState;
         mDesktopTasksController = desktopTasksController;
+        mDesktopUserRepositories = desktopUserRepositories;
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
@@ -424,10 +430,19 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             ArrayList<Integer> displayIds = mSplitMultiDisplayHelper.getCachedOrSystemDisplayIds();
             displayIds.forEach(id -> {
                 taskOrganizer.createRootTask(
-                        id, WINDOWING_MODE_FULLSCREEN, this);
+                        new TaskOrganizer.CreateRootTaskRequest()
+                                .setName("SplitRoot")
+                                .setDisplayId(id)
+                                .setWindowingMode(WINDOWING_MODE_FULLSCREEN),
+                        this);
             });
         } else {
-            taskOrganizer.createRootTask(displayId, WINDOWING_MODE_FULLSCREEN, this /* listener */);
+            taskOrganizer.createRootTask(
+                    new TaskOrganizer.CreateRootTaskRequest()
+                            .setName("SplitRoot")
+                            .setDisplayId(displayId)
+                            .setWindowingMode(WINDOWING_MODE_FULLSCREEN),
+                    this);
         }
 
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Creating main/side root task");
@@ -491,6 +506,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
@@ -517,6 +533,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mWindowDecorViewModel = windowDecorViewModel;
         mSplitState = splitState;
         mDesktopTasksController = desktopTasksController;
+        mDesktopUserRepositories = desktopUserRepositories;
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
@@ -982,7 +999,18 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         RunningTaskInfo taskInfo = mTaskOrganizer.getRunningTaskInfo(taskId);
         if (enableFullScreenWindowOnRemovingSplitScreenStageBugfix() && taskInfo != null
                 && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
+            RunningTaskInfo task = mTaskOrganizer.getRunningTaskInfo(taskId);
             prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                // TODO: b/422176395 - Use options#setReparentLeafTaskToTda instead once it can work
+                // with wct#startTask.
+                DesktopRepository currentDesktopRepo = mDesktopUserRepositories.map(
+                        DesktopUserRepositories::getCurrent).orElse(
+                        null);
+                if (currentDesktopRepo != null && currentDesktopRepo.isActiveTask(taskId)) {
+                    wct.reparent(task.getToken(), null, true);
+                }
+            }
         }
         wct.startTask(taskId, outOptions[0]);
         mSplitTransitions.startFullscreenTransition(wct, remoteTransition);
@@ -2071,6 +2099,12 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             int targetWindowingMode) {
         ActivityOptions options = ActivityOptions.fromBundle(opts);
         options.setLaunchWindowingMode(targetWindowingMode);
+        // We are trying to move to fullscreen, reparent the task to tda to prevent it from being
+        // launched in a previously existing root task.
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                && targetWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+            options.setReparentLeafTaskToTda(true);
+        }
         opts.putAll(options.toBundle());
         addActivityOptions(opts, launchTarget);
     }
@@ -3759,6 +3793,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         // First, verify that we actually have opened apps in both splits.
         TransitionInfo.Change mainChild = null;
         TransitionInfo.Change sideChild = null;
+        // Tracks the set of opening tasks in the transition
+        final Set<Integer> openingMainTaskIds = new HashSet<>();
+        final Set<Integer> openingSideTaskIds = new HashSet<>();
         StageTaskListener firstAppStage = null;
         StageTaskListener secondAppStage = null;
         boolean foundPausingTask = false;
@@ -3773,20 +3810,29 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             }
             StageTaskListener stage = getStageOfTask(taskInfo);
             final @StageType int stageType = getStageType(stage);
-            if (mainChild == null
-                    && stageType == (enableFlexibleSplit() ? STAGE_TYPE_A : STAGE_TYPE_MAIN)
-                    && (isOpeningType(change.getMode()) || change.getMode() == TRANSIT_CHANGE)) {
+            final boolean isMainStage = stageType
+                    == (enableFlexibleSplit() ? STAGE_TYPE_A : STAGE_TYPE_MAIN);
+            final boolean isSideStage = stageType
+                    == (enableFlexibleSplit() ? STAGE_TYPE_B : STAGE_TYPE_SIDE);
+            final boolean isVisibleTask = isOpeningType(change.getMode())
+                    || change.getMode() == TRANSIT_CHANGE;
+            if (mainChild == null && isMainStage && isVisibleTask) {
                 // Includes TRANSIT_CHANGE to cover reparenting top-most task to split.
                 mainChild = change;
                 firstAppStage = getStageOfTask(taskInfo);
-            } else if (sideChild == null
-                    && stageType == (enableFlexibleSplit() ? STAGE_TYPE_B : STAGE_TYPE_SIDE)
-                    && (isOpeningType(change.getMode()) || change.getMode() == TRANSIT_CHANGE)) {
+            } else if (sideChild == null && isSideStage && isVisibleTask) {
                 sideChild = change;
                 secondAppStage = stage;
             } else if (stageType != STAGE_TYPE_UNDEFINED && change.getMode() == TRANSIT_TO_BACK) {
                 // Collect all to back task's and evict them when transition finished.
                 evictWct.reparent(taskInfo.token, null /* parent */, false /* onTop */);
+            }
+            if (isVisibleTask) {
+                if (isMainStage) {
+                    openingMainTaskIds.add(taskInfo.taskId);
+                } else if (isSideStage) {
+                    openingSideTaskIds.add(taskInfo.taskId);
+                }
             }
         }
 
@@ -3863,16 +3909,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             }
             if (finalMainChild != null) {
                 if (!mainNotContainOpenTask) {
-                    finalFirstAppStage.evictOtherChildren(callbackWct,
-                            finalMainChild.getTaskInfo().taskId);
+                    finalFirstAppStage.evictOtherChildren(callbackWct, openingMainTaskIds);
                 } else {
                     finalFirstAppStage.evictInvisibleChildren(callbackWct);
                 }
             }
             if (finalSideChild != null) {
                 if (!sideNotContainOpenTask) {
-                    finalSecondAppStage.evictOtherChildren(callbackWct,
-                            finalSideChild.getTaskInfo().taskId);
+                    finalSecondAppStage.evictOtherChildren(callbackWct, openingSideTaskIds);
                 } else {
                     finalSecondAppStage.evictInvisibleChildren(callbackWct);
                 }
@@ -3974,7 +4018,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
 
         boolean replacingMainStage = getMainStagePosition() == mSplitRequest.mActivatePosition;
-        (replacingMainStage ? mMainStage : mSideStage).evictOtherChildren(wct, taskInfo.taskId);
+        (replacingMainStage ? mMainStage : mSideStage).evictOtherChildren(wct,
+                Set.of(taskInfo.taskId));
     }
 
     boolean isLaunchToSplit(TaskInfo taskInfo) {

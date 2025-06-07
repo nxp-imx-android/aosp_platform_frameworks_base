@@ -17,6 +17,8 @@
 package com.android.internal.protolog;
 
 import static android.tools.traces.Utils.busyWaitForDataSourceRegistration;
+import static android.tools.traces.Utils.busyWaitTracingSessionDoesntExist;
+import static android.tools.traces.Utils.busyWaitTracingSessionExists;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -954,6 +956,127 @@ public class ProcessedPerfettoProtoLogImplTest {
         sProtoLog.stopLoggingToLogcat(
                 new String[] { TestProtoLogGroup.TEST_GROUP.name() }, (msg) -> {});
         Truth.assertThat(TestProtoLogGroup.TEST_GROUP.isLogToLogcat()).isFalse();
+    }
+
+    @Test
+    public void messagesLoggedWhenProtoDisabledAreNotTraced() throws IOException {
+        assertFalse("ProtoLog should be disabled before starting any trace",
+                sProtoLog.isProtoEnabled());
+
+        // Log a message when ProtoLog is disabled.
+        sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 1,
+                LogDataType.BOOLEAN, new Object[]{false}); // "false" to distinguish
+
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+        try {
+            traceMonitor.start();
+            assertTrue("ProtoLog should be enabled after starting the trace.",
+                    sProtoLog.isProtoEnabled());
+
+            // Log a message when ProtoLog is enabled.
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 1,
+                    LogDataType.BOOLEAN, new Object[]{true}); // "true" to distinguish
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ProtoLogTrace protolog = reader.readProtoLogTrace();
+
+        Truth.assertThat(protolog.messages).hasSize(1);
+        Truth.assertThat(protolog.messages.getFirst().getMessage())
+                .isEqualTo("My Test Debug Log Message true"); // Only the "true" message
+    }
+
+
+    @Test
+    public void messagesInQueueBeforeNewSessionActivationAreNotTracedInNewSession()
+            throws Exception {
+        final int numOldMessages = 2;
+        final int numNewMessages = 2;
+
+        final CountDownLatch executorBlockedLatch = new CountDownLatch(1);
+        final CountDownLatch releaseExecutorLatch = new CountDownLatch(1);
+
+        // Submit task to block the executor.
+        sProtoLog.mBackgroundHandler.post(() -> {
+            executorBlockedLatch.countDown();
+            try {
+                if (!releaseExecutorLatch.await(60, TimeUnit.SECONDS)) {
+                    Truth.assertWithMessage("Timeout waiting for releaseExecutorLatch").fail();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Task_Block interrupted: " + e.getMessage());
+            }
+        });
+        assertTrue("Executor did not block in time",
+                executorBlockedLatch.await(5, TimeUnit.SECONDS));
+
+        PerfettoTraceMonitor traceMonitor0 = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .setUniqueSessionName("test_session0")
+                .build();
+        traceMonitor0.start();
+        busyWaitTracingSessionExists("test_session0");
+
+        // Log "old" messages. These are queued before we start the second tracing session.
+        for (int i = 0; i < numOldMessages; i++) {
+            sProtoLog.log(LogLevel.WARN, TestProtoLogGroup.TEST_GROUP, 1,
+                    LogDataType.BOOLEAN, new Object[]{false}); // Task_LogOld_i
+        }
+
+        // At this point, queue on backgroundService is roughly:
+        // [Task_Block(paused), Task_Activate0, Task_LogOld1, ..., Task_Deactivate0]
+
+        // Start the actual trace session to inspect (traceMonitor1). Queues Task_Activate1.
+        PerfettoTraceMonitor traceMonitor1 = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .setUniqueSessionName("test_session1")
+                .build();
+        traceMonitor1.start();
+        busyWaitTracingSessionExists("test_session1");
+
+        // Log "new" messages. These are for traceMonitor1.
+        for (int i = 0; i < numNewMessages; i++) {
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 1,
+                    LogDataType.BOOLEAN, new Object[]{true});
+        }
+
+        // Unblock the executor.
+        releaseExecutorLatch.countDown();
+
+        var writer0 = new ResultWriter()
+                .forScenario(new ScenarioBuilder().forClass("scenario0").build())
+                .withOutputDir(mTracingDirectory).setRunComplete();
+        traceMonitor0.stop(writer0);
+
+        var writer1 = new ResultWriter()
+                .forScenario(new ScenarioBuilder().forClass("scenario1").build())
+                .withOutputDir(mTracingDirectory).setRunComplete();
+        traceMonitor1.stop(writer1);
+        busyWaitTracingSessionDoesntExist("test_session1");
+
+        final ResultReader reader0 = new ResultReader(writer0.write(), mTraceConfig);
+        final ProtoLogTrace protolog0 = reader0.readProtoLogTrace();
+
+        Truth.assertThat(protolog0.messages).hasSize(numOldMessages + numNewMessages);
+
+        final ResultReader reader1 = new ResultReader(writer1.write(), mTraceConfig);
+        final ProtoLogTrace protolog1 = reader1.readProtoLogTrace();
+
+        Truth.assertThat(protolog1.messages).hasSize(numNewMessages);
+        for (int i = 0; i < numNewMessages; i++) {
+            Truth.assertThat(protolog1.messages.get(i).getLevel()).isEqualTo(LogLevel.DEBUG);
+            Truth.assertThat(protolog1.messages.get(i).getMessage())
+                    .isEqualTo("My Test Debug Log Message true");
+        }
+        // Ensure no messages (from the "old" batch) are present.
+        for (var msg : protolog1.messages) {
+            Truth.assertThat(msg.getLevel()).isNotEqualTo(LogLevel.VERBOSE);
+        }
     }
 
     @Test

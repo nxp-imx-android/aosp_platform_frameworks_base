@@ -356,10 +356,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"отримувати доступ до інформації датчиків про ваші життєві показники"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Сповіщення"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"показувати сповіщення"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"дані відстеження розширеної реальності"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"отримувати доступ до даних розширеної реальності про вас і оточення"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"чутливі дані відстеж. розшир. реальності"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"отримувати доступ до чутливих даних відстеження, наприклад даних про напрямок погляду"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Отримувати вміст вікна"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Перевіряти вміст вікна, з яким ви взаємодієте."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Увімкнути функцію дослідження дотиком"</string>
@@ -2555,28 +2561,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Карти"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Додатки"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Ваші відбитки пальців більше не розпізнаються. Налаштуйте розблокування відбитком пальця повторно."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Безпека й конфіденційність"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Додатковий захист для USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Щоб перенести дані, розблокуйте пристрій"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Щоб перенести дані, можливо, потрібно буде розблокувати пристрій і підключити знову"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Для швидкого заряджання й перенесення даних розблокуйте пристрій"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Щоб швидко зарядити пристрій і перенести дані, можливо, потрібно буде розблокувати його й підключити знову"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Для швидкого заряджання розблокуйте пристрій"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Щоб швидко зарядити пристрій, можливо, потрібно буде розблокувати його й підключити знову"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Вимкнути звук сповіщень"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Звук сповіщень вимкнено"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Звук сповіщень буде вимкнено, доки ви не перезапустите пристрій"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Підозрілі дії з USB-пристроєм"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Передавання даних через USB вимкнено."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Виникли проблеми з розблокуванням відбитком пальця?"</string>

@@ -800,8 +800,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
             return false;
         }
         UserBackupManagerService userBackupManagerService =
-                getServiceForUserIfCallerHasPermission(
-                        UserHandle.USER_SYSTEM, "setBackupPassword()");
+                getServiceForUserIfCallerHasPermission(userId, "setBackupPassword()");
 
         return userBackupManagerService != null
                 && userBackupManagerService.setBackupPassword(currentPassword, newPassword);
@@ -815,8 +814,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
             return false;
         }
         UserBackupManagerService userBackupManagerService =
-                getServiceForUserIfCallerHasPermission(
-                        UserHandle.USER_SYSTEM, "hasBackupPassword()");
+                getServiceForUserIfCallerHasPermission(userId, "hasBackupPassword()");
 
         return userBackupManagerService != null && userBackupManagerService.hasBackupPassword();
     }

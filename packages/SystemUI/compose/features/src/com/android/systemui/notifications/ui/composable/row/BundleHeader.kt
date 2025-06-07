@@ -16,7 +16,6 @@
 
 package com.android.systemui.notifications.ui.composable.row
 
-import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -35,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -49,7 +47,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,18 +58,13 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
-import com.android.compose.theme.PlatformTheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
-import com.android.systemui.initOnBackPressedDispatcherOwner
-import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel
 
 object BundleHeader {
@@ -92,24 +84,13 @@ object BundleHeader {
     }
 }
 
-fun createComposeView(viewModel: BundleHeaderViewModel, context: Context): ComposeView {
-    return ComposeView(context).apply {
-        repeatWhenAttached {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                initOnBackPressedDispatcherOwner(this@repeatWhenAttached.lifecycle)
-                setContent {
-                    // TODO(b/399588047): Check if we can init PlatformTheme once instead of once
-                    //  per ComposeView
-                    PlatformTheme { BundleHeader(viewModel) }
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier) {
+fun BundleHeader(
+    viewModel: BundleHeaderViewModel,
+    modifier: Modifier = Modifier,
+    onHeaderClicked: () -> Unit = {},
+) {
     val state =
         rememberMutableSceneTransitionLayoutState(
             initialScene = BundleHeader.Scenes.Collapsed,
@@ -163,7 +144,10 @@ fun BundleHeader(viewModel: BundleHeaderViewModel, modifier: Modifier = Modifier
             state = state,
             modifier =
                 Modifier.clickable(
-                    onClick = { viewModel.onHeaderClicked() },
+                    onClick = {
+                        viewModel.onHeaderClicked()
+                        onHeaderClicked()
+                    },
                     interactionSource = null,
                     indication = null,
                 ),

@@ -257,6 +257,7 @@ public final class BroadcastHelper {
             Intent lockedBcIntent = new Intent(Intent.ACTION_LOCKED_BOOT_COMPLETED)
                     .setPackage(packageName);
             lockedBcIntent.putExtra(Intent.EXTRA_USER_HANDLE, userId);
+            lockedBcIntent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
             if (includeStopped) {
                 lockedBcIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             }

@@ -33,6 +33,8 @@ import static com.android.server.biometrics.BiometricServiceStateProto.STATE_CLI
 import static com.android.server.biometrics.BiometricServiceStateProto.STATE_ERROR_PENDING_SYSUI;
 import static com.android.server.biometrics.BiometricServiceStateProto.STATE_SHOWING_DEVICE_CREDENTIAL;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -74,6 +76,7 @@ import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.display.IDisplayManager;
 import android.hardware.face.FaceManager;
 import android.hardware.face.FaceSensorProperties;
 import android.hardware.face.FaceSensorPropertiesInternal;
@@ -95,8 +98,12 @@ import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
+import android.proximity.IProximityResultCallback;
+import android.proximity.ProximityResultCode;
 import android.security.GateKeeper;
 import android.security.KeyStoreAuthorization;
+import android.security.authenticationpolicy.AuthenticationPolicyManager;
+import android.security.authenticationpolicy.IAuthenticationPolicyService;
 import android.service.gatekeeper.IGateKeeperService;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
@@ -108,7 +115,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.R;
-import com.android.internal.statusbar.ISessionListener;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.server.biometrics.log.BiometricContextProvider;
 import com.android.server.biometrics.sensors.AuthSessionCoordinator;
@@ -143,17 +149,11 @@ public class BiometricServiceTest {
 
     private static final String ERROR_HW_UNAVAILABLE = "hw_unavailable";
     private static final String ERROR_NOT_RECOGNIZED = "not_recognized";
-    private static final String ERROR_TIMEOUT = "error_timeout";
-    private static final String ERROR_CANCELED = "error_canceled";
-    private static final String ERROR_UNABLE_TO_PROCESS = "error_unable_to_process";
     private static final String ERROR_USER_CANCELED = "error_user_canceled";
-    private static final String ERROR_LOCKOUT = "error_lockout";
     private static final String FACE_SUBTITLE = "face_subtitle";
     private static final String FINGERPRINT_SUBTITLE = "fingerprint_subtitle";
     private static final String CREDENTIAL_SUBTITLE = "credential_subtitle";
     private static final String DEFAULT_SUBTITLE = "default_subtitle";
-
-    private static final String FINGERPRINT_ACQUIRED_SENSOR_DIRTY = "sensor_dirty";
 
     private static final int SENSOR_ID_FINGERPRINT = 0;
     private static final int SENSOR_ID_FACE = 1;
@@ -198,8 +198,6 @@ public class BiometricServiceTest {
     @Mock
     IBiometricAuthenticator mFaceAuthenticator;
     @Mock
-    IBiometricAuthenticator mCredentialAuthenticator;
-    @Mock
     ITrustManager mTrustManager;
     @Mock
     DevicePolicyManager mDevicePolicyManager;
@@ -207,8 +205,6 @@ public class BiometricServiceTest {
     private WindowManager mWindowManager;
     @Mock
     private IStatusBarService mStatusBarService;
-    @Mock
-    private ISessionListener mSessionListener;
     @Mock
     private AuthSessionCoordinator mAuthSessionCoordinator;
     @Mock
@@ -230,6 +226,12 @@ public class BiometricServiceTest {
     private FingerprintManager mFingerprintManager;
     @Mock
     private FaceManager mFaceManager;
+    @Mock
+    private IDisplayManager mDisplayManager;
+    @Mock
+    private IAuthenticationPolicyService mAuthenticationPolicyService;
+
+    private AuthenticationPolicyManager mAuthenticationPolicyManager;
 
     BiometricContextProvider mBiometricContextProvider;
 
@@ -239,10 +241,16 @@ public class BiometricServiceTest {
 
         resetReceivers();
 
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.type = Display.TYPE_INTERNAL;
+        final Display display = new Display(new DisplayManagerGlobal(
+                mDisplayManager), 0 /* displayId */, displayInfo, mResources);
+
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
         when(mContext.getResources()).thenReturn(mResources);
         when(mContext.getSystemService(Context.DEVICE_POLICY_SERVICE))
                 .thenReturn(mDevicePolicyManager);
+        when(mContext.getDisplay()).thenReturn(display);
 
         when(mInjector.getActivityManagerService()).thenReturn(mock(IActivityManager.class));
         when(mInjector.getStatusBarService()).thenReturn(mock(IStatusBarService.class));
@@ -283,8 +291,12 @@ public class BiometricServiceTest {
         mBiometricContextProvider = new BiometricContextProvider(mContext, mWindowManager,
                 mStatusBarService, null /* handler */,
                 mAuthSessionCoordinator);
+        mAuthenticationPolicyManager = new AuthenticationPolicyManager(mContext,
+                mAuthenticationPolicyService);
         when(mInjector.getBiometricContext(any())).thenReturn(mBiometricContextProvider);
         when(mInjector.getKeyStoreAuthorization()).thenReturn(mKeyStoreAuthorization);
+        when(mInjector.getAuthenticationPolicyManager(any())).thenReturn(
+                mAuthenticationPolicyManager);
         when(mInjector.getGateKeeperService()).thenReturn(mGateKeeperService);
         when(mInjector.getNotificationLogger()).thenReturn(mNotificationLogger);
         when(mGateKeeperService.getSecureUserId(anyInt())).thenReturn(42L);
@@ -1378,6 +1390,26 @@ public class BiometricServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_WATCH)
+    public void testDismissedReason_cancelWatchRanging() throws Exception {
+        setupAuthForOnly(TYPE_FACE, Authenticators.BIOMETRIC_STRONG);
+        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
+                false /* requireConfirmation */, null /* authenticators */);
+
+        mBiometricService.mAuthSession.mSensorReceiver.onError(
+                SENSOR_ID_FACE,
+                getCookieForCurrentSession(mBiometricService.mAuthSession),
+                BiometricConstants.BIOMETRIC_ERROR_TIMEOUT,
+                0 /* vendorCode */);
+        mBiometricService.mAuthSession.mSysuiReceiver.onDialogDismissed(
+                BiometricPrompt.DISMISSED_REASON_CONTENT_VIEW_MORE_OPTIONS,
+                null /* credentialAttestation */);
+        waitForIdle();
+
+        verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
+    }
+
+    @Test
     public void testAcquire_whenAuthenticating_sentToSystemUI() throws Exception {
         when(mContext.getResources().getString(anyInt())).thenReturn("test string");
 
@@ -1422,6 +1454,87 @@ public class BiometricServiceTest {
                 eq(BiometricConstants.BIOMETRIC_ERROR_CANCELED),
                 eq(0 /* vendorCode */));
         verify(mBiometricService.mStatusBarService).hideAuthenticationDialog(eq(TEST_REQUEST_ID));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_IDENTITY_CHECK_WATCH)
+    public void testCancelBiometricAuthentication_cancelWatchRanging() throws Exception {
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
+                false /* requireConfirmation */, null /* authenticators */);
+
+        mBiometricService.mImpl.cancelAuthentication(mBiometricService.mAuthSession.mToken,
+                TEST_PACKAGE_NAME, TEST_REQUEST_ID);
+        waitForIdle();
+
+        mBiometricService.mAuthSession.mSensorReceiver.onError(
+                SENSOR_ID_FINGERPRINT,
+                getCookieForCurrentSession(mBiometricService.mAuthSession),
+                BiometricConstants.BIOMETRIC_ERROR_CANCELED,
+                0 /* vendorCode */);
+        waitForIdle();
+
+        verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_WATCH, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    public void testAuthenticateForIdentityCheck_startWatchRanging_cancelOnSuccess()
+            throws Exception {
+        final ArgumentCaptor<IProximityResultCallback> proximityResultCallbackArgumentCaptor =
+                ArgumentCaptor.forClass(IProximityResultCallback.class);
+
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+
+        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
+                false /* requireConfirmation */,
+                Authenticators.IDENTITY_CHECK | Authenticators.DEVICE_CREDENTIAL);
+
+        waitForIdle();
+
+        verify(mAuthenticationPolicyService).startWatchRangingForIdentityCheck(anyLong(),
+                proximityResultCallbackArgumentCaptor.capture());
+        assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
+                WatchRangingHelper.WATCH_RANGING_STARTED);
+
+        proximityResultCallbackArgumentCaptor.getValue().onSuccess(ProximityResultCode.SUCCESS);
+        waitForIdle();
+
+        verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
+        assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
+                WatchRangingHelper.WATCH_RANGING_SUCCESSFUL);
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_IDENTITY_CHECK_WATCH, Flags.FLAG_IDENTITY_CHECK_TEST_API})
+    public void testAuthenticateForIdentityCheck_startWatchRanging_cancelOnError()
+            throws Exception {
+        final ArgumentCaptor<IProximityResultCallback> proximityResultCallbackArgumentCaptor =
+                ArgumentCaptor.forClass(IProximityResultCallback.class);
+
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+
+        when(mBiometricService.mSettingObserver.isIdentityCheckActive(anyInt())).thenReturn(true);
+
+        invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,
+                false /* requireConfirmation */,
+                Authenticators.IDENTITY_CHECK | Authenticators.DEVICE_CREDENTIAL);
+        waitForIdle();
+
+        verify(mAuthenticationPolicyService).startWatchRangingForIdentityCheck(anyLong(),
+                proximityResultCallbackArgumentCaptor.capture());
+        assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
+                WatchRangingHelper.WATCH_RANGING_STARTED);
+
+        proximityResultCallbackArgumentCaptor.getValue().onError(
+                ProximityResultCode.NO_RANGING_RESULT);
+        waitForIdle();
+
+        verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
+        assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
+                WatchRangingHelper.WATCH_RANGING_STOPPED);
     }
 
     @Test

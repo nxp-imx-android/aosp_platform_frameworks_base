@@ -326,6 +326,7 @@ constructor(
                         val entryView = child.requireViewById<LinearLayout>(R.id.wifi_list)
                         val background =
                             when {
+                                itemCount == 1 -> entryBackgroundInactive
                                 adapterPosition == 0 -> entryBackgroundStart
                                 adapterPosition == itemCount - 1 && !hasMoreWifiEntries ->
                                     entryBackgroundEnd
@@ -1019,6 +1020,10 @@ constructor(
 
             override fun onWifiScan(isScan: Boolean) {
                 setProgressBarVisible(isScan)
+            }
+
+            override fun onSatelliteModemStateChanged(state: Int) {
+                updateContent(shouldUpdateMobileNetwork = true)
             }
         }
 

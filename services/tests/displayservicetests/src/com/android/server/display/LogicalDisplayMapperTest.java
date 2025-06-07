@@ -40,6 +40,7 @@ import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EV
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REFRESH_RATE_CHANGED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_REMOVED;
 import static com.android.server.display.LogicalDisplayMapper.LOGICAL_DISPLAY_EVENT_STATE_CHANGED;
+import static com.android.server.display.TestUtilsKt.createTestDisplayAddress;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 import static com.android.server.display.layout.Layout.Display.POSITION_UNKNOWN;
 import static com.android.server.utils.FoldSettingProvider.SETTING_VALUE_SELECTIVE_STAY_AWAKE;
@@ -256,6 +257,25 @@ public class LogicalDisplayMapperTest {
         LogicalDisplay displayRemoved = mDisplayCaptor.getValue();
         assertEquals(DEFAULT_DISPLAY, id(displayRemoved));
         assertEquals(displayAdded, displayRemoved);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT)
+    public void test_committedStateChanged_eventEmitted() {
+        when(mFlagsMock.isCommittedStateSeparateEventEnabled()).thenReturn(true);
+        initLogicalDisplayMapper();
+        TestDisplayDevice device = createDisplayDevice(TYPE_INTERNAL, 600, 800,
+                FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
+
+        // add
+        LogicalDisplay displayAdded = add(device);
+        assertEquals(info(displayAdded).address, info(device).address);
+        assertEquals(DEFAULT_DISPLAY, id(displayAdded));
+
+        device.getSourceInfo().committedState = STATE_ON;
+        mDisplayDeviceRepo.onDisplayDeviceEvent(device, DISPLAY_DEVICE_EVENT_CHANGED);
+        verify(mListenerMock).onLogicalDisplayEventLocked(
+                mDisplayCaptor.capture(), eq(LOGICAL_DISPLAY_EVENT_COMMITTED_STATE_CHANGED));
     }
 
     @Test
@@ -974,9 +994,9 @@ public class LogicalDisplayMapperTest {
     @Test
     public void testEnabledAndDisabledDisplays() {
         initLogicalDisplayMapper();
-        DisplayAddress displayAddressOne = new TestUtils.TestDisplayAddress();
-        DisplayAddress displayAddressTwo = new TestUtils.TestDisplayAddress();
-        DisplayAddress displayAddressThree = new TestUtils.TestDisplayAddress();
+        DisplayAddress displayAddressOne = createTestDisplayAddress();
+        DisplayAddress displayAddressTwo = createTestDisplayAddress();
+        DisplayAddress displayAddressThree = createTestDisplayAddress();
 
         TestDisplayDevice device1 = createDisplayDevice(displayAddressOne, "one",
                 TYPE_INTERNAL, 600, 800, DisplayDeviceInfo.FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY);
@@ -1211,7 +1231,7 @@ public class LogicalDisplayMapperTest {
                 spy(new DisplayGroupAllocator(mContextMock, new DisplayGroupAllocator.Injector() {
 
                     @Override
-                    boolean canInternalDisplayHostDesktops(Context context) {
+                    boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
                         return simulateExtendedMode;
                     }
 
@@ -1322,13 +1342,13 @@ public class LogicalDisplayMapperTest {
 
     private TestDisplayDevice createDisplayDevice(int type, int width, int height, int flags) {
         return createDisplayDevice(
-                new TestUtils.TestDisplayAddress(), /*  uniqueId */ "", type, width, height, flags);
+                createTestDisplayAddress(), /*  uniqueId */ "", type, width, height, flags);
     }
 
     private TestDisplayDevice createDisplayDevice(
             int type, String uniqueId, int width, int height, int flags) {
         return createDisplayDevice(
-                new TestUtils.TestDisplayAddress(), uniqueId, type, width, height, flags);
+                createTestDisplayAddress(), uniqueId, type, width, height, flags);
     }
 
     private TestDisplayDevice createDisplayDevice(

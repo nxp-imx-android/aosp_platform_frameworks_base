@@ -84,7 +84,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
             InstalledTilesComponentRepositoryImpl(
                 context,
                 testScope.backgroundScope,
-                kosmos.packageChangeRepository
+                kosmos.packageChangeRepository,
             )
     }
 
@@ -98,7 +98,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     packageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -127,7 +127,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     packageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -149,7 +149,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     packageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -172,7 +172,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     packageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -213,7 +213,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     secondaryUserPackageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -221,7 +221,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     packageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -259,7 +259,7 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
                     packageManager.queryIntentServicesAsUser(
                         matchIntent(),
                         matchFlags(),
-                        eq(userId)
+                        eq(userId),
                     )
                 )
                 .thenReturn(listOf(resolveInfo))
@@ -277,7 +277,8 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
             ResolveInfoFlags.of(
                 (PackageManager.MATCH_DIRECT_BOOT_AWARE or
                         PackageManager.MATCH_DIRECT_BOOT_UNAWARE or
-                        PackageManager.GET_SERVICES)
+                        PackageManager.GET_SERVICES or
+                        PackageManager.GET_META_DATA)
                     .toLong()
             )
         private val PERMISSION = BIND_QUICK_SETTINGS_TILE
@@ -286,12 +287,13 @@ class InstalledTilesComponentRepositoryImplTest : SysuiTestCase() {
 
         private fun matchFlags() =
             argThat<ResolveInfoFlags> { flags -> flags?.value == FLAGS.value }
+
         private fun matchIntent() = argThat<Intent> { intent -> intent.action == INTENT.action }
 
         private fun ResolveInfo(
             componentName: ComponentName,
             hasPermission: Boolean,
-            defaultEnabled: Boolean
+            defaultEnabled: Boolean,
         ): ResolveInfo {
             val applicationInfo = ApplicationInfo().apply { enabled = true }
             val serviceInfo =

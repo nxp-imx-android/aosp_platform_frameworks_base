@@ -43,13 +43,13 @@ import static android.net.ipsec.ike.IkeSessionParams.ESP_ENCAP_TYPE_UDP;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV4;
 import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_IPV6;
+import static android.net.platform.flags.Flags.FLAG_COLLECT_VPN_METRICS;
 import static android.os.UserHandle.PER_USER_RANGE;
 import static android.telephony.CarrierConfigManager.KEY_CARRIER_CONFIG_APPLIED_BOOL;
 import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
 import static android.telephony.CarrierConfigManager.KEY_PREFERRED_IKE_PROTOCOL_INT;
 
 import static com.android.net.module.util.NetworkStackConstants.IPV6_MIN_MTU;
-import static com.android.server.connectivity.Flags.FLAG_COLLECT_VPN_METRICS;
 import static com.android.server.connectivity.Vpn.AUTOMATIC_KEEPALIVE_DELAY_SECONDS;
 import static com.android.server.connectivity.Vpn.DEFAULT_LONG_LIVED_TCP_CONNS_EXPENSIVE_TIMEOUT_SEC;
 import static com.android.server.connectivity.Vpn.DEFAULT_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
@@ -180,6 +180,7 @@ import com.android.internal.net.VpnConfig;
 import com.android.internal.net.VpnProfile;
 import com.android.internal.util.HexDump;
 import com.android.internal.util.IndentingPrintWriter;
+import com.android.net.module.util.CollectionUtils;
 import com.android.server.DeviceIdleInternal;
 import com.android.server.IpSecService;
 import com.android.server.VpnTestBase;
@@ -2219,6 +2220,13 @@ public class VpnTest extends VpnTestBase {
                 any(), any(), anyString(), ncCaptor.capture(), lpCaptor.capture(),
                 any(), nacCaptor.capture(), any(), any());
         verify(mIkeSessionWrapper).setUnderpinnedNetwork(TEST_NETWORK);
+        verify(mVpnConnectivityMetrics).setUnderlyingNetwork(any());
+        verify(mVpnConnectivityMetrics).setVpnNetworkIpProtocol(argThat(addresses ->
+                CollectionUtils.all(List.of(
+                                new LinkAddress(TEST_VPN_INTERNAL_IP, IP4_PREFIX_LEN),
+                                new LinkAddress(TEST_VPN_INTERNAL_IP6, IP6_PREFIX_LEN)),
+                        address -> addresses.contains(address))));
+        verify(mVpnConnectivityMetrics).setServerIpProtocol(TEST_VPN_SERVER_IP);
         // Check LinkProperties
         final LinkProperties lp = lpCaptor.getValue();
         final List<RouteInfo> expectedRoutes =

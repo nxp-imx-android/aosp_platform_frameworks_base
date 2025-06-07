@@ -22,12 +22,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toComposeRect
 import com.android.app.tracing.coroutines.coroutineScopeTraced
+import com.android.systemui.Dumpable
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
+import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.util.kotlin.launchAndDispose
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.io.PrintWriter
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
@@ -38,7 +43,11 @@ import kotlinx.coroutines.launch
 
 class AmbientCueViewModel
 @AssistedInject
-constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveActivatable() {
+constructor(
+    private val ambientCueInteractor: AmbientCueInteractor,
+    private val dumpManager: DumpManager,
+) : ExclusiveActivatable(), Dumpable {
+
     private val hydrator = Hydrator("AmbientCueViewModel.hydrator")
 
     private val isRootViewAttached: Boolean by
@@ -159,8 +168,22 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
                     delayAndDeactivateCueBar()
                 }
             }
+            launchAndDispose {
+                dumpManager.registerNormalDumpable(TAG, this@AmbientCueViewModel)
+                DisposableHandle { dumpManager.unregisterDumpable(TAG) }
+            }
             awaitCancellation()
         }
+    }
+
+    override fun dump(pw: PrintWriter, args: Array<out String>) {
+        pw.println("isRootViewAttached: $isRootViewAttached")
+        pw.println("isImeVisible: $isImeVisible")
+        pw.println("isVisible: $isVisible")
+        pw.println("isExpanded: $isExpanded")
+        pw.println("pillStyle: $pillStyle")
+        pw.println("deactivateCueBarJob: $deactivateCueBarJob")
+        pw.println("actions: $actions")
     }
 
     @AssistedFactory
@@ -170,6 +193,6 @@ constructor(private val ambientCueInteractor: AmbientCueInteractor) : ExclusiveA
 
     companion object {
         private const val TAG = "AmbientCueViewModel"
-        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 15.seconds
+        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 30.seconds
     }
 }

@@ -413,18 +413,6 @@ flag {
 }
 
 flag {
-    name: "delegate_back_gesture_to_shell"
-    namespace: "windowing_frontend"
-    description: "Delegate back gesture event to back animation controller."
-    bug: "394599430"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-
-flag {
     name: "enable_handlers_debugging_mode"
     namespace: "windowing_frontend"
     description: "collect data on handlers that did or did not play"
@@ -523,4 +511,14 @@ flag {
     namespace: "windowing_frontend"
     description: "Use a single binder for task-org/transition messaging to shell"
     bug: "410930250"
+}
+
+flag {
+    name: "screen_brightness_dim_on_emulator"
+    namespace: "wear_systems"
+    description: "Apply screen brightness to emulator display overlay"
+    bug: "418830217"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

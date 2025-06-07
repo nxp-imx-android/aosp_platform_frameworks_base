@@ -29,6 +29,7 @@ import static android.net.IpSecAlgorithm.CRYPT_AES_CBC;
 import static android.net.IpSecAlgorithm.CRYPT_AES_CTR;
 
 import android.net.ConnectivityManager;
+import android.net.LinkAddress;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.VpnManager;
@@ -38,6 +39,8 @@ import android.util.SparseArray;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,6 +53,15 @@ public class VpnConnectivityMetrics {
     public static final int VPN_TYPE_UNKNOWN = 0;
     public static final int VPN_PROFILE_TYPE_UNKNOWN = 0;
     private static final int UNKNOWN_UNDERLYING_NETWORK_TYPE = -1;
+    // Copied from corenetworking platform vpn enum
+    @VisibleForTesting
+    static final int IP_PROTOCOL_UNKNOWN = 0;
+    @VisibleForTesting
+    static final int IP_PROTOCOL_IPv4 = 1;
+    @VisibleForTesting
+    static final int IP_PROTOCOL_IPv6 = 2;
+    @VisibleForTesting
+    static final int IP_PROTOCOL_IPv4v6 = 3;
     private static final SparseArray<String> sAlgorithms = new SparseArray<>();
     private final int mUserId;
     @NonNull
@@ -75,6 +87,8 @@ public class VpnConnectivityMetrics {
      */
     @NonNull
     private int[] mUnderlyingNetworkTypes;
+    private int mVpnNetworkIpProtocol = IP_PROTOCOL_UNKNOWN;
+    private int mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
 
     // Static initializer block to populate the sAlgorithms mapping. It associates integer keys
     // (which also serve as bit positions for the mAllowedAlgorithms bitmask) with their
@@ -196,5 +210,59 @@ public class VpnConnectivityMetrics {
         } else {
             mUnderlyingNetworkTypes = new int[0];
         }
+    }
+
+    /**
+     * Sets the IP protocol for the vpn network based on a list of {@link LinkAddress} objects.
+     *
+     * @param addresses A list of {@link LinkAddress} objects representing the IP addresses
+     *                  configured on the VPN network.
+     */
+    public void setVpnNetworkIpProtocol(@NonNull List<LinkAddress> addresses) {
+        mVpnNetworkIpProtocol = checkIpProtocol(addresses);
+    }
+
+    /**
+     * Sets the IP protocol for the server based on its {@link InetAddress}.
+     *
+     * @param address The {@link InetAddress} of the server.
+     */
+    public void setServerIpProtocol(@NonNull InetAddress address) {
+        // Assume that if the address is not IPv4, it is IPv6. It does not consider other cases like
+        // IPv4-mapped IPv6 addresses.
+        if (address instanceof Inet4Address) {
+            mServerIpProtocol = IP_PROTOCOL_IPv4;
+        } else {
+            mServerIpProtocol = IP_PROTOCOL_IPv6;
+        }
+    }
+
+    /**
+     * Analyzes a list of {@link LinkAddress} objects to determine the overall IP protocol(s) in
+     * use.
+     *
+     * @param addresses A list of {@link LinkAddress} objects to be checked.
+     * @return An integer representing the detected IP protocol.
+     */
+    @VisibleForTesting
+    static int checkIpProtocol(@NonNull List<LinkAddress> addresses) {
+        boolean hasIpv4 = false;
+        boolean hasIpv6 = false;
+        int ipProtocol = IP_PROTOCOL_UNKNOWN;
+        for (LinkAddress address : addresses) {
+            if (address.isIpv4()) {
+                hasIpv4 = true;
+            } else if (address.isIpv6()) {
+                hasIpv6 = true;
+            }
+        }
+        if (hasIpv4 && hasIpv6) {
+            ipProtocol = IP_PROTOCOL_IPv4v6;
+        } else if (hasIpv4) {
+            ipProtocol = IP_PROTOCOL_IPv4;
+        } else if (hasIpv6) {
+            ipProtocol = IP_PROTOCOL_IPv6;
+        }
+        return ipProtocol;
     }
 }

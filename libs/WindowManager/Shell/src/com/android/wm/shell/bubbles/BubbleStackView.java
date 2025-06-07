@@ -636,6 +636,9 @@ public class BubbleStackView extends FrameLayout
             }
 
             if (mBubbleData.isExpanded()) {
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY, "BubbleStackView.bubbleDrag.onDown: isExpanded");
                 if (mManageEduView != null) {
                     mManageEduView.hide();
                 }
@@ -650,6 +653,9 @@ public class BubbleStackView extends FrameLayout
                 // Save the magnetized individual bubble so we can dispatch touch events to it.
                 mMagnetizedObject = mExpandedAnimationController.getMagnetizedBubbleDraggingOut();
             } else {
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY, "BubbleStackView.bubbleDrag.onDown: isCollapsed");
                 // If we're collapsed, prepare to drag the stack. Cancel active animations, set the
                 // animation controller, and hide the flyout.
                 mStackAnimationController.cancelStackPositionAnimations();
@@ -678,8 +684,21 @@ public class BubbleStackView extends FrameLayout
         @Override
         public void onMove(@NonNull View v, @NonNull MotionEvent ev, float viewInitialX,
                 float viewInitialY, float dx, float dy) {
+            // TODO(b/417749498): Delete debug log
+            ProtoLog.v(
+                    WM_SHELL_BUBBLES_NOISY,
+                    "BubbleStackView.bubbleDrag.onMove: dx=%f, dy=%f",
+                    dx,
+                    dy);
             // If we're expanding or collapsing, ignore all touch events.
             if (mIsExpansionAnimating || mShowedUserEducationInTouchListenerActive) {
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onMove: ignore isExpansionAnimating=%b"
+                                + " showedUserEDU=%b",
+                        mIsExpansionAnimating,
+                        mShowedUserEducationInTouchListenerActive);
                 return;
             }
 
@@ -688,7 +707,13 @@ public class BubbleStackView extends FrameLayout
             }
 
             // Show the dismiss target, if we haven't already.
-            mDismissView.show();
+            boolean shown = mDismissView.show();
+            // TODO(b/417749498): Delete debug log
+            ProtoLog.v(
+                    WM_SHELL_BUBBLES_NOISY,
+                    "BubbleStackView.bubbleDrag.onMove: dismissView(%d) shown=%b",
+                    mDismissView.hashCode(),
+                    shown);
 
             if (mIsExpanded && mExpandedBubble != null && v.equals(mExpandedBubble.getIconView())) {
                 // Hide the expanded view if we're dragging out the expanded bubble, and we haven't
@@ -718,16 +743,29 @@ public class BubbleStackView extends FrameLayout
                 float viewInitialY, float dx, float dy, float velX, float velY) {
             // If we're expanding or collapsing, ignore all touch events.
             if (mIsExpansionAnimating) {
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onUp: isExpansionAnimating ignore");
                 return;
             }
             if (mShowedUserEducationInTouchListenerActive) {
                 mShowedUserEducationInTouchListenerActive = false;
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onUp: showed user EDU ignore");
                 return;
             }
 
             // First, see if the magnetized object consumes the event - if so, the bubble was
             // released in the target or flung out of it, and we should ignore the event.
             if (!passEventToMagnetizedObject(ev)) {
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onUp: magnetized object not handling"
+                                + " event");
                 if (mBubbleData.isExpanded()) {
                     mExpandedAnimationController.snapBubbleBack(v, velX, velY);
 
@@ -745,7 +783,16 @@ public class BubbleStackView extends FrameLayout
                     logBubbleEvent(null /* no bubble associated with bubble stack move */,
                             FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__STACK_MOVED);
                 }
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onUp: hide dismiss view");
                 mDismissView.hide();
+            } else {
+                // TODO(b/417749498): Delete debug log
+                ProtoLog.v(
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onUp: magnetized object handling up");
             }
 
             onDraggingEnded();
@@ -758,6 +805,8 @@ public class BubbleStackView extends FrameLayout
         @Override
         public void onCancel(@NonNull View v, @NonNull MotionEvent ev, float viewInitialX,
                 float viewInitialY) {
+            // TODO(b/417749498): Delete debug log
+            ProtoLog.v(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.bubbleDrag.onCancel");
             animateStashedState(false /* stashImmediately */);
         }
     };
@@ -1644,7 +1693,11 @@ public class BubbleStackView extends FrameLayout
                 if (parent != null && parent != mBubbleContainer) {
                     Log.w(TAG, "Found an unexpected parent for the overflow icon before "
                             + "reordering. Removing it directly. Parent = " + parent);
-                    parent.removeView(overflow);
+                    if (parent instanceof PhysicsAnimationLayout) {
+                        ((PhysicsAnimationLayout) parent).removeViewNoAnimation(overflow);
+                    } else {
+                        parent.removeView(overflow);
+                    }
                 }
                 mBubbleContainer.reorderView(overflow,
                         mBubbleContainer.getChildCount() - 1 /* index */);

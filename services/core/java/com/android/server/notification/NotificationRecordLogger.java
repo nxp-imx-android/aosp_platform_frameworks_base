@@ -19,9 +19,13 @@ package com.android.server.notification;
 import static android.app.Flags.nmSummarization;
 import static android.app.Flags.nmSummarizationUi;
 import static android.service.notification.NotificationListenerService.REASON_ASSISTANT_CANCEL;
+import static android.service.notification.NotificationListenerService.REASON_BUNDLE_DISMISSED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CLEAR_DATA;
 import static android.service.notification.NotificationListenerService.REASON_CLICK;
+import static android.service.notification.NotificationListenerService.REASON_LOCKDOWN;
+
+import static com.android.server.notification.Flags.logVisuallyChangedUpdates;
 
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
@@ -220,7 +224,11 @@ interface NotificationRecordLogger {
                 + " shade.")
         NOTIFICATION_CANCEL_USER_SHADE(192),
         @UiEvent(doc = "Notification was canceled due to an assistant adjustment update.")
-        NOTIFICATION_CANCEL_ASSISTANT(906);
+        NOTIFICATION_CANCEL_ASSISTANT(906),
+        @UiEvent(doc = "Notification was canceled due to the device entering lockdown.")
+        NOTIFICATION_CANCEL_LOCKDOWN(2329),
+        @UiEvent(doc = "Notification was canceled because it was in a dismissed bundle.")
+        NOTIFICATION_CANCEL_BUNDLE(2330);
 
         private final int mId;
         NotificationCancelledEvent(int id) {
@@ -265,6 +273,12 @@ interface NotificationRecordLogger {
                 }
                 if (reason == REASON_ASSISTANT_CANCEL) {
                     return NotificationCancelledEvent.NOTIFICATION_CANCEL_ASSISTANT;
+                }
+                if (reason == REASON_LOCKDOWN) {
+                    return NotificationCancelledEvent.NOTIFICATION_CANCEL_LOCKDOWN;
+                }
+                if (reason == REASON_BUNDLE_DISMISSED) {
+                    return NotificationCancelledEvent.NOTIFICATION_CANCEL_BUNDLE;
                 }
                 Log.wtf(TAG, "Unexpected reason: " + reason + " with surface " + surface);
                 return INVALID;
@@ -420,6 +434,10 @@ interface NotificationRecordLogger {
                 return false;
             }
             if ((old == null) || (buzzBeepBlink > 0)) {
+                return true;
+            }
+
+            if (logVisuallyChangedUpdates() && r.isTextChanged()) {
                 return true;
             }
 

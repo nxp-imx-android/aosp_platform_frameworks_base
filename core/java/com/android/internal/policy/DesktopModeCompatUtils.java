@@ -18,9 +18,13 @@ package com.android.internal.policy;
 
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS;
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 import android.annotation.NonNull;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.window.DesktopModeFlags;
 
 /**
@@ -46,6 +50,14 @@ public final class DesktopModeCompatUtils {
                 && !isConfigurationDecoupled(info, optOutEdgeToEdge)
                 && (!isResizeable
                     || info.isChangeEnabled(OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS));
+    }
+
+    /**
+     * Returns the orientation of the given {@code rect}.
+     */
+    public static @Configuration.Orientation int computeConfigOrientation(@NonNull Rect rect) {
+        return rect.height() >= rect.width()
+                ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
     }
 
     private static boolean isConfigurationDecoupled(@NonNull ActivityInfo info,

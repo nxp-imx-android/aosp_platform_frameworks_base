@@ -176,6 +176,11 @@ public class CollapsingToolbarBaseActivity extends FragmentActivity implements
     }
 
     @Override
+    public void removeOnItemSelectedListener() {
+        getToolbarDelegate().removeOnItemSelectedListener();
+    }
+
+    @Override
     public boolean onNavigateUp() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStackImmediate();

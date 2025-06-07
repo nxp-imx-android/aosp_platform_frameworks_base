@@ -95,4 +95,32 @@ fun LegacyFlickerTest.appLayerHasSizeAtEnd(
     }
 }
 
+fun LegacyFlickerTest.leftTiledAppLargerThanRightAtEnd(
+    leftComponent: IComponentMatcher,
+    rightComponent: IComponentMatcher,
+) {
+    assertLayersEnd {
+        val rightRegion = visibleRegion(rightComponent)
+        visibleRegion(leftComponent).isStrictlyWiderThan(rightRegion.region)
+    }
+}
 
+fun LegacyFlickerTest.tilingDividerBecomesVisibleThenInvisible() {
+    assertLayers {
+        this.isInvisible(TILING_SPLIT_DIVIDER)
+            .then()
+            .isVisible(TILING_SPLIT_DIVIDER)
+            .then()
+            .isInvisible(TILING_SPLIT_DIVIDER)
+    }
+}
+
+fun LegacyFlickerTest.tilingDividerBecomesInvisibleThenVisible() {
+    assertLayers {
+        this.isVisible(TILING_SPLIT_DIVIDER)
+            .then()
+            .isInvisible(TILING_SPLIT_DIVIDER)
+            .then()
+            .isVisible(TILING_SPLIT_DIVIDER)
+    }
+}

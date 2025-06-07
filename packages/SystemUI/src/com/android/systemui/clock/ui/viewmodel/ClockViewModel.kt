@@ -16,29 +16,49 @@
 
 package com.android.systemui.clock.ui.viewmodel
 
+import android.icu.text.DateTimePatternGenerator
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.clock.domain.interactor.ClockInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.util.time.DateFormatUtil
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 
 /** Models UI state for the clock. */
 @OptIn(ExperimentalCoroutinesApi::class)
-class ClockViewModel @AssistedInject constructor(clockInteractor: ClockInteractor) :
+class ClockViewModel
+@AssistedInject
+constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFormatUtil) :
     ExclusiveActivatable() {
     private val hydrator = Hydrator("ClockViewModel.hydrator")
+    private lateinit var dateTimePatternGenerator: DateTimePatternGenerator
+
+    private val formatString: Flow<String> =
+        clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatString() }
+
+    private val clockFormat: Flow<SimpleDateFormat> =
+        formatString.mapLatest { format -> SimpleDateFormat(format) }
+
+    private val _clockText: Flow<String> =
+        combine(clockFormat, clockInteractor.currentTime) { clockFormat, time ->
+            clockFormat.format(time)
+        }
 
     val clockText: String by
         hydrator.hydratedStateOf(
             traceName = "clockText",
             initialValue = clockInteractor.currentTime.value.toString(),
-            source = clockInteractor.currentTime.mapLatest { time -> time.toString() },
+            source = _clockText,
         )
 
     override suspend fun onActivated(): Nothing {
@@ -52,5 +72,15 @@ class ClockViewModel @AssistedInject constructor(clockInteractor: ClockInteracto
     @AssistedFactory
     interface Factory {
         fun create(): ClockViewModel
+    }
+
+    private fun getFormatString(): String {
+        dateTimePatternGenerator = DateTimePatternGenerator.getInstance(Locale.getDefault())
+
+        // TODO(b/390204943): use different value depending on if the system want to show seconds.
+        val formatSkeleton = if (dateFormatUtil.is24HourFormat) "Hm" else "hm"
+
+        // TODO(b/390204943): handle ContentDescriptionFormat and AM/PM style
+        return dateTimePatternGenerator.getBestPattern(formatSkeleton)
     }
 }

@@ -188,8 +188,6 @@ public class Resources {
     private static final int MAX_THEME_REFS_FLUSH_SIZE = 512;
     private int mThemeRefsNextFlushSize = MIN_THEME_REFS_FLUSH_SIZE;
 
-    private int mBaseApkAssetsSize;
-
     /** @hide */
     private static final Set<Resources> sResourcesHistory = Collections.synchronizedSet(
             Collections.newSetFromMap(
@@ -381,7 +379,6 @@ public class Resources {
             impl.setLocaleConfig(mResourcesImpl.getLocaleConfig());
         }
 
-        mBaseApkAssetsSize = ArrayUtils.size(impl.getAssets().getApkAssets());
         mResourcesImpl = impl;
 
         // Rebase the ThemeImpls using the new ResourcesImpl.

@@ -22,6 +22,8 @@ import android.os.SystemClock
 import android.provider.SearchIndexablesContract
 import android.provider.SearchIndexablesProvider
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 
 /**
  * [SearchIndexablesProvider] to generate indexing data consistently for preference screens that are
@@ -63,9 +65,11 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         if (!isCatalystSearchEnabled) return cursor
         val start = SystemClock.elapsedRealtime()
         val context = requireContext()
-        context.visitPreferenceScreen { preferenceScreenMetadata ->
-            val screenTitle = preferenceScreenMetadata.getPreferenceScreenTitle(context)
-            fun PreferenceHierarchyNode.visitRecursively(isParentAvailableOnCondition: Boolean) {
+        visitPreferenceScreen(context) { preferenceScreenMetadata, coroutineScope ->
+            val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
+            suspend fun PreferenceHierarchyNode.visitRecursively(
+                isParentAvailableOnCondition: Boolean
+            ) {
                 if (!metadata.isAvailable(context)) return
                 val isAvailableOnCondition =
                     isParentAvailableOnCondition || metadata.isAvailableOnCondition
@@ -78,11 +82,13 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                         .toRawColumnValues(context, preferenceScreenMetadata, screenTitle)
                         ?.let { cursor.addRow(it) }
                 }
-                (this as? PreferenceHierarchy)?.forEach {
+                (this as? PreferenceHierarchy)?.forEachAsync {
                     it.visitRecursively(isAvailableOnCondition)
                 }
             }
-            preferenceScreenMetadata.getPreferenceHierarchy(context).visitRecursively(false)
+            preferenceScreenMetadata
+                .getPreferenceHierarchy(context, coroutineScope)
+                .visitRecursively(false)
         }
         Log.d(TAG, "dynamicRawData: ${cursor.count} in ${SystemClock.elapsedRealtime() - start}ms")
         return cursor
@@ -93,8 +99,8 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         if (!isCatalystSearchEnabled) return cursor
         val start = SystemClock.elapsedRealtime()
         val context = requireContext()
-        context.visitPreferenceScreen { preferenceScreenMetadata ->
-            val screenTitle = preferenceScreenMetadata.getPreferenceScreenTitle(context)
+        visitPreferenceScreen(context) { preferenceScreenMetadata, coroutineScope ->
+            val screenTitle = preferenceScreenMetadata.getIndexableTitle(context)
             fun PreferenceHierarchyNode.visitRecursively() {
                 if (metadata.isAvailableOnCondition) return
                 if (
@@ -106,9 +112,13 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
                         .toRawColumnValues(context, preferenceScreenMetadata, screenTitle)
                         ?.let { cursor.addRow(it) }
                 }
+                // forEachAsync is not used so as to ignore async nodes, which are treated as
+                // available on condition
                 (this as? PreferenceHierarchy)?.forEach { it.visitRecursively() }
             }
-            preferenceScreenMetadata.getPreferenceHierarchy(context).visitRecursively()
+            preferenceScreenMetadata
+                .getPreferenceHierarchy(context, coroutineScope)
+                .visitRecursively()
         }
         Log.d(TAG, "rawData: ${cursor.count} in ${SystemClock.elapsedRealtime() - start}ms")
         return cursor
@@ -118,17 +128,23 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         // Just return empty as queryRawData ignores conditional available preferences recursively
         MatrixCursor(SearchIndexablesContract.NON_INDEXABLES_KEYS_COLUMNS)
 
-    private fun Context.visitPreferenceScreen(action: (PreferenceScreenMetadata) -> Unit) {
-        PreferenceScreenRegistry.preferenceScreenMetadataFactories.forEach { _, factory ->
-            // parameterized screen is not supported because there is no way to provide arguments
-            if (factory is PreferenceScreenMetadataParameterizedFactory) return@forEach
-            val preferenceScreenMetadata = factory.create(this)
-            if (
-                preferenceScreenMetadata.hasCompleteHierarchy() &&
-                    preferenceScreenMetadata.isIndexable(this) &&
-                    preferenceScreenMetadata.isFlagEnabled(this)
-            ) {
-                action(preferenceScreenMetadata)
+    private fun visitPreferenceScreen(
+        context: Context,
+        action: suspend (PreferenceScreenMetadata, CoroutineScope) -> Unit,
+    ) = runBlocking {
+        usePreferenceHierarchyScope {
+            // TODO: support visiting screens concurrently and setting timeout for each screen
+            PreferenceScreenRegistry.preferenceScreenMetadataFactories.forEachAsync { _, factory ->
+                // parameterized screen is not supported as there is no way to provide arguments
+                if (factory is PreferenceScreenMetadataParameterizedFactory) return@forEachAsync
+                val preferenceScreenMetadata = factory.create(context)
+                if (
+                    preferenceScreenMetadata.hasCompleteHierarchy() &&
+                        preferenceScreenMetadata.isIndexable(context) &&
+                        preferenceScreenMetadata.isFlagEnabled(context)
+                ) {
+                    action(preferenceScreenMetadata, this)
+                }
             }
         }
     }
@@ -141,7 +157,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         val intent = preferenceScreenMetadata.getLaunchIntent(context, this) ?: return null
         val columnValues = arrayOfNulls<Any>(SearchIndexablesContract.INDEXABLES_RAW_COLUMNS.size)
 
-        columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_TITLE] = getPreferenceTitle(context)
+        columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_TITLE] = getIndexableTitle(context)
         columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_KEYWORDS] = getKeywords(context)
         columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_SCREEN_TITLE] = screenTitle
         val iconResId = getPreferenceIcon(context)
@@ -160,6 +176,18 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
         }
         return columnValues
     }
+
+    private fun PreferenceScreenMetadata.getIndexableTitle(context: Context) =
+        when (this) {
+            is PreferenceIndexableTitleProvider -> getIndexableTitle(context)
+            else -> getPreferenceScreenTitle(context)
+        }
+
+    private fun PreferenceMetadata.getIndexableTitle(context: Context) =
+        when (this) {
+            is PreferenceIndexableTitleProvider -> getIndexableTitle(context)
+            else -> getPreferenceTitle(context)
+        }
 
     private fun PreferenceMetadata.getKeywords(context: Context) =
         if (keywords != 0) context.getString(keywords) else null

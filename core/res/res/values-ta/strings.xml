@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"உங்கள் உடல் இயக்கம் பற்றி உணர்விகள் கூறும் தகவலைப் பார்க்கலாம்"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"அறிவிப்புகள்"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"அறிவிப்புகளைக் காட்டும்"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR கண்காணிப்புத் தரவு"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"உங்களையும் உங்கள் சுற்றுச்சூழலையும் பற்றிய XR தரவை அணுகும்"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"பாதுகாக்க வேண்டிய XR கண்காணிப்புத் தரவு"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"கண் பார்வை போன்ற பாதுகாக்க வேண்டிய கண்காணிப்புத் தரவை அணுகும்"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"சாளர உள்ளடக்கத்தைப் பெறும்"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"நீங்கள் பணியாற்றிக் கொண்டிருக்கும் சாளரத்தின் உள்ளடக்கத்தைப் பார்க்கலாம்."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"தொடுவதன் மூலம் அறிவதை இயக்கும்"</string>
@@ -678,7 +684,7 @@
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"தொடர, உங்கள் பயோமெட்ரிக்கையோ திரைப் பூட்டையோ பயன்படுத்துங்கள்"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"பயோமெட்ரிக் வன்பொருள் இல்லை"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"அங்கீகரிப்பு ரத்தானது"</string>
-    <string name="biometric_not_recognized" msgid="5106687642694635888">"அடையாளங்காணபடவில்லை"</string>
+    <string name="biometric_not_recognized" msgid="5106687642694635888">"பொருந்தவில்லை"</string>
     <string name="biometric_face_not_recognized" msgid="5535599455744525200">"முகத்தைக் கண்டறிய முடியவில்லை"</string>
     <string name="biometric_error_canceled" msgid="8266582404844179778">"அங்கீகரிப்பு ரத்தானது"</string>
     <string name="biometric_error_device_not_secured" msgid="3129845065043995924">"பின்னோ, பேட்டர்னோ, கடவுச்சொல்லோ அமைக்கப்படவில்லை"</string>
@@ -1798,7 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ஒற்றைக் கைப் பயன்முறை"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"மிகக் குறைவான வெளிச்சம்"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"செவித்துணைக் கருவிகள்"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"ஆட்டோ கிளிக் (காத்திருப்பு நேரம்)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"ஆட்டோ கிளிக் (இருப்பு நேரம்)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"மவுஸ் பட்டன்கள்"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"இணைப்புநீக்கப்பட்டது"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"இணைக்கப்பட்டுள்ளது"</string>
@@ -2503,7 +2509,7 @@
     <string name="satellite_notification_how_it_works" msgid="3132069321977520519">"இது செயல்படும் விதம்"</string>
     <string name="satellite_manual_selection_state_popup_title" msgid="8545991934926661974">"\"நெட்வொர்க்கைத் தானாகத் தேர்ந்தெடு\" என்பதை இயக்குங்கள்"</string>
     <string name="satellite_manual_selection_state_popup_message" msgid="1928101658551382450">"அமைப்புகளில் \"நெட்வொர்க்கைத் தானாகத் தேர்ந்தெடு\" என்பதை இயக்கினால் செயற்கைக்கோள் மூலம் இயங்கும் நெட்வொர்க்கை உங்கள் மொபைல் கண்டறிய முடியும்"</string>
-    <string name="satellite_manual_selection_state_popup_ok" msgid="2459664752624985095">"இயக்கு"</string>
+    <string name="satellite_manual_selection_state_popup_ok" msgid="2459664752624985095">"ஆன் செய்"</string>
     <string name="satellite_manual_selection_state_popup_cancel" msgid="973605633339469252">"பின்செல்"</string>
     <string name="unarchival_session_app_label" msgid="6811856981546348205">"நிலுவையிலுள்ளது..."</string>
     <string name="satellite_sos_available_notification_title" msgid="5396708154268096124">"சாட்டிலைட் SOS அம்சம் இப்போது கிடைக்கிறது"</string>
@@ -2553,28 +2559,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ஆப்ஸ்"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"உங்கள் கைரேகைகளை இனி அடையாளம் காண முடியாது. கைரேகை அன்லாக் அம்சத்தை மீண்டும் அமையுங்கள்."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"பாதுகாப்பு &amp; தனியுரிமை"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USBக்கான மேம்பட்ட பாதுகாப்பு"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"தரவுப் பரிமாற்றம் செய்ய உங்கள் சாதனத்தை அன்லாக் செய்யுங்கள்"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"தரவுப் பரிமாற்றம் செய்ய உங்கள் சாதனத்தை அன்லாக் செய்து மீண்டும் இணைக்க வேண்டியிருக்கலாம்"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"விரைவு சார்ஜிங் மற்றும் தரவுப் பரிமாற்றம் செய்ய சாதனத்தை அன்லாக் செய்யுங்கள்"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"விரைவு சார்ஜிங் மற்றும் தரவுப் பரிமாற்றம் செய்ய உங்கள் சாதனத்தை அன்லாக் செய்து மீண்டும் இணைக்க வேண்டியிருக்கலாம்"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"விரைவு சார்ஜிங் செய்ய சாதனத்தை அன்லாக் செய்யுங்கள்"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"விரைவு சார்ஜிங் செய்ய உங்கள் சாதனத்தை அன்லாக் செய்து மீண்டும் இணைக்க வேண்டியிருக்கலாம்"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ஒலியடக்கு"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"அறிவிப்பு ஒலியடக்கப்பட்டுள்ளது"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"உங்கள் சாதனத்தை மீண்டும் தொடங்கும் வரை ஒலியடக்கப்பட்டுள்ளது"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"சந்தேகத்திற்குரிய USB செயல்பாடு"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB தரவு சிக்னல் முடக்கப்பட்டுள்ளது."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"கைரேகை அன்லாக் அம்சத்தில் ஏதேனும் சிக்கலை எதிர்கொள்கிறீர்களா?"</string>

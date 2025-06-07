@@ -263,6 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"បង្រួមក្រុម។"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"បញ្ចូលឧបករណ៍ទៅក្រុម។"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ដកឧបករណ៍ចេញពីក្រុម។"</string>
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"បញ្ចូល <xliff:g id="DEVICE_NAME">%s</xliff:g> ទៅ​ក្នុង​ក្រុម។"</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"ដក <xliff:g id="DEVICE_NAME">%s</xliff:g> ចេញពីក្រុម។"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"បើកកម្មវិធី។"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"មិន​បាន​តភ្ជាប់​។"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"រ៉ូ​មីង"</string>
@@ -298,6 +300,12 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"តិច​ជាង"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"បាន​បញ្ឈប់​ការ​ចាត់​ថ្នាក់​អេក្រង់។"</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"ពន្លឺ​ការ​បង្ហាញ"</string>
+    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
+    <skip />
+    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
+    <skip />
+    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
+    <skip />
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"ទិន្នន័យទូរសព្ទចល័តបានផ្អាក"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"ទិន្នន័យត្រូវបានផ្អាក"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"បានឈានដល់កម្រិតទិន្នន័យដែលអ្នកបានកំណត់ហើយ។ ឥឡូវ​អ្នកមិនប្រើទិន្នន័យទូរសព្ទចល័តទៀតទេ។\n\nអាចនឹងគិតថ្លៃលើការប្រើទិន្នន័យ ប្រសិនបើអ្នកបន្តប្រើឡើងវិញ។"</string>
@@ -647,6 +655,8 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"បិទ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ដោះសោដើម្បីមើលការជូនដំណឹងចាស់ៗ"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ឧបករណ៍​នេះ​ស្ថិត​ក្រោម​ការ​គ្រប់គ្រង​របស់មាតាបិតាអ្នក"</string>
+    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
+    <skip />
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ស្ថាប័ន​របស់អ្នក​ជាម្ចាស់​ឧបករណ៍​នេះ ហើយ​អាចនឹង​តាមដាន​ចរាចរណ៍បណ្តាញ"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> ជាម្ចាស់​ឧបករណ៍​នេះ ហើយ​អាចនឹង​តាមដាន​ចរាចរណ៍​បណ្តាញ"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"ឧបករណ៍នេះត្រូវបានផ្ដល់ដោយ <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -687,6 +697,8 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"បើក​ការកំណត់ VPN"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"ឧបករណ៍​នេះ​ស្ថិត​ក្រោម​ការ​គ្រប់គ្រង​របស់មាតាបិតាអ្នក។ មាតាបិតារបស់អ្នកអាចមើល និងគ្រប់គ្រងព័ត៌មាន​ដូចជា កម្មវិធីដែលអ្នកប្រើ ទីតាំងរបស់អ្នក និងរយៈពេលប្រើប្រាស់ឧបករណ៍របស់អ្នកជាដើម។"</string>
+    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"បាន​ដោះសោ​ដោយភ្នាក់ងារ​​ទុកចិត្ត"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ឧបករណ៍ត្រូវបានចាក់សោ ដោយសារមានការព្យាយាមផ្ទៀងផ្ទាត់ច្រើនដងពេក"</string>
@@ -790,6 +802,8 @@
     <string name="status_bar_work" msgid="5238641949837091056">"កម្រងព័ត៌មានការងារ"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"ពេលជិះយន្តហោះ"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"ការគ្រប់គ្រង​ដោយ​មាតាបិតា"</string>
+    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
+    <skip />
     <string name="zen_alarm_warning" msgid="7844303238486849503">"អ្នកនឹងមិនលឺម៉ោងរោទ៍ <xliff:g id="WHEN">%1$s</xliff:g> បន្ទាប់របស់អ្នកទេ"</string>
     <string name="alarm_template" msgid="2234991538018805736">"នៅ <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"នៅ <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -800,6 +814,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ផ្កាយរណប អាចតភ្ជាប់បាន"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ការប្រកាសអាសន្នតាមផ្កាយរណប"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"សម្រាប់​ការហៅទៅ​លេខ​សង្គ្រោះបន្ទាន់ ឬ​ការប្រកាសអាសន្ន​តែប៉ុណ្ណោះ"</string>
+    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>។"</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"គ្មានសញ្ញា"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"មួយកាំ"</string>
@@ -820,19 +836,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"បើក"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"បើក - ផ្អែកលើមុខ"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"បិទ​សំឡេង និងដាក់ជាក្រុមជាមួយគ្នា"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"ប្រើកម្មវិធីរៀបចំការជូនដំណឹង"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"សម្រាប់ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"ការលក់ មុខងារថ្មីៗ និងច្រើនទៀត"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"វិចារណកថា រឿងពេញនិយម និងច្រើនទៀត"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"ការចូលចិត្ត សារបង្ហោះ និងច្រើនទៀត"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"ព្រឹត្តិបត្រ មេឌៀដែលបានណែនាំ និងច្រើនទៀត"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"បើក"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ឥឡូវនេះ ការសន្ទនាវែងៗរបស់អ្នកអាចត្រូវបានសង្ខេប ដើម្បីផ្ដល់ការសង្ខេបខ្លីៗឱ្យអ្នក"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"សំឡេងស្ងាត់ និងកញ្ចប់កម្មវិធីរៀបចំការជូនដំណឹងបន្ថយការជូនដំណឹងអាទិភាព"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"បិទ"</string>

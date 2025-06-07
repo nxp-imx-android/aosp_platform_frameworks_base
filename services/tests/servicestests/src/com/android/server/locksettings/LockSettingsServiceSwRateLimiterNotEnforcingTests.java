@@ -67,7 +67,7 @@ public class LockSettingsServiceSwRateLimiterNotEnforcingTests
         final LskfIdentifier lskfId = new LskfIdentifier(userId, protectorId);
 
         // The software and hardware counters start at 0.
-        assertEquals(0, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(0, mSpManager.readFailureCounter(lskfId));
         assertEquals(0, mSpManager.getSumOfWeaverFailureCounters());
 
         // Try the same wrong PIN repeatedly.
@@ -79,7 +79,7 @@ public class LockSettingsServiceSwRateLimiterNotEnforcingTests
         // The software counter should now be 1, since there was one unique guess. The hardware
         // counter should now be numGuesses, since the software rate-limiter was in non-enforcing
         // mode, i.e. the hardware rate-limiter should still have been called for every guess.
-        assertEquals(1, mSpManager.readWrongGuessCounter(lskfId));
+        assertEquals(1, mSpManager.readFailureCounter(lskfId));
         assertEquals(numGuesses, mSpManager.getSumOfWeaverFailureCounters());
     }
 }

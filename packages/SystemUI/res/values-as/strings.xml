@@ -156,7 +156,7 @@
     <string name="cast_to_other_device_stop_dialog_message_specific_app" msgid="8616103075630934513">"বৰ্তমান আপুনি আশে-পাশে থকা ডিভাইচ এটাত <xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g> কাষ্ট কৰি আছে"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic_with_device" msgid="9213582497852420203">"বৰ্তমান আপুনি <xliff:g id="DEVICE_NAME">%1$s</xliff:g>ত কাষ্ট কৰি আছে"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic" msgid="4100272100480415076">"বৰ্তমান আপুনি আশে-পাশে থকা ডিভাইচ এটাত কাষ্ট কৰি আছে"</string>
-    <string name="cast_to_other_device_stop_dialog_button" msgid="6420183747435521834">"কাষ্ট বন্ধ কৰক"</string>
+    <string name="cast_to_other_device_stop_dialog_button" msgid="6420183747435521834">"কাষ্ট কৰাটো বন্ধ কৰক"</string>
     <string name="close_dialog_button" msgid="4749497706540104133">"বন্ধ কৰক"</string>
     <string name="issuerecord_title" msgid="286627115110121849">"সমস্যা ৰেকৰ্ডাৰ"</string>
     <string name="issuerecord_background_processing_label" msgid="1666840264959336876">"সমস্যা ৰেকৰ্ড কৰি থকা হৈছে"</string>
@@ -263,6 +263,8 @@
     <string name="accessibility_collapse_group" msgid="1842704016768329517">"গোট সংকোচন কৰক।"</string>
     <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"গোটত ডিভাইচ যোগ দিয়ক।"</string>
     <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"গোটৰ পৰা ডিভাইচ আঁতৰাওক।"</string>
+    <string name="accessibility_add_device_to_group_with_name" msgid="1042306202917036858">"গোটত <xliff:g id="DEVICE_NAME">%s</xliff:g> যোগ দিয়ক।"</string>
+    <string name="accessibility_remove_device_from_group_with_name" msgid="5582015497111561027">"গোটৰ পৰা <xliff:g id="DEVICE_NAME">%s</xliff:g> আঁতৰাওক।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"এপ্লিকেশ্বনটো খোলক।"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"সংযোগ হৈ থকা নাই।"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ৰ\'মিং"</string>
@@ -298,6 +300,12 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"কম সময়।"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"স্ক্ৰীন কাষ্টিং বন্ধ কৰা হ’ল।"</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"ডিছপ্লেৰ উজ্জ্বলতা"</string>
+    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
+    <skip />
+    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
+    <skip />
+    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
+    <skip />
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"ম’বাইল ডেটা পজ কৰা হৈছে"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"ডেটা পজ কৰা হৈছে"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"আপুনি নির্ধাৰণ কৰা ডেটাৰ সীমা শেষ হৈছে। আপুনি এতিয়া ম’বাইল ডেটা ব্যৱহাৰ কৰিব নোৱাৰে। \n\nযদিহে আপুনি আকৌ ম’বাইল ডেটা ব্যৱহাৰ কৰে তেন্তে ডেটাৰ ব্যৱহাৰৰ বাবে মাচুল ভৰিবলগীয়া হ’ব পাৰে।"</string>
@@ -647,6 +655,8 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"অফ কৰক"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"পুৰণি জাননী চবলৈ আনলক কৰক"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"এই ডিভাইচটো আপোনাৰ অভিভাৱকে পৰিচালনা কৰে"</string>
+    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
+    <skip />
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"এই ডিভাইচটোৰ গৰাকী আপোনাৰ প্ৰতিষ্ঠান আৰু ই নেটৱৰ্কৰ ট্ৰেফিক নিৰীক্ষণ কৰিব পাৰে"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"এই ডিভাইচটোৰ গৰাকী <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> আৰু এইটোৱে নেটৱৰ্কৰ ট্ৰেফিক নিৰীক্ষণ কৰিব পাৰে"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"এই ডিভাইচটো <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>এ প্ৰদান কৰিছে"</string>
@@ -687,6 +697,8 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN ছেটিং খোলক"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"এই ডিভাইচটো আপোনাৰ অভিভাৱকে পৰিচালনা কৰে। আপোনাৰ অভিভাৱকে আপুনি ব্যৱহাৰ কৰা এপ্‌, আপোনাৰ অৱস্থান আৰু আপুনি ডিভাইচত অতিবাহিত কৰা সময়ৰ দৰে তথ্য চাব আৰু পৰিচালনা কৰিব পাৰে।"</string>
+    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
+    <skip />
     <string name="legacy_vpn_name" msgid="4174223520162559145">"ভিপিএন"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgentএ আনলক কৰি ৰাখিছে"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ডিভাইচ লক কৰা হৈছে, বিশ্বাসযোগ্যতা প্ৰমাণীকৰণৰ অতি বেছিসংখ্যক প্ৰয়াস"</string>
@@ -790,6 +802,8 @@
     <string name="status_bar_work" msgid="5238641949837091056">"কৰ্মস্থানৰ প্ৰ\'ফাইল"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"এয়াৰপ্লে’ন ম’ড"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"অভিভাৱকীয় নিয়ন্ত্ৰণ"</string>
+    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
+    <skip />
     <string name="zen_alarm_warning" msgid="7844303238486849503">"আপুনি আপোনাৰ পিছৰটো এলাৰ্ম <xliff:g id="WHEN">%1$s</xliff:g> বজাত শুনা নাপাব"</string>
     <string name="alarm_template" msgid="2234991538018805736">"<xliff:g id="WHEN">%1$s</xliff:g> বজাত"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g> বজাত"</string>
@@ -800,6 +814,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"উপগ্ৰহ, সংযোগ উপলব্ধ"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"উপগ্ৰহ SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"কেৱল জৰুৰীকালীন কল বা SOS"</string>
+    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"কোনো ছিগনেল নাই"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"এডাল দণ্ড"</string>
@@ -820,19 +836,15 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"অন কৰক"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"অন আছে - মুখাৱয়ব ভিত্তিক"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"নীৰৱ আৰু বাণ্ডলৰ বিকল্প"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (3186784466618443494) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"জাননী সংগঠক ব্যৱহাৰ কৰক"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>ৰ বাবে"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"বিক্ৰী, নতুন সুবিধা আৰু বহুতো"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"শীৰ্ষ কাহিনী, সম্পাদকীয় আৰু বহুতো"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"লাইক, প’ষ্ট আৰু বহুতো"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"সংবাদপত্ৰ, চুপাৰিছ কৰা মিডিয়া আৰু বহুতো"</string>
-    <!-- no translation found for notification_onboarding_summaries_turn_on (5050003857531272655) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_summaries_message (6061524903176459064) -->
-    <skip />
-    <!-- no translation found for notification_onboarding_bundles_message (9038023612294384832) -->
-    <skip />
+    <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"অন কৰক"</string>
+    <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"এতিয়া আপোনাক ক্ষিপ্ৰ ৰিকেপ দিবলৈ আপোনাৰ দীঘলীয়া বাৰ্তালাপৰ সাৰাংশ প্ৰস্তুত কৰিব পাৰি"</string>
+    <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"জাননী সংগঠকে বাণ্ডল কৰে আৰু কম অগ্ৰাধিকাৰ থকা জাননী নীৰৱ কৰে"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"কৰা হ’ল"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"প্ৰয়োগ কৰক"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"অফ কৰক"</string>
@@ -1293,7 +1305,7 @@
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"ডিভাইচ সংযোগ কৰক"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"ডিভাইচ সংযোগ কৰক"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"অজ্ঞাত এপ্"</string>
-    <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাষ্ট বন্ধ কৰক"</string>
+    <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"কাষ্ট কৰাটো বন্ধ কৰক"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"অডিঅ\' আউটপুটৰ বাবে উপলব্ধ ডিভাইচ।"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ভলিউম"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>

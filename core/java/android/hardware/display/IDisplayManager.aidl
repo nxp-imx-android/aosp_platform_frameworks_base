@@ -171,9 +171,16 @@ interface IDisplayManager {
     @EnforcePermission("CONTROL_DISPLAY_BRIGHTNESS")
     void setBrightness(int displayId, float brightness);
 
+    // Set the display brightness. Accepts different brightness units.
+    @EnforcePermission("WRITE_SETTINGS")
+    void setBrightnessByUnit(int displayId, float value, int unit);
+
     // Retrieves the display brightness.
     @EnforcePermission("CONTROL_DISPLAY_BRIGHTNESS")
     float getBrightness(int displayId);
+
+    // Retrieves the display brightness in the specified brightness unit.
+    float getBrightnessByUnit(int displayId, int unit);
 
     // Temporarily sets the auto brightness adjustment factor.
     @EnforcePermission("CONTROL_DISPLAY_BRIGHTNESS")

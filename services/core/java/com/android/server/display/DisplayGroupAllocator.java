@@ -56,7 +56,8 @@ class DisplayGroupAllocator {
     public void initLater(Context context) {
         mContext = context;
         mCanDeviceEnterDesktopMode = mInjector.canEnterDesktopMode(mContext);
-        mCanDefaultDisplayEnterDesktopMode = mInjector.canInternalDisplayHostDesktops(mContext);
+        mCanDefaultDisplayEnterDesktopMode =
+                mInjector.isDesktopModeSupportedOnInternalDisplay(mContext);
     }
 
     /**
@@ -154,8 +155,8 @@ class DisplayGroupAllocator {
             return DesktopModeHelper.canEnterDesktopMode(context);
         }
 
-        boolean canInternalDisplayHostDesktops(Context context) {
-            return DesktopModeHelper.canInternalDisplayHostDesktops(context);
+        boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
+            return DesktopModeHelper.isDesktopModeSupportedOnInternalDisplay(context);
         }
 
         boolean canDisplayHostTasksLocked(LogicalDisplay display) {

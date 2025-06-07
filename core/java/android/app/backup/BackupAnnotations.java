@@ -30,9 +30,9 @@ public class BackupAnnotations {
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
-            OperationType.UNKNOWN,
-            OperationType.BACKUP,
-            OperationType.RESTORE,
+        OperationType.UNKNOWN,
+        OperationType.BACKUP,
+        OperationType.RESTORE,
     })
     public @interface OperationType {
         int UNKNOWN = -1;
@@ -44,12 +44,13 @@ public class BackupAnnotations {
      * Denotes where the backup data is going (e.g. to the cloud or directly to the other device)
      * during backup or where it is coming from during restore.
      *
-     * @hide */
+     * @hide
+     */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
-            BackupDestination.CLOUD,
-            BackupDestination.DEVICE_TRANSFER,
-            BackupDestination.ADB_BACKUP
+        BackupDestination.CLOUD,
+        BackupDestination.DEVICE_TRANSFER,
+        BackupDestination.ADB_BACKUP
     })
     public @interface BackupDestination {
         // A cloud backup.

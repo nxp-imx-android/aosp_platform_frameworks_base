@@ -43,7 +43,7 @@ data class LetterboxLifecycleEvent(
     val taskBounds: Rect,
     val letterboxBounds: Rect? = null,
     val containerToken: WindowContainerToken? = null,
-    val leash: SurfaceControl? = null,
+    val taskLeash: SurfaceControl? = null,
 )
 
 /**
@@ -64,6 +64,7 @@ fun Change.asLetterboxLifecycleEventType() = when {
 /**
  * Creates a [LetterboxLifecycleEvent] from the information in a [Change].
  */
+// TODO(b/375339716): Clean code and improve readability.
 fun Change.toLetterboxLifecycleEvent(): LetterboxLifecycleEvent {
     val taskBounds = Rect(
         endRelOffset.x,
@@ -90,6 +91,6 @@ fun Change.toLetterboxLifecycleEvent(): LetterboxLifecycleEvent {
         taskBounds = taskBounds,
         letterboxBounds = letterboxBounds,
         containerToken = taskInfo?.token,
-        leash = leash
+        taskLeash = leash
     )
 }

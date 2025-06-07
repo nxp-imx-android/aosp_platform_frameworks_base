@@ -271,18 +271,17 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public boolean cancelDraw(IWindow window) {
-        return mService.cancelDraw(this, window);
+    public boolean cancelDraw(IWindow window, int seqId) {
+        return mService.cancelDraw(this, window, seqId);
     }
 
     @Override
     public int relayout(IWindow window, WindowManager.LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewFlags, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult, SurfaceControl outSurface) {
+            int syncSeqId, WindowRelayoutResult outRelayoutResult, SurfaceControl outSurface) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, mRelayoutTag);
         int res = mService.relayoutWindow(this, window, attrs, requestedWidth,
-                requestedHeight, viewFlags, flags, seq, lastSyncSeqId, outRelayoutResult,
-                outSurface);
+                requestedHeight, viewFlags, flags, seq, syncSeqId, outRelayoutResult, outSurface);
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         return res;
     }

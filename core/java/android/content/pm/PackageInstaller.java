@@ -61,6 +61,8 @@ import android.content.pm.parsing.ApkLiteParseUtils;
 import android.content.pm.parsing.PackageLite;
 import android.content.pm.parsing.result.ParseResult;
 import android.content.pm.parsing.result.ParseTypeImpl;
+import android.content.pm.verify.developer.DeveloperVerificationSession;
+import android.content.pm.verify.developer.DeveloperVerificationStatus;
 import android.content.pm.verify.domain.DomainSet;
 import android.graphics.Bitmap;
 import android.icu.util.ULocale;
@@ -228,6 +230,17 @@ public class PackageInstaller {
     @SystemApi
     public static final String ACTION_INSTALL_DEPENDENCY =
             "android.content.pm.action.INSTALL_DEPENDENCY";
+
+    /**
+     * Intent sent to the installer to indicate user action is required to proceed with the
+     * developer verification.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE =
+            "android.content.pm.action.NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE";
 
     /**
      * An integer session ID that an operation is working with.
@@ -428,6 +441,61 @@ public class PackageInstaller {
      * @hide
      */
     public static final String EXTRA_WARNINGS = "android.content.pm.extra.WARNINGS";
+
+    /**
+     * When an installation fails because the developer verification was incomplete or blocked,
+     * this extra provides a code that explains the reason, such
+     * as {@link #DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE}. It is included in the
+     * installation result returned via the {@link IntentSender} in
+     * {@link Session#commit(IntentSender)}. However, along with this reason code, installers can
+     * receive different status codes from {@link #EXTRA_STATUS} depending on their target SDK and
+     * privileged status:
+     * <p>
+     *      Non-privileged installers targeting 36 or less will first receive the
+     *      {@link #STATUS_PENDING_USER_ACTION} status code without this reason code. They will be
+     *      forced through the user action flow to allow the OS to inform the user of such
+     *      verification context before continuing to fail the install. If the user has the option
+     *      to bypass the verification result and chooses to do so, the installation will proceed.
+     *      Otherwise, the installer will receive the {@link #STATUS_FAILURE_ABORTED} status code
+     *      along with this reason code that explains why the verification had failed.
+     * </p>
+     * <p>
+     *     Privileged installer targeting 36 or less will directly receive the
+     *     {@link #STATUS_FAILURE_ABORTED} status code. This is because they are not expected to
+     *     have the capability of handling the {@link #STATUS_PENDING_USER_ACTION} flow, so the
+     *     installation will directly fail. This reason code will be supplied to them for
+     *     providing additional information.
+     * </p>
+     * <p>
+     *     All installers targeting 37 and higher will receive a {@link #STATUS_FAILURE_ABORTED}
+     *     status code along with this reason code, so the installers can explain the failure to the
+     *     user accordingly. An {@link Intent#EXTRA_INTENT} will also be populated with an intent
+     *     that can provide additional context where appropriate, should the installer prefer to
+     *     defer to the OS to explain the failure to the user.
+     * </p>
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON =
+            "android.content.pm.extra.DEVELOPER_VERIFICATION_FAILURE_REASON";
+
+    /**
+     * An extra containing the response provided by the developer verifier to any extension
+     * params provided by the installer. It will be of type {@link PersistableBundle}.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE =
+            "android.content.pm.extra.DEVELOPER_VERIFICATION_EXTENSION_RESPONSE";
+
+    /**
+     * An extra containing a boolean indicating whether the lite version of the developer
+     * verification was performed on the app to be installed. It is included in the installation
+     * result returned via the {@link IntentSender} in {@link Session#commit(IntentSender)}
+     * when the installation failed.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final String EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED =
+            "android.content.pm.extra.DEVELOPER_VERIFICATION_LITE_PERFORMED";
+
 
     /**
      * Streaming installation pending.
@@ -772,6 +840,149 @@ public class PackageInstaller {
     @Retention(RetentionPolicy.SOURCE)
     public @interface UnarchivalStatus {}
 
+    /**
+     * Developer verification failed because of unknown reasons, such as when the verifier times out
+     * or cannot be connected. It can also corresponds to the status of
+     * {@link DeveloperVerificationSession#DEVELOPER_VERIFICATION_INCOMPLETE_UNKNOWN} reported by
+     * the verifier via {@link DeveloperVerificationSession#reportVerificationIncomplete(int)}.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final int DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN = 0;
+
+    /**
+     * Developer verification failed because the network is unavailable. This corresponds to the
+     * status of
+     * {@link DeveloperVerificationSession#DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE}
+     * reported by the verifier via
+     * {@link DeveloperVerificationSession#reportVerificationIncomplete(int)}.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final int DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE = 1;
+
+    /**
+     * Developer verification failed because the developer cannot be verified, as reported by the
+     * verifier via
+     * {@link DeveloperVerificationSession#reportVerificationComplete(DeveloperVerificationStatus)}
+     * or
+     * {@link DeveloperVerificationSession#reportVerificationComplete(
+     * DeveloperVerificationStatus, PersistableBundle)}
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public static final int DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED = 2;
+
+    /**
+     * @hide
+     */
+    @IntDef(value = {
+            DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN,
+            DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE,
+            DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DeveloperVerificationFailedReason {
+    }
+
+    /**
+     * Do not block installs, regardless of developer verification status.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_POLICY_NONE = 0; // platform default
+    /**
+     * Only block installations when the developer verification status says the developer is not
+     * verified, and ask the user if they'd like to install anyway when the verification cannot
+     * complete for any other reason. In case of a network issue, the user also has the option to
+     * retry the verification.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN = 1;
+    /**
+     * Only block installations when the developer verification result says the developer is not
+     * verified, and ask the user if they'd like to install anyway when the verification cannot
+     * complete for any other reason. In case of a network issue, the user also has the option to
+     * retry the verification.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN = 2;
+    /**
+     * Block installations when the developer verification result says the developer is not verified
+     * or when the verification cannot be conducted because of unknown reasons. In case of a network
+     * issue, the user has the option to retry the verification.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED = 3;
+    /**
+     * @hide
+     */
+    @IntDef(value = {
+            DEVELOPER_VERIFICATION_POLICY_NONE,
+            DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN,
+            DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN,
+            DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DeveloperVerificationPolicy {
+    }
+
+    /**
+     * This response code indicates that there was some error while showing a user confirmation
+     * dialog for developer verification.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR = 0;
+    /**
+     * This indicates that the user has confirmed not to proceed with the installation as a response
+     * to the developer verification result.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL = 1;
+    /**
+     * This indicates that the user has acknowledged that installation cannot be completed due to
+     * a failed / incomplete developer verification.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_OK = 2;
+    /**
+     * For an incomplete developer verification, the user has asked to retry the verification.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY = 3;
+    /**
+     * For an incomplete developer verification, the user has confirmed proceeding with the
+     * installation anyway.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 4;
+    /**
+     * @hide
+     */
+    @IntDef(value = {
+            DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR,
+            DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL,
+            DEVELOPER_VERIFICATION_USER_RESPONSE_OK,
+            DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY,
+            DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DeveloperVerificationUserResponse {
+    }
 
     /** Default set of checksums - includes all available checksums.
      * @see Session#requestChecksums  */
@@ -909,6 +1120,27 @@ public class PackageInstaller {
     public @Nullable SessionInfo getSessionInfo(int sessionId) {
         try {
             return mInstaller.getSessionInfo(sessionId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the details about an incomplete or failed developer verification. Used by the default
+     * PackageInstaller app on the device to show appropriate informational dialogs to the user,
+     * when a user action is required.
+     *
+     * @return details for the requested session, or {@code null} if the session does not exist.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE)
+    public @Nullable DeveloperVerificationUserConfirmationInfo
+    getDeveloperVerificationUserConfirmationInfo(int sessionId) {
+        try {
+            return mInstaller.getDeveloperVerificationUserConfirmationInfo(sessionId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1511,6 +1743,75 @@ public class PackageInstaller {
                     i.remove();
                 }
             }
+        }
+    }
+
+    /**
+     * Return the current developer verification enforcement policy. This may only be called by the
+     * package currently set by the system as the verifier agent.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    public final @DeveloperVerificationPolicy int getDeveloperVerificationPolicy() {
+        try {
+            return mInstaller.getDeveloperVerificationPolicy(mUserId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Set the current developer verification enforcement policy which will be applied to all future
+     * installation sessions. This may only be called by the package currently set by the system as
+     * the verifier agent.
+     * @hide
+     * @return whether the new policy was successfully set.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    public final boolean setDeveloperVerificationPolicy(@DeveloperVerificationPolicy int policy) {
+        try {
+            return mInstaller.setDeveloperVerificationPolicy(policy, mUserId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     *  Return the package name of the developer verification service provider, for the
+     *  purpose of interacting with the specific verifier in relation to
+     *  extension parameters and response structure.  Return null if the system
+     *  verifier service provider is not available to the caller, or if there is no
+     *  such provider specified by the system.
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    public final @Nullable String getDeveloperVerificationServiceProvider() {
+        try {
+            return mInstaller.getDeveloperVerificationServiceProvider();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Set user's response to an incomplete developer verification, regarding proceeding with the
+     * installation.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE)
+    public void setDeveloperVerificationUserResponse(int sessionId,
+            @DeveloperVerificationUserResponse int developerVerificationUserResponse) {
+        try {
+            mInstaller.setDeveloperVerificationUserResponse(sessionId,
+                    developerVerificationUserResponse);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
         }
     }
 
@@ -2812,7 +3113,12 @@ public class PackageInstaller {
         /** {@hide} */
         public @Nullable String dexoptCompilerFilter = null;
         /** {@hide} */
+        public boolean forceVerification;
+        /** {@hide} */
         public boolean isAutoInstallDependenciesEnabled = true;
+        /** {@hide} */
+        @Nullable
+        public PersistableBundle extensionParams;
 
         private final ArrayMap<String, Integer> mPermissionStates;
 
@@ -2872,7 +3178,9 @@ public class PackageInstaller {
             developmentInstallFlags = source.readInt();
             unarchiveId = source.readInt();
             dexoptCompilerFilter = source.readString();
+            forceVerification = source.readBoolean();
             isAutoInstallDependenciesEnabled = source.readBoolean();
+            extensionParams = source.readPersistableBundle();
         }
 
         /** {@hide} */
@@ -2909,7 +3217,9 @@ public class PackageInstaller {
             ret.developmentInstallFlags = developmentInstallFlags;
             ret.unarchiveId = unarchiveId;
             ret.dexoptCompilerFilter = dexoptCompilerFilter;
+            ret.forceVerification = forceVerification;
             ret.isAutoInstallDependenciesEnabled = isAutoInstallDependenciesEnabled;
+            ret.extensionParams = extensionParams;
             return ret;
         }
 
@@ -3651,6 +3961,14 @@ public class PackageInstaller {
         }
 
         /**
+         * Used by adb installations to force enable the verification for this install.
+         * {@hide}
+         */
+        public void setForceVerification() {
+            this.forceVerification = true;
+        }
+
+        /**
          * Optionally indicate whether missing SDK or static shared library dependencies should be
          * automatically fetched and installed when installing an app that wants to use these
          * dependencies.
@@ -3667,6 +3985,18 @@ public class PackageInstaller {
         @FlaggedApi(Flags.FLAG_SDK_DEPENDENCY_INSTALLER)
         public void setAutoInstallDependenciesEnabled(boolean enableAutoInstallDependencies) {
             isAutoInstallDependenciesEnabled = enableAutoInstallDependencies;
+        }
+
+        /**
+         * Optionally called to provide a set of parameters to pass directly to the developer
+         * verification service provider (a.k.a., the verifier) to provide any additional context
+         * regarding the pending verification. The structure of this bundle will be specific to the
+         * implementation of the verifier, so callers can determine the verifier by calling
+         * {@link PackageInstaller#getDeveloperVerificationServiceProvider()}.
+         */
+        @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+        public void setExtensionParams(@NonNull PersistableBundle extensionParams) {
+            this.extensionParams = extensionParams;
         }
 
         /** {@hide} */
@@ -3704,7 +4034,9 @@ public class PackageInstaller {
             pw.printHexPair("developmentInstallFlags", developmentInstallFlags);
             pw.printPair("unarchiveId", unarchiveId);
             pw.printPair("dexoptCompilerFilter", dexoptCompilerFilter);
+            pw.printPair("forceVerification", forceVerification);
             pw.printPair("isAutoInstallDependenciesEnabled", isAutoInstallDependenciesEnabled);
+            pw.printPair("extensionParams", extensionParams);
             pw.println();
         }
 
@@ -3751,7 +4083,9 @@ public class PackageInstaller {
             dest.writeInt(developmentInstallFlags);
             dest.writeInt(unarchiveId);
             dest.writeString(dexoptCompilerFilter);
+            dest.writeBoolean(forceVerification);
             dest.writeBoolean(isAutoInstallDependenciesEnabled);
+            dest.writePersistableBundle(extensionParams);
         }
 
         public static final Parcelable.Creator<SessionParams>
@@ -4695,6 +5029,116 @@ public class PackageInstaller {
     }
 
     /**
+     * Details about an incomplete or failed developer verification that requires user intervention.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    public static final class DeveloperVerificationUserConfirmationInfo implements Parcelable {
+        /**
+         * Developer verification requires user intervention because of unknown reasons, such as
+         * when the verifier times out or cannot be connected.
+         */
+        public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN = 0;
+
+        /**
+         * Developer verification requires user intervention because the network is unavailable.
+         */
+        public static final int
+                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE = 1;
+
+        /**
+         * Developer verification requires user intervention because the developer is not verified.
+         */
+        public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED =
+                2;
+
+        /**
+         * Developer verification requires user intervention because only the lite version of the
+         * verification was completed on the request, not the full verification.
+         */
+        public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION =
+                3;
+
+        /**
+         * @hide
+         */
+        @IntDef(value = {
+                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN,
+                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE,
+                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED,
+                DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION
+        })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface UserActionNeededReason {
+        }
+
+        @DeveloperVerificationPolicy
+        private int mVerificationPolicy;
+
+        @UserActionNeededReason
+        private int mVerificationUserActionNeededReason;
+
+        public DeveloperVerificationUserConfirmationInfo() {
+        }
+
+        public DeveloperVerificationUserConfirmationInfo(@DeveloperVerificationPolicy int policy,
+                @UserActionNeededReason int reason) {
+            mVerificationPolicy = policy;
+            mVerificationUserActionNeededReason = reason;
+        }
+
+        private DeveloperVerificationUserConfirmationInfo(@NonNull Parcel in) {
+            mVerificationPolicy = in.readInt();
+            mVerificationUserActionNeededReason = in.readInt();
+        }
+
+        @DeveloperVerificationPolicy
+        public int getVerificationPolicy() {
+            return mVerificationPolicy;
+        }
+
+        @UserActionNeededReason
+        public int getVerificationUserActionNeededReason() {
+            return mVerificationUserActionNeededReason;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mVerificationPolicy);
+            dest.writeInt(mVerificationUserActionNeededReason);
+        }
+
+        public static final @NonNull Parcelable.Creator<DeveloperVerificationUserConfirmationInfo>
+                CREATOR = new Parcelable.Creator<>() {
+                    @Override
+                    public DeveloperVerificationUserConfirmationInfo createFromParcel(
+                            @NonNull Parcel p) {
+                        return new DeveloperVerificationUserConfirmationInfo(p);
+                    }
+
+                    @Override
+                    public DeveloperVerificationUserConfirmationInfo[] newArray(int size) {
+                        return new DeveloperVerificationUserConfirmationInfo[size];
+                    }
+                };
+
+        @Override
+        public String toString() {
+            return "VerificationUserConfirmationInfo{"
+                    + "verificationPolicy=" + mVerificationPolicy
+                    + ", verificationUserActionReason=" + mVerificationUserActionNeededReason
+                    + '}';
+        }
+    }
+
+    /**
      * Details for requesting the pre-commit install approval.
      */
     @DataClass(genConstructor = false, genToString = true)
@@ -4750,9 +5194,13 @@ public class PackageInstaller {
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             byte flg = 0;
-            if (mIcon != null) flg |= 0x1;
+            if (mIcon != null) {
+                flg |= 0x1;
+            }
             dest.writeByte(flg);
-            if (mIcon != null) mIcon.writeToParcel(dest, flags);
+            if (mIcon != null) {
+                mIcon.writeToParcel(dest, flags);
+            }
             dest.writeCharSequence(mLabel);
             dest.writeString8(mLocale.toString());
             dest.writeString8(mPackageName);
@@ -5519,5 +5967,4 @@ public class PackageInstaller {
             return mUserActionIntent;
         }
     }
-
 }

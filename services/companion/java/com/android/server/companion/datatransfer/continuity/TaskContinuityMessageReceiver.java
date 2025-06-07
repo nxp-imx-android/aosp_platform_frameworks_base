@@ -16,7 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity;
 
-import static android.companion.CompanionDeviceManager.MESSAGE_TASK_CONTINUITY;
+import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.content.Context;
 import android.companion.CompanionDeviceManager;
@@ -65,7 +65,7 @@ class TaskContinuityMessageReceiver {
         mOnTaskContinuityMessageReceivedListener = onTaskContinuityMessageReceivedListener;
         mCompanionDeviceManager.addOnMessageReceivedListener(
             mContext.getMainExecutor(),
-            MESSAGE_TASK_CONTINUITY,
+            MESSAGE_ONEWAY_TASK_CONTINUITY,
             mOnMessageReceivedListener
         );
 
@@ -85,7 +85,7 @@ class TaskContinuityMessageReceiver {
         mOnTaskContinuityMessageReceivedListener = null;
 
         mCompanionDeviceManager.removeOnMessageReceivedListener(
-            MESSAGE_TASK_CONTINUITY,
+            MESSAGE_ONEWAY_TASK_CONTINUITY,
             mOnMessageReceivedListener);
 
         mIsListening = false;

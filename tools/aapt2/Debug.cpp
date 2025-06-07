@@ -339,6 +339,14 @@ void Debug::PrintTable(const ResourceTable& table, const DebugPrintTableOptions&
             printer->Print("(");
             printer->Print(value->config.to_string());
             printer->Print(") ");
+            if (value->value->GetFlag()) {
+              printer->Print("(featureFlag=");
+              if (value->value->GetFlag()->negated) {
+                printer->Print("!");
+              }
+              printer->Print(value->value->GetFlag()->name);
+              printer->Print(") ");
+            }
             value->value->Accept(&headline_printer);
             if (options.show_sources && !value->value->GetSource().path.empty()) {
               printer->Print(" src=");
@@ -354,6 +362,12 @@ void Debug::PrintTable(const ResourceTable& table, const DebugPrintTableOptions&
             for (const auto& value : entry.flag_disabled_values) {
               printer->Print("(");
               printer->Print(value->config.to_string());
+              printer->Print(") ");
+              printer->Print("(featureFlag=");
+              if (value->value->GetFlag()->negated) {
+                printer->Print("!");
+              }
+              printer->Print(value->value->GetFlag()->name);
               printer->Print(") ");
               value->value->Accept(&headline_printer);
               if (options.show_sources && !value->value->GetSource().path.empty()) {

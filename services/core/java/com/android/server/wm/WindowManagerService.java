@@ -153,6 +153,7 @@ import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListe
 import static com.android.systemui.shared.Flags.enableLppAssistInvocationEffect;
 import static com.android.window.flags.Flags.enableDeviceStateAutoRotateSettingRefactor;
 import static com.android.window.flags.Flags.multiCrop;
+import static com.android.window.flags.Flags.screenBrightnessDimOnEmulator;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
@@ -2403,21 +2404,21 @@ public class WindowManagerService extends IWindowManager.Stub
     /**
      * Returns whether this window can proceed with drawing or needs to retry later.
      */
-    public boolean cancelDraw(Session session, IWindow client) {
+    public boolean cancelDraw(Session session, IWindow client, int seqId) {
         synchronized (mGlobalLock) {
             final WindowState win = windowForClientLocked(session, client, false);
             if (win == null) {
                 return false;
             }
 
-            return win.cancelAndRedraw();
+            return win.cancelAndRedraw(seqId);
         }
     }
 
     /** Relayouts window. */
     public int relayoutWindow(Session session, IWindow client, LayoutParams attrs,
             int requestedWidth, int requestedHeight, int viewVisibility, int flags, int seq,
-            int lastSyncSeqId, WindowRelayoutResult outRelayoutResult,
+            int syncSeqId, WindowRelayoutResult outRelayoutResult,
             SurfaceControl outSurfaceControl) {
         final ClientWindowFrames outFrames;
         final MergedConfiguration outMergedConfiguration;
@@ -2454,7 +2455,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 return 0;
             }
 
-            if (win.cancelAndRedraw() && win.mPrepareSyncSeqId <= lastSyncSeqId) {
+            if (win.cancelAndRedraw(syncSeqId) && win.mPrepareSyncSeqId <= syncSeqId) {
                 // The client has reported the sync draw, but we haven't finished it yet.
                 // Don't let the client perform a non-sync draw at this time.
                 result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
@@ -2817,7 +2818,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             if (outRelayoutResult != null) {
                 if (win.syncNextBuffer() && viewVisibility == View.VISIBLE
-                        && win.mSyncSeqId > lastSyncSeqId && !displayContent.mWaitingForConfig) {
+                        && win.mSyncSeqId > syncSeqId && !displayContent.mWaitingForConfig) {
                     outRelayoutResult.syncSeqId = win.shouldSyncWithBuffers()
                             ? win.mSyncSeqId
                             : -1;
@@ -3916,6 +3917,10 @@ public class WindowManagerService extends IWindowManager.Stub
                     }
                 }
             }
+
+            // This call is crucial on user switch to ensure the Magnify IME state
+            // is correctly re-evaluated and applied for the new user.
+            mSettingsObserver.updateMagnifyIme();
             mAtmService.mChainTracker.end();
         }
     }
@@ -4248,24 +4253,47 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    public void showEmulatorDisplayOverlayIfNeeded() {
-        if (mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_windowEnableCircularEmulatorDisplayOverlay)
-                && SystemProperties.getBoolean(PROPERTY_EMULATOR_CIRCULAR, false)
-                && Build.IS_EMULATOR) {
+    @VisibleForTesting
+    void showEmulatorDisplayOverlayIfNeeded() {
+        if (shouldShowEmulatorDisplayOverlay()) {
             mH.sendMessage(mH.obtainMessage(H.SHOW_EMULATOR_DISPLAY_OVERLAY));
         }
     }
 
-    public void showEmulatorDisplayOverlay() {
+    private boolean shouldShowEmulatorDisplayOverlay() {
+        return enableCircularEmulatorDisplayOverlay()
+                || enableScreenBrightnessEmulatorDisplayOverlay();
+    }
+
+    @VisibleForTesting
+    boolean enableCircularEmulatorDisplayOverlay() {
+        return Build.IS_EMULATOR
+                && mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_windowEnableCircularEmulatorDisplayOverlay)
+                && SystemProperties.getBoolean(PROPERTY_EMULATOR_CIRCULAR, false);
+    }
+
+    @VisibleForTesting
+    boolean enableScreenBrightnessEmulatorDisplayOverlay() {
+        return screenBrightnessDimOnEmulator() && Build.IS_EMULATOR
+                && mContext.getResources().getBoolean(
+                R.bool.config_windowEnableScreenBrightnessEmulatorDisplayOverlay);
+    }
+
+    @VisibleForTesting
+    void showEmulatorDisplayOverlay() {
         synchronized (mGlobalLock) {
 
             if (SHOW_LIGHT_TRANSACTIONS) Slog.i(TAG_WM, ">>> showEmulatorDisplayOverlay");
             if (mEmulatorDisplayOverlay == null) {
                 mEmulatorDisplayOverlay = new EmulatorDisplayOverlay(mContext,
+                        this,
                         getDefaultDisplayContentLocked(),
                         mPolicy.getWindowLayerFromTypeLw(WindowManager.LayoutParams.TYPE_POINTER)
-                                * TYPE_LAYER_MULTIPLIER + 10, mTransaction);
+                                * TYPE_LAYER_MULTIPLIER + 10,
+                        mTransaction,
+                        enableCircularEmulatorDisplayOverlay(),
+                        enableScreenBrightnessEmulatorDisplayOverlay());
             }
             mEmulatorDisplayOverlay.setVisibility(true, mTransaction);
             mTransaction.apply();
@@ -7052,21 +7080,6 @@ public class WindowManagerService extends IWindowManager.Stub
         mRoot.dumpTopFocusedDisplayId(pw);
         mRoot.forAllDisplays(dc -> {
             final int displayId = dc.getDisplayId();
-            final WindowState imeLayeringTarget = dc.getImeLayeringTarget();
-            final InputTarget imeInputTarget = dc.getImeInputTarget();
-            final InsetsControlTarget imeControlTarget = dc.getImeControlTarget();
-            if (imeLayeringTarget != null) {
-                pw.print("  imeLayeringTarget in display# "); pw.print(displayId);
-                pw.print(' '); pw.println(imeLayeringTarget);
-            }
-            if (imeInputTarget != null) {
-                pw.print("  imeInputTarget in display# "); pw.print(displayId);
-                pw.print(' '); pw.println(imeInputTarget);
-            }
-            if (imeControlTarget != null) {
-                pw.print("  imeControlTarget in display# "); pw.print(displayId);
-                pw.print(' '); pw.println(imeControlTarget);
-            }
             pw.print("  Minimum task size of display#"); pw.print(displayId);
             pw.print(' '); pw.println(dc.mMinSizeOfResizeableTaskDp);
         });
@@ -8598,43 +8611,37 @@ public class WindowManagerService extends IWindowManager.Stub
             }
         }
 
+        @NonNull
         @Override
-        public ImeTargetInfo onToggleImeRequested(boolean show, IBinder focusedToken,
-                IBinder requestToken, int displayId) {
+        public ImeTargetInfo onToggleImeRequested(boolean show, @NonNull IBinder focusedToken,
+                @NonNull IBinder requestToken, int displayId) {
             final String focusedWindowName;
             final String requestWindowName;
-            final String imeControlTargetName;
             final String imeLayeringTargetName;
+            final String imeInputTargetName;
+            final String imeControlTargetName;
             final String imeSurfaceParentName;
             synchronized (mGlobalLock) {
-                final WindowState focusedWin = mWindowMap.get(focusedToken);
-                focusedWindowName = focusedWin != null ? focusedWin.getName() : "null";
-                final WindowState requestWin = mWindowMap.get(requestToken);
-                requestWindowName = requestWin != null ? requestWin.getName() : "null";
+                focusedWindowName = String.valueOf(mWindowMap.get(focusedToken));
+                requestWindowName = String.valueOf(mWindowMap.get(requestToken));
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc != null) {
-                    final InsetsControlTarget controlTarget = dc.getImeControlTarget();
-                    if (controlTarget != null) {
-                        final WindowState w = InsetsControlTarget.asWindowOrNull(controlTarget);
-                        imeControlTargetName = w != null ? w.getName() : controlTarget.toString();
-                    } else {
-                        imeControlTargetName = "null";
-                    }
-                    final WindowState layeringTarget = dc.getImeLayeringTarget();
-                    imeLayeringTargetName = layeringTarget != null ? layeringTarget.getName()
-                            : "null";
-                    final SurfaceControl imeParent = dc.mInputMethodSurfaceParent;
-                    imeSurfaceParentName = imeParent != null ? imeParent.toString() : "null";
+                    imeLayeringTargetName = String.valueOf(dc.getImeLayeringTarget());
+                    imeInputTargetName =  String.valueOf(dc.getImeInputTarget());
+                    imeControlTargetName = String.valueOf(dc.getImeControlTarget());
+                    imeSurfaceParentName = String.valueOf(dc.mInputMethodSurfaceParent);
                     if (show) {
                         dc.onShowImeRequested();
                     }
                 } else {
-                    imeControlTargetName = imeLayeringTargetName = imeSurfaceParentName =
-                            "no-display";
+                    imeLayeringTargetName = "no-display";
+                    imeInputTargetName = "no-display";
+                    imeControlTargetName = "no-display";
+                    imeSurfaceParentName = "no-display";
                 }
             }
-            return new ImeTargetInfo(focusedWindowName, requestWindowName, imeControlTargetName,
-                    imeLayeringTargetName, imeSurfaceParentName);
+            return new ImeTargetInfo(focusedWindowName, requestWindowName, imeLayeringTargetName,
+                    imeInputTargetName, imeControlTargetName, imeSurfaceParentName);
         }
 
         @Override

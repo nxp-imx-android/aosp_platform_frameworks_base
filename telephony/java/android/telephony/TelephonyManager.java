@@ -4428,29 +4428,47 @@ public class TelephonyManager {
     }
 
     /**
-     * Gets information about currently inserted UICCs and eUICCs.
+     * Gets information about currently inserted UICCs (Universal Integrated Circuit Cards)
+     * and eUICCs (embedded UICCs).
      * <p>
-     * Requires that the calling app has carrier privileges (see {@link #hasCarrierPrivileges}).
+     * The details returned for each {@link android.telephony.UiccCardInfo UiccCardInfo} object
+     * depend on the permissions held by the calling application.
+     * The specific fields populated within each {@code UiccCardInfo} are determined as follows:
+     * <ul>
+     * <li>With {@link android.Manifest.permission#READ_BASIC_PHONE_STATE READ_BASIC_PHONE_STATE}:
+     * The {@code UiccCardInfo} will include whether the card is an eUICC
+     * ({@link android.telephony.UiccCardInfo#isEuicc()}) and its
+     * {@link android.telephony.UiccCardInfo#getPhysicalSlotIndex() physical slot index}.</li>
+     * <li>With carrier privileges on any active subscription (see
+     * {@link TelephonyManager#hasCarrierPrivileges()}):
+     * The {@code UiccCardInfo} will include the card ID
+     * ({@link android.telephony.UiccCardInfo#getCardId()}), whether it's an
+     * eUICC ({@link android.telephony.UiccCardInfo#isEuicc()}), and its
+     * {@link android.telephony.UiccCardInfo#getPhysicalSlotIndex() physical slot index}.</li>
+     * <li>With carrier privileges on the specific UICC or eUICC card:
+     * Sensitive identifiers like the EID ({@link android.telephony.UiccCardInfo#getEid()}) and
+     * ICCID ({@link android.telephony.UiccCardInfo#getIccId()}) for that particular card
+     * can be accessed.</li>
+     * </ul>
+     * If an application lacks the necessary permissions for certain details of a card (e.g.,the EID
+     * due to missing specific carrier privileges for that card), those fields will not be populated
+     * in the {@code UiccCardInfo} object for that card.
      * <p>
-     * If the caller has carrier priviliges on any active subscription, then they have permission to
-     * get simple information like the card ID ({@link UiccCardInfo#getCardId()}), whether the card
-     * is an eUICC ({@link UiccCardInfo#isEuicc()}), and the physical slot index where the card is
-     * inserted ({@link UiccCardInfo#getPhysicalSlotIndex()}.
-     * <p>
-     * To get private information such as the EID ({@link UiccCardInfo#getEid()}) or ICCID
-     * ({@link UiccCardInfo#getIccId()}), the caller must have carrier priviliges on that specific
-     * UICC or eUICC card.
-     * <p>
-     * See {@link UiccCardInfo} for more details on the kind of information available.
+     * See {@link android.telephony.UiccCardInfo} for a comprehensive description of all possible
+     * card attributes and their individual data protection considerations.
      *
-     * @return a list of UiccCardInfo objects, representing information on the currently inserted
-     * UICCs and eUICCs. Each UiccCardInfo in the list will have private information filtered out if
-     * the caller does not have adequate permissions for that card.
+     * @return A list of {@code UiccCardInfo} objects, representing the currently inserted
+     * UICCs and eUICCs. Each object contains information filtered according to the
+     * caller's permissions for that specific card. Returns an empty list if no
+     * cards are present or accessible.
      *
-     * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
+     * @throws UnsupportedOperationException If the device does not declare the
+     * {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION} feature.
      */
-    @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+    @FlaggedApi(Flags.FLAG_MACRO_BASED_OPPORTUNISTIC_NETWORKS)
+    @RequiresPermission(anyOf = {android.Manifest.permission.READ_BASIC_PHONE_STATE,
+            android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
+            "carrier privileges"})
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     @NonNull
     public List<UiccCardInfo> getUiccCardsInfo() {
@@ -16074,6 +16092,7 @@ public class TelephonyManager {
      * Indicates whether or not there is a modem stack enabled for the given SIM slot.
      *
      * <p>Requires Permission:
+     * {@link android.Manifest.permission#READ_BASIC_PHONE_STATE READ_BASIC_PHONE_STATE},
      * {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE},
      * READ_PRIVILEGED_PHONE_STATE or that the calling app has carrier privileges (see
      * {@link #hasCarrierPrivileges()}).
@@ -16083,8 +16102,10 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY}.
      */
+    @FlaggedApi(Flags.FLAG_MACRO_BASED_OPPORTUNISTIC_NETWORKS)
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
     @RequiresPermission(anyOf = {android.Manifest.permission.READ_PHONE_STATE,
+            android.Manifest.permission.READ_BASIC_PHONE_STATE,
             android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE})
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
     public boolean isModemEnabledForSlot(int slotIndex) {
@@ -16199,7 +16220,8 @@ public class TelephonyManager {
      * Returns if the usage of multiple SIM cards at the same time to register on the network
      * (e.g. Dual Standby or Dual Active) is supported by the device and by the carrier.
      *
-     * <p>Requires Permission: {@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE}
+     * <p>Requires Permission:{@link android.Manifest.permission#READ_PHONE_STATE READ_PHONE_STATE},
+     * {@link android.Manifest.permission#READ_BASIC_PHONE_STATE READ_BASIC_PHONE_STATE}
      * or that the calling app has carrier privileges (see {@link #hasCarrierPrivileges}).
      *
      * @return {@link #MULTISIM_ALLOWED} if the device supports multiple SIMs.
@@ -16210,14 +16232,13 @@ public class TelephonyManager {
      * @throws UnsupportedOperationException If the device does not have
      *          {@link PackageManager#FEATURE_TELEPHONY_SUBSCRIPTION}.
      */
+    @FlaggedApi(Flags.FLAG_MACRO_BASED_OPPORTUNISTIC_NETWORKS)
     @SuppressAutoDoc // Blocked by b/72967236 - no support for carrier privileges
-    @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
+    @RequiresPermission(anyOf = {android.Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_BASIC_PHONE_STATE})
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)
     @IsMultiSimSupportedResult
     public int isMultiSimSupported() {
-        if (getSupportedModemCount() < 2) {
-            return TelephonyManager.MULTISIM_NOT_SUPPORTED_BY_HARDWARE;
-        }
         try {
             ITelephony service = getITelephony();
             if (service != null) {

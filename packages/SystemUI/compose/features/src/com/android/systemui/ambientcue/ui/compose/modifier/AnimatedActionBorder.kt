@@ -20,7 +20,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -35,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import com.android.systemui.ambientcue.ui.utils.AiColorUtils.boostChroma
@@ -58,7 +56,7 @@ fun Modifier.animatedActionBorder(
     val strokeAnimStartColor =
         Color(boostChroma(MaterialTheme.colorScheme.tertiaryContainer.toArgb()))
     val strokeAnimMiddleColor =
-        Color(boostChroma(dynamicDarkColorScheme(LocalContext.current).primary.toArgb()))
+        Color(boostChroma(MaterialTheme.colorScheme.primaryFixedDim.toArgb()))
     val strokeAnimEndColor = Color(boostChroma(MaterialTheme.colorScheme.primary.toArgb()))
 
     // Trigger animations when the composable enters the composition
@@ -67,10 +65,11 @@ fun Modifier.animatedActionBorder(
             launch {
                 rotationAngle.snapTo(Constants.INITIAL_ROTATION_DEGREES)
                 rotationAngle.animateTo(
-                    targetValue = Constants.INITIAL_ROTATION_DEGREES + 360f,
+                    targetValue = Constants.INITIAL_ROTATION_DEGREES + 180f,
                     animationSpec =
                         tween(
                             durationMillis = Constants.ROTATION_DURATION_MILLIS,
+                            delayMillis = Constants.FADE_DURATION_MILLIS,
                             easing = LinearEasing,
                         ),
                 )
@@ -137,11 +136,11 @@ fun Modifier.animatedActionBorder(
 }
 
 private object Constants {
-    const val INITIAL_ROTATION_DEGREES: Float = 20f // Start rotation at 20 degrees
-    const val GRADIENT_START_FRACTION = 0.2f
-    const val GRADIENT_MIDDLE_FRACTION = 0.5f
-    const val GRADIENT_END_FRACTION = 0.8f
+    const val INITIAL_ROTATION_DEGREES: Float = 45f
+    const val GRADIENT_START_FRACTION = 0.1f
+    const val GRADIENT_MIDDLE_FRACTION = 0.4f
+    const val GRADIENT_END_FRACTION = 0.6f
     const val ROTATION_DURATION_MILLIS: Int = 1500
     const val FADE_DURATION_MILLIS: Int = 500
-    const val FADE_DELAY_MILLIS: Int = 1000
+    const val FADE_DELAY_MILLIS: Int = 1500
 }

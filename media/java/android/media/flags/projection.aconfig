@@ -64,3 +64,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "media_projection"
+    name: "start_uid_check"
+    description: "Improves permission model when starting MediaProjection session"
+    bug: "419269649"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

@@ -20,6 +20,7 @@ import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_M
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.util.DisplayMetrics;
@@ -75,9 +76,14 @@ public class AutoclickScrollPointIndicator extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // Draw a solid circle with materialColorPrimary.
+        // Draw a circle at (mX, mY) with default black fill and white border.
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setColor(getContext().getColor(R.color.materialColorPrimary));
+        mPaint.setColor(Color.BLACK);
+        canvas.drawCircle(mX, mY, mPointSizePx, mPaint);
+
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(1f);
+        mPaint.setColor(Color.WHITE);
         canvas.drawCircle(mX, mY, mPointSizePx, mPaint);
     }
 

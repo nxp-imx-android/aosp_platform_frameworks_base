@@ -44,6 +44,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
+import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
@@ -98,6 +99,7 @@ public class SplitTestUtils {
                 LaunchAdjacentController launchAdjacentController,
                 Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
                 Optional<DesktopTasksController> desktopTasksController,
+                Optional<DesktopUserRepositories> desktopUserRepositories,
                 RootTaskDisplayAreaOrganizer rootTDAOrganizer,
                 RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
                 IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
@@ -105,7 +107,8 @@ public class SplitTestUtils {
                     sideStage, displayController, imeController, insetsController, splitLayout,
                     transitions, transactionPool, mainExecutor, mainHandler, recentTasks,
                     launchAdjacentController, windowDecorViewModel, splitState,
-                    desktopTasksController, rootTDAOrganizer, rootDisplayAreaOrganizer,
+                    desktopTasksController, desktopUserRepositories, rootTDAOrganizer,
+                    rootDisplayAreaOrganizer,
                     desktopState, activityTaskManager, msdlPlayer);
 
             // Prepare root task for testing.

@@ -53,16 +53,6 @@ flag {
 
 flag {
      namespace: "backstage_power"
-     name: "enable_fgs_timeout_crash_behavior"
-     description: "Enable the new behavior where the app is crashed once an FGS times out."
-     bug: "339526947"
-     metadata {
-         purpose: PURPOSE_BUGFIX
-     }
-}
-
-flag {
-     namespace: "backstage_power"
      name: "skip_bg_mem_trim_on_fg_app"
      description: "Skip background memory trim event on foreground processes."
      is_fixed_read_only: true

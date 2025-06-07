@@ -73,7 +73,7 @@ class InputController {
         synchronized (mLock) {
             final Iterator<Map.Entry<IBinder, IVirtualInputDevice>> iterator =
                     mInputDevices.entrySet().iterator();
-            if (iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 final Map.Entry<IBinder, IVirtualInputDevice> entry = iterator.next();
                 final IBinder token = entry.getKey();
                 iterator.remove();
@@ -86,7 +86,7 @@ class InputController {
         IVirtualInputDevice device = mInputManagerInternal.createVirtualDpad(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_dpad_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -95,7 +95,7 @@ class InputController {
         IVirtualInputDevice device = mInputManagerInternal.createVirtualKeyboard(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_keyboard_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -103,7 +103,7 @@ class InputController {
         IVirtualInputDevice device = mInputManagerInternal.createVirtualMouse(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_mouse_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -112,7 +112,7 @@ class InputController {
         IVirtualInputDevice device = mInputManagerInternal.createVirtualTouchscreen(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_touchscreen_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -123,7 +123,7 @@ class InputController {
         Counter.logIncrementWithUid(
                 "virtual_devices.value_virtual_navigationtouchpad_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -131,7 +131,7 @@ class InputController {
         IVirtualInputDevice device = mInputManagerInternal.createVirtualStylus(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_stylus_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -141,7 +141,7 @@ class InputController {
                 mInputManagerInternal.createVirtualRotaryEncoder(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_rotary_created_count",
                 mAttributionSource.getUid());
-        mInputDevices.put(token, device);
+        addDevice(token, device);
         return device;
     }
 
@@ -171,7 +171,7 @@ class InputController {
     }
 
     @VisibleForTesting
-    void addDeviceForTesting(IBinder token, IVirtualInputDevice device) {
+    void addDevice(IBinder token, IVirtualInputDevice device) {
         synchronized (mLock) {
             mInputDevices.put(token, device);
         }

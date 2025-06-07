@@ -412,8 +412,36 @@ class DragZoneFactoryTest {
         }
     }
 
+    @Test
+    fun dragZonesForLauncherIcon_bubbleBarHasNoBubblesDoNotShowDropTarget() {
+        dragZoneFactory =
+            DragZoneFactory(
+                context,
+                tabletPortrait,
+                splitScreenModeChecker,
+                desktopWindowModeChecker,
+                bubbleBarPropertiesProvider,
+            )
+        val dragZones =
+            dragZoneFactory.createSortedDragZones(
+                DraggedObject.LauncherIcon(showDropTarget = false, bubbleBarHasBubbles = false) { }
+            )
+        val expectedZones: List<DragZoneVerifier> =
+            listOf(verifyInstance<DragZone.Bubble.Left>(), verifyInstance<DragZone.Bubble.Right>())
+        assertThat(dragZones).hasSize(expectedZones.size)
+        dragZones.zip(expectedZones).forEach { (zone, instanceVerifier) ->
+            instanceVerifier(zone)
+            zone.verifyDropZone(isPresent = false)
+            zone.verifySecondaryDropZone(isPresent = true)
+        }
+    }
+
     private inline fun <reified T> verifyInstance(): DragZoneVerifier = { dragZone ->
         assertThat(dragZone).isInstanceOf(T::class.java)
+    }
+
+    private fun DragZone.verifyDropZone(isPresent: Boolean) {
+        assertThat(dropTarget != null == isPresent).isTrue()
     }
 
     private fun DragZone.verifySecondaryDropZone(isPresent: Boolean) {

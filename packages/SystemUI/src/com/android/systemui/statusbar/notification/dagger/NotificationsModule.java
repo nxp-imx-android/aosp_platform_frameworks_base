@@ -36,6 +36,7 @@ import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.statusbar.NotificationListener;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationLaunchAnimatorControllerProvider;
+import com.android.systemui.statusbar.notification.NotificationOnboardingAffordanceManagerModule;
 import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
@@ -114,18 +115,21 @@ import javax.inject.Provider;
 /**
  * Dagger Module for classes found within the com.android.systemui.statusbar.notification package.
  */
-@Module(includes = {
-        KeyguardNotificationVisibilityProviderModule.class,
-        NotificationDataLayerModule.class,
-        NotificationDomainLayerModule.class,
-        NotifPipelineChoreographerModule.class,
-        NotificationSectionHeadersModule.class,
-        ActivatableNotificationViewModelModule.class,
-        NotificationMemoryModule.class,
-        NotificationStatsLoggerModule.class,
-        NotificationsLogModule.class,
-        NotificationRebindingTrackerModule.class,
-})
+@Module(
+        includes = {
+                ActivatableNotificationViewModelModule.class,
+                KeyguardNotificationVisibilityProviderModule.class,
+                NotifPipelineChoreographerModule.class,
+                NotificationDataLayerModule.class,
+                NotificationDomainLayerModule.class,
+                NotificationMemoryModule.class,
+                NotificationOnboardingAffordanceManagerModule.class,
+                NotificationRebindingTrackerModule.class,
+                NotificationSectionHeadersModule.class,
+                NotificationStatsLoggerModule.class,
+                NotificationsLogModule.class,
+        }
+)
 public interface NotificationsModule {
     @Binds
     StackScrollAlgorithm.SectionProvider bindSectionProvider(NotificationSectionsManager impl);

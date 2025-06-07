@@ -25,7 +25,11 @@ import static com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_CLEAR_ALL;
 import static com.android.systemui.Flags.magneticNotificationSwipes;
 import static com.android.systemui.Flags.physicalNotificationMovement;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_NEWS;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_PROMO;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_RECS;
 import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SILENT;
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_SOCIAL;
 import static com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_SWIPE;
 import static com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent.SCROLL_DOWN;
 import static com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent.SCROLL_UP;
@@ -138,7 +142,6 @@ import com.android.systemui.util.Assert;
 import com.android.systemui.util.ColorUtilKt;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.ListenerSet;
-import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
 
 import com.google.errorprone.annotations.CompileTimeConstant;
 
@@ -661,9 +664,6 @@ public class NotificationStackScrollLayout
             return NotificationStackScrollLayout.this;
         }
     };
-
-    @Nullable
-    private WallpaperInteractor mWallpaperInteractor;
 
     public NotificationStackScrollLayout(Context context, AttributeSet attrs) {
         super(context, attrs, 0, 0);
@@ -1412,17 +1412,20 @@ public class NotificationStackScrollLayout
             return;
         }
         createSortedNotificationLists(mTmpSortedChildren, mTmpNonOverlapChildren);
+        // Now lets update the overlaps for the views, ensuring that we set the values for every
+        // view, otherwise they might get stuck.
         mTmpNonOverlapChildren.forEach((child) -> {
             child.setBottomOverlap(0);
             child.setTopOverlap(0);
         });
 
-        // Now lets update the overlaps for the views, ensuring that we set the values for every
-        // view, otherwise they might get stuck
-        float minimumClipPosition = 0;
+        // The NSSL can actually  be inset and notifications even rendering above it. Let's make
+        // sure that we don't clip them at 0 but use some large negative number (not min
+        // because overflow)
+        float minimumClipPosition = Integer.MIN_VALUE >> 1;
         ExpandableView lastTransientView = null;
-        float transientClippingPosition = 0;
-        float lastGroupEnd = 0;
+        float transientClippingPosition = minimumClipPosition;
+        float lastGroupEnd = minimumClipPosition;
         for (int i = 0; i < mTmpSortedChildren.size(); i++) {
             ExpandableView expandableView = mTmpSortedChildren.get(i);
             float currentTop = getRelativePosition(expandableView);
@@ -3086,7 +3089,9 @@ public class NotificationStackScrollLayout
         if (!mChildTransferInProgress) {
             if (NotificationMinimalism.isEnabled()
                     && mAmbientState.isOnKeyguard()
-                    && this.mOnKeyguardTopLevelNotificationRemovedRunnable != null) {
+                    && this.mOnKeyguardTopLevelNotificationRemovedRunnable != null
+                    && expandableView instanceof ExpandableNotificationRow
+            ) {
                 mOnKeyguardTopLevelNotificationRemovedRunnable.run();
             }
             onViewRemovedInternal(expandableView, this);
@@ -5507,6 +5512,7 @@ public class NotificationStackScrollLayout
                     childRow.setOnKeyguard(isOnLockscreen);
                 }
             }
+            mShelf.setOnKeyguard(isOnLockscreen);
         }
     }
 
@@ -5597,6 +5603,9 @@ public class NotificationStackScrollLayout
     public void setStatusBarState(int statusBarState) {
         mStatusBarState = statusBarState;
         mAmbientState.setStatusBarState(statusBarState);
+        if (!SceneContainerFlag.isEnabled()) {
+            mShelf.setOnKeyguard(statusBarState == StatusBarState.KEYGUARD);
+        }
         updateSpeedBumpIndex();
         updateDismissBehavior();
     }
@@ -6031,10 +6040,6 @@ public class NotificationStackScrollLayout
             NotificationStackScrollLayoutController notificationStackScrollLayoutController) {
         mController = notificationStackScrollLayoutController;
         mController.getNotificationRoundnessManager().setAnimatedChildren(mChildrenToAddAnimated);
-    }
-
-    public void setWallpaperInteractor(WallpaperInteractor wallpaperInteractor) {
-        mWallpaperInteractor = wallpaperInteractor;
     }
 
     void addSwipedOutView(View v) {
@@ -6649,7 +6654,15 @@ public class NotificationStackScrollLayout
             case ROWS_HIGH_PRIORITY:
                 return bucket < BUCKET_SILENT;
             case ROWS_GENTLE:
-                return bucket == BUCKET_SILENT;
+                if (NotificationBundleUi.isEnabled()) {
+                    return bucket == BUCKET_SILENT
+                            || bucket == BUCKET_PROMO
+                            || bucket == BUCKET_RECS
+                            || bucket == BUCKET_SOCIAL
+                            || bucket == BUCKET_NEWS;
+                } else {
+                    return bucket == BUCKET_SILENT;
+                }
             default:
                 throw new IllegalArgumentException("Unknown selection: " + selection);
         }

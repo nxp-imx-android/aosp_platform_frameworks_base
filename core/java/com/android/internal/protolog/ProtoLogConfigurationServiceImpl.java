@@ -199,9 +199,9 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
                 mConfigFileCounts.put(viewerConfigFile,
                         mConfigFileCounts.getOrDefault(viewerConfigFile, 0) + 1);
             }
-        }
 
-        registerGroups(client, args.groups, args.groupsDefaultLogcatStatus);
+            registerGroupsLocked(client, args.groups, args.groupsDefaultLogcatStatus);
+        }
 
         clientBinder.linkToDeath(this, /* flags= */ 0);
     }
@@ -209,7 +209,9 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
     @Override
     public void registerGroups(@NonNull IProtoLogClient client, @NonNull RegisterGroupsArgs args)
             throws RemoteException {
-        registerGroups(client, args.groups, args.groupsDefaultLogcatStatus);
+        synchronized (mConfigLock) {
+            registerGroupsLocked(client, args.groups, args.groupsDefaultLogcatStatus);
+        }
     }
 
     /**
@@ -327,7 +329,8 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
         unregisterClient(IProtoLogClient.Stub.asInterface(clientBinder));
     }
 
-    private void registerGroups(@NonNull IProtoLogClient client, @NonNull String[] groups,
+    @GuardedBy("mConfigLock")
+    private void registerGroupsLocked(@NonNull IProtoLogClient client, @NonNull String[] groups,
             @NonNull boolean[] logcatStatuses) throws RemoteException {
         if (groups.length != logcatStatuses.length) {
             throw new RuntimeException(
@@ -336,26 +339,25 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
                         + " and logcatStatuses has length " + logcatStatuses.length);
         }
 
-        synchronized (mConfigLock) {
-            final var clientRecord = mClientRecords.get(client.asBinder());
-            if (clientRecord == null) {
-                throw new RuntimeException("Client " + client + " is not registered");
-            }
+        final var clientRecord = mClientRecords.get(client.asBinder());
+        if (clientRecord == null) {
+            Log.wtf(LOG_TAG, "Trying to add groups to unregistered client: " + client);
+            return;
+        }
 
-            for (int i = 0; i < groups.length; i++) {
-                String group = groups[i];
-                boolean logcatStatus = logcatStatuses[i];
+        for (int i = 0; i < groups.length; i++) {
+            String group = groups[i];
+            boolean logcatStatus = logcatStatuses[i];
 
-                final boolean requestedLogToLogcat;
-                mRegisteredGroups.add(group);
-                clientRecord.groups.add(group);
+            final boolean requestedLogToLogcat;
+            mRegisteredGroups.add(group);
+            clientRecord.groups.add(group);
 
-                mLogGroupToLogcatStatus.putIfAbsent(group, logcatStatus);
-                requestedLogToLogcat = mLogGroupToLogcatStatus.get(group);
+            mLogGroupToLogcatStatus.putIfAbsent(group, logcatStatus);
+            requestedLogToLogcat = mLogGroupToLogcatStatus.get(group);
 
-                if (requestedLogToLogcat != logcatStatus) {
-                    client.toggleLogcat(requestedLogToLogcat, new String[]{group});
-                }
+            if (requestedLogToLogcat != logcatStatus) {
+                client.toggleLogcat(requestedLogToLogcat, new String[]{group});
             }
         }
     }

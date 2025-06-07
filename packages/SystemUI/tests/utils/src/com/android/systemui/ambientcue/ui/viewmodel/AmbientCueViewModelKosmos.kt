@@ -17,10 +17,13 @@
 package com.android.systemui.ambientcue.ui.viewmodel
 
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 
-private val Kosmos.ambientCueViewModel by Fixture { AmbientCueViewModel(ambientCueInteractor) }
+private val Kosmos.ambientCueViewModel by Fixture {
+    AmbientCueViewModel(ambientCueInteractor, dumpManager)
+}
 
 val Kosmos.ambientCueViewModelFactory by Fixture {
     object : AmbientCueViewModel.Factory {

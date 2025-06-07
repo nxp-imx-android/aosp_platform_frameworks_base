@@ -16,6 +16,7 @@
 
 package com.android.server.display;
 
+import static android.hardware.display.DisplayManager.brightnessUnitToString;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.Display.TYPE_OVERLAY;
@@ -130,6 +131,8 @@ class DisplayManagerShellCommand extends ShellCommand {
                 return getModeSupportedHdrTypes();
             case "get-supported-hdr-output-types":
                 return getSupportedHdrOutputTypes();
+            case "get-active-mode":
+                return getActiveMode();
             default:
                 return handleDefaultCommands(cmd);
         }
@@ -146,6 +149,11 @@ class DisplayManagerShellCommand extends ShellCommand {
         pw.println("    Show notification for one of the following types: " + NOTIFICATION_TYPES);
         pw.println("  cancel-notifications");
         pw.println("    Cancel notifications.");
+        pw.println("  get-brightness DISPLAY_ID UNIT(optional)");
+        pw.println("    Gets the current brightness of the specified display. If no unit is "
+                + "specified, the returned value is in the float scale [0, 1]. The unit can be '"
+                + brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE) + "' which "
+                + "will return the value displayed on the brightness slider.");
         pw.println("  set-brightness BRIGHTNESS");
         pw.println("    Sets the current brightness to BRIGHTNESS (a number between 0 and 1).");
         pw.println("  reset-brightness-configuration");
@@ -255,6 +263,9 @@ class DisplayManagerShellCommand extends ShellCommand {
         pw.println("    (e.g., 1=DOLBY_VISION, 2=HDR10, 3=HLG, 4=HDR10_PLUS).");
         pw.println("    An empty array [] may indicate no types are supported OR the feature "
                 + "is disabled.");
+        pw.println("  get-active-mode DISPLAY_ID");
+        pw.println("    Gets the current active display mode (resolution, refresh rate)");
+        pw.println("    for the specified DISPLAY_ID.");
         pw.println();
         Intent.printIntentArgsHelp(pw, "");
     }
@@ -381,6 +392,7 @@ class DisplayManagerShellCommand extends ShellCommand {
         return 0;
     }
 
+    @SuppressLint("AndroidFrameworkRequiresPermission")
     private int getBrightness() {
         String displayIdString = getNextArg();
         if (displayIdString == null) {
@@ -394,12 +406,31 @@ class DisplayManagerShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error: invalid displayId=" + displayIdString + " not int");
             return 1;
         }
+
         final Context context = mService.getContext();
         final DisplayManager dm = context.getSystemService(DisplayManager.class);
-        getOutPrintWriter().println(dm.getBrightness(displayId));
+
+        String brightnessUnitString = getNextArg();
+        float brightness;
+        if (brightnessUnitString == null) {
+            brightness = dm.getBrightness(displayId);
+        } else {
+            int unit;
+            if (brightnessUnitString.equals(
+                    brightnessUnitToString(DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE))) {
+                unit = DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+            } else {
+                getErrPrintWriter().println("Unexpected brightness unit: " + brightnessUnitString);
+                return 1;
+            }
+            brightness = dm.getBrightness(displayId, unit);
+        }
+
+        getOutPrintWriter().println(brightness);
         return 0;
     }
 
+    @SuppressLint("AndroidFrameworkRequiresPermission")
     private int setBrightness() {
         String brightnessText = getNextArg();
         if (brightnessText == null) {
@@ -1040,6 +1071,56 @@ class DisplayManagerShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error retrieving supported HDR output types: "
                     + e.getMessage());
             Slog.e(TAG, "Failed to get supported HDR output types", e);
+            return 1;
+        }
+        return 0;
+    }
+
+    private int getActiveMode() {
+        final Context context = mService.getContext();
+        final DisplayManager dm = context.getSystemService(DisplayManager.class);
+
+        final String displayIdText = getNextArgRequired();
+        if (displayIdText == null) {
+            getErrPrintWriter().println("Error: Missing required argument DISPLAY_ID.");
+            return 1;
+        }
+
+        int displayId;
+        try {
+            displayId = Integer.parseInt(displayIdText);
+        } catch (NumberFormatException e) {
+            getErrPrintWriter().println("Error: Invalid format for DISPLAY_ID: " + displayIdText);
+            return 1;
+        }
+
+        final Display display = dm.getDisplay(displayId);
+
+        if (display == null) {
+            getErrPrintWriter().println("Error: Display with ID " + displayId + " not found.");
+            return 1;
+        }
+
+        try {
+            Display.Mode activeMode = display.getMode();
+
+            if (activeMode == null) {
+                getOutPrintWriter().println("Active mode for display " + displayId
+                        + ": null (or could not be determined)");
+            } else {
+                getOutPrintWriter().println("Active mode for display " + displayId + ":");
+                getOutPrintWriter().printf("  Mode ID: %d, Resolution: %dx%d, "
+                        + "Refresh Rate: %.2f Hz\n",
+                        activeMode.getModeId(),
+                        activeMode.getPhysicalWidth(),
+                        activeMode.getPhysicalHeight(),
+                        activeMode.getRefreshRate());
+            }
+        } catch (Exception e) {
+            getErrPrintWriter().println("Error retrieving active mode for display "
+                    + displayId + ": "
+                    + e.getMessage());
+            Slog.e(TAG, "Failed to get active mode for display " + displayId, e);
             return 1;
         }
         return 0;

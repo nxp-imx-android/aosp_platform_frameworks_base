@@ -29,7 +29,6 @@ java_library {
     ],
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail:__pkg__",
-        "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail/dagger:__pkg__",
         "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail/domain:__pkg__",
     ],
 }
@@ -51,7 +50,6 @@ java_library {
     ],
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail:__pkg__",
-        "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail/dagger:__pkg__",
         "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail/domain:__pkg__",
     ],
 }

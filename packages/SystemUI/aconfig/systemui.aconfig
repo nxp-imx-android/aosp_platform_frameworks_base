@@ -1842,16 +1842,6 @@ flag {
 }
 
 flag {
-   name: "skip_cancelling_huns_for_guts"
-   namespace: "systemui"
-   description: "Do not cancel HUNs when GUTs are exposed"
-   bug: "372227464"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "stuck_hearing_devices_qs_tile_fix"
     namespace: "systemui"
     description: "Prevent the Hearing Device Dialog's exit animation to avoid the appearance of it being stuck during activity launch."
@@ -2041,3 +2031,19 @@ flag {
     }
 }
 
+flag {
+    name: "ongoing_activity_chips_on_dream"
+    namespace: "systemui"
+    description: "Enables ongoing activity chips in dream status bar"
+    bug: "418243972"
+}
+
+flag {
+    name: "instant_hide_shade"
+    namespace: "systemui"
+    description: "Enables the Shade to hide instantaneously at the end of a launch animation, preventing flickers."
+    bug: "419304171"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

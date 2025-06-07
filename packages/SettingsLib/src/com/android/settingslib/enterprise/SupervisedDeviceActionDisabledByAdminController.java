@@ -16,7 +16,8 @@
 
 package com.android.settingslib.enterprise;
 
-
+import android.app.admin.EnforcingAdmin;
+import android.app.supervision.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -49,6 +50,9 @@ final class SupervisedDeviceActionDisabledByAdminController
 
     @Override
     public String getAdminSupportTitle(@Nullable String restriction) {
+        if (Flags.enableSupervisionSettingsScreen()) {
+            return mStringProvider.getDisabledByParentalControlsTitle();
+        }
         return mStringProvider.getDisabledBiometricsParentConsentTitle();
     }
 
@@ -66,14 +70,29 @@ final class SupervisedDeviceActionDisabledByAdminController
                 || TextUtils.isEmpty(enforcedAdmin.component.getPackageName())) {
             return null;
         }
+        return getPositiveButtonListener(context, enforcedAdmin.component.getPackageName());
+    }
 
+    @Nullable
+    @Override
+    public DialogInterface.OnClickListener getPositiveButtonListener(@NonNull Context context,
+            @NonNull EnforcingAdmin enforcingAdmin) {
+        if (TextUtils.isEmpty(enforcingAdmin.getPackageName())) {
+            return null;
+        }
+        return getPositiveButtonListener(context, enforcingAdmin.getPackageName());
+    }
+
+    @Nullable
+    private DialogInterface.OnClickListener getPositiveButtonListener(@NonNull Context context,
+            @NonNull String packageName) {
         final Intent intent = new Intent(Settings.ACTION_MANAGE_SUPERVISOR_RESTRICTED_SETTING)
                 .setData(new Uri.Builder()
                         .scheme("policy")
                         .appendPath("user_restrictions")
                         .appendPath(mRestriction)
                         .build())
-                .setPackage(enforcedAdmin.component.getPackageName());
+                .setPackage(packageName);
         ComponentName resolvedSupervisionActivity =
                 intent.resolveActivity(context.getPackageManager());
         if (resolvedSupervisionActivity == null) {

@@ -57,10 +57,10 @@ class InstallViewModel(application: Application, val repository: InstallReposito
         _currentInstallStage.addSource(
             repository.stagingResult.distinctUntilChanged()
         ) { installStage: InstallStage ->
-            if (installStage.stageCode != InstallStage.STAGE_READY) {
-                _currentInstallStage.value = installStage
-            } else {
-                checkIfAllowedAndInitiateInstall()
+            when (installStage.stageCode) {
+                InstallStage.STAGE_READY -> checkIfAllowedAndInitiateInstall()
+                InstallStage.STAGE_VERIFICATION_CONFIRMATION_REQUIRED -> requestVerification()
+                else -> _currentInstallStage.value = installStage
             }
         }
     }
@@ -82,6 +82,15 @@ class InstallViewModel(application: Application, val repository: InstallReposito
         if (stage != null) {
             _currentInstallStage.value = stage
         }
+    }
+
+    private fun requestVerification() {
+        val stage = repository.requestVerificationConfirmation()
+        _currentInstallStage.value = stage
+    }
+
+    fun setVerificationUserResponse(responseCode: Int) {
+        repository.setUserVerificationResponse(responseCode)
     }
 
     fun forcedSkipSourceCheck() {

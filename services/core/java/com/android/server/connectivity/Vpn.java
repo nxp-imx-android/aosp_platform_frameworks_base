@@ -29,11 +29,11 @@ import static android.net.ipsec.ike.IkeSessionParams.ESP_IP_VERSION_AUTO;
 import static android.net.vcn.util.PersistableBundleUtils.STRING_DESERIALIZER;
 import static android.os.PowerWhitelistManager.REASON_VPN;
 import static android.os.UserHandle.PER_USER_RANGE;
+import static android.net.platform.flags.Flags.collectVpnMetrics;
 import static android.telephony.CarrierConfigManager.KEY_MIN_UDP_PORT_4500_NAT_TIMEOUT_SEC_INT;
 import static android.telephony.CarrierConfigManager.KEY_PREFERRED_IKE_PROTOCOL_INT;
 
 import static com.android.net.module.util.NetworkStackConstants.IPV6_MIN_MTU;
-import static com.android.server.connectivity.Flags.collectVpnMetrics;
 
 import static java.util.Objects.requireNonNull;
 
@@ -2992,6 +2992,9 @@ public class Vpn {
             // The update on VPN and the IPsec tunnel will be done when migration is fully complete
             // in onChildMigrated
             mIkeConnectionInfo = ikeConnectionInfo;
+            if (mVpnConnectivityMetrics != null) {
+                mVpnConnectivityMetrics.setServerIpProtocol(ikeConnectionInfo.getRemoteAddress());
+            }
         }
 
         /**
@@ -3061,6 +3064,9 @@ public class Vpn {
 
                     mConfig.addresses.clear();
                     mConfig.addresses.addAll(internalAddresses);
+                    if (mVpnConnectivityMetrics != null) {
+                        mVpnConnectivityMetrics.setVpnNetworkIpProtocol(mConfig.addresses);
+                    }
 
                     mConfig.routes.clear();
                     mConfig.routes.addAll(newRoutes);

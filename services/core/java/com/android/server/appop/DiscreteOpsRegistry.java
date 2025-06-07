@@ -107,16 +107,6 @@ abstract class DiscreteOpsRegistry {
             OP_MONITOR_LOCATION
     };
 
-    // These are additional ops, which are not backed by runtime permissions, but are recorded.
-    static final int[] ADDITIONAL_DISCRETE_OPS = new int[] {
-            OP_PHONE_CALL_MICROPHONE,
-            OP_RECEIVE_AMBIENT_TRIGGER_AUDIO,
-            OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
-            OP_PHONE_CALL_CAMERA,
-            OP_EMERGENCY_LOCATION,
-            OP_RESERVED_FOR_TESTING
-    };
-
     // Legacy ops captured in discrete database.
     private static final String LEGACY_OPS = OP_FINE_LOCATION + "," + OP_COARSE_LOCATION
             + "," + OP_EMERGENCY_LOCATION + "," + OP_CAMERA + "," + OP_RECORD_AUDIO + ","
@@ -241,29 +231,16 @@ abstract class DiscreteOpsRegistry {
         Arrays.sort(sDiscreteOps);
     }
 
-    // App ops backed by runtime/dangerous permissions.
-    private static IntArray getRuntimePermissionOps() {
-        IntArray runtimeOps = new IntArray();
-        for (int op = 0; op < AppOpsManager._NUM_OP; op++) {
-            if (AppOpsManager.opIsRuntimePermission(op)) {
-                runtimeOps.add(op);
-            }
-        }
-        return runtimeOps;
-    }
-
     /**
      * @return an array of app ops captured into discrete database.
      */
     private static int[] getDefaultOpsList() {
-        if (!(Flags.recordAllRuntimeAppopsSqlite() && Flags.enableSqliteAppopsAccesses())) {
-            return getDefaultLegacyOps();
+        IntArray discreteOpsArray = new IntArray();
+        discreteOpsArray.addAll(getDefaultLegacyOps());
+
+        if (Flags.enableSqliteAppopsAccesses()) {
+            discreteOpsArray.addAll(IMPORTANT_OPS_FOR_SECURITY);
         }
-
-        IntArray discreteOpsArray = getRuntimePermissionOps();
-        discreteOpsArray.addAll(IMPORTANT_OPS_FOR_SECURITY);
-        discreteOpsArray.addAll(ADDITIONAL_DISCRETE_OPS);
-
         return discreteOpsArray.toArray();
     }
 

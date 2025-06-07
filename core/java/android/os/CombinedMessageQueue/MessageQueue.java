@@ -63,6 +63,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @RavenwoodKeepWholeClass
 @RavenwoodRedirectionClass("MessageQueue_ravenwood")
 public final class MessageQueue {
+    private static final String TAG = "MessageQueue";
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
@@ -252,7 +253,7 @@ public final class MessageQueue {
     private void incAndTraceMessageCount(Message msg, long when) {
         mMessageCount.incrementAndGet();
         if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
-            msg.mSendingThreadName = Thread.currentThread().getName();
+            msg.sendingThreadName = Thread.currentThread().getName();
             msg.mEventId.set(PerfettoTrace.getFlowId());
 
             traceMessageCount();
@@ -1271,7 +1272,6 @@ public final class MessageQueue {
         int mBarrierToken;
 
         MatchBarrierToken(int token) {
-            super();
             mBarrierToken = token;
         }
 
@@ -1372,6 +1372,14 @@ public final class MessageQueue {
         return enqueueMessageUnchecked(msg, when);
     }
 
+    @NeverCompile
+    private static void logDeadThread(Message msg) {
+        IllegalStateException e = new IllegalStateException(
+                msg.target + " sending message to a Handler on a dead thread");
+        Log.w(TAG, e.getMessage(), e);
+        msg.recycleUnchecked();
+    }
+
     private boolean enqueueMessageLegacy(Message msg, long when) {
         synchronized (this) {
             if (msg.isInUse()) {
@@ -1379,10 +1387,7 @@ public final class MessageQueue {
             }
 
             if (mQuitting) {
-                IllegalStateException e = new IllegalStateException(
-                        msg.target + " sending message to a Handler on a dead thread");
-                Log.w(TAG_L, e.getMessage(), e);
-                msg.recycle();
+                logDeadThread(msg);
                 return false;
             }
 
@@ -2607,7 +2612,7 @@ public final class MessageQueue {
                 sRemovedFromStack = l.findVarHandle(MessageQueue.MessageNode.class,
                         "mRemovedFromStackValue", boolean.class);
             } catch (Exception e) {
-                Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+                Log.wtf(TAG_C, "VarHandle lookup failed", e);
                 throw new ExceptionInInitializerError(e);
             }
         }
@@ -2686,7 +2691,7 @@ public final class MessageQueue {
             sMptrRefCount = l.findVarHandle(MessageQueue.class, "mMptrRefCountValue",
                     long.class);
         } catch (Exception e) {
-            Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+            Log.wtf(TAG_C, "VarHandle lookup failed", e);
             throw new ExceptionInInitializerError(e);
         }
     }
@@ -2802,7 +2807,7 @@ public final class MessageQueue {
                 sCounts = l.findVarHandle(MessageQueue.MessageCounts.class, "mCountsValue",
                         long.class);
             } catch (Exception e) {
-                Log.wtf(TAG_C, "VarHandle lookup failed with exception: " + e);
+                Log.wtf(TAG_C, "VarHandle lookup failed", e);
                 throw new ExceptionInInitializerError(e);
             }
         }
@@ -2910,11 +2915,7 @@ public final class MessageQueue {
         /* If we are running on the looper thread we can add directly to the priority queue */
         if (myLooper != null && myLooper.getQueue() == this) {
             if (getQuitting()) {
-                IllegalStateException e = new IllegalStateException(
-                        msg.target + " sending message to a Handler on a dead thread");
-                Log.w(TAG_C, e.getMessage(), e);
-                msg.recycleUnchecked();
-                decAndTraceMessageCount();
+                logDeadThread(msg);
                 return false;
             }
 
@@ -2965,10 +2966,7 @@ public final class MessageQueue {
                     break;
 
                 case STACK_NODE_QUITTING:
-                    IllegalStateException e = new IllegalStateException(
-                            msg.target + " sending message to a Handler on a dead thread");
-                    Log.w(TAG_C, e.getMessage(), e);
-                    msg.recycleUnchecked();
+                    logDeadThread(msg);
                     return false;
 
                 default:
@@ -3048,7 +3046,7 @@ public final class MessageQueue {
                 }
                 if (removeMatches) {
                     if (p.removeFromStack()) {
-                        msg.recycleUnchecked();
+                        msg.clear();
                         decAndTraceMessageCount();
                         if (mMessageCounts.incrementCancelled()) {
                             concurrentWake();
@@ -3087,7 +3085,7 @@ public final class MessageQueue {
             if (compare.compareMessage(msg, h, what, object, r, when)) {
                 if (removeMatches) {
                     if (queue.remove(msg)) {
-                        msg.recycleUnchecked();
+                        msg.clear();
                         decAndTraceMessageCount();
                         found = true;
                     }

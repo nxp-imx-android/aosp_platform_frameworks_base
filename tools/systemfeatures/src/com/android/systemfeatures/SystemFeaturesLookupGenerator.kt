@@ -24,12 +24,16 @@ import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
 import java.io.File
 import javax.lang.model.element.Modifier
+import kotlin.system.exitProcess
 
 /*
  * Simple Java code generator that takes as input a list of Metalava API files and generates an
  * accessory class that maps from PackageManager system feature variable values to their
  * declared PackageManager variable names. This is needed for host tooling that cannot depend
  * directly on the base framework lib/srcs.
+ *
+ * The main function expects arguments in the format:
+ * <input_api_files...> <output_java_file>
  *
  * <pre>
  * package com.android.systemfeatures;
@@ -42,10 +46,29 @@ import javax.lang.model.element.Modifier
  */
 object SystemFeaturesLookupGenerator {
 
+    private fun usage() {
+        println("Usage: SystemFeaturesLookupGenerator <input_api_files...> <output_java_file>")
+    }
+
     /** Main entrypoint for system feature constant lookup codegen. */
     @JvmStatic
     fun main(args: Array<String>) {
-        generate(args.asIterable(), System.out)
+        if (args.size < 2) {
+            usage()
+            exitProcess(1)
+        }
+
+        val outputFilePath = args.last()
+        val apiFilePaths = args.dropLast(1)
+
+        runCatching {
+            File(outputFilePath).bufferedWriter().use { writer ->
+                generate(apiFilePaths, writer)
+            }
+        }.onFailure {
+            System.err.println("Error writing to output file '$outputFilePath': ${it.message}")
+            exitProcess(1)
+        }
     }
 
     /**

@@ -345,9 +345,7 @@ final class DeletePackageHelper {
         }
 
         if (res && isInstallerPackage) {
-            final PackageInstallerService packageInstallerService =
-                    mPm.mInjector.getPackageInstallerService();
-            packageInstallerService.onInstallerPackageDeleted(uninstalledPs.getAppId(), removeUser);
+            mPm.onInstallerPackageDeleted(uninstalledPs.getAppId(), removeUser);
         }
 
         return res ? DELETE_SUCCEEDED : PackageManager.DELETE_FAILED_INTERNAL_ERROR;

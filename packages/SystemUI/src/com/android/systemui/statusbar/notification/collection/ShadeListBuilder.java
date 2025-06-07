@@ -1152,9 +1152,9 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
      * Collect the keys of any groups which have already lost a child to stability this run.
      *
      * If stability is being enforced, then {@link #stabilizeGroupingNotifs(List)} might have
-     * detached some children from their groups and left them at the top level because the child was
-     * previously attached at the top level.  Doing so would set the
-     * {@link SuppressedAttachState#getParent() suppressed parent} for the current attach state.
+     * detached some children from their groups and left them with their previous parent. Doing so
+     * would set the {@link SuppressedAttachState#getParent() suppressed parent} for the current
+     * attach state.
      *
      * If we've already removed a child from this group, we don't want to remove any more children
      * from the group (even if that would leave only a single notification in the group) because
@@ -1169,15 +1169,31 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         ArraySet<String> groupsWithChildrenLostToStability = new ArraySet<>();
         for (int i = 0; i < shadeList.size(); i++) {
             final PipelineEntry tle = shadeList.get(i);
-            final PipelineEntry suppressedParent =
-                    tle.getAttachState().getSuppressedChanges().getParent();
-            if (suppressedParent != null) {
-                // This top-level-entry was supposed to be attached to this group,
-                //  so mark the group as having lost a child to stability.
-                groupsWithChildrenLostToStability.add(suppressedParent.getKey());
-            }
+            addGroupsWithChildrenLostToStability(tle, groupsWithChildrenLostToStability);
         }
         return groupsWithChildrenLostToStability;
+    }
+
+    private void addGroupsWithChildrenLostToStability(PipelineEntry entry, Set<String> out) {
+        if (entry instanceof BundleEntry be) {
+            final List<ListEntry> children = be.getChildren();
+            for (int i = 0; i < children.size(); i++) {
+                final ListEntry child = children.get(i);
+                addGroupsWithChildrenLostToStability(child, out);
+            }
+        } else if (entry instanceof ListEntry le) {
+            addGroupsWithChildrenLostToStability(le, out);
+        }
+    }
+
+    private void addGroupsWithChildrenLostToStability(ListEntry entry, Set<String> out) {
+        final PipelineEntry suppressedParent =
+                entry.getAttachState().getSuppressedChanges().getParent();
+        if (suppressedParent != null) {
+            // This ListEntry was supposed to be attached to this group, so mark the group as
+            // having lost a child to stability.
+            out.add(suppressedParent.getKey());
+        }
     }
 
     /**
@@ -1324,6 +1340,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             if (entry instanceof GroupEntry parent) {
                 allSorted &= sortGroupChildren(parent.getRawChildren());
             } else if (entry instanceof BundleEntry bundleEntry) {
+                allSorted &= sortBundleChildren(bundleEntry.getRawChildren());
                 // Sort children of groups within bundles
                 for (ListEntry le : bundleEntry.getChildren()) {
                     if (le instanceof GroupEntry ge) {
@@ -1357,6 +1374,15 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             return true;
         } else {
             return mSemiStableSort.sort(entries, mStableOrder, mGroupChildrenComparator);
+        }
+    }
+
+    private boolean sortBundleChildren(List<ListEntry> entries) {
+        if (getStabilityManager().isEveryChangeAllowed()) {
+            entries.sort(mBundleChildrenComparator);
+            return true;
+        } else {
+            return mSemiStableSort.sort(entries, mStableOrder, mBundleChildrenComparator);
         }
     }
 
@@ -1600,6 +1626,18 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     }
 
     private final Comparator<NotificationEntry> mGroupChildrenComparator = (o1, o2) -> {
+        int cmp = Integer.compare(
+                o1.getRepresentativeEntry().getRanking().getRank(),
+                o2.getRepresentativeEntry().getRanking().getRank());
+        if (cmp != 0) return cmp;
+
+        cmp = -1 * Long.compare(
+                o1.getRepresentativeEntry().getSbn().getNotification().getWhen(),
+                o2.getRepresentativeEntry().getSbn().getNotification().getWhen());
+        return cmp;
+    };
+
+    private final Comparator<ListEntry> mBundleChildrenComparator = (o1, o2) -> {
         int cmp = Integer.compare(
                 o1.getRepresentativeEntry().getRanking().getRank(),
                 o2.getRepresentativeEntry().getRanking().getRank());

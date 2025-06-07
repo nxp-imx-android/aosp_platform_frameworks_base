@@ -19,6 +19,7 @@ package com.android.keyguard;
 import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED;
 
 import static com.android.internal.widget.flags.Flags.hideLastCharWithPhysicalInput;
+import static com.android.systemui.Flags.bouncerLifecycleFix;
 import static com.android.systemui.Flags.pinInputFieldStyledFocusState;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
@@ -262,6 +263,12 @@ public abstract class KeyguardPinBasedInputViewController<T extends KeyguardPinB
     @Override
     public void onResume(int reason) {
         super.onResume(reason);
+
+        if (bouncerLifecycleFix() && !mView.isVisibleToUser()) {
+            // don't request focus if view isn't visible
+            return;
+        }
+
         // It's possible to reach a state here where mPasswordEntry believes it is focused
         // but it is not actually focused. This state will prevent the view from gaining focus,
         // as requestFocus will no-op since the focus flag is already set. By clearing focus first,

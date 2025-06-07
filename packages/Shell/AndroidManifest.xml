@@ -767,6 +767,7 @@
 
     <!-- Permission required for CTS test - Notification test suite -->
     <uses-permission android:name="android.permission.REVOKE_POST_NOTIFICATIONS_WITHOUT_KILL" />
+    <uses-permission android:name="android.permission.HIDE_STATUS_BAR_NOTIFICATION" />
 
     <!-- Permission required for test - CellBroadcastComplianceTest -->
     <uses-permission android:name="com.android.cellbroadcastservice.FULL_ACCESS_CELL_BROADCAST_HISTORY" />
@@ -949,6 +950,7 @@
 
     <!-- Permission required for CTS test - CtsPackageManagerTestCases-->
     <uses-permission android:name="android.permission.DOMAIN_VERIFICATION_AGENT" />
+    <uses-permission android:name="android.permission.DEVELOPER_VERIFICATION_AGENT" />
 
     <!-- Permission required for Cts test - CtsInputTestCases -->
     <uses-permission
@@ -1037,6 +1039,9 @@
 
     <!-- Permissions required for integration test - InputTest -->
     <uses-permission android:name="android.permission.LISTEN_FOR_KEY_ACTIVITY" />
+
+    <!-- Permission required for CTS test - CtsMediaProjectionTestCases -->
+    <uses-permission android:name="android.permission.MANAGE_MEDIA_PROJECTION" />
 
     <application
         android:label="@string/app_label"
