@@ -72,7 +72,6 @@ import java.util.Objects;
  *      if requested after the startup is complete.
  * </p>
  */
-@FlaggedApi(Flags.FLAG_APP_START_INFO)
 public final class ApplicationStartInfo implements Parcelable {
 
     /**
