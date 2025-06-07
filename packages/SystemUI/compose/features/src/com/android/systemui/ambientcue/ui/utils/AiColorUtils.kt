@@ -26,7 +26,7 @@ object AiColorUtils {
         val outColor = FloatArray(3)
         ColorUtils.colorToM3HCT(color, outColor)
         val chroma = outColor[1]
-        if (chroma <= 5) {
+        if (chroma <= 3) {
             return color
         }
         return ColorUtils.M3HCTToColor(outColor[0], 120f, outColor[2])

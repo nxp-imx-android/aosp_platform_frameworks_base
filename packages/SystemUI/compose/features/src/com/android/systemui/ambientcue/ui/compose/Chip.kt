@@ -68,7 +68,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                         if (action.actionType == ActionType.MR) {
                             Modifier
                         } else {
-                            Modifier.border(0.75.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                            Modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                         }
                     )
                     .clip(CircleShape),
