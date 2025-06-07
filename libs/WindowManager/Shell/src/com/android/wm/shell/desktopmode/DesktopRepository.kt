@@ -349,6 +349,9 @@ class DesktopRepository(
     fun setActiveDesk(displayId: Int, deskId: Int) {
         logD("setActiveDesk for displayId=%d and deskId=%d", displayId, deskId)
         val oldActiveDeskId = desktopData.getActiveDesk(displayId)?.deskId ?: INVALID_DESK_ID
+        if (deskId == INVALID_DESK_ID || deskId == oldActiveDeskId) {
+            return
+        }
         desktopData.setActiveDesk(displayId = displayId, deskId = deskId)
         deskChangeListeners.forEach { (listener, executor) ->
             executor.execute {
