@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +56,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(24.dp))
                 .background(backgroundColor)
                 .defaultMinSize(minHeight = 48.dp)
+                .widthIn(max = 288.dp)
                 .combinedClickable(onClick = action.onClick, onLongClick = action.onLongClick)
                 .padding(start = 12.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
     ) {

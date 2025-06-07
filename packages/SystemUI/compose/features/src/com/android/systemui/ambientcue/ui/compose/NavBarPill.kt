@@ -19,6 +19,7 @@ package com.android.systemui.ambientcue.ui.compose
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,10 +52,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -79,9 +85,9 @@ fun NavBarPill(
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
 ) {
-    val configuration = LocalConfiguration.current
-    val maxPillWidth = (configuration.screenWidthDp * 0.65f).dp
+    val maxPillWidth = 248.dp
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
+    val scrimColor = MaterialTheme.colorScheme.primary
 
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
@@ -93,9 +99,32 @@ fun NavBarPill(
     val enterProgress by
         transition.animateFloat(
             transitionSpec = { tween(250, delayMillis = 200) },
-            label = "enter",
+            label = "enterProgress",
         ) {
             if (it) 1f else 0f
+        }
+    val smartScrimAlpha by
+        transition.animateFloat(transitionSpec = { tween(500) }, label = "smartScrimAlpha") {
+            if (it) 0.3f else 0f
+        }
+    val smartScrimAlphaBoost by
+        transition.animateFloat(
+            transitionSpec = {
+                if (visible) {
+                    keyframes {
+                        durationMillis = 2000
+                        0f at 0
+                        0.2f at 500
+                        0.2f at 1500
+                        0f at 2000
+                    }
+                } else {
+                    tween(500)
+                }
+            },
+            label = "smartScrimAlphaBoost",
+        ) {
+            if (it) 0f else 0f
         }
     val expansionAlpha by
         animateFloatAsState(
@@ -106,21 +135,45 @@ fun NavBarPill(
 
     Box(
         modifier =
-            modifier.graphicsLayer {
-                alpha = enterProgress * expansionAlpha
-                scaleY = enterProgress
-                scaleX =
-                    if (expandedSize.width != 0) {
-                        val initialScale = collapsedWidthPx / expandedSize.width
-                        lerp(initialScale, 1f, enterProgress)
-                    } else {
-                        1f
+            modifier.defaultMinSize(minWidth = 412.dp, minHeight = 50.dp).drawBehind {
+                // SmartScrim
+                val radius = size.width / 2f
+                if (!(radius > 0)) return@drawBehind
+                val scrimBrush =
+                    Brush.radialGradient(
+                        colors = listOf(scrimColor, scrimColor.copy(alpha = 0f)),
+                        center = Offset.Zero,
+                        radius = radius,
+                    )
+                translate(radius, size.height) {
+                    scale(scaleX = 1f, scaleY = size.height / size.width * 2, pivot = Offset.Zero) {
+                        drawCircle(
+                            brush = scrimBrush,
+                            alpha = smartScrimAlpha + smartScrimAlphaBoost,
+                            radius = radius,
+                            center = Offset.Zero,
+                        )
                     }
+                }
             }
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
+            modifier =
+                Modifier.graphicsLayer {
+                        alpha = enterProgress * expansionAlpha
+                        scaleY = enterProgress
+                        scaleX =
+                            if (expandedSize.width != 0) {
+                                val initialScale = collapsedWidthPx / expandedSize.width
+                                lerp(initialScale, 1f, enterProgress)
+                            } else {
+                                1f
+                            }
+                    }
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 4.dp),
         ) {
             val closeButtonSize = 28.dp
             Spacer(modifier = Modifier.size(closeButtonSize))
@@ -145,13 +198,15 @@ fun NavBarPill(
                     // Should have at most 1 expanded chip
                     var expandedChip = false
                     actions.fastForEachIndexed { index, action ->
-                        val hasAttribution = action.attribution != null
+                        val isMrAction = action.actionType == ActionType.MR
+
+                        // Pill rounded container
                         Row(
                             horizontalArrangement =
                                 Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
                             verticalAlignment = Alignment.CenterVertically,
                             modifier =
-                                if (hasAttribution) Modifier.weight(1f, false)
+                                if (isMrAction) Modifier.weight(1f, false)
                                 else Modifier.width(IntrinsicSize.Max),
                         ) {
                             val iconBorder =
@@ -164,9 +219,10 @@ fun NavBarPill(
                                         shape = CircleShape,
                                     )
                                 }
-                            if ((actions.size == 1 || hasAttribution) && !expandedChip) {
+                            if ((actions.size == 1 || isMrAction) && !expandedChip) {
                                 expandedChip = true
                                 val hasBackground = actions.size > 1
+                                // Expanded chip for single action or MR
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                                     modifier =
@@ -197,17 +253,16 @@ fun NavBarPill(
                                     )
                                 }
                             } else {
+                                // Smaller app icons
                                 Image(
                                     painter = rememberDrawablePainter(action.icon),
                                     contentDescription = action.label,
                                     modifier =
                                         Modifier.then(
-                                                if (index == 0) {
-                                                    Modifier.padding(start = 5.dp)
-                                                } else if (index == actions.size - 1) {
-                                                    Modifier.padding(end = 5.dp)
-                                                } else {
-                                                    Modifier
+                                                when (index) {
+                                                    0 -> Modifier.padding(start = 5.dp)
+                                                    actions.size - 1 -> Modifier.padding(end = 5.dp)
+                                                    else -> Modifier
                                                 }
                                             )
                                             .padding(3.dp)
@@ -219,6 +274,7 @@ fun NavBarPill(
                         }
                     }
                 }
+                // Inner glow
                 Box(
                     Modifier.matchParentSize()
                         .padding(1.dp)
@@ -231,6 +287,7 @@ fun NavBarPill(
                 )
             }
 
+            // Close button
             PlatformIconButton(
                 modifier =
                     Modifier.size(closeButtonSize)
