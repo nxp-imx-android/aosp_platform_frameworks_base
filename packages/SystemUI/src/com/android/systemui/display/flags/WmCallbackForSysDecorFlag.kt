@@ -34,7 +34,7 @@ object WmCallbackForSysDecorFlag {
      * adb shell setprop persist.wm.debug.desktop_experience_devopts 1
      * ```
      */
-    private const val ENABLED_BY_DESKTOP_EXPERIENCE_DEV_OPTION = false
+    private const val ENABLED_BY_DESKTOP_EXPERIENCE_DEV_OPTION = true
 
     private val FLAG =
         DesktopExperienceFlags.DesktopExperienceFlag(
