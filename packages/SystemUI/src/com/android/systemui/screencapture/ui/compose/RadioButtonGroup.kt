@@ -20,44 +20,71 @@ package com.android.systemui.screencapture.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonColors
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEachIndexed
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 
+private val ICON_SIZE = 20.dp
+
+/**
+ * Data class to represent a single radio button item. The item must have an [icon] or a [label] (or
+ * both).
+ */
+data class RadioButtonGroupItem(val icon: IconModel? = null, val label: String? = null) {
+    init {
+        require(icon != null || label != null) {
+            "A ButtonItem must have at least an icon or a label (or both)."
+        }
+    }
+}
+
 /** A group of N icon buttons where any single icon button is selected at a time. */
 @Composable
-fun RadioIconButtonGroup(
-    icons: List<IconModel>,
+fun RadioButtonGroup(
+    items: List<RadioButtonGroupItem>,
     selectedIndex: Int,
     onSelect: (index: Int) -> Unit,
     modifier: Modifier = Modifier,
     colors: ToggleButtonColors = ToggleButtonDefaults.toggleButtonColors(),
 ) {
+    require(selectedIndex in 0..items.size) { "selectedIndex is out of range of items." }
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
     ) {
-        icons.forEachIndexed { index, item ->
+        items.fastForEachIndexed { index, item ->
             ToggleButton(
                 colors = colors,
                 shapes =
                     when (index) {
                         0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                        icons.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        items.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
                         else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                     },
                 checked = (index == selectedIndex),
                 onCheckedChange = { onSelect(index) },
             ) {
-                Icon(icon = item, modifier = Modifier.size(20.dp))
+                if (item.icon != null && item.label != null) {
+                    Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))
+                    Spacer(Modifier.size(8.dp))
+                    Text(item.label)
+                } else if (item.icon != null) {
+                    Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))
+                } else if (item.label != null) {
+                    Text(item.label)
+                }
             }
         }
     }
