@@ -32,33 +32,25 @@ import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.model.ShadeMode.Dual
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
+import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class ActionCornerInteractor
 @Inject
 constructor(
-    @Main private val mainThreadContext: CoroutineContext,
     private val repository: ActionCornerRepository,
     private val launcherProxyService: LauncherProxyService,
-    private val shadeModeInteractor: ShadeModeInteractor,
-    private val shadeInteractor: ShadeInteractor,
     private val actionCornerSettingRepository: ActionCornerSettingRepository,
     private val userSetupRepository: UserSetupRepository,
+    private val commandQueue: CommandQueue,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
@@ -83,28 +75,8 @@ constructor(
                             ActionCornerConstants.OVERVIEW,
                             it.displayId,
                         )
-                    NOTIFICATIONS -> {
-                        if (isDualShadeEnabled()) {
-                            withContext(mainThreadContext) {
-                                if (shadeInteractor.isShadeAnyExpanded.value) {
-                                    shadeInteractor.collapseNotificationsShade(LOGGING_REASON)
-                                } else {
-                                    shadeInteractor.expandNotificationsShade(LOGGING_REASON)
-                                }
-                            }
-                        }
-                    }
-                    QUICK_SETTINGS -> {
-                        if (isDualShadeEnabled()) {
-                            withContext(mainThreadContext) {
-                                if (shadeInteractor.isQsExpanded.value) {
-                                    shadeInteractor.collapseQuickSettingsShade(LOGGING_REASON)
-                                } else {
-                                    shadeInteractor.expandQuickSettingsShade(LOGGING_REASON)
-                                }
-                            }
-                        }
-                    }
+                    NOTIFICATIONS -> commandQueue.toggleNotificationsPanel()
+                    QUICK_SETTINGS -> commandQueue.toggleQuickSettingsPanel()
                     NONE -> {}
                 }
             }
@@ -118,13 +90,5 @@ constructor(
             BOTTOM_LEFT -> actionCornerSettingRepository.bottomLeftCornerAction.value
             BOTTOM_RIGHT -> actionCornerSettingRepository.bottomRightCornerAction.value
         }
-    }
-
-    private fun isDualShadeEnabled(): Boolean {
-        return SceneContainerFlag.isEnabled && shadeModeInteractor.shadeMode.value == Dual
-    }
-
-    companion object {
-        private const val LOGGING_REASON = "Active action corner"
     }
 }
