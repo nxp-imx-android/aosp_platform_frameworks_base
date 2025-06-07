@@ -283,10 +283,20 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
                     deskId = DESK_ID,
                     displayId = DEFAULT_DISPLAY,
                     willExitDesktop = true,
+                    removingLastTaskId = taskInfo.taskId,
                 )
         } else {
             verify(mockDesktopTasksController, never())
-                .performDesktopExitCleanUp(any(), anyOrNull(), any(), any(), any(), any(), any())
+                .performDesktopExitCleanUp(
+                    wct = any(),
+                    deskId = anyOrNull(),
+                    displayId = any(),
+                    willExitDesktop = any(),
+                    removingLastTaskId = anyOrNull(),
+                    shouldEndUpAtHome = any(),
+                    skipWallpaperAndHomeOrdering = any(),
+                    skipUpdatingExitDesktopListener = any(),
+                )
         }
     }
 
