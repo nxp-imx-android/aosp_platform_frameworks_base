@@ -143,6 +143,7 @@ final class DefaultPermissionGrantPolicy {
         PHONE_PERMISSIONS.add(Manifest.permission.ADD_VOICEMAIL);
         PHONE_PERMISSIONS.add(Manifest.permission.USE_SIP);
         PHONE_PERMISSIONS.add(Manifest.permission.PROCESS_OUTGOING_CALLS);
+        PHONE_PERMISSIONS.add(Manifest.permission.ANSWER_PHONE_CALLS);
     }
 
     private static final Set<String> CONTACTS_PERMISSIONS = new ArraySet<>();
