@@ -925,19 +925,21 @@ public class CallLog {
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/calls";
 
         /**
-         * The type of the call (incoming, outgoing or missed).
+         * The type of the call.
          * <P>Type: INTEGER (int)</P>
          *
          * <p>
          * Allowed values:
          * <ul>
-         * <li>{@link #INCOMING_TYPE}</li>
-         * <li>{@link #OUTGOING_TYPE}</li>
-         * <li>{@link #MISSED_TYPE}</li>
-         * <li>{@link #VOICEMAIL_TYPE}</li>
-         * <li>{@link #REJECTED_TYPE}</li>
-         * <li>{@link #BLOCKED_TYPE}</li>
-         * <li>{@link #ANSWERED_EXTERNALLY_TYPE}</li>
+         * <li>{@link #INCOMING_TYPE} - an incoming call which the user answered.</li>
+         * <li>{@link #OUTGOING_TYPE} - an outgoing call which was placed by the user.</li>
+         * <li>{@link #MISSED_TYPE} - a call that rang without the user answering it.</li>
+         * <li>{@link #VOICEMAIL_TYPE} - a call log entry associated with voicemail.</li>
+         * <li>{@link #REJECTED_TYPE} - an incoming call rejected by the user.</li>
+         * <li>{@link #BLOCKED_TYPE} - the call was blocked by a
+         * {@link android.telecom.CallScreeningService}</li> or the system block list.
+         * <li>{@link #ANSWERED_EXTERNALLY_TYPE} - used for SIM twinning scenarios where a call
+         * may have been answered on another device.</li>
          * </ul>
          * </p>
          */
