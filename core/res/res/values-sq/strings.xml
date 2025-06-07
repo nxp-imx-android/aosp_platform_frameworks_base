@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"qasu tek të dhënat e sensorëve rreth shenjave të tua jetësore"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Njoftimet"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"shfaq njoftimet"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"Të dhënat e gjurmimit për XR"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"të qaset në të dhënat për XR për ty dhe mjedisin rreth teje"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"të dhënat delikate të gjurmimit për XR"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"të qaset në të dhënat delikate të gjurmimit, si p.sh. të vështrimit të syve"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Të nxjerrë përmbajtjen e dritares"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspekton përmbajtjen e dritares me të cilën po ndërvepron."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Të aktivizojë veçorinë \"Eksploro me prekje\""</string>
@@ -2553,28 +2559,17 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Maps"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacionet"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Gjurmët e tua të gishtave nuk mund të njihen më. Konfiguro përsëri \"Shkyçjen me gjurmën e gishtit\"."</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_app_title (285421860627714333) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (5205863500921477220) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (2147694109838597680) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (1979414895616432005) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (5974307859193807824) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (9045166614060168068) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (5538918232374470393) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (4301626745704703517) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_silence_action_text (5495539757631669634) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (7883902869771699533) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (7154391495952217529) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Siguria dhe privatësia"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Mbrojtja e përparuar për USB-në"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Shkyç pajisjen për transferimin e të dhënave"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Mund të të duhet të shkyçësh dhe të rilidhësh pajisjen për transferimin e të dhënave"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Shkyç pajisjen për karikimin e shpejtë dhe transferimin e të dhënave"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Mund të të duhet të shkyçësh dhe të rilidhësh pajisjen për karikimin e shpejtë dhe transferimin e të dhënave"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Shkyç pajisjen për karikimin e shpejtë"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Mund të të duhet të shkyçësh dhe të rilidhësh pajisjen për karikimin e shpejtë"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Vendos në heshtje"</string>
+    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Njoftimi u vendos në heshtje"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Vendosur në heshtje derisa të rinisësh pajisjen"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktivitet i dyshimtë i USB-së"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sinjali i të dhënave të USB-së është çaktivizuar."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Ke probleme me \"Shkyçjen me gjurmën e gishtit\"?"</string>

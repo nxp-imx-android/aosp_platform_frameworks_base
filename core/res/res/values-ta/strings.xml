@@ -354,10 +354,16 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"உங்கள் உடல் இயக்கம் பற்றி உணர்விகள் கூறும் தகவலைப் பார்க்கலாம்"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"அறிவிப்புகள்"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"அறிவிப்புகளைக் காட்டும்"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
+    <skip />
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR கண்காணிப்புத் தரவு"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"உங்களையும் உங்கள் சுற்றுச்சூழலையும் பற்றிய XR தரவை அணுகும்"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="1194833982988144536">"பாதுகாக்க வேண்டிய XR கண்காணிப்புத் தரவு"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="9178027369004805829">"கண் பார்வை போன்ற பாதுகாக்க வேண்டிய கண்காணிப்புத் தரவை அணுகும்"</string>
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"சாளர உள்ளடக்கத்தைப் பெறும்"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"நீங்கள் பணியாற்றிக் கொண்டிருக்கும் சாளரத்தின் உள்ளடக்கத்தைப் பார்க்கலாம்."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"தொடுவதன் மூலம் அறிவதை இயக்கும்"</string>
@@ -678,7 +684,7 @@
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"தொடர, உங்கள் பயோமெட்ரிக்கையோ திரைப் பூட்டையோ பயன்படுத்துங்கள்"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"பயோமெட்ரிக் வன்பொருள் இல்லை"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"அங்கீகரிப்பு ரத்தானது"</string>
-    <string name="biometric_not_recognized" msgid="5106687642694635888">"அடையாளங்காணபடவில்லை"</string>
+    <string name="biometric_not_recognized" msgid="5106687642694635888">"பொருந்தவில்லை"</string>
     <string name="biometric_face_not_recognized" msgid="5535599455744525200">"முகத்தைக் கண்டறிய முடியவில்லை"</string>
     <string name="biometric_error_canceled" msgid="8266582404844179778">"அங்கீகரிப்பு ரத்தானது"</string>
     <string name="biometric_error_device_not_secured" msgid="3129845065043995924">"பின்னோ, பேட்டர்னோ, கடவுச்சொல்லோ அமைக்கப்படவில்லை"</string>
@@ -1798,7 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"ஒற்றைக் கைப் பயன்முறை"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"மிகக் குறைவான வெளிச்சம்"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"செவித்துணைக் கருவிகள்"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"ஆட்டோ கிளிக் (காத்திருப்பு நேரம்)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"ஆட்டோ கிளிக் (இருப்பு நேரம்)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"மவுஸ் பட்டன்கள்"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"இணைப்புநீக்கப்பட்டது"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"இணைக்கப்பட்டுள்ளது"</string>
