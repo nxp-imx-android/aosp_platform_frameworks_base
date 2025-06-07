@@ -41,7 +41,9 @@ import com.android.systemui.util.ViewController;
 import com.android.systemui.util.settings.SecureSettings;
 
 import kotlinx.coroutines.CoroutineDispatcher;
+import kotlinx.coroutines.DisposableHandle;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +68,12 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
     private final LifecycleOwner mLifecycleOwner;
     private final ComplicationCollectionViewModel mComplicationCollectionViewModel;
     private final HashMap<ComplicationId, Complication.ViewHolder> mComplications = new HashMap<>();
+
+    private final ConfigurationInteractor mConfigurationInteractor;
+
+    private final CoroutineDispatcher mMainDispatcher;
+
+    private final ArrayList<DisposableHandle> mFlows = new ArrayList<>();
 
     private final Observer<Collection<ComplicationViewModel>> mComplicationViewModelObserver =
             new Observer<>() {
@@ -96,15 +104,9 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
         // Whether animations are enabled.
         mIsAnimationEnabled = secureSettings.getFloatForUser(
                 Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f, UserHandle.USER_CURRENT) != 0.0f;
-        if (Flags.dreamsV2()) {
-            // Update layout on configuration change like rotation, fold etc.
-            collectFlow(
-                    view,
-                    configurationInteractor.getMaxBounds(),
-                    this::updateLayoutEngine,
-                    mainDispatcher
-            );
-        }
+
+        mConfigurationInteractor = configurationInteractor;
+        mMainDispatcher = mainDispatcher;
     }
 
     /**
@@ -198,12 +200,30 @@ public class ComplicationHostViewController extends ViewController<ConstraintLay
     protected void onViewAttached() {
         mComplicationCollectionViewModel.getComplications().observe(mLifecycleOwner,
                 mComplicationViewModelObserver);
+
+        if (Flags.dreamsV2()) {
+            // Update layout on configuration change like rotation, fold etc.
+            mFlows.add(collectFlow(
+                    mView,
+                    mConfigurationInteractor.getMaxBounds(),
+                    this::updateLayoutEngine,
+                    mMainDispatcher
+            ));
+        }
     }
 
     @Override
     protected void onViewDetached() {
         mComplicationCollectionViewModel.getComplications().removeObserver(
                 mComplicationViewModelObserver);
+
+        if (Flags.dreamsV2()) {
+            for (DisposableHandle flow : mFlows) {
+                flow.dispose();
+            }
+
+            mFlows.clear();
+        }
     }
 
     @Override

@@ -60,6 +60,8 @@ import com.android.systemui.statusbar.window.StatusBarWindowStateListener;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.time.DateFormatUtil;
 
+import kotlinx.coroutines.DisposableHandle;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -145,6 +147,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
     private final PrivacyItemController.Callback mPrivacyItemControllerCallback =
             this::onPrivacyItemsChanged;
 
+    private final ArrayList<DisposableHandle> mFlows = new ArrayList<>();
+
     @Inject
     public AmbientStatusBarViewController(
             AmbientStatusBarView view,
@@ -219,17 +223,17 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
                     mIconViewStoreFactory);
         }
 
-        collectFlow(
+        mFlows.add(collectFlow(
                 mView,
                 mWifiInteractor.getWifiNetwork(),
                 network -> updateWifiUnavailableStatusIcon(
-                        network instanceof WifiNetworkModel.Active));
+                        network instanceof WifiNetworkModel.Active)));
 
-        collectFlow(
+        mFlows.add(collectFlow(
                 mView,
                 mCommunalSceneInteractor.isCommunalVisible(),
                 this::onCommunalVisibleChanged
-        );
+        ));
 
         mNextAlarmController.addCallback(mNextAlarmCallback);
         updateAlarmStatusIcon();
@@ -260,6 +264,10 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
         mDreamOverlayStateController.setDreamOverlayStatusBarVisible(false);
         mDreamOverlayStateController.removeCallback(mDreamOverlayStateCallback);
 
+        for (DisposableHandle flow : mFlows) {
+            flow.dispose();
+        }
+        mFlows.clear();
         mIsAttached = false;
     }
 
