@@ -118,11 +118,8 @@ interface PreferenceScreenMetadata : PreferenceGroup {
 /** Generator of [PreferenceHierarchy] based on given type. */
 interface PreferenceHierarchyGenerator<T> {
 
-    /** Default type to generate [PreferenceHierarchy]. */
-    val defaultType: T
-
     /** Generates [PreferenceHierarchy] with given type. */
-    suspend fun generatePreferenceHierarchy(
+    fun generatePreferenceHierarchy(
         context: Context,
         coroutineScope: CoroutineScope,
         type: T,
