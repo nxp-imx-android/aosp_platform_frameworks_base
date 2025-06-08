@@ -1517,11 +1517,11 @@ final class ActivityManagerShellCommand extends ShellCommand {
         HashMap<Long, Integer> duplicatedBitmaps;
 
         private static final String bitmapInfoHeader =
-          "   Bitmap ID  | Width | Height |   Size   |   Config  | M |   Type   |  Source";
+          "   Bitmap ID  | Width | Height |   Size     |   Config  | M |   Type   |  Source";
         private static final String bitmapInfoSep =
-          "--------------|-------|--------|----------|-----------|---|----------|--------";
+          "--------------|-------|--------|------------|-----------|---|----------|--------";
         private static final String bitmapInfoRowFormat =
-          " %12d | %5d |  %5d | %8d | %9.9s | %s | %8.8s | %12d";
+          " %12d | %5d |  %5d | %,10d | %9.9s | %s | %8.8s | %12d";
 
         private static final String bitmapInfoHeaderCSV =
           "PID, Process Name, Bitmap ID, Width, Height, Size, Config, Mutable, AllocType, Source";
