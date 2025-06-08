@@ -85,7 +85,6 @@ class SystemRestrictedRepositoryTest {
                 .first()
 
         assertThat(restrictedMode).isInstanceOf(SystemBlockedByAdmin::class.java)
-        assertThat((restrictedMode as SystemBlockedByAdmin).canOverrideSwitchChecked).isTrue()
     }
 
     private companion object {

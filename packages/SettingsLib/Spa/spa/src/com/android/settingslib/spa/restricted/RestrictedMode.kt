@@ -16,20 +16,39 @@
 
 package com.android.settingslib.spa.restricted
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+
 sealed interface RestrictedMode
 
 data object NoRestricted : RestrictedMode
 
 sealed interface Blocked : RestrictedMode {
     /**
-     * Determines if the [RestrictedSwitchPreference]'s checked state will be forced to its param
-     * value of `ifBlockedOverrideCheckedTo` when the preference is blocked.
+     * Represents the configuration for overriding a [RestrictedSwitchPreference] or
+     * [RestrictedMainSwitchPreference] when it's in a blocked state.
      *
-     * Requires [RestrictedSwitchPreference]'s param `ifBlockedOverrideCheckedTo` to be set to a
-     * specific state (true or false).
+     * This class allows specifying whether the checked state of the preference should be overridden
+     * and provides custom summaries for the 'on' and 'off' states when blocked.
      */
-    val canOverrideSwitchChecked: Boolean
-        get() = false
+    data class SwitchPreferenceOverrides(
+        /**
+         * The summary to show when the preference is blocked and checked value is on.
+         *
+         * Note: Requires switch preference's param `ifBlockedOverrideCheckedTo` to be set to true.
+         */
+        val summaryOn: String? = null,
+
+        /**
+         * The summary to show when the preference is blocked and checked value is off.
+         *
+         * Note: Requires switch preference's param `ifBlockedOverrideCheckedTo` to be set to false.
+         */
+        val summaryOff: String? = null,
+    )
+
+    val switchPreferenceOverridesFlow: Flow<SwitchPreferenceOverrides>
+        get() = flowOf(SwitchPreferenceOverrides())
 }
 
 interface BlockedWithDetails : Blocked {
