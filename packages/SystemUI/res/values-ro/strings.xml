@@ -1069,7 +1069,7 @@
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Cardul a fost eliminat"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Editorul pentru setări rapide."</string>
     <string name="accessibility_desc_notification_icon" msgid="7331265967584178674">"Notificare <xliff:g id="ID_1">%1$s</xliff:g>: <xliff:g id="ID_2">%2$s</xliff:g>"</string>
-    <string name="accessibility_quick_settings_settings" msgid="7098489591715844713">"Deschide setările."</string>
+    <string name="accessibility_quick_settings_settings" msgid="7098489591715844713">"Deschide setările"</string>
     <string name="accessibility_quick_settings_expand" msgid="2609275052412521467">"Deschide setările rapide."</string>
     <string name="accessibility_quick_settings_collapse" msgid="4674876336725041982">"Închide setările rapide."</string>
     <string name="accessibility_quick_settings_user" msgid="505821942882668619">"Conectat(ă) ca <xliff:g id="ID_1">%s</xliff:g>"</string>
@@ -1437,7 +1437,6 @@
     <string name="dream_overlay_status_bar_alarm_set" msgid="566707328356590886">"Alarmă setată"</string>
     <string name="dream_overlay_status_bar_camera_off" msgid="5273073778969890823">"Camera foto este dezactivată"</string>
     <string name="dream_overlay_status_bar_mic_off" msgid="8366534415013819396">"Microfonul este dezactivat"</string>
-    <string name="dream_overlay_status_bar_camera_mic_off" msgid="3199425257833773569">"Camera și microfonul sunt dezactivate"</string>
     <string name="dream_overlay_status_bar_notification_indicator" msgid="8091389255691081711">"{count,plural, =1{# notificare}few{# notificări}other{# de notificări}}"</string>
     <string name="dream_overlay_weather_complication_desc" msgid="824503662089783824">"<xliff:g id="WEATHER_CONDITION">%1$s</xliff:g>, <xliff:g id="TEMPERATURE">%2$s</xliff:g>"</string>
     <string name="note_task_button_label" msgid="230135078402003532">"Luare de notițe"</string>

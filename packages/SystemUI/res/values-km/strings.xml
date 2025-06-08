@@ -1437,7 +1437,6 @@
     <string name="dream_overlay_status_bar_alarm_set" msgid="566707328356590886">"រូបកំណត់​ម៉ោងរោទ៍"</string>
     <string name="dream_overlay_status_bar_camera_off" msgid="5273073778969890823">"កាមេរ៉ា​ត្រូវបានបិទ"</string>
     <string name="dream_overlay_status_bar_mic_off" msgid="8366534415013819396">"មីក្រូហ្វូន​ត្រូវ​បាន​បិទ"</string>
-    <string name="dream_overlay_status_bar_camera_mic_off" msgid="3199425257833773569">"កាមេរ៉ា និង​មីក្រូហ្វូន​ត្រូវបានបិទ"</string>
     <string name="dream_overlay_status_bar_notification_indicator" msgid="8091389255691081711">"{count,plural, =1{ការ​ជូន​ដំណឹង #}other{ការ​ជូនដំណឹង #}}"</string>
     <string name="dream_overlay_weather_complication_desc" msgid="824503662089783824">"<xliff:g id="WEATHER_CONDITION">%1$s</xliff:g>, <xliff:g id="TEMPERATURE">%2$s</xliff:g>"</string>
     <string name="note_task_button_label" msgid="230135078402003532">"ការកត់ត្រា"</string>

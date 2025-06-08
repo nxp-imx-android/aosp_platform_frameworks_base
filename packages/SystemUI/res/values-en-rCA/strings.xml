@@ -652,8 +652,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Turn off"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Unlock to see older notifications"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"This device is managed by your parent"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Some device settings are PIN protected."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Your organization owns this device and may monitor network traffic"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> owns this device and may monitor network traffic"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"This device is provided by <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -694,8 +693,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Open VPN settings"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"This device is managed by your parent. Your parent can see and manage information such as the apps you use, your location, and your screen time."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Some controls on your device, like daily limits &amp; downtime, can only be changed with a PIN."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Kept unlocked by TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Device was locked, too many authentication attempts"</string>
@@ -799,8 +797,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"Work profile"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Airplane mode"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Parental controls"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"PIN protection for some device controls"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"You won\'t hear your next alarm <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template" msgid="2234991538018805736">"at <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"on <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -811,8 +808,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satellite, connection available"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satellite SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Emergency calls or SOS only"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"Satellite network"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"no signal"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"one bar"</string>
@@ -1434,7 +1430,6 @@
     <string name="dream_overlay_status_bar_alarm_set" msgid="566707328356590886">"Alarm set"</string>
     <string name="dream_overlay_status_bar_camera_off" msgid="5273073778969890823">"Camera is off"</string>
     <string name="dream_overlay_status_bar_mic_off" msgid="8366534415013819396">"Mic is off"</string>
-    <string name="dream_overlay_status_bar_camera_mic_off" msgid="3199425257833773569">"Camera and mic are off"</string>
     <string name="dream_overlay_status_bar_notification_indicator" msgid="8091389255691081711">"{count,plural, =1{# notification}other{# notifications}}"</string>
     <string name="dream_overlay_weather_complication_desc" msgid="824503662089783824">"<xliff:g id="WEATHER_CONDITION">%1$s</xliff:g>, <xliff:g id="TEMPERATURE">%2$s</xliff:g>"</string>
     <string name="note_task_button_label" msgid="230135078402003532">"Note-taking"</string>
