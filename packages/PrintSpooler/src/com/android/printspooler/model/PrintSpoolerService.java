@@ -69,6 +69,7 @@ import com.android.internal.util.dump.DualDumpOutputStream;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.printspooler.R;
 import com.android.printspooler.flags.Flags;
+import com.android.printspooler.stats.StatsAsyncLogger;
 import com.android.printspooler.util.ApprovedPrintServices;
 
 import libcore.io.IoUtils;
@@ -155,10 +156,17 @@ public final class PrintSpoolerService extends Service {
         synchronized (sLock) {
             sInstance = this;
         }
+
+        if (Flags.printingTelemetry()) {
+            StatsAsyncLogger.INSTANCE.startLogging();
+        }
     }
 
     @Override
     public void onDestroy() {
+        if (Flags.printingTelemetry()) {
+            StatsAsyncLogger.INSTANCE.stopLogging();
+        }
         super.onDestroy();
     }
 

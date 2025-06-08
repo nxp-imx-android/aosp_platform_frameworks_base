@@ -89,6 +89,7 @@ import android.window.OnBackInvokedDispatcher;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.printspooler.R;
+import com.android.printspooler.flags.Flags;
 import com.android.printspooler.model.MutexFileProvider;
 import com.android.printspooler.model.PrintSpoolerProvider;
 import com.android.printspooler.model.PrintSpoolerService;
@@ -96,6 +97,7 @@ import com.android.printspooler.model.RemotePrintDocument;
 import com.android.printspooler.model.RemotePrintDocument.RemotePrintDocumentInfo;
 import com.android.printspooler.renderer.IPdfEditor;
 import com.android.printspooler.renderer.PdfManipulationService;
+import com.android.printspooler.stats.StatsAsyncLogger;
 import com.android.printspooler.util.ApprovedPrintServices;
 import com.android.printspooler.util.MediaSizeUtils;
 import com.android.printspooler.util.MediaSizeUtils.MediaSizeComparator;
@@ -843,6 +845,16 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
             Log.w(LOG_TAG, "Advanced options activity " + mAdvancedPrintOptionsActivity + " could "
                     + "not be found");
             return;
+        }
+
+        if (Flags.printingTelemetry()) {
+            final String serviceName = printer.getId().getServiceName().getPackageName();
+            try {
+                final int serviceUId = getPackageManager().getApplicationInfo(serviceName, 0).uid;
+                StatsAsyncLogger.INSTANCE.AdvancedOptionsUiLaunched(serviceUId);
+            } catch (NameNotFoundException e) {
+                Log.e(LOG_TAG, "Failed to get uid for service");
+            }
         }
 
         // The activity is a component name, therefore it is one or none.
