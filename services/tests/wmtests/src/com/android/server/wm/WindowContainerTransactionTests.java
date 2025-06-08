@@ -464,7 +464,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
     public void testSetDisablePip() {
         final Task task = createTask(mDisplayContent);
         assertFalse(task.isDisablePip());
@@ -484,7 +483,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
     public void testSetDisableLaunchAdjacent() {
         final Task task = createTask(mDisplayContent);
         assertFalse(task.isLaunchAdjacentDisabled());

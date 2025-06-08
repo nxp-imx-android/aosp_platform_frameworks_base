@@ -26,7 +26,6 @@ import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER
@@ -109,7 +108,6 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
     @EnableFlags(
         FLAG_ENABLE_BUBBLE_ANYTHING,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
-        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )
     fun onTaskCreated_appliesWctToEnterBubble() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)

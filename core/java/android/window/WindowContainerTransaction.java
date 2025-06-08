@@ -996,10 +996,6 @@ public final class WindowContainerTransaction implements Parcelable {
     @NonNull
     public WindowContainerTransaction setDisablePip(
             @NonNull WindowContainerToken container, boolean disablePip) {
-        if (!Flags.disallowBubbleToEnterPip()) {
-            throw new IllegalStateException(
-                    "Flag " + Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP + " is not enabled");
-        }
         final Change chg = getOrCreateChange(container.asBinder());
         chg.mChangeMask |= Change.CHANGE_DISABLE_PIP;
         chg.mDisablePip = disablePip;
