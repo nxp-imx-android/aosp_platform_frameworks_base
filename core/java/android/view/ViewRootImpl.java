@@ -133,7 +133,6 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
-import static com.android.window.flags.Flags.fixViewRootCallTrace;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
@@ -1561,9 +1560,6 @@ public final class ViewRootImpl implements ViewParent,
                     mAttachInfo.mPanelParentWindowToken
                             = panelParentView.getApplicationWindowToken();
                 }
-                if (!fixViewRootCallTrace()) {
-                    mAdded = true;
-                }
                 int res; /* = WindowManagerImpl.ADD_OKAY; */
 
                 // Schedule the first layout -before- adding to the window
@@ -1620,9 +1616,6 @@ public final class ViewRootImpl implements ViewParent,
                     mTmpFrames.compatScale = addResult.frames.compatScale;
                     mInvCompatScale = 1f / addResult.frames.compatScale;
                 } catch (RemoteException | RuntimeException e) {
-                    if (!fixViewRootCallTrace()) {
-                        mAdded = false;
-                    }
                     mView = null;
                     mAttachInfo.mRootView = null;
                     mFallbackEventHandler.setView(null);
@@ -1650,9 +1643,6 @@ public final class ViewRootImpl implements ViewParent,
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
                 if (res < WindowManagerGlobal.ADD_OKAY) {
                     mAttachInfo.mRootView = null;
-                    if (!fixViewRootCallTrace()) {
-                        mAdded = false;
-                    }
                     mFallbackEventHandler.setView(null);
                     unscheduleTraversals();
                     setAccessibilityFocus(null, null);
@@ -1761,9 +1751,7 @@ public final class ViewRootImpl implements ViewParent,
                 mFirstInputStage = nativePreImeStage;
                 mFirstPostImeInputStage = earlyPostImeStage;
                 mPendingInputEventQueueLengthCounterName = "aq:pending:" + counterSuffix;
-                if (fixViewRootCallTrace()) {
-                    mAdded = true;
-                }
+                mAdded = true;
 
                 if (!mRemoved || !mAppVisible) {
                     AnimationHandler.requestAnimatorsEnabled(mAppVisible, this);
