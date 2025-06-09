@@ -9459,6 +9459,7 @@ package android.app.job {
   public class JobInfo implements android.os.Parcelable {
     method public int describeContents();
     method public int getBackoffPolicy();
+    method @FlaggedApi("android.app.job.job_category_apis") public int getCategory();
     method @Nullable public android.content.ClipData getClipData();
     method public int getClipGrantFlags();
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public java.util.Set<java.lang.String> getDebugTags();
@@ -9520,7 +9521,6 @@ package android.app.job {
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder addDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder addTriggerContentUri(@NonNull android.app.job.JobInfo.TriggerContentUri);
     method public android.app.job.JobInfo build();
-    method @FlaggedApi("android.app.job.job_category_apis") public int getCategory();
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder removeDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder setBackoffCriteria(long, int);
     method @FlaggedApi("android.app.job.job_category_apis") @NonNull public android.app.job.JobInfo.Builder setCategory(int);
