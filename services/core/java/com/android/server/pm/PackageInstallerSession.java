@@ -21,7 +21,6 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.PACKAGE_INSTA
 import static android.app.admin.DevicePolicyResources.Strings.Core.PACKAGE_UPDATED_BY_DO;
 import static android.content.pm.DataLoaderType.INCREMENTAL;
 import static android.content.pm.DataLoaderType.STREAMING;
-import static android.content.pm.Flags.cloudCompilationVerification;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN;
@@ -80,7 +79,6 @@ import static com.android.server.pm.PackageManagerShellCommandDataLoader.Metadat
 
 import android.Manifest;
 import android.annotation.AnyThread;
-import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -133,7 +131,6 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
-import android.content.pm.dex.DexMetadataHelper;
 import android.content.pm.parsing.ApkLite;
 import android.content.pm.parsing.ApkLiteParseUtils;
 import android.content.pm.parsing.PackageLite;
@@ -934,11 +931,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             if (file.getName().endsWith(REMOVE_MARKER_EXTENSION)) return false;
             if (file.getName().endsWith(V4Signature.EXT)) return false;
             if (isAppMetadata(file)) return false;
-            if (com.android.art.flags.Flags.artServiceV3()) {
-                if (ArtManagedInstallFileHelper.isArtManaged(file.getPath())) return false;
-            } else {
-                if (DexMetadataHelper.isDexMetadataFile(file)) return false;
-            }
+            if (ArtManagedInstallFileHelper.isArtManaged(file.getPath())) return false;
             if (ApkChecksums.isDigestOrDigestSignatureFile(file)) return false;
             return true;
         }
@@ -964,8 +957,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private static final FileFilter sArtManagedFilter = new FileFilter() {
         @Override
         public boolean accept(File file) {
-            return !file.isDirectory() && com.android.art.flags.Flags.artServiceV3()
-                    && ArtManagedInstallFileHelper.isArtManaged(file.getPath());
+            return !file.isDirectory() && ArtManagedInstallFileHelper.isArtManaged(file.getPath());
         }
     };
 
@@ -4133,9 +4125,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             CollectionUtils.addAll(stagedSplitTypes, apk.getSplitTypes());
         }
 
-        if (cloudCompilationVerification()) {
-            verifySdmSignatures(artManagedFilePaths, mSigningDetails);
-        }
+        verifySdmSignatures(artManagedFilePaths, mSigningDetails);
 
         if (removeSplitList.size() > 0) {
             if (pkgInfo == null) {
@@ -4447,25 +4437,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     }
 
     @GuardedBy("mLock")
-    private void maybeStageDexMetadataLocked(File origFile, File targetFile)
-            throws PackageManagerException {
-        final File dexMetadataFile = DexMetadataHelper.findDexMetadataForFile(origFile);
-        if (dexMetadataFile == null) {
-            return;
-        }
-
-        if (!FileUtils.isValidExtFilename(dexMetadataFile.getName())) {
-            throw new PackageManagerException(INSTALL_FAILED_INVALID_APK,
-                    "Invalid filename: " + dexMetadataFile);
-        }
-        final File targetDexMetadataFile = new File(stageDir,
-                DexMetadataHelper.buildDexMetadataPathForApk(targetFile.getName()));
-
-        stageFileLocked(dexMetadataFile, targetDexMetadataFile);
-    }
-
-    @FlaggedApi(com.android.art.flags.Flags.FLAG_ART_SERVICE_V3)
-    @GuardedBy("mLock")
     private void maybeStageArtManagedInstallFilesLocked(File origFile, File targetFile,
             List<String> artManagedFilePaths) throws PackageManagerException {
         for (String path : ArtManagedInstallFileHelper.filterPathsForApk(
@@ -4565,11 +4536,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         }
         // Stage ART managed install files (e.g., dex metadata (.dm)) and corresponding fs-verity
         // signature if present.
-        if (com.android.art.flags.Flags.artServiceV3()) {
-            maybeStageArtManagedInstallFilesLocked(origFile, targetFile, artManagedFilePaths);
-        } else {
-            maybeStageDexMetadataLocked(origFile, targetFile);
-        }
+        maybeStageArtManagedInstallFilesLocked(origFile, targetFile, artManagedFilePaths);
         // Stage checksums (.digests) if present.
         maybeStageDigestsLocked(origFile, targetFile, splitName);
     }
@@ -4590,17 +4557,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         maybeInheritV4SignatureLocked(origFile);
 
         // Inherit ART managed install files (e.g., dex metadata (.dm)) if present.
-        if (com.android.art.flags.Flags.artServiceV3()) {
-            for (String path : ArtManagedInstallFileHelper.filterPathsForApk(
+        for (String path : ArtManagedInstallFileHelper.filterPathsForApk(
                          artManagedFilePaths, origFile.getPath())) {
-                File artManagedFile = new File(path);
-                mResolvedInheritedFiles.add(artManagedFile);
-            }
-        } else {
-            final File dexMetadataFile = DexMetadataHelper.findDexMetadataForFile(origFile);
-            if (dexMetadataFile != null) {
-                mResolvedInheritedFiles.add(dexMetadataFile);
-            }
+            File artManagedFile = new File(path);
+            mResolvedInheritedFiles.add(artManagedFile);
         }
         // Inherit the digests if present.
         final File digestsFile = ApkChecksums.findDigestsForFile(origFile);

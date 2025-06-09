@@ -13627,7 +13627,7 @@ package android.content.pm {
     method @NonNull public abstract android.graphics.drawable.Drawable getUserBadgedDrawableForDensity(@NonNull android.graphics.drawable.Drawable, @NonNull android.os.UserHandle, @Nullable android.graphics.Rect, int);
     method @NonNull public abstract android.graphics.drawable.Drawable getUserBadgedIcon(@NonNull android.graphics.drawable.Drawable, @NonNull android.os.UserHandle);
     method @NonNull public abstract CharSequence getUserBadgedLabel(@NonNull CharSequence, @NonNull android.os.UserHandle);
-    method @FlaggedApi("android.content.pm.cloud_compilation_pm") @NonNull public static android.content.pm.SigningInfo getVerifiedSigningInfo(@NonNull String, int) throws android.content.pm.SigningInfoException;
+    method @NonNull public static android.content.pm.SigningInfo getVerifiedSigningInfo(@NonNull String, int) throws android.content.pm.SigningInfoException;
     method @NonNull @RequiresPermission(value="android.permission.WHITELIST_RESTRICTED_PERMISSIONS", conditional=true) public java.util.Set<java.lang.String> getWhitelistedRestrictedPermissions(@NonNull String, int);
     method @Nullable public abstract android.content.res.XmlResourceParser getXml(@NonNull String, @XmlRes int, @Nullable android.content.pm.ApplicationInfo);
     method public boolean hasSigningCertificate(@NonNull String, @NonNull byte[], int);
@@ -14273,17 +14273,17 @@ package android.content.pm {
     method public android.content.pm.Signature[] getSigningCertificateHistory();
     method public boolean hasMultipleSigners();
     method public boolean hasPastSigningCertificates();
-    method @FlaggedApi("android.content.pm.cloud_compilation_pm") public boolean signersMatchExactly(@NonNull android.content.pm.SigningInfo);
+    method public boolean signersMatchExactly(@NonNull android.content.pm.SigningInfo);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.SigningInfo> CREATOR;
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_JAR = 1; // 0x1
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_SIGNING_BLOCK_V2 = 2; // 0x2
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_SIGNING_BLOCK_V3 = 3; // 0x3
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_SIGNING_BLOCK_V4 = 4; // 0x4
+    field public static final int VERSION_JAR = 1; // 0x1
+    field public static final int VERSION_SIGNING_BLOCK_V2 = 2; // 0x2
+    field public static final int VERSION_SIGNING_BLOCK_V3 = 3; // 0x3
+    field public static final int VERSION_SIGNING_BLOCK_V4 = 4; // 0x4
   }
 
-  @FlaggedApi("android.content.pm.cloud_compilation_pm") public class SigningInfoException extends java.lang.Exception {
-    method @FlaggedApi("android.content.pm.cloud_compilation_pm") public int getCode();
+  public class SigningInfoException extends java.lang.Exception {
+    method public int getCode();
   }
 
   public final class VersionedPackage implements android.os.Parcelable {

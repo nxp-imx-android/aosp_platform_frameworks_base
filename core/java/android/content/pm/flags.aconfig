@@ -303,14 +303,6 @@ flag {
 }
 
 flag {
-    name: "cloud_compilation_verification"
-    namespace: "art_mainline"
-    description: "Feature flag to enable the Cloud Compilation install-time verification in the package manager."
-    bug: "377474232"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "parallel_package_parsing_across_system_dirs"
     namespace: "system_performance"
     description: "Continue parsing packages in system dirs instead of blocking on install completion for each directory."
