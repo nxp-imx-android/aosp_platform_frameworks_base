@@ -25,6 +25,11 @@ import static android.os.VibrationEffect.Composition.PRIMITIVE_SLOW_RISE;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_SPIN;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_THUD;
 import static android.os.VibrationEffect.Composition.PRIMITIVE_TICK;
+import static android.os.VibrationEffect.DEFAULT_AMPLITUDE;
+import static android.os.VibrationEffect.EFFECT_CLICK;
+import static android.os.VibrationEffect.EFFECT_POP;
+import static android.os.VibrationEffect.EFFECT_THUD;
+import static android.os.VibrationEffect.EFFECT_TICK;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -92,13 +97,12 @@ public class DeviceAdapterTest {
             TEST_FREQUENCIES_HZ[TEST_FREQUENCIES_HZ.length - 1];
     private static final int TEST_PRIMITIVE_DURATION = 20;
 
-    @Rule
-    public MockitoRule mMockitoRule = MockitoJUnit.rule();
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
-    @Mock
-    private PackageManagerInternal mPackageManagerInternalMock;
+    @Mock private PackageManagerInternal mPackageManagerInternalMock;
+
+    private final SparseArray<VibrationEffect> mFallbackEffects = new SparseArray<>();
 
     private TestLooper mTestLooper;
     private VibrationSettings mVibrationSettings;
@@ -114,7 +118,7 @@ public class DeviceAdapterTest {
         Context context = ApplicationProvider.getApplicationContext();
         mTestLooper = new TestLooper();
         mVibrationSettings = new VibrationSettings(context, new Handler(mTestLooper.getLooper()),
-                new VibrationConfig(context.getResources()));
+                new VibrationConfig(context.getResources()), mFallbackEffects);
 
         SparseArray<VibratorController> vibrators = new SparseArray<>();
         vibrators.put(EMPTY_VIBRATOR_ID, createEmptyVibratorController(EMPTY_VIBRATOR_ID));
@@ -127,22 +131,20 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    public void testPrebakedAndPrimitiveSegments_returnsOriginalSegment() {
+    public void testPrebakedAndPrimitiveSegments_supportedEffects_returnsOriginalSegment() {
+        mFallbackEffects.put(EFFECT_THUD, VibrationEffect.createOneShot(10, 100));
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PrebakedSegment(
-                        VibrationEffect.EFFECT_CLICK, false, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new PrebakedSegment(EFFECT_CLICK, false, VibrationEffect.EFFECT_STRENGTH_LIGHT),
                 new PrimitiveSegment(VibrationEffect.Composition.PRIMITIVE_TICK, 1, 10),
-                new PrebakedSegment(
-                        VibrationEffect.EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
+                new PrebakedSegment(EFFECT_TICK, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
                 new PrimitiveSegment(VibrationEffect.Composition.PRIMITIVE_SPIN, 0.5f, 100)),
                 /* repeatIndex= */ -1);
 
         assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect)).isEqualTo(effect);
-        assertThat(mAdapter.adaptToVibrator(PWLE_VIBRATOR_ID, effect)).isEqualTo(effect);
     }
 
     @Test
-    @EnableFlags(android.os.vibrator.Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
+    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void testVendorEffect_returnsOriginalSegment() {
         PersistableBundle vendorData = new PersistableBundle();
         vendorData.putInt("key", 1);
@@ -220,7 +222,7 @@ public class DeviceAdapterTest {
     }
 
     @Test
-    @DisableFlags(android.os.vibrator.Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+    @DisableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testStepAndRampSegments_withValidFreqMapping_returnsClippedValuesOnlyInRamps() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 // Individual step without frequency control, will not use PWLE composition
@@ -253,13 +255,9 @@ public class DeviceAdapterTest {
     @Test
     public void testMonoCombinedVibration_returnsSameVibrationWhenEffectsUnchanged() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PrebakedSegment(
-                        VibrationEffect.EFFECT_CLICK, false, VibrationEffect.EFFECT_STRENGTH_LIGHT),
-                new StepSegment(1, 0, 10),
-                new PrebakedSegment(
-                        VibrationEffect.EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
-                new StepSegment(1, 0, 10)),
-                /* repeatIndex= */ -1);
+                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
+                new StepSegment(0, 0, 10),
+                new StepSegment(1, 0, 10)), /* repeatIndex= */ -1);
 
         CombinedVibration expected = CombinedVibration.createParallel(effect);
 
@@ -456,8 +454,20 @@ public class DeviceAdapterTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
+    public void testUnsupportedPrimitives_withoutFlag_returnsOriginal() {
+        VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
+                new PrimitiveSegment(PRIMITIVE_TICK, 1, 10),
+                new PrimitiveSegment(PRIMITIVE_TICK, 0.5f, 10),
+                new PrimitiveSegment(PRIMITIVE_CLICK, 1, 100)),
+                /* repeatIndex= */ -1);
+
+        assertThat(mAdapter.adaptToVibrator(EMPTY_VIBRATOR_ID, effect)).isEqualTo(effect);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_PRIMITIVE_COMPOSITION_ABSOLUTE_DELAY)
-    public void testUnsupportedPrimitives_withFlag_returnsNull() {
+    public void testUnsupportedPrimitives_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new PrimitiveSegment(PRIMITIVE_TICK, 1, 10),
                 new PrimitiveSegment(PRIMITIVE_TICK, 0.5f, 10),
@@ -493,6 +503,60 @@ public class DeviceAdapterTest {
 
         assertThat(mAdapter.adaptToVibrator(EMPTY_VIBRATOR_ID, effect)).isNull();
         assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect)).isEqualTo(expected);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
+    public void testPrebakedUnsupported_withFallback_replacesUnsupportedPrebaked() {
+        mFallbackEffects.put(EFFECT_THUD, VibrationEffect.createWaveform(
+                new long[] { 10, 10, 10, 10 }, -1));
+        VibrationEffect.Composed effect1 = new VibrationEffect.Composed(Arrays.asList(
+                new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new PrebakedSegment(EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
+                new PrebakedSegment(EFFECT_TICK, true, VibrationEffect.EFFECT_STRENGTH_STRONG)),
+                /* repeatIndex= */ 2);
+        VibrationEffect.Composed adaptedEffect1 = new VibrationEffect.Composed(Arrays.asList(
+                new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new StepSegment(0, 0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
+                new StepSegment(0, 0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
+                new PrebakedSegment(EFFECT_TICK, true, VibrationEffect.EFFECT_STRENGTH_STRONG)),
+                /* repeatIndex= */ 5);
+
+        VibrationEffect.Composed effect2 = new VibrationEffect.Composed(Arrays.asList(
+                new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new PrebakedSegment(EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG)),
+                /* repeatIndex= */ 1);
+        VibrationEffect.Composed adaptedEffect2 = new VibrationEffect.Composed(Arrays.asList(
+                new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new StepSegment(0, 0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 0, 10),
+                new StepSegment(0, 0, 10),
+                new StepSegment(DEFAULT_AMPLITUDE, 0, 10)),
+                /* repeatIndex= */ 1);
+
+        assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect1)).isEqualTo(adaptedEffect1);
+        assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect2)).isEqualTo(adaptedEffect2);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
+    public void testPrebakedUnsupported_withoutFallback_returnsNull() {
+        mFallbackEffects.put(EFFECT_THUD, VibrationEffect.createWaveform(
+                new long[] { 10, 10, 10, 10 }, -1));
+        VibrationEffect.Composed effect1 = new VibrationEffect.Composed(Arrays.asList(
+                new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new PrebakedSegment(EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_STRONG),
+                new PrebakedSegment(EFFECT_POP, true, VibrationEffect.EFFECT_STRENGTH_STRONG)),
+                /* repeatIndex= */ 2);
+        VibrationEffect.Composed effect2 = new VibrationEffect.Composed(Arrays.asList(
+                new PrebakedSegment(EFFECT_CLICK, true, VibrationEffect.EFFECT_STRENGTH_LIGHT),
+                new PrebakedSegment(EFFECT_THUD, false, VibrationEffect.EFFECT_STRENGTH_STRONG)),
+                /* repeatIndex= */ 1);
+
+        assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect1)).isNull();
+        assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect2)).isNull();
     }
 
     private VibratorController createEmptyVibratorController(int vibratorId) {
@@ -547,7 +611,7 @@ public class DeviceAdapterTest {
         provider.setCapabilities(capabilities);
         provider.setSupportedPrimitives(PRIMITIVE_CLICK, PRIMITIVE_TICK, PRIMITIVE_THUD,
                 PRIMITIVE_SPIN, PRIMITIVE_QUICK_RISE, PRIMITIVE_QUICK_FALL, PRIMITIVE_SLOW_RISE);
-        provider.setSupportedEffects(VibrationEffect.EFFECT_CLICK, VibrationEffect.EFFECT_TICK);
+        provider.setSupportedEffects(EFFECT_CLICK, VibrationEffect.EFFECT_TICK);
         provider.setPrimitiveDuration(TEST_PRIMITIVE_DURATION);
         return provider;
     }

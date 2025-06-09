@@ -371,7 +371,7 @@ public class VibratorInfo implements Parcelable {
      * supported or not.
      */
     @Vibrator.VibrationEffectSupport
-    public int isEffectSupported(@VibrationEffect.EffectType int effectId) {
+    public int isEffectSupported(int effectId) {
         if (mSupportedEffects == null) {
             return Vibrator.VIBRATION_EFFECT_SUPPORT_UNKNOWN;
         }

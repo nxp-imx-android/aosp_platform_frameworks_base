@@ -38,6 +38,7 @@ import java.util.function.IntFunction;
  */
 final class HalVibration extends Vibration {
 
+    // TODO(b/409002423): remove this map once remove_hidl_support flag removed
     public final SparseArray<VibrationEffect> mFallbacks = new SparseArray<>();
 
     /** A {@link CountDownLatch} to enable waiting for completion. */
@@ -91,6 +92,7 @@ final class HalVibration extends Vibration {
      * Add a fallback {@link VibrationEffect} to be played for each predefined effect id, which
      * might be necessary for replacement in realtime.
      */
+    // TODO(b/409002423): remove this method once remove_hidl_support flag removed
     public void fillFallbacks(IntFunction<VibrationEffect> fallbackProvider) {
         fillFallbacksForEffect(mEffectToPlay, fallbackProvider);
     }
@@ -179,6 +181,7 @@ final class HalVibration extends Vibration {
                 && vib.callerInfo.attrs.isFlagSet(VibrationAttributes.FLAG_PIPELINED_EFFECT);
     }
 
+    // TODO(b/409002423): remove this method once remove_hidl_support flag removed
     private void fillFallbacksForEffect(CombinedVibration effect,
             IntFunction<VibrationEffect> fallbackProvider) {
         if (effect instanceof CombinedVibration.Mono) {
@@ -198,6 +201,7 @@ final class HalVibration extends Vibration {
         }
     }
 
+    // TODO(b/409002423): remove this method once remove_hidl_support flag removed
     private void fillFallbacksForEffect(VibrationEffect effect,
             IntFunction<VibrationEffect> fallbackProvider) {
         if (!(effect instanceof VibrationEffect.Composed composed)) {
