@@ -171,8 +171,6 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     // onActivityResult() after the association is created.
     private @Nullable DeviceFilterPair<?> mSelectedDevice;
 
-    private final LinearLayoutManager mPermissionsLayoutManager = new LinearLayoutManager(this);
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         boolean forceCancelDialog = getIntent().getBooleanExtra(EXTRA_FORCE_CANCEL_CONFIRMATION,
@@ -745,10 +743,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mPermissionListAdapter.setAppLabel(mAppLabel);
         mPermissionListAdapter.setDeviceName(mDeviceName);
         mPermissionListRecyclerView.setAdapter(mPermissionListAdapter);
-        // Only attach the LinearLayoutManager if it's not already attached.
-        if (mPermissionListRecyclerView.getLayoutManager() == null) {
-            mPermissionListRecyclerView.setLayoutManager(mPermissionsLayoutManager);
-        }
+        mPermissionListRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         disableButtons();
 
