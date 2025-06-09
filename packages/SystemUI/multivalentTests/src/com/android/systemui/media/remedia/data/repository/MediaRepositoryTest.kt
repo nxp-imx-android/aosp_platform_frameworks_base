@@ -288,6 +288,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             isResume = resumption,
             resumeAction = resumeAction,
             isExplicit = isExplicit,
+            suggestionData = mediaModel.suggestionData,
         )
     }
 

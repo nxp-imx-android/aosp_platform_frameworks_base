@@ -22,6 +22,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
 import com.android.systemui.media.controls.shared.model.MediaNotificationAction
+import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 
@@ -68,4 +69,6 @@ data class MediaDataModel(
     /** Action that should be performed to restart a non active session. */
     val resumeAction: Runnable?,
     val isExplicit: Boolean,
+    /** Device suggestions data */
+    val suggestionData: SuggestionData?,
 )

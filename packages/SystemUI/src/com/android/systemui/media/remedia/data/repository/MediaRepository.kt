@@ -235,6 +235,7 @@ constructor(
                 isResume = resumption,
                 resumeAction = resumeAction,
                 isExplicit = isExplicit,
+                suggestionData = suggestionData,
             )
         }
     }
