@@ -1042,4 +1042,10 @@ interface IActivityManager {
      */
     @EnforcePermission("INTERACT_ACROSS_USERS_FULL")
     IBinder refreshIntentCreatorToken(in Intent intent);
+
+    /**
+     * Reports ART optimization info.
+     */
+    oneway void reportOptimizationInfo(in IBinder app, in String compilerFilter,
+            in String compilationReason);
 }

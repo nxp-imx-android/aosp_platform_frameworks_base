@@ -66,6 +66,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ServiceInfo;
+import android.content.pm.dex.PackageOptimizationInfo;
 import android.content.res.Configuration;
 import android.os.Binder;
 import android.os.Build;
@@ -87,6 +88,7 @@ import com.android.internal.app.HeavyWeightSwitcherActivity;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
+import com.android.server.art.ReasonMapping;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService.HotPath;
 import com.android.server.wm.BackgroundLaunchProcessController.BalCheckConfiguration;
@@ -349,6 +351,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
      * perceptible task became stopped. Written by window manager and read by activity manager.
      */
     private volatile long mPerceptibleTaskStoppedTimeMillis = Long.MIN_VALUE;
+
+    private volatile PackageOptimizationInfo mOptimizationInfo = null;
 
     public WindowProcessController(@NonNull ActivityTaskManagerService atm,
             @NonNull ApplicationInfo info, String name, int uid, int userId, Object owner,
@@ -2222,5 +2226,20 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
         overrideConfig.setGrammaticalGender(targetValue);
         return true;
+    }
+
+    /** Sets the ART optimization info of the app process. */
+    public void setOptimizationInfo(
+            @NonNull String compilerFilter, @NonNull String compilationReason) {
+        if (com.android.art.flags.Flags.updatableFilterAndReason()) {
+            mOptimizationInfo = new PackageOptimizationInfo(
+                    ReasonMapping.getCompilerFilterValueForFrameworkStatsReporting(compilerFilter),
+                    ReasonMapping.getCompilationReasonValueForFrameworkStatsReporting(
+                            compilationReason));
+        }
+    }
+
+    PackageOptimizationInfo getOptimizationInfo() {
+        return mOptimizationInfo;
     }
 }
