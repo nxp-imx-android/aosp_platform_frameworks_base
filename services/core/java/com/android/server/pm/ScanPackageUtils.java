@@ -51,6 +51,7 @@ import static com.android.server.pm.PackageManagerServiceUtils.getLastModifiedTi
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.Flags;
 import android.content.pm.PackageManager;
@@ -423,7 +424,18 @@ final class ScanPackageUtils {
         }
 
         boolean is16KbDevice = Os.sysconf(OsConstants._SC_PAGESIZE) == PAGE_SIZE_16KB;
-        if (Flags.appCompatOption16kb() && is16KbDevice) {
+
+        // Run 16 KB alignment checks on 4 KB device if evaluated as true.
+        boolean enable4kbChecks =  false;
+        if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
+                && !isSystemApp
+                && !isApex
+                && !isPlatformPackage) {
+            enable4kbChecks = enableAlignmentChecks(parsedPackage, injector.getContext(),
+                pkgSetting.getInstallSource().mInitiatingPackageName);
+        }
+
+        if (Flags.appCompatOption16kb() && (is16KbDevice || enable4kbChecks)) {
             // Alignment checks are used decide whether this app should run in compat mode when
             // nothing was specified in manifest. Manifest should always take precedence over
             // something decided by platform.
@@ -1096,6 +1108,17 @@ final class ScanPackageUtils {
                 }
             }
         }
+    }
+
+    private static boolean enableAlignmentChecks(ParsedPackage parsedPackage, Context context,
+            String initiatingPackage) {
+        if (Flags.appCompatWarnings16kb()) {
+            return false;
+        }
+
+        boolean isDebuggable = parsedPackage.isDebuggable();
+        boolean isInstalledByAdb = PackageManagerServiceUtils.isInstalledByAdb(initiatingPackage);
+        return isDebuggable && isInstalledByAdb;
     }
 
     /** Directory where installed application's 32-bit native libraries are copied. */
