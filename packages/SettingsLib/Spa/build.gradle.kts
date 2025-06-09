@@ -28,7 +28,7 @@ val androidTop: String = file("../../../../..").canonicalPath
 
 allprojects {
     extra["androidTop"] = androidTop
-    extra["jetpackComposeVersion"] = "1.9.0-alpha03"
+    extra["jetpackComposeVersion"] = "1.9.0-alpha04"
 }
 
 subprojects {
@@ -39,7 +39,6 @@ subprojects {
             compileSdkVersion(36)
 
             defaultConfig {
-                minSdk = 23
                 targetSdk = 36
             }
         }

@@ -16,15 +16,24 @@
 
 package com.android.settingslib.spa.restricted
 
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.settingslib.spa.R
 import com.android.settingslib.spa.framework.common.SpaEnvironmentFactory
 import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 
 @Composable
@@ -52,18 +61,49 @@ internal fun RestrictedBaseSwitchPreference(
     }
     val restrictedModeFlow =
         remember(restrictions) {
-            repository.restrictedModeFlow(restrictions).flowOn(Dispatchers.Default)
+            repository.restrictedModeFlow(restrictions).conflate().flowOn(Dispatchers.Default)
         }
-    val restrictedMode by
-        restrictedModeFlow.collectAsStateWithLifecycle(initialValue = NoRestricted)
-    val restrictedSwitchPreferenceModel =
-        remember(restrictedMode, model, ifBlockedOverrideCheckedTo) {
-            RestrictedSwitchPreferenceModel(
-                model = model,
-                restrictedMode = restrictedMode,
-                ifBlockedOverrideCheckedTo = ifBlockedOverrideCheckedTo,
-            )
+    val restrictedMode by restrictedModeFlow.collectAsStateWithLifecycle(initialValue = null)
+    val presenter =
+        remember(model, ifBlockedOverrideCheckedTo) {
+            RestrictedSwitchPreferencePresenter(model, ifBlockedOverrideCheckedTo)
         }
+    val restrictedModel by
+        remember(presenter, restrictedMode) { presenter.restrictedModelFlow(restrictedMode) }
+            .collectAsStateWithLifecycle(initialValue = presenter.indeterminateModel)
 
-    restrictedSwitchPreferenceModel.RestrictionWrapper(content)
+    RestrictionWrapper(restrictedMode, restrictedModel, content)
 }
+
+@Composable
+private fun RestrictionWrapper(
+    restrictedMode: RestrictedMode?,
+    restrictedModel: SwitchPreferenceModel,
+    content: @Composable (SwitchPreferenceModel, Modifier) -> Unit,
+) {
+    val modifier =
+        when (restrictedMode) {
+            is BlockedWithDetails -> {
+                val statusDescription = stringResource(R.string.spa_unavailable)
+                Modifier.clickable(
+                        onClickLabel = stringResource(R.string.spa_learn_more),
+                        role = Role.Switch,
+                        onClick = { restrictedMode.showDetails() },
+                    )
+                    .semantics {
+                        contentDescription = statusDescription
+                        toggleableState = toggleableState(restrictedModel.checked())
+                    }
+            }
+
+            else -> Modifier
+        }
+    content(restrictedModel, modifier)
+}
+
+private fun toggleableState(value: Boolean?) =
+    when (value) {
+        true -> ToggleableState.On
+        false -> ToggleableState.Off
+        null -> ToggleableState.Indeterminate
+    }

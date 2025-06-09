@@ -29,6 +29,7 @@ import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
@@ -59,6 +60,7 @@ constructor(
     private val connectivityRepository: ConnectivityRepository,
     ethernetInteractor: EthernetInteractor,
     mobileIconsInteractor: MobileIconsInteractor,
+    mobileContextProvider: MobileContextProvider,
     wifiInteractor: WifiInteractor,
 ) : QSTileDataInteractor<InternetTileModel> {
     private val internetLabel: String = context.getString(R.string.quick_settings_internet_label)
@@ -89,11 +91,13 @@ constructor(
                 flowOf(null)
             } else {
                 combine(it.isRoaming, it.networkTypeIconGroup) { isRoaming, networkTypeIconGroup ->
-                    val cd = loadString(networkTypeIconGroup.contentDescription)
+                    val mobileContext =
+                        mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
+                    val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
                     if (isRoaming) {
-                        val roaming = context.getString(R.string.data_connection_roaming)
+                        val roaming = mobileContext.getString(R.string.data_connection_roaming)
                         if (cd != null) {
-                            context.getString(R.string.mobile_data_text_format, roaming, cd)
+                            mobileContext.getString(R.string.mobile_data_text_format, roaming, cd)
                         } else {
                             roaming
                         }
@@ -171,7 +175,7 @@ constructor(
         )
     }
 
-    private fun loadString(@StringRes resId: Int): CharSequence? =
+    private fun loadString(@StringRes resId: Int, context: Context): CharSequence? =
         if (resId != 0) {
             context.getString(resId)
         } else {

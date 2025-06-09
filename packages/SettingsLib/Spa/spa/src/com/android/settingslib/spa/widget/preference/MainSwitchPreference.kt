@@ -18,15 +18,14 @@ package com.android.settingslib.spa.widget.preference
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.android.settingslib.spa.framework.theme.SettingsDimension
 import com.android.settingslib.spa.framework.theme.SettingsShape
+import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import com.android.settingslib.spa.framework.theme.isSpaExpressiveEnabled
 
@@ -38,13 +37,11 @@ fun MainSwitchPreference(model: SwitchPreferenceModel) {
 @Composable
 internal fun MainSwitchPreference(model: SwitchPreferenceModel, modifier: Modifier) {
     Surface(
-        modifier = Modifier.padding(SettingsDimension.itemPaddingEnd),
-        color =
-            when (model.checked()) {
-                true -> MaterialTheme.colorScheme.primaryContainer
-                else -> MaterialTheme.colorScheme.secondaryContainer
-            },
-        shape = if (isSpaExpressiveEnabled) CircleShape else SettingsShape.CornerExtraLarge1,
+        modifier = Modifier.padding(SettingsSpace.small1),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        shape =
+            if (isSpaExpressiveEnabled) SettingsShape.CornerFull
+            else SettingsShape.CornerExtraLarge1,
     ) {
         InternalSwitchPreference(
             title = model.title,
@@ -52,9 +49,9 @@ internal fun MainSwitchPreference(model: SwitchPreferenceModel, modifier: Modifi
             checked = model.checked(),
             changeable = model.changeable(),
             onCheckedChange = model.onCheckedChange,
-            paddingStart = if (isSpaExpressiveEnabled) 32.dp else 20.dp,
-            paddingEnd = 20.dp,
-            paddingVertical = if (isSpaExpressiveEnabled) 16.dp else 24.dp,
+            paddingStart = if (isSpaExpressiveEnabled) SettingsSpace.medium1 else 20.dp,
+            paddingEnd = SettingsSpace.small3,
+            paddingVertical = if (isSpaExpressiveEnabled) SettingsSpace.small1 else 24.dp,
         )
     }
 }

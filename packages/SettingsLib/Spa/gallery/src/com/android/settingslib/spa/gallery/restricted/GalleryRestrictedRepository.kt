@@ -18,6 +18,7 @@ package com.android.settingslib.spa.gallery.restricted
 
 import android.content.Context
 import android.content.Intent
+import com.android.settingslib.spa.restricted.Blocked.SwitchPreferenceOverrides
 import com.android.settingslib.spa.restricted.BlockedWithDetails
 import com.android.settingslib.spa.restricted.NoRestricted
 import com.android.settingslib.spa.restricted.RestrictedMode
@@ -25,6 +26,7 @@ import com.android.settingslib.spa.restricted.RestrictedRepository
 import com.android.settingslib.spa.restricted.Restrictions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 class GalleryRestrictedRepository(private val context: Context) : RestrictedRepository {
@@ -33,7 +35,13 @@ class GalleryRestrictedRepository(private val context: Context) : RestrictedRepo
         return enableRestrictionsFlow.map { enableRestrictions ->
             if (enableRestrictions && restrictions.isRestricted) {
                 object : BlockedWithDetails {
-                    override val canOverrideSwitchChecked = true
+                    override val switchPreferenceOverridesFlow =
+                        combine(summaryOnFlow, summaryOffFlow) { summaryOn, summaryOff ->
+                            SwitchPreferenceOverrides(
+                                summaryOn = summaryOn,
+                                summaryOff = summaryOff,
+                            )
+                        }
 
                     override fun showDetails() {
                         context.startActivity(Intent("android.settings.SHOW_ADMIN_SUPPORT_DETAILS"))
@@ -47,5 +55,7 @@ class GalleryRestrictedRepository(private val context: Context) : RestrictedRepo
 
     companion object {
         var enableRestrictionsFlow = MutableStateFlow(true)
+        var summaryOnFlow = MutableStateFlow("Force on")
+        var summaryOffFlow = MutableStateFlow("Force off")
     }
 }

@@ -4121,6 +4121,17 @@ final class ActivityManagerShellCommand extends ShellCommand {
                     return -1;
                 }
             }
+        } else if (toggleValue.equals("log-change-checks-to-statsd")) {
+            // Note that this is only used for testing.
+            final String value = getNextArgRequired();
+            if ("on".equals(value) || "off".equals(value)) {
+                pw.println("Setting log compat change checks to statsd " + value);
+                platformCompat.setLogChangeChecksToStatsd(value.equals("on"));
+            } else {
+                pw.println("Invalid value for logging compat change checks to statsd.");
+                return -1;
+            }
+            return 0;
         } else {
             String changeIdString = getNextArgRequired();
             try {

@@ -23,6 +23,7 @@ import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_PO
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT;
 
 import static com.android.systemui.Flags.enableViewCaptureTracing;
+import static com.android.window.flags.Flags.enableInorderTransitionCallbacksForDesktop;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -100,6 +101,7 @@ import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
 import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
+import com.android.wm.shell.desktopmode.DesktopInOrderTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeDragAndDropAnimatorHelper;
@@ -532,7 +534,8 @@ public abstract class WMShellModule {
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
-            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver) {
+            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
+            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver) {
         return new FreeformTaskTransitionObserver(
                 shellInit,
                 transitions,
@@ -544,7 +547,8 @@ public abstract class WMShellModule {
                 desksTransitionObserver,
                 desktopState,
                 desktopImeHandler,
-                desktopBackNavTransitionObserver);
+                desktopBackNavTransitionObserver,
+                desktopInOrderTransitionObserver);
     }
 
     @WMSingleton
@@ -994,6 +998,28 @@ public abstract class WMShellModule {
         return Optional.empty();
     }
 
+    @WMSingleton
+    @Provides
+    static Optional<DesktopInOrderTransitionObserver> provideDesktopInOrderTransitionObserver(
+            ShellInit shellInit,
+            Optional<DesktopImmersiveController> desktopImmersiveController,
+            FocusTransitionObserver focusTransitionObserver,
+            Optional<DesksTransitionObserver> desksTransitionObserver,
+            DesktopState desktopState,
+            Optional<DesktopImeHandler> desktopImeHandler,
+            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver) {
+        if (enableInorderTransitionCallbacksForDesktop()
+                && ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
+                && desktopState.canEnterDesktopMode()) {
+            return Optional.of(new DesktopInOrderTransitionObserver(
+                    desktopImmersiveController,
+                    focusTransitionObserver,
+                    desksTransitionObserver,
+                    desktopImeHandler,
+                    desktopBackNavTransitionObserver));
+        }
+        return Optional.empty();
+    }
     @WMSingleton
     @Provides
     static Optional<DesktopTasksLimiter> provideDesktopTasksLimiter(

@@ -22,14 +22,17 @@ import android.provider.Settings
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.android.internal.logging.InstanceId
+import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.domain.pipeline.getNotificationActions
 import com.android.systemui.media.controls.shared.model.MediaAction
+import com.android.systemui.media.controls.shared.model.SuggestionData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.media.remedia.data.repository.MediaRepository
 import com.android.systemui.media.remedia.domain.model.MediaActionModel
@@ -150,7 +153,7 @@ constructor(
                     }
 
             override val suggestedOutputDevice: MediaOutputDeviceModel?
-                get() = TODO("Not yet implemented")
+                get() = dataModel.suggestionData?.toDeviceModel()
 
             override val actionButtonLayout: MediaCardActionButtonLayout
                 get() =
@@ -212,6 +215,17 @@ constructor(
                 onClick = { action?.run() },
             )
         } ?: MediaActionModel.None
+    }
+
+    private fun SuggestionData.toDeviceModel(): MediaOutputDeviceModel? {
+        if (suggestedMediaDeviceData == null) {
+            return null
+        }
+        return MediaOutputDeviceModel(
+            suggestedMediaDeviceData.name,
+            suggestedMediaDeviceData.icon.asIcon(),
+            suggestedMediaDeviceData.connectionState == MediaDeviceState.STATE_CONNECTING,
+        )
     }
 
     companion object {

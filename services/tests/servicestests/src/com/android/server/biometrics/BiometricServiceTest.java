@@ -91,6 +91,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
@@ -938,6 +939,7 @@ public class BiometricServiceTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
     public void testErrorFromHal_whenPaused_notifiesSystemUIAndClient() throws Exception {
         setupAuthForOnly(TYPE_FACE, Authenticators.BIOMETRIC_STRONG);
         invokeAuthenticateAndStart(mBiometricService.mImpl, mReceiver1,

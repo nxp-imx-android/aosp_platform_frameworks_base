@@ -2511,6 +2511,25 @@ public final class DisplayPowerControllerTest {
         // No crash = success
     }
 
+    @Test
+    public void testScreenOff_thenTurnOn_ensureColorFade() {
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
+
+        // Ensure the feature flag is enabled.
+        when(mDisplayManagerFlagsMock.isEnsureColorFadeWhenTurningOnEnabled()).thenReturn(true);
+        // Ensure the initial screen state is OFF.
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_OFF);
+
+        // Run the DPC logic.
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        // The conditions are met, so prepareColorFade() is invoked.
+        verify(mHolder.displayPowerState).prepareColorFade(any(), anyInt());
+    }
+
     /**
      * Creates a mock and registers it to {@link LocalServices}.
      */

@@ -737,7 +737,7 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             biometricSettingsRepository.setIsFaceAuthCurrentlyAllowed(false)
             assertThat(canFaceAuthRun()).isFalse()
             underTest.requestAuthenticate(
-                FACE_AUTH_TRIGGERED_SWIPE_UP_ON_BOUNCER,
+                FaceAuthUiEvent.FACE_AUTH_TRIGGERED_PICK_UP_GESTURE_TRIGGERED,
                 fallbackToDetection = true,
             )
             faceAuthenticateIsNotCalled()
@@ -758,7 +758,28 @@ class DeviceEntryFaceAuthRepositoryTest : SysuiTestCase() {
             keyguardRepository.setKeyguardDismissible(true)
             assertThat(canFaceAuthRun()).isFalse()
             underTest.requestAuthenticate(
-                FACE_AUTH_TRIGGERED_SWIPE_UP_ON_BOUNCER,
+                FaceAuthUiEvent.FACE_AUTH_TRIGGERED_PICK_UP_GESTURE_TRIGGERED,
+                fallbackToDetection = true,
+            )
+            faceAuthenticateIsNotCalled()
+
+            faceDetectIsCalled()
+        }
+
+    @Test
+    fun authenticateFallbacksToDetectionWhenFaceIsLockedOut() =
+        testScope.runTest {
+            whenever(faceManager.sensorPropertiesInternal)
+                .thenReturn(listOf(createFaceSensorProperties(supportsFaceDetection = true)))
+            whenever(bypassController.bypassEnabled).thenReturn(true)
+            underTest = createDeviceEntryFaceAuthRepositoryImpl()
+            initCollectors()
+            allPreconditionsToRunFaceAuthAreTrue()
+
+            underTest.setLockedOut(true)
+            assertThat(canFaceAuthRun()).isFalse()
+            underTest.requestAuthenticate(
+                FaceAuthUiEvent.FACE_AUTH_TRIGGERED_PICK_UP_GESTURE_TRIGGERED,
                 fallbackToDetection = true,
             )
             faceAuthenticateIsNotCalled()

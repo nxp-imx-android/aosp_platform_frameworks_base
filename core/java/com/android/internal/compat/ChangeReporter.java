@@ -97,12 +97,13 @@ public class ChangeReporter {
      * @param isLoggableBySdk  whether debug logging is allowed for this change based on target
      *                         SDK version. This is combined with other logic to determine whether
      *                         to actually log. If the sdk version does not matter, should be true.
+     * @param doStatsLog       whether to log to stats log.
      */
     public void reportChange(int uid, long changeId, int state, boolean isKnownSystemApp,
-            boolean isLoggableBySdk) {
+            boolean isLoggableBySdk, boolean doStatsLog) {
         boolean isAlreadyReported =
                 checkAndSetIsAlreadyReported(uid, new ChangeReport(changeId, state));
-        if (shouldWriteToStatsLog(isKnownSystemApp, isAlreadyReported)) {
+        if (doStatsLog && shouldWriteToStatsLog(isKnownSystemApp, isAlreadyReported)) {
             FrameworkStatsLog.write(FrameworkStatsLog.APP_COMPATIBILITY_CHANGE_REPORTED, uid,
                     changeId, state, mSource);
         }
@@ -118,9 +119,10 @@ public class ChangeReporter {
      * @param uid      affected by the change
      * @param changeId the reported change id
      * @param state    of the reported change - enabled/disabled/only logged
+     * @param doStatsLog whether to log to stats log.
      */
-    public void reportChange(int uid, long changeId, int state) {
-        reportChange(uid, changeId, state, false, true);
+    public void reportChange(int uid, long changeId, int state, boolean doStatsLog) {
+        reportChange(uid, changeId, state, false, true, doStatsLog);
     }
 
     /**

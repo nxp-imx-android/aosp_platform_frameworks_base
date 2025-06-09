@@ -9,6 +9,7 @@ import com.android.systemui.biometrics.domain.interactor.FakeCredentialInteracto
 import com.android.systemui.biometrics.domain.interactor.PromptCredentialInteractor
 import com.android.systemui.biometrics.domain.interactor.promptSelectorInteractor
 import com.android.systemui.biometrics.promptInfo
+import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.testKosmos
@@ -181,7 +182,14 @@ class CredentialViewModelTest : SysuiTestCase() {
     ) =
         runTest(dispatcher) {
             init()
-            promptRepository.setPrompt(promptInfo(), USER_ID, REQUEST_ID, OPERATION_ID, kind)
+            promptRepository.setPrompt(
+                promptInfo(),
+                USER_ID,
+                BiometricModalities(),
+                REQUEST_ID,
+                OPERATION_ID,
+                kind,
+            )
             block()
         }
 }

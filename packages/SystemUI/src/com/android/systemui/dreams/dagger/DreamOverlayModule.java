@@ -104,8 +104,9 @@ public abstract class DreamOverlayModule {
     @Provides
     @DreamOverlayComponent.DreamOverlayScope
     public static AmbientStatusBarViewController providesStatusBarViewController(
-            AmbientStatusBarView view, AmbientStatusBarComponent.Factory factory) {
-        return factory.create(view).getController();
+            AmbientStatusBarView view, AmbientStatusBarComponent.Factory factory,
+            TouchInsetManager.TouchInsetSession touchInsetSession) {
+        return factory.create(view, touchInsetSession).getController();
     }
 
     /**  */

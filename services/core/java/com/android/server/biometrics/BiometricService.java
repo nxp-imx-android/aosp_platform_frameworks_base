@@ -837,6 +837,16 @@ public class BiometricService extends SystemService {
             public void onStartFingerprintNow() {
                 mHandler.post(() -> handleOnStartFingerprintNow(requestId));
             }
+
+            @Override
+            public void onPauseAuthentication() {
+                mHandler.post(() -> handleOnPauseAuthentication(requestId));
+            }
+
+            @Override
+            public void onResumeAuthentication() {
+                mHandler.post(() -> handleOnResumeAuthentication(requestId));
+            }
         };
     }
 
@@ -1707,6 +1717,30 @@ public class BiometricService extends SystemService {
         }
 
         session.onStartFingerprint();
+    }
+
+    private void handleOnPauseAuthentication(long requestId) {
+        Slog.d(TAG, "handleOnPauseAuthentication");
+
+        final AuthSession session = getAuthSessionIfCurrent(requestId);
+        if (session == null) {
+            Slog.w(TAG, "handleOnPauseAuthentication: AuthSession is not current");
+            return;
+        }
+
+        session.onPauseAuthentication();
+    }
+
+    private void handleOnResumeAuthentication(long requestId) {
+        Slog.d(TAG, "handleOnResumeAuthentication");
+
+        final AuthSession session = getAuthSessionIfCurrent(requestId);
+        if (session == null) {
+            Slog.w(TAG, "handleOnResumeAuthentication: AuthSession is not current");
+            return;
+        }
+
+        session.onResumeAuthentication();
     }
 
     /**

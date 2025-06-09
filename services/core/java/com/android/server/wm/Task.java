@@ -4665,9 +4665,6 @@ class Task extends TaskFragment {
         if (dc == null || !dc.isWindowingModeSupported(WINDOWING_MODE_PINNED)) {
             return true;
         }
-        if (!Flags.disallowBubbleToEnterPip()) {
-            return false;
-        }
         if (mDisablePip) {
             return true;
         }
@@ -4680,10 +4677,6 @@ class Task extends TaskFragment {
     }
 
     void setDisablePip(boolean disablePip) {
-        if (!Flags.disallowBubbleToEnterPip()) {
-            Slog.w(TAG, "Flag " + Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP + " is not enabled");
-            return;
-        }
         mDisablePip = disablePip;
     }
 

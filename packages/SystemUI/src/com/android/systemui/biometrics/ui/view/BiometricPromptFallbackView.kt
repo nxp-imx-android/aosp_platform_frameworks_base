@@ -78,7 +78,12 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = { promptViewModel.onSwitchToAuth() }) {
+                IconButton(
+                    onClick = {
+                        promptViewModel.onSwitchToAuth()
+                        callback.onResumeAuthentication()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,

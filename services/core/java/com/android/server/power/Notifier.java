@@ -1518,7 +1518,7 @@ public class Notifier {
         if (mWakelockTracer != null) {
             boolean isAcquire = eventType == WakelockEventType.ACQUIRE;
             mWakelockTracer.onWakelockEvent(isAcquire, tag, ownerUid, ownerPid, flags,
-                    workSource, mInjector.nanoTime());
+                    workSource);
         }
 
         if (mBatteryStatsInternal == null) {
@@ -1560,11 +1560,6 @@ public class Notifier {
         long currentTimeMillis();
 
         /**
-         * Gets the current time in nanoseconds
-         */
-        long nanoTime();
-
-        /**
          * Gets the WakeLockLog object
          */
         @NonNull WakeLockLog getWakeLockLog(Context context);
@@ -1590,12 +1585,6 @@ public class Notifier {
         @Override
         public long currentTimeMillis() {
             return System.currentTimeMillis();
-        }
-
-        @Override
-        public long nanoTime() {
-            // This must be time since boot including suspend for Perfetto.
-            return SystemClock.elapsedRealtimeNanos();
         }
 
         @Override

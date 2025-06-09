@@ -33,6 +33,7 @@ import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.display.shared.model.isDefaultOrientation
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -152,7 +153,12 @@ constructor(
                                     credentialInteractor.getCredentialOwnerOrSelfId(userId),
                             ),
                         operationInfo = BiometricOperationInfo(gatekeeperChallenge = challenge),
-                        modalities = kind.activeModalities,
+                        modalities =
+                            if (Flags.bpFallbackOptions()) {
+                                promptRepository.modalities.value
+                            } else {
+                                kind.activeModalities
+                            },
                         opPackageName = opPackageName,
                     )
                 else -> null
@@ -210,7 +216,7 @@ constructor(
             promptRepository.promptInfo.value!!,
             promptRepository.userId.value!!,
             promptRepository.requestId.value!!,
-            modalities,
+            if (Flags.bpFallbackOptions()) promptRepository.modalities.value else modalities,
             promptRepository.challenge.value!!,
             promptRepository.opPackageName.value!!,
             onSwitchToCredential = true,
@@ -221,6 +227,17 @@ constructor(
 
     override fun onSwitchToAuth() {
         _currentView.value = BiometricPromptView.BIOMETRIC
+
+        setPrompt(
+            promptRepository.promptInfo.value!!,
+            promptRepository.userId.value!!,
+            promptRepository.requestId.value!!,
+            promptRepository.modalities.value,
+            promptRepository.challenge.value!!,
+            promptRepository.opPackageName.value!!,
+            onSwitchToCredential = false,
+            isLandscape = !displayStateInteractor.currentRotation.value.isDefaultOrientation(),
+        )
     }
 
     override fun onSwitchToFallback() {
@@ -254,7 +271,7 @@ constructor(
             _currentView.value = BiometricPromptView.BIOMETRIC
             // TODO(b/330908557): Subscribe to
             // displayStateInteractor.currentRotation.value.isDefaultOrientation() for checking
-            // `isLandscape` after removing AuthContinerView.
+            // `isLandscape` after removing AuthContainerView.
             kind =
                 if (isLandscape) {
                     val paneType =
@@ -277,6 +294,7 @@ constructor(
         promptRepository.setPrompt(
             promptInfo = promptInfo,
             userId = userId,
+            modalities = modalities,
             requestId = requestId,
             gatekeeperChallenge = challenge,
             kind = kind,

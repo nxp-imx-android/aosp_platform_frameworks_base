@@ -51,6 +51,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -130,6 +131,8 @@ class PipTouchHandlerTest : ShellTestCase() {
         whenever(pipTouchState.latestMotionEvent).thenReturn(mockMotionEvent)
         whenever(pipTransitionState.pinnedTaskLeash).thenReturn(mockLeash)
         whenever(mockPipBoundsState.movementBounds).thenReturn(PIP_BOUNDS)
+        whenever(mockPipBoundsState.displayLayout).thenReturn(mockDisplayLayout)
+        whenever(mockPipBoundsState.displayBounds).thenReturn(DISPLAY_BOUNDS)
         whenever(mockPipBoundsState.motionBoundsState).thenReturn(mockMotionBoundsState)
         whenever(pipTouchHandler.possiblyMotionBounds).thenReturn(PIP_BOUNDS)
         whenever(mockDisplayController.getDisplayLayout(anyInt()))
@@ -294,10 +297,62 @@ class PipTouchHandlerTest : ShellTestCase() {
         verify(mockPipDisplayTransferHandler, never()).removeMirrors()
     }
 
+
+    @Test
+    fun pipTouchGesture_onUpMotionBoundsDroppingOnLeft_pipStashedToEdge() {
+        pipTouchGesture.onDown(pipTouchState)
+
+        pipTouchHandler.mEnableStash = true
+        whenever(pipTouchState.isDragging).thenReturn(true)
+        PIP_BOUNDS.offset(-500, 0)
+        whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+        pipTouchGesture.onUp(pipTouchState)
+
+        verify(mockPipMotionHelper).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+    }
+
+    @Test
+    fun pipTouchGesture_onUpDisplayIdChanged_disallowsStashing() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        pipTouchGesture.onDown(pipTouchState)
+
+        pipTouchHandler.mEnableStash = true
+        whenever(pipTouchState.isDragging).thenReturn(true)
+        PIP_BOUNDS.offset(-500, 0)
+        whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+        whenever(pipTouchState.lastTouchDisplayId).thenReturn(TARGET_DISPLAY_ID)
+        pipTouchGesture.onUp(pipTouchState)
+
+        verify(mockPipMotionHelper, never()).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+    }
+
+    @Test
+    fun pipTouchGesture_onUpMirrorIsShown_disallowsStashing() {
+        whenever(mockPipDesktopState.isDraggingPipAcrossDisplaysEnabled()).thenReturn(true)
+        pipTouchGesture.onDown(pipTouchState)
+
+        pipTouchHandler.mEnableStash = true
+        whenever(pipTouchState.isDragging).thenReturn(true)
+        PIP_BOUNDS.offset(-500, 0)
+        whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
+        whenever(mockPipDisplayTransferHandler.isMirrorShown).thenReturn(true)
+        pipTouchGesture.onUp(pipTouchState)
+
+        verify(mockPipMotionHelper, never()).stashToEdge(
+            any(), any(), anyOrNull()
+        )
+    }
+
+
     private companion object {
         const val ORIGIN_DISPLAY_ID = 0
         const val TARGET_DISPLAY_ID = 1
         val PIP_BOUNDS = Rect(0, 0, 700, 700)
+        val DISPLAY_BOUNDS = Rect(0, 0, 1000, 1000)
         val GLOBAL_BOUNDS = RectF(0f, 0f, 400f, 400f)
     }
 }

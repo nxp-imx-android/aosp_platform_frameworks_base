@@ -20,6 +20,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -47,7 +48,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +78,7 @@ fun ShortPill(
 ) {
     val outlineColor = if (isSystemInDarkTheme()) Color.White else Color.Black
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
+    val scrimColor = MaterialTheme.colorScheme.primary
     val minSize = 48.dp
     val closeButtonSize = 28.dp
     val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
@@ -90,27 +97,81 @@ fun ShortPill(
             animationSpec = transitionTween,
             label = "expansion",
         )
+    val smartScrimAlpha by
+        transition.animateFloat(transitionSpec = { tween(500) }, label = "smartScrimAlpha") {
+            if (it) 0.3f else 0f
+        }
+    val smartScrimAlphaBoost by
+        transition.animateFloat(
+            transitionSpec = {
+                if (visible) {
+                    keyframes {
+                        durationMillis = 2000
+                        0f at 0
+                        0.2f at 500
+                        0.2f at 1500
+                        0f at 2000
+                    }
+                } else {
+                    tween(500)
+                }
+            },
+            label = "smartScrimAlphaBoost",
+        ) {
+            if (it) 0f else 0f
+        }
 
     Box(
         modifier =
-            modifier.graphicsLayer {
+            modifier.drawBehind {
+                // SmartScrim
+                val halfWidth = size.width / 2f
+                val halfHeight = size.height / 2f
+                if (!(halfWidth > 0) || !(halfHeight > 0)) return@drawBehind
+                val scrimBrush =
+                    Brush.radialGradient(
+                        colors = listOf(scrimColor, scrimColor.copy(alpha = 0f)),
+                        center = Offset.Zero,
+                        radius = if (horizontal) halfWidth else halfHeight,
+                    )
+                translate(
+                    left = if (horizontal) halfWidth else size.width,
+                    top = if (horizontal) size.height else halfHeight,
+                ) {
+                    scale(
+                        scaleX = if (horizontal) 1f else 0.3f,
+                        scaleY = if (horizontal) 0.3f else 1f,
+                        pivot = Offset.Zero,
+                    ) {
+                        drawCircle(
+                            brush = scrimBrush,
+                            alpha = smartScrimAlpha + smartScrimAlphaBoost,
+                            radius = if (horizontal) halfWidth else halfHeight,
+                            center = Offset.Zero,
+                        )
+                    }
+                }
+            }
+    ) {
+        val scaleAnimationModifier =
+            Modifier.graphicsLayer {
                 scaleY = enterProgress
                 scaleX = enterProgress
             }
-    ) {
         val pillModifier =
             Modifier.graphicsLayer { alpha = enterProgress * expansionAlpha }
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
                 .widthIn(0.dp, minSize * 2)
-                .clickable { onClick() }
+                .then(if (expanded) Modifier else Modifier.clickable { onClick() })
                 .padding(4.dp)
 
         if (horizontal) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                modifier = scaleAnimationModifier,
             ) {
                 Spacer(modifier = Modifier.size(closeButtonSize))
 
@@ -146,6 +207,7 @@ fun ShortPill(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = scaleAnimationModifier,
             ) {
                 Spacer(modifier = Modifier.size(closeButtonSize))
 

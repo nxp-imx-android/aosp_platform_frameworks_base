@@ -6866,12 +6866,10 @@ public class UserManagerService extends IUserManager.Stub {
     }
 
     /**
-     * Returns an optional string name of the restriction to check for user removal. The restriction
-     * name varies depending on whether the user is a managed profile.
-     *
-     * <p>If the flag android.multiuser.ignore_restrictions_when_deleting_private_profile is enabled
-     * and the user is a private profile (i.e. has no removal restrictions) the method will return
-     * {@code Optional.empty()}.
+     * Returns an optional string name of the restriction to check for user removal or {@code
+     * Optional.empty()} if the user is a private profile (i.e. has no removal restrictions). The
+     * restriction name for non private profiles varies depending on whether the user is a managed
+     * profile.
      */
     private Optional<String> getUserRemovalRestrictionOptional(@UserIdInt int userId) {
         final boolean isPrivateProfile;
@@ -6882,8 +6880,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
         isPrivateProfile = userInfo != null && userInfo.isPrivateProfile();
         isManagedProfile = userInfo != null && userInfo.isManagedProfile();
-        if (android.multiuser.Flags.ignoreRestrictionsWhenDeletingPrivateProfile()
-                && isPrivateProfile) {
+        if (isPrivateProfile) {
             return Optional.empty();
         }
         return Optional.of(

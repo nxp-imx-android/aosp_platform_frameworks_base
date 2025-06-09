@@ -38,7 +38,6 @@ import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
-import static com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API;
 
@@ -1344,7 +1343,6 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP)
     public void testRequestEnterPipModeWhenTaskIsDisabledPip_notEnterPip() {
         final ActivityRecord record = new ActivityBuilder(mAtm).setCreateTask(true).build();
         PictureInPictureParams params = mock(PictureInPictureParams.class);

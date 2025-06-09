@@ -977,7 +977,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
                 // Reset the touch state on up before the fling settles
                 mTouchState.reset();
-                if (mEnableStash && shouldStash(vel, getPossiblyMotionBounds())) {
+                if (mEnableStash && shouldStash(vel, getPossiblyMotionBounds(), displayIdOnUp)) {
                     mMotionHelper.stashToEdge(vel.x, vel.y, null /* endAction */);
                 } else {
                     if (mPipBoundsState.isStashed()) {
@@ -1059,7 +1059,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             }
         }
 
-        private boolean shouldStash(PointF vel, Rect motionBounds) {
+        private boolean shouldStash(PointF vel, Rect motionBounds, int displayIdOnUp) {
             final boolean flingToLeft = vel.x < -mStashVelocityThreshold;
             final boolean flingToRight = vel.x > mStashVelocityThreshold;
             final int offset = motionBounds.width() / 2;
@@ -1094,10 +1094,11 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             final boolean stashFromDroppingOnEdge = droppingOnLeft || droppingOnRight;
 
             // If dragging PiP across displays is allowed, then ensure that stashing only occurs
-            // when no drag mirrors of the window are shown, meaning that it wasn't partially shown
-            // on another display
+            // when no drag mirrors of the window are shown, and the display ID on down and up are
+            // the same, meaning that we don't allow stashing while moving PiP across displays
             return (stashFromFlingToEdge || stashFromDroppingOnEdge)
-                    && !mPipDisplayTransferHandler.isMirrorShown();
+                    && !mPipDisplayTransferHandler.isMirrorShown()
+                    && mDisplayIdOnDown == displayIdOnUp;
         }
     }
 

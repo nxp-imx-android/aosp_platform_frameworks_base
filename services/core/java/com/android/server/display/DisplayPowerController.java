@@ -2243,12 +2243,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         // This surface is essentially the final state of the color fade animation and
         // it is only removed once the window manager tells us that the activity has
         // finished drawing underneath.
-        // If mPendingScreenOffUnblocker is not null, it means we are waiting for
-        // the window manager policy to unblock the screen off. This policy is doing something
-        // like creating a snapshot, so should not report the screen off.
         if (isOff && mReportedScreenStateToPolicy != REPORTED_TO_POLICY_SCREEN_OFF
-                && !mDisplayPowerProximityStateController.isScreenOffBecauseOfProximity()
-                && mPendingScreenOffUnblocker == null) {
+                && !mDisplayPowerProximityStateController.isScreenOffBecauseOfProximity()) {
             setReportedScreenState(REPORTED_TO_POLICY_SCREEN_OFF);
             unblockScreenOn();
             mWindowManagerPolicy.screenTurnedOff(mDisplayId, mIsInTransition);
@@ -2345,6 +2341,14 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             }
             // If display state changed to on, proceed and stop the color fade and turn screen on.
             mPendingScreenOff = false;
+        }
+
+        if (mFlags.isEnsureColorFadeWhenTurningOnEnabled()
+                && ((mPowerState.getScreenState() == Display.STATE_OFF)
+                && target != Display.STATE_OFF)) {
+            // ensure ColorFade is present.
+            mPowerState.prepareColorFade(mContext,
+                    mColorFadeFadesConfig ? ColorFade.MODE_FADE : ColorFade.MODE_WARM_UP);
         }
 
         if (mDisplayBlanksAfterDozeConfig

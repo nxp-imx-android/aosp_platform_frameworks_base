@@ -20,7 +20,6 @@ import android.os.Binder
 import android.platform.test.annotations.EnableFlags
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
@@ -55,7 +54,6 @@ class BubbleUtilsTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_CREATE_ANY_BUBBLE,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
-        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )
     @Test
     fun testGetEnterBubbleTransaction(@TestParameter isAppBubble: Boolean) {
@@ -67,7 +65,6 @@ class BubbleUtilsTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_CREATE_ANY_BUBBLE,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
-        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )
     @Test
     fun testGetEnterBubbleTransaction_reparentToTda(@TestParameter isAppBubble: Boolean) {
@@ -85,7 +82,6 @@ class BubbleUtilsTest : ShellTestCase() {
     @EnableFlags(
         FLAG_ENABLE_CREATE_ANY_BUBBLE,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
-        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
         FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
     )
     @Test

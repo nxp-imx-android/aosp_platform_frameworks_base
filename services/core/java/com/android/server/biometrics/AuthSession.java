@@ -393,6 +393,9 @@ public final class AuthSession implements IBinder.DeathRecipient {
                 }
             } else {
                 // The UI was already showing :)
+                if (Flags.bpFallbackOptions()) {
+                    startAllPreparedFingerprintSensors();
+                }
                 mState = STATE_AUTH_STARTED_UI_SHOWING;
             }
         } else {
@@ -483,6 +486,11 @@ public final class AuthSession implements IBinder.DeathRecipient {
         // do not propagate the error and let onAuthenticationSucceeded handle the new state
         if (hasAuthenticated()) {
             Slog.d(TAG, "onErrorReceived after successful auth (ignoring)");
+            return false;
+        }
+
+        if (Flags.bpFallbackOptions() && mState == STATE_AUTH_PAUSED
+                && error == BiometricConstants.BIOMETRIC_ERROR_CANCELED) {
             return false;
         }
 
@@ -617,7 +625,8 @@ public final class AuthSession implements IBinder.DeathRecipient {
 
     void onDialogAnimatedIn(boolean startFingerprintNow) {
         if (mState != STATE_AUTH_STARTED && mState != STATE_ERROR_PENDING_SYSUI
-                && mState != STATE_AUTH_PAUSED && mState != STATE_AUTH_PENDING_CONFIRM) {
+                && mState != STATE_AUTH_PAUSED && mState != STATE_AUTH_PENDING_CONFIRM
+                && mState != STATE_AUTH_PAUSED_RESUMING) {
             Slog.e(TAG, "onDialogAnimatedIn, unexpected state: " + mState);
             return;
         }
@@ -657,6 +666,39 @@ public final class AuthSession implements IBinder.DeathRecipient {
 
         if (mState != STATE_AUTH_PAUSED) {
             Slog.w(TAG, "onTryAgainPressed, state: " + mState);
+        }
+
+        try {
+            setSensorsToStateWaitingForCookie(true /* isTryAgain */);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "RemoteException: " + e);
+        }
+    }
+
+    void onPauseAuthentication() {
+        if (hasAuthenticatedAndConfirmed()) {
+            Slog.d(TAG, "onPauseAuthentication after successful auth");
+            return;
+        }
+
+        if (mState != STATE_AUTH_STARTED && mState != STATE_AUTH_STARTED_UI_SHOWING) {
+            Slog.w(TAG, "onPauseAuthentication, state: " + mState);
+            return;
+        }
+
+        mState = STATE_AUTH_PAUSED;
+        cancelAllSensors();
+    }
+
+    void onResumeAuthentication() {
+        if (hasAuthenticatedAndConfirmed()) {
+            Slog.d(TAG, "onResumeAuthentication after successful auth");
+            return;
+        }
+
+        if (mState != STATE_AUTH_PAUSED && mState != STATE_SHOWING_DEVICE_CREDENTIAL) {
+            Slog.w(TAG, "onResumeAuthentication, state: " + mState);
+            return;
         }
 
         try {

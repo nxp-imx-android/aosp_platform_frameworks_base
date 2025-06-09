@@ -1376,7 +1376,7 @@ public final class AutofillManager {
                     } catch (RemoteException e) {
                         Log.e(TAG, "Could not figure out if there was an autofill session", e);
                     } catch (SyncResultReceiver.TimeoutException e) {
-                        Log.e(TAG, "Fail to get session restore status: " + e);
+                        Log.e(TAG, "Fail to get session restore status", e);
                     }
                 }
             }
@@ -1506,7 +1506,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            Log.e(TAG, "Fail to get fill event history: " + e);
+            Log.e(TAG, "Fail to get fill event history", e);
             return null;
         }
     }
@@ -2103,7 +2103,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             // The failure could be a consequence of something going wrong on the
             // server side. Just log the exception and move-on.
-            Log.w(TAG, "notifyImeAnimationStart(): RemoteException caught but ignored " + e);
+            Log.w(TAG, "notifyImeAnimationStart(): RemoteException caught but ignored", e);
         }
     }
 
@@ -2117,7 +2117,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             // The failure could be a consequence of something going wrong on the
             // server side. Just log the exception and move-on.
-            Log.w(TAG, "notifyImeAnimationStart(): RemoteException caught but ignored " + e);
+            Log.w(TAG, "notifyImeAnimationStart(): RemoteException caught but ignored", e);
         }
     }
 
@@ -2249,7 +2249,7 @@ public final class AutofillManager {
                             // The failure could be a consequence of something going wrong on the
                             // server side. Do nothing here since it's just logging, but it's
                             // possible follow-up actions may fail.
-                            Log.w(TAG, "RemoteException caught but ignored " + e);
+                            Log.w(TAG, "RemoteException caught but ignored", e);
                         }
                     }
                 }
@@ -2417,7 +2417,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get enabled autofill services status. " + e);
+            throw new RuntimeException("Fail to get enabled autofill services status.", e);
         }
     }
 
@@ -2436,7 +2436,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get autofill services component name. " + e);
+            throw new RuntimeException("Fail to get autofill services component name.", e);
         }
     }
 
@@ -2463,7 +2463,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get user data id for field classification. " + e);
+            throw new RuntimeException("Fail to get user data id for field classification.", e);
         }
     }
 
@@ -2486,7 +2486,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get user data for field classification. " + e);
+            throw new RuntimeException("Fail to get user data for field classification.", e);
         }
     }
 
@@ -2526,7 +2526,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get field classification enabled status. " + e);
+            throw new RuntimeException("Fail to get field classification enabled status.", e);
         }
     }
 
@@ -2550,7 +2550,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get default field classification algorithm. " + e);
+            throw new RuntimeException("Fail to get default field classification algorithm.", e);
         }
     }
 
@@ -2573,7 +2573,7 @@ public final class AutofillManager {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
             throw new
-                RuntimeException("Fail to get available field classification algorithms. " + e);
+                RuntimeException("Fail to get available field classification algorithms.", e);
         }
     }
 
@@ -2597,7 +2597,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            throw new RuntimeException("Fail to get autofill supported status. " + e);
+            throw new RuntimeException("Fail to get autofill supported status.", e);
         }
     }
 
@@ -2809,7 +2809,7 @@ public final class AutofillManager {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
             // no-op, just log the error message.
-            Log.w(TAG, "Exception getting result from SyncResultReceiver: " + e);
+            Log.w(TAG, "Exception getting result from SyncResultReceiver:", e);
         }
     }
 
@@ -2910,7 +2910,7 @@ public final class AutofillManager {
                 try {
                     flags = receiver.getIntResult();
                 } catch (SyncResultReceiver.TimeoutException e) {
-                    Log.w(TAG, "Failed to initialize autofill: " + e);
+                    Log.w(TAG, "Failed to initialize autofill:", e);
                     // Reset the states initialized above.
                     mService.removeClient(mServiceClient, userId);
                     mServiceClient = null;
@@ -3055,7 +3055,7 @@ public final class AutofillManager {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         } catch (SyncResultReceiver.TimeoutException e) {
-            Log.e(TAG, "Fail to get the result of set AugmentedAutofill whitelist. " + e);
+            Log.e(TAG, "Fail to get the result of set AugmentedAutofill whitelist.", e);
             return;
         }
         switch (resultCode) {
@@ -3230,7 +3230,7 @@ public final class AutofillManager {
                 // The failure could be a consequence of something going wrong on the server side.
                 // Do nothing here since it's just logging, but it's possible follow-up actions may
                 // fail.
-                Log.w(TAG, "Unable to log due to " + e);
+                Log.w(TAG, "Unable to log due to", e);
             }
         } else {
             if (sDebug) {
@@ -3738,7 +3738,7 @@ public final class AutofillManager {
             try {
                 result.send(0, resultData);
             } catch (RemoteException e) {
-                Log.w(TAG, "Could not send AugmentedAutofillClient back: " + e);
+                Log.w(TAG, "Could not send AugmentedAutofillClient back:", e);
             }
         }
     }

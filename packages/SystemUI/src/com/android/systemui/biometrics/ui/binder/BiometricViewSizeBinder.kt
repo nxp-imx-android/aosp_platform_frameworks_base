@@ -49,6 +49,7 @@ import com.android.systemui.biometrics.ui.viewmodel.isSmall
 import com.android.systemui.biometrics.ui.viewmodel.isTop
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
+import com.android.systemui.util.kotlin.Quad
 import com.android.systemui.utils.windowmanager.WindowManagerUtils
 import kotlin.math.abs
 import kotlinx.coroutines.flow.combine
@@ -336,17 +337,26 @@ object BiometricViewSizeBinder {
                     }
                 }
 
-                lifecycleScope.launch {
-                    combine(viewModel.hideSensorIcon, viewModel.size, ::Pair).collect {
-                        (hideSensorIcon, size) ->
-                        setVisibilities(hideSensorIcon, size)
+                if (!Flags.bpFallbackOptions()) {
+                    lifecycleScope.launch {
+                        combine(viewModel.hideSensorIcon, viewModel.size, ::Pair).collect {
+                            (hideSensorIcon, size) ->
+                            setVisibilities(hideSensorIcon, size)
+                        }
                     }
                 }
 
                 lifecycleScope.launch {
-                    combine(viewModel.position, viewModel.size, viewModel.fallbackShowing, ::Triple)
-                        .collect { (position, size, fallbackShowing) ->
+                    combine(
+                            viewModel.position,
+                            viewModel.size,
+                            viewModel.fallbackShowing,
+                            viewModel.hideSensorIcon,
+                            ::Quad,
+                        )
+                        .collect { (position, size, fallbackShowing, hideSensor) ->
                             if (Flags.bpFallbackOptions()) {
+                                setVisibilities(hideSensor, size)
                                 if (fallbackShowing) {
                                     mediumConstraintSet.setVisibility(R.id.auth_screen, View.GONE)
                                     mediumConstraintSet.setVisibility(iconHolderView.id, View.GONE)
@@ -358,6 +368,10 @@ object BiometricViewSizeBinder {
                                     mediumConstraintSet.setVisibility(
                                         R.id.auth_screen,
                                         View.VISIBLE,
+                                    )
+                                    mediumConstraintSet.setVisibility(
+                                        iconHolderView.id,
+                                        if (hideSensor) View.GONE else View.VISIBLE,
                                     )
                                     mediumConstraintSet.setVisibility(R.id.fallback_view, View.GONE)
                                 }

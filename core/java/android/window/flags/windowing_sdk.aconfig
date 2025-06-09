@@ -109,17 +109,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_view_root_call_trace"
-    description: "Do not set mAdded=true unless #setView finished successfully"
-    bug: "385705687"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "activity_embedding_metrics"
     description: "Metrics for Activity Embedding usage in WM Extensions"
     bug: "399465821"
@@ -148,17 +137,6 @@ flag {
     name: "force_show_system_bar_for_bubble"
     description: "Ensure system bar are shown for Bubble"
     bug: "329124127"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
-    name: "disallow_bubble_to_enter_pip"
-    description: "Prevent Bubble task to enter picture-in-picture"
-    bug: "389158353"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

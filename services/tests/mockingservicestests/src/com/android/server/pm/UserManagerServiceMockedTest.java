@@ -22,16 +22,19 @@ import static android.content.pm.PackageManager.FEATURE_WATCH;
 import static android.content.pm.UserInfo.FLAG_ADMIN;
 import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
+import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE;
-import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
+import static android.multiuser.Flags.FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserManager.DISALLOW_OUTGOING_CALLS;
 import static android.os.UserManager.DISALLOW_SMS;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
+import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
+import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
 import static android.content.pm.UserInfo.flagsToString;
@@ -172,6 +175,7 @@ public final class UserManagerServiceMockedTest {
             .spyStatic(LocalServices.class)
             .spyStatic(SystemProperties.class)
             .spyStatic(ActivityManager.class)
+            .spyStatic(UserHandle.class)
             .mockStatic(Settings.Global.class)
             .mockStatic(Settings.Secure.class)
             .mockStatic(Resources.class)
@@ -331,7 +335,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testIsUserRunning_StartedUserShouldReturnTrue() {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         startUser(USER_ID);
 
         assertWithMessage("isUserRunning(%s)", USER_ID)
@@ -340,7 +344,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testIsUserRunning_StoppedUserShouldReturnFalse() {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         stopUser(USER_ID);
 
         assertWithMessage("isUserRunning(%s)", USER_ID)
@@ -367,8 +371,8 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testSetBootUser_SuppliedUserIsSwitchable() throws Exception {
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
 
         mUms.setBootUser(OTHER_USER_ID);
 
@@ -379,8 +383,8 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testSetBootUser_NotHeadless_SuppliedUserIsNotSwitchable() throws Exception {
         setSystemUserHeadless(false);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         addDefaultProfileAndParent();
 
         mUms.setBootUser(PROFILE_USER_ID);
@@ -393,9 +397,9 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testSetBootUser_Headless_SuppliedUserIsNotSwitchable() throws Exception {
         setSystemUserHeadless(true);
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
         addDefaultProfileAndParent();
 
@@ -408,8 +412,8 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testGetBootUser_NotHeadless_ReturnsSystemUser() throws Exception {
         setSystemUserHeadless(false);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
 
         assertWithMessage("getBootUser")
                 .that(mUmi.getBootUser(/* waitUntilSet= */ false))
@@ -419,10 +423,10 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testGetBootUser_Headless_ReturnsMostRecentlyInForeground() throws Exception {
         setSystemUserHeadless(true);
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
 
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         assertWithMessage("getBootUser")
@@ -452,9 +456,9 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetPreviousUserToEnterForeground() throws Exception {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         assertWithMessage("getPreviousUserToEnterForeground")
@@ -464,9 +468,9 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetPreviousUserToEnterForeground_SkipsCurrentUser() throws Exception {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mockCurrentUser(OTHER_USER_ID);
@@ -477,9 +481,9 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetPreviousUserToEnterForeground_SkipsPartialUsers() throws Exception {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mUsers.get(OTHER_USER_ID).info.partial = true;
@@ -490,9 +494,9 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetPreviousUserToEnterForeground_SkipsDisabledUsers() throws Exception {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mUsers.get(OTHER_USER_ID).info.flags |= UserInfo.FLAG_DISABLED;
@@ -503,9 +507,9 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetPreviousUserToEnterForeground_SkipsRemovingUsers() throws Exception {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 2_000_000L);
 
         mUms.addRemovingUserId(OTHER_USER_ID);
@@ -516,7 +520,7 @@ public final class UserManagerServiceMockedTest {
 
     @Test
     public void testGetPreviousUserToEnterForeground_ReturnsHeadlessSystemUser() throws Exception {
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(true);
@@ -652,14 +656,12 @@ public final class UserManagerServiceMockedTest {
                 mSpiedUms.createProfileForUserEvenWhenDisallowedWithThrow(PRIVATE_PROFILE_NAME,
                         USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
         Mockito.doNothing().when(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true), any(),
-                any());
+                eq(privateProfileUser.id), eq(true), any(), any());
 
         mSpiedUms.autoLockPrivateSpace();
 
         Mockito.verify(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -677,14 +679,12 @@ public final class UserManagerServiceMockedTest {
                 USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
         mockAutoLockForPrivateSpace(Settings.Secure.PRIVATE_SPACE_AUTO_LOCK_ON_DEVICE_LOCK);
         Mockito.doNothing().when(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true), any(),
-                any());
+                eq(privateProfileUser.id), eq(true), any(), any());
 
         mSpiedUms.tryAutoLockingPrivateSpaceOnKeyguardChanged(true);
 
         Mockito.verify(mSpiedUms).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                        any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -705,8 +705,7 @@ public final class UserManagerServiceMockedTest {
 
         // Verify that no operation to disable quiet mode is not called
         Mockito.verify(mSpiedUms, never()).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -726,8 +725,7 @@ public final class UserManagerServiceMockedTest {
         verify((MockedVoidMethod) () -> Settings.Secure.getInt(any(),
                 eq(Settings.Secure.PRIVATE_SPACE_AUTO_LOCK), anyInt()), never());
         Mockito.verify(mSpiedUms, never()).setQuietModeEnabledAsync(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), eq(true),
-                any(), any());
+                eq(privateProfileUser.id), eq(true), any(), any());
     }
 
     @Test
@@ -747,13 +745,12 @@ public final class UserManagerServiceMockedTest {
                 mSpiedUms.createProfileForUserEvenWhenDisallowedWithThrow(PRIVATE_PROFILE_NAME,
                         USER_TYPE_PROFILE_PRIVATE, 0, mainUser, null);
         Mockito.doNothing().when(mSpiedUms).scheduleAlarmToAutoLockPrivateSpace(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), anyLong());
-
+                eq(privateProfileUser.id), anyLong());
 
         mSpiedUms.maybeScheduleAlarmToAutoLockPrivateSpace();
 
         Mockito.verify(mSpiedUms).scheduleAlarmToAutoLockPrivateSpace(
-                eq(privateProfileUser.getUserHandle().getIdentifier()), anyLong());
+                eq(privateProfileUser.id), anyLong());
     }
 
     @Test
@@ -956,8 +953,8 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testGetBootUser_Headless_BootToSystemUserWhenDeviceIsProvisioned() {
         setSystemUserHeadless(true);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         mockProvisionedDevice(true);
         mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
 
@@ -967,8 +964,8 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testGetBootUser_Headless_BootToFirstSwitchableFullUserWhenDeviceNotProvisioned() {
         setSystemUserHeadless(true);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         mockProvisionedDevice(false);
         mockHsumBootStrategy(BOOT_TO_HSU_FOR_PROVISIONED_DEVICE);
         // Even if the headless system user switchable flag is true, the boot user should be the
@@ -995,7 +992,7 @@ public final class UserManagerServiceMockedTest {
     public void testGetUserLogoutability_HsumAndInteractiveHeadlessSystemUser_UserCanLogout()
             throws Exception {
         setSystemUserHeadless(true);
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         mockCurrentUser(USER_ID);
 
@@ -1012,7 +1009,7 @@ public final class UserManagerServiceMockedTest {
             throws Exception {
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(false);
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
         setLastForegroundTime(USER_ID, 1_000_000L);
         mockCurrentUser(USER_ID);
         mockUserIsInCall(false);
@@ -1048,8 +1045,8 @@ public final class UserManagerServiceMockedTest {
     public void testGetUserLogoutability_CannotSwitch_CannotLogout() throws Exception {
         setSystemUserHeadless(true);
         mockCanSwitchToHeadlessSystemUser(true);
-        addUser(USER_ID);
-        addUser(OTHER_USER_ID);
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
         setLastForegroundTime(OTHER_USER_ID, 1_000_000L);
         mockCurrentUser(USER_ID);
         mUms.setUserRestriction(DISALLOW_USER_SWITCH, true, USER_ID);
@@ -1628,7 +1625,7 @@ public final class UserManagerServiceMockedTest {
     @Test
     public void testIsLastFullAdminUser_hsum_targetNotAdmin_returnsFalse() {
         setSystemUserHeadless(true);
-        addUser(USER_ID); // USER_ID is full, not admin
+        addSecondaryUser(USER_ID); // USER_ID is full, not admin
         addAdminUser(OTHER_USER_ID); // OTHER_USER_ID is full, admin
 
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
@@ -1659,7 +1656,7 @@ public final class UserManagerServiceMockedTest {
     public void testIsLastFullAdminUser_hsum_targetAdmin_otherFullNotAdmin_returnsTrue() {
         setSystemUserHeadless(true);
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
-        addUser(OTHER_USER_ID); // OTHER_USER_ID is full, not admin
+        addSecondaryUser(OTHER_USER_ID); // OTHER_USER_ID is full, not admin
 
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isTrue();
     }
@@ -1714,7 +1711,7 @@ public final class UserManagerServiceMockedTest {
         setSystemUserHeadless(false);
 
         // Add another non-admin full user to ensure system is not the *only* user
-        addUser(USER_ID);
+        addSecondaryUser(USER_ID);
 
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(UserHandle.USER_SYSTEM).info)).isTrue();
     }
@@ -1727,6 +1724,102 @@ public final class UserManagerServiceMockedTest {
         addAdminUser(USER_ID); // USER_ID is full, admin (target)
 
         assertThat(mUms.isLastFullAdminUserLU(mUsers.get(USER_ID).info)).isFalse();
+    }
+
+    @Test
+    public void testSetUserAdmin() {
+        addSecondaryUser(USER_ID);
+
+        mUms.setUserAdmin(USER_ID);
+
+        assertThat(mUsers.get(USER_ID).info.isAdmin()).isTrue();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY)
+    public void testSetUserAdminThrowsSecurityException() {
+        addSecondaryUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
+        mockCallingUserId(OTHER_USER_ID);
+
+        // 1. Target User Restriction
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, USER_ID);
+        assertThrows(SecurityException.class, () -> mUms.setUserAdmin(USER_ID));
+
+        // 2. Current User Restriction
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, false, USER_ID);
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, OTHER_USER_ID);
+        assertThrows(SecurityException.class, () -> mUms.setUserAdmin(USER_ID));
+    }
+
+    @Test
+    public void testSetUserAdminFailsForGuest() {
+        addGuestUser(USER_ID);
+
+        mUms.setUserAdmin(USER_ID);
+
+        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+    }
+
+    @Test
+    public void testSetUserAdminFailsForProfile() {
+        addSecondaryUser(PARENT_USER_ID);
+        addProfile(PROFILE_USER_ID, PARENT_USER_ID, USER_TYPE_PROFILE_MANAGED);
+
+        mUms.setUserAdmin(PROFILE_USER_ID);
+
+        assertThat(mUsers.get(PROFILE_USER_ID).info.isAdmin()).isFalse();
+    }
+
+    @Test
+    public void testSetUserAdminFailsForRestrictedProfile() {
+        addRestrictedProfile(USER_ID);
+
+        mUms.setUserAdmin(USER_ID);
+
+        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+    }
+
+    @Test
+    public void testRevokeUserAdmin() {
+        addAdminUser(USER_ID);
+
+        mUms.revokeUserAdmin(USER_ID);
+
+        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+    }
+
+    @Test
+    public void testRevokeUserAdminFromNonAdmin() {
+        addSecondaryUser(USER_ID);
+
+        mUms.revokeUserAdmin(USER_ID);
+
+        assertThat(mUsers.get(USER_ID).info.isAdmin()).isFalse();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_UNICORN_MODE_REFACTORING_FOR_HSUM_READ_ONLY)
+    public void testRevokeUserAdminThrowsSecurityException() {
+        addAdminUser(USER_ID);
+        addSecondaryUser(OTHER_USER_ID);
+        mockCallingUserId(OTHER_USER_ID);
+
+        // 1. Target User Restriction
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, USER_ID);
+        assertThrows(SecurityException.class, () -> mUms.revokeUserAdmin(USER_ID));
+
+        // 2. Current User Restriction
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, false, USER_ID);
+        mUms.setUserRestriction(UserManager.DISALLOW_GRANT_ADMIN, true, OTHER_USER_ID);
+        assertThrows(SecurityException.class, () -> mUms.revokeUserAdmin(USER_ID));
+    }
+
+    @Test
+    public void testRevokeUserAdminFailsForSystemUser() {
+        mUms.revokeUserAdmin(UserHandle.USER_SYSTEM);
+
+        assertThat(mUsers.get(UserHandle.USER_SYSTEM).info.isAdmin()).isTrue();
     }
 
     /**
@@ -1869,6 +1962,10 @@ public final class UserManagerServiceMockedTest {
         when(mTelecomManager.isInCall()).thenReturn(isInCall);
     }
 
+    private void mockCallingUserId(@UserIdInt int userId) {
+        doReturn(userId).when(UserHandle::getCallingUserId);
+    }
+
     private void expectUserJourneyLogged(@UserIdInt int userId, @UserJourney int journey) {
         verify(mUserJourneyLogger).logUserJourneyBegin(userId, journey);
     }
@@ -1878,22 +1975,50 @@ public final class UserManagerServiceMockedTest {
     }
 
     private void addDefaultProfileAndParent() {
-        addUser(PARENT_USER_ID);
-        addProfile(PROFILE_USER_ID, PARENT_USER_ID);
+        addSecondaryUser(PARENT_USER_ID);
+        addProfile(PROFILE_USER_ID, PARENT_USER_ID, /* userType= */ null);
     }
 
-    private void addProfile(@UserIdInt int profileId, @UserIdInt int parentId) {
+    private void addProfile(@UserIdInt int profileId, @UserIdInt int parentId, String userType) {
         TestUserData profileData = new TestUserData(profileId);
         profileData.info.flags = UserInfo.FLAG_PROFILE;
         profileData.info.profileGroupId = parentId;
-
+        profileData.info.userType = userType;
         addUserData(profileData);
+
+        assertWithMessage("user (id %s) retrieved after being added is not an admin", profileId)
+            .that(mUsers.get(profileId).info.isAdmin()).isFalse();
     }
 
-    private void addUser(@UserIdInt int userId) {
+    private void addRestrictedProfile(@UserIdInt int profileId) {
+        TestUserData profileData = new TestUserData(profileId);
+        profileData.info.flags = UserInfo.FLAG_FULL;
+        profileData.info.userType = USER_TYPE_FULL_RESTRICTED;
+        addUserData(profileData);
+
+        assertWithMessage("user (id %s) retrieved after being added is not an admin", profileId)
+            .that(mUsers.get(profileId).info.isAdmin()).isFalse();
+    }
+
+    /** Adds a full secondary non-admin user. */
+    private void addSecondaryUser(@UserIdInt int userId) {
         TestUserData userData = new TestUserData(userId);
         userData.info.flags = UserInfo.FLAG_FULL;
+        userData.info.userType = USER_TYPE_FULL_SECONDARY;
         addUserData(userData);
+
+        assertWithMessage("user (id %s) retrieved after being added is not an admin", userId)
+            .that(mUsers.get(userId).info.isAdmin()).isFalse();
+    }
+
+    private void addGuestUser(@UserIdInt int userId) {
+        TestUserData userData = new TestUserData(userId);
+        userData.info.flags = UserInfo.FLAG_GUEST;
+        userData.info.userType = UserManager.USER_TYPE_FULL_GUEST;
+        addUserData(userData);
+
+        assertWithMessage("user (id %s) retrieved after being added is not an admin", userId)
+            .that(mUsers.get(userId).info.isAdmin()).isFalse();
     }
 
     private void assumeMainUserIsNotTheSystemUser() {
@@ -1957,7 +2082,11 @@ public final class UserManagerServiceMockedTest {
     private void addAdminUser(@UserIdInt int userId) {
         TestUserData userData = new TestUserData(userId);
         userData.info.flags = UserInfo.FLAG_FULL | UserInfo.FLAG_ADMIN;
+        userData.info.userType = USER_TYPE_FULL_SECONDARY;
         addUserData(userData);
+
+        assertWithMessage("user (id %s) retrieved after being added is an admin", userId)
+            .that(mUsers.get(userId).info.isAdmin()).isTrue();
     }
 
     private UserInfo addDyingUser(UserInfo user) {

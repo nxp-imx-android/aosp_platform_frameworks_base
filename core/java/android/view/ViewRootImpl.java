@@ -112,7 +112,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SANDBOXING_VIEW_BOUNDS_APIS;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
-import static android.view.WindowManagerGlobal.RELAYOUT_RES_CONSUME_ALWAYS_SYSTEM_BARS;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_SURFACE_CHANGED;
 import static android.view.accessibility.Flags.a11ySequentialFocusStartingPoint;
 import static android.view.accessibility.Flags.forceInvertColor;
@@ -134,7 +133,6 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
-import static com.android.window.flags.Flags.fixViewRootCallTrace;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
@@ -867,7 +865,6 @@ public final class ViewRootImpl implements ViewParent,
 
     final Rect mPendingBackDropFrame = new Rect();
 
-    boolean mPendingAlwaysConsumeSystemBars;
     private int mRelayoutSeq;
     private final Rect mWinFrameInScreen = new Rect();
     private final InsetsState mTempInsets = new InsetsState();
@@ -1563,9 +1560,6 @@ public final class ViewRootImpl implements ViewParent,
                     mAttachInfo.mPanelParentWindowToken
                             = panelParentView.getApplicationWindowToken();
                 }
-                if (!fixViewRootCallTrace()) {
-                    mAdded = true;
-                }
                 int res; /* = WindowManagerImpl.ADD_OKAY; */
 
                 // Schedule the first layout -before- adding to the window
@@ -1622,9 +1616,6 @@ public final class ViewRootImpl implements ViewParent,
                     mTmpFrames.compatScale = addResult.frames.compatScale;
                     mInvCompatScale = 1f / addResult.frames.compatScale;
                 } catch (RemoteException | RuntimeException e) {
-                    if (!fixViewRootCallTrace()) {
-                        mAdded = false;
-                    }
                     mView = null;
                     mAttachInfo.mRootView = null;
                     mFallbackEventHandler.setView(null);
@@ -1637,9 +1628,6 @@ public final class ViewRootImpl implements ViewParent,
                     }
                 }
 
-                mAttachInfo.mAlwaysConsumeSystemBars =
-                        (res & WindowManagerGlobal.ADD_FLAG_ALWAYS_CONSUME_SYSTEM_BARS) != 0;
-                mPendingAlwaysConsumeSystemBars = mAttachInfo.mAlwaysConsumeSystemBars;
                 handleInsetsControlChanged(mTempInsets, mTempControls);
                 final InsetsState state = mInsetsController.getState();
                 final Rect displayCutoutSafe = mTempRect;
@@ -1655,9 +1643,6 @@ public final class ViewRootImpl implements ViewParent,
                 if (DEBUG_LAYOUT) Log.v(mTag, "Added window " + mWindow);
                 if (res < WindowManagerGlobal.ADD_OKAY) {
                     mAttachInfo.mRootView = null;
-                    if (!fixViewRootCallTrace()) {
-                        mAdded = false;
-                    }
                     mFallbackEventHandler.setView(null);
                     unscheduleTraversals();
                     setAccessibilityFocus(null, null);
@@ -1766,9 +1751,7 @@ public final class ViewRootImpl implements ViewParent,
                 mFirstInputStage = nativePreImeStage;
                 mFirstPostImeInputStage = earlyPostImeStage;
                 mPendingInputEventQueueLengthCounterName = "aq:pending:" + counterSuffix;
-                if (fixViewRootCallTrace()) {
-                    mAdded = true;
-                }
+                mAdded = true;
 
                 if (!mRemoved || !mAppVisible) {
                     AnimationHandler.requestAnimatorsEnabled(mAppVisible, this);
@@ -2366,7 +2349,6 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         mForceNextWindowRelayout |= forceLayout;
-        mPendingAlwaysConsumeSystemBars = false;
         mSyncSeqId = seqId > mSyncSeqId ? seqId : mSyncSeqId;
 
         if (reportDraw) {
@@ -3936,8 +3918,6 @@ public final class ViewRootImpl implements ViewParent,
                     surfaceSizeChanged = true;
                     mLastSurfaceSize.set(mSurfaceSize.x, mSurfaceSize.y);
                 }
-                final boolean alwaysConsumeSystemBarsChanged =
-                        mPendingAlwaysConsumeSystemBars != mAttachInfo.mAlwaysConsumeSystemBars;
                 updateColorModeIfNeeded(lp.getColorMode(), lp.getDesiredHdrHeadroom());
                 surfaceCreated = !hadSurface && mSurface.isValid();
                 surfaceDestroyed = hadSurface && !mSurface.isValid();
@@ -3954,10 +3934,6 @@ public final class ViewRootImpl implements ViewParent,
                     mHandler.removeMessages(MSG_SURFACE_REPLACED_TIMEOUT);
                     mHandler.sendEmptyMessageDelayed(MSG_SURFACE_REPLACED_TIMEOUT,
                             FRAME_RATE_SURFACE_REPLACED_TIME);
-                }
-                if (alwaysConsumeSystemBarsChanged) {
-                    mAttachInfo.mAlwaysConsumeSystemBars = mPendingAlwaysConsumeSystemBars;
-                    dispatchApplyInsets = true;
                 }
                 if (dispatchApplyInsets || mLastSystemUiVisibility !=
                         mAttachInfo.mSystemUiVisibility || mApplyInsetsRequested) {
@@ -9635,9 +9611,6 @@ public final class ViewRootImpl implements ViewParent,
             mInvCompatScale = 1f / mTmpFrames.compatScale;
             CompatibilityInfo.applyOverrideIfNeeded(mPendingMergedConfiguration);
             handleInsetsControlChanged(mTempInsets, mTempControls);
-
-            mPendingAlwaysConsumeSystemBars =
-                    (relayoutResult & RELAYOUT_RES_CONSUME_ALWAYS_SYSTEM_BARS) != 0;
         }
 
         final int transformHint = SurfaceControl.rotationToBufferTransform(

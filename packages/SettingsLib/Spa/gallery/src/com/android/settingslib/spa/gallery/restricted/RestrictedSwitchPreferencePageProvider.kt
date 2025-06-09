@@ -27,6 +27,7 @@ import com.android.settingslib.spa.framework.common.SettingsPageProvider
 import com.android.settingslib.spa.framework.compose.navigator
 import com.android.settingslib.spa.restricted.RestrictedMainSwitchPreference
 import com.android.settingslib.spa.restricted.RestrictedSwitchPreference
+import com.android.settingslib.spa.widget.editor.SettingsOutlinedTextField
 import com.android.settingslib.spa.widget.preference.MainSwitchPreference
 import com.android.settingslib.spa.widget.preference.Preference
 import com.android.settingslib.spa.widget.preference.PreferenceModel
@@ -42,7 +43,7 @@ object RestrictedSwitchPreferencePageProvider : SettingsPageProvider {
     @Composable
     override fun Page(arguments: Bundle?) {
         RegularScaffold(TITLE) {
-            EnableRestrictionsSwitchPreference()
+            Configs()
 
             SampleRestrictedMainSwitchPreference(ifBlockedOverrideCheckedTo = null)
             SampleRestrictedMainSwitchPreference(ifBlockedOverrideCheckedTo = true)
@@ -68,9 +69,11 @@ object RestrictedSwitchPreferencePageProvider : SettingsPageProvider {
 }
 
 @Composable
-private fun EnableRestrictionsSwitchPreference() {
+private fun Configs() {
     val enableRestrictions by
         GalleryRestrictedRepository.enableRestrictionsFlow.collectAsStateWithLifecycle()
+    val summaryOn by GalleryRestrictedRepository.summaryOnFlow.collectAsStateWithLifecycle()
+    val summaryOff by GalleryRestrictedRepository.summaryOffFlow.collectAsStateWithLifecycle()
     MainSwitchPreference(
         model =
             object : SwitchPreferenceModel {
@@ -80,6 +83,16 @@ private fun EnableRestrictionsSwitchPreference() {
                     GalleryRestrictedRepository.enableRestrictionsFlow.value = newChecked
                 }
             }
+    )
+    SettingsOutlinedTextField(
+        value = summaryOn,
+        label = "Override summary on",
+        onTextChange = { GalleryRestrictedRepository.summaryOnFlow.value = it },
+    )
+    SettingsOutlinedTextField(
+        value = summaryOff,
+        label = "Override summary off",
+        onTextChange = { GalleryRestrictedRepository.summaryOffFlow.value = it },
     )
 }
 

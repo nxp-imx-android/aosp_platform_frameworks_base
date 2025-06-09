@@ -393,7 +393,7 @@ public class Utils {
             outFile = FileUtils.buildUniqueFile(externalStorage, mimeType, fileName);
         } catch (FileNotFoundException e) {
             // This might also be reached if the number of repeated files gets too high
-            Log.e(TAG, "Unable to get a unique file name: " + e);
+            Log.e(TAG, "Unable to get a unique file name", e);
             return null;
         }
         return outFile;
@@ -806,7 +806,7 @@ public class Utils {
                                 new InputStreamReader(fileInputStream, StandardCharsets.UTF_8));
                 return parsedVibration.resolve(vibrator);
             } catch (IOException e) {
-                Log.e(TAG, "FileNotFoundException" + e);
+                Log.e(TAG, "IOException", e);
             }
         } else {
             // File not found or cannot be read

@@ -501,6 +501,18 @@
     <string name="biometric_dialog_use_pattern">Use pattern</string>
     <!-- Button text shown on BiometricPrompt giving the user the option to use an alternate form of authentication (Pass) [CHAR LIMIT=30] -->
     <string name="biometric_dialog_use_password">Use password</string>
+    <!-- Header text for biometric prompt reset lockout with PIN [CHAR LIMIT=40] -->
+    <string name="biometric_dialog_enter_pin">Enter your PIN</string>
+    <!-- Header text for biometric prompt reset lockout with password [CHAR LIMIT=40] -->
+    <string name="biometric_dialog_enter_password">Enter your password</string>
+    <!-- Header text for biometric prompt reset lockout with pattern [CHAR LIMIT=40] -->
+    <string name="biometric_dialog_enter_pattern">Enter your pattern</string>
+    <!-- Subtitle string for biometric prompt reset lockout with pin [CHAR LIMIT=NONE] -->
+    <string name="biometric_dialog_recovery_pin">PIN is required to recover biometrics after too many failed attempts</string>
+    <!-- Subtitle string for biometric prompt reset lockout with pattern [CHAR LIMIT=NONE] -->
+    <string name="biometric_dialog_recovery_pattern">Pattern is required to recover biometrics after too many failed attempts</string>
+    <!-- Subtitle string for biometric prompt reset lockout with password [CHAR LIMIT=NONE] -->
+    <string name="biometric_dialog_recovery_password">Password is required to recover biometrics after too many failed attempts</string>
     <!-- Error string shown when the user enters an incorrect PIN [CHAR LIMIT=40]-->
     <string name="biometric_dialog_wrong_pin">Wrong PIN</string>
     <!-- Error string shown when the user enters an incorrect pattern [CHAR LIMIT=40]-->
@@ -2789,6 +2801,14 @@
 
     <!-- accessibility label for paging indicator in quick settings [CHAR LIMITi=NONE] -->
     <string name="accessibility_quick_settings_page">Page <xliff:g name="current_page" example="1">%1$d</xliff:g> of <xliff:g name="num_pages" example="2">%2$d</xliff:g></string>
+
+    <!-- Strings for the dialog to enable accessibility services in key gestures -->
+    <!-- Text for the dialog title. -->
+    <string name="accessibility_key_gesture_dialog_title" translatable="false">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
+    <!-- Text for showing inside the dialog.-->
+    <string name="accessibility_key_gesture_dialog_content" translatable="false">Action + <xliff:g name="secondary_key" example="Alt">%1$s</xliff:g> + <xliff:g name="key_code" example="M">%2$s</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">%3$s</xliff:g>. <xliff:g name="feature_intro" example="Magnification intro">%4$s</xliff:g></string>
+    <!-- The prefix string for the magnification intro -->
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" translatable="false">This allows you to quickly zoom in on the screen to make content larger.</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->

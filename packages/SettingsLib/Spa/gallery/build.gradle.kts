@@ -27,6 +27,7 @@ android {
         applicationId = "com.android.settingslib.spa.gallery"
         versionCode = 1
         versionName = "1.0"
+        minSdk = 23
     }
 
     sourceSets.getByName("main") {
