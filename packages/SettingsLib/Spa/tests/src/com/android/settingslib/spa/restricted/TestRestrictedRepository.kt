@@ -16,12 +16,14 @@
 
 package com.android.settingslib.spa.restricted
 
+import com.android.settingslib.spa.restricted.Blocked.SwitchPreferenceOverrides
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
 class TestRestrictedRepository : RestrictedRepository {
     var isBlockedWithDetails = false
-    var canOverrideSwitchChecked = false
+    var switchPreferenceOverrides = SwitchPreferenceOverrides()
     var detailsIsShown = false
 
     override fun restrictedModeFlow(restrictions: Restrictions): Flow<RestrictedMode> {
@@ -34,8 +36,9 @@ class TestRestrictedRepository : RestrictedRepository {
             restrictions.isEmpty() -> NoRestricted
             isBlockedWithDetails ->
                 object : BlockedWithDetails {
-                    override val canOverrideSwitchChecked =
-                        this@TestRestrictedRepository.canOverrideSwitchChecked
+                    override val switchPreferenceOverridesFlow = flow {
+                        emit(switchPreferenceOverrides)
+                    }
 
                     override fun showDetails() {
                         detailsIsShown = true

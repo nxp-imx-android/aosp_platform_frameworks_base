@@ -27,5 +27,5 @@
         android:label="Tests for Spa-system"
         android:targetPackage="com.android.settingslib.spa.system.test" />
 
-    <uses-sdk android:minSdkVersion="31" />
+    <uses-sdk android:minSdkVersion="33" />
 </manifest>

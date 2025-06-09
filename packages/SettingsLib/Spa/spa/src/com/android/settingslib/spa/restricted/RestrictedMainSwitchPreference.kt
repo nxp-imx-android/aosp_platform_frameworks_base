@@ -25,8 +25,7 @@ import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
  * Restricted version [MainSwitchPreference].
  *
  * @param ifBlockedOverrideCheckedTo if this is not null and the current [RestrictedMode] is
- *   [Blocked] and [Blocked.canOverrideSwitchChecked] is set to true, the switch's checked status
- *   will be overridden to this value.
+ *   [Blocked], the switch's checked status will be overridden to this value.
  */
 @Composable
 fun RestrictedMainSwitchPreference(

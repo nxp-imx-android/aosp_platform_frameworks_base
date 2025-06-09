@@ -111,11 +111,10 @@ class RestrictedMainSwitchPreferenceTest {
     }
 
     @Test
-    fun whenBlockedWithDetailsThenOverrideSwitchCheckedToFalse_overrideCheckedToFalse() {
+    fun whenBlockedWithDetailsThenOverrideCheckedToFalse_overrideCheckedToFalse() {
         switchPreferenceModel.checkedState.value = true
         val restrictions = TestRestrictions(isEmpty = false)
         testRestrictedRepository.isBlockedWithDetails = true
-        testRestrictedRepository.canOverrideSwitchChecked = true
 
         setContent(restrictions, ifBlockedOverrideCheckedTo = false)
 
@@ -124,11 +123,10 @@ class RestrictedMainSwitchPreferenceTest {
     }
 
     @Test
-    fun whenBlockedWithDetailsThenOverrideSwitchCheckedToTrue_overrideCheckedToTrue() {
+    fun whenBlockedWithDetailsThenOverrideCheckedToTrue_overrideCheckedToTrue() {
         switchPreferenceModel.checkedState.value = false
         val restrictions = TestRestrictions(isEmpty = false)
         testRestrictedRepository.isBlockedWithDetails = true
-        testRestrictedRepository.canOverrideSwitchChecked = true
 
         setContent(restrictions, ifBlockedOverrideCheckedTo = true)
 
