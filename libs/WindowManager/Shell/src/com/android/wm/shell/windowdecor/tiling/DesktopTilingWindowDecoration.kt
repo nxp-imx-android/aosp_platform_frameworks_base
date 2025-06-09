@@ -462,7 +462,7 @@ class DesktopTilingWindowDecoration(
                             taskInfo.isFullscreen,
                         )
 
-                    !isActiveTaskWithinDesk(taskInfo.taskId) ->
+                    !taskInfo.isFreeform ->
                         removeTaskIfTiled(
                             taskInfo.taskId,
                             taskVanished = true,
@@ -488,9 +488,6 @@ class DesktopTilingWindowDecoration(
             hiddenByOverviewAnimation = false
         }
     }
-
-    private fun isActiveTaskWithinDesk(taskId: Int): Boolean =
-        desktopUserRepositories.current.getDeskIdForTask(taskId) == deskId
 
     private fun handleTaskBroughtToFront(taskId: Int) {
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
