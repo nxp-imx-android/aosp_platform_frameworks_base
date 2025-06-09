@@ -20,11 +20,12 @@ import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.ShadeListBuilder
+import com.android.systemui.statusbar.notification.collection.forEachGroupEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderEntryListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderGroupListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnAfterRenderListListener
@@ -151,31 +152,6 @@ class RenderStageManager @Inject constructor() : PipelineDumpable {
                     }
                 }
                 else -> error("Unhandled entry: $entry")
-            }
-        }
-    }
-
-    /**
-     * Performs an action on all group entries, even if they are in a bundle
-     */
-    private inline fun List<PipelineEntry>.forEachGroupEntry(
-        action: (GroupEntry) -> Unit
-    ) {
-        forEach { entry ->
-            when (entry) {
-                is GroupEntry -> {
-                    action(entry)
-                }
-                is BundleEntry -> {
-                    for (bundleChild in entry.children) {
-                        if (bundleChild is GroupEntry) {
-                            action(bundleChild)
-                        }
-                    }
-                }
-                else -> {
-                    // Do nothing for leaf nodes
-                }
             }
         }
     }

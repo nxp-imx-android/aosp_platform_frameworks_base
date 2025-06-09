@@ -86,3 +86,24 @@ sealed class PipelineEntry(
         fun onSensitivityChanged(entry: NotificationEntry)
     }
 }
+
+/** Performs an action on all group entries, even if they are in a bundle */
+inline fun List<PipelineEntry>.forEachGroupEntry(action: (GroupEntry) -> Unit) {
+    forEach { entry ->
+        when (entry) {
+            is GroupEntry -> {
+                action(entry)
+            }
+            is BundleEntry -> {
+                for (bundleChild in entry.children) {
+                    if (bundleChild is GroupEntry) {
+                        action(bundleChild)
+                    }
+                }
+            }
+            else -> {
+                // Do nothing for leaf nodes
+            }
+        }
+    }
+}
