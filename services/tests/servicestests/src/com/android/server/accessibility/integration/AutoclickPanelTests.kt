@@ -32,12 +32,13 @@ import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
+import com.android.compatibility.common.util.PollingCheck
+import com.android.compatibility.common.util.PollingCheck.waitFor
 import com.android.compatibility.common.util.SettingsStateChangerRule
 import com.android.server.accessibility.Flags
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
@@ -126,6 +127,10 @@ class AutoclickPanelTests {
         ).visibleCenter
     }
 
+    private fun waitAndAssert(condition: PollingCheck.PollingCheckCondition) {
+        waitFor(FIND_OBJECT_TIMEOUT.inWholeMilliseconds, condition)
+    }
+
     @Test
     fun togglePauseResumeButton_contentDescriptionReflectsTheState() {
         // Expect the panel to start with the pause button.
@@ -168,21 +173,34 @@ class AutoclickPanelTests {
 
     @Test
     fun clickPositionButton_autoclickPanelMovesAroundTheScreen() {
-        // Capture position of the panel after each click.
+        // Capture the position of the panel and confirm it moves after clicking the positio
+        // button.
         val startingPosition = getAutoclickPanelPosition()
         clickPositionButton()
+        waitAndAssert {
+            startingPosition != getAutoclickPanelPosition()
+        }
+
         val secondPosition = getAutoclickPanelPosition()
         clickPositionButton()
+        waitAndAssert {
+            secondPosition != getAutoclickPanelPosition()
+        }
+
         val thirdPosition = getAutoclickPanelPosition()
         clickPositionButton()
+        waitAndAssert {
+            thirdPosition != getAutoclickPanelPosition()
+        }
+
         val fourthPosition = getAutoclickPanelPosition()
         clickPositionButton()
-        val fifthPosition = getAutoclickPanelPosition()
+        waitAndAssert {
+            fourthPosition != getAutoclickPanelPosition()
+        }
 
         // Confirm the panel moved around the screen and finished in the starting location.
-        assertNotEquals(startingPosition, secondPosition)
-        assertNotEquals(secondPosition, thirdPosition)
-        assertNotEquals(thirdPosition, fourthPosition)
+        val fifthPosition = getAutoclickPanelPosition()
         assertEquals(startingPosition, fifthPosition)
     }
 
