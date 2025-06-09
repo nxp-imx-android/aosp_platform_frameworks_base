@@ -1078,6 +1078,7 @@ public abstract class Context {
      *         does not exist.
      */
     @Nullable
+    @RavenwoodKeep
     public final Drawable getDrawable(@DrawableRes int id) {
         return getResources().getDrawable(id, getTheme());
     }
@@ -1094,6 +1095,7 @@ public abstract class Context {
      *         does not exist.
      */
     @NonNull
+    @RavenwoodKeep
     public final ColorStateList getColorStateList(@ColorRes int id) {
         return getResources().getColorStateList(id, getTheme());
     }

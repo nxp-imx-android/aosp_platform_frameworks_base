@@ -52,6 +52,9 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.StrictMode;
 import android.os.UserHandle;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodThrow;
 import android.text.TextUtils;
 import android.util.Log;
 import android.window.DesktopExperienceFlags;
@@ -81,6 +84,7 @@ import java.util.Objects;
  * behavior.
  */
 
+@RavenwoodKeepWholeClass
 public final class Icon implements Parcelable {
     private static final String TAG = "Icon";
     private static final boolean DEBUG = false;
@@ -442,6 +446,34 @@ public final class Icon implements Parcelable {
         return drawable;
     }
 
+    @RavenwoodReplace(blockedBy = PackageManager.class)
+    private Resources getResourcesForPackage(Context context, String resPackage) {
+        final PackageManager pm = context.getPackageManager();
+        try {
+            ApplicationInfo ai = pm.getApplicationInfo(
+                    resPackage,
+                    PackageManager.MATCH_UNINSTALLED_PACKAGES
+                            | PackageManager.GET_SHARED_LIBRARY_FILES);
+            if (ai != null) {
+                return pm.getResourcesForApplication(ai);
+            } else {
+                return null;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, String.format("Unable to find pkg=%s for icon %s",
+                    resPackage, this), e);
+            return null;
+        }
+    }
+
+    private Resources getResourcesForPackage$ravenwood(Context context, String resPackage) {
+        if (!resPackage.equals(context.getPackageName())) {
+            throw new IllegalArgumentException(
+                    "Ravenwood does not support loading Icon from other packages");
+        }
+        return context.getResources();
+    }
+
     /**
      * Do the heavy lifting of loading the drawable, but stop short of applying any tint.
      */
@@ -470,20 +502,10 @@ public final class Icon implements Parcelable {
                             mObj1 = Resources.getSystem();
                         }
                     } else {
-                        final PackageManager pm = context.getPackageManager();
-                        try {
-                            ApplicationInfo ai = pm.getApplicationInfo(
-                                    resPackage,
-                                    PackageManager.MATCH_UNINSTALLED_PACKAGES
-                                    | PackageManager.GET_SHARED_LIBRARY_FILES);
-                            if (ai != null) {
-                                mObj1 = pm.getResourcesForApplication(ai);
-                            } else {
-                                break;
-                            }
-                        } catch (PackageManager.NameNotFoundException e) {
-                            Log.e(TAG, String.format("Unable to find pkg=%s for icon %s",
-                                    resPackage, this), e);
+                        var res = getResourcesForPackage(context, resPackage);
+                        if (res != null) {
+                            mObj1 = res;
+                        } else {
                             break;
                         }
                     }
@@ -566,6 +588,7 @@ public final class Icon implements Parcelable {
      *
      * @hide
      */
+    @RavenwoodThrow(reason = "Ravenwood does not support multiuser")
     public Drawable loadDrawableAsUser(Context context, int userId) {
         if (mType == TYPE_RESOURCE) {
             String resPackage = getResPackage();
