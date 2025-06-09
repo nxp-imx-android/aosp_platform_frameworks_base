@@ -105,10 +105,19 @@ public class AdaptiveIconDrawable extends Drawable implements Drawable.Callback 
     private static final float EXTRA_INSET_PERCENTAGE = 1 / 4f;
     private static final float DEFAULT_VIEW_PORT_SCALE = 1f / (1 + 2 * EXTRA_INSET_PERCENTAGE);
 
+    // Aspect ratio over which the icon should be considered a banner. Halfway between square icon
+    // and 16:9 banner to account for slight variations in aspect ratios.
+    private static final float BANNER_THRESHOLD_ASPECT_RATIO = 1.38f;
+
     /**
      * Clip path defined in R.string.config_icon_mask.
      */
     private static Path sMask;
+
+    /**
+     * Clip path defined in R.string.config_banner_mask;
+     */
+    private static Path sMaskBanner;
 
     /**
      * Scaled mask based on the view bounds.
@@ -165,6 +174,7 @@ public class AdaptiveIconDrawable extends Drawable implements Drawable.Callback 
         // TODO: either make sMask update only when config_icon_mask changes OR
         // get rid of it all-together in layoutlib
         sMask = PathParser.createPathFromPathData(r.getString(R.string.config_icon_mask));
+        sMaskBanner = PathParser.createPathFromPathData(r.getString(R.string.config_banner_mask));
         mMask = new Path(sMask);
         mMaskScaleOnly = new Path(mMask);
         mMaskMatrix = new Matrix();
@@ -362,12 +372,19 @@ public class AdaptiveIconDrawable extends Drawable implements Drawable.Callback 
     }
 
     private void updateMaskBoundsInternal(Rect b) {
+        Path mask;
+        if (b.width() / (float) b.height() > BANNER_THRESHOLD_ASPECT_RATIO) {
+            mask = sMaskBanner;
+        } else {
+            mask = sMask;
+        }
+
         // reset everything that depends on the view bounds
         mMaskMatrix.setScale(b.width() / MASK_SIZE, b.height() / MASK_SIZE);
-        sMask.transform(mMaskMatrix, mMaskScaleOnly);
+        mask.transform(mMaskMatrix, mMaskScaleOnly);
 
         mMaskMatrix.postTranslate(b.left, b.top);
-        sMask.transform(mMaskMatrix, mMask);
+        mask.transform(mMaskMatrix, mMask);
 
         if (mLayersBitmap == null || mLayersBitmap.getWidth() != b.width()
                 || mLayersBitmap.getHeight() != b.height()) {
