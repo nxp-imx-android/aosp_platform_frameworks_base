@@ -123,9 +123,9 @@ public class DeveloperVerifierControllerTest {
     Computer mSnapshot;
     Supplier<Computer> mSnapshotSupplier = () -> mSnapshot;
     @Mock
-    PackageInstallerSession.VerifierCallback mSessionCallback;
+    PackageInstallerSession.DeveloperVerifierCallback mSessionCallback;
     @Mock
-    PackageInstallerSession.VerifierCallback mSessionCallbackSecondaryUser;
+    PackageInstallerSession.DeveloperVerifierCallback mSessionCallbackSecondaryUser;
 
     private DeveloperVerifierController mDeveloperVerifierController;
     private String mPackageName;
@@ -187,14 +187,15 @@ public class DeveloperVerifierControllerTest {
     public void testRebindService() {
         ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> captor = ArgumentCaptor.forClass(
                 ServiceConnector.ServiceLifecycleCallbacks.class);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0))
-                .isTrue();
+        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0,
+                mSessionCallback)).isTrue();
         verify(mMockServiceConnector).setServiceLifecycleCallbacks(captor.capture());
         ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> callbacks =
                 captor.getValue();
         // Verify that the countdown to auto-disconnect has started
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         callbacks.onConnected(mMockService);
+        verify(mSessionCallback, times(1)).onConnectionEstablished(anyInt());
         verify(mInjector, times(1)).removeCallbacks(eq(mHandler),
                 runnableCaptor.capture());
         Runnable autoDisconnectRunnable = runnableCaptor.getValue();
@@ -207,8 +208,8 @@ public class DeveloperVerifierControllerTest {
         when(mSnapshot.getPackageUidInternal(
                 eq(mPackageName), anyLong(), anyInt(), anyInt()
         )).thenReturn(INVALID_UID);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0))
-                .isFalse();
+        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0,
+                mSessionCallback)).isFalse();
         // Test that nothing crashes if the verifier is available even though there's no bound
         mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, 0);
         mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, 0);
@@ -221,8 +222,8 @@ public class DeveloperVerifierControllerTest {
     public void testUnbindService() throws Exception {
         ArgumentCaptor<ServiceConnector.ServiceLifecycleCallbacks> captor = ArgumentCaptor.forClass(
                 ServiceConnector.ServiceLifecycleCallbacks.class);
-        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0))
-                .isTrue();
+        assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, 0,
+                mSessionCallback)).isTrue();
         verify(mMockServiceConnector).setServiceLifecycleCallbacks(captor.capture());
         ServiceConnector.ServiceLifecycleCallbacks<IDeveloperVerifierService> callbacks =
                 captor.getValue();
@@ -523,6 +524,7 @@ public class DeveloperVerifierControllerTest {
         final long extendTimeMillis = TEST_TIMEOUT_DURATION_MILLIS;
         assertThat(session.extendTimeRemaining(extendTimeMillis)).isEqualTo(extendTimeMillis);
         assertThat(session.getTimeoutTime()).isEqualTo(initialTimeoutTime + extendTimeMillis);
+        verify(mSessionCallback, times(1)).onTimeoutExtensionRequested();
     }
 
     @Test
@@ -588,10 +590,10 @@ public class DeveloperVerifierControllerTest {
         verify(mMockService).onVerificationRequired(captor.capture());
         DeveloperVerificationSession session = captor.getValue();
         final int policy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
-        when(mSessionCallback.setVerificationPolicy(eq(policy))).thenReturn(true);
+        when(mSessionCallback.onVerificationPolicyOverridden(eq(policy))).thenReturn(true);
         assertThat(session.setVerificationPolicy(policy)).isTrue();
         assertThat(session.getVerificationPolicy()).isEqualTo(policy);
-        verify(mSessionCallback, times(1)).setVerificationPolicy(eq(policy));
+        verify(mSessionCallback, times(1)).onVerificationPolicyOverridden(eq(policy));
     }
 
     @Test

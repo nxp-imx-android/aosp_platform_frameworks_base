@@ -457,11 +457,17 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      */
     private final AtomicInteger mCurrentVerificationPolicy;
     /**
+     * Tracks how many times the developer verification has been retried as requested by the user.
+     */
+    private AtomicInteger mDeveloperVerificationRetryCount = new AtomicInteger(0);
+    /**
      * Note all calls must be done outside {@link #mLock} to prevent lock inversion.
      */
     private final StagingManager mStagingManager;
     @NonNull
     private final DeveloperVerifierController mDeveloperVerifierController;
+    private final DeveloperVerifierCallback mDeveloperVerifierCallback =
+            new DeveloperVerifierCallback();
 
     private final InstallDependencyHelper mInstallDependencyHelper;
 
@@ -1377,15 +1383,19 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
         mMetrics = new SessionMetrics(mHandler, sessionId, userId, installerUid, params,
                 createdMillis, committedMillis, committed, childSessionIds, parentSessionId,
-                sessionErrorCode);
+                sessionErrorCode, mInitialVerificationPolicy);
 
         if (shouldUseVerificationService()) {
             // Start binding to the verification service, if not bound already.
             mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mPm::snapshotComputer,
-                    userId);
+                    userId, mDeveloperVerifierCallback);
             if (!TextUtils.isEmpty(params.appPackageName)) {
+                // Opportunistically notify verifier about package name so no need to check results.
                 mDeveloperVerifierController.notifyPackageNameAvailable(params.appPackageName,
                         userId);
+            }
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationBindStarted();
             }
         }
     }
@@ -2734,6 +2744,14 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
     private void onSessionVerificationFailure(int error, String msg, Bundle extras) {
         Slog.e(TAG, "Failed to verify session " + sessionId);
+        // Logging of developer verification failure.
+        if (extras != null && extras.containsKey(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON)) {
+            final String packageName = getPackageName();
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationFailed(
+                        extras.getInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON), packageName);
+            }
+        }
         // Dispatch message to remove session from PackageInstallerService.
         dispatchSessionFinished(error, msg, extras);
         maybeFinishChildSessions(error, msg);
@@ -3030,15 +3048,17 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
             // Send the request to the verifier and wait for its response before the rest of
             // the installation can proceed.
-            final VerifierCallback verifierCallback = new VerifierCallback();
             if (!mDeveloperVerifierController.startVerificationSession(mPm::snapshotComputer,
                     userId, sessionId, getPackageName(),
                     stageDir == null ? Uri.EMPTY : Uri.fromFile(stageDir), signingInfo,
                     declaredLibraries, mCurrentVerificationPolicy.get(),
                     /* extensionParams= */ params.extensionParams,
-                    verifierCallback, /* retry= */ false)) {
-                // A verifier is installed but cannot be connected.
-                verifierCallback.onConnectionFailed();
+                    mDeveloperVerifierCallback, /* retry= */ false)) {
+                // A verifier is installed but cannot be connected. Maybe notify user.
+                mDeveloperVerifierCallback.onConnectionInfeasible();
+            }
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationRequestSent();
             }
         } else {
             // No need to check with verifier. Proceed with the rest of the verification.
@@ -3058,6 +3078,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         if ((params.installFlags & PackageManager.INSTALL_FROM_ADB) != 0) {
             // adb installs are exempted from verification unless explicitly requested
             if (!params.forceVerification) {
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerificationBypassedByAdb();
+                }
                 return false;
             }
         }
@@ -3072,7 +3095,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         return true;
     }
 
-    private void startVerificationSession(Supplier<Computer> snapshotSupplier, boolean retry) {
+    private void retryDeveloperVerificationSession(Supplier<Computer> snapshotSupplier) {
         final SigningInfo signingInfo;
         final List<SharedLibraryInfo> declaredLibraries;
         synchronized (mLock) {
@@ -3080,22 +3103,21 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             declaredLibraries =
                     mPackageLite == null ? null : mPackageLite.getDeclaredLibraries();
         }
+        // TODO (b/360130528): limit the number of times user can retry
+        mDeveloperVerificationRetryCount.getAndIncrement();
         // Send the request to the verifier and wait for its response before the rest of
         // the installation can proceed.
-        final VerifierCallback verifierCallback = new VerifierCallback();
         if (!mDeveloperVerifierController.startVerificationSession(snapshotSupplier, userId,
                 sessionId, getPackageName(),
                 stageDir == null ? Uri.EMPTY : Uri.fromFile(stageDir), signingInfo,
                 declaredLibraries, mCurrentVerificationPolicy.get(), /* extensionParams= */ null,
-                verifierCallback, retry)) {
-            // A verifier is installed but cannot be connected.
-            verifierCallback.onConnectionFailed();
-            String errorMsg =
-                    "A verifier agent is available on device but cannot be connected.";
-            setSessionFailed(INSTALL_FAILED_INTERNAL_ERROR, errorMsg);
-            onSessionVerificationFailure(INSTALL_FAILED_INTERNAL_ERROR, errorMsg,
-                    /* extras= */ null);
-            // TODO (b/360130528): maybe show error dialog to the user
+                mDeveloperVerifierCallback, /* retry = */ true)) {
+            // A verifier is installed but cannot be connected. Maybe prompt the user again.
+            mDeveloperVerifierCallback.onConnectionInfeasible();
+        }
+        synchronized (mMetrics) {
+            mMetrics.onDeveloperVerificationRetryRequestSent(
+                    mDeveloperVerificationRetryCount.get());
         }
     }
 
@@ -3167,27 +3189,57 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     /**
      * Used for the VerifierController to report status back.
      */
-    public class VerifierCallback {
-
+    public class DeveloperVerifierCallback {
         /**
-         * Called by the VerifierController when the verifier requests to get the current
-         * verification policy for this session.
+         * Called by the VerifierController to indicate that the verifier has been connected. Only
+         * used for metrics logging for now.
          */
-        public @PackageInstaller.DeveloperVerificationPolicy int getVerificationPolicy() {
-            return mCurrentVerificationPolicy.get();
+        public void onConnectionEstablished(int verifierUid) {
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerifierConnectionEstablished(verifierUid);
+            }
         }
 
         /**
          * Called by the VerifierController when the verifier requests to change the verification
          * policy for this session.
          */
-        public boolean setVerificationPolicy(
+        public boolean onVerificationPolicyOverridden(
                 @PackageInstaller.DeveloperVerificationPolicy int policy) {
             if (!isValidVerificationPolicy(policy)) {
                 return false;
             }
             mCurrentVerificationPolicy.set(policy);
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationPolicyOverridden(policy);
+            }
             return true;
+        }
+
+        /**
+         * Called by the session itself when the verifier cannot be connected because of infeasible
+         * reasons such as it's not installed on the target user.
+         */
+        private void onConnectionInfeasible() {
+            mHandler.post(() -> {
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerifierResponseReceived(
+                            SessionMetrics.DeveloperVerifierResponse.OTHER);
+                }
+                if (mCurrentVerificationPolicy.get()
+                        != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
+                    // Continue with the rest of the verification and installation.
+                    resumeVerify();
+                    return;
+                }
+
+                mVerificationUserActionNeededReason =
+                        DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
+                mVerificationFailedMessage = "A verifier agent is specified on device but cannot "
+                        + "be connected because of unknown error.";
+                maybeSendUserActionForVerification(/* blockingFailure= */ false,
+                        /* extensionResponse= */ null);
+            });
         }
 
         /**
@@ -3195,6 +3247,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          */
         public void onConnectionFailed() {
             mHandler.post(() -> {
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerifierResponseReceived(
+                            SessionMetrics.DeveloperVerifierResponse.DISCONNECTED);
+                }
                 if (mCurrentVerificationPolicy.get()
                         != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
                     // Continue with the rest of the verification and installation.
@@ -3212,12 +3268,25 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         }
 
         /**
+         * Called by the VerifierController when the verifier has requested a timeout extension.
+         */
+        public void onTimeoutExtensionRequested() {
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationTimeoutExtensionRequested();
+            }
+        }
+
+        /**
          * Called by the VerifierController when the verification request has timed out.
          */
         public void onTimeout() {
             // Always notify the verifier, regardless of the policy.
             mDeveloperVerifierController.notifyVerificationTimeout(sessionId, userId);
             mHandler.post(() -> {
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerifierResponseReceived(
+                            SessionMetrics.DeveloperVerifierResponse.TIMEOUT);
+                }
                 if (mCurrentVerificationPolicy.get()
                         != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
                     // Continue with the rest of the verification and installation.
@@ -3242,6 +3311,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 @NonNull DeveloperVerificationStatus statusReceived,
                 @Nullable PersistableBundle extensionResponse) {
             mHandler.post(() -> {
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerifierResponseReceived(statusReceived.isVerified()
+                            ? SessionMetrics.DeveloperVerifierResponse.COMPLETE_WITH_PASS
+                            : SessionMetrics.DeveloperVerifierResponse.COMPLETE_WITH_REJECT);
+                    mMetrics.onAslStatusReceived(statusReceived.getAslStatus());
+                }
                 if (mCurrentVerificationPolicy.get() == DEVELOPER_VERIFICATION_POLICY_NONE) {
                     // No policy applied. Continue with the rest of the verification and install.
                     resumeVerify();
@@ -3250,6 +3325,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 if (statusReceived.isVerified()) {
                     if (statusReceived.isLite()) {
                         mVerificationLiteEnabled = true;
+                        synchronized (mMetrics) {
+                            mMetrics.onDeveloperVerificationLiteEnabled();
+                        }
                         // This is a lite verification. Need further user action.
                         mVerificationUserActionNeededReason =
                                 DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
@@ -3286,6 +3364,13 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          */
         public void onVerificationIncompleteReceived(int incompleteReason) {
             mHandler.post(() -> {
+                final boolean isNetworkUnavailable =
+                        incompleteReason == DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerifierResponseReceived(isNetworkUnavailable
+                            ? SessionMetrics.DeveloperVerifierResponse.INCOMPLETE_NETWORK
+                            : SessionMetrics.DeveloperVerifierResponse.INCOMPLETE_UNKNOWN);
+                }
                 if (mCurrentVerificationPolicy.get() == DEVELOPER_VERIFICATION_POLICY_NONE) {
                     // Continue with the rest of the verification and installation.
                     resumeVerify();
@@ -3294,7 +3379,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
                 StringBuilder sb = new StringBuilder(
                         "Verification cannot be completed because of ");
-                if (incompleteReason == DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE) {
+                if (isNetworkUnavailable) {
                     mVerificationUserActionNeededReason =
                             DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
                     sb.append("unavailable network.");
@@ -3316,6 +3401,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 mVerificationUserActionNeeded = true;
                 sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId,
                         intent);
+                synchronized (mMetrics) {
+                    mMetrics.onDeveloperVerificationUserActionRequired(
+                            mVerificationUserActionNeededReason);
+                }
                 return;
             }
             // Not sending user action. Directly return the failure to the installer.
@@ -5021,7 +5110,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     + "SessionID: " + sessionId);
             return;
         }
-
+        synchronized (mMetrics) {
+            mMetrics.onDeveloperVerificationUserResponseReceived(userResponse);
+        }
         switch (userResponse) {
             case DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR -> {
                 String errorMsg = "User could not be notified about the pending verification.";
@@ -5060,8 +5151,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
 
             case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {
-                // TODO (b/360130528): limit the number of times user can retry
-                startVerificationSession(mPm::snapshotComputer, /* retry= */ true);
+                retryDeveloperVerificationSession(mPm::snapshotComputer /* retry= */);
             }
 
             case DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY -> resumeVerify();
@@ -6076,6 +6166,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // been sent out, which happens right after commit() is called.
             mDeveloperVerifierController.notifyVerificationCancelled(
                     params.appPackageName, userId);
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationCancelled();
+            }
         }
     }
 
