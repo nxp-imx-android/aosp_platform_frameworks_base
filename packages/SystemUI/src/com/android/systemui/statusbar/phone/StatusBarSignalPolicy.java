@@ -35,7 +35,6 @@ import com.android.systemui.statusbar.connectivity.SignalCallback;
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController;
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor;
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor;
-import com.android.systemui.statusbar.pipeline.ethernet.shared.StatusBarSignalPolicyRefactorEthernet;
 import com.android.systemui.statusbar.policy.SecurityController;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.tuner.TunerService.Tunable;
@@ -113,9 +112,7 @@ public class StatusBarSignalPolicy
 
         mJavaAdapter.alwaysCollectFlow(
                 mAirplaneModeInteractor.isAirplaneMode(), this::updateAirplaneModeIcon);
-        if (StatusBarSignalPolicyRefactorEthernet.isEnabled()) {
-            mJavaAdapter.alwaysCollectFlow(mEthernetInteractor.getIcon(), this::updateEthernetIcon);
-        }
+        mJavaAdapter.alwaysCollectFlow(mEthernetInteractor.getIcon(), this::updateEthernetIcon);
     }
 
     /** Call to initialize and register this class with the system. */
@@ -133,9 +130,7 @@ public class StatusBarSignalPolicy
                     mAirplaneModeInteractor.isAirplaneMode(),
                     this::updateAirplaneModeIcon);
         }
-        if (StatusBarSignalPolicyRefactorEthernet.isEnabled()) {
-            mJavaAdapter.alwaysCollectFlow(mEthernetInteractor.getIcon(), this::updateEthernetIcon);
-        }
+        mJavaAdapter.alwaysCollectFlow(mEthernetInteractor.getIcon(), this::updateEthernetIcon);
     }
 
     public void destroy() {
@@ -196,28 +191,7 @@ public class StatusBarSignalPolicy
         }
     }
 
-    @Override
-    public void setEthernetIndicators(IconState state) {
-        if (StatusBarSignalPolicyRefactorEthernet.isEnabled()) {
-            return;
-        }
-
-        int resId = state.icon;
-        String description = state.contentDescription;
-
-        if (resId > 0) {
-            mIconController.setIcon(mSlotEthernet, resId, description);
-            mIconController.setIconVisibility(mSlotEthernet, true);
-        } else {
-            mIconController.setIconVisibility(mSlotEthernet, false);
-        }
-    }
-
     private void updateEthernetIcon(@Nullable Icon.Resource ethernetIcon) {
-        if (StatusBarSignalPolicyRefactorEthernet.isUnexpectedlyInLegacyMode()) {
-            return;
-        }
-
         if (ethernetIcon != null) {
             mIconController.setIcon(
                     mSlotEthernet,
