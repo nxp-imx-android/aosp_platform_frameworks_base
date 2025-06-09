@@ -77,6 +77,7 @@ package android {
     field public static final String CALL_PRIVILEGED = "android.permission.CALL_PRIVILEGED";
     field public static final String CAMERA = "android.permission.CAMERA";
     field public static final String CAPTURE_AUDIO_OUTPUT = "android.permission.CAPTURE_AUDIO_OUTPUT";
+    field @FlaggedApi("com.android.hardware.input.request_key_capture_api") public static final String CAPTURE_KEYBOARD = "android.permission.CAPTURE_KEYBOARD";
     field public static final String CHANGE_COMPONENT_ENABLED_STATE = "android.permission.CHANGE_COMPONENT_ENABLED_STATE";
     field public static final String CHANGE_CONFIGURATION = "android.permission.CHANGE_CONFIGURATION";
     field public static final String CHANGE_NETWORK_STATE = "android.permission.CHANGE_NETWORK_STATE";
