@@ -650,8 +650,6 @@ public final class UserManagerTest {
 
     @MediumTest
     @Test
-    @RequiresFlagsEnabled(
-            android.multiuser.Flags.FLAG_IGNORE_RESTRICTIONS_WHEN_DELETING_PRIVATE_PROFILE)
     public void testRemoveUser_shouldRemovePrivateUser_withDisallowRemoveUserRestriction() {
         UserHandle mainUser = mUserManager.getMainUser();
         mUserManager.setUserRestriction(
