@@ -23,6 +23,7 @@ import static android.content.pm.UserInfo.FLAG_ADMIN;
 import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.multiuser.Flags.FLAG_BLOCK_PRIVATE_SPACE_CREATION;
 import static android.multiuser.Flags.FLAG_DEMOTE_MAIN_USER;
+import static android.multiuser.Flags.FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER;
 import static android.multiuser.Flags.FLAG_ENABLE_PRIVATE_SPACE_FEATURES;
 import static android.multiuser.Flags.FLAG_LOGOUT_USER_API;
 import static android.multiuser.Flags.FLAG_SUPPORT_AUTOLOCK_FOR_PRIVATE_SPACE;
@@ -236,10 +237,10 @@ public final class UserManagerServiceMockedTest {
         doNothing().when(mSpiedContext).sendBroadcastAsUser(any(), any(), any());
         mockIsLowRamDevice(false);
 
-        // Called when getting boot user. config_hsumBootStrategy is 0 by default.
         mSpyResources = spy(mSpiedContext.getResources());
         when(mSpiedContext.getResources()).thenReturn(mSpyResources);
         mockHsumBootStrategy(BOOT_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER);
+        mockDisallowRemovingLastAdminUser(false);
 
         doReturn(mSpyResources).when(Resources::getSystem);
 
@@ -1822,6 +1823,19 @@ public final class UserManagerServiceMockedTest {
         assertThat(mUsers.get(UserHandle.USER_SYSTEM).info.isAdmin()).isTrue();
     }
 
+    @Test
+    @RequiresFlagsEnabled(FLAG_DISALLOW_REMOVING_LAST_ADMIN_USER)
+    public void testRevokeUserAdminFailsForLastFullAdmin() {
+        mockDisallowRemovingLastAdminUser(true);
+        // Mark system user as headless so that it is not a full admin user.
+        setSystemUserHeadless(true);
+        addAdminUser(USER_ID);
+
+        mUms.revokeUserAdmin(USER_ID);
+
+        assertThat(mUsers.get(USER_ID).info.isAdmin()).isTrue();
+    }
+
     /**
      * Returns true if the user's XML file has Default restrictions
      * @param userId Id of the user.
@@ -1956,6 +1970,16 @@ public final class UserManagerServiceMockedTest {
         doReturn(strategy)
                 .when(mSpyResources)
                 .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+    }
+
+    private void mockDisallowRemovingLastAdminUser(boolean disallow) {
+        boolean previousValue = mSpyResources
+                .getBoolean(com.android.internal.R.bool.config_disallowRemovingLastAdminUser);
+        Log.d(TAG, "mockDisallowRemovingLastAdminUser(): will return " + disallow + " instead of "
+                + previousValue);
+        doReturn(disallow)
+                .when(mSpyResources)
+                .getBoolean(com.android.internal.R.bool.config_disallowRemovingLastAdminUser);
     }
 
     private void mockUserIsInCall(boolean isInCall) {

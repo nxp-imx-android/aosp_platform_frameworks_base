@@ -42,6 +42,7 @@ import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_ABORTED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_INVALID_USER_TYPE;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_UNSPECIFIED;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_ALREADY_AN_ADMIN;
+import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_IS_LAST_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.ERROR_CODE_USER_IS_NOT_AN_ADMIN;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_DEMOTE_MAIN_USER;
 import static com.android.server.pm.UserJourneyLogger.USER_JOURNEY_PROMOTE_MAIN_USER;
@@ -2337,14 +2338,14 @@ public class UserManagerService extends IUserManager.Stub {
                             currentUserId, userId, /* userType */ "", /* userFlags */ -1);
                     return;
                 } else if (user.info.isAdmin()) {
-                    // Exit if the user is already an Admin.
+                    // Exit if the user is already an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                         user.info, USER_JOURNEY_GRANT_ADMIN,
                         ERROR_CODE_USER_ALREADY_AN_ADMIN);
                     return;
                 } else if (user.info.isProfile() || user.info.isGuest()
                         || user.info.isRestricted()) {
-                    // Profiles, guest users or restricted profiles cannot become an Admin.
+                    // Profiles, guest users or restricted profiles cannot become an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId,
                             user.info, USER_JOURNEY_GRANT_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
                     return;
@@ -2376,14 +2377,20 @@ public class UserManagerService extends IUserManager.Stub {
                             USER_JOURNEY_REVOKE_ADMIN, currentUserId, userId, "", -1);
                     return;
                 } else if (!user.info.isAdmin()) {
-                    // Exit if user is not an Admin.
+                    // Exit if user is not an admin.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_USER_IS_NOT_AN_ADMIN);
                     return;
                 } else if ((user.info.flags & UserInfo.FLAG_SYSTEM) != 0) {
-                    // System user must always be an Admin.
+                    // System user cannot lose its admin status.
                     mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
                             USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_INVALID_USER_TYPE);
+                    return;
+                } else if (isNonRemovableLastAdminUserLU(user.info)) {
+                    // This is the last admin user and this device requires that it not lose its
+                    // admin status.
+                    mUserJourneyLogger.logUserJourneyFinishWithError(currentUserId, user.info,
+                            USER_JOURNEY_REVOKE_ADMIN, ERROR_CODE_USER_IS_LAST_ADMIN);
                     return;
                 }
                 user.info.flags ^= UserInfo.FLAG_ADMIN;
@@ -7043,17 +7050,10 @@ public class UserManagerService extends IUserManager.Stub {
                     msg);
             return UserManager.REMOVE_RESULT_ALREADY_BEING_REMOVED;
         }
-        if (android.multiuser.Flags.disallowRemovingLastAdminUser()) {
-            if (getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)) {
-                // For HSUM, the headless system user is currently flagged as an admin user now.
-                // Thus we must exclude it when checking for the last admin user, and only consider
-                // full admin users. b/419105275 will investigate not making HSU an admin.
-                if (isLastFullAdminUserLU(userData.info)) {
-                    Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.",
-                            userId, msg);
-                    return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
-                }
-            }
+        if (isNonRemovableLastAdminUserLU(userData.info)) {
+            Slogf.e(LOG_TAG, "User %d can not be %s, last admin user cannot be removed.", userId,
+                    msg);
+            return UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER;
         }
         return UserManager.REMOVE_RESULT_USER_IS_REMOVABLE;
     }
@@ -8839,6 +8839,21 @@ public class UserManagerService extends IUserManager.Stub {
      */
     private boolean isNonRemovableMainUser(UserInfo userInfo) {
         return userInfo.isMain() && isMainUserPermanentAdmin();
+    }
+
+    /**
+     * Returns true if we must not delete this user or revoke its admin status because it is the
+     * last admin user on a device that requires there to always be at least one admin.
+     */
+    @GuardedBy("mUsersLock")
+    private boolean isNonRemovableLastAdminUserLU(UserInfo userInfo) {
+        return android.multiuser.Flags.disallowRemovingLastAdminUser()
+                && getContextResources().getBoolean(R.bool.config_disallowRemovingLastAdminUser)
+                // For HSUM, the headless system user is currently flagged as an admin user now.
+                // Thus we must exclude it when checking for the last admin user, and only consider
+                // full admin users.
+                // TODO(b/419105275): Investigate not making HSU an admin.
+                && isLastFullAdminUserLU(userInfo);
     }
 
     /** Returns if the user is the last admin user that is a full user. */

@@ -69,6 +69,7 @@ public class UserJourneyLogger {
     public static final int ERROR_CODE_USER_ALREADY_AN_ADMIN = 5;
     public static final int ERROR_CODE_USER_IS_NOT_AN_ADMIN = 6;
     public static final int ERROR_CODE_INVALID_USER_TYPE = 7;
+    public static final int ERROR_CODE_USER_IS_LAST_ADMIN = 8;
 
     @IntDef(prefix = {"ERROR_CODE"}, value = {
             ERROR_CODE_UNSPECIFIED,
@@ -78,7 +79,8 @@ public class UserJourneyLogger {
             ERROR_CODE_USER_ALREADY_AN_ADMIN,
             ERROR_CODE_USER_IS_NOT_AN_ADMIN,
             ERROR_CODE_INVALID_SESSION_ID,
-            ERROR_CODE_INVALID_USER_TYPE
+            ERROR_CODE_INVALID_USER_TYPE,
+            ERROR_CODE_USER_IS_LAST_ADMIN,
     })
     public @interface UserJourneyErrorCode {
     }
