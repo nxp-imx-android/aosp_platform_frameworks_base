@@ -360,6 +360,17 @@ public class ZygoteProcess {
                                                   boolean bindMountAppStorageDirs,
                                                   boolean bindOverrideSysprops,
                                                   @Nullable String[] zygoteArgs) {
+        if (Flags.zygoteAppLaunchLatencyAblation()) {
+            final long sleepUntilMs = System.currentTimeMillis() + 5;
+            long nextSleepMs = 5;
+            while (nextSleepMs > 0) {
+                try {
+                    Thread.sleep(nextSleepMs);
+                } catch (InterruptedException ignored) {}
+                nextSleepMs = sleepUntilMs - System.currentTimeMillis();
+            }
+        }
+
         // TODO (chriswailes): Is there a better place to check this value?
         if (fetchUsapPoolEnabledPropWithMinInterval()) {
             informZygotesOfUsapPoolStatus();
