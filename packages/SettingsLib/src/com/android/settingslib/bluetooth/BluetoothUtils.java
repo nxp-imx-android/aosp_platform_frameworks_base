@@ -83,7 +83,7 @@ public class BluetoothUtils {
     private static final String KEY_HEARABLE_CONTROL_SLICE = "HEARABLE_CONTROL_SLICE_WITH_WIDTH";
     private static final Set<Integer> SA_PROFILES =
             ImmutableSet.of(
-                    BluetoothProfile.A2DP, BluetoothProfile.LE_AUDIO, BluetoothProfile.HEARING_AID);
+                    BluetoothProfile.A2DP, BluetoothProfile.LE_AUDIO);
     private static final List<Integer> BLUETOOTH_DEVICE_CLASS_HEADSET =
             List.of(
                     BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES,

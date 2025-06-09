@@ -110,7 +110,6 @@ public class BluetoothUtilsTest {
     @Mock private PackageManager mPackageManager;
     @Mock private LeAudioProfile mA2dpProfile;
     @Mock private LeAudioProfile mLeAudioProfile;
-    @Mock private LeAudioProfile mHearingAid;
     @Mock private LocalBluetoothLeBroadcast mBroadcast;
     @Mock private LocalBluetoothProfileManager mProfileManager;
     @Mock private LocalBluetoothManager mLocalBluetoothManager;
@@ -158,7 +157,6 @@ public class BluetoothUtilsTest {
         when(mProfileManager.getLeAudioProfile()).thenReturn(mLeAudioProfile);
         when(mA2dpProfile.getProfileId()).thenReturn(BluetoothProfile.A2DP);
         when(mLeAudioProfile.getProfileId()).thenReturn(BluetoothProfile.LE_AUDIO);
-        when(mHearingAid.getProfileId()).thenReturn(BluetoothProfile.HEARING_AID);
         when(mContext.getSystemService(InputManager.class)).thenReturn(mInputManager);
         when(mInputManager.getInputDeviceIds()).thenReturn(new int[]{TEST_DEVICE_ID});
         when(mInputManager.getInputDeviceBluetoothAddress(TEST_DEVICE_ID)).thenReturn(TEST_ADDRESS);
@@ -1225,25 +1223,6 @@ public class BluetoothUtilsTest {
                         new AudioDeviceAttributes(
                                 AudioDeviceAttributes.ROLE_OUTPUT,
                                 AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-                                TEST_ADDRESS));
-    }
-
-    @Test
-    public void getAudioDeviceAttributesForSpatialAudio_hearingAid() {
-        when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
-        when(mCachedBluetoothDevice.getAddress()).thenReturn(TEST_ADDRESS);
-        when(mCachedBluetoothDevice.getProfiles()).thenReturn(List.of(mHearingAid));
-        when(mHearingAid.isEnabled(mBluetoothDevice)).thenReturn(true);
-
-        AudioDeviceAttributes attr =
-                BluetoothUtils.getAudioDeviceAttributesForSpatialAudio(
-                        mCachedBluetoothDevice, AudioManager.AUDIO_DEVICE_CATEGORY_HEARING_AID);
-
-        assertThat(attr)
-                .isEqualTo(
-                        new AudioDeviceAttributes(
-                                AudioDeviceAttributes.ROLE_OUTPUT,
-                                AudioDeviceInfo.TYPE_HEARING_AID,
                                 TEST_ADDRESS));
     }
 
