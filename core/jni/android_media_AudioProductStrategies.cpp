@@ -51,6 +51,7 @@ static jmethodID gAudioProductStrategyCstor;
 static struct {
     jfieldID    mAudioAttributesGroups;
     jfieldID    mName;
+    jfieldID    mZoneId;
     jfieldID    mId;
 } gAudioProductStrategyFields;
 
@@ -79,11 +80,13 @@ static jint convertAudioProductStrategiesFromNative(
     jobject jAudioAttribute = NULL;
     jstring jName = NULL;
     jint jStrategyId = NULL;
+    jint jZoneId = NULL;
     jint numAttributesGroups;
     size_t indexGroup = 0;
 
     jName = env->NewStringUTF(strategy.getName().c_str());
     jStrategyId = static_cast<jint>(strategy.getId());
+    jZoneId = static_cast<jint>(strategy.getZoneId());
 
     // Audio Attributes Group array
     int attrGroupIndex = 0;
@@ -150,7 +153,7 @@ static jint convertAudioProductStrategiesFromNative(
     }
     *jAudioStrategy = env->NewObject(gAudioProductStrategyClass, gAudioProductStrategyCstor,
                                      jName,
-                                     jStrategyId,
+                                     jStrategyId, jZoneId,
                                      jAudioAttributesGroups);
 exit:
     if (jAudioAttributes != NULL) {
@@ -167,6 +170,74 @@ exit:
         env->DeleteLocalRef(jName);
     }
     return jStatus;
+}
+
+static jint android_media_AudioSystem_getAudioAttributesForLegacyStream(JNIEnv *env, jobject clazz,
+                                                                       jint jStreamType,
+                                                                       jobject jAttributesBuilder) {
+    if (env == NULL) {
+        return AUDIO_JAVA_DEAD_OBJECT;
+    }
+
+    if (jAttributesBuilder == NULL) {
+        ALOGE("%s: NULL AudioAttributes.Builder", __func__);
+        return (jint)AUDIO_JAVA_BAD_VALUE;
+    }
+
+    if (!JNIAudioAttributeHelper::isInstanceOfAudioAttributesBuilder(env, jAttributesBuilder)) {
+        ALOGE("%s: not an AudioAttributes", __func__);
+        return (jint)AUDIO_JAVA_BAD_VALUE;
+    }
+
+    audio_attributes_t attributes;
+    status_t status = AudioSystem::getAttributesForStreamType((audio_stream_type_t)jStreamType,
+                                                          attributes);
+
+    if (status != NO_ERROR) {
+        ALOGE("%s: error getting audio attributes for stream %d", __func__, jStreamType);
+        return nativeToJavaStatus(status);
+    }
+
+    status = JNIAudioAttributeHelper::nativeToJavaBuilder(env, jAttributesBuilder, attributes);
+
+    if (status != NO_ERROR) {
+        ALOGE("getAudioAttributesForLegacyStream error %d", status);
+        return nativeToJavaStatus(status);
+    }
+
+    return AUDIO_JAVA_SUCCESS;
+}
+
+static jint android_media_AudioSystem_getLegacyStreamForAudioAttributes(JNIEnv *env, jobject clazz,
+                                                                       jobject jattributes) {
+    if (env == NULL) {
+        return (jint)AUDIO_STREAM_DEFAULT;
+    }
+
+    if (jattributes == NULL) {
+        ALOGE("%s: NULL AudioAttributes", __func__);
+        return (jint)AUDIO_STREAM_DEFAULT;
+    }
+
+    if (!JNIAudioAttributeHelper::isInstanceOfAudioAttributes(env, jattributes)) {
+        ALOGE("%s not an AudioAttributes", __func__ );
+        return (jint)AUDIO_STREAM_DEFAULT;
+    }
+
+    audio_attributes_t attributes;
+    int status = JNIAudioAttributeHelper::nativeFromJava(env, jattributes, &attributes);
+
+    if (status != NO_ERROR) {
+        ALOGE("%s error %d", __func__,  status);
+        return (jint)AUDIO_STREAM_DEFAULT;;
+    }
+    audio_stream_type_t type;
+    status = AudioSystem::getStreamTypeForAttributes(attributes, type);
+    if (status != NO_ERROR) {
+        ALOGE("%s error %d", __func__, status);
+        return (jint)AUDIO_STREAM_DEFAULT;;
+    }
+    return (jint)type;
 }
 
 static jint
@@ -215,6 +286,10 @@ exit:
 static const JNINativeMethod gMethods[] = {
     {"native_list_audio_product_strategies", "(Ljava/util/ArrayList;)I",
                         (void *)android_media_AudioSystem_listAudioProductStrategies},
+    {"native_get_audio_attributes_for_legacy_stream", "(ILandroid/media/AudioAttributes$Builder;)I",
+     (void *)android_media_AudioSystem_getAudioAttributesForLegacyStream},
+    {"native_get_legacy_stream_for_audio_attributes", "(Landroid/media/AudioAttributes;)I",
+     (void *)android_media_AudioSystem_getLegacyStreamForAudioAttributes},
 };
 
 int register_android_media_AudioProductStrategies(JNIEnv *env)
@@ -229,7 +304,8 @@ int register_android_media_AudioProductStrategies(JNIEnv *env)
     gAudioProductStrategyClass = MakeGlobalRefOrDie(env, audioProductStrategyClass);
     gAudioProductStrategyCstor = GetMethodIDOrDie(
                 env, audioProductStrategyClass, "<init>",
-                "(Ljava/lang/String;I[Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;)V");
+                "(Ljava/lang/String;"
+                "II[Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;)V");
     gAudioProductStrategyFields.mAudioAttributesGroups = GetFieldIDOrDie(
                 env, audioProductStrategyClass, "mAudioAttributesGroups",
                 "[Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;");
@@ -237,6 +313,8 @@ int register_android_media_AudioProductStrategies(JNIEnv *env)
                 env, audioProductStrategyClass, "mName", "Ljava/lang/String;");
     gAudioProductStrategyFields.mId = GetFieldIDOrDie(
                 env, audioProductStrategyClass, "mId", "I");
+    gAudioProductStrategyFields.mZoneId = GetFieldIDOrDie(
+                env, audioProductStrategyClass, "mZoneId", "I");
 
     jclass audioAttributesGroupClass = FindClassOrDie(env, kAudioAttributesGroupsClassPathName);
     gAudioAttributesGroupClass = MakeGlobalRefOrDie(env, audioAttributesGroupClass);

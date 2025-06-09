@@ -60,6 +60,7 @@ import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.media.audio.Flags.scoManagedByAudio;
 import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
 import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
+import static android.media.audiopolicy.Flags.multiZoneAudio;
 import static android.media.audiopolicy.Flags.volumeGroupManagementUpdate;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.INVALID_UID;
@@ -559,6 +560,44 @@ public class AudioService extends IAudioService.Stub
             return new Pair<>(-1, false);
         }
         return new Pair<>(streamState.getIndex(device), streamState.mIsMuted);
+    }
+
+    /**
+     * Returns volume group id for a stream type
+     * @param stream stream to query
+     *
+     * @return group id if the stream is valid, has been created, and volume group state
+     * initialized, returns {@code AudioVolumeGroup.DEFAULT_VOLUME_GROUP} otherwise
+     */
+    private int getVolumeGroupStateIdForStreamType(int stream) {
+        if (!mStreamStatesCreated.get()) {
+            return AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
+        }
+        VolumeStreamState volumeStreamState = mStreamStates.get(stream);
+        if (volumeStreamState == null) {
+            return AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
+        }
+        if (volumeStreamState.mVolumeGroupState == null) {
+            return AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
+        }
+        return volumeStreamState.mVolumeGroupState.getId();
+    }
+
+    /**
+     * Returns volume group id for a stream type
+     * @param stream stream to query for the id
+     *
+     * <p>Will try to get volume group id from volume stream states, if not yet available
+     * native side will be queried
+     *
+     * @return volume group for stream
+     */
+    private int getVolumeGroupForStreamType(int stream) {
+        int groupId = getVolumeGroupStateIdForStreamType(stream);
+        if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
+            return groupId;
+        }
+        return mAudioSystem.getVolumeGroupIdFromStreamType(stream);
     }
 
     /**
@@ -1456,7 +1495,7 @@ public class AudioService extends IAudioService.Stub
         // Priority 1 - Android Property
         // Priority 2 - Audio Policy Service
         // Priority 3 - Default Value
-        if (AudioProductStrategy.getAudioProductStrategies().size() > 0) {
+        if (!mAudioSystem.getAudioProductStrategies(/* filterInternal= */ true).isEmpty()) {
             int numStreamTypes = AudioSystem.getNumStreamTypes();
 
             for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
@@ -1464,7 +1503,7 @@ public class AudioService extends IAudioService.Stub
                 int minVolume = -1;
 
                 if (volumeGroupManagementUpdate()) {
-                    int groupId = getVolumeGroupForStreamType(streamType);
+                    int groupId = mAudioSystem.getVolumeGroupIdFromStreamType(streamType);
                     if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
                         maxVolume = AudioSystem.getMaxVolumeIndexForGroup(groupId);
                         minVolume = AudioSystem.getMinVolumeIndexForGroup(groupId);
@@ -2533,17 +2572,28 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
-    @android.annotation.EnforcePermission(MODIFY_AUDIO_ROUTING)
     /**
-     * @return the {@link android.media.audiopolicy.AudioProductStrategy} discovered from the
-     * platform configuration file.
+     * Returns list audio product strategies
+     * @param filterInternal parameter that can be used to filter internal audio product strategies
+     *
+     * <p>Internal strategies are the strategy reserved for use by native audio service
+     * (e.g. patch and rerouting strategies).
+     *
+     * @return the non-internal {@link AudioProductStrategy} discovered from the platform
+     * configuration file if {@code filterInternal} is {@code true}, returns all audio product
+     * strategies otherwise.
      */
+    @android.annotation.EnforcePermission(anyOf = {
+            MODIFY_AUDIO_ROUTING,
+            QUERY_AUDIO_STATE,
+            MODIFY_AUDIO_SETTINGS_PRIVILEGED })
     @NonNull
-    public List<AudioProductStrategy> getAudioProductStrategies() {
+    @Override
+    public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
         // verify permissions
         super.getAudioProductStrategies_enforcePermission();
 
-        return AudioProductStrategy.getAudioProductStrategies();
+        return  mAudioSystem.getAudioProductStrategies(filterInternal);
     }
 
     @android.annotation.EnforcePermission(anyOf = {
@@ -4669,6 +4719,18 @@ public class AudioService extends IAudioService.Stub
 
     @Override
     @android.annotation.EnforcePermission(anyOf = {
+            MODIFY_AUDIO_ROUTING,
+            QUERY_AUDIO_STATE,
+            MODIFY_AUDIO_SETTINGS_PRIVILEGED })
+    public int getVolumeGroupIdForAttributes(@NonNull AudioAttributes attributes, int zoneId) {
+        super.getVolumeGroupIdForAttributes_enforcePermission();
+        Objects.requireNonNull(attributes, "Audio attributes must not be null");
+        return AudioProductStrategy.getVolumeGroupIdForAudioAttributes(attributes, zoneId,
+                /* fallbackOnDefault= */ true);
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {
             MODIFY_AUDIO_SETTINGS_PRIVILEGED, MODIFY_AUDIO_ROUTING })
     /** @see AudioManager#setVolumeGroupVolumeIndex(int, int, int) */
     public void setVolumeGroupVolumeIndex(int groupId, int index, int flags,
@@ -5391,6 +5453,8 @@ public class AudioService extends IAudioService.Stub
                 + registerVolumeCallbackApiHardening());
         pw.println("\tcom.android.media.audio.Flags.updatePreferredDevicesForStrategy:"
                 + updatePreferredDevicesForStrategy());
+        pw.println("\tandroid.media.audiopolicy.Flags.multi_zone_audio:"
+                + multiZoneAudio());
     }
 
     private void dumpAudioMode(PrintWriter pw) {
@@ -9179,16 +9243,6 @@ public class AudioService extends IAudioService.Stub
     private static boolean isCallStream(int stream) {
         return stream == AudioSystem.STREAM_VOICE_CALL
                 || stream == AudioSystem.STREAM_BLUETOOTH_SCO;
-    }
-
-    private static int getVolumeGroupForStreamType(int stream) {
-        AudioAttributes attributes =
-                AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(stream);
-        if (attributes.equals(new AudioAttributes.Builder().build())) {
-            return AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
-        }
-        return AudioProductStrategy.getVolumeGroupIdForAudioAttributes(
-                attributes, /* fallbackOnDefault= */ false);
     }
 
     private static int initMinMaxForVolumeGroup(int groupId, int minVol, int maxVol,

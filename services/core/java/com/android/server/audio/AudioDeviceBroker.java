@@ -225,7 +225,8 @@ public class AudioDeviceBroker {
         mContext = context;
         mAudioService = service;
         mBtHelper = new BtHelper(this, context);
-        mDeviceInventory = new AudioDeviceInventory(this);
+        mDeviceInventory = new AudioDeviceInventory(this,
+                audioSystem.getAudioProductStrategies(/* filterInternal= */ true));
         mSystemServer = SystemServerAdapter.getDefaultAdapter(mContext);
         mAudioSystem = audioSystem;
         mScoManagedByAudio = scoManagedByAudio()
@@ -293,7 +294,8 @@ public class AudioDeviceBroker {
     }
 
     private void initRoutingStrategyIds() {
-        List<AudioProductStrategy> strategies = AudioProductStrategy.getAudioProductStrategies();
+        List<AudioProductStrategy> strategies =
+                mAudioSystem.getAudioProductStrategies(/* filterInternal= */ true);
         mCommunicationStrategyId = -1;
         mAccessibilityStrategyId = -1;
         for (AudioProductStrategy strategy : strategies) {

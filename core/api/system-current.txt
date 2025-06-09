@@ -7659,7 +7659,7 @@ package android.media {
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public int[] getActiveAssistantServicesUids();
     method @IntRange(from=0) public long getAdditionalOutputDeviceDelay(@NonNull android.media.AudioDeviceInfo);
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public int[] getAssistantServicesUids();
-    method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public static java.util.List<android.media.audiopolicy.AudioProductStrategy> getAudioProductStrategies();
+    method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public static java.util.List<android.media.audiopolicy.AudioProductStrategy> getAudioProductStrategies();
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public static java.util.List<android.media.audiopolicy.AudioVolumeGroup> getAudioVolumeGroups();
     method @NonNull @RequiresPermission(android.Manifest.permission.CALL_AUDIO_INTERCEPTION) public android.media.AudioRecord getCallDownlinkExtractionAudioRecord(@NonNull android.media.AudioFormat);
     method @NonNull @RequiresPermission(android.Manifest.permission.CALL_AUDIO_INTERCEPTION) public android.media.AudioTrack getCallUplinkInjectionAudioTrack(@NonNull android.media.AudioFormat);
@@ -7678,6 +7678,7 @@ package android.media {
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public java.util.List<android.media.AudioDeviceAttributes> getPreferredDevicesForStrategy(@NonNull android.media.audiopolicy.AudioProductStrategy);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public int getStreamTypeAlias(int);
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public int[] getSupportedSystemUsages();
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getVolumeGroupIdForAttributes(@NonNull android.media.AudioAttributes, int);
     method @IntRange(from=0) @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED, android.Manifest.permission.MODIFY_AUDIO_ROUTING}) public int getVolumeGroupMaxVolumeIndex(int);
     method @IntRange(from=0) @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED, android.Manifest.permission.MODIFY_AUDIO_ROUTING}) public int getVolumeGroupMinVolumeIndex(int);
     method @IntRange(from=0) @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED, android.Manifest.permission.MODIFY_AUDIO_ROUTING}) public int getVolumeGroupVolumeIndex(int);
@@ -8205,14 +8206,22 @@ package android.media.audiopolicy {
   }
 
   public final class AudioProductStrategy implements android.os.Parcelable {
-    method @NonNull public static android.media.audiopolicy.AudioProductStrategy createInvalidAudioProductStrategy(int);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public static android.media.audiopolicy.AudioProductStrategy createInvalidAudioProductStrategy(int);
     method public int describeContents();
-    method @NonNull public android.media.AudioAttributes getAudioAttributes();
-    method public int getId();
-    method @NonNull public String getName();
-    method public boolean supportsAudioAttributes(@NonNull android.media.AudioAttributes);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public android.media.AudioAttributes getAudioAttributes();
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public static android.media.audiopolicy.AudioProductStrategy getAudioProductStrategyForAudioAttributes(@NonNull android.media.AudioAttributes, int, boolean);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getId();
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public String getName();
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public static int getVolumeGroupIdForAudioAttributes(@NonNull android.media.AudioAttributes, int, boolean);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getVolumeGroupIdForAudioAttributes(@NonNull android.media.AudioAttributes, int);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getZoneId();
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public static int getZoneIdForAudioVolumeGroupId(int);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public boolean supportsAudioAttributes(@NonNull android.media.AudioAttributes);
+    method @FlaggedApi("android.media.audiopolicy.multi_zone_audio") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public boolean supportsAudioAttributes(@NonNull android.media.AudioAttributes, int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.audiopolicy.AudioProductStrategy> CREATOR;
+    field @FlaggedApi("android.media.audiopolicy.multi_zone_audio") public static final int DEFAULT_ZONE_ID = 0; // 0x0
+    field @FlaggedApi("android.media.audiopolicy.multi_zone_audio") public static final int INVALID_ZONE_ID = -1; // 0xffffffff
   }
 
   public final class AudioVolumeGroup implements android.os.Parcelable {
