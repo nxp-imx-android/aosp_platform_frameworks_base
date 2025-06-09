@@ -184,6 +184,8 @@ public enum DesktopExperienceFlags {
     ENABLE_REJECT_HOME_TRANSITION(
             Flags::enableRejectHomeTransition, true,
             Flags.FLAG_ENABLE_REJECT_HOME_TRANSITION),
+    ENABLE_REMOVE_DESK_ON_LAST_TASK_REMOVAL(Flags::removeDeskOnLastTaskRemoval, false,
+            Flags.FLAG_REMOVE_DESK_ON_LAST_TASK_REMOVAL),
     ENABLE_REQUEST_FULLSCREEN_REFACTOR(
             Flags::enableRequestFullscreenRefactor, false,
             Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_REFACTOR),
