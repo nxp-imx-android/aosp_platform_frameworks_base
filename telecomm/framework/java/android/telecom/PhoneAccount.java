@@ -437,18 +437,24 @@ public final class PhoneAccount implements Parcelable {
 
 
     /**
-     * Flag indicating that this {@link PhoneAccount} supports the use TelecomManager APIs that
-     * utilize {@link android.os.OutcomeReceiver}s or {@link java.util.function.Consumer}s.
-     * Be aware, if this capability is set, {@link #CAPABILITY_SELF_MANAGED} will be amended by
-     * Telecom when this {@link PhoneAccount} is registered via
-     * {@link TelecomManager#registerPhoneAccount(PhoneAccount)}.
+     * Flag indicating that this {@link PhoneAccount} supports the transactional
+     * {@link TelecomManager#addCall} API for adding calls.
      *
      * <p>
-     * {@link android.os.OutcomeReceiver}s and {@link java.util.function.Consumer}s represent
-     * transactional operations because the operation can succeed or fail.  An app wishing to use
-     * transactional operations should define behavior for a successful and failed TelecomManager
-     * API call.
+     * An app that declares this capability is indicating its support for a newer,
+     * more flexible call registration mechanism. When this capability is set on a
+     * {@link PhoneAccount}, the Telecom framework will amend its capabilities to
+     * include {@link #CAPABILITY_SELF_MANAGED}. This allows the app to manage its
+     * own call UI and lifecycle, while still integrating with the Android system for
+     * audio routing and call management.
      *
+     * <p>
+     * This capability should <strong>only</strong> be added if your application is using the
+     * {@link TelecomManager#addCall} method to report new incoming and outgoing
+     * calls. If your app uses the legacy methods {@link TelecomManager#addNewIncomingCall} or
+     * {@link TelecomManager#placeCall}, this capability <strong>must not</strong> be used.
+     *
+     * @see TelecomManager#addCall
      * @see #CAPABILITY_SELF_MANAGED
      * @see #getCapabilities
      */
