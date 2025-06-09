@@ -147,8 +147,8 @@ object CredentialViewBinder {
                 }
 
                 launch {
-                    viewModel.isShadeExpanded.collect { isShadeExpanded ->
-                        if (isShadeExpanded) {
+                    viewModel.isShadeInteracted.collect { isShadeInteracted ->
+                        if (isShadeInteracted) {
                             host.onCredentialAborted()
                         }
                     }

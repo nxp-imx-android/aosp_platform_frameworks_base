@@ -58,6 +58,7 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -97,6 +98,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     private val testScope = kosmos.testScope
     private val fakeExecutor = kosmos.fakeExecutor
+    private val fakeShadeRepository = kosmos.fakeShadeRepository
 
     private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
 
@@ -152,7 +154,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
-    fun testDismissOnShadeDown() {
+    fun testDismissOnShadeInteraction() {
         val container = initializeFingerprintContainer(addToView = true)
         assertThat(container.parent).isNotNull()
         val root = container.rootView

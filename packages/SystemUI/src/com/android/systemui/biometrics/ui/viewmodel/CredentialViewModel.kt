@@ -75,8 +75,8 @@ constructor(
             }
         }
 
-    /** Whether the shade is expanded */
-    val isShadeExpanded = shadeInteractor.isShadeAnyExpanded
+    /** Whether the shade is being interacted with */
+    val isShadeInteracted = shadeInteractor.isUserInteracting
 
     /** Input flags for text based credential views */
     val inputFlags: Flow<Int?> =
