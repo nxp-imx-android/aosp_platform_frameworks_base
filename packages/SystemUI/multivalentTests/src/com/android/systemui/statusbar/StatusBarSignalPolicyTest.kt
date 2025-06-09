@@ -16,19 +16,13 @@
 
 package com.android.systemui.statusbar
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
-import com.android.systemui.Flags.FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.res.R.drawable.stat_sys_airplane_mode
-import com.android.systemui.statusbar.connectivity.IconState
-import com.android.systemui.statusbar.connectivity.NetworkController
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
@@ -43,12 +37,8 @@ import kotlin.test.Test
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verifyNoMoreInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -58,14 +48,12 @@ class StatusBarSignalPolicyTest : SysuiTestCase() {
 
     private val securityController = mock<SecurityController>()
     private val statusBarIconController = mock<StatusBarIconController>()
-    private val networkController = mock<NetworkController>()
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
             StatusBarSignalPolicy(
                 mContext,
                 statusBarIconController,
-                networkController,
                 securityController,
                 tunerService,
                 javaAdapter,
@@ -84,8 +72,7 @@ class StatusBarSignalPolicyTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
-    fun airplaneModeViaInteractor_statusBarSignalPolicyRefactorFlagEnabled_iconUpdated() =
+    fun airplaneModeViaInteractor_iconUpdated() =
         kosmos.runTest {
             underTest.start()
             clearInvocations(statusBarIconController)
@@ -98,71 +85,6 @@ class StatusBarSignalPolicyTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
-    fun airplaneModeViaSignalCallback_statusBarSignalPolicyRefactorFlagEnabled_iconNotUpdated() =
-        kosmos.runTest {
-            underTest.start()
-            clearInvocations(statusBarIconController)
-
-            // Make sure the legacy code path does not change airplane mode when the refactor
-            // flag is enabled.
-            underTest.setIsAirplaneMode(IconState(true, stat_sys_airplane_mode, ""))
-            verify(statusBarIconController, never()).setIconVisibility(eq(slotAirplane), any())
-
-            underTest.setIsAirplaneMode(IconState(false, stat_sys_airplane_mode, ""))
-            verify(statusBarIconController, never()).setIconVisibility(eq(slotAirplane), any())
-        }
-
-    @Test
-    @EnableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
-    fun statusBarSignalPolicyInitialization_statusBarSignalPolicyRefactorFlagEnabled_initNoOp() =
-        kosmos.runTest {
-            // Make sure StatusBarSignalPolicy.init does no initialization when
-            // the refactor flag is disabled.
-            underTest.init()
-            verifyNoMoreInteractions(securityController, networkController, tunerService)
-        }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
-    fun airplaneModeViaSignalCallback_statusBarSignalPolicyRefactorFlagDisabled_iconUpdated() =
-        kosmos.runTest {
-            underTest.init()
-
-            underTest.setIsAirplaneMode(IconState(true, stat_sys_airplane_mode, ""))
-            verify(statusBarIconController).setIconVisibility(slotAirplane, true)
-
-            underTest.setIsAirplaneMode(IconState(false, stat_sys_airplane_mode, ""))
-            verify(statusBarIconController).setIconVisibility(slotAirplane, false)
-        }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
-    fun airplaneModeViaInteractor_statusBarSignalPolicyRefactorFlagDisabled_iconNotUpdated() =
-        kosmos.runTest {
-            underTest.init()
-
-            // Make sure changing airplane mode from airplaneModeRepository does nothing
-            // if the StatusBarSignalPolicyRefactor is not enabled.
-            airplaneModeInteractor.setIsAirplaneMode(true)
-            verify(statusBarIconController, never()).setIconVisibility(eq(slotAirplane), any())
-
-            airplaneModeInteractor.setIsAirplaneMode(false)
-            verify(statusBarIconController, never()).setIconVisibility(eq(slotAirplane), any())
-        }
-
-    @Test
-    @DisableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
-    fun statusBarSignalPolicyInitialization_statusBarSignalPolicyRefactorFlagDisabled_startNoOp() =
-        kosmos.runTest {
-            // Make sure StatusBarSignalPolicy.start does no initialization when
-            // the refactor flag is disabled.
-            underTest.start()
-            verifyNoMoreInteractions(securityController, networkController, tunerService)
-        }
-
-    @Test
-    @EnableFlags(FLAG_STATUS_BAR_SIGNAL_POLICY_REFACTOR)
     fun ethernetIconViaInteractor_iconUpdated() =
         kosmos.runTest {
             underTest.start()

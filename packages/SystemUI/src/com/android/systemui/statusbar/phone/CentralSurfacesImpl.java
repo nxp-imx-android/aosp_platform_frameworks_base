@@ -31,7 +31,6 @@ import static androidx.lifecycle.Lifecycle.State.RESUMED;
 
 import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
 import static com.android.systemui.Flags.keyboardShortcutHelperRewrite;
-import static com.android.systemui.Flags.statusBarSignalPolicyRefactor;
 import static com.android.systemui.charging.WirelessChargingAnimation.UNKNOWN_BATTERY_LEVEL;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
 import static com.android.systemui.shared.Flags.ambientAod;
@@ -876,10 +875,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mUiModeManager = mContext.getSystemService(UiModeManager.class);
         mBubblesOptional.ifPresent(this::initBubbles);
         mKeyguardBypassController.listenForQsExpandedChange();
-
-        if (!statusBarSignalPolicyRefactor()) {
-            mStatusBarSignalPolicy.init();
-        }
 
         mKeyguardIndicationController.init();
 
