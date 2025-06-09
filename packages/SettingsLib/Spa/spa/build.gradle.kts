@@ -28,6 +28,7 @@ android {
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = 23
     }
 
     sourceSets.getByName("main") {

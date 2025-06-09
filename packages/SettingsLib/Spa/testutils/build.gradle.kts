@@ -24,6 +24,7 @@ val jetpackComposeVersion: String? by extra
 
 android {
     namespace = "com.android.settingslib.spa.testutils"
+    defaultConfig { minSdk = 23 }
 
     sourceSets.getByName("main") {
         kotlin.setSrcDirs(listOf("src"))
