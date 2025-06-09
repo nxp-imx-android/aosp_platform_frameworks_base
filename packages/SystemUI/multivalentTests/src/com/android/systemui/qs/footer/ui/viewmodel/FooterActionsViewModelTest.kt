@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.footer.ui.viewmodel
 
+import android.app.supervision.flags.Flags
 import android.graphics.drawable.Drawable
 import android.os.UserManager
 import android.platform.test.annotations.DisableFlags
@@ -70,6 +71,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -210,10 +212,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
 
         // Mock QSSecurityFooter to map a SecurityModel into a SecurityButtonConfig using the
         // logic in securityToConfig.
-        var securityToConfig: (SecurityModel) -> SecurityButtonConfig? = { null }
-        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
-            securityToConfig(it.arguments.first() as SecurityModel)
-        }
+        mockButtonConfig(qsSecurityFooterUtils, securityToConfig = { null })
 
         val underTest =
             utils.footerActionsViewModel(
@@ -238,7 +237,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
                 text = "foo",
                 isClickable = true,
             )
-        securityToConfig = { buttonConfig }
+        mockButtonConfig(qsSecurityFooterUtils, securityToConfig = { buttonConfig })
 
         // There was no change of the security info yet, so the mapper was not called yet.
         assertThat(currentSecurity()).isNull()
@@ -252,7 +251,10 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         assertThat(security.onClick).isNotNull()
 
         // If the config.clickable = false, then onClick should be null.
-        securityToConfig = { buttonConfig.copy(isClickable = false) }
+        mockButtonConfig(
+            qsSecurityFooterUtils,
+            securityToConfig = { buttonConfig.copy(isClickable = false) },
+        )
         securityController.updateState {}
         security = currentSecurity()
         assertThat(security).isNotNull()
@@ -268,10 +270,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
 
         // Mock QSSecurityFooter to map a SecurityModel into a SecurityButtonConfig using the
         // logic in securityToConfig.
-        var securityToConfig: (SecurityModel) -> SecurityButtonConfig? = { null }
-        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
-            securityToConfig(it.arguments.first() as SecurityModel)
-        }
+        mockButtonConfig(qsSecurityFooterUtils, securityToConfig = { null })
 
         val underTest =
             utils.footerActionsViewModel(
@@ -318,13 +317,16 @@ class FooterActionsViewModelTest : SysuiTestCase() {
 
         // Showing the security button will make this show as a simple button without text.
         assertThat(foregroundServices.displayText).isTrue()
-        securityToConfig = {
-            SecurityButtonConfig(
-                icon = Icon.Resource(res = 0, contentDescription = null),
-                text = "foo",
-                isClickable = true,
-            )
-        }
+        mockButtonConfig(
+            qsSecurityFooterUtils,
+            securityToConfig = {
+                SecurityButtonConfig(
+                    icon = Icon.Resource(res = 0, contentDescription = null),
+                    text = "foo",
+                    isClickable = true,
+                )
+            },
+        )
         securityController.updateState {}
         assertThat(currentForegroundServices()?.displayText).isFalse()
     }
@@ -483,10 +485,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
 
         // Mock QSSecurityFooter to map a SecurityModel into a SecurityButtonConfig using the
         // logic in securityToConfig.
-        val securityToConfig: (SecurityModel) -> SecurityButtonConfig? = { null }
-        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
-            securityToConfig(it.arguments.first() as SecurityModel)
-        }
+        mockButtonConfig(qsSecurityFooterUtils, securityToConfig = { null })
         val fgsManagerController =
             FakeFgsManagerController(showFooterDot = false, numRunningPackages = 1)
 
@@ -524,6 +523,21 @@ class FooterActionsViewModelTest : SysuiTestCase() {
                 )
             )
         assertThat(foregroundServices!!.displayText).isFalse()
+    }
+
+    private fun mockButtonConfig(
+        qsSecurityFooterUtils: QSSecurityFooterUtils,
+        securityToConfig: (SecurityModel) -> SecurityButtonConfig?,
+    ) {
+        if (Flags.enableSupervisionAppService()) {
+            whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
+                securityToConfig(it.arguments.first() as SecurityModel)
+            }
+        } else {
+            whenever(qsSecurityFooterUtils.getButtonConfig(any(), eq(null))).thenAnswer {
+                securityToConfig(it.arguments.first() as SecurityModel)
+            }
+        }
     }
 
     companion object {
