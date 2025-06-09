@@ -183,6 +183,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getGapHeightForChild_returnsBundleGapHeight_whenPreviousChildIsBundle() {
         // Assemble
         val child = mock<View>()
