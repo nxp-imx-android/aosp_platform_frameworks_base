@@ -18,6 +18,7 @@ package com.android.settingslib.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
@@ -44,6 +45,7 @@ public class SettingsSpinnerPreference extends Preference
     private int mPosition;
     private boolean mShouldPerformClick;
     private int mOffset;
+    private CharSequence mContentDescription;
 
     /**
      * Perform inflation from XML and apply a class-specific base style.
@@ -148,6 +150,12 @@ public class SettingsSpinnerPreference extends Preference
         notifyChanged();
     }
 
+    /** Sets the content description of the spinner. */
+    public void setContentDescription(@Nullable CharSequence contentDescription) {
+        mContentDescription = contentDescription;
+        notifyChanged();
+    }
+
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
@@ -179,6 +187,9 @@ public class SettingsSpinnerPreference extends Preference
             mShouldPerformClick = false;
             // To show dropdown view.
             spinner.performClick();
+        }
+        if (!TextUtils.isEmpty(mContentDescription)) {
+            spinner.setContentDescription(mContentDescription);
         }
     }
 
