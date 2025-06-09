@@ -1294,7 +1294,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         for (int i = 0; i < mCallbacks.size(); i++) {
             KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
             if (cb != null) {
-                cb.onBiometricRunningStateChanged(isFaceDetectionRunning(),
+                cb.onBiometricRunningStateChanged(isFaceAuthOrDetectionRunning(),
                         FACE);
             }
         }
@@ -1308,7 +1308,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
      * @deprecated This is being migrated to use modern architecture.
      */
     @Deprecated
-    public boolean isFaceDetectionRunning() {
+    public boolean isFaceAuthOrDetectionRunning() {
         return getFaceAuthInteractor() != null
                 && (getFaceAuthInteractor().isAuthRunning()
                 || getFaceAuthInteractor().isDetectRunning());

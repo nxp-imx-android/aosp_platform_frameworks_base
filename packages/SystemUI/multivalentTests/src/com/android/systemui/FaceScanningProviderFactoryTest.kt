@@ -115,7 +115,7 @@ class FaceScanningProviderFactoryTest : SysuiTestCase() {
     @Test
     fun shouldShowFaceScanningAnimationIfKeyguardFaceDetectionIsShowing() {
         whenever(keyguardUpdateMonitor.isFaceEnabledAndEnrolled).thenReturn(true)
-        whenever(keyguardUpdateMonitor.isFaceDetectionRunning).thenReturn(true)
+        whenever(keyguardUpdateMonitor.isFaceAuthOrDetectionRunning).thenReturn(true)
 
         assertThat(underTest.shouldShowFaceScanningAnim()).isTrue()
     }

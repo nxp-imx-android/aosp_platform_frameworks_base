@@ -190,10 +190,9 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun whenFaceIsLockedOutAndBypass_DetectRuns() =
+    fun whenFaceIsLockedOutAndBypass_runningAuthRequestNotNull() =
         kosmos.runTest {
             underTest.start()
-            val authenticationStatus = collectLastValue(underTest.authenticationStatus)
             faceAuthRepository.setLockedOut(true)
             fakeDeviceEntryFaceAuthRepository.isBypassEnabled.value = true
 
