@@ -18,16 +18,20 @@ package com.android.server.wm;
 
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.FLAG_PRESENTATION;
+import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_TRUSTED;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_WAKE;
+import static android.view.WindowManager.LayoutParams.TYPE_PRESENTATION;
+import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.window.flags.Flags.FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -198,6 +202,32 @@ public class PresentationControllerTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
+    public void testInvisiblePrivatePresentationIsAllowed() {
+        final int uid = Binder.getCallingUid();
+        final Task task = createTask(mDefaultDisplay);
+        task.effectiveUid = uid;
+        final ActivityRecord activity = createActivityRecord(task);
+        assertTrue(activity.isVisible());
+
+        // Add a private presentation window on a private presentation display.
+        final DisplayContent privateDisplay = createPrivatePresentationDisplay();
+        final WindowState window = addPrivatePresentationWindow(uid,
+                privateDisplay.getDisplayId());
+        window.setViewVisibility(View.VISIBLE);
+        final Transition addTransition = window.mTransitionController.getCollectingTransition();
+        completeTransition(addTransition, /*abortSync=*/ true);
+        assertTrue(window.isVisible());
+
+        // Making the private presentation view invisible is allowed, thus no close transition runs.
+        window.setViewVisibility(View.GONE);
+        assertTrue(window.isVisible());
+        waitHandlerIdle(window.mWmService.mAtmService.mH);
+        assertNull(window.mTransitionController.getCollectingTransition());
+        assertTrue(window.isVisible());
+    }
+
+    @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
+    @Test
     public void testPresentationCannotLaunchOnNonPresentationDisplayWithoutHostHavingGlobalFocus() {
         final int uid = Binder.getCallingUid();
         // Adding a presentation window on an internal display requires a host task
@@ -279,11 +309,20 @@ public class PresentationControllerTests extends WindowTestsBase {
     }
 
     private WindowState addPresentationWindow(int uid, int displayId) {
+        return addPresentationWindowInner(uid, displayId, false /* isPrivatePresentation */);
+    }
+
+    private WindowState addPrivatePresentationWindow(int uid, int displayId) {
+        return addPresentationWindowInner(uid, displayId, true /* isPrivatePresentation */);
+    }
+
+    private WindowState addPresentationWindowInner(int uid, int displayId,
+            boolean isPrivatePresentation) {
         final Session session = createTestSession(mAtm, 1234 /* pid */, uid);
         final int userId = UserHandle.getUserId(uid);
         doReturn(true).when(mWm.mUmInternal).isUserVisible(eq(userId), eq(displayId));
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.TYPE_PRESENTATION);
+                isPrivatePresentation ? TYPE_PRIVATE_PRESENTATION : TYPE_PRESENTATION);
         final IWindow clientWindow = new TestIWindow();
         final int res = mWm.addWindow(session, clientWindow, params, View.VISIBLE, displayId,
                 userId, WindowInsets.Type.defaultVisible(), null, new WindowRelayoutResult());
@@ -311,9 +350,21 @@ public class PresentationControllerTests extends WindowTestsBase {
     }
 
     private DisplayContent createPresentationDisplay() {
+        return createPresentationDisplayInner(false /* isPrivateDisplay */);
+    }
+
+    private DisplayContent createPrivatePresentationDisplay() {
+        return createPresentationDisplayInner(true /* isPrivateDisplay */);
+    }
+
+    private DisplayContent createPresentationDisplayInner(boolean isPrivateDisplay) {
         final DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.copyFrom(mDisplayInfo);
         displayInfo.flags = FLAG_PRESENTATION | FLAG_TRUSTED;
+        if (isPrivateDisplay) {
+            displayInfo.flags |= FLAG_PRIVATE;
+            displayInfo.ownerUid = Binder.getCallingUid();
+        }
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
         final DisplayContent dc = createNewDisplay(displayInfo);
         final int displayId = dc.getDisplayId();
