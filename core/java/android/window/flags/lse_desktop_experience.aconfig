@@ -822,6 +822,16 @@ flag {
 }
 
 flag {
+    name: "enable_mirror_display_no_activity"
+    namespace: "lse_desktop_experience"
+    description: "Prevent activity being launched on a mirroring display."
+    bug: "417098352"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_modals_fullscreen_with_permission"
     namespace: "lse_desktop_experience"
     description: "Uses permissions to understand if modal fullscreen is allowed for /n"
