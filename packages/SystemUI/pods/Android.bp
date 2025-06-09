@@ -22,7 +22,11 @@ package {
 }
 
 java_defaults {
-    name: "SystemUI_pod_defaults",
+    name: "SystemUI_pod_defaults_api",
+    srcs: [
+        "*.java",
+        "*.kt",
+    ],
     libs: [
         "jsr330",
     ],
@@ -34,6 +38,30 @@ java_defaults {
         "-Xexplicit-api=strict",
         "-Xjvm-default=all",
     ],
+    visibility: ["//visibility:public"],
+    defaults_visibility: [":__subpackages__"],
+}
+
+java_defaults {
+    name: "SystemUI_pod_defaults_impl",
+    srcs: [
+        "impl/*.java",
+        "impl/*.kt",
+    ],
+    libs: [
+        "jsr330",
+    ],
+    lint: {
+        extra_check_modules: ["SystemUILintChecker"],
+        warning_checks: ["MissingApacheLicenseDetector"],
+    },
+    kotlincflags: [
+        "-Xexplicit-api=strict",
+        "-Xjvm-default=all",
+    ],
+    // TODO(b/423659894): Once SysUI stands up its Dagger graph in its own build target, this
+    // visibility should be updated to just that build target.
+    visibility: ["//frameworks/base/packages/SystemUI:__subpackages__"],
     defaults_visibility: [":__subpackages__"],
 }
 
