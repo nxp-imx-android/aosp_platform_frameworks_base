@@ -52,6 +52,7 @@ import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.
 import static com.android.server.wm.SizeCompatTests.rotateDisplay;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -1578,17 +1579,18 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-    public void testUsesDisplayAreaAndWindowingModeFromSource() {
+    public void testInheritWindowingModeFromCurrentParams() {
         setupDesktopModeLaunchParamsModifier();
 
         final Task task = new TaskBuilder(mSupervisor).setActivityType(
                 ACTIVITY_TYPE_STANDARD).build();
-        TaskDisplayArea mockTaskDisplayArea = mock(TaskDisplayArea.class);
-        mCurrent.mPreferredTaskDisplayArea = mockTaskDisplayArea;
+        final TaskDisplayArea currTaskDisplayArea = mock(TaskDisplayArea.class);
+        mCurrent.mPreferredTaskDisplayArea = currTaskDisplayArea;
         mCurrent.mWindowingMode = WINDOWING_MODE_FREEFORM;
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task).calculate());
-        assertEquals(mockTaskDisplayArea, mResult.mPreferredTaskDisplayArea);
+        assertEquals(task.getRootTask().getDisplayArea(), mResult.mPreferredTaskDisplayArea);
+        assertNotEquals(currTaskDisplayArea, mResult.mPreferredTaskDisplayArea);
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
     }
 
