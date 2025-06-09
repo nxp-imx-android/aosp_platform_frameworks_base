@@ -66,9 +66,7 @@ object BubbleUtils {
         if (Flags.excludeTaskFromRecents()) {
             wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
         }
-        if (Flags.disallowBubbleToEnterPip()) {
-            wct.setDisablePip(token, toBubble /* disablePip */)
-        }
+        wct.setDisablePip(token, toBubble /* disablePip */)
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
             if (!toBubble) {

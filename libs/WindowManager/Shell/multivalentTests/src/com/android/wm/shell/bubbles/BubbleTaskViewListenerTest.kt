@@ -39,7 +39,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags.FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP
 import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
@@ -425,7 +424,6 @@ class BubbleTaskViewListenerTest {
     @EnableFlags(
         FLAG_ENABLE_BUBBLE_ANYTHING,
         FLAG_EXCLUDE_TASK_FROM_RECENTS,
-        FLAG_DISALLOW_BUBBLE_TO_ENTER_PIP,
     )
     fun onTaskCreated_appliesWctToEnterBubble() {
         val b = createAppBubble()
