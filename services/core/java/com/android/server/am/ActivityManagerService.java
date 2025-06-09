@@ -4816,6 +4816,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         contentCaptureOptions,
                         app.getDisabledCompatChanges(),
                         app.getLoggableCompatChanges(),
+                        app.isLogChangeChecksToStatsD(),
                         serializedSystemFontMap,
                         mApplicationSharedMemoryReadOnlyFd,
                         app.getStartElapsedTime(),

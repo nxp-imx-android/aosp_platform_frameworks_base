@@ -2166,6 +2166,7 @@ public final class ProcessList {
         if (mPlatformCompat != null) {
             app.setDisabledCompatChanges(mPlatformCompat.getDisabledChanges(app.info));
             app.setLoggableCompatChanges(mPlatformCompat.getLoggableChanges(app.info));
+            app.setLogChangeChecksToStatsD(mPlatformCompat.isLogChangeChecksToStatsd());
         }
         final long startSeq = ++mProcStartSeqCounter;
         app.setStartSeq(startSeq);

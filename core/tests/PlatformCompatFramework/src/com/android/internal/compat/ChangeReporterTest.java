@@ -39,7 +39,7 @@ public class ChangeReporterTest {
 
         assertTrue(reporter.shouldWriteToStatsLog(false,
                 reporter.isAlreadyReported(myUid, myChangeId, myState)));
-        reporter.reportChange(myUid, myChangeId, myState);
+        reporter.reportChange(myUid, myChangeId, myState, true);
 
         // Same report will not be logged again.
         assertFalse(reporter.shouldWriteToStatsLog(false,
@@ -62,7 +62,7 @@ public class ChangeReporterTest {
 
         assertTrue(reporter.shouldWriteToStatsLog(false,
                 reporter.isAlreadyReported(myUid, myChangeId, myState)));
-        reporter.reportChange(myUid, myChangeId, myState);
+        reporter.reportChange(myUid, myChangeId, myState, true);
 
         // Same report will not be logged again.
         assertFalse(reporter.shouldWriteToStatsLog(false,
@@ -82,7 +82,7 @@ public class ChangeReporterTest {
         int myState = ChangeReporter.STATE_ENABLED, otherState = ChangeReporter.STATE_LOGGED;
 
         assertTrue(reporter.shouldWriteToDebug(myUid, myChangeId, myState));
-        reporter.reportChange(myUid, myChangeId, myState);
+        reporter.reportChange(myUid, myChangeId, myState, false);
 
         // Same report will not be logged again.
         assertFalse(reporter.shouldWriteToDebug(myUid, myChangeId, myState));
@@ -90,6 +90,11 @@ public class ChangeReporterTest {
         assertTrue(reporter.shouldWriteToDebug(otherUid, myChangeId, myState));
         assertTrue(reporter.shouldWriteToDebug(myUid, otherChangeId, myState));
         assertTrue(reporter.shouldWriteToDebug(myUid, myChangeId, otherState));
+
+        // Is not registered as already reported for stats logging as stats
+        // logging parameter is false
+        assertFalse(reporter.isAlreadyReported(myUid, myChangeId, myState));
+
     }
 
     @Test
@@ -100,7 +105,7 @@ public class ChangeReporterTest {
         int myState = ChangeReporter.STATE_ENABLED;
 
         assertTrue(reporter.shouldWriteToDebug(myUid, myChangeId, myState));
-        reporter.reportChange(myUid, myChangeId, myState);
+        reporter.reportChange(myUid, myChangeId, myState, false);
 
         // Same report will not be logged again.
         assertFalse(reporter.shouldWriteToDebug(myUid, myChangeId, myState));
@@ -118,7 +123,7 @@ public class ChangeReporterTest {
         int myState = ChangeReporter.STATE_ENABLED;
 
         assertTrue(reporter.shouldWriteToDebug(myUid, myChangeId, myState));
-        reporter.reportChange(myUid, myChangeId, myState);
+        reporter.reportChange(myUid, myChangeId, myState, false);
 
         reporter.startDebugLogAll();
         // Same report will be logged again.

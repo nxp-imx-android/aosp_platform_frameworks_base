@@ -365,10 +365,12 @@ public final class SELinuxMMAC {
             return sharedUser.getSeInfoTargetSdkVersion();
         }
         final ApplicationInfo appInfo = AndroidPackageUtils.generateAppInfoWithoutState(pkg);
-        if (compatibility.isChangeEnabledInternal(SELINUX_LATEST_CHANGES, appInfo)) {
+        if (compatibility.isChangeEnabledAndReportInternal(
+                SELINUX_LATEST_CHANGES, appInfo, false)) {
             return Math.max(
                     android.os.Build.VERSION_CODES.CUR_DEVELOPMENT, pkg.getTargetSdkVersion());
-        } else if (compatibility.isChangeEnabledInternal(SELINUX_R_CHANGES, appInfo)) {
+        } else if (compatibility.isChangeEnabledAndReportInternal(
+                SELINUX_R_CHANGES, appInfo, false)) {
             return Math.max(android.os.Build.VERSION_CODES.R, pkg.getTargetSdkVersion());
         }
 

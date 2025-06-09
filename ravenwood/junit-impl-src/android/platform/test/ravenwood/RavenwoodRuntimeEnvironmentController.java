@@ -541,7 +541,7 @@ public class RavenwoodRuntimeEnvironmentController {
     private static void initializeCompatIds() {
         // Set up compat-IDs for the app side.
         // TODO: Inside the system server, all the compat-IDs should be enabled,
-        // Due to the `AppCompatCallbacks.install(new long[0], new long[0])` call in
+        // Due to the `AppCompatCallbacks.install(new long[0], new long[0] ...` call in
         // SystemServer.
 
         // Compat framework only uses the package name and the target SDK level.
@@ -560,7 +560,7 @@ public class RavenwoodRuntimeEnvironmentController {
         var disabledChanges = platformCompat.getDisabledChanges(appInfo);
         var loggableChanges = platformCompat.getLoggableChanges(appInfo);
 
-        AppCompatCallbacks.install(disabledChanges, loggableChanges);
+        AppCompatCallbacks.install(disabledChanges, loggableChanges, false);
     }
 
     /**
