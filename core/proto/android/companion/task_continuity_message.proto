@@ -28,6 +28,7 @@ message TaskContinuityMessage {
         RemoteTaskRemovedMessage remote_task_removed = 3;
         HandoffRequestMessage handoff_request = 4;
         RemoteTaskUpdatedMessage remote_task_updated = 5;
+        HandoffRequestResultMessage handoff_request_result = 6;
     }
 }
 
@@ -57,6 +58,12 @@ message RemoteTaskInfo {
 
 message RemoteTaskRemovedMessage {
     int32 taskId = 1;
+}
+
+message HandoffRequestResultMessage {
+    int32 statusCode = 1;
+    int32 taskId = 2;
+    repeated HandoffActivityData activities = 3;
 }
 
 message HandoffActivityData {

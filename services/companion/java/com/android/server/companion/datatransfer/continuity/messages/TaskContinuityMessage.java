@@ -58,6 +58,9 @@ public final class TaskContinuityMessage {
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
                 mData = HandoffRequestMessage.readFromProto(pis);
                 break;
+            case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST_RESULT:
+                mData = HandoffRequestResultMessage.readFromProto(pis);
+                break;
         }
 
         pis.end(dataToken);
@@ -73,7 +76,7 @@ public final class TaskContinuityMessage {
     /**
      * Serializes this message to bytes.
      */
-    public byte[] toBytes() {
+    public byte[] toBytes() throws IOException {
         ProtoOutputStream pos = new ProtoOutputStream();
         long dataToken = pos.start(mData.getFieldNumber());
         mData.writeToProto(pos);

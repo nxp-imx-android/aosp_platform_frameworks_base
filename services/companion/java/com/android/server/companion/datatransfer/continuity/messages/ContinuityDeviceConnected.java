@@ -90,7 +90,7 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
      * Writes this object to a proto output stream.
      */
     @Override
-    public void writeToProto(ProtoOutputStream pos) {
+    public void writeToProto(ProtoOutputStream pos) throws IOException {
         pos.writeInt32(
             android.companion.ContinuityDeviceConnected.CURRENT_FOREGROUND_TASK_ID,
             mCurrentForegroundTaskId);

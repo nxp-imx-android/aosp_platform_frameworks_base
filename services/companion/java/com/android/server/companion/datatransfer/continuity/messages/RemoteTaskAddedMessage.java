@@ -56,7 +56,7 @@ public class RemoteTaskAddedMessage implements TaskContinuityMessageData {
     }
 
     @Override
-    public void writeToProto(ProtoOutputStream pos) {
+    public void writeToProto(ProtoOutputStream pos) throws IOException {
         long taskToken = pos.start(
             android.companion.RemoteTaskAddedMessage.TASK);
 
