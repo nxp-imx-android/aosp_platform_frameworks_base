@@ -25206,6 +25206,7 @@ package android.media {
   }
 
   public final class MediaRecorder.VideoEncoder {
+    field @FlaggedApi("android.media.mediarecorder.apv_recording_support") public static final int APV = 9; // 0x9
     field public static final int AV1 = 8; // 0x8
     field public static final int DEFAULT = 0; // 0x0
     field public static final int DOLBY_VISION = 7; // 0x7
