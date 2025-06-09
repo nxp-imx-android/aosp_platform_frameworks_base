@@ -23,6 +23,7 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
+import android.app.ActivityTaskManager;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.hardware.HardwareBuffer;
@@ -49,6 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 /**
  * Singleton worker thread to queue up persist or delete tasks of {@link TaskSnapshot}s to disk.
@@ -56,7 +58,7 @@ import java.util.ArrayDeque;
 class SnapshotPersistQueue {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "TaskSnapshotPersister" : TAG_WM;
     private static final long DELAY_MS = 100;
-    static final int MAX_STORE_QUEUE_DEPTH = 2;
+    static final int MAX_HW_STORE_QUEUE_DEPTH = 2;
     private static final int COMPRESS_QUALITY = 95;
 
     @GuardedBy("mLock")
@@ -71,9 +73,11 @@ class SnapshotPersistQueue {
     private final Object mLock = new Object();
     private final UserManagerInternal mUserManagerInternal;
     private boolean mShutdown;
+    final int mMaxTotalStoreQueue;
 
     SnapshotPersistQueue() {
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
+        mMaxTotalStoreQueue = ActivityTaskManager.getMaxRecentTasksStatic();
     }
 
     Object getLock() {
@@ -173,7 +177,18 @@ class SnapshotPersistQueue {
     }
 
     private void addToQueueInternal(WriteQueueItem item, boolean insertToFront) {
-        mWriteQueue.removeFirstOccurrence(item);
+        if (Flags.extendingPersistenceSnapshotQueueDepth()) {
+            final Iterator<WriteQueueItem> iterator = mWriteQueue.iterator();
+            while (iterator.hasNext()) {
+                final WriteQueueItem next = iterator.next();
+                if (item.isDuplicateOrExclusiveItem(next)) {
+                    iterator.remove();
+                    break;
+                }
+            }
+        } else {
+            mWriteQueue.removeFirstOccurrence(item);
+        }
         if (insertToFront) {
             mWriteQueue.addFirst(item);
         } else {
@@ -200,10 +215,40 @@ class SnapshotPersistQueue {
 
     @GuardedBy("mLock")
     private void ensureStoreQueueDepthLocked() {
-        while (mStoreQueueItems.size() > MAX_STORE_QUEUE_DEPTH) {
-            final StoreWriteQueueItem item = mStoreQueueItems.poll();
-            mWriteQueue.remove(item);
-            Slog.i(TAG, "Queue is too deep! Purged item with index=" + item.mId);
+        if (!Flags.extendingPersistenceSnapshotQueueDepth()) {
+            while (mStoreQueueItems.size() > MAX_HW_STORE_QUEUE_DEPTH) {
+                final StoreWriteQueueItem item = mStoreQueueItems.poll();
+                mWriteQueue.remove(item);
+                Slog.i(TAG, "Queue is too deep! Purged item with index=" + item.mId);
+            }
+            return;
+        }
+
+        // Rules for store queue depth:
+        //  - Hardware render involved items < MAX_HW_STORE_QUEUE_DEPTH
+        //  - Total (SW + HW) items < mMaxTotalStoreQueue
+        int hwStoreCount = 0;
+        int totalStoreCount = 0;
+        // Use descending iterator to keep the latest items.
+        final Iterator<StoreWriteQueueItem> iterator = mStoreQueueItems.descendingIterator();
+        while (iterator.hasNext() && mStoreQueueItems.size() > MAX_HW_STORE_QUEUE_DEPTH) {
+            final StoreWriteQueueItem item = iterator.next();
+            totalStoreCount++;
+            boolean removeItem = false;
+            if (mustPersistByHardwareRender(item.mSnapshot)) {
+                hwStoreCount++;
+                if (hwStoreCount > MAX_HW_STORE_QUEUE_DEPTH) {
+                    removeItem = true;
+                }
+            }
+            if (!removeItem && totalStoreCount > mMaxTotalStoreQueue) {
+                removeItem = true;
+            }
+            if (removeItem) {
+                iterator.remove();
+                mWriteQueue.remove(item);
+                Slog.i(TAG, "Queue is too deep! Purged item with index=" + item.mId);
+            }
         }
     }
 
@@ -302,6 +347,19 @@ class SnapshotPersistQueue {
          */
         void onDequeuedLocked() {
         }
+
+        boolean isDuplicateOrExclusiveItem(WriteQueueItem testItem) {
+            return false;
+        }
+    }
+
+    static boolean mustPersistByHardwareRender(@NonNull TaskSnapshot snapshot) {
+        final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
+        final int pixelFormat = hwBuffer.getFormat();
+        return !Flags.extendingPersistenceSnapshotQueueDepth()
+                || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
+                || !snapshot.isRealSnapshot()
+                || TransitionAnimation.hasProtectedContent(hwBuffer);
     }
 
     StoreWriteQueueItem createStoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
@@ -411,10 +469,7 @@ class SnapshotPersistQueue {
             final int width = hwBuffer.getWidth();
             final int height = hwBuffer.getHeight();
             final int pixelFormat = hwBuffer.getFormat();
-            final Bitmap swBitmap = !Flags.reduceTaskSnapshotMemoryUsage()
-                    || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
-                    || !mSnapshot.isRealSnapshot()
-                    || TransitionAnimation.hasProtectedContent(hwBuffer)
+            final Bitmap swBitmap = mustPersistByHardwareRender(mSnapshot)
                     ? copyToSwBitmapReadBack()
                     : copyToSwBitmapDirect(width, height, pixelFormat);
             if (swBitmap == null) {
@@ -511,6 +566,28 @@ class SnapshotPersistQueue {
                     && mPersistInfoProvider == other.mPersistInfoProvider;
         }
 
+        /** Called when the item is going to be removed from write queue. */
+        void onRemovedFromWriteQueue() {
+            mStoreQueueItems.remove(this);
+            mSnapshot.removeReference(TaskSnapshot.REFERENCE_PERSIST);
+        }
+
+        @Override
+        boolean isDuplicateOrExclusiveItem(WriteQueueItem testItem) {
+            if (equals(testItem)) {
+                final StoreWriteQueueItem swqi = (StoreWriteQueueItem) testItem;
+                if (swqi.mSnapshot != mSnapshot) {
+                    swqi.onRemovedFromWriteQueue();
+                    return true;
+                }
+            } else if (testItem instanceof DeleteWriteQueueItem) {
+                final DeleteWriteQueueItem dwqi = (DeleteWriteQueueItem) testItem;
+                return dwqi.mId == mId && dwqi.mUserId == mUserId
+                        && dwqi.mPersistInfoProvider == mPersistInfoProvider;
+            }
+            return false;
+        }
+
         @Override
         public String toString() {
             return "StoreWriteQueueItem{ID=" + mId + ", UserId=" + mUserId + "}";
@@ -540,6 +617,28 @@ class SnapshotPersistQueue {
         @Override
         public String toString() {
             return "DeleteWriteQueueItem{ID=" + mId + ", UserId=" + mUserId + "}";
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            final DeleteWriteQueueItem other = (DeleteWriteQueueItem) o;
+            return mId == other.mId && mUserId == other.mUserId
+                    && mPersistInfoProvider == other.mPersistInfoProvider;
+        }
+
+        @Override
+        boolean isDuplicateOrExclusiveItem(WriteQueueItem testItem) {
+            if (testItem instanceof StoreWriteQueueItem) {
+                final StoreWriteQueueItem swqi = (StoreWriteQueueItem) testItem;
+                if (swqi.mId == mId && swqi.mUserId == mUserId
+                        && swqi.mPersistInfoProvider == mPersistInfoProvider) {
+                    swqi.onRemovedFromWriteQueue();
+                    return true;
+                }
+                return false;
+            }
+            return equals(testItem);
         }
     }
 

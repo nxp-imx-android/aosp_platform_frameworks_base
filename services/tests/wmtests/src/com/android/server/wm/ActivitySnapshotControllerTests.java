@@ -21,7 +21,8 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static com.android.server.wm.SnapshotPersistQueue.MAX_STORE_QUEUE_DEPTH;
+import static com.android.server.wm.ActivitySnapshotController.MAX_PERSIST_SNAPSHOT_COUNT;
+import static com.android.server.wm.SnapshotPersistQueue.MAX_HW_STORE_QUEUE_DEPTH;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,6 +39,8 @@ import android.util.ArraySet;
 import android.window.TaskSnapshot;
 
 import androidx.test.filters.SmallTest;
+
+import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -275,7 +278,10 @@ public class ActivitySnapshotControllerTests extends TaskSnapshotPersisterTestBa
 
         mSnapshotPersistQueue.setPaused(true);
         final ArrayList<ActivityRecord> tmpList = new ArrayList<>();
-        for (int i = 0; i < MAX_STORE_QUEUE_DEPTH; ++i) {
+        final int maxStoreQueue = Flags.extendingPersistenceSnapshotQueueDepth()
+                ? MAX_PERSIST_SNAPSHOT_COUNT
+                : MAX_HW_STORE_QUEUE_DEPTH;
+        for (int i = 0; i < maxStoreQueue; ++i) {
             tmpList.clear();
             final ActivityRecord activity = createActivityRecord(task);
             tmpList.add(activity);
