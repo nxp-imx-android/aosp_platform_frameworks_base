@@ -174,6 +174,7 @@
     <uses-permission android:name="android.permission.REPORT_USAGE_STATS" />
     <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
     <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name="android.permission.INJECT_KEY_EVENTS" />
     <uses-permission android:name="android.permission.RETRIEVE_WINDOW_CONTENT" />
     <uses-permission android:name="android.permission.SET_ACTIVITY_WATCHER" />
     <uses-permission android:name="android.permission.READ_INPUT_STATE" />
