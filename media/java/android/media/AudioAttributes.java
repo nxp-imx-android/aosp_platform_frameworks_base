@@ -35,6 +35,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.IntArray;
 import android.util.Log;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.util.proto.ProtoOutputStream;
 
@@ -1500,9 +1501,52 @@ public final class AudioAttributes implements Parcelable {
                 + " content=" + contentTypeToString()
                 + (mSource != MediaRecorder.AudioSource.AUDIO_SOURCE_INVALID
                     ? " source=" + MediaRecorder.toLogFriendlyAudioSource(mSource) : "")
-                + " flags=0x" + Integer.toHexString(mFlags).toUpperCase()
+                + " flags=0x" + Integer.toHexString(mFlags).toUpperCase() + flagsToString()
                 + " tags=" + mFormattedTags
                 + " bundle=" + (mBundle == null ? "null" : mBundle.toString()));
+    }
+
+    private static final SparseArray<String> FLAG_NAMES = new SparseArray<>(17);
+
+    static {
+        FLAG_NAMES.put(AudioAttributes.FLAG_AUDIBILITY_ENFORCED, "FLAG_AUDIBILITY_ENFORCED");
+        FLAG_NAMES.put(AudioAttributes.FLAG_SECURE, "FLAG_SECURE");
+        FLAG_NAMES.put(AudioAttributes.FLAG_SCO, "FLAG_SCO");
+        FLAG_NAMES.put(AudioAttributes.FLAG_BEACON, "FLAG_BEACON");
+        FLAG_NAMES.put(AudioAttributes.FLAG_HW_AV_SYNC, "FLAG_HW_AV_SYNC");
+        FLAG_NAMES.put(AudioAttributes.FLAG_HW_HOTWORD, "FLAG_HW_HOTWORD");
+        FLAG_NAMES.put(AudioAttributes.FLAG_BYPASS_INTERRUPTION_POLICY,
+                "FLAG_BYPASS_INTERRUPTION_POLICY");
+        FLAG_NAMES.put(AudioAttributes.FLAG_BYPASS_MUTE, "FLAG_BYPASS_MUTE");
+        FLAG_NAMES.put(AudioAttributes.FLAG_LOW_LATENCY, "FLAG_LOW_LATENCY");
+        FLAG_NAMES.put(AudioAttributes.FLAG_DEEP_BUFFER, "FLAG_DEEP_BUFFER");
+        FLAG_NAMES.put(AudioAttributes.FLAG_NO_MEDIA_PROJECTION, "FLAG_NO_MEDIA_PROJECTION");
+        FLAG_NAMES.put(AudioAttributes.FLAG_MUTE_HAPTIC, "FLAG_MUTE_HAPTIC");
+        FLAG_NAMES.put(AudioAttributes.FLAG_NO_SYSTEM_CAPTURE, "FLAG_NO_SYSTEM_CAPTURE");
+        FLAG_NAMES.put(AudioAttributes.FLAG_CAPTURE_PRIVATE, "FLAG_CAPTURE_PRIVATE");
+        FLAG_NAMES.put(AudioAttributes.FLAG_CONTENT_SPATIALIZED, "FLAG_CONTENT_SPATIALIZED");
+        FLAG_NAMES.put(AudioAttributes.FLAG_NEVER_SPATIALIZE, "FLAG_NEVER_SPATIALIZE");
+        FLAG_NAMES.put(AudioAttributes.FLAG_CALL_REDIRECTION, "FLAG_CALL_REDIRECTION");
+    }
+
+    private String flagsToString() {
+        if (mFlags == 0) {
+            return "";
+        }
+        String separator = (Integer.bitCount(mFlags) > 1) ? "+" : "";
+        StringBuilder sb = new StringBuilder("(");
+        final int numFlags = FLAG_NAMES.size();
+        boolean first = true;
+        for (int i = 0; i < numFlags; i++) {
+            int flagKey = FLAG_NAMES.keyAt(i);
+            String flagName = FLAG_NAMES.valueAt(i);
+            if ((mFlags & flagKey) == flagKey) {
+                sb.append(first ? "" : separator).append(flagName);
+                first = false;
+            }
+        }
+        sb.append(") ");
+        return sb.toString();
     }
 
     /** @hide */
