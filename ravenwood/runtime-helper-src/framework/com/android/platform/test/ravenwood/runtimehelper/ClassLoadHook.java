@@ -34,7 +34,7 @@ public class ClassLoadHook {
         // Always try to initialize the environment in case classes are loaded before
         // RavenwoodAwareTestRunner is initialized
         try {
-            Class.forName("android.platform.test.ravenwood.RavenwoodRuntimeEnvironmentController")
+            Class.forName("android.platform.test.ravenwood.RavenwoodDriver")
                     .getMethod("globalInitOnce").invoke(null);
         } catch (ReflectiveOperationException ignored) {
         }

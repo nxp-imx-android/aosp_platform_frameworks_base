@@ -64,7 +64,7 @@ public final class RavenwoodRunnerState {
         if (RAVENWOOD_VERBOSE_LOGGING) {
             Log.v(TAG, "enterTestRunner: " + mRunner);
         }
-        RavenwoodRuntimeEnvironmentController.initForRunner();
+        RavenwoodDriver.initForRunner();
     }
 
     public void enterTestClass() {
@@ -78,18 +78,18 @@ public final class RavenwoodRunnerState {
             Log.v(TAG, "exitTestClass: " + mRunner.mTestJavaClass.getName());
         }
         assertTrue(RAVENWOOD_RULE_ERROR, sActiveProperties.isEmpty());
-        RavenwoodRuntimeEnvironmentController.exitTestClass();
+        RavenwoodDriver.exitTestClass();
     }
 
     /** Called when a test method is about to start */
     public void enterTestMethod(Description description) {
         mMethodDescription = description;
-        RavenwoodRuntimeEnvironmentController.enterTestMethod(description);
+        RavenwoodDriver.enterTestMethod(description);
     }
 
     /** Called when a test method finishes */
     public void exitTestMethod(Description description) {
-        RavenwoodRuntimeEnvironmentController.exitTestMethod(description);
+        RavenwoodDriver.exitTestMethod(description);
         mMethodDescription = null;
     }
 

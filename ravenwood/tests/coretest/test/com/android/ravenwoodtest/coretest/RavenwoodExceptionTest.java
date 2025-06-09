@@ -45,8 +45,8 @@ public class RavenwoodExceptionTest {
      *
 STACKTRACE:
 java.lang.Exception: Exception detected on thread Thread-0:  *** Continuing the test because it's recoverable ***
-at android.platform.test.ravenwood.RavenwoodRuntimeEnvironmentController.makeRecoverableExceptionInstance(RavenwoodRuntimeEnvironmentController.java:588)
-at android.platform.test.ravenwood.RavenwoodRuntimeEnvironmentController.onUncaughtException(RavenwoodRuntimeEnvironmentController.java:763)
+at android.platform.test.ravenwood.RavenwoodDriver.makeRecoverableExceptionInstance(RavenwoodDriver.java:588)
+at android.platform.test.ravenwood.RavenwoodDriver.onUncaughtException(RavenwoodDriver.java:763)
 at java.base/java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:695)
 at java.base/java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:690)
 at java.base/java.lang.Thread.dispatchUncaughtException(Thread.java:2901)
@@ -75,7 +75,7 @@ at java.base/java.lang.Thread.run(Thread.java:1583)
  at com.android.ravenwoodtest.coretest.RavenwoodExceptionTest.lambda$testBgCrash$1(RavenwoodExceptionTest.java:68)
  at java.base/java.lang.Thread.run(Thread.java:1583)
  ; Failing all subsequent tests
- at android.platform.test.ravenwood.RavenwoodRuntimeEnvironmentController.onUncaughtException(RavenwoodRuntimeEnvironmentController.java:771)
+ at android.platform.test.ravenwood.RavenwoodDriver.onUncaughtException(RavenwoodDriver.java:771)
  at java.base/java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:695)
  at java.base/java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:690)
  at java.base/java.lang.Thread.dispatchUncaughtException(Thread.java:2901)
