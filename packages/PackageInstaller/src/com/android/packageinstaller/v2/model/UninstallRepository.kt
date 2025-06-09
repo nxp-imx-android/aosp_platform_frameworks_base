@@ -144,14 +144,17 @@ class UninstallRepository(private val context: Context) {
         if (uninstalledUser == null) {
             uninstalledUser = Process.myUserHandle()
         } else {
-            val profiles = userManager!!.userProfiles
-            if (!profiles.contains(uninstalledUser)) {
-                Log.e(
-                    LOG_TAG,
-                    "User " + Process.myUserHandle() + " can't request uninstall " +
-                        "for user " + uninstalledUser
-                )
-                return UninstallAborted(UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED)
+            if (uninstalledUser!! != Process.myUserHandle()) {
+                val isCurrentUserProfileOwner =
+                    Process.myUserHandle() == userManager!!.getProfileParent(uninstalledUser!!)
+                if (!isCurrentUserProfileOwner) {
+                    Log.e(
+                        LOG_TAG,
+                        "User " + Process.myUserHandle() + " can't request uninstall " +
+                                "for user " + uninstalledUser
+                    )
+                    return UninstallAborted(UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED)
+                }
             }
         }
 
