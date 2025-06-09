@@ -3093,6 +3093,13 @@ package android.provider {
     field public static final String SMS_CARRIER_PROVISION_ACTION = "android.provider.Telephony.SMS_CARRIER_PROVISION";
   }
 
+  public static interface Telephony.TextBasedSmsColumns {
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String CONTAINS_OTP = "contains_otp";
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_CONTAINS_OTP = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_NONE = 0; // 0x0
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final int OTP_TYPE_PENDING = 2; // 0x2
+  }
+
   public static final class VoicemailContract.Voicemails implements android.provider.BaseColumns android.provider.OpenableColumns {
     field public static final String _DATA = "_data";
   }

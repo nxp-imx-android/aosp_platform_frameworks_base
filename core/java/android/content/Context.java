@@ -3162,6 +3162,21 @@ public abstract class Context {
     }
 
     /**
+     * Like {@link #sendOrderedBroadcastMultiplePermissions(Intent, String[], String,
+     * BroadcastReceiver, Handler, int, String, Bundle, Bundle)}, but also allows specification of a
+     * list of multiple permissions that the receiver should NOT hold.
+     * @hide
+     */
+    public void sendOrderedBroadcastMultiplePermissions(
+            @NonNull Intent intent, @NonNull String[] receiverPermissions,
+            @NonNull String[] excludedPermissions, @Nullable String receiverAppOp,
+            @Nullable BroadcastReceiver resultReceiver, @Nullable Handler scheduler,
+            int initialCode, @Nullable String initialData, @Nullable Bundle initialExtras,
+            @Nullable Bundle options) {
+        throw new RuntimeException("Not implemented. Must override in a subclass.");
+    }
+
+    /**
      * <p>Perform a {@link #sendBroadcast(Intent)} that is "sticky," meaning the
      * Intent you are sending stays around after the broadcast is complete,
      * so that others can quickly retrieve that data through the return
