@@ -2663,7 +2663,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 mTranslateableViews.get(i).setTranslationX(0);
             }
             invalidateOutline();
-            getShelfIcon().setScrollX(0);
+            @Nullable final StatusBarIconView shelfIcon = getShelfIcon();
+            // TODO(b/416147040): Remove null check, will be unnecessary
+            if (shelfIcon != null) {
+                shelfIcon.setScrollX(0);
+            }
         }
 
         if (mMenuRow != null) {
@@ -3053,7 +3057,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     @Override
-    public @NonNull StatusBarIconView getShelfIcon() {
+    public @Nullable StatusBarIconView getShelfIcon() {
+        // TODO(b/416147040): Add requireNotNull check and change annotation to @NonNull
         if (NotificationBundleUi.isEnabled()) {
             return getEntryAdapter().getIcons().getShelfIcon();
         } else {
