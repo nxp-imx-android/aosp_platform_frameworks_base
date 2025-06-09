@@ -105,6 +105,7 @@ import java.util.stream.Collectors;
 public class VibrationThreadTest {
 
     private static final int TEST_TIMEOUT_MILLIS = 900;
+    private static final int TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS = 100;
     private static final int UID = Process.ROOT_UID;
     private static final int DEVICE_ID = 10;
     private static final int VIBRATOR_ID = 1;
@@ -683,7 +684,7 @@ public class VibrationThreadTest {
                         /* immediate= */ false));
         cancellingThread.start();
 
-        waitForCompletion(/* timeout= */ 50);
+        waitForCompletion(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
         cancellingThread.join();
 
         verifyCallbacksTriggered(vibration, Status.CANCELLED_BY_SETTINGS_UPDATE);
@@ -713,7 +714,7 @@ public class VibrationThreadTest {
                         /* immediate= */ false));
         cancellingThread.start();
 
-        waitForCompletion(/* timeout= */ 50);
+        waitForCompletion(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
         cancellingThread.join();
 
         verifyCallbacksTriggered(vibration, Status.CANCELLED_BY_SETTINGS_UPDATE);
@@ -740,7 +741,7 @@ public class VibrationThreadTest {
                         /* immediate= */ false));
         cancellingThread.start();
 
-        waitForCompletion(/* timeout= */ 50);
+        waitForCompletion(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
         cancellingThread.join();
 
         verifyCallbacksTriggered(vibration, Status.CANCELLED_BY_SCREEN_OFF);
@@ -1842,7 +1843,7 @@ public class VibrationThreadTest {
 
         // Cancelling the vibration should be fast and return right away, even if the thread is
         // stuck at the slow call to the vibrator.
-        cancellingThread.join(/* timeout= */ 50);
+        cancellingThread.join(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
 
         // After the vibrator call ends the vibration is cancelled and the vibrator is turned off.
         waitForCompletion(/* timeout= */ latency + TEST_TIMEOUT_MILLIS);
@@ -1879,7 +1880,7 @@ public class VibrationThreadTest {
                         /* immediate= */ false));
         cancellingThread.start();
 
-        waitForCompletion(/* timeout= */ 50);
+        waitForCompletion(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
         cancellingThread.join();
 
         verifyCallbacksTriggered(vibration, Status.CANCELLED_BY_SCREEN_OFF);
@@ -1914,7 +1915,7 @@ public class VibrationThreadTest {
                         /* immediate= */ false));
         cancellingThread.start();
 
-        waitForCompletion(/* timeout= */ 50);
+        waitForCompletion(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
         cancellingThread.join();
 
         verifyCallbacksTriggered(vibration, Status.CANCELLED_BY_SCREEN_OFF);
@@ -1948,7 +1949,7 @@ public class VibrationThreadTest {
                         /* immediate= */ false));
         cancellingThread.start();
 
-        waitForCompletion(/* timeout= */ 50);
+        waitForCompletion(TEST_IMMEDIATE_CANCEL_TIMEOUT_MILLIS);
         cancellingThread.join();
 
         verifyCallbacksTriggered(vibration, Status.CANCELLED_BY_SCREEN_OFF);
