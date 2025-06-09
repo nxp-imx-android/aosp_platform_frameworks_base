@@ -18,6 +18,8 @@ package com.android.systemui.accessibility
 
 import com.android.systemui.accessibility.data.repository.AccessibilityQsShortcutsRepository
 import com.android.systemui.accessibility.data.repository.AccessibilityQsShortcutsRepositoryImpl
+import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
+import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepositoryImpl
 import com.android.systemui.accessibility.data.repository.ColorCorrectionRepository
 import com.android.systemui.accessibility.data.repository.ColorCorrectionRepositoryImpl
 import com.android.systemui.accessibility.data.repository.ColorInversionRepository
@@ -43,6 +45,10 @@ interface AccessibilityModule {
         impl: AccessibilityQsShortcutsRepositoryImpl
     ): AccessibilityQsShortcutsRepository
 
+    @Binds fun magnification(impl: MagnificationImpl): Magnification
+
     @Binds
-    fun magnification(impl: MagnificationImpl): Magnification
+    fun accessibilityShortcutsRepository(
+        impl: AccessibilityShortcutsRepositoryImpl
+    ): AccessibilityShortcutsRepository
 }

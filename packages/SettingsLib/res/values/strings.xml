@@ -1390,6 +1390,9 @@
     <!-- Content description of zen mode time condition minus button (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_manual_zen_less_time">Less time.</string>
 
+    <!-- Title for the accessibility preference screen to enable screen magnification. [CHAR LIMIT=35] -->
+    <string name="accessibility_screen_magnification_title">Magnification</string>
+
     <!-- Button label for generic cancel action [CHAR LIMIT=20] -->
     <string name="cancel">Cancel</string>
     <!-- Button label for generic next action [CHAR LIMIT=20] -->
