@@ -19,10 +19,13 @@ package com.android.settingslib.spa.restricted
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
+import com.android.settingslib.spa.R
 import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
 
 internal class RestrictedSwitchPreferenceModel(
@@ -62,11 +65,16 @@ internal class RestrictedSwitchPreferenceModel(
         val modifier =
             when (restrictedMode) {
                 is BlockedWithDetails -> {
+                    val statusDescription = stringResource(R.string.spa_unavailable)
                     Modifier.clickable(
+                            onClickLabel = stringResource(R.string.spa_learn_more),
                             role = Role.Switch,
                             onClick = { restrictedMode.showDetails() },
                         )
-                        .semantics { this.toggleableState = toggleableState(checked()) }
+                        .semantics {
+                            contentDescription = statusDescription
+                            toggleableState = toggleableState(checked())
+                        }
                 }
 
                 else -> Modifier
