@@ -46,6 +46,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 interface MobileIconInteractor {
+    /** The subscriptionId that this connection represents */
+    // TODO(b/423048138): The interactor should have enough information to get the proper RAT
+    // indicator icon, rather than just exposing the subId here.
+    val subscriptionId: Int
+
     /** The table log created for this connection */
     val tableLogBuffer: TableLogBuffer
 
@@ -147,6 +152,8 @@ class MobileIconInteractorImpl(
     private val context: Context,
     val carrierIdOverrides: MobileIconCarrierIdOverrides = MobileIconCarrierIdOverridesImpl(),
 ) : MobileIconInteractor {
+    override val subscriptionId = connectionRepository.subId
+
     override val tableLogBuffer: TableLogBuffer = connectionRepository.tableLogBuffer
 
     override val activity = connectionRepository.dataActivityDirection

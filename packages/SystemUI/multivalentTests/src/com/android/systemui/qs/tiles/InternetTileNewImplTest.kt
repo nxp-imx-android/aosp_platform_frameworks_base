@@ -48,7 +48,6 @@ import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepo
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractorImpl
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiScanEntry
-import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -60,6 +59,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
@@ -113,6 +113,7 @@ class InternetTileNewImplTest(flags: FlagsParameterization) : SysuiTestCase() {
                 connectivityRepository,
                 ethernetInteractor,
                 mobileIconsInteractor,
+                mock(),
                 wifiInteractor,
                 context,
                 testScope.backgroundScope,
