@@ -61,6 +61,7 @@ cc_library_shared {
         "input_transfer_token.cpp",
         "looper.cpp",
         "native_activity.cpp",
+        "native_service.cpp",
         "native_window_jni.cpp",
         "net.c",
         "obb.cpp",
