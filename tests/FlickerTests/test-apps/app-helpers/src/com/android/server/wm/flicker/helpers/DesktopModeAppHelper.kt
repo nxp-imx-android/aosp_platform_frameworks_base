@@ -592,6 +592,21 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
+    fun exitDesktopModeToSplitScreenWithAppHeader(wmHelper:WindowManagerStateHelper) {
+        val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
+        openMenuButton?.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+
+        val pill = getDesktopAppViewByRes(PILL_CONTAINER)
+        val splitScreenModeButton =
+            pill
+                ?.children
+                ?.find { it.resourceName.endsWith(SPLIT_SCREEN_BUTTON) }
+
+        splitScreenModeButton?.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
     fun restartFromAppHandleMenu(wmHelper: WindowManagerStateHelper) {
         val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
         openMenuButton?.click()
@@ -719,6 +734,7 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
         const val RESTART_BUTTON: String = "handle_menu_restart_button"
         const val RESTART_DIALOG_RESTART_BUTTON: String = "letterbox_restart_dialog_restart_button"
         const val FULL_SCREEN_BUTTON: String = "fullscreen_button"
+        const val SPLIT_SCREEN_BUTTON: String = "split_screen_button"
         val caption: BySelector
             get() = By.res(SYSTEMUI_PACKAGE, CAPTION)
         // In DesktopMode, window snap can be done with just a single window. In this case, the
