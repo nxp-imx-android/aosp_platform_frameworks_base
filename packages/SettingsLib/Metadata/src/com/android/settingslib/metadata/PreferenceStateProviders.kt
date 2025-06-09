@@ -184,6 +184,9 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
      */
     abstract val childFragmentManager: FragmentManager
 
+    /** Returns the key of current preference screen. */
+    abstract val preferenceScreenKey: String
+
     /** Returns the preference widget object associated with given key. */
     abstract fun <T> findPreference(key: String): T?
 
@@ -192,7 +195,7 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
      *
      * @throws NullPointerException if preference is not found
      */
-    abstract fun <T : Any> requirePreference(key: String): T
+    open fun <T : Any> requirePreference(key: String): T = findPreference(key)!!
 
     /** Returns the [KeyValueStore] attached to the preference of given key *on the same screen*. */
     abstract fun getKeyValueStore(key: String): KeyValueStore?
@@ -201,10 +204,22 @@ abstract class PreferenceLifecycleContext(context: Context) : ContextWrapper(con
     abstract fun notifyPreferenceChange(key: String)
 
     /**
-     * Switches preference hierarchy to given type, the screen metadata must implement
-     * `PreferenceHierarchyGenerator`.
+     * Switches to given preference hierarchy type for [PreferenceHierarchyGenerator].
+     *
+     * [PreferenceScreenMetadata.hasCompleteHierarchy] must return true.
      */
-    open fun switchPreferenceHierarchy(type: Any?): Unit = TODO()
+    abstract fun switchPreferenceHierarchy(hierarchyType: Any?)
+
+    /**
+     * Regenerates preference hierarchy.
+     *
+     * A new [PreferenceHierarchy] will be generated and applied to the preference screen. This is
+     * to support the case that dynamic preference hierarchy is changed at runtime (e.g. app list
+     * needs to be updated if new app is installed).
+     *
+     * [PreferenceScreenMetadata.hasCompleteHierarchy] must return true.
+     */
+    abstract fun regeneratePreferenceHierarchy()
 
     /**
      * Starts activity for result, see [android.app.Activity.startActivityForResult].

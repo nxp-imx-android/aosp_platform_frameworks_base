@@ -28,6 +28,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 
 /** A node in preference hierarchy that is associated with [PreferenceMetadata]. */
 open class PreferenceHierarchyNode internal constructor(val metadata: PreferenceMetadata) {
@@ -115,8 +116,6 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      * Adds a sub hierarchy with coroutine.
      *
      * Notes:
-     * - [PreferenceLifecycleProvider] is not supported for [PreferenceMetadata] added to the async
-     *   hierarchy.
      * - As it is async, coroutine could be finished anytime. Consider specify an order explicitly
      *   to achieve deterministic hierarchy.
      * - The sub hierarchy is flattened into current hierarchy.
@@ -276,6 +275,17 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
             when (it) {
                 is PreferenceHierarchy -> it.forEachRecursivelyAsync(action)
                 else -> action(it)
+            }
+        }
+    }
+
+    /** Await until any child is available to be processed immediately. */
+    suspend fun awaitAnyChild() {
+        if (children.isEmpty()) return
+        for (child in children) if (child !is Deferred<*>) return
+        select<Unit> {
+            for (child in children) {
+                if (child is Deferred<*>) child.onAwait { it }
             }
         }
     }

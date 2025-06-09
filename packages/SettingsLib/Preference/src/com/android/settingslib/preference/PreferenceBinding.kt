@@ -72,13 +72,15 @@ interface PreferenceBinding {
         metadata.apply {
             preference.key = key
             val context = preference.context
-            val preferenceIcon = metadata.getPreferenceIcon(context)
-            if (preferenceIcon != 0) {
-                preference.setIcon(preferenceIcon)
-            } else {
-                preference.icon = null
-            }
             val isPreferenceScreen = preference is PreferenceScreen
+            if (!isPreferenceScreen) {
+                val preferenceIcon = metadata.getPreferenceIcon(context)
+                if (preferenceIcon != 0) {
+                    preference.setIcon(preferenceIcon)
+                } else {
+                    preference.icon = null
+                }
+            }
             val screenMetadata = this as? PreferenceScreenMetadata
             // extras
             preference.peekExtras()?.clear()
@@ -153,6 +155,7 @@ interface PreferenceScreenCreator : PreferenceScreenMetadata, PreferenceScreenPr
             inflatePreferenceHierarchy(
                 preferenceBindingFactory,
                 getPreferenceHierarchy(context, coroutineScope),
+                mutableMapOf(),
             )
         }
 }

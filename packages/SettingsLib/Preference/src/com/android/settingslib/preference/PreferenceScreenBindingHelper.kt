@@ -21,9 +21,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleCoroutineScope
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import androidx.preference.Preference
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceGroup
@@ -44,6 +42,9 @@ import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Helper to bind preferences on given [preferenceScreen].
@@ -54,33 +55,71 @@ import kotlinx.coroutines.CoroutineScope
  */
 class PreferenceScreenBindingHelper(
     private val fragment: PreferenceFragment,
+    private var coroutineScope: CoroutineScope,
     private val preferenceBindingFactory: PreferenceBindingFactory,
     private val preferenceScreen: PreferenceScreen,
-    private val preferenceHierarchy: PreferenceHierarchy,
+    private var preferenceHierarchy: PreferenceHierarchy,
     private val storages: MutableMap<KeyValueStore, PreferenceDataStore>,
 ) : KeyedDataObservable<String>() {
+    private var lifecycleState: Lifecycle.State = Lifecycle.State.INITIALIZED
 
-    private val preferenceLifecycleContext =
+    internal val preferenceLifecycleContext =
         object : PreferenceLifecycleContext(fragment.requireContext()) {
-            override val lifecycleScope: LifecycleCoroutineScope
-                get() = fragment.lifecycleScope
+            override val lifecycleScope
+                get() = coroutineScope
 
-            override val fragmentManager: FragmentManager
+            override val fragmentManager
                 get() = fragment.parentFragmentManager
 
-            override val childFragmentManager: FragmentManager
+            override val childFragmentManager
                 get() = fragment.childFragmentManager
+
+            override val preferenceScreenKey
+                get() = preferenceScreen.key
 
             override fun <T> findPreference(key: String) =
                 preferenceScreen.findPreference(key) as T?
-
-            override fun <T : Any> requirePreference(key: String) = findPreference<T>(key)!!
 
             override fun getKeyValueStore(key: String) =
                 findPreference<Preference>(key)?.preferenceDataStore?.findKeyValueStore()
 
             override fun notifyPreferenceChange(key: String) =
                 notifyChange(key, PreferenceChangeReason.STATE)
+
+            override fun switchPreferenceHierarchy(hierarchyType: Any?) {
+                val context = fragment.context ?: return
+                fragment.ensureHasCompleteHierarchy()
+                fragment.preferenceHierarchyType = hierarchyType
+                coroutineScope.cancel()
+                coroutineScope = fragment.newCoroutineScope()
+                preferenceHierarchy = fragment.newPreferenceHierarchy(context, coroutineScope)
+                // remove all preferences with thread switch will cause UI flicker, so wait for a
+                // moment to alleviate the situation
+                coroutineScope.launch {
+                    withTimeoutOrNull(1000) { preferenceHierarchy.awaitAnyChild() }
+                    val state = lifecycleState
+                    // pretend the lifecycle is finished for cleanup
+                    onPause()
+                    onStop()
+                    onDestroy()
+                    storages.clear()
+                    preferenceScreen.removeAll()
+                    preferenceScreen.inflatePreferenceHierarchy(
+                        preferenceBindingFactory,
+                        preferenceHierarchy,
+                        storages,
+                    )
+                    initialize()
+                    // advance the lifecycle state
+                    if (state.isAtLeast(Lifecycle.State.CREATED)) onCreate()
+                    if (state.isAtLeast(Lifecycle.State.STARTED)) onStart()
+                    if (state.isAtLeast(Lifecycle.State.RESUMED)) onResume()
+                }
+            }
+
+            override fun regeneratePreferenceHierarchy() {
+                switchPreferenceHierarchy(fragment.preferenceHierarchyType)
+            }
 
             @Suppress("DEPRECATION")
             override fun startActivityForResult(
@@ -122,11 +161,11 @@ class PreferenceScreenBindingHelper(
         }
 
     init {
-        preferenceHierarchy.forEachRecursivelyAsync(
-            ::addNode,
-            fragment.lifecycleScope,
-            ::addAsyncNode,
-        )
+        initialize()
+    }
+
+    private fun initialize() {
+        preferenceHierarchy.forEachRecursivelyAsync(::addNode, coroutineScope, ::addAsyncNode)
 
         val executor = HandlerExecutor.main
         addObserver(preferenceObserver, executor)
@@ -160,9 +199,15 @@ class PreferenceScreenBindingHelper(
         preferenceBindingFactory.bind(preference, node, preferenceBinding)
         // TODO: What if the highlighted preference happens to be in the async hierarchy
         preferenceGroup.addPreference(preference)
-        // PreferenceLifecycleProvider is not well supported
         addNode(node)
         addObserver(preference, node)
+        (metadata as? PreferenceLifecycleProvider)?.advanceState()
+    }
+
+    private fun PreferenceLifecycleProvider.advanceState() {
+        if (lifecycleState.isAtLeast(Lifecycle.State.CREATED)) onCreate(preferenceLifecycleContext)
+        if (lifecycleState.isAtLeast(Lifecycle.State.STARTED)) onStart(preferenceLifecycleContext)
+        if (lifecycleState.isAtLeast(Lifecycle.State.RESUMED)) onResume(preferenceLifecycleContext)
     }
 
     fun addObserver(preference: Preference, node: PreferenceHierarchyNode?) {
@@ -224,36 +269,48 @@ class PreferenceScreenBindingHelper(
     ) = preferenceHierarchy.forEachRecursivelyAsync(action, coroutineScope, asyncNodeAction)
 
     fun onCreate() {
+        if (lifecycleState != Lifecycle.State.INITIALIZED) return
+        lifecycleState = Lifecycle.State.CREATED
         for (preference in lifecycleAwarePreferences) {
             preference.onCreate(preferenceLifecycleContext)
         }
     }
 
     fun onStart() {
+        if (lifecycleState != Lifecycle.State.CREATED) return
+        lifecycleState = Lifecycle.State.STARTED
         for (preference in lifecycleAwarePreferences) {
             preference.onStart(preferenceLifecycleContext)
         }
     }
 
     fun onResume() {
+        if (lifecycleState != Lifecycle.State.STARTED) return
+        lifecycleState = Lifecycle.State.RESUMED
         for (preference in lifecycleAwarePreferences) {
             preference.onResume(preferenceLifecycleContext)
         }
     }
 
     fun onPause() {
+        if (lifecycleState != Lifecycle.State.RESUMED) return
+        lifecycleState = Lifecycle.State.STARTED
         for (preference in lifecycleAwarePreferences) {
             preference.onPause(preferenceLifecycleContext)
         }
     }
 
     fun onStop() {
+        if (lifecycleState != Lifecycle.State.STARTED) return
+        lifecycleState = Lifecycle.State.CREATED
         for (preference in lifecycleAwarePreferences) {
             preference.onStop(preferenceLifecycleContext)
         }
     }
 
     fun onDestroy() {
+        if (lifecycleState != Lifecycle.State.CREATED) return
+        lifecycleState = Lifecycle.State.INITIALIZED
         removeObserver(preferenceObserver)
         screenEntryPointObservable.removeObserver(screenEntryPointObserver)
         for ((key, observable) in observables) observable.removeObserver(key, observer)
@@ -294,6 +351,7 @@ class PreferenceScreenBindingHelper(
                         preferenceScreen,
                         preferenceBindingFactory,
                         getPreferenceHierarchy(context, coroutineScope),
+                        mutableMapOf(),
                     )
                 }
             }
@@ -303,9 +361,9 @@ class PreferenceScreenBindingHelper(
             preferenceScreen: PreferenceScreen,
             preferenceBindingFactory: PreferenceBindingFactory,
             preferenceHierarchy: PreferenceHierarchy,
-        ): MutableMap<KeyValueStore, PreferenceDataStore> {
+            storages: MutableMap<KeyValueStore, PreferenceDataStore>,
+        ) {
             val preferenceScreenMetadata = preferenceHierarchy.metadata as PreferenceScreenMetadata
-            val storages = mutableMapOf<KeyValueStore, PreferenceDataStore>()
 
             fun PreferenceHierarchy.bindRecursively(preferenceGroup: PreferenceGroup) {
                 preferenceBindingFactory.bind(preferenceGroup, this)
@@ -347,7 +405,6 @@ class PreferenceScreenBindingHelper(
             }
 
             preferenceHierarchy.bindRecursively(preferenceScreen)
-            return storages
         }
     }
 }
