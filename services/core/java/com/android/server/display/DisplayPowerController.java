@@ -2347,6 +2347,14 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             mPendingScreenOff = false;
         }
 
+        if (mFlags.isEnsureColorFadeWhenTurningOnEnabled()
+                && ((mPowerState.getScreenState() == Display.STATE_OFF)
+                && target != Display.STATE_OFF)) {
+            // ensure ColorFade is present.
+            mPowerState.prepareColorFade(mContext,
+                    mColorFadeFadesConfig ? ColorFade.MODE_FADE : ColorFade.MODE_WARM_UP);
+        }
+
         if (mDisplayBlanksAfterDozeConfig
                 && Display.isDozeState(mPowerState.getScreenState())
                 && !Display.isDozeState(target)) {

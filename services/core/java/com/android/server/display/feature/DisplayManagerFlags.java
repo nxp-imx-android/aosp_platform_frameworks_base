@@ -309,6 +309,10 @@ public class DisplayManagerFlags {
             Flags.FLAG_MODE_SWITCH_WITHOUT_SAVING,
             Flags::modeSwitchWithoutSaving
     );
+    private final FlagState mEnsureColorFadeWhenTurningOn = new FlagState(
+            Flags.FLAG_ENSURE_COLOR_FADE_WHEN_TURNING_ON,
+            Flags::ensureColorFadeWhenTurningOn
+    );
 
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
@@ -652,6 +656,13 @@ public class DisplayManagerFlags {
     }
 
     /**
+     * @return {@code true} if the flag for ensure color fad when turning screen on is enabled
+     */
+    public boolean isEnsureColorFadeWhenTurningOnEnabled() {
+        return mEnsureColorFadeWhenTurningOn.isEnabled();
+    }
+
+    /**
      * dumps all flagstates
      * @param pw printWriter
      */
@@ -714,6 +725,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mDispatchDisplayModeWithVsyncOffsets);
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
+        pw.println(" " + mEnsureColorFadeWhenTurningOn);
     }
 
     private static class FlagState {
