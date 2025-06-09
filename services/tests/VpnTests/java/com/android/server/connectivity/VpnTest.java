@@ -2063,13 +2063,6 @@ public class VpnTest extends VpnTestBase {
     private Vpn startLegacyVpn(final Vpn vpn, final VpnProfile vpnProfile) throws Exception {
         setMockedUsers(PRIMARY_USER);
         vpn.startLegacyVpn(vpnProfile);
-        if (vpnProfile.type == VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS
-                || vpnProfile.type == VpnProfile.TYPE_IKEV2_IPSEC_PSK) {
-            verify(mVpnConnectivityMetrics).setAllowedAlgorithms(
-                    Ikev2VpnProfile.DEFAULT_ALGORITHMS);
-        }
-        verify(mVpnConnectivityMetrics).setVpnType(VpnManager.TYPE_VPN_PLATFORM);
-        verify(mVpnConnectivityMetrics).setVpnProfileType(vpnProfile.type);
         return vpn;
     }
 
@@ -2220,6 +2213,13 @@ public class VpnTest extends VpnTestBase {
                 any(), any(), anyString(), ncCaptor.capture(), lpCaptor.capture(),
                 any(), nacCaptor.capture(), any(), any());
         verify(mIkeSessionWrapper).setUnderpinnedNetwork(TEST_NETWORK);
+        if (vpnProfile.type == VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS
+                || vpnProfile.type == VpnProfile.TYPE_IKEV2_IPSEC_PSK) {
+            verify(mVpnConnectivityMetrics).setAllowedAlgorithms(
+                    Ikev2VpnProfile.DEFAULT_ALGORITHMS);
+        }
+        verify(mVpnConnectivityMetrics).setVpnType(VpnManager.TYPE_VPN_PLATFORM);
+        verify(mVpnConnectivityMetrics).setVpnProfileType(vpnProfile.type);
         verify(mVpnConnectivityMetrics).setUnderlyingNetwork(any());
         verify(mVpnConnectivityMetrics).setVpnNetworkIpProtocol(argThat(addresses ->
                 CollectionUtils.all(List.of(
