@@ -66,6 +66,21 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
         }
     }
 
+      public void addTask(int associationId, RemoteTaskInfo taskInfo) {
+        synchronized (mRemoteDeviceTaskLists) {
+            if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
+                Slog.e(
+                    TAG,
+                    "addTask failure for association: " + associationId + " - not connected.");
+
+                return;
+            }
+
+            Slog.v(TAG, "Adding task: " + taskInfo.getId() + " for association: " + associationId);
+            mRemoteDeviceTaskLists.get(associationId).addTask(taskInfo);
+        }
+    }
+
    public void removeTask(int associationId, int taskId) {
         synchronized (mRemoteDeviceTaskLists) {
             if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
