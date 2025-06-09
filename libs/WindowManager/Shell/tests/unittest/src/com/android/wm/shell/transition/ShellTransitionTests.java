@@ -127,6 +127,7 @@ import org.mockito.Answers;
 import org.mockito.InOrder;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -1327,7 +1328,8 @@ public class ShellTransitionTests extends ShellTestCase {
         final RecentsTransitionHandler recentsHandler =
                 new RecentsTransitionHandler(shellInit, mock(ShellTaskOrganizer.class), transitions,
                         mockRecentsTaskController, mock(HomeTransitionObserver.class),
-                        mock(DisplayController.class), mock(DesksOrganizer.class));
+                        mock(DisplayController.class), mock(DesksOrganizer.class),
+                        Optional.empty());
         recentsHandler.setFinishTransactionSupplier(
                 () -> mock(SurfaceControl.Transaction.class));
         transitions.replaceDefaultHandlerForTest(mDefaultHandler);
