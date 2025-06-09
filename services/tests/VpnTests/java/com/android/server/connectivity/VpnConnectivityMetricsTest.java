@@ -235,4 +235,49 @@ public class VpnConnectivityMetricsTest {
                     USER_ID);
         }, () -> Log.setWtfHandler(originalHandler));
     }
+
+    @Test
+    public void testResetMetrics() {
+        final Network cellNetwork = new Network(1234);
+        final NetworkCapabilities cellCap = new NetworkCapabilities();
+        cellCap.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+        doReturn(cellCap).when(mCm).getNetworkCapabilities(cellNetwork);
+
+        // Fill in metrics data
+        mMetrics.setVpnType(VpnManager.TYPE_VPN_PLATFORM);
+        mMetrics.setMtu(1327);
+        mMetrics.setVpnProfileType(VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS);
+        mMetrics.setAllowedAlgorithms(Ikev2VpnProfile.DEFAULT_ALGORITHMS);
+        mMetrics.setUnderlyingNetwork(new Network[] { cellNetwork });
+        mMetrics.setVpnNetworkIpProtocol(
+                List.of(new LinkAddress(VPN_CLIENT_IP_V4), new LinkAddress(VPN_CLIENT_IP_V6)));
+        mMetrics.setServerIpProtocol(InetAddresses.parseNumericAddress(VPN_SERVER_IP_V4));
+
+        // Verify a vpn connected event with the filled in data.
+        mMetrics.notifyVpnConnected();
+        verify(mDeps).statsWrite(
+                VpnManager.TYPE_VPN_PLATFORM,
+                IP_PROTOCOL_IPv4v6,
+                IP_PROTOCOL_IPv4,
+                VpnProfile.TYPE_IKEV2_IPSEC_USER_PASS + 1,
+                1999 /* allowedAlgorithms */,
+                1327 /* mtu */,
+                new int[] { NetworkCapabilities.TRANSPORT_CELLULAR },
+                true /* connected */,
+                USER_ID);
+
+        // Reset all metrics and verify again. All data should be the default value.
+        mMetrics.resetMetrics();
+        mMetrics.notifyVpnConnected();
+        verify(mDeps).statsWrite(
+                VPN_TYPE_UNKNOWN,
+                IP_PROTOCOL_UNKNOWN,
+                IP_PROTOCOL_UNKNOWN,
+                VPN_PROFILE_TYPE_UNKNOWN,
+                0 /* allowedAlgorithms */,
+                0 /* mtu */,
+                new int[0],
+                true /* connected */,
+                USER_ID);
+    }
 }

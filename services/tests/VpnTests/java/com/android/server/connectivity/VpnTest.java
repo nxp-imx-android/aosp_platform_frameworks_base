@@ -3031,6 +3031,7 @@ public class VpnTest extends VpnTestBase {
         verify(mMockNetworkAgent, timeout(TEST_TIMEOUT_MS)).unregister();
         // Verify disconnection metrics notification.
         verify(mVpnConnectivityMetrics).notifyVpnDisconnected();
+        verify(mVpnConnectivityMetrics).resetMetrics();
     }
 
     @Test

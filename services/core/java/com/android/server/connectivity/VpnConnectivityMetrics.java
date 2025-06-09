@@ -391,4 +391,20 @@ public class VpnConnectivityMetrics {
     public void notifyVpnDisconnected() {
         validateAndReportVpnConnectionEvent(false /* connected */);
     }
+
+    /**
+     * Resets all internal VPN metrics to their default states.
+     * <p>
+     * This method should be called to ensure a clean state.
+     * </p>
+     */
+    public void resetMetrics() {
+        mVpnType = VPN_TYPE_UNKNOWN;
+        mVpnNetworkIpProtocol = IP_PROTOCOL_UNKNOWN;
+        mServerIpProtocol = IP_PROTOCOL_UNKNOWN;
+        mVpnProfileType = VPN_PROFILE_TYPE_UNKNOWN;
+        mAllowedAlgorithms = 0;
+        mMtu = 0;
+        mUnderlyingNetworkTypes = new int[0];
+    }
 }

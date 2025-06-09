@@ -747,6 +747,8 @@ public class Vpn {
                     mNetworkAgent = null;
                     if (isVpnMetricsLoggable()) {
                         mVpnConnectivityMetrics.notifyVpnDisconnected();
+                        // Clear the metrics since the NetworkAgent is disconnected.
+                        mVpnConnectivityMetrics.resetMetrics();
                     }
                 }
                 break;
