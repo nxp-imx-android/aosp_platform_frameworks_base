@@ -23,6 +23,8 @@ import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepositor
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.viewmodel.fakeDeviceEntryIconViewModelTransition
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
@@ -48,6 +50,7 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
         }
     private val systemUIDialogManager = kosmos.systemUIDialogManager
     private val bouncerRepository = kosmos.fakeKeyguardBouncerRepository
+    private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val testScope = kosmos.testScope
     private val deviceEntryIconViewModelTransition = kosmos.fakeDeviceEntryIconViewModelTransition
     private val underTest = kosmos.deviceEntryUdfpsTouchOverlayViewModel
@@ -111,6 +114,21 @@ class DeviceEntryUdfpsTouchOverlayViewModelTest : SysuiTestCase() {
             runCurrent()
 
             bouncerRepository.setAlternateVisible(true)
+            assertThat(shouldHandleTouches).isTrue()
+        }
+
+    @Test
+    fun transitioningToDozing_shouldHandleTouchesTrue() =
+        testScope.runTest {
+            val shouldHandleTouches by collectLastValue(underTest.shouldHandleTouches)
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.DOZING,
+                testScope = testScope,
+            )
+            runCurrent()
+
             assertThat(shouldHandleTouches).isTrue()
         }
 }

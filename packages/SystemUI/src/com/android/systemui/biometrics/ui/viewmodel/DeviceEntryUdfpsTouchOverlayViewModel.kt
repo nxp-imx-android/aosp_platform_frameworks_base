@@ -49,15 +49,21 @@ constructor(
                 deviceEntryViewAlphaIsMostlyVisible,
                 alternateBouncerInteractor.isVisible,
                 systemUIDialogManager.hideAffordancesRequest,
-            ) { canTouchDeviceEntryViewAlpha, alternateBouncerVisible, hideAffordancesRequest ->
+                deviceEntryIconViewModel.transitioningToDozing,
+            ) {
+                canTouchDeviceEntryViewAlpha,
+                alternateBouncerVisible,
+                hideAffordancesRequest,
+                toDozing ->
                 val shouldHandleTouches =
                     (canTouchDeviceEntryViewAlpha && !hideAffordancesRequest) ||
-                        alternateBouncerVisible
+                        alternateBouncerVisible ||
+                        toDozing
                 logger.logDeviceEntryUdfpsTouchOverlayShouldHandleTouches(
                     shouldHandleTouches,
                     canTouchDeviceEntryViewAlpha,
                     alternateBouncerVisible,
-                    hideAffordancesRequest
+                    hideAffordancesRequest,
                 )
                 shouldHandleTouches
             }
