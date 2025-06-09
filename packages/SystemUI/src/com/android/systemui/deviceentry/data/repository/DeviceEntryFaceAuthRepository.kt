@@ -281,16 +281,23 @@ constructor(
                     *gatingConditionsForAuthAndDetect(),
                     Pair(isBypassEnabled, "isBypassEnabled"),
                     Pair(
-                        biometricSettingsRepository.isFaceAuthCurrentlyAllowed
-                            .isFalse()
-                            .or(isLockedOut)
-                            .or(keyguardRepository.isKeyguardDismissible),
+                        combine(
+                            biometricSettingsRepository.isFaceAuthCurrentlyAllowed,
+                            isLockedOut,
+                            keyguardRepository.isKeyguardDismissible,
+                        ) { faceAuthCurrentlyAllowed, isLockedOut, isKeyguardDismissible ->
+                            !faceAuthCurrentlyAllowed || isLockedOut || isKeyguardDismissible
+                        },
                         "faceAuthIsNotCurrentlyAllowedOrCurrentUserIsTrusted",
                     ),
                     // We don't want to run face detect if fingerprint can be used to unlock the
                     // device bc it's not possible to authenticate with FP from the bouncer (UDFPS)
                     Pair(
-                        and(isUdfps(), deviceEntryFingerprintAuthRepository.isRunning).isFalse(),
+                        combine(isUdfps(), deviceEntryFingerprintAuthRepository.isRunning) {
+                            isUdfps,
+                            fingerprintAuthRunning ->
+                            !(isUdfps && fingerprintAuthRunning)
+                        },
                         "udfpsAuthIsNotPossibleAnymore",
                     ),
                 )
@@ -385,13 +392,14 @@ constructor(
     private fun gatingConditionsForAuthAndDetect(): Array<Pair<Flow<Boolean>, String>> {
         return arrayOf(
             Pair(
-                and(
-                        displayStateInteractor.isDefaultDisplayOff,
-                        keyguardTransitionInteractor.isFinishedInStateWhere(
-                            KeyguardState::deviceIsAwakeInState
-                        ),
-                    )
-                    .isFalse(),
+                combine(
+                    displayStateInteractor.isDefaultDisplayOff,
+                    keyguardTransitionInteractor.isFinishedInStateWhere(
+                        KeyguardState::deviceIsAwakeInState
+                    ),
+                ) { defaultDisplayOff, finishedInAwakeState ->
+                    !(defaultDisplayOff && finishedInAwakeState)
+                },
                 // this can happen if an app is requesting for screen off, the display can
                 // turn off without wakefulness.isStartingToSleepOrAsleep calls
                 "displayIsNotOffWhileFullyTransitionedToAwake",
@@ -402,23 +410,21 @@ constructor(
             ),
             Pair(
                 if (SceneContainerFlag.isEnabled) {
-                    sceneInteractor
-                        .get()
-                        .transitionState
-                        .map { it.isTransitioning(to = Scenes.Gone) || it.isIdle(Scenes.Gone) }
-                        .isFalse()
+                    sceneInteractor.get().transitionState.map {
+                        !it.isTransitioning(to = Scenes.Gone) && !it.isIdle(Scenes.Gone)
+                    }
                 } else {
-                    (keyguardTransitionInteractor
-                            .isFinishedIn(KeyguardState.GONE)
-                            .or(
-                                keyguardTransitionInteractor.isInTransition(
-                                    Edge.create(to = Scenes.Gone),
-                                    Edge.create(to = KeyguardState.GONE),
-                                )
-                            ))
-                        .isFalse()
+                    combine(
+                        keyguardTransitionInteractor.isFinishedIn(KeyguardState.GONE),
+                        keyguardTransitionInteractor.isInTransition(
+                            Edge.create(to = Scenes.Gone),
+                            Edge.create(to = KeyguardState.GONE),
+                        ),
+                    ) { finishedInGone, transitioningToGone ->
+                        !finishedInGone && !transitioningToGone
+                    }
                 },
-                "keyguardNotGoneOrTransitioningToGone",
+                "keyguardNotGoneAndNotTransitioningToGone",
             ),
             Pair(
                 keyguardTransitionInteractor
@@ -427,19 +433,19 @@ constructor(
                 "deviceNotTransitioningToAsleepState",
             ),
             Pair(
-                keyguardInteractor.isSecureCameraActive
-                    .isFalse()
-                    .or(
-                        alternateBouncerInteractor.isVisible.or(
-                            if (SceneContainerFlag.isEnabled) {
-                                sceneInteractor.get().transitionState.map {
-                                    it.isIdle(overlay = Overlays.Bouncer)
-                                }
-                            } else {
-                                keyguardInteractor.primaryBouncerShowing
-                            }
-                        )
-                    ),
+                combine(
+                    keyguardInteractor.isSecureCameraActive,
+                    alternateBouncerInteractor.isVisible,
+                    if (SceneContainerFlag.isEnabled) {
+                        sceneInteractor.get().transitionState.map {
+                            it.isIdle(overlay = Overlays.Bouncer)
+                        }
+                    } else {
+                        keyguardInteractor.primaryBouncerShowing
+                    },
+                ) { isSecureCameraActive, alternateBouncerVisible, primaryBouncerShowing ->
+                    !isSecureCameraActive || alternateBouncerVisible || primaryBouncerShowing
+                },
                 "secureCameraNotActiveOrAnyBouncerIsShowing",
             ),
             Pair(
@@ -452,10 +458,10 @@ constructor(
             ),
             Pair(keyguardRepository.isKeyguardShowing, "isKeyguardShowing"),
             Pair(
-                userRepository.selectedUser
-                    .map { it.selectionStatus == SelectionStatus.SELECTION_IN_PROGRESS }
-                    .isFalse(),
-                "userSwitchingInProgress",
+                userRepository.selectedUser.map {
+                    it.selectionStatus != SelectionStatus.SELECTION_IN_PROGRESS
+                },
+                "userSwitchingNotInProgress",
             ),
         )
     }
@@ -768,14 +774,6 @@ constructor(
         pw.println("  lockscreenBypassEnabled: ${keyguardBypassController?.bypassEnabled ?: false}")
     }
 }
-
-/** Combine two boolean flows by and-ing both of them */
-private fun and(flow: Flow<Boolean>, anotherFlow: Flow<Boolean>) =
-    flow.combine(anotherFlow) { a, b -> a && b }
-
-/** Combine two boolean flows by or-ing both of them */
-private fun Flow<Boolean>.or(anotherFlow: Flow<Boolean>) =
-    this.combine(anotherFlow) { a, b -> a || b }
 
 /** "Not" the given flow. The return [Flow] will be true when [this] flow is false. */
 private fun Flow<Boolean>.isFalse(): Flow<Boolean> {
