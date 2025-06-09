@@ -41,6 +41,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 
 /**
  * A ContextWrapper with utilities specifically designed to make Testing easier.
@@ -287,6 +288,12 @@ public class TestableContext extends ContextWrapper implements TestRule {
         if (mService != null) mService.getLeakInfo(conn).addAllocation(new Throwable());
         if (checkMocks(service, conn)) return true;
         return super.bindService(service, conn, flags);
+    }
+
+    @Override
+    public boolean bindService(Intent service, int flags, Executor executor,
+            ServiceConnection conn) {
+        return bindService(service, conn, flags);
     }
 
     /**
