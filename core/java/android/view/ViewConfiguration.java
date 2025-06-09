@@ -420,8 +420,6 @@ public class ViewConfiguration {
     private final int mTapTimeoutMillis;
     private final int mDoubleTapTimeoutMillis;
     private final int mDoubleTapMinTimeMillis;
-    private final int mLongPressTimeoutMillis;
-    private final int mMultiPressTimeoutMillis;
     private final float mScrollFriction;
 
     private int mDeviceId = Context.DEVICE_ID_INVALID;
@@ -481,8 +479,6 @@ public class ViewConfiguration {
         mTapTimeoutMillis = sResourceCache.getTapTimeout();
         mDoubleTapTimeoutMillis = sResourceCache.getDoubleTapTimeout();
         mDoubleTapMinTimeMillis = sResourceCache.getDoubleTapMinTime();
-        mLongPressTimeoutMillis = getLongPressTimeout();
-        mMultiPressTimeoutMillis = getMultiPressTimeout();
         mScrollFriction = sResourceCache.getScrollFriction();
     }
 
@@ -629,10 +625,6 @@ public class ViewConfiguration {
         mScrollFriction = res.getFloat(R.dimen.config_scrollFriction);
 
         mDeviceId = context.getDeviceId();
-        mLongPressTimeoutMillis = AppGlobals.getIntCoreSetting(Settings.Secure.LONG_PRESS_TIMEOUT,
-                DEFAULT_LONG_PRESS_TIMEOUT, mDeviceId);
-        mMultiPressTimeoutMillis = AppGlobals.getIntCoreSetting(Settings.Secure.MULTI_PRESS_TIMEOUT,
-                DEFAULT_MULTI_PRESS_TIMEOUT, mDeviceId);
     }
 
     /**
@@ -764,7 +756,7 @@ public class ViewConfiguration {
      */
     @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
     public int getLongPressTimeoutMillis() {
-        return mLongPressTimeoutMillis;
+        return getSettingValue(Settings.Secure.LONG_PRESS_TIMEOUT, DEFAULT_LONG_PRESS_TIMEOUT);
     }
 
     /**
@@ -782,7 +774,7 @@ public class ViewConfiguration {
      */
     @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_VIEWCONFIGURATION_APIS)
     public int getMultiPressTimeoutMillis() {
-        return mMultiPressTimeoutMillis;
+        return getSettingValue(Settings.Secure.MULTI_PRESS_TIMEOUT, DEFAULT_MULTI_PRESS_TIMEOUT);
     }
 
     /**
@@ -816,18 +808,8 @@ public class ViewConfiguration {
      */
     @FlaggedApi(android.view.accessibility.Flags.FLAG_TEXT_CURSOR_BLINK_INTERVAL)
     public int getTextCursorBlinkIntervalMillis() {
-        int value;
-        if (mDeviceId != Context.DEVICE_ID_INVALID) {
-            value = AppGlobals.getIntCoreSetting(
-                    Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
-                    sResourceCache.getDefaultTextCursorBlinkInterval(),
-                    mDeviceId);
-        } else {
-            value = AppGlobals.getIntCoreSetting(
-                    Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
-                    sResourceCache.getDefaultTextCursorBlinkInterval());
-        }
-
+        int value = getSettingValue(Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS,
+                sResourceCache.getDefaultTextCursorBlinkInterval());
         int noBlink = sResourceCache.getNoBlinkTextCursorBlinkInterval();
         int minBlink = sResourceCache.getMinTextCursorBlinkInterval();
 
@@ -1597,6 +1579,13 @@ public class ViewConfiguration {
     @TestApi
     public static int getHoverTooltipHideShortTimeout() {
         return HOVER_TOOLTIP_HIDE_SHORT_TIMEOUT;
+    }
+
+    private int getSettingValue(String key, int defaultValue) {
+        if (mDeviceId != Context.DEVICE_ID_INVALID) {
+            return AppGlobals.getIntCoreSetting(key, defaultValue, mDeviceId);
+        }
+        return AppGlobals.getIntCoreSetting(key, defaultValue);
     }
 
     private static int getDisplayDensity(Context context) {
