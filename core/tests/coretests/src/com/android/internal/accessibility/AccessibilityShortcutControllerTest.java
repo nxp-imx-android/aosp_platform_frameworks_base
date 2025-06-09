@@ -34,14 +34,15 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -50,6 +51,7 @@ import static org.mockito.Mockito.when;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ApplicationInfo;
@@ -57,7 +59,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
-import android.content.res.Resources;
 import android.media.Ringtone;
 import android.os.Build;
 import android.os.Handler;
@@ -66,7 +67,8 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.Voice;
-import android.test.mock.MockContentResolver;
+import android.testing.TestableContext;
+import android.testing.TestableResources;
 import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
@@ -74,15 +76,14 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
 import android.widget.Toast;
 
-import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.AccessibilityShortcutController.FrameworkObjectProvider;
-import com.android.internal.util.test.FakeSettingsProvider;
 
-import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -113,14 +114,16 @@ public class AccessibilityShortcutControllerTest {
     private static final int ENABLED_EXCEPT_LOCK_SCREEN = 1;
     private static final int ENABLED_INCLUDING_LOCK_SCREEN = 2;
 
-    private @Mock Context mContext;
+    @Rule
+    public final TestableContext mContext = spy(new TestableContext(
+            InstrumentationRegistry.getInstrumentation().getContext()));
+    private ContentResolver mContentResolver = mContext.getContentResolver();
     private @Mock FrameworkObjectProvider mFrameworkObjectProvider;
     private @Mock IAccessibilityManager mAccessibilityManagerService;
     private @Mock Handler mHandler;
     private @Mock AlertDialog.Builder mAlertDialogBuilder;
     private @Mock AlertDialog mAlertDialog;
     private @Mock AccessibilityServiceInfo mServiceInfo;
-    private @Mock Resources mResources;
     private @Mock Toast mToast;
     private @Mock Vibrator mVibrator;
     private @Mock ApplicationInfo mApplicationInfo;
@@ -129,8 +132,6 @@ public class AccessibilityShortcutControllerTest {
     private @Mock Voice mVoice;
     private @Mock Ringtone mRingtone;
     private @Captor ArgumentCaptor<List<String>> mListCaptor;
-
-    private MockContentResolver mContentResolver;
     private WindowManager.LayoutParams mLayoutParams = new WindowManager.LayoutParams();
 
     @Before
@@ -138,30 +139,22 @@ public class AccessibilityShortcutControllerTest {
         MockitoAnnotations.initMocks(this);
 
         when(mVibrator.hasVibrator()).thenReturn(true);
-
-        when(mContext.getResources()).thenReturn(mResources);
         when(mContext.getApplicationInfo()).thenReturn(mApplicationInfo);
-        when(mContext.getSystemService(Context.VIBRATOR_SERVICE)).thenReturn(mVibrator);
-        when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        mContext.addMockSystemService(Context.VIBRATOR_SERVICE, mVibrator);
+        mContext.setMockPackageManager(mPackageManager);
 
         // We're not checking the text. Just prevent us crashing when getting text.
         when(mPackageManager.getText(any(), anyInt(), any())).thenReturn("text");
-
-        mContentResolver = new MockContentResolver(mContext);
-        mContentResolver.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
-        FakeSettingsProvider.clearSettingsProvider();
-        when(mContext.getContentResolver()).thenReturn(mContentResolver);
-
         when(mAccessibilityManagerService.getInstalledAccessibilityServiceList(anyInt()))
                 .thenReturn(new ParceledListSlice<>(Collections.singletonList(mServiceInfo)));
 
         // Use the extra level of indirection in the object to mock framework objects
         AccessibilityManager accessibilityManager =
-                new AccessibilityManager(InstrumentationRegistry.getContext(), mHandler,
-                        mAccessibilityManagerService, 0, true);
+                new AccessibilityManager(mContext, mHandler,
+                        mAccessibilityManagerService, mContext.getUserId(), true);
+        mContext.addMockSystemService(Context.ACCESSIBILITY_SERVICE, accessibilityManager);
+
         when(mFrameworkObjectProvider.getAccessibilityManagerInstance(mContext))
-                .thenReturn(accessibilityManager);
-        when(mContext.getSystemService(Context.ACCESSIBILITY_SERVICE))
                 .thenReturn(accessibilityManager);
         when(mFrameworkObjectProvider.getAlertDialogBuilder(mContext))
                 .thenReturn(mAlertDialogBuilder);
@@ -172,9 +165,10 @@ public class AccessibilityShortcutControllerTest {
                 .thenReturn(mTextToSpeech);
         when(mFrameworkObjectProvider.getRingtone(eq(mContext), any())).thenReturn(mRingtone);
 
-        when(mResources.getString(anyInt())).thenReturn("Howdy %s");
-        when(mResources.getString(R.string.config_defaultAccessibilityService)).thenReturn(null);
-        when(mResources.getIntArray(anyInt())).thenReturn(VIBRATOR_PATTERN_INT);
+        TestableResources resources = mContext.getOrCreateTestableResources();
+        resources.addOverride(
+                R.string.config_defaultAccessibilityService, "");
+        resources.addOverride(R.array.config_longPressVibePattern, VIBRATOR_PATTERN_INT);
 
         ResolveInfo resolveInfo = mock(ResolveInfo.class);
         resolveInfo.serviceInfo = mock(ServiceInfo.class);
@@ -222,11 +216,6 @@ public class AccessibilityShortcutControllerTest {
         } catch (Exception e) {
             throw new RuntimeException("Unable to set sFrameworkShortcutFeaturesMap", e);
         }
-    }
-
-    @AfterClass
-    public static void cleanUpSettingsProvider() {
-        FakeSettingsProvider.clearSettingsProvider();
     }
 
     @Test
@@ -366,8 +355,9 @@ public class AccessibilityShortcutControllerTest {
                 mContentResolver, ACCESSIBILITY_SHORTCUT_DIALOG_SHOWN,
                 AccessibilityShortcutController.DialogStatus.NOT_SHOWN)).isEqualTo(
                 AccessibilityShortcutController.DialogStatus.SHOWN);
-        verify(mResources).getString(
-                R.string.accessibility_shortcut_single_service_warning_title, PACKAGE_NAME_STRING);
+        verify(mAlertDialogBuilder).setTitle(
+                mContext.getString(R.string.accessibility_shortcut_single_service_warning_title,
+                        PACKAGE_NAME_STRING));
         verify(mAlertDialog).show();
         verify(mAccessibilityManagerService, atLeastOnce()).getInstalledAccessibilityServiceList(
                 anyInt());
@@ -475,6 +465,7 @@ public class AccessibilityShortcutControllerTest {
         configureDefaultAccessibilityService();
         Settings.Secure.putInt(mContentResolver, ACCESSIBILITY_SHORTCUT_DIALOG_SHOWN,
                 AccessibilityShortcutController.DialogStatus.NOT_SHOWN);
+        Settings.Secure.putString(mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, null);
         getController().performAccessibilityShortcut();
 
         ArgumentCaptor<DialogInterface.OnClickListener> captor =
@@ -721,7 +712,8 @@ public class AccessibilityShortcutControllerTest {
         configureValidShortcutService();
         // Shortcut setting should be cleared on user setup
         Settings.Secure.putStringForUser(
-                mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, null, 0);
+                mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, null,
+                mContext.getUserId());
         when(mAccessibilityManagerService
                 .getEnabledAccessibilityServiceList(anyInt(), eq(0)))
                 .thenReturn(Collections.emptyList());
@@ -730,7 +722,7 @@ public class AccessibilityShortcutControllerTest {
         controller.mUserSetupCompleteObserver.onChange(true);
 
         final String shortcut = Settings.Secure.getStringForUser(
-                mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, 0);
+                mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, mContext.getUserId());
         assertThat(shortcut).isEqualTo("");
     }
 
@@ -809,7 +801,7 @@ public class AccessibilityShortcutControllerTest {
 
     private AccessibilityShortcutController getController() {
         AccessibilityShortcutController accessibilityShortcutController =
-                new AccessibilityShortcutController(mContext, mHandler, 0);
+                new AccessibilityShortcutController(mContext, mHandler, mContext.getUserId());
         accessibilityShortcutController.mFrameworkObjectProvider = mFrameworkObjectProvider;
         return accessibilityShortcutController;
     }
@@ -818,9 +810,8 @@ public class AccessibilityShortcutControllerTest {
         when(mAccessibilityManagerService
                 .getAccessibilityShortcutTargets(eq(HARDWARE), anyInt()))
                 .thenReturn(Collections.singletonList(SERVICE_NAME_STRING));
-
-        when(mResources.getString(R.string.config_defaultAccessibilityService)).thenReturn(
-                SERVICE_NAME_STRING);
+        mContext.getOrCreateTestableResources()
+                .addOverride(R.string.config_defaultAccessibilityService, SERVICE_NAME_STRING);
     }
 
     private void turnOffVolumeKeyShortcutForA11yService(boolean alwaysOnService) throws Exception {
