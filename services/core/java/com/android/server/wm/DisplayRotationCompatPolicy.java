@@ -211,8 +211,7 @@ final class DisplayRotationCompatPolicy implements AppCompatCameraStatePolicy,
                             + (topActivity == null ? "null" : topActivity.shortComponentName)
                     + " isTreatmentEnabledForActivity="
                             + isTreatmentEnabledForActivity(topActivity)
-                            + "mCameraStateMonitor="
-                            + mCameraStateMonitor.getSummary();
+                            + "mCameraStateMonitor=" + mCameraStateMonitor;
         }
         return "DisplayRotationCompatPolicy{"
                 + " isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay()
