@@ -13,6 +13,7 @@ import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteracto
 import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.biometrics.shared.model.FallbackOptionModel
+import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -32,26 +33,46 @@ class CredentialViewModel
 @Inject
 constructor(
     @Application private val applicationContext: Context,
-    private val credentialInteractor: PromptCredentialInteractor,
-    private val shadeInteractor: ShadeInteractor,
+    private val promptCredentialInteractor: PromptCredentialInteractor,
+    shadeInteractor: ShadeInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
 ) {
+    /** Whether credential is allowed in the prompt */
+    val isCredentialAllowed: Flow<Boolean> =
+        promptCredentialInteractor.prompt.map { it?.credentialAllowed == true }
+
     /** Top level information about the prompt. */
     val header: Flow<CredentialHeaderViewModel> =
         combine(
-            credentialInteractor.prompt.filterIsInstance<BiometricPromptRequest.Credential>(),
-            credentialInteractor.showTitleOnly,
-        ) { request, showTitleOnly ->
-            BiometricPromptHeaderViewModelImpl(
-                request,
-                user = request.userInfo,
-                title = request.title,
-                subtitle = if (showTitleOnly) "" else request.subtitle,
-                contentView = if (!showTitleOnly) request.contentView else null,
-                description = if (request.contentView != null) "" else request.description,
-                icon = applicationContext.asLockIcon(request.userInfo.deviceCredentialOwnerId),
-                showEmergencyCallButton = request.showEmergencyCallButton,
-            )
+            promptCredentialInteractor.prompt.filterIsInstance<BiometricPromptRequest.Credential>(),
+            promptCredentialInteractor.showTitleOnly,
+            isCredentialAllowed,
+            promptCredentialInteractor.credentialKind,
+        ) { request, showTitleOnly, credentialAllowed, credentialKind ->
+            if (credentialAllowed) {
+                BiometricPromptHeaderViewModelImpl(
+                    request,
+                    user = request.userInfo,
+                    title = request.title,
+                    subtitle = if (showTitleOnly) "" else request.subtitle,
+                    contentView = if (!showTitleOnly) request.contentView else null,
+                    description = if (request.contentView != null) "" else request.description,
+                    icon = applicationContext.asLockIcon(request.userInfo.deviceCredentialOwnerId),
+                    showEmergencyCallButton = request.showEmergencyCallButton,
+                )
+            } else {
+                BiometricPromptHeaderViewModelImpl(
+                    request,
+                    user = request.userInfo,
+                    title = applicationContext.asResetTitle(credentialKind),
+                    description = applicationContext.asResetSubtitle(credentialKind),
+                    icon =
+                        applicationContext.asLockIcon(
+                            request.userInfo.deviceCredentialOwnerId
+                        ), // TODO: Need custom icon
+                    showEmergencyCallButton = request.showEmergencyCallButton,
+                )
+            }
         }
 
     /** Whether the shade is expanded */
@@ -59,7 +80,7 @@ constructor(
 
     /** Input flags for text based credential views */
     val inputFlags: Flow<Int?> =
-        credentialInteractor.prompt.map {
+        promptCredentialInteractor.prompt.map {
             when (it) {
                 is BiometricPromptRequest.Credential.Pin ->
                     InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
@@ -69,7 +90,7 @@ constructor(
 
     /** Input box accessibility description for text based credential views */
     val inputBoxContentDescription: Flow<Int?> =
-        credentialInteractor.prompt.map {
+        promptCredentialInteractor.prompt.map {
             when (it) {
                 is BiometricPromptRequest.Credential.Pin -> R.string.keyguard_accessibility_pin_area
                 is BiometricPromptRequest.Credential.Password ->
@@ -80,7 +101,7 @@ constructor(
 
     /** If stealth mode is active (hide user credential input). */
     val stealthMode: Flow<Boolean> =
-        credentialInteractor.prompt.map {
+        promptCredentialInteractor.prompt.map {
             when (it) {
                 is BiometricPromptRequest.Credential.Pattern -> it.stealthMode
                 else -> false
@@ -93,7 +114,9 @@ constructor(
 
     /** Error messages to show the user. */
     val errorMessage: Flow<String> =
-        combine(credentialInteractor.verificationError, credentialInteractor.prompt) { error, p ->
+        combine(promptCredentialInteractor.verificationError, promptCredentialInteractor.prompt) {
+            error,
+            p ->
             when (error) {
                 is CredentialStatus.Fail.Error ->
                     error.error ?: applicationContext.asBadCredentialErrorMessage(p)
@@ -112,10 +135,11 @@ constructor(
     val remainingAttempts: Flow<RemainingAttempts> = _remainingAttempts.asStateFlow()
 
     private val biometricsRequested: Flow<Boolean> =
-        credentialInteractor.prompt.map { it?.biometricsRequested == true }
+        promptCredentialInteractor.prompt.map { it?.biometricsRequested == true }
 
     /** List of fallback options set by prompt caller */
-    val fallbackOptions: Flow<List<FallbackOptionModel>> = credentialInteractor.fallbackOptions
+    val fallbackOptions: Flow<List<FallbackOptionModel>> =
+        promptCredentialInteractor.fallbackOptions
 
     /** Whether the fallback button should show on the credential screen */
     val showFallbackButton: Flow<Boolean> =
@@ -130,7 +154,7 @@ constructor(
 
     /** Show an error message to inform the user the pattern is too short to attempt validation. */
     fun showPatternTooShortError() {
-        credentialInteractor.setVerificationError(
+        promptCredentialInteractor.setVerificationError(
             CredentialStatus.Fail.Error(
                 applicationContext.asBadCredentialErrorMessage(
                     BiometricPromptRequest.Credential.Pattern::class
@@ -141,7 +165,7 @@ constructor(
 
     /** Reset the error message to an empty string. */
     fun resetErrorMessage() {
-        credentialInteractor.resetVerificationError()
+        promptCredentialInteractor.resetVerificationError()
     }
 
     /** Switch to the fallback view. */
@@ -149,15 +173,23 @@ constructor(
         promptSelectorInteractor.onSwitchToFallback()
     }
 
+    /** Switch to the auth view. */
+    fun onSwichToAuthScreen() {
+        promptSelectorInteractor.onSwitchToAuth()
+    }
+
     /** Check a PIN or password and update [validatedAttestation] or [remainingAttempts]. */
     suspend fun checkCredential(text: CharSequence, header: CredentialHeaderViewModel) =
-        checkCredential(credentialInteractor.checkCredential(header.asRequest(), text = text))
+        checkCredential(promptCredentialInteractor.checkCredential(header.asRequest(), text = text))
 
     /** Check a pattern and update [validatedAttestation] or [remainingAttempts]. */
     suspend fun checkCredential(
         pattern: List<LockPatternView.Cell>,
         header: CredentialHeaderViewModel,
-    ) = checkCredential(credentialInteractor.checkCredential(header.asRequest(), pattern = pattern))
+    ) =
+        checkCredential(
+            promptCredentialInteractor.checkCredential(header.asRequest(), pattern = pattern)
+        )
 
     private suspend fun checkCredential(result: CredentialStatus) {
         when (result) {
@@ -220,13 +252,33 @@ private fun Context.asLockIcon(userId: Int): Drawable {
     return resources.getDrawable(id, theme)
 }
 
+private fun Context.asResetTitle(credentialKind: PromptKind): String =
+    getString(
+        when (credentialKind) {
+            PromptKind.Pin -> R.string.biometric_dialog_enter_pin
+            PromptKind.Pattern -> R.string.biometric_dialog_enter_pattern
+            PromptKind.Password -> R.string.biometric_dialog_enter_password
+            else -> 0 // credentialKind should always be a credential
+        }
+    )
+
+private fun Context.asResetSubtitle(credentialKind: PromptKind): String =
+    getString(
+        when (credentialKind) {
+            PromptKind.Pin -> R.string.biometric_dialog_recovery_pin
+            PromptKind.Pattern -> R.string.biometric_dialog_recovery_pattern
+            PromptKind.Password -> R.string.biometric_dialog_recovery_password
+            else -> 0 // credentialKind should always be a credential
+        }
+    )
+
 private class BiometricPromptHeaderViewModelImpl(
     val request: BiometricPromptRequest.Credential,
     override val user: BiometricUserInfo,
     override val title: String,
-    override val subtitle: String,
-    override val description: String,
-    override val contentView: PromptContentView?,
+    override val subtitle: String = "",
+    override val description: String = "",
+    override val contentView: PromptContentView? = null,
     override val icon: Drawable,
     override val showEmergencyCallButton: Boolean,
 ) : CredentialHeaderViewModel

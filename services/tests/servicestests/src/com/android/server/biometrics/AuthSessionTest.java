@@ -118,7 +118,6 @@ public class AuthSessionTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule =
             DeviceFlagsValueProvider.createCheckFlagsRule();
-
     @Mock private BiometricContext mBiometricContext;
     @Mock private ITrustManager mTrustManager;
     @Mock private DevicePolicyManager mDevicePolicyManager;
@@ -925,6 +924,107 @@ public class AuthSessionTest {
         session.onDialogDismissed(DISMISSED_REASON_USER_CANCEL, null);
 
         verify(mBiometricManager).resetLockoutTimeBound(any(), any(), anyInt(), anyInt(), any());
+    }
+
+    @Test
+    public void testOnPauseAuthentication_pausesWhenRunning() throws Exception {
+        setupFingerprint(0 /* id */, FingerprintSensorProperties.TYPE_REAR);
+        setupFace(1 /* id */, false /* confirmationAlwaysRequired */,
+                mock(IBiometricAuthenticator.class));
+        final AuthSession session = createAuthSession(mSensors,
+                false /* checkDevicePolicyManager */,
+                Authenticators.BIOMETRIC_STRONG,
+                TEST_REQUEST_ID,
+                0 /* operationId */,
+                0 /* userId */);
+        session.goToInitialState();
+        for (BiometricSensor sensor : session.mPreAuthInfo.eligibleSensors) {
+            session.onCookieReceived(sensor.getCookie());
+        }
+        session.onDialogAnimatedIn(true /* startFingerprintNow */);
+        assertThat(session.getState()).isEqualTo(STATE_AUTH_STARTED_UI_SHOWING);
+        for (BiometricSensor sensor : session.mPreAuthInfo.eligibleSensors) {
+            assertThat(sensor.getSensorState()).isEqualTo(BiometricSensor.STATE_AUTHENTICATING);
+        }
+
+        // Pause the authentication
+        session.onPauseAuthentication();
+
+        assertThat(session.getState()).isEqualTo(STATE_AUTH_PAUSED);
+        for (BiometricSensor sensor : session.mPreAuthInfo.eligibleSensors) {
+            verify(sensor.impl).cancelAuthenticationFromService(
+                    eq(mToken), eq(TEST_PACKAGE), eq(TEST_REQUEST_ID));
+            assertThat(sensor.getSensorState()).isEqualTo(BiometricSensor.STATE_CANCELING);
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    public void testPause_ignoresCancellationErrorAndDoesNotTerminate() throws Exception {
+        setupFace(0 /* id */, false, mock(IBiometricAuthenticator.class));
+        final AuthSession session = createAuthSession(mSensors,
+                false, Authenticators.BIOMETRIC_STRONG, TEST_REQUEST_ID, 0, 0);
+        session.goToInitialState();
+        session.onCookieReceived(session.mPreAuthInfo.eligibleSensors.get(0).getCookie());
+        session.onDialogAnimatedIn(true);
+        final int cookie = session.mPreAuthInfo.eligibleSensors.get(0).getCookie();
+
+        session.onPauseAuthentication();
+        assertThat(session.getState()).isEqualTo(STATE_AUTH_PAUSED);
+
+        session.onErrorReceived(0, cookie, BiometricConstants.BIOMETRIC_ERROR_CANCELED, 0);
+
+        assertThat(session.getState()).isEqualTo(STATE_AUTH_PAUSED);
+        verify(mClientReceiver, never()).onError(anyInt(), anyInt(), anyInt());
+        verify(mStatusBarService, never()).hideAuthenticationDialog(anyLong());
+    }
+
+    @Test
+    public void testPauseAndResume_restartsAuthentication() throws Exception {
+        final IBiometricAuthenticator faceAuthenticator = mock(IBiometricAuthenticator.class);
+        setupFace(0 /* id */, false /* confirmationAlwaysRequired */, faceAuthenticator);
+        final AuthSession session = createAuthSession(mSensors,
+                false, Authenticators.BIOMETRIC_STRONG, TEST_REQUEST_ID, 0, 0);
+
+        session.goToInitialState();
+        session.onCookieReceived(session.mPreAuthInfo.eligibleSensors.get(0).getCookie());
+        session.onDialogAnimatedIn(true);
+        verify(faceAuthenticator, times(1)).prepareForAuthentication(
+                anyBoolean(), any(), anyLong(), anyInt(), any(), any(), anyLong(), anyInt(),
+                anyBoolean(), anyBoolean(), anyBoolean());
+        assertThat(session.getState()).isEqualTo(STATE_AUTH_STARTED_UI_SHOWING);
+
+        session.onPauseAuthentication();
+        assertThat(session.getState()).isEqualTo(STATE_AUTH_PAUSED);
+
+        session.onResumeAuthentication();
+
+        verify(faceAuthenticator, times(2)).prepareForAuthentication(
+                anyBoolean(), any(), anyLong(), anyInt(), any(), any(), anyLong(), anyInt(),
+                anyBoolean(), anyBoolean(), anyBoolean());
+    }
+
+    @Test
+    public void testOnResumeAuthentication_resumesFromCredentialViewState() throws Exception {
+        final IBiometricAuthenticator faceAuthenticator = mock(IBiometricAuthenticator.class);
+        setupFace(0 /* id */, false, faceAuthenticator);
+        final AuthSession session = createAuthSession(mSensors,
+                true /* checkDevicePolicyManager */,
+                Authenticators.BIOMETRIC_STRONG | Authenticators.DEVICE_CREDENTIAL,
+                TEST_REQUEST_ID, 0, 0);
+
+        session.goToInitialState();
+        session.onCookieReceived(session.mPreAuthInfo.eligibleSensors.get(0).getCookie());
+        session.onDialogAnimatedIn(true);
+        session.onDeviceCredentialPressed();
+        assertThat(session.getState()).isEqualTo(
+                BiometricServiceStateProto.STATE_SHOWING_DEVICE_CREDENTIAL);
+
+        session.onResumeAuthentication();
+
+        verify(faceAuthenticator, times(2)).prepareForAuthentication(
+                anyBoolean(), any(), anyLong(), anyInt(), any(), any(), anyLong(), anyInt(),
+                anyBoolean(), anyBoolean(), anyBoolean());
     }
 
     // TODO (b/208484275) : Enable these tests

@@ -69,6 +69,7 @@ import android.view.WindowManager;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.hidden_from_bootclasspath.android.hardware.biometrics.Flags;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.widget.LockPatternUtils;
@@ -483,7 +484,37 @@ public class AuthController implements
         try {
             receiver.onStartFingerprintNow();
         } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException when sending onDialogAnimatedIn", e);
+            Log.e(TAG, "RemoteException when sending onStartFingerprintNow", e);
+        }
+    }
+
+    @Override
+    public void onPauseAuthentication(long requestId) {
+        final IBiometricSysuiReceiver receiver = getCurrentReceiver(requestId);
+        if (receiver == null) {
+            Log.e(TAG, "onPauseAuthentication: Receiver is null");
+            return;
+        }
+
+        try {
+            receiver.onPauseAuthentication();
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException when sending onPauseAuthentication", e);
+        }
+    }
+
+    @Override
+    public void onResumeAuthentication(long requestId) {
+        final IBiometricSysuiReceiver receiver = getCurrentReceiver(requestId);
+        if (receiver == null) {
+            Log.e(TAG, "onResumeAuthentication: Receiver is null");
+            return;
+        }
+
+        try {
+            receiver.onResumeAuthentication();
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException when sending onResumeAuthentication", e);
         }
     }
 
@@ -671,6 +702,7 @@ public class AuthController implements
         }
         onDialogDismissed(reason);
     }
+
     @Inject
     public AuthController(@Main Context context,
             @Application CoroutineScope applicationCoroutineScope,
@@ -1082,7 +1114,8 @@ public class AuthController implements
                 || error == BiometricConstants.BIOMETRIC_ERROR_UNABLE_TO_PROCESS
                 || isCameraPrivacyEnabled);
         if (mCurrentDialog != null) {
-            if (mCurrentDialog.isAllowDeviceCredentials() && isLockout) {
+            if (isLockout && (Flags.bpFallbackOptions()
+                    || mCurrentDialog.isAllowDeviceCredentials())) {
                 if (DEBUG) Log.d(TAG, "onBiometricError, lockout");
                 mCurrentDialog.animateToCredentialUI(true /* isError */);
             } else if (isSoftError) {

@@ -64,6 +64,9 @@ constructor(
     /** Fallback options set by prompt requester */
     val fallbackOptions: Flow<List<FallbackOptionModel>> = biometricPromptRepository.fallbackOptions
 
+    /** The credential kind being used in the prompt */
+    val credentialKind: Flow<PromptKind> = biometricPromptRepository.promptKind
+
     /** Metadata about the current credential prompt, including app-supplied preferences. */
     val prompt: Flow<BiometricPromptRequest.Credential?> =
         combine(

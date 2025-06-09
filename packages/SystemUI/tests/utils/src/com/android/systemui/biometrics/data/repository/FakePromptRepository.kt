@@ -1,6 +1,7 @@
 package com.android.systemui.biometrics.data.repository
 
 import android.hardware.biometrics.PromptInfo
+import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.PromptKind
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,9 @@ class FakePromptRepository : PromptRepository {
 
     private val _promptInfo = MutableStateFlow<PromptInfo?>(null)
     override val promptInfo = _promptInfo.asStateFlow()
+
+    private val _modalities = MutableStateFlow(BiometricModalities())
+    override val modalities = _modalities.asStateFlow()
 
     private val _userId = MutableStateFlow<Int?>(null)
     override val userId = _userId.asStateFlow()
@@ -40,6 +44,7 @@ class FakePromptRepository : PromptRepository {
     override fun setPrompt(
         promptInfo: PromptInfo,
         userId: Int,
+        modalities: BiometricModalities,
         requestId: Long,
         gatekeeperChallenge: Long?,
         kind: PromptKind,
@@ -48,6 +53,7 @@ class FakePromptRepository : PromptRepository {
         setPrompt(
             promptInfo,
             userId,
+            modalities,
             requestId,
             gatekeeperChallenge,
             kind,
@@ -58,6 +64,7 @@ class FakePromptRepository : PromptRepository {
     fun setPrompt(
         promptInfo: PromptInfo,
         userId: Int,
+        modalities: BiometricModalities,
         requestId: Long,
         gatekeeperChallenge: Long?,
         kind: PromptKind,
@@ -66,6 +73,7 @@ class FakePromptRepository : PromptRepository {
     ) {
         _promptInfo.value = promptInfo
         _userId.value = userId
+        _modalities.value = modalities
         _requestId.value = requestId
         _challenge.value = gatekeeperChallenge
         _promptKind.value = kind
@@ -76,6 +84,7 @@ class FakePromptRepository : PromptRepository {
     override fun unsetPrompt(requestId: Long) {
         _promptInfo.value = null
         _userId.value = null
+        _modalities.value = BiometricModalities()
         _requestId.value = null
         _challenge.value = null
         _promptKind.value = PromptKind.None

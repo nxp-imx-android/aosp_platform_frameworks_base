@@ -2,14 +2,14 @@ package com.android.systemui.biometrics.ui.binder
 
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternView
-import com.android.systemui.res.R
 import com.android.systemui.biometrics.ui.CredentialPatternView
 import com.android.systemui.biometrics.ui.CredentialView
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.res.R
 
 /** Sub-binder for the [CredentialPatternView]. */
 object CredentialPatternViewBinder {
@@ -63,8 +63,11 @@ private class OnPatternDetectedListener(
     private val onDetected: (pattern: List<LockPatternView.Cell>) -> Unit
 ) : LockPatternView.OnPatternListener {
     override fun onPatternCellAdded(pattern: List<LockPatternView.Cell>) {}
+
     override fun onPatternCleared() {}
+
     override fun onPatternStart() {}
+
     override fun onPatternDetected(pattern: List<LockPatternView.Cell>) {
         onDetected(pattern)
     }
