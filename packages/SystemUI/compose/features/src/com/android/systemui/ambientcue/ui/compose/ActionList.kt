@@ -131,7 +131,7 @@ fun ActionList(
         verticalArrangement = Arrangement.spacedBy(columnSpacing, Alignment.Bottom),
         horizontalAlignment = horizontalAlignment,
     ) {
-        val childHeights = remember { MutableList(actions.size) { 0 } }
+        val childHeights = remember(actions) { MutableList(actions.size) { 0 } }
         actions.forEachIndexed { index, action ->
             val scale by
                 animateFloatAsState(
