@@ -4223,8 +4223,7 @@ public final class ActivityThread extends ClientTransactionHandler
         } catch (Exception e) {
             if (!mInstrumentation.onException(activity, e)) {
                 throw new RuntimeException(
-                    "Unable to instantiate activity " + component
-                    + ": " + e.toString(), e);
+                    "Unable to instantiate activity " + component, e);
             }
         }
 
@@ -4317,8 +4316,7 @@ public final class ActivityThread extends ClientTransactionHandler
         } catch (Exception e) {
             if (!mInstrumentation.onException(activity, e)) {
                 throw new RuntimeException(
-                    "Unable to start activity " + component
-                    + ": " + e.toString(), e);
+                    "Unable to start activity " + component, e);
             }
         }
 
@@ -5070,8 +5068,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     "Finishing failed broadcast to " + data.intent.getComponent());
             data.sendFinished(mgr);
             throw new RuntimeException(
-                "Unable to instantiate receiver " + component
-                + ": " + e.toString(), e);
+                "Unable to instantiate receiver " + component, e);
         }
 
         long debugStoreId = -1;
@@ -5098,8 +5095,7 @@ public final class ActivityThread extends ClientTransactionHandler
             data.sendFinished(mgr);
             if (!mInstrumentation.onException(receiver, e)) {
                 throw new RuntimeException(
-                    "Unable to start receiver " + component
-                    + ": " + e.toString(), e);
+                    "Unable to start receiver " + component, e);
             }
         } finally {
             sCurrentBroadcastIntent.set(null);
@@ -5216,7 +5212,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 } catch (Exception e) {
                     // If this is during restore, fail silently; otherwise go
                     // ahead and let the user see the crash.
-                    Slog.e(TAG, "Agent threw during creation: " + e);
+                    Slog.e(TAG, "Agent threw during creation", e);
                     if (data.backupMode != ApplicationThreadConstants.BACKUP_MODE_RESTORE
                             && data.backupMode !=
                                     ApplicationThreadConstants.BACKUP_MODE_RESTORE_FULL) {
@@ -5234,7 +5230,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         } catch (Exception e) {
             throw new RuntimeException("Unable to create BackupAgent "
-                    + classname + ": " + e.toString(), e);
+                    + classname, e);
         }
     }
 
@@ -5354,8 +5350,7 @@ public final class ActivityThread extends ClientTransactionHandler
         } catch (Exception e) {
             if (!mInstrumentation.onException(service, e)) {
                 throw new RuntimeException(
-                    "Unable to create service " + data.info.name
-                    + ": " + e.toString(), e);
+                    "Unable to create service " + data.info.name, e);
             }
         }
     }
@@ -5387,7 +5382,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (!mInstrumentation.onException(s, e)) {
                     throw new RuntimeException(
                             "Unable to bind to service " + s
-                            + " with " + data.intent + ": " + e.toString(), e);
+                            + " with " + data.intent, e);
                 }
             }
         }
@@ -5417,7 +5412,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (!mInstrumentation.onException(s, e)) {
                     throw new RuntimeException(
                             "Unable to unbind to service " + s
-                            + " with " + data.intent + ": " + e.toString(), e);
+                            + " with " + data.intent, e);
                 }
             }
         }
@@ -5531,7 +5526,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (!mInstrumentation.onException(s, e)) {
                     throw new RuntimeException(
                             "Unable to start service " + s
-                            + " with " + data.args + ": " + e.toString(), e);
+                            + " with " + data.args, e);
                 }
             }
         }
@@ -5561,9 +5556,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 }
             } catch (Exception e) {
                 if (!mInstrumentation.onException(s, e)) {
-                    throw new RuntimeException(
-                            "Unable to stop service " + s
-                            + ": " + e.toString(), e);
+                    throw new RuntimeException("Unable to stop service " + s, e);
                 }
                 Slog.i(TAG, "handleStopService: exception for " + token, e);
             }
@@ -5587,8 +5580,7 @@ public final class ActivityThread extends ClientTransactionHandler
             } catch (Exception e) {
                 if (!mInstrumentation.onException(s, e)) {
                     throw new RuntimeException(
-                            "Unable to call onTimeout on service " + s
-                                    + ": " + e.toString(), e);
+                            "Unable to call onTimeout on service " + s, e);
                 }
                 Slog.i(TAG, "handleTimeoutService: exception for " + token, e);
             }
@@ -5608,7 +5600,7 @@ public final class ActivityThread extends ClientTransactionHandler
             } catch (Exception e) {
                 if (!mInstrumentation.onException(s, e)) {
                     throw new RuntimeException(
-                            "Unable to call onTimeLimitExceeded on service " + s + ": " + e, e);
+                            "Unable to call onTimeLimitExceeded on service " + s, e);
                 }
                 Slog.i(TAG, "handleTimeoutServiceForType: exception for " + token, e);
             }
@@ -5675,7 +5667,7 @@ public final class ActivityThread extends ClientTransactionHandler
         } catch (Exception e) {
             if (!mInstrumentation.onException(r.activity, e)) {
                 throw new RuntimeException("Unable to resume activity "
-                        + r.intent.getComponent().toShortString() + ": " + e.toString(), e);
+                        + r.intent.getComponent().toShortString(), e);
             }
         }
         return true;
@@ -5974,7 +5966,7 @@ public final class ActivityThread extends ClientTransactionHandler
         } catch (Exception e) {
             if (!mInstrumentation.onException(r.activity, e)) {
                 throw new RuntimeException("Unable to pause activity "
-                        + safeToComponentShortString(r.intent) + ": " + e.toString(), e);
+                        + safeToComponentShortString(r.intent), e);
             }
         }
         r.setState(ON_PAUSE);
@@ -6054,8 +6046,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (!mInstrumentation.onException(r.activity, e)) {
                     throw new RuntimeException(
                             "Unable to save state of activity "
-                            + r.intent.getComponent().toShortString()
-                            + ": " + e.toString(), e);
+                            + r.intent.getComponent().toShortString(), e);
                 }
             }
         }
@@ -6087,8 +6078,7 @@ public final class ActivityThread extends ClientTransactionHandler
             if (!mInstrumentation.onException(r.activity, e)) {
                 throw new RuntimeException(
                         "Unable to stop activity "
-                                + r.intent.getComponent().toShortString()
-                                + ": " + e.toString(), e);
+                                + r.intent.getComponent().toShortString(), e);
             }
         }
         r.setState(ON_STOP);
@@ -6244,8 +6234,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (!mInstrumentation.onException(r.activity, e)) {
                     throw new RuntimeException(
                             "Failure delivering result " + ri + " to activity "
-                            + r.intent.getComponent().toShortString()
-                            + ": " + e.toString(), e);
+                            + r.intent.getComponent().toShortString(), e);
                 }
             }
         }
@@ -6278,8 +6267,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 if (!mInstrumentation.onException(r.activity, e)) {
                     throw new RuntimeException(
                             "Unable to pause activity "
-                            + r.intent.getComponent().toShortString()
-                            + ": " + e.toString(), e);
+                            + r.intent.getComponent().toShortString(), e);
                 }
             }
         }
@@ -6311,7 +6299,7 @@ public final class ActivityThread extends ClientTransactionHandler
             } catch (Exception e) {
                 if (!mInstrumentation.onException(r.activity, e)) {
                     throw new RuntimeException("Unable to retain activity "
-                            + r.intent.getComponent().toShortString() + ": " + e.toString(), e);
+                            + r.intent.getComponent().toShortString(), e);
                 }
             }
         }
@@ -6330,7 +6318,7 @@ public final class ActivityThread extends ClientTransactionHandler
         } catch (Exception e) {
             if (!mInstrumentation.onException(r.activity, e)) {
                 throw new RuntimeException("Unable to destroy activity "
-                        + safeToComponentShortString(r.intent) + ": " + e.toString(), e);
+                        + safeToComponentShortString(r.intent), e);
             }
         }
         r.setState(ON_DESTROY);
@@ -7905,8 +7893,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
             catch (Exception e) {
                 throw new RuntimeException(
-                    "Exception thrown in onCreate() of "
-                    + data.instrumentationName + ": " + e.toString(), e);
+                    "Exception thrown in onCreate() of " + data.instrumentationName, e);
             }
             try {
                 timestampApplicationOnCreateNs = SystemClock.uptimeNanos();
@@ -7915,8 +7902,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 timestampApplicationOnCreateNs = 0;
                 if (!mInstrumentation.onException(app, e)) {
                     throw new RuntimeException(
-                      "Unable to create application " + app.getClass().getName()
-                      + ": " + e.toString(), e);
+                      "Unable to create application " + app.getClass().getName(), e);
                 }
             }
         } finally {
@@ -8087,8 +8073,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 mInstrumentation.onCreate(data.instrumentationArgs);
             } catch (Exception e) {
                 throw new RuntimeException(
-                        "Exception thrown in onCreate() of "
-                                + data.instrumentationName + ": " + e.toString(), e);
+                        "Exception thrown in onCreate() of " + data.instrumentationName, e);
             }
 
         } catch (Exception e) {
@@ -8165,8 +8150,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     cl.loadClass(data.instrumentationName.getClassName()).newInstance();
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Unable to instantiate instrumentation "
-                            + data.instrumentationName + ": " + e.toString(), e);
+                    "Unable to instantiate instrumentation " + data.instrumentationName, e);
         }
 
         final ComponentName component = new ComponentName(ii.packageName, ii.name);
@@ -8748,8 +8732,7 @@ public final class ActivityThread extends ClientTransactionHandler
             } catch (java.lang.Exception e) {
                 if (!mInstrumentation.onException(null, e)) {
                     throw new RuntimeException(
-                            "Unable to get provider " + info.name
-                            + ": " + e.toString(), e);
+                            "Unable to get provider " + info.name, e);
                 }
                 return null;
             }
@@ -8919,7 +8902,7 @@ public final class ActivityThread extends ClientTransactionHandler
             thread.mInitialApplication = context.mPackageInfo.makeApplicationInner(true, null);
             thread.mInitialApplication.onCreate();
         } catch (Exception e) {
-            throw new RuntimeException("Unable to instantiate Application():" + e, e);
+            throw new RuntimeException("Unable to instantiate Application()", e);
         }
     }
 

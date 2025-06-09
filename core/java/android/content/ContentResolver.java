@@ -944,7 +944,7 @@ public abstract class ContentResolver implements ContentInterface {
                 // Manager will kill this process shortly anyway.
                 return null;
             } catch (java.lang.Exception e) {
-                Log.w(TAG, "Failed to get type for: " + url + " (" + e.getMessage() + ")");
+                Log.w(TAG, "Failed to get type for: " + url, e);
                 return null;
             } finally {
                 try {
@@ -974,7 +974,7 @@ public abstract class ContentResolver implements ContentInterface {
             // We just failed to send a oneway request to the System Server. Nothing to do.
             return null;
         } catch (java.lang.Exception e) {
-            Log.w(TAG, "Failed to get type for: " + url + " (" + e.getMessage() + ")");
+            Log.w(TAG, "Failed to get type for: " + url, e);
             return null;
         }
     }

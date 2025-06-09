@@ -1740,7 +1740,7 @@ public final class Parcel {
                 totalObjects = Math.multiplyExact(totalObjects, dimension);
             }
         } catch (ArithmeticException e) {
-            Log.e(TAG, "ArithmeticException occurred while multiplying dimensions " + e);
+            Log.e(TAG, "ArithmeticException occurred while multiplying dimensions", e);
             BadParcelableException badParcelableException = new BadParcelableException("Estimated "
                     + "array length is too large. Array Dimensions:" + Arrays.toString(dimensions));
             SneakyThrow.sneakyThrow(badParcelableException);
@@ -1754,7 +1754,7 @@ public final class Parcel {
             estimatedAllocationSize = Math.multiplyExact(typeSize, length);
         } catch (ArithmeticException e) {
             Log.e(TAG, "ArithmeticException occurred while multiplying values " + typeSize
-                    + " and "  + length + " Exception: " + e);
+                    + " and " + length, e);
             BadParcelableException badParcelableException = new BadParcelableException("Estimated "
                     + "allocation size is too large. typeSize: " + typeSize + " length: " + length);
             SneakyThrow.sneakyThrow(badParcelableException);
