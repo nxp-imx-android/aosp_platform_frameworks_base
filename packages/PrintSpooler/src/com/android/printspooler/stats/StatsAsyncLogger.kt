@@ -147,4 +147,42 @@ object StatsAsyncLogger {
         }
         return true
     }
+
+    fun MainPrintUiLaunched(@UserIdInt printServiceIds: Set<Int>, printerCount: Int): Boolean {
+        if (!logging) {
+            return false
+        }
+        if (DEBUG) {
+            Log.d(TAG, "Logging MainPrintUiLaunched event")
+        }
+        synchronized(semaphore) {
+            if (!semaphore.tryAcquire()) {
+                Log.w(TAG, "Logging too many events, dropping MainPrintUiLaunched event")
+                return false
+            }
+            val result =
+                eventHandler.postAtTime(
+                    Runnable {
+                        synchronized(semaphore) {
+                            if (DEBUG) {
+                                Log.d(TAG, "Async logging MainPrintUiLaunched event")
+                            }
+                            statsLogWrapper.internalMainPrintUiLaunched(
+                                printServiceIds,
+                                printerCount,
+                            )
+                            semaphore.release()
+                        }
+                    },
+                    nextAvailableTimeMillis,
+                )
+            if (!result) {
+                Log.e(TAG, "Could not log MainPrintUiLaunched event")
+                semaphore.release()
+                return false
+            }
+            nextAvailableTimeMillis = getNextAvailableTimeMillis()
+        }
+        return true
+    }
 }

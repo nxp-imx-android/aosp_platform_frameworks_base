@@ -120,8 +120,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class PrintActivity extends Activity implements RemotePrintDocument.UpdateResultCallbacks,
@@ -2203,6 +2205,32 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
         if (mPrintedDocument != null && mPrintedDocument.isUpdating()) {
             // The printedDocument will call doFinish() when the current command finishes
             return;
+        }
+
+        if (Flags.printingTelemetry()) {
+            // If this runs any earlier we double log when a printjob
+            // is completed. If it gets called any later than it does
+            // not get called when a user launches the printing UI
+            // without printing anything or opening "All printers".
+
+            // We record the MainPrintUilaunched event and recorded
+            // printers/services at the end of the activity lifecycle
+            // so there has been time for printers to be discovered.
+            final List<PrinterInfo> printers = (mPrinterRegistry == null)
+                    ? new ArrayList<>() :
+                      mPrinterRegistry.getPrinters();
+            final Set<Integer> printServiceUIds = new HashSet<>();
+            for (final PrinterInfo printer : printers) {
+                final String serviceName = printer.getId().getServiceName().getPackageName();
+                try {
+                    final int serviceUId =
+                            getPackageManager().getApplicationInfo(serviceName, 0).uid;
+                    printServiceUIds.add(serviceUId);
+                } catch (NameNotFoundException e) {
+                    Log.e(LOG_TAG, "Failed to get uid for service");
+                }
+            }
+            StatsAsyncLogger.INSTANCE.MainPrintUiLaunched(printServiceUIds, printers.size());
         }
 
         if (mIsFinishing) {

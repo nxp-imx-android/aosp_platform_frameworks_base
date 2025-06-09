@@ -62,6 +62,48 @@ open class StatsAsyncLoggerTest {
     }
 
     @Test
+    fun mainPrintUiLaunchedSuccessfullyLoggedTest() {
+        val logWrapperInOrder = inOrder(mStatsLogWrapper)
+        val handlerInOrder = inOrder(mHandler)
+        val semaphoreInOrder = inOrder(mSemaphore)
+        val timeCaptor = argumentCaptor<Long>()
+        val runnableCaptor = argumentCaptor<Runnable>()
+
+        StatsAsyncLogger.startLogging()
+        StatsAsyncLogger.testSetSemaphore(mSemaphore)
+        StatsAsyncLogger.testSetHandler(mHandler)
+        StatsAsyncLogger.testSetStatsLogWrapper(mStatsLogWrapper)
+
+        // Arbitrary arguments
+        assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isTrue()
+        assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(4, 5, 6), 1337)).isTrue()
+
+        handlerInOrder
+            .verify(mHandler, times(2))
+            .postAtTime(runnableCaptor.capture(), timeCaptor.capture())
+        handlerInOrder.verifyNoMoreInteractions()
+
+        // Validate delay args
+        val firstTime = timeCaptor.firstValue
+        val secondTime = timeCaptor.secondValue
+        assertThat(secondTime - firstTime)
+            .isAtLeast(StatsAsyncLogger.EVENT_REPORTED_MIN_INTERVAL.inWholeMilliseconds)
+        assertThat(secondTime - firstTime)
+            .isAtMost(2 * StatsAsyncLogger.EVENT_REPORTED_MIN_INTERVAL.inWholeMilliseconds)
+
+        // Validate Runnable logic
+        runnableCaptor.firstValue.run()
+        runnableCaptor.secondValue.run()
+        logWrapperInOrder.verify(mStatsLogWrapper).internalMainPrintUiLaunched(setOf(1, 2, 3), 42)
+        logWrapperInOrder.verify(mStatsLogWrapper).internalMainPrintUiLaunched(setOf(4, 5, 6), 1337)
+        logWrapperInOrder.verifyNoMoreInteractions()
+
+        // Validate Semaphore logic
+        semaphoreInOrder.verify(mSemaphore, times(2)).tryAcquire()
+        semaphoreInOrder.verify(mSemaphore, times(2)).release()
+    }
+
+    @Test
     fun advancedPrintUiLaunchedSuccessfullyLoggedTest() {
         val logWrapperInOrder = inOrder(mStatsLogWrapper)
         val handlerInOrder = inOrder(mHandler)
@@ -112,6 +154,7 @@ open class StatsAsyncLoggerTest {
         whenever(mSemaphore.tryAcquire()).thenReturn(false)
         // Arbitrary Arguments
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
+        assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
         verifyNoInteractions(mHandler)
     }
 
@@ -124,7 +167,8 @@ open class StatsAsyncLoggerTest {
         whenever(mHandler.postAtTime(any(), any())).thenReturn(false)
         // Arbitrary Arguments
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
-        verify(mSemaphore, times(1)).release()
+        assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
+        verify(mSemaphore, times(2)).release()
     }
 
     @Test
@@ -156,6 +200,7 @@ open class StatsAsyncLoggerTest {
 
         // Arbitrary Arguments
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
+        assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
         verifyNoInteractions(mHandler)
         verifyNoInteractions(mSemaphore)
         verifyNoInteractions(mStatsLogWrapper)

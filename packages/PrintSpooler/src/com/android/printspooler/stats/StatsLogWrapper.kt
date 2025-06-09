@@ -38,4 +38,15 @@ open class StatsLogWrapper {
             printServiceId,
         )
     }
+
+    open fun internalMainPrintUiLaunched(
+        @UserIdInt printServiceIds: Set<Int>,
+        printServiceCount: Int,
+    ) {
+        PrintSpoolerStatsLog.write(
+            PrintSpoolerStatsLog.FRAMEWORK_MAIN_PRINT_UI_LAUNCHED,
+            printServiceIds.toIntArray(),
+            printServiceCount,
+        )
+    }
 }
