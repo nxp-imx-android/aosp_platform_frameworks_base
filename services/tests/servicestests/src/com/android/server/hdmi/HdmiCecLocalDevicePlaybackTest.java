@@ -2323,6 +2323,52 @@ public class HdmiCecLocalDevicePlaybackTest {
     }
 
     @Test
+    public void hotplugOut_hotPlugIn_standbyFromPlayback_sendStandbyMessage() {
+        mHdmiCecLocalDevicePlayback.mService.getHdmiCecConfig().setStringValue(
+                HdmiControlManager.CEC_SETTING_NAME_POWER_CONTROL_MODE,
+                HdmiControlManager.POWER_CONTROL_MODE_TV);
+        mTestLooper.dispatchAll();
+
+        mPowerManager.setInteractive(true);
+        mNativeWrapper.onHotplugEvent(1, false);
+        mTestLooper.dispatchAll();
+        // Advance time to trigger the device to go to standby after hotplug out.
+        mPowerManagerInternal.setIdleDuration(
+                HdmiCecLocalDevicePlayback.STANDBY_AFTER_HOTPLUG_OUT_DELAY_MS);
+        mTestLooper.moveTimeForward(HdmiCecLocalDevicePlayback.STANDBY_AFTER_HOTPLUG_OUT_DELAY_MS);
+        mTestLooper.dispatchAll();
+
+        assertThat(mPowerManager.isInteractive()).isFalse();
+        assertThat(mHdmiCecLocalDevicePlayback.getActiveSource().logicalAddress)
+                .isNotEqualTo(mPlaybackLogicalAddress);
+        mNativeWrapper.onHotplugEvent(1, true);
+        mNativeWrapper.setPhysicalAddress(mPlaybackPhysicalAddress);
+        mNativeWrapper.clearResultMessages();
+        mTestLooper.dispatchAll();
+
+        HdmiCecMessage setStreamPathToPlayback = HdmiCecMessageBuilder.buildSetStreamPath(ADDR_TV,
+                mPlaybackPhysicalAddress);
+        assertThat(mHdmiCecLocalDevicePlayback.handleSetStreamPath(setStreamPathToPlayback))
+                .isEqualTo(Constants.HANDLED);
+        mTestLooper.dispatchAll();
+
+        // Verify that the device broadcasts an <Active Source> message.
+        HdmiCecMessage activeSource =
+                HdmiCecMessageBuilder.buildActiveSource(mPlaybackLogicalAddress,
+                        mPlaybackPhysicalAddress);
+        assertThat(mNativeWrapper.getResultMessages()).contains(activeSource);
+
+        // Trigger standby and verify the <Standby> message is sent to the TV.
+        mHdmiCecLocalDevicePlayback.onStandby(false, HdmiControlService.STANDBY_SCREEN_OFF);
+        mTestLooper.dispatchAll();
+
+        HdmiCecMessage standbyMessageToTv =
+                HdmiCecMessageBuilder.buildStandby(
+                        mHdmiCecLocalDevicePlayback.getDeviceInfo().getLogicalAddress(), ADDR_TV);
+        assertThat(mNativeWrapper.getResultMessages()).contains(standbyMessageToTv);
+    }
+
+    @Test
     public void onHotplugInAfterHotplugOut_noStandbyAfterDelay() {
         mPowerManager.setInteractive(true);
         mNativeWrapper.onHotplugEvent(1, false);
