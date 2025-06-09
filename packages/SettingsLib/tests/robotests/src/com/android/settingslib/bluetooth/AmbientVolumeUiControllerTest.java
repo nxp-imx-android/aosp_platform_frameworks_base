@@ -67,6 +67,8 @@ public class AmbientVolumeUiControllerTest {
 
     private static final String TEST_ADDRESS = "00:00:00:00:11";
     private static final String TEST_MEMBER_ADDRESS = "00:00:00:00:22";
+    private static final int TEST_AMBIENT_MAX = 60;
+    private static final int TEST_AMBIENT_MIN = -30;
 
     @Mock
     LocalBluetoothManager mBluetoothManager;
@@ -111,7 +113,11 @@ public class AmbientVolumeUiControllerTest {
         when(mVolumeControlProfile.getConnectionStatus(mMemberDevice)).thenReturn(
                 BluetoothProfile.STATE_CONNECTED);
         when(mVolumeController.isAmbientControlAvailable(mDevice)).thenReturn(true);
+        when(mVolumeController.getAmbientMax(mDevice)).thenReturn(TEST_AMBIENT_MAX);
+        when(mVolumeController.getAmbientMin(mDevice)).thenReturn(TEST_AMBIENT_MIN);
         when(mVolumeController.isAmbientControlAvailable(mMemberDevice)).thenReturn(true);
+        when(mVolumeController.getAmbientMax(mMemberDevice)).thenReturn(TEST_AMBIENT_MAX);
+        when(mVolumeController.getAmbientMin(mMemberDevice)).thenReturn(TEST_AMBIENT_MIN);
         when(mLocalDataManager.get(any(BluetoothDevice.class))).thenReturn(
                 new HearingDeviceLocalDataManager.Data.Builder().build());
 
@@ -213,6 +219,7 @@ public class AmbientVolumeUiControllerTest {
                 .ambient(0).groupAmbient(0).ambientControlExpanded(testExpanded).build();
         when(mLocalDataManager.get(mDevice)).thenReturn(data);
 
+        mController.refresh();
         mController.onDeviceLocalDataChange(TEST_ADDRESS, data);
         shadowOf(Looper.getMainLooper()).idle();
 
