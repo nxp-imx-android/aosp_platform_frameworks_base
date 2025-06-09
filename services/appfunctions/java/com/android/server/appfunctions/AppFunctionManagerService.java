@@ -21,7 +21,6 @@ import android.app.appfunctions.AppFunctionAccessServiceInterface;
 import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
-import android.permission.flags.Flags;
 
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -47,9 +46,7 @@ public class AppFunctionManagerService extends SystemService {
 
     @Override
     public void onBootPhase(int phase) {
-        if (Flags.appFunctionAccessServiceEnabled()) {
-            mServiceImpl.onBootPhase(phase);
-        }
+        mServiceImpl.onBootPhase(phase);
     }
 
     @Override

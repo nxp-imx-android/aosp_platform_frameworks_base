@@ -87,10 +87,13 @@ import com.android.server.SystemService.TargetUser;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
@@ -114,6 +117,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private final SparseArray<PackageMonitor> mPackageMonitors = new SparseArray<>();
 
     private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
+
+    private final Object mAgentAllowlistLock = new Object();
+
+    // The main agent allowlist, set by the updatable DeviceConfig System
+    @GuardedBy("mAgentAllowlistLock")
+    private List<SignedPackage> mUpdatableAgentAllowlist = new ArrayList<>();
 
     public AppFunctionManagerServiceImpl(
             @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal,
@@ -206,21 +215,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 public void onPropertiesChanged(DeviceConfig.Properties properties) {
                     if (Flags.appFunctionAccessServiceEnabled()) {
                         if (properties.getKeyset().contains(ALLOWLISTED_APP_FUNCTIONS_AGENTS)) {
-                            final String signaturesString =
-                                    properties.getString(ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
-                            Slog.d(TAG, "onPropertiesChanged signatureString " + signaturesString);
-                            try {
-                                final List<SignedPackage> allowedSignedPackages =
-                                        SignedPackageParser.parseList(signaturesString);
-                                // TODO(b/416661798): Calls new
-                                // AppFunctionAccessService#updateAgentAllowlist API to update
-                                // the allowlist
-                            } catch (Exception e) {
-                                Slog.e(
-                                        TAG,
-                                        "Cannot parse signature string: " + signaturesString,
-                                        e);
-                            }
+                            updateAgentAllowlist(/* readFromDeviceConfig */ true);
                         }
                     }
                 }
@@ -238,24 +233,55 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
      *     specifically acts on {@link SystemService#PHASE_SYSTEM_SERVICES_READY}.
      */
     public void onBootPhase(int phase) {
+        if (!Flags.appFunctionAccessServiceEnabled()) return;
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
-            final String signatureString =
-                    DeviceConfig.getString(
-                            NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
-            try {
-                final List<SignedPackage> allowedSignedPackages =
-                        SignedPackageParser.parseList(signatureString);
-
-                // TODO(b/416661798): Similar to the callback, update the allowlist with
-                // AppFunctionAccessService#updateAgentAllowlist API.
-
-            } catch (Exception e) {
-                Slog.e(TAG, "Cannot parse signature string: " + signatureString, e);
-            }
+            updateAgentAllowlist(/* readFromDeviceConfig */ true);
             DeviceConfig.addOnPropertiesChangedListener(
                     NAMESPACE_MACHINE_LEARNING,
                     BackgroundThread.getExecutor(),
                     mDeviceConfigListener);
+        }
+    }
+
+    // TODO(b/413093397): Merge allowlist agents from other sources
+    private void updateAgentAllowlist(boolean readFromDeviceConfig) {
+        synchronized (mAgentAllowlistLock) {
+            Set<SignedPackage> oldAgents = new HashSet<>();
+            oldAgents.addAll(mUpdatableAgentAllowlist);
+
+            List<SignedPackage> newDeviceConfigAgents;
+            if (readFromDeviceConfig) {
+                newDeviceConfigAgents = readDeviceConfigAgentAllowlist();
+                if (newDeviceConfigAgents == null) {
+                    // If we fail to parse a valid list
+                    newDeviceConfigAgents = mUpdatableAgentAllowlist;
+                }
+            } else {
+                newDeviceConfigAgents = mUpdatableAgentAllowlist;
+            }
+
+            Set<SignedPackage> newAgents = new HashSet<>();
+            newAgents.addAll(newDeviceConfigAgents);
+
+            if (oldAgents.equals(newAgents)) {
+                return;
+            }
+
+            mUpdatableAgentAllowlist = newDeviceConfigAgents;
+            mAppFunctionAccessService.setAgentAllowlist(List.copyOf(newAgents));
+        }
+    }
+
+    @Nullable
+    private List<SignedPackage> readDeviceConfigAgentAllowlist() {
+        final String signatureString =
+                DeviceConfig.getString(
+                        NAMESPACE_MACHINE_LEARNING, ALLOWLISTED_APP_FUNCTIONS_AGENTS, "");
+        try {
+            return SignedPackageParser.parseList(signatureString);
+        } catch (Exception e) {
+            Slog.e(TAG, "Cannot parse signature string: " + signatureString, e);
+            return null;
         }
     }
 
