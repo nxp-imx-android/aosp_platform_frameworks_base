@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelAlwaysShowPercentFactory
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.mobileIconsViewModelKairos
 import org.mockito.kotlin.mock
 
 val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
@@ -56,7 +57,7 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             statusBarIconController = mock<StatusBarIconController>(),
             batteryViewModelFactory = batteryViewModelAlwaysShowPercentFactory,
             kairosNetwork = kairos,
-            mobileIconsViewModelKairos = mock(),
+            mobileIconsViewModelKairos = { mobileIconsViewModelKairos },
             dualShadeEducationInteractor = dualShadeEducationInteractor,
         )
     }
