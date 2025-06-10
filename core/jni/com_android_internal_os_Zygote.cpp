@@ -2148,7 +2148,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
     // Make it easier to debug audit logs by setting the main thread's name to the
     // nice name rather than "app_process".
     if (nice_name.has_value()) {
-        ALOGI("Process %d crated for %s", getpid(), nice_name.value().c_str());
+        ALOGI("Process %d created for %s", getpid(), nice_name.value().c_str());
         SetThreadName(nice_name.value());
     } else if (is_system_server) {
         SetThreadName("system_server");
