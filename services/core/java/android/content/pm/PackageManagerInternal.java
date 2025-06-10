@@ -21,6 +21,7 @@ import android.annotation.IntDef;
 import android.annotation.LongDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers;
 import android.annotation.SystemApi;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
@@ -299,6 +300,18 @@ public abstract class PackageManagerInternal {
      */
     public abstract String[] setPackagesSuspendedByAdmin(
             @UserIdInt int userId, @NonNull String[] packageNames, boolean suspended);
+
+
+
+    /**
+     * Unsuspends all packages that were previously suspended by a specific suspending package.
+     *
+     * @param suspendingPackage The package that originally requested suspension.
+     * @param suspendingUserId The user ID that requested suspension.
+     * @param affectedUserId The user ID for which to unsuspend the packages.
+     */
+    public abstract void unsuspendForSuspendingPackage(String suspendingPackage,
+            @UserIdInt int suspendingUserId, @SpecialUsers.CanBeALL @UserIdInt int affectedUserId);
 
     /**
      * Get the information describing the dialog to be shown to the user when they try to launch a

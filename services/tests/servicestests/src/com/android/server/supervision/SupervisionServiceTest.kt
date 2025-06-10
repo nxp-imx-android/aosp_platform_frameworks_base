@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
+import android.app.role.RoleManager
 import android.app.supervision.ISupervisionListener
 import android.app.supervision.SupervisionRecoveryInfo
 import android.app.supervision.SupervisionRecoveryInfo.STATE_PENDING
@@ -30,14 +31,15 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.IBinder
 import android.content.pm.PackageManager
+import android.content.pm.PackageManagerInternal
 import android.content.pm.UserInfo
 import android.content.pm.UserInfo.FLAG_FOR_TESTING
 import android.content.pm.UserInfo.FLAG_FULL
 import android.content.pm.UserInfo.FLAG_MAIN
 import android.content.pm.UserInfo.FLAG_SYSTEM
 import android.os.Handler
+import android.os.IBinder
 import android.os.PersistableBundle
 import android.os.UserHandle
 import android.os.UserHandle.MIN_SECONDARY_USER_ID
@@ -56,6 +58,7 @@ import com.android.server.LocalServices
 import com.android.server.SystemService.TargetUser
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
+import com.android.server.supervision.SupervisionService.RoleManagerWrapper
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Files
 import org.junit.Before
@@ -88,8 +91,9 @@ class SupervisionServiceTest {
     @Mock private lateinit var mockDpmInternal: DevicePolicyManagerInternal
     @Mock private lateinit var mockKeyguardManager: KeyguardManager
     @Mock private lateinit var mockPackageManager: PackageManager
+    @Mock private lateinit var mockPackageManagerInternal: PackageManagerInternal
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
-    @Mock private lateinit var mockSupervisionListener: ISupervisionListener
+    @Mock private lateinit var mockRoleManager: SupervisionService.RoleManagerWrapper
 
     private lateinit var context: Context
     private lateinit var lifecycle: SupervisionService.Lifecycle
@@ -98,13 +102,17 @@ class SupervisionServiceTest {
     @Before
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().context
-        context = SupervisionContextWrapper(context, mockKeyguardManager, mockPackageManager)
+        context = SupervisionContextWrapper(context, mockKeyguardManager, mockPackageManager,
+            mockRoleManager)
 
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal::class.java)
         LocalServices.addService(DevicePolicyManagerInternal::class.java, mockDpmInternal)
 
         LocalServices.removeServiceForTest(UserManagerInternal::class.java)
         LocalServices.addService(UserManagerInternal::class.java, mockUserManagerInternal)
+
+        LocalServices.removeServiceForTest(PackageManagerInternal::class.java)
+        LocalServices.addService(PackageManagerInternal::class.java, mockPackageManagerInternal)
 
         // Creating a temporary folder to enable access to SupervisionSettings.
         SupervisionSettings.getInstance()
@@ -114,6 +122,7 @@ class SupervisionServiceTest {
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
 
+        //TODO: b/427453821 Remove after converting SupervisionSettings from being a singleton.
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
     }
 
@@ -273,10 +282,18 @@ class SupervisionServiceTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
     fun setSupervisionEnabledForUser_removesPoliciesWhenDisabling() {
+        for ((role, packageName) in supervisionRoleHolders) {
+            whenever(mockRoleManager.getRoleHoldersAsUser(eq(role), any()))
+                .thenReturn(listOf(packageName));
+        }
+
         service.setSupervisionEnabledForUser(USER_ID, false)
 
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
-        verify(mockDpmInternal).removePoliciesForAdmins(eq(systemSupervisionPackage), eq(USER_ID))
+        for (packageName in supervisionRoleHolders.values) {
+            verify(mockPackageManagerInternal)
+                .unsuspendForSuspendingPackage(eq(packageName), eq(USER_ID), eq(USER_ID))
+        }
     }
 
     @Test
@@ -491,12 +508,16 @@ class SupervisionServiceTest {
         assertThat(service.mSupervisionListeners).doesNotContainKey(binder)
     }
 
-    private fun setSupervisionEnabledForUser(expectedUserId: Int, enabled: Boolean,
-            listeners: Map<Int, Pair<ISupervisionListener, IBinder>>) {
+    private fun setSupervisionEnabledForUser(
+        expectedUserId: Int,
+        enabled: Boolean,
+        listeners: Map<Int, Pair<ISupervisionListener, IBinder>>,
+    ) {
         service.setSupervisionEnabledForUser(expectedUserId, enabled)
         listeners.forEach { userId, (listener, binder) ->
             when (userId) {
-                expectedUserId, UserHandle.USER_ALL -> {
+                expectedUserId,
+                UserHandle.USER_ALL -> {
                     verify(listener).onSetSupervisionEnabled(eq(expectedUserId), eq(enabled))
                 }
                 else -> {
@@ -504,6 +525,34 @@ class SupervisionServiceTest {
                 }
             }
         }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
+    fun clearPackageSuspensions_unsuspendsSupervisionPackages() {
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        for ((role, packageName) in supervisionRoleHolders) {
+            whenever(mockRoleManager.getRoleHoldersAsUser(eq(role), any()))
+                .thenReturn(listOf(packageName));
+        }
+
+        service.setSupervisionEnabledForUser(USER_ID, false)
+
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
+        for (packageName in supervisionRoleHolders.values) {
+            verify(mockPackageManagerInternal)
+                .unsuspendForSuspendingPackage(eq(packageName), eq(USER_ID), eq(USER_ID))
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
+    fun clearPackageSuspensions_noSupervisionPackages_doesNothing() {
+        whenever(mockRoleManager.getRoleHoldersAsUser(
+            any(), any())).thenReturn(listOf())
+        service.setSupervisionEnabledForUser(USER_ID, false)
+
+        verify(mockPackageManagerInternal, never()).unsuspendForSuspendingPackage(any(), any(), any())
     }
 
     private val systemSupervisionPackage: String
@@ -557,6 +606,10 @@ class SupervisionServiceTest {
         const val SUPERVISING_USER_ID = 10
         const val USER_ICON = "user_icon"
         const val USER_TYPE = "fake_user_type"
+        val supervisionRoleHolders = mapOf(
+            RoleManager.ROLE_SYSTEM_SUPERVISION to "com.example.supervisionapp1",
+            RoleManager.ROLE_SUPERVISION to "com.example.supervisionapp2"
+        )
         val userData: Map<Int, Int> =
             mapOf(
                 USER_SYSTEM to FLAG_SYSTEM,
@@ -574,14 +627,18 @@ private class SupervisionContextWrapper(
     val context: Context,
     val keyguardManager: KeyguardManager,
     val pkgManager: PackageManager,
+    val roleManagerWrapper: RoleManagerWrapper,
 ) : ContextWrapper(context) {
     val interceptors = mutableListOf<Pair<BroadcastReceiver, IntentFilter>>()
 
-    override fun getSystemService(name: String): Any =
-        when (name) {
-            KEYGUARD_SERVICE -> keyguardManager
+    override fun getSystemService(name: String): Any? {
+        var ret =  when (name) {
+            Context.KEYGUARD_SERVICE -> keyguardManager
+            Context.ROLE_SERVICE -> roleManagerWrapper
             else -> super.getSystemService(name)
         }
+        return ret;
+    }
 
     override fun getPackageManager() = pkgManager
 
