@@ -152,6 +152,7 @@ public class KeyguardPinBasedInputViewControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_BOUNCER_LIFECYCLE_FIX)
     public void onResume_doesNotRequestFocusIfNotVisible() {
         when(mPinBasedInputView.isVisibleToUser()).thenReturn(false);
         mKeyguardPinViewController.onResume(KeyguardSecurityView.SCREEN_ON);
