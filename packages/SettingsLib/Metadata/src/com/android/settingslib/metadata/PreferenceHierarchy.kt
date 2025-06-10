@@ -171,7 +171,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     private fun findPreference(key: String): Pair<PreferenceHierarchy, Int>? {
         children.forEachIndexed { index, node ->
             if (node !is PreferenceHierarchyNode) return@forEachIndexed
-            if (node.metadata.key == key) return this to index
+            if (node.metadata.bindingKey == key) return this to index
             if (node is PreferenceHierarchy) {
                 val result = node.findPreference(key)
                 if (result != null) return result
@@ -346,7 +346,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      * Note: sub async hierarchy will not be searched, use [findAsync] if needed.
      */
     fun find(key: String): PreferenceMetadata? {
-        if (metadata.key == key) return metadata
+        if (metadata.bindingKey == key) return metadata
         for (child in children) {
             if (child is Deferred<*>) continue
             if (child is PreferenceHierarchy) {
@@ -354,7 +354,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
                 if (result != null) return result
             } else {
                 child as PreferenceHierarchyNode
-                if (child.metadata.key == key) return child.metadata
+                if (child.metadata.bindingKey == key) return child.metadata
             }
         }
         return null

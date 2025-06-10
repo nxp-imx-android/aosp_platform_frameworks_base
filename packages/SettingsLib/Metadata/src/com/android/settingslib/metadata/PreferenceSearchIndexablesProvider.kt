@@ -165,7 +165,7 @@ abstract class PreferenceSearchIndexablesProvider : SearchIndexablesProvider() {
             columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_ICON_RESID] = iconResId
         }
         columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_KEY] =
-            "$PREFIX${preferenceScreenMetadata.key}/$key"
+            "$PREFIX${preferenceScreenMetadata.key}/$bindingKey"
 
         columnValues[SearchIndexablesContract.COLUMN_INDEX_RAW_INTENT_ACTION] = intent.action
         intent.component?.let {

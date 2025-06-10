@@ -427,7 +427,7 @@ fun PreferenceMetadata.toProto(
     flags: Int,
 ) = preferenceProto {
     val metadata = this@toProto
-    key = metadata.key
+    key = metadata.bindingKey
     if (flags.includeMetadata()) {
         metadata.getTitleTextProto(context, isRoot)?.let { title = it }
         if (metadata.summary != 0) {
@@ -473,13 +473,14 @@ fun PreferenceMetadata.toProto(
     ) {
         val storage = metadata.storage(context)
         value = preferenceValueProto {
+            val key = metadata.bindingKey
             when (metadata.valueType) {
-                Int::class.javaObjectType -> storage.getInt(metadata.key)?.let { intValue = it }
+                Int::class.javaObjectType -> storage.getInt(key)?.let { intValue = it }
                 Boolean::class.javaObjectType ->
-                    storage.getBoolean(metadata.key)?.let { booleanValue = it }
+                    storage.getBoolean(key)?.let { booleanValue = it }
                 Float::class.javaObjectType ->
-                    storage.getFloat(metadata.key)?.let { floatValue = it }
-                Long::class.javaObjectType -> storage.getLong(metadata.key)?.let { longValue = it }
+                    storage.getFloat(key)?.let { floatValue = it }
+                Long::class.javaObjectType -> storage.getLong(key)?.let { longValue = it }
                 else -> {}
             }
         }

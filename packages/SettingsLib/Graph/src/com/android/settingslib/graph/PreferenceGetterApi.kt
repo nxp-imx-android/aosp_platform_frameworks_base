@@ -131,7 +131,7 @@ class PreferenceGetterApiHandler(
             for (coordinate in coordinates) nodes[coordinate.key] = null
             screenMetadata.getPreferenceHierarchy(application, this).forEachRecursivelyAsync {
                 val metadata = it.metadata
-                val key = metadata.key
+                val key = metadata.bindingKey
                 if (nodes.containsKey(key)) nodes[key] = it
             }
             for (coordinate in coordinates) {

@@ -177,7 +177,7 @@ class PreferenceScreenBindingHelper(
 
     private fun addNode(node: PreferenceHierarchyNode) {
         val metadata = node.metadata
-        val key = metadata.key
+        val key = metadata.bindingKey
         preferences[key] = node
         for (dependency in metadata.dependencies(preferenceScreen.context)) {
             dependencies.getOrPut(dependency) { mutableSetOf() }.add(key)
@@ -189,7 +189,7 @@ class PreferenceScreenBindingHelper(
         val metadata = node.metadata
         val preferenceBinding = preferenceBindingFactory.getPreferenceBinding(metadata)!!
         val preferenceGroup =
-            preferenceScreen.findPreference<PreferenceGroup>(parent.metadata.key)!!
+            preferenceScreen.findPreference<PreferenceGroup>(parent.metadata.bindingKey)!!
         val preference = preferenceBinding.createWidget(preferenceScreen.context)
         preference.setPreferenceDataStore(
             metadata,
@@ -368,7 +368,7 @@ class PreferenceScreenBindingHelper(
             fun PreferenceHierarchy.bindRecursively(preferenceGroup: PreferenceGroup) {
                 preferenceBindingFactory.bind(preferenceGroup, this)
                 val preferences = mutableMapOf<String, PreferenceHierarchyNode>()
-                forEach { preferences[it.metadata.key] = it }
+                forEach { preferences[it.metadata.bindingKey] = it }
                 for (index in 0 until preferenceGroup.preferenceCount) {
                     val preference = preferenceGroup.getPreference(index)
                     val node = preferences.remove(preference.key) ?: continue

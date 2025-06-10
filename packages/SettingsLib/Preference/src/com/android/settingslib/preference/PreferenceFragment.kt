@@ -124,7 +124,7 @@ open class PreferenceFragment :
         var storages = mutableMapOf<KeyValueStore, PreferenceDataStore>()
         val preferenceScreen =
             if (screenCreator.hasCompleteHierarchy()) {
-                Log.i(TAG, "Load screen " + screenCreator.key + " from hierarchy")
+                Log.i(TAG, "Load screen " + screenCreator.bindingKey + " from hierarchy")
                 factory.getOrCreatePreferenceScreen().apply {
                     inflatePreferenceHierarchy(
                         preferenceBindingFactory,
@@ -133,7 +133,7 @@ open class PreferenceFragment :
                     )
                 }
             } else {
-                Log.i(TAG, "Screen " + screenCreator.key + " is hybrid")
+                Log.i(TAG, "Screen " + screenCreator.bindingKey + " is hybrid")
                 createPreferenceScreenFromResource()?.also {
                     bindRecursively(it, preferenceBindingFactory, preferenceHierarchy, storages)
                 } ?: return null
@@ -265,7 +265,7 @@ open class PreferenceFragment :
 
     protected fun getPreferenceKeysInHierarchy(): Set<String> =
         preferenceScreenBindingHelper?.let {
-            mutableSetOf<String>().apply { it.forEachRecursively { add(it.metadata.key) } }
+            mutableSetOf<String>().apply { it.forEachRecursively { add(it.metadata.bindingKey) } }
         } ?: setOf()
 
     companion object {

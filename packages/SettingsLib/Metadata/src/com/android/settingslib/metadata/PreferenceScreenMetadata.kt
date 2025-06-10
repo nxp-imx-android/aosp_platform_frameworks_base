@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.Flow
  * For parameterized preference screen that relies on additional information (e.g. package name,
  * language code) to build its content, the subclass must:
  * - override [arguments] in constructor
+ * - override [bindingKey] to distinguish the preferences on the preference hierarchy
  * - add a static method `fun parameters(context: Context): Flow<Bundle>` (context is optional) to
  *   provide all possible arguments
  */

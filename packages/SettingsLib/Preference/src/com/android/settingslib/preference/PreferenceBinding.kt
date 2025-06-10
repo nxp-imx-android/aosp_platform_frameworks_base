@@ -70,7 +70,7 @@ interface PreferenceBinding {
     @CallSuper
     fun bind(preference: Preference, metadata: PreferenceMetadata) {
         metadata.apply {
-            preference.key = key
+            preference.key = bindingKey
             val context = preference.context
             val isPreferenceScreen = preference is PreferenceScreen
             if (!isPreferenceScreen) {
@@ -89,7 +89,7 @@ interface PreferenceBinding {
                 val extras = preference.extras
                 // Pass the preference key to fragment, so that the fragment could find associated
                 // preference screen registered in PreferenceScreenRegistry
-                extras.putString(EXTRA_BINDING_SCREEN_KEY, preference.key)
+                extras.putString(EXTRA_BINDING_SCREEN_KEY, key)
                 screenMetadata.arguments?.let { extras.putBundle(EXTRA_BINDING_SCREEN_ARGS, it) }
             }
             preference.title =
