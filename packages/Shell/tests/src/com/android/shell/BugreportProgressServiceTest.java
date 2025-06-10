@@ -35,9 +35,6 @@ import android.os.BugreportParams;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
 import android.os.UserManager;
-
-import androidx.core.content.FileProvider;
-
 import android.test.mock.MockContext;
 import android.util.Pair;
 
@@ -54,7 +51,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,14 +64,11 @@ import java.util.List;
 /**
  * Test for {@link BugreportProgressServiceTest}.
  *
- * Usage:
- * adb shell am instrument -w \
- * -e class com.android.shell.BugreportProgressServiceTest \
- * com.android.shell.tests
+ * Usage: {@code atest BugreportProgressServiceTest}
  */
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class BugreportProgressServiceTest {
+public final class BugreportProgressServiceTest {
 
     public static final String BASE_NAME = "baseName";
     public static final String NAME = "name";
@@ -87,32 +82,33 @@ public class BugreportProgressServiceTest {
     public static final String BUGREPORT_DESCRIPTION = "Details of the bug";
 
     @Rule
-    public TemporaryFolder mTempFolder = new TemporaryFolder();
+    public final TemporaryFolder tempFolder = new TemporaryFolder();
+
+    @Rule
+    public final MockitoRule mockitoRule = MockitoJUnit.rule();
+
+    @Mock
+    private UserManager mMockUserManager;
+
+    @Mock
+    private AccountManager mMockAccountManager;
+
     private File mBugreportsDir;
 
     @Before
     public void setUp() throws IOException {
-        mBugreportsDir = mTempFolder.newFolder("bugreports");
+        mBugreportsDir = tempFolder.newFolder("bugreports");
     }
 
-    private static class MyContext extends MockContext {
-        @Mock
-        public UserManager userManager;
-
-        @Mock
-        public AccountManager accountManager;
-
-        public MyContext() {
-            MockitoAnnotations.initMocks(this);
-        }
+    private final class MyContext extends MockContext {
 
         @Override
         public Object getSystemService(String name) {
             switch (name) {
                 case Context.USER_SERVICE:
-                    return userManager;
+                    return mMockUserManager;
                 case Context.ACCOUNT_SERVICE:
-                    return accountManager;
+                    return mMockAccountManager;
                 default:
                     return super.getSystemService(name);
             }
@@ -153,11 +149,11 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void findSendToAccount_noWorkProfile() {
-        when(mTestContext.userManager.getUserProfiles()).thenReturn(
+        when(mMockUserManager.getUserProfiles()).thenReturn(
                 list(UserHandle.of(UserHandle.USER_SYSTEM)));
 
         // No accounts.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array());
 
         assertNull(findSendToAccount(mTestContext, null));
@@ -166,7 +162,7 @@ public class BugreportProgressServiceTest {
         assertNull(findSendToAccount(mTestContext, "@android.com"));
 
         // 1 account
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -177,7 +173,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // 2 accounts, same domain
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -188,7 +184,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // 2 accounts, different domains
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@android.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -199,7 +195,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // Plut an account that doesn't look like an email address.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("notemail"), account("abc@gmail.com"), account("def@android.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -216,15 +212,15 @@ public class BugreportProgressServiceTest {
      */
     @Test
     public void findSendToAccount_withWorkProfile_noAccounts() {
-        when(mTestContext.userManager.getUserProfiles()).thenReturn(
+        when(mMockUserManager.getUserProfiles()).thenReturn(
                 list(UserHandle.of(UserHandle.USER_SYSTEM), UserHandle.of(10)));
 
         // Work profile has no accounts
-        when(mTestContext.accountManager.getAccountsAsUser(eq(10))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(10))).thenReturn(
                 array());
 
         // No accounts.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array());
 
         assertNull(findSendToAccount(mTestContext, null));
@@ -233,7 +229,7 @@ public class BugreportProgressServiceTest {
         assertNull(findSendToAccount(mTestContext, "@android.com"));
 
         // 1 account
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -244,7 +240,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // 2 accounts, same domain
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -255,7 +251,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // 2 accounts, different domains
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@android.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -266,7 +262,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // Plut an account that doesn't look like an email address.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("notemail"), account("abc@gmail.com"), account("def@android.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -284,15 +280,15 @@ public class BugreportProgressServiceTest {
      */
     @Test
     public void findSendToAccount_withWorkProfile_1account() {
-        when(mTestContext.userManager.getUserProfiles()).thenReturn(
+        when(mMockUserManager.getUserProfiles()).thenReturn(
                 list(UserHandle.of(UserHandle.USER_SYSTEM), UserHandle.of(10)));
 
         // Work profile has no accounts
-        when(mTestContext.accountManager.getAccountsAsUser(eq(10))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(10))).thenReturn(
                 array(account("xyz@gmail.com")));
 
         // No accounts.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array());
 
         checkFindSendToAccount(10, "xyz@gmail.com", null);
@@ -301,7 +297,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(10, "xyz@gmail.com", "@android.com");
 
         // 1 account
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -312,7 +308,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // 2 accounts, same domain
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -323,7 +319,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // 2 accounts, different domains
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@android.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -334,7 +330,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // Plut an account that doesn't look like an email address.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("notemail"), account("abc@gmail.com"), account("def@android.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -351,15 +347,15 @@ public class BugreportProgressServiceTest {
      */
     @Test
     public void findSendToAccount_withWorkProfile_mixedDomains() {
-        when(mTestContext.userManager.getUserProfiles()).thenReturn(
+        when(mMockUserManager.getUserProfiles()).thenReturn(
                 list(UserHandle.of(UserHandle.USER_SYSTEM), UserHandle.of(10)));
 
         // Work profile has no accounts
-        when(mTestContext.accountManager.getAccountsAsUser(eq(10))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(10))).thenReturn(
                 array(account("xyz@android.com")));
 
         // No accounts.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array());
 
         checkFindSendToAccount(10, "xyz@android.com", null);
@@ -368,7 +364,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(10, "xyz@android.com", "@android.com");
 
         // 1 account
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -379,7 +375,7 @@ public class BugreportProgressServiceTest {
         checkFindSendToAccount(0, "abc@gmail.com", "@gmail.com");
 
         // more accounts.
-        when(mTestContext.accountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
+        when(mMockAccountManager.getAccountsAsUser(eq(UserHandle.USER_SYSTEM))).thenReturn(
                 array(account("abc@gmail.com"), account("def@gmail.com")));
 
         checkFindSendToAccount(0, "abc@gmail.com", null);
@@ -394,12 +390,12 @@ public class BugreportProgressServiceTest {
     public void testMaybeCreateBugreportFile_withoutUri_createsFile() {
         BugreportProgressService.BugreportLocationInfo info =
                 new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
-                        mTempFolder.getRoot(), BASE_NAME, NAME);
+                        tempFolder.getRoot(), BASE_NAME, NAME);
 
         boolean result = info.maybeCreateBugreportFile();
 
         assertTrue("maybeCreateBugreportFile should return true when file does not exist", result);
-        File createdFile = new File(mTempFolder.getRoot(), BASE_NAME + "-" + NAME + ".zip");
+        File createdFile = new File(tempFolder.getRoot(), BASE_NAME + "-" + NAME + ".zip");
         assertTrue("Bugreport file should be created", createdFile.exists());
     }
 
@@ -408,9 +404,9 @@ public class BugreportProgressServiceTest {
     public void testMaybeCreateBugreportFile_withoutUri_doesNotCreateFile() throws IOException {
         BugreportProgressService.BugreportLocationInfo info =
                 new BugreportProgressService.BugreportLocationInfo(/* bugreportUri= */ null,
-                        mTempFolder.getRoot(), BASE_NAME, NAME);
+                        tempFolder.getRoot(), BASE_NAME, NAME);
 
-        mTempFolder.newFile(BASE_NAME + "-" + NAME + ".zip");
+        tempFolder.newFile(BASE_NAME + "-" + NAME + ".zip");
 
         boolean result = info.maybeCreateBugreportFile();
 
@@ -420,7 +416,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testIsPlainText_withTxtFile() throws IOException {
-        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+        File bugreportFile = tempFolder.newFile(BUGREPORT_TXT);
 
         BugreportProgressService.BugreportLocationInfo info =
                 new BugreportProgressService.BugreportLocationInfo(bugreportFile);
@@ -431,7 +427,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testIsPlainText_withZipFile() throws IOException {
-        File zipBugreportFile = mTempFolder.newFile(BUGREPORT_ZIP);
+        File zipBugreportFile = tempFolder.newFile(BUGREPORT_ZIP);
 
         BugreportProgressService.BugreportLocationInfo zipInfo =
                 new BugreportProgressService.BugreportLocationInfo(zipBugreportFile);
@@ -442,7 +438,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testIsFileEmpty_withEmptyFile() throws IOException {
-        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+        File bugreportFile = tempFolder.newFile(BUGREPORT_TXT);
 
         BugreportProgressService.BugreportLocationInfo info =
                 new BugreportProgressService.BugreportLocationInfo(bugreportFile);
@@ -453,7 +449,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testIsFileEmpty_withNonEmptyFile() throws IOException {
-        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+        File bugreportFile = tempFolder.newFile(BUGREPORT_TXT);
         try (FileOutputStream fos = new FileOutputStream(bugreportFile)) {
             fos.write("Bugreport data".getBytes());
         }
@@ -516,7 +512,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testGetBugreportPath_withFile() throws IOException {
-        File bugreportFile = mTempFolder.newFile(BUGREPORT_TXT);
+        File bugreportFile = tempFolder.newFile(BUGREPORT_TXT);
 
         BugreportProgressService.BugreportLocationInfo info =
                 new BugreportProgressService.BugreportLocationInfo(bugreportFile);
@@ -528,7 +524,7 @@ public class BugreportProgressServiceTest {
     @Test
     public void testGetScreenshotFd_withFile() throws IOException {
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
 
         BugreportProgressService.ScreenshotLocationInfo info =
                 new BugreportProgressService.ScreenshotLocationInfo(null);
@@ -542,7 +538,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testGetScreenshotPath_withFile() throws IOException {
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
         screenshotFile.createNewFile();
 
         BugreportProgressService.ScreenshotLocationInfo info =
@@ -556,7 +552,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testRenameScreenshots_withFile() throws IOException {
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
         screenshotFile.createNewFile();
         try (FileOutputStream fos = new FileOutputStream(screenshotFile)) {
             fos.write(0x00);
@@ -575,7 +571,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testDeleteEmptyScreenshots_withNonEmptyFile() throws IOException {
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
         screenshotFile.createNewFile();
         try (FileOutputStream fos = new FileOutputStream(screenshotFile)) {
             fos.write(0x00);
@@ -592,7 +588,7 @@ public class BugreportProgressServiceTest {
 
     @Test
     public void testDeleteEmptyScreenshots_withEmptyFile() throws IOException {
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
         screenshotFile.createNewFile();
 
         BugreportProgressService.ScreenshotLocationInfo info =
@@ -681,9 +677,9 @@ public class BugreportProgressServiceTest {
     public void testSetupFilesAndCreateBugreportInfo_withWearBugreport() throws IOException {
         BugreportProgressService service = new BugreportProgressService();
 
-        File fileBugreport = mTempFolder.newFile(BUGREPORT_TXT);
+        File fileBugreport = tempFolder.newFile(BUGREPORT_TXT);
         Uri bugreportUri=  Uri.fromFile(fileBugreport);
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
         Uri screenshotUri = Uri.fromFile(screenshotFile);
         Intent fakeIntent = new Intent();
         ArrayList<Uri> fakeUris = new ArrayList<>();
@@ -718,9 +714,9 @@ public class BugreportProgressServiceTest {
     public void testSetupFilesAndCreateBugreportInfo_withoutWearBugreport() throws IOException {
         BugreportProgressService service = new BugreportProgressService();
 
-        File fileBugreport = mTempFolder.newFile(BUGREPORT_TXT);
+        File fileBugreport = tempFolder.newFile(BUGREPORT_TXT);
         Uri bugreportUri=  Uri.fromFile(fileBugreport);
-        File screenshotFile = mTempFolder.newFile(SCREENSHOT_PNG);
+        File screenshotFile = tempFolder.newFile(SCREENSHOT_PNG);
         Uri screenshotUri = Uri.fromFile(screenshotFile);
         Intent fakeIntent = new Intent();
         ArrayList<Uri> fakeUris = new ArrayList<>();
@@ -753,7 +749,7 @@ public class BugreportProgressServiceTest {
     @NotNull
     private BugreportProgressService.BugreportLocationInfo getBugreportLocationInfoFromUri(
             String fileName) throws IOException {
-        File file = mTempFolder.newFile(fileName);
+        File file = tempFolder.newFile(fileName);
         Uri uri = Uri.fromFile(file);
 
         return new BugreportProgressService.BugreportLocationInfo(uri, file.getParentFile(),
@@ -765,7 +761,7 @@ public class BugreportProgressServiceTest {
     @NotNull
     private BugreportProgressService.ScreenshotLocationInfo getScreenshotLocationInfoFromUri(
             String fileName) throws IOException {
-        File file = mTempFolder.newFile(fileName);
+        File file = tempFolder.newFile(fileName);
         Uri uri = Uri.fromFile(file);
         return new BugreportProgressService.ScreenshotLocationInfo(uri);
     }

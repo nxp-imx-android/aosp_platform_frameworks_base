@@ -136,7 +136,7 @@ import java.util.zip.ZipOutputStream;
  * bugreport artifacts.
  * </ol>
  */
-public class BugreportProgressService extends Service {
+public final class BugreportProgressService extends Service {
     private static final String TAG = "BugreportProgressService";
     private static final boolean DEBUG = false;
     private static final String WRITE_AND_APPEND_MODE = "wa";
@@ -216,8 +216,6 @@ public class BugreportProgressService extends Service {
 
     /** System property where dumpstate stores last triggered bugreport id */
     static final String PROPERTY_LAST_ID = "dumpstate.last_id";
-
-    private static final String BUGREPORT_SERVICE = "bugreport";
 
     /**
      * Directory on Shell's data storage where screenshots will be stored.
@@ -937,7 +935,7 @@ public class BugreportProgressService extends Service {
     private void sendForegroundabledNotification(int id, Notification notification) {
         if (mForegroundId >= 0) {
             if (DEBUG) Log.d(TAG, "Already running as foreground service");
-            NotificationManager.from(mContext).notify(id, notification);
+            sendNotification(id, notification);
         } else {
             mForegroundId = id;
             Log.d(TAG, "Start running as foreground service on id " + mForegroundId);
@@ -990,7 +988,7 @@ public class BugreportProgressService extends Service {
 
 
         Log.d(TAG, "stopProgress(" + id + "): cancel notification");
-        NotificationManager.from(mContext).cancel(id);
+        cancelNotification(id);
 
         stopSelfWhenDoneLocked();
     }
@@ -1031,7 +1029,7 @@ public class BugreportProgressService extends Service {
             Log.w(TAG, "launchBugreportInfoDialog(): canceling notification because id " + id
                     + " was not found");
             // TODO: add test case to make sure notification is canceled.
-            NotificationManager.from(mContext).cancel(id);
+            cancelNotification(id);
             return;
         }
 
@@ -1068,7 +1066,7 @@ public class BugreportProgressService extends Service {
             Log.w(TAG, "takeScreenshot(): canceling notification because id " + id
                     + " was not found");
             // TODO: add test case to make sure notification is canceled.
-            NotificationManager.from(mContext).cancel(id);
+            cancelNotification(id);
             return;
         }
         setTakingScreenshot(true);
@@ -1364,7 +1362,7 @@ public class BugreportProgressService extends Service {
             warningIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             mContext.startActivity(warningIntent);
         }
-        NotificationManager.from(mContext).cancel(id);
+        cancelNotification(id);
     }
 
     /**
@@ -1513,7 +1511,7 @@ public class BugreportProgressService extends Service {
         }
 
         Log.d(TAG, "Sending 'Share' notification for ID " + info.id + ": " + title);
-        NotificationManager.from(mContext).notify(info.id, builder.build());
+        sendNotification(info.id, builder.build());
     }
 
     /**
@@ -1529,6 +1527,22 @@ public class BugreportProgressService extends Service {
                 .setContentText(context.getString(R.string.bugreport_updating_wait));
         Log.v(TAG, "Sending 'Updating zip' notification for ID " + id + ": " + title);
         sendForegroundabledNotification(id, builder.build());
+    }
+
+    private void cancelNotification(int id) {
+        if (DEBUG) {
+            Log.v(TAG, "Calling NotificationManager.cancel(" + id + ") on user "
+                    + mContext.getUser());
+        }
+        NotificationManager.from(mContext).cancel(id);
+    }
+
+    private void sendNotification(int id, Notification notification) {
+        if (DEBUG) {
+            Log.v(TAG, "Calling NotificationManager.notify(" + id + ", " + notification
+                    + ") on user " + mContext.getUser());
+        }
+        NotificationManager.from(mContext).notify(id, notification);
     }
 
     private static Notification.Builder newBaseNotification(Context context) {
