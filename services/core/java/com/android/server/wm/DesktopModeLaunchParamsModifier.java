@@ -257,7 +257,9 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         //  activity will also enter desktop mode. On this same relationship, we can also assume
         //  if there are not visible freeform tasks but a freeform activity is now launching, it
         //  will force the device into desktop mode.
-        return (task.getDisplayContent().getTopMostFreeformActivity() != null
+        final Task visibleFreeformTask = task.getDisplayContent().getTask(
+                t -> t.inFreeformWindowingMode() && t.isVisibleRequested());
+        return (visibleFreeformTask != null
                     && checkSourceWindowModesCompatible(task, options, currentParams))
                 || isRequestingFreeformWindowMode(task, options, currentParams);
     }

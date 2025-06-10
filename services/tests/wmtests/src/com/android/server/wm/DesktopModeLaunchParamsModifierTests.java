@@ -188,8 +188,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final DisplayContent dc = spy(createNewDisplay());
         final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
-        doReturn(existingFreeformTask.getRootActivity()).when(dc)
-                .getTopMostFreeformActivity();
+        doReturn(existingFreeformTask).when(dc).getTask(any());
         final Task launchingTask = new TaskBuilder(mSupervisor).build();
         launchingTask.onDisplayChanged(dc);
 
