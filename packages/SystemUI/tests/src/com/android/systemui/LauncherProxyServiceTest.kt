@@ -178,6 +178,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         sysuiStatePerDisplayRepository.add(Display.DEFAULT_DISPLAY, sysUiState)
         runBlocking { kosmos.displayRepository.apply { addDisplay(0) } }
         fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(false)
+        whenever(userTracker.userId).then { Binder.getCallingUserHandle().identifier }
         subject = createLauncherProxyService(context)
     }
 
@@ -413,7 +414,6 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun onStatusBarTouchEvent_withoutSceneFlag_onSameDisplayTouch_handlesInput() =
         kosmos.testScope.runTest {
-            whenever(userTracker.userId).thenReturn(Binder.getCallingUserHandle().identifier)
             val shadeDisplayId = 0
             whenever(statusBarShadeDisplayPolicy.displayId)
                 .thenReturn(MutableStateFlow(shadeDisplayId))
