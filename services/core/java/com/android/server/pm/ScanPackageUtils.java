@@ -51,6 +51,7 @@ import static com.android.server.pm.PackageManagerServiceUtils.getLastModifiedTi
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.Flags;
@@ -425,12 +426,14 @@ final class ScanPackageUtils {
 
         boolean is16KbDevice = Os.sysconf(OsConstants._SC_PAGESIZE) == PAGE_SIZE_16KB;
 
-        // Run 16 KB alignment checks on 4 KB device if evaluated as true.
+        // Run 16 KB alignment checks on 4 KB device if evaluated as true for new installations.
         boolean enable4kbChecks =  false;
         if ((Build.SUPPORTED_64_BIT_ABIS.length > 0)
                 && !isSystemApp
                 && !isApex
-                && !isPlatformPackage) {
+                && !isPlatformPackage
+                && (scanFlags & SCAN_NEW_INSTALL) != 0
+        ) {
             enable4kbChecks = enableAlignmentChecks(parsedPackage, injector.getContext(),
                 pkgSetting.getInstallSource().mInitiatingPackageName);
         }
@@ -1116,9 +1119,18 @@ final class ScanPackageUtils {
             return false;
         }
 
+        final ContentResolver resolver = context.getContentResolver();
+        if (resolver == null) {
+            Slog.w(TAG, "Content resolver not available!");
+            return false;
+        }
+
         boolean isDebuggable = parsedPackage.isDebuggable();
+        boolean isDeveloperMode = android.provider.Settings.Global.getInt(resolver,
+                android.provider.Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) != 0;
         boolean isInstalledByAdb = PackageManagerServiceUtils.isInstalledByAdb(initiatingPackage);
-        return isDebuggable && isInstalledByAdb;
+
+        return isDebuggable && isDeveloperMode && isInstalledByAdb;
     }
 
     /** Directory where installed application's 32-bit native libraries are copied. */
