@@ -28,7 +28,6 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MailAppHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
@@ -47,9 +46,11 @@ abstract class CloseAllAppsWithAppHeaderExit (
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     private val mailApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
     private val nonResizeableApp = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
+    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+
+    val appsInZOrder: ArrayList<DesktopModeAppHelper> = ArrayList()
 
     @Rule @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
 
@@ -62,8 +63,13 @@ abstract class CloseAllAppsWithAppHeaderExit (
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(rotation.value)
         testApp.enterDesktopMode(wmHelper, device)
+        appsInZOrder.add(testApp)
+
         mailApp.launchViaIntent(wmHelper)
+        appsInZOrder.add( mailApp)
+
         nonResizeableApp.launchViaIntent(wmHelper)
+        appsInZOrder.add(nonResizeableApp)
     }
 
     @Test
