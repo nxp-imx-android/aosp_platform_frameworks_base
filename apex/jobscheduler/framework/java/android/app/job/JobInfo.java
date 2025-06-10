@@ -827,6 +827,21 @@ public class JobInfo implements Parcelable {
     }
 
     /**
+     * Gets the category of this job, which was previously defined using
+     * {@link JobInfo.Builder#setCategory(int)}. If no category has been set, then
+     * {@link JobInfo#CATEGORY_UNKNOWN} will be returned.
+     *
+     * @return The category of this job, or {@link JobInfo#CATEGORY_UNKNOWN} if no category has
+     *         been set using {@link JobInfo.Builder#setCategory(int)}.
+     * @see JobInfo.Builder#setCategory(int)
+     */
+    @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
+    @Category
+    public int getCategory() {
+        return JobInfo.CATEGORY_UNKNOWN;
+    }
+
+    /**
      * @see JobInfo.Builder#setExpedited(boolean)
      */
     public boolean isExpedited() {
@@ -2285,20 +2300,6 @@ public class JobInfo implements Parcelable {
         public Builder setCategory(@Category int category) {
             // TODO: b/419047126 - Store the category
             return this;
-        }
-
-        /**
-         * Gets the category of this job, which was previously defined using
-         * {@link #setCategory(int)}. If no category has been set, then
-         * {@link JobInfo#CATEGORY_UNKNOWN} will be returned.
-         *
-         * @return The category of this job, or {@link JobInfo#CATEGORY_UNKNOWN} if no category
-         *         has been set using {@link #setCategory(int)}.
-         */
-        @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
-        @Category
-        public int getCategory() {
-            return JobInfo.CATEGORY_UNKNOWN;
         }
 
         /**
