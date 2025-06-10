@@ -18,10 +18,10 @@
 
 package com.android.systemui.statusbar.notification.row.domain.interactor
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MotionScheme
@@ -55,7 +55,6 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import platform.test.motion.compose.runMonotonicClockTest
@@ -101,9 +100,8 @@ class BundleInteractorTest : SysuiTestCase() {
             whenever(
                     kosmos.mockAppIconProvider.getOrFetchAppIcon(
                         any<String>(),
-                        any<Context>(),
-                        eq(false),
-                        eq(false),
+                        any<UserHandle>(),
+                        any<String>(),
                     )
                 )
                 .thenReturn(drawable1)
@@ -119,7 +117,7 @@ class BundleInteractorTest : SysuiTestCase() {
 
             // Assert
             verify(kosmos.mockAppIconProvider, times(4))
-                .getOrFetchAppIcon(any<String>(), any<Context>(), eq(false), eq(false))
+                .getOrFetchAppIcon(any<String>(), any<UserHandle>(), any<String>())
 
             assertThat(result).hasSize(3)
             assertThat(result).containsExactly(drawable1, drawable2, drawable3).inOrder()
@@ -144,18 +142,16 @@ class BundleInteractorTest : SysuiTestCase() {
             whenever(
                     kosmos.mockAppIconProvider.getOrFetchAppIcon(
                         eq("app1"),
-                        anyOrNull<Context>(),
-                        eq(false),
-                        eq(false),
+                        any<UserHandle>(),
+                        any<String>(),
                     )
                 )
                 .thenReturn(drawable1)
             whenever(
                     kosmos.mockAppIconProvider.getOrFetchAppIcon(
                         eq("app2"),
-                        anyOrNull<Context>(),
-                        eq(false),
-                        eq(false),
+                        any<UserHandle>(),
+                        any<String>(),
                     )
                 )
                 .thenReturn(drawable2)
@@ -170,9 +166,9 @@ class BundleInteractorTest : SysuiTestCase() {
             // Assert
             assertThat(result).containsExactly(drawable1, drawable2).inOrder()
             verify(kosmos.mockAppIconProvider)
-                .getOrFetchAppIcon(eq("app1"), anyOrNull<Context>(), eq(false), eq(false))
+                .getOrFetchAppIcon(eq("app1"), any<UserHandle>(), any<String>())
             verify(kosmos.mockAppIconProvider)
-                .getOrFetchAppIcon(eq("app2"), anyOrNull<Context>(), eq(false), eq(false))
+                .getOrFetchAppIcon(eq("app2"), any<UserHandle>(), any<String>())
         }
 
     @Test
@@ -201,9 +197,8 @@ class BundleInteractorTest : SysuiTestCase() {
             whenever(
                     kosmos.mockAppIconProvider.getOrFetchAppIcon(
                         eq("new_app"),
-                        anyOrNull<Context>(),
-                        eq(false),
-                        eq(false),
+                        any<UserHandle>(),
+                        any<String>(),
                     )
                 )
                 .thenReturn(drawable3)
@@ -218,16 +213,11 @@ class BundleInteractorTest : SysuiTestCase() {
             // Assert
             assertThat(result).containsExactly(drawable3)
             verify(kosmos.mockAppIconProvider, times(0))
-                .getOrFetchAppIcon(eq("old_app"), anyOrNull<Context>(), eq(false), eq(false))
+                .getOrFetchAppIcon(eq("old_app"), any<UserHandle>(), any<String>())
             verify(kosmos.mockAppIconProvider, times(0))
-                .getOrFetchAppIcon(
-                    eq("at_collapse_app"),
-                    anyOrNull<Context>(),
-                    eq(false),
-                    eq(false),
-                )
+                .getOrFetchAppIcon(eq("at_collapse_app"), any<UserHandle>(), any<String>())
             verify(kosmos.mockAppIconProvider)
-                .getOrFetchAppIcon(eq("new_app"), anyOrNull<Context>(), eq(false), eq(false))
+                .getOrFetchAppIcon(eq("new_app"), any<UserHandle>(), any<String>())
         }
 
     @Test
@@ -253,7 +243,7 @@ class BundleInteractorTest : SysuiTestCase() {
             // Assert
             assertThat(result).isEmpty()
             verify(kosmos.mockAppIconProvider, times(0))
-                .getOrFetchAppIcon(anyString(), anyOrNull<Context>(), eq(false), eq(false))
+                .getOrFetchAppIcon(anyString(), any<UserHandle>(), any<String>())
         }
 
     @Test

@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Flags.notificationsRedesignTemplates;
-import static android.app.Flags.notificationsRedesignThemedAppIcons;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
@@ -340,11 +339,8 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
                 try {
                     mAppName = String.valueOf(mPm.getApplicationLabel(info));
                     // The app icon is likely already in the cache, so let's use it
-                    boolean withWorkProfileBadge =
-                            mIconStyleProvider.shouldShowWorkProfileBadge(mSbn, getContext());
-                    mPkgIcon = mAppIconProvider.getOrFetchAppIcon(info.packageName, getContext(),
-                            withWorkProfileBadge,
-                            /* themed = */ notificationsRedesignThemedAppIcons());
+                    mPkgIcon = mAppIconProvider.getOrFetchAppIcon(info.packageName,
+                            mSbn.getUser(), /* instanceKey= */ "LEGACY");
                 } catch (Exception ignored) {
                 }
             }
