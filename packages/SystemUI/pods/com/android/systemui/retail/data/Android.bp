@@ -25,7 +25,7 @@ java_library {
         "kotlinx_coroutines",
     ],
     defaults: [
-        "SystemUI_pod_defaults",
+        "SystemUI_pod_defaults_api",
     ],
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail:__pkg__",
@@ -46,7 +46,7 @@ java_library {
         "com.android.systemui.retail.data-api",
     ],
     defaults: [
-        "SystemUI_pod_defaults",
+        "SystemUI_pod_defaults_impl",
     ],
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/com/android/systemui/retail:__pkg__",
