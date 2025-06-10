@@ -528,8 +528,10 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
                     FLAGS_INPUT_FILTER, "event=" + event + ";policyFlags=" + policyFlags);
         }
 
+        final KeyEvent keyEvent = event.copy();
         mHandler.post(() -> {
-            onKeyEventInternal(event, policyFlags);
+            onKeyEventInternal(keyEvent, policyFlags);
+            keyEvent.recycle();
         });
     }
 
