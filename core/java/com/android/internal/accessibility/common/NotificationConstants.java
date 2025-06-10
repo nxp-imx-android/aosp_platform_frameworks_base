@@ -23,13 +23,16 @@ package com.android.internal.accessibility.common;
  */
 public class NotificationConstants {
 
-    /** Broadcast action sent when attempting to show the accessibility survey notification. */
-    public static final String ACTION_SURVEY_NOTIFICATION_SHOWN =
-            "android.settings.ACCESSIBILITY_SURVEY_NOTIFICATION_SHOWN";
+    /** Broadcast action to schedule the display of the accessibility survey notification. */
+    public static final String ACTION_SCHEDULE_SURVEY_NOTIFICATION =
+            "android.settings.ACCESSIBILITY_SCHEDULE_SURVEY_NOTIFICATION";
 
-    /** Broadcast action to indicate the accessibility survey notification has been dismissed. */
-    public static final String ACTION_SURVEY_NOTIFICATION_DISMISSED =
-            "android.settings.ACCESSIBILITY_SURVEY_NOTIFICATION_DISMISSED";
+    /**
+     * Broadcast action to cancel the accessibility survey notification, including any scheduled or
+     * active display.
+     */
+    public static final String ACTION_CANCEL_SURVEY_NOTIFICATION =
+            "android.settings.ACCESSIBILITY_CANCEL_SURVEY_NOTIFICATION";
 
     /** Extra key indicating the source of an action. */
     public static final String EXTRA_SOURCE = "source";
