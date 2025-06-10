@@ -3861,6 +3861,10 @@ public class HdmiControlService extends SystemService {
         return mWakeUpMessageReceived;
     }
 
+    void setWakeUpMessageReceived(boolean wakeUpMessageReceived) {
+        mWakeUpMessageReceived = wakeUpMessageReceived;
+    }
+
     protected boolean isStandbyMessageReceived() {
         return mStandbyMessageReceived;
     }
