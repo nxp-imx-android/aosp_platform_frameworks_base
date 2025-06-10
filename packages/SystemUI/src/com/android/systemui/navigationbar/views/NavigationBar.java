@@ -1421,10 +1421,14 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
                     } else if (mOverrideHomeButtonLongPressSlopMultiplier.isPresent()) {
                         // If override timeout doesn't exist but override touch slop exists, we use
                         // system default long press duration
-                        Log.d(TAG, "ACTION_DOWN default duration: "
-                                + ViewConfiguration.getLongPressTimeout());
+                        int longPressTimeoutMillis =
+                                android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
+                                        ? ViewConfiguration.get(mContext)
+                                                .getLongPressTimeoutMillis()
+                                        : ViewConfiguration.getLongPressTimeout();
+                        Log.d(TAG, "ACTION_DOWN default duration: " + longPressTimeoutMillis);
                         mHandler.postDelayed(mOnVariableDurationHomeLongClick,
-                                ViewConfiguration.getLongPressTimeout());
+                                longPressTimeoutMillis);
                     } else {
                         mHomeButtonLongPressDurationMs.ifPresent(longPressDuration -> {
                             Log.d(TAG, "ACTION_DOWN original duration: " + longPressDuration);

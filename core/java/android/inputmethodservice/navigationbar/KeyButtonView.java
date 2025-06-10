@@ -210,7 +210,7 @@ public class KeyButtonView extends ImageView implements ButtonInterface {
                 }
                 if (Flags.imeSwitcherRevamp() && isLongClickable()) {
                     removeCallbacks(mCheckLongPress);
-                    postDelayed(mCheckLongPress, ViewConfiguration.getLongPressTimeout());
+                    postDelayed(mCheckLongPress, getLongPressTimeoutMillis());
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
