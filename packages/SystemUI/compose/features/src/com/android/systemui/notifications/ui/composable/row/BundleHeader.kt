@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +42,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
@@ -259,29 +257,22 @@ private fun ContentScope.BundlePreviewIcons(
 @Composable
 private fun PreviewIcon(drawable: Drawable, modifier: Modifier = Modifier, borderWidth: Dp) {
     val strokeWidthPx = with(LocalDensity.current) { borderWidth.toPx() }
-    val stroke = remember(borderWidth) { Stroke(width = strokeWidthPx) }
-
     Box(
         modifier =
             modifier.drawWithContent {
-                // Draw the original content of the inner Box
-                drawContent()
-
-                // Draw a circle with BlendMode.Clear to 'erase' pixels for the stroke.
+                // Draw a circle with BlendMode.Clear to 'erase' pixels for the "border".
                 // This will punch a hole in *this* icon's local offscreen buffer, allowing the
                 // background of the containing Composable (which needs to have a global
                 // offscreen layer) to show through.
                 drawCircle(
                     color = Color.Black, // Color doesn't matter for BlendMode.Clear
-                    // Calculate the radius for the clearing circle.
-                    // It should be the full size.minDimension / 2 PLUS half the stroke width.
-                    // This pushes the *center* of the stroke outward, so the *inner* edge of the
-                    // stroke aligns with the existing content boundary.
-                    radius = (size.minDimension / 2f) + (strokeWidthPx / 2f),
+                    radius = (size.minDimension / 2f) + strokeWidthPx,
                     center = center,
-                    style = stroke,
                     blendMode = BlendMode.Clear,
                 )
+
+                // Draw the original content of the inner Box
+                drawContent()
             }
     ) {
         val surfaceColor = notificationElementSurfaceColor()
