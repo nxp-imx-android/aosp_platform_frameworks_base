@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.server.display.utils;
+package com.android.server.display.utils
 
-public class AmbientFilterStubber extends AmbientFilter {
-    public AmbientFilterStubber() {
-        super(null, 1);
+fun createLastValueAmbientFilter(): AmbientFilter =
+    object : AmbientFilter("LastValueAmbientFilter", 1) {
+        override fun filter(time: Long, buffer: RollingBuffer): Float {
+            return if (buffer.isEmpty) {
+                -1f
+            } else {
+                buffer.getValue(buffer.size() - 1)
+            }
+        }
     }
-
-    protected float filter(long time, RollingBuffer buffer) {
-        return 0f;
-    }
-}
