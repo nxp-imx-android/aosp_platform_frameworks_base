@@ -58,14 +58,20 @@ class AppCompatCameraPolicy {
                 DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
                         && DesktopModeHelper.canEnterDesktopMode(wmService.mContext);
         if (needsDisplayRotationCompatPolicy || needsCameraCompatFreeformPolicy) {
-            mCameraStateMonitor = new CameraStateMonitor(displayContent, wmService.mH);
+            final AppCompatCameraStateSource cameraStateListenerDelegate =
+                    new AppCompatCameraStateSource();
+            mCameraStateMonitor = new CameraStateMonitor(displayContent, wmService.mH,
+                    cameraStateListenerDelegate);
             mActivityRefresher = new ActivityRefresher(wmService, wmService.mH);
             mDisplayRotationCompatPolicy =
                     needsDisplayRotationCompatPolicy ? new DisplayRotationCompatPolicy(
-                            displayContent, mCameraStateMonitor, mActivityRefresher) : null;
+                            displayContent, mCameraStateMonitor, cameraStateListenerDelegate,
+                            mActivityRefresher)
+                            : null;
             mCameraCompatFreeformPolicy =
                     needsCameraCompatFreeformPolicy ? new CameraCompatFreeformPolicy(displayContent,
-                            mCameraStateMonitor, mActivityRefresher) : null;
+                            mCameraStateMonitor, cameraStateListenerDelegate, mActivityRefresher)
+                            : null;
         } else {
             mDisplayRotationCompatPolicy = null;
             mCameraCompatFreeformPolicy = null;
@@ -158,7 +164,7 @@ class AppCompatCameraPolicy {
             mCameraCompatFreeformPolicy.dispose();
         }
         if (mCameraStateMonitor != null) {
-            mCameraStateMonitor.dispose();
+            mCameraStateMonitor.stopListeningToCameraState();
         }
     }
 

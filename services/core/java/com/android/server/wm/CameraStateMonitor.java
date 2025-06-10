@@ -76,13 +76,14 @@ class CameraStateMonitor {
     // TODO(b/336474959): should/can this go in the compat listeners?
     private final Set<String> mScheduledCompatModeUpdateCameraIdSet = new ArraySet<>();
 
-    private final ArrayList<CameraCompatStateListener> mCameraStateListeners = new ArrayList<>();
+    @VisibleForTesting
+    final AppCompatCameraStatePolicy mAppCompatCameraStatePolicy;
 
     /**
      * Value toggled on {@link #startListeningToCameraState()} to {@code true} and on {@link
-     * #dispose()} to {@code false}.
+     * #stopListeningToCameraState()} to {@code false}.
      */
-    private boolean mIsRunning;
+    private boolean mIsListeningToCameraState;
 
     private final CameraManager.AvailabilityCallback mAvailabilityCallback =
             new  CameraManager.AvailabilityCallback() {
@@ -100,42 +101,41 @@ class CameraStateMonitor {
                 }
             };
 
-    CameraStateMonitor(@NonNull DisplayContent displayContent, @NonNull Handler handler) {
+    CameraStateMonitor(@NonNull DisplayContent displayContent, @NonNull Handler handler,
+            @NonNull AppCompatCameraStatePolicy appCompatCameraStatePolicy) {
         // This constructor is called from DisplayContent constructor. Don't use any fields in
         // DisplayContent here since they aren't guaranteed to be set.
         mHandler = handler;
         mDisplayContent = displayContent;
+        mAppCompatCameraStatePolicy = appCompatCameraStatePolicy;
         mWmService = displayContent.mWmService;
         mCameraManager = mWmService.mContext.getSystemService(CameraManager.class);
     }
 
+    /** Starts listening to camera opened/closed signals. */
     void startListeningToCameraState() {
         if (mCameraManager != null) {
             mCameraManager.registerAvailabilityCallback(
                     mWmService.mContext.getMainExecutor(), mAvailabilityCallback);
         }
-        mIsRunning = true;
+        mIsListeningToCameraState = true;
     }
 
-    /** Releases camera callback listener. */
-    void dispose() {
+    /** Stops listening to camera opened/closed signals. */
+    public void stopListeningToCameraState() {
         if (mCameraManager != null) {
             mCameraManager.unregisterAvailabilityCallback(mAvailabilityCallback);
         }
-        mIsRunning = false;
+        mIsListeningToCameraState = false;
     }
 
+    /**
+     * Returns whether {@link CameraStateMonitor} is listening to camera opened/closed
+     * signals.
+     */
     @VisibleForTesting
-    boolean isRunning() {
-        return mIsRunning;
-    }
-
-    void addCameraStateListener(CameraCompatStateListener listener) {
-        mCameraStateListeners.add(listener);
-    }
-
-    void removeCameraStateListener(CameraCompatStateListener listener) {
-        mCameraStateListeners.remove(listener);
+    boolean isListeningToCameraState() {
+        return mIsListeningToCameraState;
     }
 
     private void notifyCameraOpenedWithDelay(@NonNull String cameraId,
@@ -169,14 +169,7 @@ class CameraStateMonitor {
             if (cameraActivity == null || cameraActivity.getTask() == null) {
                 return;
             }
-            notifyListenersCameraOpened(cameraActivity);
-        }
-    }
-
-    private void notifyListenersCameraOpened(@NonNull ActivityRecord cameraActivity) {
-        for (int i = 0; i < mCameraStateListeners.size(); i++) {
-            CameraCompatStateListener listener = mCameraStateListeners.get(i);
-            listener.onCameraOpened(cameraActivity);
+            mAppCompatCameraStatePolicy.onCameraOpened(cameraActivity);
         }
     }
 
@@ -229,34 +222,16 @@ class CameraStateMonitor {
                 // Already reconnected to this camera, no need to clean up.
                 return;
             }
-            final boolean canClose = checkCanCloseForAllListeners(cameraId);
+            final boolean canClose = mAppCompatCameraStatePolicy.canCameraBeClosed(cameraId);
             if (canClose) {
                 // Finish cleaning up.
                 mCameraIdPackageBiMapping.removeCameraId(cameraId);
-                notifyListenersCameraClosed();
+                mAppCompatCameraStatePolicy.onCameraClosed();
             } else {
                 // Not ready to process closure yet - the camera activity might be refreshing.
                 // Try again later.
                 rescheduleRemoveCameraActivity(cameraId);
             }
-        }
-    }
-
-    /**
-     * @return {@code false} if any listener has reported that they cannot process camera close now.
-     */
-    private boolean checkCanCloseForAllListeners(@NonNull String cameraId) {
-        for (int i = 0; i < mCameraStateListeners.size(); i++) {
-            if (!mCameraStateListeners.get(i).canCameraBeClosed(cameraId)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void notifyListenersCameraClosed() {
-        for (int i = 0; i < mCameraStateListeners.size(); i++) {
-            mCameraStateListeners.get(i).onCameraClosed();
         }
     }
 
@@ -302,24 +277,5 @@ class CameraStateMonitor {
         return " CameraIdPackageNameBiMapping="
                 + mCameraIdPackageBiMapping
                 .getSummaryForDisplayRotationHistoryRecord();
-    }
-
-    interface CameraCompatStateListener {
-        /**
-         * Notifies the compat listener that an activity has opened camera.
-         */
-        void onCameraOpened(@NonNull ActivityRecord cameraActivity);
-        /**
-         * Checks whether a listener is ready to do a cleanup when camera is closed.
-         *
-         * <p>The notifier might try again if false is returned.
-         */
-        // TODO(b/336474959): try to decouple `cameraId` from the listeners.
-        boolean canCameraBeClosed(@NonNull String cameraId);
-
-        /**
-         * Notifies the compat listener that camera is closed.
-         */
-        void onCameraClosed();
     }
 }

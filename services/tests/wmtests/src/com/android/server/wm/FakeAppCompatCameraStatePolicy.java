@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.server.wm;
 
 import androidx.annotation.NonNull;
 
-/** Fake {@link CameraStateMonitor.CameraCompatStateListener} for testing. */
-class FakeCameraCompatStateListener implements CameraStateMonitor.CameraCompatStateListener {
+/** Fake {@link AppCompatCameraStatePolicy} for testing. */
+public class FakeAppCompatCameraStatePolicy implements AppCompatCameraStatePolicy {
     int mOnCameraOpenedCounter = 0;
     int mCheckCanCloseCounter = 0;
     int mOnCameraClosedCounter = 0;
@@ -33,7 +32,7 @@ class FakeCameraCompatStateListener implements CameraStateMonitor.CameraCompatSt
      *                                      subsequent calls. This fake implementation tests the
      *                                      retry mechanism in {@link CameraStateMonitor}.
      */
-    FakeCameraCompatStateListener(boolean simulateCannotCloseOnce) {
+    FakeAppCompatCameraStatePolicy(boolean simulateCannotCloseOnce) {
         mCheckCanCloseReturnValue = !simulateCannotCloseOnce;
     }
 

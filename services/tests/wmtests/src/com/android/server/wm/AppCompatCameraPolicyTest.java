@@ -154,7 +154,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ true);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ true);
-            robot.checkTopActivityCameraStateMonitorIsRunning();
+            robot.checkTopActivityCameraStateMonitorIsListeningToCameraChanges();
         });
     }
 
@@ -175,7 +175,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ true);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ true);
-            robot.checkTopActivityCameraStateMonitorIsRunning();
+            robot.checkTopActivityCameraStateMonitorIsListeningToCameraChanges();
         });
     }
 
@@ -332,9 +332,9 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
                     .mCameraCompatFreeformPolicy.isRunning());
         }
 
-        void checkTopActivityCameraStateMonitorIsRunning() {
+        void checkTopActivityCameraStateMonitorIsListeningToCameraChanges() {
             assertTrue(activity().top().mDisplayContent.mAppCompatCameraPolicy
-                    .mCameraStateMonitor.isRunning());
+                    .mCameraStateMonitor.isListeningToCameraState());
         }
 
         void checkIsCameraCompatTreatmentActiveForTopActivity(boolean active) {
