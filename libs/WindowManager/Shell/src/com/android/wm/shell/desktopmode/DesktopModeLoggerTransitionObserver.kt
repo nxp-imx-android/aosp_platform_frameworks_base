@@ -36,6 +36,7 @@ import androidx.core.util.isEmpty
 import androidx.core.util.isNotEmpty
 import androidx.core.util.plus
 import androidx.core.util.putAll
+import androidx.core.util.size
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
@@ -51,6 +52,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_ENTER
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_HANDLE_MENU_BUTTON
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_KEYBOARD_SHORTCUT
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -70,6 +72,7 @@ class DesktopModeLoggerTransitionObserver(
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val desktopTasksLimiter: Optional<DesktopTasksLimiter>,
     desktopState: DesktopState,
+    private val desksOrganizer: DesksOrganizer,
 ) : Transitions.TransitionObserver {
 
     init {
@@ -176,7 +179,7 @@ class DesktopModeLoggerTransitionObserver(
             ProtoLog.v(
                 WM_SHELL_DESKTOP_MODE,
                 "DesktopModeLogger: processing tasks after task vanished %s",
-                postTransitionFreeformTasks.size(),
+                postTransitionFreeformTasks.size,
             )
             identifyLogEventAndUpdateState(
                 transition = null,
@@ -210,6 +213,7 @@ class DesktopModeLoggerTransitionObserver(
         }
 
         // filter changes involving freeform tasks or tasks that were cached in previous state
+        // and exclude desk task changes.
         val changesToFreeformWindows =
             info.changes
                 .filter { it.taskInfo != null && it.requireTaskInfo().taskId != INVALID_TASK_ID }
@@ -217,6 +221,7 @@ class DesktopModeLoggerTransitionObserver(
                     it.requireTaskInfo().isFreeformWindow() ||
                         visibleFreeformTaskInfos.containsKey(it.requireTaskInfo().taskId)
                 }
+                .filter { !desksOrganizer.isDeskChange(it, it.requireTaskInfo().taskId) }
 
         val postTransitionFreeformTasks: SparseArray<TaskInfo> = SparseArray()
         // start off by adding all existing tasks
@@ -250,7 +255,7 @@ class DesktopModeLoggerTransitionObserver(
         ProtoLog.v(
             WM_SHELL_DESKTOP_MODE,
             "DesktopModeLogger: taskInfo map after processing changes %s",
-            postTransitionFreeformTasks.size(),
+            postTransitionFreeformTasks.size,
         )
 
         return postTransitionFreeformTasks
@@ -280,6 +285,7 @@ class DesktopModeLoggerTransitionObserver(
         postTransitionVisibleFreeformTasks: SparseArray<TaskInfo>,
         newFocusedFreeformTask: TaskInfo?,
     ) {
+        // TODO(b/423560267): Consider logging for empty desks and multiple desks.
         if (
             postTransitionVisibleFreeformTasks.isEmpty() &&
                 preTransitionVisibleFreeformTasks.isNotEmpty() &&
@@ -342,7 +348,7 @@ class DesktopModeLoggerTransitionObserver(
             val currentTaskUpdate =
                 buildTaskUpdateForTask(
                     taskInfo,
-                    postTransitionVisibleFreeformTasks.size(),
+                    postTransitionVisibleFreeformTasks.size,
                     focusChangedReason = focusChangedReason,
                 )
             val previousTaskInfo = preTransitionVisibleFreeformTasks[taskId]
@@ -358,11 +364,11 @@ class DesktopModeLoggerTransitionObserver(
                     Trace.setCounter(
                         Trace.TRACE_TAG_WINDOW_MANAGER,
                         VISIBLE_TASKS_COUNTER_NAME,
-                        postTransitionVisibleFreeformTasks.size().toLong(),
+                        postTransitionVisibleFreeformTasks.size.toLong(),
                     )
                     SystemProperties.set(
                         VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY,
-                        postTransitionVisibleFreeformTasks.size().toString(),
+                        postTransitionVisibleFreeformTasks.size.toString(),
                     )
                 }
                 focusChangedReason != null ->
@@ -371,7 +377,7 @@ class DesktopModeLoggerTransitionObserver(
                 // TODO(b/347935387): Log changes only once they are stable.
                 buildTaskUpdateForTask(
                     previousTaskInfo,
-                    postTransitionVisibleFreeformTasks.size(),
+                    postTransitionVisibleFreeformTasks.size,
                     focusChangedReason = focusChangedReason,
                 ) != currentTaskUpdate ->
                     desktopModeEventLogger.logTaskInfoChanged(currentTaskUpdate)
@@ -387,18 +393,18 @@ class DesktopModeLoggerTransitionObserver(
                 val taskUpdate =
                     buildTaskUpdateForTask(
                         taskInfo,
-                        postTransitionVisibleFreeformTasks.size(),
+                        postTransitionVisibleFreeformTasks.size,
                         minimizeReason,
                     )
                 desktopModeEventLogger.logTaskRemoved(taskUpdate)
                 Trace.setCounter(
                     Trace.TRACE_TAG_WINDOW_MANAGER,
                     VISIBLE_TASKS_COUNTER_NAME,
-                    postTransitionVisibleFreeformTasks.size().toLong(),
+                    postTransitionVisibleFreeformTasks.size.toLong(),
                 )
                 SystemProperties.set(
                     VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY,
-                    postTransitionVisibleFreeformTasks.size().toString(),
+                    postTransitionVisibleFreeformTasks.size.toString(),
                 )
             }
         }
@@ -566,7 +572,7 @@ class DesktopModeLoggerTransitionObserver(
         @VisibleForTesting const val VISIBLE_TASKS_COUNTER_NAME = "desktop_mode_visible_tasks"
         @VisibleForTesting
         const val VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY =
-            "debug.tracing." + VISIBLE_TASKS_COUNTER_NAME
+            "debug.tracing.$VISIBLE_TASKS_COUNTER_NAME"
         const val VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY_DEFAULT_VALUE = "0"
     }
 }

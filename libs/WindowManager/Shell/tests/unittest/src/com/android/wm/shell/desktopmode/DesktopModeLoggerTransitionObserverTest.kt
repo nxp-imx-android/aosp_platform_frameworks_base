@@ -60,6 +60,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_KEYBOARD_SHORTCUT
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_TASK_DRAG
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_EXIT_DESKTOP_MODE_UNKNOWN
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
@@ -106,6 +107,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
     private val transitions = mock<Transitions>()
     private val desktopTasksLimiter = mock<DesktopTasksLimiter>()
     private val desktopState = FakeDesktopState()
+    private val desksOrganizer = mock<DesksOrganizer>()
 
     private lateinit var transitionObserver: DesktopModeLoggerTransitionObserver
     private lateinit var shellInit: ShellInit
@@ -124,6 +126,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                 desktopModeEventLogger,
                 Optional.of(desktopTasksLimiter),
                 desktopState,
+                desksOrganizer,
             )
         val initRunnableCaptor = ArgumentCaptor.forClass(Runnable::class.java)
         verify(mockShellInit)
@@ -156,6 +159,19 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
     fun transitOpen_notFreeformWindow_doesNotLogTaskAddedOrSessionEnter() {
         val change = createChange(TRANSIT_OPEN, createTaskInfo(WINDOWING_MODE_FULLSCREEN))
         val transitionInfo = TransitionInfoBuilder(TRANSIT_OPEN, 0).addChange(change).build()
+
+        callOnTransitionReady(transitionInfo)
+
+        verify(desktopModeEventLogger, never()).logSessionEnter(any())
+        verify(desktopModeEventLogger, never()).logTaskAdded(any())
+    }
+
+    @Test
+    fun transitOpen_rootDeskChange_doesNotLogTaskAdded() {
+        val taskInfo = createTaskInfo(WINDOWING_MODE_FREEFORM)
+        val change = createChange(TRANSIT_OPEN, taskInfo)
+        val transitionInfo = TransitionInfoBuilder(TRANSIT_OPEN, 0).addChange(change).build()
+        `when`(desksOrganizer.isDeskChange(change, taskInfo.taskId)).thenReturn(true)
 
         callOnTransitionReady(transitionInfo)
 
