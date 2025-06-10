@@ -1620,13 +1620,16 @@ public class DesktopModeLaunchParamsModifierTests extends
     public void testInMultiDesk_requestFullscreen_returnDone() {
         setupDesktopModeLaunchParamsModifier();
 
-        final Task task = new TaskBuilder(mSupervisor).setActivityType(
-                ACTIVITY_TYPE_STANDARD).setCreatedByOrganizer(true).build();
+        final Task deskRoot = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .setCreatedByOrganizer(true).build();
         final Task sourceTask = new TaskBuilder(mSupervisor).setActivityType(
                 ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_FULLSCREEN).build();
+        // Creating a fullscreen task under the desk root.
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+                .setParentTask(deskRoot).build();
 
-        assertNotNull(task.getCreatedByOrganizerTask());
-        task.getCreatedByOrganizerTask().setWindowingMode(WINDOWING_MODE_FREEFORM);
         final ActivityRecord sourceActivity = new ActivityBuilder(task.mAtmService)
                 .setTask(sourceTask).build();
 

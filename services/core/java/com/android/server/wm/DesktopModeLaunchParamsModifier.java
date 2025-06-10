@@ -159,7 +159,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             final Task sourceTask = source.getTask();
             // Don't explicitly set to freeform if task is launching in full-screen in desktop-first
             // container, as it should already inherit freeform by default if undefined.
-            requestFullscreen |= sourceTask.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
+            requestFullscreen |= task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
             isFullscreenInDeskTask = inDesktopFirstContainer && requestFullscreen;
             if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()
                     && isEnteringDesktopMode(sourceTask, options, currentParams)
