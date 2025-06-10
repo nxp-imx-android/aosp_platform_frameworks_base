@@ -20,6 +20,7 @@ import static android.server.wm.CtsWindowInfoUtils.waitForStableWindowGeometry;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowInsets.Type.displayCutout;
 import static android.view.WindowInsets.Type.statusBars;
+import static android.window.ScreenCapture.ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -136,7 +137,7 @@ public class ScreenshotTests {
 
         ScreenCaptureInternal.LayerCaptureArgs args =
                 new ScreenCaptureInternal.LayerCaptureArgs.Builder(secureSC)
-                        .setCaptureSecureLayers(true)
+                        .setSecureContentPolicy(SECURE_CONTENT_POLICY_CAPTURE)
                         .setChildrenOnly(false)
                         .build();
 

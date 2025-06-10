@@ -36,19 +36,25 @@
 namespace android {
 
 using gui::CaptureArgs;
+using gui::CaptureMode;
 using gui::IScreenCaptureListener;
+using gui::ProtectedLayerMode;
+using gui::SecureLayerMode;
 
 static struct {
     jfieldID pixelFormat;
     jfieldID sourceCrop;
     jfieldID frameScaleX;
     jfieldID frameScaleY;
-    jfieldID captureSecureLayers;
-    jfieldID allowProtected;
+    jfieldID secureLayerMode;
+    jfieldID protectedLayerMode;
+    jfieldID captureMode;
     jfieldID uid;
     jfieldID grayscale;
     jmethodID getNativeExcludeLayers;
-    jfieldID hintForSeamlessTransition;
+    jfieldID preserveDisplayColors;
+    jfieldID useDisplayInstallationOrientation;
+    jfieldID includeAllLayers;
 } gCaptureArgsClassInfo;
 
 static struct {
@@ -162,10 +168,18 @@ static void getCaptureArgs(JNIEnv* env, jobject captureArgsObject, CaptureArgs& 
             env->GetFloatField(captureArgsObject, gCaptureArgsClassInfo.frameScaleX);
     captureArgs.frameScaleY =
             env->GetFloatField(captureArgsObject, gCaptureArgsClassInfo.frameScaleY);
-    captureArgs.captureSecureLayers =
-            env->GetBooleanField(captureArgsObject, gCaptureArgsClassInfo.captureSecureLayers);
-    captureArgs.allowProtected =
-            env->GetBooleanField(captureArgsObject, gCaptureArgsClassInfo.allowProtected);
+
+    jint secureLayerMode =
+            env->GetIntField(captureArgsObject, gCaptureArgsClassInfo.secureLayerMode);
+    captureArgs.secureLayerMode = static_cast<SecureLayerMode>(secureLayerMode);
+
+    jint protectedLayerMode =
+            env->GetIntField(captureArgsObject, gCaptureArgsClassInfo.protectedLayerMode);
+    captureArgs.protectedLayerMode = static_cast<ProtectedLayerMode>(protectedLayerMode);
+
+    jint captureMode = env->GetIntField(captureArgsObject, gCaptureArgsClassInfo.captureMode);
+    captureArgs.captureMode = static_cast<CaptureMode>(captureMode);
+
     captureArgs.uid = env->GetLongField(captureArgsObject, gCaptureArgsClassInfo.uid);
     captureArgs.grayscale =
             env->GetBooleanField(captureArgsObject, gCaptureArgsClassInfo.grayscale);
@@ -186,9 +200,13 @@ static void getCaptureArgs(JNIEnv* env, jobject captureArgsObject, CaptureArgs& 
             captureArgs.excludeHandles.emplace_back(excludeObject->getHandle());
         }
     }
-    captureArgs.hintForSeamlessTransition =
+    captureArgs.preserveDisplayColors =
+            env->GetBooleanField(captureArgsObject, gCaptureArgsClassInfo.preserveDisplayColors);
+    captureArgs.useDisplayInstallationOrientation =
             env->GetBooleanField(captureArgsObject,
-                                 gCaptureArgsClassInfo.hintForSeamlessTransition);
+                                 gCaptureArgsClassInfo.useDisplayInstallationOrientation);
+    captureArgs.includeAllLayers =
+            env->GetBooleanField(captureArgsObject, gCaptureArgsClassInfo.includeAllLayers);
 }
 
 static DisplayCaptureArgs displayCaptureArgsFromObject(JNIEnv* env,
@@ -312,16 +330,21 @@ int register_android_window_ScreenCapture(JNIEnv* env) {
             GetFieldIDOrDie(env, captureArgsClazz, "mSourceCrop", "Landroid/graphics/Rect;");
     gCaptureArgsClassInfo.frameScaleX = GetFieldIDOrDie(env, captureArgsClazz, "mFrameScaleX", "F");
     gCaptureArgsClassInfo.frameScaleY = GetFieldIDOrDie(env, captureArgsClazz, "mFrameScaleY", "F");
-    gCaptureArgsClassInfo.captureSecureLayers =
-            GetFieldIDOrDie(env, captureArgsClazz, "mCaptureSecureLayers", "Z");
-    gCaptureArgsClassInfo.allowProtected =
-            GetFieldIDOrDie(env, captureArgsClazz, "mAllowProtected", "Z");
+    gCaptureArgsClassInfo.secureLayerMode =
+            GetFieldIDOrDie(env, captureArgsClazz, "mSecureContentPolicy", "I");
+    gCaptureArgsClassInfo.protectedLayerMode =
+            GetFieldIDOrDie(env, captureArgsClazz, "mProtectedContentPolicy", "I");
+    gCaptureArgsClassInfo.captureMode = GetFieldIDOrDie(env, captureArgsClazz, "mCaptureMode", "I");
     gCaptureArgsClassInfo.uid = GetFieldIDOrDie(env, captureArgsClazz, "mUid", "J");
     gCaptureArgsClassInfo.grayscale = GetFieldIDOrDie(env, captureArgsClazz, "mGrayscale", "Z");
     gCaptureArgsClassInfo.getNativeExcludeLayers =
             GetMethodIDOrDie(env, captureArgsClazz, "getNativeExcludeLayers", "()[J");
-    gCaptureArgsClassInfo.hintForSeamlessTransition =
-            GetFieldIDOrDie(env, captureArgsClazz, "mHintForSeamlessTransition", "Z");
+    gCaptureArgsClassInfo.preserveDisplayColors =
+            GetFieldIDOrDie(env, captureArgsClazz, "mPreserveDisplayColors", "Z");
+    gCaptureArgsClassInfo.useDisplayInstallationOrientation =
+            GetFieldIDOrDie(env, captureArgsClazz, "mUseDisplayInstallationOrientation", "Z");
+    gCaptureArgsClassInfo.includeAllLayers =
+            GetFieldIDOrDie(env, captureArgsClazz, "mIncludeSystemOverlays", "Z");
 
     jclass displayCaptureArgsClazz =
             FindClassOrDie(env, "android/window/ScreenCaptureInternal$DisplayCaptureArgs");

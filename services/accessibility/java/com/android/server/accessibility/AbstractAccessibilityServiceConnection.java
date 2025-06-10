@@ -95,6 +95,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
 import android.view.accessibility.IWindowSurfaceInfoCallback;
 import android.view.inputmethod.EditorInfo;
+import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
@@ -1486,12 +1487,15 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
                                     return;
                                 }
 
+                                final int secureContentPolicy = canCaptureSecureLayers
+                                        ? ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE
+                                        : ScreenCaptureParams.SECURE_CONTENT_POLICY_REDACT;
                                 final ScreenCaptureInternal.LayerCaptureArgs captureArgs =
                                         new ScreenCaptureInternal.LayerCaptureArgs.Builder(
                                                         surfaceControl)
                                                 .setChildrenOnly(false)
                                                 .setUid(processUid)
-                                                .setCaptureSecureLayers(canCaptureSecureLayers)
+                                                .setSecureContentPolicy(secureContentPolicy)
                                                 .build();
                                 if (mSystemSupport.performScreenCapture(captureArgs, listener)
                                         != 0) {
@@ -1577,10 +1581,13 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
                                 }
                             });
             if (Flags.allowSecureScreenshots()) {
+                final int secureContentPolicy =
+                        canCaptureSecureLayers() ? ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE
+                                : ScreenCaptureParams.SECURE_CONTENT_POLICY_REDACT;
                 mWindowManagerService.captureDisplay(
                         displayId,
                         new ScreenCaptureInternal.CaptureArgs.Builder<>()
-                                .setCaptureSecureLayers(canCaptureSecureLayers())
+                                .setSecureContentPolicy(secureContentPolicy)
                                 .build(),
                         screenCaptureListener);
             } else {
