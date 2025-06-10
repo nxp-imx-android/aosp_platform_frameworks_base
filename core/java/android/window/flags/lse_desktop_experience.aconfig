@@ -1430,4 +1430,15 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "taskbar_running_tasks_in_splitscreen_select"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to fix recent task icons behavior in taskbar during split screen selection."
+    bug: "393513479"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end
