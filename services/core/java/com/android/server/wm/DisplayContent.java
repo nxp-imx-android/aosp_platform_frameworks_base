@@ -249,8 +249,8 @@ import android.view.inputmethod.ImeTracker;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayWindowPolicyController;
 import android.window.IDisplayAreaOrganizer;
-import android.window.ScreenCapture;
-import android.window.ScreenCapture.LayerCaptureArgs;
+import android.window.ScreenCaptureInternal;
+import android.window.ScreenCaptureInternal.LayerCaptureArgs;
 import android.window.SystemPerformanceHinter;
 import android.window.TransitionRequestInfo;
 
@@ -4537,8 +4537,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         @NonNull
-        private SurfaceControl createSurface(@NonNull ScreenCapture.ScreenshotHardwareBuffer b,
-                @NonNull Transaction t) {
+        private SurfaceControl createSurface(
+                @NonNull ScreenCaptureInternal.ScreenshotHardwareBuffer b, @NonNull Transaction t) {
             final HardwareBuffer buffer = b.getHardwareBuffer();
             ProtoLog.i(WM_DEBUG_IME, "create IME screenshot for %s, buff width=%s, height=%s",
                     mImeTarget, buffer.getWidth(), buffer.getHeight());
@@ -4610,9 +4610,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The exclusion of home/recents is an optimization for regular task switch because
             // home/recents won't appear in recents task.
             if (task != null && (anyTargetTask || !task.isActivityTypeHomeOrRecents())) {
-                final ScreenCapture.ScreenshotHardwareBuffer buffer = renewSurface
-                        ? dc.mWmService.mTaskSnapshotController.screenshotImeFromAttachedTask(task)
-                        : null;
+                final ScreenCaptureInternal.ScreenshotHardwareBuffer buffer =
+                        renewSurface
+                                ? dc.mWmService.mTaskSnapshotController
+                                        .screenshotImeFromAttachedTask(task)
+                                : null;
                 if (buffer != null) {
                     // Remove the last surface when the surface needs to renew.
                     removeSurface(t);

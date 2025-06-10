@@ -91,7 +91,7 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
 import android.window.DesktopExperienceFlags;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -2788,7 +2788,8 @@ public class VoiceInteractionManagerService extends SystemService {
                     isManagedProfileVisible = true;
                 }
             }
-            final ScreenCapture.ScreenshotHardwareBuffer shb = mWmInternal.takeAssistScreenshot();
+            final ScreenCaptureInternal.ScreenshotHardwareBuffer shb =
+                    mWmInternal.takeAssistScreenshot();
             final Bitmap bm = shb != null ? shb.asBitmap() : null;
             // Now that everything is fetched, putting it in the launchIntent.
             if (bm != null) {

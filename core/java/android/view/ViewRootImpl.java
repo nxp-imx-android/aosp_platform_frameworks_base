@@ -274,7 +274,7 @@ import android.window.InputTransferToken;
 import android.window.OnBackAnimationCallback;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.SurfaceSyncGroup;
 import android.window.WindowOnBackInvokedDispatcher;
 import android.window.WindowTokenClient;
@@ -318,6 +318,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
 /**
  * The top of a view hierarchy, implementing the needed protocol between View
  * and the WindowManager.  This is for the most part an internal implementation
@@ -2689,7 +2690,9 @@ public final class ViewRootImpl implements ViewParent,
             mStopped = stopped;
             final ThreadedRenderer renderer = mAttachInfo.mThreadedRenderer;
             if (renderer != null) {
-                if (DEBUG_DRAW) Log.d(mTag, "WindowStopped on " + getTitle() + " set to " + mStopped);
+                if (DEBUG_DRAW) {
+                    Log.d(mTag, "WindowStopped on " + getTitle() + " set to " + mStopped);
+                }
                 renderer.setStopped(mStopped);
             }
             if (!mStopped) {
@@ -12377,8 +12380,9 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         @Override
-        public void takeScreenshotOfWindow(int interactionId,
-                ScreenCapture.ScreenCaptureListener listener,
+        public void takeScreenshotOfWindow(
+                int interactionId,
+                ScreenCaptureInternal.ScreenCaptureListener listener,
                 IAccessibilityInteractionConnectionCallback callback) {
             ViewRootImpl viewRootImpl = mViewRootImpl.get();
             if (viewRootImpl != null && viewRootImpl.mView != null) {

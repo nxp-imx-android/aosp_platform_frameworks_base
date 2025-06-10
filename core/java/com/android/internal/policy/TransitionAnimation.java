@@ -65,7 +65,7 @@ import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import com.android.internal.R;
 
@@ -1329,8 +1329,10 @@ public class TransitionAnimation {
     }
 
     /** Sets the default attributes of the screenshot layer used for animation. */
-    public static void configureScreenshotLayer(SurfaceControl.Transaction t, SurfaceControl layer,
-            ScreenCapture.ScreenshotHardwareBuffer buffer) {
+    public static void configureScreenshotLayer(
+            SurfaceControl.Transaction t,
+            SurfaceControl layer,
+            ScreenCaptureInternal.ScreenshotHardwareBuffer buffer) {
         t.setBuffer(layer, buffer.getHardwareBuffer());
         t.setDataSpace(layer, buffer.getColorSpace().getDataSpace());
         // Avoid showing dimming effect for HDR content when running animations.
@@ -1362,8 +1364,8 @@ public class TransitionAnimation {
 
     /** Returns the luminance in 0~1. */
     public static float getBorderLuma(SurfaceControl surfaceControl, int w, int h) {
-        final ScreenCapture.ScreenshotHardwareBuffer buffer =
-                ScreenCapture.captureLayers(surfaceControl, new Rect(0, 0, w, h), 1);
+        final ScreenCaptureInternal.ScreenshotHardwareBuffer buffer =
+                ScreenCaptureInternal.captureLayers(surfaceControl, new Rect(0, 0, w, h), 1);
         if (buffer == null) {
             return 0;
         }

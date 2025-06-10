@@ -63,7 +63,7 @@ import android.view.ViewOutlineProvider;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -697,7 +697,7 @@ public class BubbleExpandedView extends LinearLayout {
 
     /** Return a GraphicBuffer with the contents of the task view surface. */
     @Nullable
-    ScreenCapture.ScreenshotHardwareBuffer snapshotActivitySurface() {
+    ScreenCaptureInternal.ScreenshotHardwareBuffer snapshotActivitySurface() {
         if (mIsOverflow) {
             // For now, just snapshot the view and return it as a hw buffer so that the animation
             // code for both the tasks and overflow can be the same
@@ -706,7 +706,7 @@ public class BubbleExpandedView extends LinearLayout {
                     p.beginRecording(mOverflowView.getWidth(), mOverflowView.getHeight()));
             p.endRecording();
             Bitmap snapshot = Bitmap.createBitmap(p);
-            return new ScreenCapture.ScreenshotHardwareBuffer(
+            return new ScreenCaptureInternal.ScreenshotHardwareBuffer(
                     snapshot.getHardwareBuffer(),
                     snapshot.getColorSpace(),
                     false /* containsSecureLayers */,
@@ -715,7 +715,7 @@ public class BubbleExpandedView extends LinearLayout {
         if (mTaskView == null || mTaskView.getSurfaceControl() == null) {
             return null;
         }
-        return ScreenCapture.captureLayers(
+        return ScreenCaptureInternal.captureLayers(
                 mTaskView.getSurfaceControl(),
                 new Rect(0, 0, mTaskView.getWidth(), mTaskView.getHeight()),
                 1 /* scale */);

@@ -114,7 +114,7 @@ import android.view.WindowManager;
 import android.window.ActivityTransitionInfo;
 import android.window.AppCompatTransitionInfo;
 import android.window.DesktopExperienceFlags;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TransitionInfo;
@@ -4355,8 +4355,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             cropBounds.offsetTo(0, 0);
             final boolean isDisplayRotation = wc.asDisplayContent() != null
                     && wc.asDisplayContent().isRotationChanging();
-            ScreenCapture.LayerCaptureArgs captureArgs =
-                    new ScreenCapture.LayerCaptureArgs.Builder(wc.getSurfaceControl())
+            ScreenCaptureInternal.LayerCaptureArgs captureArgs =
+                    new ScreenCaptureInternal.LayerCaptureArgs.Builder(wc.getSurfaceControl())
                             .setSourceCrop(cropBounds)
                             .setCaptureSecureLayers(true)
                             .setAllowProtected(true)
@@ -4364,8 +4364,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                             // is ALWAYS seamless
                             .setHintForSeamlessTransition(true)
                             .build();
-            ScreenCapture.ScreenshotHardwareBuffer screenshotBuffer =
-                    ScreenCapture.captureLayers(captureArgs);
+            ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
+                    ScreenCaptureInternal.captureLayers(captureArgs);
             final HardwareBuffer buffer = screenshotBuffer == null ? null
                     : screenshotBuffer.getHardwareBuffer();
             if (buffer == null || buffer.getWidth() <= 1 || buffer.getHeight() <= 1) {

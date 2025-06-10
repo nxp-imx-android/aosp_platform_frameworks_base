@@ -290,9 +290,9 @@ static jlong getNativeListenerFinalizer(JNIEnv* env, jclass clazz) {
 
 static const JNINativeMethod sScreenCaptureMethods[] = {
         // clang-format off
-    {"nativeCaptureDisplay", "(Landroid/window/ScreenCapture$DisplayCaptureArgs;J)I",
+    {"nativeCaptureDisplay", "(Landroid/window/ScreenCaptureInternal$DisplayCaptureArgs;J)I",
             (void*)nativeCaptureDisplay },
-    {"nativeCaptureLayers",  "(Landroid/window/ScreenCapture$LayerCaptureArgs;JZ)I",
+    {"nativeCaptureLayers",  "(Landroid/window/ScreenCaptureInternal$LayerCaptureArgs;JZ)I",
             (void*)nativeCaptureLayers },
     {"nativeCreateScreenCaptureListener", "(Ljava/util/function/ObjIntConsumer;)J",
             (void*)nativeCreateScreenCaptureListener },
@@ -304,10 +304,11 @@ static const JNINativeMethod sScreenCaptureMethods[] = {
 };
 
 int register_android_window_ScreenCapture(JNIEnv* env) {
-    int err = RegisterMethodsOrDie(env, "android/window/ScreenCapture", sScreenCaptureMethods,
-                                   NELEM(sScreenCaptureMethods));
+    int err = RegisterMethodsOrDie(env, "android/window/ScreenCaptureInternal",
+                                   sScreenCaptureMethods, NELEM(sScreenCaptureMethods));
 
-    jclass captureArgsClazz = FindClassOrDie(env, "android/window/ScreenCapture$CaptureArgs");
+    jclass captureArgsClazz =
+            FindClassOrDie(env, "android/window/ScreenCaptureInternal$CaptureArgs");
     gCaptureArgsClassInfo.pixelFormat = GetFieldIDOrDie(env, captureArgsClazz, "mPixelFormat", "I");
     gCaptureArgsClassInfo.sourceCrop =
             GetFieldIDOrDie(env, captureArgsClazz, "mSourceCrop", "Landroid/graphics/Rect;");
@@ -325,7 +326,7 @@ int register_android_window_ScreenCapture(JNIEnv* env) {
             GetFieldIDOrDie(env, captureArgsClazz, "mHintForSeamlessTransition", "Z");
 
     jclass displayCaptureArgsClazz =
-            FindClassOrDie(env, "android/window/ScreenCapture$DisplayCaptureArgs");
+            FindClassOrDie(env, "android/window/ScreenCaptureInternal$DisplayCaptureArgs");
     gDisplayCaptureArgsClassInfo.displayToken =
             GetFieldIDOrDie(env, displayCaptureArgsClazz, "mDisplayToken", "Landroid/os/IBinder;");
     gDisplayCaptureArgsClassInfo.width =
@@ -334,7 +335,7 @@ int register_android_window_ScreenCapture(JNIEnv* env) {
             GetFieldIDOrDie(env, displayCaptureArgsClazz, "mHeight", "I");
 
     jclass layerCaptureArgsClazz =
-            FindClassOrDie(env, "android/window/ScreenCapture$LayerCaptureArgs");
+            FindClassOrDie(env, "android/window/ScreenCaptureInternal$LayerCaptureArgs");
     gLayerCaptureArgsClassInfo.layer =
             GetFieldIDOrDie(env, layerCaptureArgsClazz, "mNativeLayer", "J");
     gLayerCaptureArgsClassInfo.childrenOnly =
@@ -344,14 +345,14 @@ int register_android_window_ScreenCapture(JNIEnv* env) {
     gConsumerClassInfo.accept = GetMethodIDOrDie(env, consumer, "accept", "(Ljava/lang/Object;I)V");
 
     jclass screenshotGraphicsBufferClazz =
-            FindClassOrDie(env, "android/window/ScreenCapture$ScreenshotHardwareBuffer");
+            FindClassOrDie(env, "android/window/ScreenCaptureInternal$ScreenshotHardwareBuffer");
     gScreenshotHardwareBufferClassInfo.clazz =
             MakeGlobalRefOrDie(env, screenshotGraphicsBufferClazz);
     gScreenshotHardwareBufferClassInfo.builder =
             GetStaticMethodIDOrDie(env, screenshotGraphicsBufferClazz, "createFromNative",
                                    "(Landroid/hardware/HardwareBuffer;IZZLandroid/hardware/"
                                    "HardwareBuffer;F)Landroid/window/"
-                                   "ScreenCapture$ScreenshotHardwareBuffer;");
+                                   "ScreenCaptureInternal$ScreenshotHardwareBuffer;");
 
     return err;
 }

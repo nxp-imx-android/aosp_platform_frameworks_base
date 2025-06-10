@@ -49,7 +49,7 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
@@ -997,8 +997,9 @@ class WallpaperController {
         final Rect bounds = wallpaperWindowState.getBounds();
         bounds.offsetTo(0, 0);
 
-        ScreenCapture.ScreenshotHardwareBuffer wallpaperBuffer = ScreenCapture.captureLayers(
-                wallpaperWindowState.getSurfaceControl(), bounds, 1 /* frameScale */);
+        ScreenCaptureInternal.ScreenshotHardwareBuffer wallpaperBuffer =
+                ScreenCaptureInternal.captureLayers(
+                        wallpaperWindowState.getSurfaceControl(), bounds, 1 /* frameScale */);
 
         if (wallpaperBuffer == null) {
             Slog.w(TAG_WM, "Failed to screenshot wallpaper");

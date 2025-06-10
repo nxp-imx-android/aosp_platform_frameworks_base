@@ -45,7 +45,7 @@ import android.view.SurfaceControl;
 import android.view.ThreadedRenderer;
 import android.view.WindowInsets;
 import android.view.WindowManager;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.SnapshotDrawerUtils;
 import android.window.TaskSnapshot;
 
@@ -235,8 +235,8 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
             return null;
         }
         Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER, "createSnapshot");
-        final ScreenCapture.ScreenshotHardwareBuffer screenshotBuffer = createSnapshot(source,
-                scale, crop, builder);
+        final ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
+                createSnapshot(source, scale, crop, builder);
         Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
         if (screenshotBuffer == null) {
             // Failed to acquire image. Has been logged.
@@ -261,8 +261,8 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
     }
 
     @Nullable
-    ScreenCapture.ScreenshotHardwareBuffer createSnapshot(@NonNull TYPE source,
-            float scaleFraction, Rect crop, TaskSnapshot.Builder builder) {
+    ScreenCaptureInternal.ScreenshotHardwareBuffer createSnapshot(
+            @NonNull TYPE source, float scaleFraction, Rect crop, TaskSnapshot.Builder builder) {
         if (source.getSurfaceControl() == null) {
             if (DEBUG_SCREENSHOT) {
                 Slog.w(TAG_WM, "Failed to take screenshot. No surface control for " + source);
@@ -295,10 +295,13 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         final SurfaceControl[] excludeLayers =
                 excludeSurfaces.toArray(new SurfaceControl[excludeSurfaces.size()]);
         builder.setHasImeSurface(!excludeIme && imeWindow != null && imeWindow.isVisible());
-        final ScreenCapture.ScreenshotHardwareBuffer screenshotBuffer =
-                ScreenCapture.captureLayersExcluding(
-                        source.getSurfaceControl(), crop, scaleFraction,
-                        builder.getPixelFormat(), excludeLayers);
+        final ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
+                ScreenCaptureInternal.captureLayersExcluding(
+                        source.getSurfaceControl(),
+                        crop,
+                        scaleFraction,
+                        builder.getPixelFormat(),
+                        excludeLayers);
         final HardwareBuffer buffer = screenshotBuffer == null ? null
                 : screenshotBuffer.getHardwareBuffer();
         if (isInvalidHardwareBuffer(buffer)) {

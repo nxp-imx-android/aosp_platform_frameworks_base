@@ -17,10 +17,10 @@
 package android.window;
 
 /** @hide */
-parcelable ScreenCapture.CaptureArgs;
+parcelable ScreenCaptureInternal.CaptureArgs;
 
 /** @hide */
-parcelable ScreenCapture.ScreenshotHardwareBuffer;
+parcelable ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
 /** @hide */
-parcelable ScreenCapture.ScreenCaptureListener;
+parcelable ScreenCaptureInternal.ScreenCaptureListener;

@@ -19,7 +19,7 @@ package com.android.wm.shell.common;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.view.SurfaceControl;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import java.util.function.Consumer;
 
@@ -35,19 +35,22 @@ public class ScreenshotUtils {
      * @param crop the crop to use when capturing the screenshot
      * @param consumer Consumer for the captured buffer
      */
-    public static void captureLayer(SurfaceControl sc, Rect crop,
-            Consumer<ScreenCapture.ScreenshotHardwareBuffer> consumer) {
-        consumer.accept(ScreenCapture.captureLayers(
-                new ScreenCapture.LayerCaptureArgs.Builder(sc)
-                    .setSourceCrop(crop)
-                    .setCaptureSecureLayers(true)
-                    .setAllowProtected(true)
-                    .setHintForSeamlessTransition(true)
-                    .build()));
+    public static void captureLayer(
+            SurfaceControl sc,
+            Rect crop,
+            Consumer<ScreenCaptureInternal.ScreenshotHardwareBuffer> consumer) {
+        consumer.accept(
+                ScreenCaptureInternal.captureLayers(
+                        new ScreenCaptureInternal.LayerCaptureArgs.Builder(sc)
+                                .setSourceCrop(crop)
+                                .setCaptureSecureLayers(true)
+                                .setAllowProtected(true)
+                                .setHintForSeamlessTransition(true)
+                                .build()));
     }
 
-    private static class BufferConsumer implements
-            Consumer<ScreenCapture.ScreenshotHardwareBuffer> {
+    private static class BufferConsumer
+            implements Consumer<ScreenCaptureInternal.ScreenshotHardwareBuffer> {
         SurfaceControl mScreenshot = null;
         SurfaceControl.Transaction mTransaction;
         SurfaceControl mSurfaceControl;
@@ -63,7 +66,7 @@ public class ScreenshotUtils {
         }
 
         @Override
-        public void accept(ScreenCapture.ScreenshotHardwareBuffer buffer) {
+        public void accept(ScreenCaptureInternal.ScreenshotHardwareBuffer buffer) {
             if (buffer == null || buffer.getHardwareBuffer() == null) {
                 return;
             }

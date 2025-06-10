@@ -170,7 +170,7 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.RefreshRateRange;
 import android.window.DisplayWindowPolicyController;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -3411,8 +3411,8 @@ public final class DisplayManagerService extends SystemService {
         return null;
     }
 
-    private ScreenCapture.ScreenshotHardwareBuffer systemScreenshotInternal(int displayId) {
-        final ScreenCapture.DisplayCaptureArgs captureArgs;
+    private ScreenCaptureInternal.ScreenshotHardwareBuffer systemScreenshotInternal(int displayId) {
+        final ScreenCaptureInternal.DisplayCaptureArgs captureArgs;
         synchronized (mSyncRoot) {
             final IBinder token = getDisplayToken(displayId);
             if (token == null) {
@@ -3424,27 +3424,27 @@ public final class DisplayManagerService extends SystemService {
             }
 
             final DisplayInfo displayInfo = logicalDisplay.getDisplayInfoLocked();
-            captureArgs = new ScreenCapture.DisplayCaptureArgs.Builder(token)
-                    .setSize(displayInfo.getNaturalWidth(), displayInfo.getNaturalHeight())
-                    .setCaptureSecureLayers(true)
-                    .setAllowProtected(true)
-                    .build();
+            captureArgs =
+                    new ScreenCaptureInternal.DisplayCaptureArgs.Builder(token)
+                            .setSize(displayInfo.getNaturalWidth(), displayInfo.getNaturalHeight())
+                            .setCaptureSecureLayers(true)
+                            .setAllowProtected(true)
+                            .build();
         }
-        return ScreenCapture.captureDisplay(captureArgs);
+        return ScreenCaptureInternal.captureDisplay(captureArgs);
     }
 
-    private ScreenCapture.ScreenshotHardwareBuffer userScreenshotInternal(int displayId) {
-        final ScreenCapture.DisplayCaptureArgs captureArgs;
+    private ScreenCaptureInternal.ScreenshotHardwareBuffer userScreenshotInternal(int displayId) {
+        final ScreenCaptureInternal.DisplayCaptureArgs captureArgs;
         synchronized (mSyncRoot) {
             final IBinder token = getDisplayToken(displayId);
             if (token == null) {
                 return null;
             }
 
-            captureArgs = new ScreenCapture.DisplayCaptureArgs.Builder(token)
-                            .build();
+            captureArgs = new ScreenCaptureInternal.DisplayCaptureArgs.Builder(token).build();
         }
-        return ScreenCapture.captureDisplay(captureArgs);
+        return ScreenCaptureInternal.captureDisplay(captureArgs);
     }
 
     @VisibleForTesting
@@ -5903,12 +5903,12 @@ public final class DisplayManagerService extends SystemService {
         }
 
         @Override
-        public ScreenCapture.ScreenshotHardwareBuffer systemScreenshot(int displayId) {
+        public ScreenCaptureInternal.ScreenshotHardwareBuffer systemScreenshot(int displayId) {
             return systemScreenshotInternal(displayId);
         }
 
         @Override
-        public ScreenCapture.ScreenshotHardwareBuffer userScreenshot(int displayId) {
+        public ScreenCaptureInternal.ScreenshotHardwareBuffer userScreenshot(int displayId) {
             return userScreenshotInternal(displayId);
         }
 

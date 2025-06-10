@@ -44,8 +44,8 @@ import java.util.function.ObjIntConsumer;
  *
  * @hide
  */
-public class ScreenCapture {
-    private static final String TAG = "ScreenCapture";
+public class ScreenCaptureInternal {
+    private static final String TAG = "ScreenCaptureInternal";
     private static final int SCREENSHOT_WAIT_TIME_S = 4 * Build.HW_TIMEOUT_MULTIPLIER;
 
     private static native int nativeCaptureDisplay(DisplayCaptureArgs captureArgs,

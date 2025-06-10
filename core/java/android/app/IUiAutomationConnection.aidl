@@ -24,8 +24,8 @@ import android.view.SurfaceControl;
 import android.view.WindowContentFrameStats;
 import android.view.WindowAnimationFrameStats;
 import android.os.ParcelFileDescriptor;
-import android.window.ScreenCapture.ScreenCaptureListener;
-import android.window.ScreenCapture.LayerCaptureArgs;
+import android.window.ScreenCaptureInternal.ScreenCaptureListener;
+import android.window.ScreenCaptureInternal.LayerCaptureArgs;
 
 import java.util.List;
 

@@ -48,8 +48,8 @@ import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost;
 import android.view.WindowManager.DisplayImePolicy;
 import android.view.inputmethod.ImeTracker;
-import android.window.ScreenCapture;
-import android.window.ScreenCapture.ScreenshotHardwareBuffer;
+import android.window.ScreenCaptureInternal;
+import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
 import com.android.internal.policy.KeyInterceptionInfo;
 import com.android.server.input.InputManagerService;
@@ -1084,9 +1084,10 @@ public abstract class WindowManagerInternal {
      * Captures the entire display specified by the displayId using the args provided. If the args
      * are null or if the sourceCrop is invalid or null, the entire display bounds will be captured.
      */
-    public abstract void captureDisplay(int displayId,
-                                        @Nullable ScreenCapture.CaptureArgs captureArgs,
-                                        ScreenCapture.ScreenCaptureListener listener);
+    public abstract void captureDisplay(
+            int displayId,
+            @Nullable ScreenCaptureInternal.CaptureArgs captureArgs,
+            ScreenCaptureInternal.ScreenCaptureListener listener);
 
     /**
      * Device has a software navigation bar (separate from the status bar) on specific display.
