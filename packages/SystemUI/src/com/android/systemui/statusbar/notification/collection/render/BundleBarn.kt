@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
 import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator.Companion.debugBundleLog
+import com.android.systemui.statusbar.notification.icon.IconManager
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.RowInflaterTask
 import com.android.systemui.statusbar.notification.row.RowInflaterTaskLogger
@@ -62,6 +63,7 @@ constructor(
     val logger: RowInflaterTaskLogger,
     val userTracker: UserTracker,
     private val presenterLazy: Lazy<NotificationPresenter?>? = null,
+    private val iconManager: IconManager,
 ) : PipelineDumpable {
 
     /**
@@ -72,6 +74,7 @@ constructor(
 
     /** Build view and controller for BundleEntry. */
     fun inflateBundleEntry(bundleEntry: BundleEntry) {
+        iconManager.createIcons(context, bundleEntry)
         debugBundleLog(TAG) { "inflateBundleEntry: ${bundleEntry.key}" }
         if (keyToControllerMap.containsKey(bundleEntry.key)) {
             // Skip if bundle is inflating or inflated.

@@ -154,4 +154,9 @@ class BundleEntryAdapterTest : SysuiTestCase() {
     fun getPeopleNotificationType() {
         assertThat(underTest.getPeopleNotificationType()).isEqualTo(TYPE_NON_PERSON)
     }
+
+    @Test
+    fun getIcons() {
+        assertThat(underTest.icons).isEqualTo(underTest.entry.icons)
+    }
 }

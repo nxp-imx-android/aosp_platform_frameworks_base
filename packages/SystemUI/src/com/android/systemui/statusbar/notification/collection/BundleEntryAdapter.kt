@@ -95,9 +95,8 @@ class BundleEntryAdapter(
         return 0
     }
 
-    override fun getIcons(): IconPack? {
-        // TODO(b/396446620): implement bundle icons
-        return IconPack.buildEmptyPack(null)
+    override fun getIcons(): IconPack {
+        return entry.icons
     }
 
     override fun isColorized(): Boolean {
