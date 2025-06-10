@@ -141,6 +141,35 @@ public class RemoteTaskStoreTest {
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
     }
 
+    @Test
+    public void addTask_addsTaskToAssociation() {
+        // Create a fake association info, and have connected association store return it.
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(1))
+            .thenReturn(associationInfo);
+        taskStore.onTransportConnected(associationInfo);
+
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
+        RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+        taskStore.setTasks(1, Collections.singletonList(remoteTaskInfo));
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(remoteTask);
+
+        // Add a new task to the association.
+        RemoteTaskInfo newRemoteTaskInfo = createNewRemoteTaskInfo(2, "task2", 200L);
+        RemoteTask newRemoteTask = newRemoteTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+        taskStore.addTask(1, newRemoteTaskInfo);
+
+        // Verify the most recent tasks are added to the task store.
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(newRemoteTask);
+    }
+
+    @Test
+    public void addTask_doesNotAddTaskIfAssociationNotConnected() {
+        RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
+        taskStore.addTask(1, remoteTaskInfo);
+        assertThat(taskStore.getMostRecentTasks()).isEmpty();
+    }
+
     private RemoteTaskInfo createNewRemoteTaskInfo(
         int id,
         String label,

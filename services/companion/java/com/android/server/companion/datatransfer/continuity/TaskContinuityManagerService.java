@@ -26,6 +26,7 @@ import android.content.Context;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
@@ -107,6 +108,11 @@ public final class TaskContinuityManagerService extends SystemService {
                 mRemoteTaskStore.setTasks(
                     associationId,
                     continuityDeviceConnected.getRemoteTasks());
+                break;
+            case RemoteTaskAddedMessage remoteTaskAddedMessage:
+                mRemoteTaskStore.addTask(
+                    associationId,
+                    remoteTaskAddedMessage.getTask());
                 break;
             case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
                 mRemoteTaskStore.removeTask(
