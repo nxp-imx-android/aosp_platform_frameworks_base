@@ -857,16 +857,21 @@ public class ChooserActivity extends ResolverActivity implements
             List<ResolveInfo> rList,
             boolean filterLastUsed) {
         int selectedProfile = findSelectedProfile();
+        List<Intent> crossProfileIntents = sanitizePayloadIntents(mIntents);
         ChooserGridAdapter personalAdapter = createChooserGridAdapter(
                 /* context */ this,
-                /* payloadIntents */ mIntents,
+                /* payloadIntents */ selectedProfile == PROFILE_PERSONAL
+                        ? mIntents
+                        : crossProfileIntents,
                 selectedProfile == PROFILE_PERSONAL ? initialIntents : null,
                 rList,
                 filterLastUsed,
                 /* userHandle */ getPersonalProfileUserHandle());
         ChooserGridAdapter workAdapter = createChooserGridAdapter(
                 /* context */ this,
-                /* payloadIntents */ mIntents,
+                /* payloadIntents */ selectedProfile == PROFILE_WORK
+                        ? mIntents
+                        : crossProfileIntents,
                 selectedProfile == PROFILE_WORK ? initialIntents : null,
                 rList,
                 filterLastUsed,
@@ -4085,5 +4090,33 @@ public class ChooserActivity extends ResolverActivity implements
                 target.getScore(),
                 target.getComponentName(),
                 target.getIntentExtras());
+    }
+
+    /**
+     * Returns a copy of provided intents with explicit targeting information is removed from each
+     * intent in the list, as well as from its selector {@link Intent#getSelector}. Specifically,
+     * the values that would be returned by {@link Intent#getPackage} and
+     * {@link Intent#getComponent} are cleared for both the main intent and its selector. This
+     * sanitization is performed because explicit intents could otherwise be used to bypass the
+     * device's cross-profile sharing policy settings.
+     */
+    @NonNull
+    @VisibleForTesting
+    public static List<Intent> sanitizePayloadIntents(@NonNull List<Intent> intents) {
+        return intents.stream().map((intent) -> {
+            if (intent == null) {
+                return null;
+            }
+            Intent sanitized = new Intent(intent);
+            sanitized.setPackage(null);
+            sanitized.setComponent(null);
+            if (sanitized.getSelector() != null) {
+                Intent selector = new Intent(sanitized.getSelector());
+                selector.setPackage(null);
+                selector.setComponent(null);
+                sanitized.setSelector(selector);
+            }
+            return sanitized;
+        }).collect(Collectors.toList());
     }
 }
