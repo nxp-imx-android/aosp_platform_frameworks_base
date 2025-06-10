@@ -78,3 +78,12 @@ flag {
     description: "This flag will enable documents trash APIs"
     bug: "409260986"
 }
+
+# OWNER=rambowang TARGET=25Q4
+flag {
+    name: "expose_system_update_settings"
+    is_exported: true
+    namespace: "android_settings"
+    description: "Feature flag to expose SYSTEM_UPDATE_SETTINGS as a public API"
+    bug: "417458670"
+}
