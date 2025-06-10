@@ -30,6 +30,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.IBinder
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
 import android.content.pm.UserInfo.FLAG_FOR_TESTING
@@ -66,7 +67,9 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.any
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -103,13 +106,15 @@ class SupervisionServiceTest {
         LocalServices.removeServiceForTest(UserManagerInternal::class.java)
         LocalServices.addService(UserManagerInternal::class.java, mockUserManagerInternal)
 
+        // Creating a temporary folder to enable access to SupervisionSettings.
+        SupervisionSettings.getInstance()
+            .changeDirForTesting(Files.createTempDirectory("tempSupervisionFolder").toFile())
+
         service = SupervisionService(context)
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
 
-        // Creating a temporary folder to enable access to SupervisionSettings.
-        SupervisionSettings.getInstance()
-            .changeDirForTesting(Files.createTempDirectory("tempSupervisionFolder").toFile())
+        assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
     }
 
     @Test
@@ -435,23 +440,70 @@ class SupervisionServiceTest {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
-    fun setSupervisionEnabledForUser_notifiesSupervisionListener() {
-        service.registerSupervisionListener(mockSupervisionListener)
+    fun registerAndUnregisteSupervisionListener() {
+        val (listener, binder) = registerSupervisionListenerForUser(USER_ID)
+        unregisterSupervisionListener(listener, binder)
+    }
 
-        assertThat(service.mSupervisionListeners.size).isEqualTo(1)
-        assertThat(service.mSupervisionListeners).containsExactly(mockSupervisionListener)
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
+    fun setSupervisionEnabledForUser_notifiesSupervisionListeners_multipleUsers() {
+        val listeners = buildMap {
+            userData.keys.forEach { userId ->
+                put(userId, registerSupervisionListenerForUser(userId))
+            }
+        }
 
-        service.setSupervisionEnabledForUser(USER_ID, true)
+        // Ensure that listeners registered for USER_ALL are notified
+        val anyUserListeners = buildMap {
+            put(UserHandle.USER_ALL, registerSupervisionListenerForUser(UserHandle.USER_ALL))
+        }
 
-        verify(mockSupervisionListener).onSetSupervisionEnabled(eq(USER_ID), eq(true))
+        listeners.forEach { userId, (listener, binder) ->
+            setSupervisionEnabledForUser(userId, true, listeners + anyUserListeners)
+            setSupervisionEnabledForUser(userId, false, listeners + anyUserListeners)
+            clearInvocations(listener)
+        }
 
-        service.setSupervisionEnabledForUser(USER_ID, false)
+        listeners.forEach { userId, (listener, binder) ->
+            unregisterSupervisionListener(listener, binder)
+        }
+    }
 
-        verify(mockSupervisionListener).onSetSupervisionEnabled(eq(USER_ID), eq(false))
+    private fun registerSupervisionListenerForUser(
+        userId: Int
+    ): Pair<ISupervisionListener, IBinder> {
+        val listener = mock<ISupervisionListener>()
+        val binder = mock<IBinder>()
 
-        service.unregisterSupervisionListener(mockSupervisionListener)
+        whenever(listener.asBinder()).thenReturn(binder)
 
-        assertThat(service.mSupervisionListeners.size).isEqualTo(0)
+        assertThat(service.mSupervisionListeners).doesNotContainKey(binder)
+
+        service.registerSupervisionListener(userId, listener)
+        assertThat(service.mSupervisionListeners).containsKey(binder)
+
+        return Pair(listener, binder)
+    }
+
+    private fun unregisterSupervisionListener(listener: ISupervisionListener, binder: IBinder) {
+        service.unregisterSupervisionListener(listener)
+        assertThat(service.mSupervisionListeners).doesNotContainKey(binder)
+    }
+
+    private fun setSupervisionEnabledForUser(expectedUserId: Int, enabled: Boolean,
+            listeners: Map<Int, Pair<ISupervisionListener, IBinder>>) {
+        service.setSupervisionEnabledForUser(expectedUserId, enabled)
+        listeners.forEach { userId, (listener, binder) ->
+            when (userId) {
+                expectedUserId, UserHandle.USER_ALL -> {
+                    verify(listener).onSetSupervisionEnabled(eq(expectedUserId), eq(enabled))
+                }
+                else -> {
+                    verify(listener, never()).onSetSupervisionEnabled(any(), any())
+                }
+            }
+        }
     }
 
     private val systemSupervisionPackage: String
@@ -532,6 +584,8 @@ private class SupervisionContextWrapper(
         }
 
     override fun getPackageManager() = pkgManager
+
+    override fun createAttributionContext(attributionTag: String?) = this
 
     override fun registerReceiverForAllUsers(
         receiver: BroadcastReceiver?,

@@ -313,7 +313,7 @@ public class SupervisionManager {
     public void registerSupervisionListener(@NonNull SupervisionListener listener) {
         if (mService != null) {
             try {
-                mService.registerSupervisionListener(listener.mListener);
+                mService.registerSupervisionListener(mContext.getUserId(), listener.mListener);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }

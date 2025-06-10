@@ -92,6 +92,7 @@ public class SupervisionSettings {
         recoveryInfoFile =
                 new AtomicFile(new File(parent, "supervision_recovery_info.xml"), "supervision");
         userDataFile = new AtomicFile(new File(parent, "supervision_settings.xml"), "supervision");
+        mUserData.clear();
     }
 
     /** Gets data about a specific user. */
