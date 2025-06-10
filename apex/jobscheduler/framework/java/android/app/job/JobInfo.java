@@ -2269,7 +2269,7 @@ public class JobInfo implements Parcelable {
          * Sets the category for this job.
          * <p>
          * The category provides a hint to the system about the purpose
-         * of the job, which <i>may</i> influence scheduling and quota allocation.
+         * of the job, which <i>may</i> influence scheduling and system resource allocation.
          *
          * <p>
          * Each category can have specific requirements. For instance, jobs of category
@@ -2289,9 +2289,11 @@ public class JobInfo implements Parcelable {
 
         /**
          * Gets the category of this job, which was previously defined using
-         * {@link #setCategory(int)}.
+         * {@link #setCategory(int)}. If no category has been set, then
+         * {@link JobInfo#CATEGORY_UNKNOWN} will be returned.
          *
-         * @return The category of this job.
+         * @return The category of this job, or {@link JobInfo#CATEGORY_UNKNOWN} if no category
+         *         has been set using {@link #setCategory(int)}.
          */
         @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
         @Category
