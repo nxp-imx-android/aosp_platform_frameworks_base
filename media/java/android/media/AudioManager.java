@@ -29,6 +29,7 @@ import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
 import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
+import static android.media.audiopolicy.Flags.FLAG_MULTI_ZONE_AUDIO;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -1649,6 +1650,31 @@ public class AudioManager {
         Preconditions.checkNotNull(attributes, "Audio Attributes must not be null");
         return AudioProductStrategy.getVolumeGroupIdForAudioAttributes(attributes,
                 /* fallbackOnDefault= */ true);
+    }
+
+    /**
+     * Returns the volume group id associated to the given {@link AudioAttributes} and zoneId.
+     *
+     * @param attributes The {@link AudioAttributes} to consider.
+     * @param zoneId to consider.
+     * @return audio volume group id supporting the given {@link AudioAttributes} if found,
+     * {@code android.media.audiopolicy.AudioVolumeGroup.DEFAULT_VOLUME_GROUP} otherwise.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_MULTI_ZONE_AUDIO)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
+    public int getVolumeGroupIdForAttributes(@NonNull AudioAttributes attributes, int zoneId) {
+        try {
+            return getService().getVolumeGroupIdForAttributes(attributes, zoneId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -8750,11 +8776,15 @@ public class AudioManager {
      */
     @SystemApi
     @NonNull
-    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_ROUTING,
+            Manifest.permission.QUERY_AUDIO_STATE,
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED
+    })
     public static List<AudioProductStrategy> getAudioProductStrategies() {
         final IAudioService service = getService();
         try {
-            return service.getAudioProductStrategies();
+            return service.getAudioProductStrategies(/* filterInternal= */ true);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -59,7 +59,7 @@ import com.android.window.flags.Flags;
  * R.bool.config_isWindowManagerCameraCompatTreatmentEnabled} is {@code true}.
  */
  // TODO(b/261444714): Consider moving Camera-specific logic outside of the WM Core path
-final class DisplayRotationCompatPolicy implements CameraStateMonitor.CameraCompatStateListener,
+final class DisplayRotationCompatPolicy implements AppCompatCameraStatePolicy,
         ActivityRefresher.Evaluator {
 
     @NonNull
@@ -68,6 +68,8 @@ final class DisplayRotationCompatPolicy implements CameraStateMonitor.CameraComp
     private final WindowManagerService mWmService;
     @NonNull
     private final CameraStateMonitor mCameraStateMonitor;
+    @NonNull
+    private final AppCompatCameraStateSource mCameraStateNotifier;
     @NonNull
     private final ActivityRefresher mActivityRefresher;
 
@@ -87,24 +89,26 @@ final class DisplayRotationCompatPolicy implements CameraStateMonitor.CameraComp
 
     DisplayRotationCompatPolicy(@NonNull DisplayContent displayContent,
             @NonNull CameraStateMonitor cameraStateMonitor,
+            @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
         // This constructor is called from DisplayContent constructor. Don't use any fields in
         // DisplayContent here since they aren't guaranteed to be set.
         mDisplayContent = displayContent;
         mWmService = displayContent.mWmService;
         mCameraStateMonitor = cameraStateMonitor;
+        mCameraStateNotifier = cameraStateNotifier;
         mActivityRefresher = activityRefresher;
     }
 
     void start() {
-        mCameraStateMonitor.addCameraStateListener(this);
+        mCameraStateNotifier.addCameraStatePolicy(this);
         mActivityRefresher.addEvaluator(this);
         mIsRunning = true;
     }
 
     /** Releases camera state listener. */
     void dispose() {
-        mCameraStateMonitor.removeCameraStateListener(this);
+        mCameraStateNotifier.removeCameraStatePolicy(this);
         mActivityRefresher.removeEvaluator(this);
         mIsRunning = false;
     }
@@ -207,8 +211,7 @@ final class DisplayRotationCompatPolicy implements CameraStateMonitor.CameraComp
                             + (topActivity == null ? "null" : topActivity.shortComponentName)
                     + " isTreatmentEnabledForActivity="
                             + isTreatmentEnabledForActivity(topActivity)
-                            + "mCameraStateMonitor="
-                            + mCameraStateMonitor.getSummary();
+                            + "mCameraStateMonitor=" + mCameraStateMonitor;
         }
         return "DisplayRotationCompatPolicy{"
                 + " isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay()

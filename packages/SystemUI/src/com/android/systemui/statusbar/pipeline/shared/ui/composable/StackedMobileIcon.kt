@@ -35,8 +35,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -140,9 +142,11 @@ private fun StackedMobileIcon(
         with(LocalDensity.current) { dimensions.totalWidth.toDp() to IconHeightSp.toDp() }
 
     Canvas(
-        modifier.width(iconSize.first).height(iconSize.second).semantics {
-            contentDescription?.let { this.contentDescription = it }
-        }
+        modifier
+            .width(iconSize.first)
+            .height(iconSize.second)
+            .semantics { contentDescription?.let { this.contentDescription = it } }
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
     ) {
         val rtl = layoutDirection == LayoutDirection.Rtl
         scale(if (rtl) -1f else 1f, 1f) {

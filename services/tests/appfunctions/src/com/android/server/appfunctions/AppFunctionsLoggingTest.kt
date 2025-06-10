@@ -15,6 +15,7 @@
  */
 package com.android.server.appfunctions
 
+import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
@@ -33,6 +34,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
+import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.util.concurrent.MoreExecutors
 import org.junit.Before
 import org.junit.Rule
@@ -74,6 +76,8 @@ class AppFunctionsLoggingTest {
             mAppFunctionsLoggerWrapper,
             mock<PackageManagerInternal>(),
             mock<AppFunctionAccessServiceInterface>(),
+            mock<IUriGrantsManager>(),
+            mock<UriGrantsManagerInternal>()
         )
 
     private val mRequestInternal =

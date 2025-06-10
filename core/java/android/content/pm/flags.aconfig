@@ -271,6 +271,14 @@ flag {
 }
 
 flag {
+    name: "app_compat_warnings_16kb"
+    namespace: "devoptions_settings"
+    description: "Feature flag to enable page size app compat warnings based on the alignment checks."
+    bug: "418267369"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "remove_hidden_module_usage"
     namespace: "modularization"
     description: "Feature flag to remove the consumption of the hidden module status (ModuleInfo#IsHidden) in the Android source tree."
@@ -299,14 +307,6 @@ flag {
     namespace: "package_manager_service"
     description: "Always read the corresponding v3/3.1 signature block for the current v4 to get the past rotated certificates, even when not verifying integrity."
     bug: "378539511"
-    is_fixed_read_only: true
-}
-
-flag {
-    name: "cloud_compilation_verification"
-    namespace: "art_mainline"
-    description: "Feature flag to enable the Cloud Compilation install-time verification in the package manager."
-    bug: "377474232"
     is_fixed_read_only: true
 }
 

@@ -22,6 +22,8 @@ import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.os.ICancellationSignal;
 
 import android.os.UserHandle;
+
+import java.util.List;
 /**
  * Defines the interface for apps to interact with the app function execution service
  * {@code AppFunctionManagerService} running in the system server process.
@@ -50,4 +52,36 @@ interface IAppFunctionManager {
         int enabledState,
         in IAppFunctionEnabledCallback callback
     );
+
+    boolean checkAppFunctionAccess(
+        in String agentPackageName,
+        int agentUserId,
+        in String targetPackageName,
+        int targetUserId
+    );
+
+    int getAppFunctionAccessRequestState(
+        in String agentPackageName,
+        int agentUserId,
+        in String targetPackageName,
+        int targetUserId
+    );
+
+    int getAppFunctionAccessFlags(
+        in String agentPackageName,
+        int agentUserId,
+        in String targetPackageName,
+        int targetUserId
+    );
+
+    void updateAppFunctionAccessFlags(
+        in String agentPackageName,
+        int agentUserId,
+        in String targetPackageName,
+        int targetUserId,
+        int flagMask,
+        int flags
+    );
+
+    void revokeSelfAppFunctionAccess(in String targetPackageName);
 }

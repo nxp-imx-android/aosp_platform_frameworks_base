@@ -17,14 +17,15 @@
 package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
+import android.app.UriGrantsManager;
 import android.app.appfunctions.AppFunctionAccessServiceInterface;
 import android.app.appfunctions.AppFunctionManagerConfiguration;
 import android.content.Context;
 import android.content.pm.PackageManagerInternal;
-import android.permission.flags.Flags;
 
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.uri.UriGrantsManagerInternal;
 
 /** Service that manages app functions. */
 public class AppFunctionManagerService extends SystemService {
@@ -35,7 +36,9 @@ public class AppFunctionManagerService extends SystemService {
         mServiceImpl =
                 new AppFunctionManagerServiceImpl(
                         context, LocalServices.getService(PackageManagerInternal.class),
-                        LocalServices.getService(AppFunctionAccessServiceInterface.class));
+                        LocalServices.getService(AppFunctionAccessServiceInterface.class),
+                        UriGrantsManager.getService(),
+                        LocalServices.getService(UriGrantsManagerInternal.class));
     }
 
     @Override
@@ -47,9 +50,7 @@ public class AppFunctionManagerService extends SystemService {
 
     @Override
     public void onBootPhase(int phase) {
-        if (Flags.appFunctionAccessServiceEnabled()) {
-            mServiceImpl.onBootPhase(phase);
-        }
+        mServiceImpl.onBootPhase(phase);
     }
 
     @Override

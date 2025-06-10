@@ -28,6 +28,8 @@ import android.media.ISoundDose;
 import android.media.ISoundDoseCallback;
 import android.media.audiopolicy.AudioMix;
 import android.media.audiopolicy.AudioMixingRule;
+import android.media.audiopolicy.AudioProductStrategy;
+import android.media.audiopolicy.AudioVolumeGroup;
 import android.media.audiopolicy.Flags;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
@@ -84,6 +86,9 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
             mDevicesForAttrCache;
     @GuardedBy("sDeviceCacheLock")
     private long mDevicesForAttributesCacheClearTimeMs = System.currentTimeMillis();
+    private static final Object sAudioProductStrategiesLock = new Object();
+    @GuardedBy("sAudioProductStrategiesLock")
+    private static List<AudioProductStrategy> sAudioProductStrategies;
     private int[] mMethodCacheHit;
     /**
      * Map that stores all attributes + forVolume pairs that are registered for
@@ -739,6 +744,61 @@ public class AudioSystemAdapter implements AudioSystem.RoutingUpdateCallback,
      */
     public ISoundDose getSoundDoseInterface(ISoundDoseCallback callback) {
         return AudioSystem.getSoundDoseInterface(callback);
+    }
+
+    /**
+     * Returns list audio product strategies
+     *
+     * @param filterInternal if true the internal strategies will be removed from the returned list
+     *
+     * <p>Internal strategies are the strategy reserved for use by native audio service
+     * (e.g. patch and rerouting strategies).
+     *
+     * @return the non-internal {@link AudioProductStrategy} discovered from the platform
+     * configuration file if {@code filterInternal} is {@code true}, returns all product strategies
+     * otherwise.
+     */
+    public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
+        if (filterInternal) {
+            return AudioProductStrategy.filterNonInternalStrategies(getAllProductStrategies());
+        }
+        return getAllProductStrategies();
+    }
+
+    /**
+     * Returns all audio product strategies
+     *
+     * @return the {@link AudioProductStrategy} discovered from the platform configuration file
+     */
+    private List<AudioProductStrategy> getAllProductStrategies() {
+        synchronized (sAudioProductStrategiesLock) {
+            if (sAudioProductStrategies == null) {
+                ArrayList<AudioProductStrategy> strategies = new ArrayList<>();
+                int status = AudioProductStrategy.native_list_audio_product_strategies(strategies);
+                if (status != AudioSystem.SUCCESS) {
+                    Log.e(TAG, "Error while getting audio product strategies "
+                            + AudioSystem.audioSystemErrorToString(status));
+                    return Collections.emptyList();
+                }
+                sAudioProductStrategies = strategies;
+            }
+        }
+
+        return sAudioProductStrategies;
+    }
+
+    /**
+     * Gets volume group mapped to stream
+     * @param stream stream to query
+     * @return volume group mapped to stream, DEFAULT_VOLUME_GROUP if no mapping is found.
+     */
+    public int getVolumeGroupIdFromStreamType(int stream) {
+        AudioAttributes attributes =
+                AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(stream);
+        if (attributes.equals(new AudioAttributes.Builder().build())) {
+            return AudioVolumeGroup.DEFAULT_VOLUME_GROUP;
+        }
+        return AudioSystem.getVolumeGroupIdForStreamType(stream);
     }
 
     /**

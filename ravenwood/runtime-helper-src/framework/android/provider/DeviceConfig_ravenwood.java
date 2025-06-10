@@ -15,7 +15,7 @@
  */
 package android.provider;
 
-public class DeviceConfig_host {
+public class DeviceConfig_ravenwood {
 
     /**
      * Called by Ravenwood runtime to reset all local changes.

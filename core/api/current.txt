@@ -77,6 +77,7 @@ package android {
     field public static final String CALL_PRIVILEGED = "android.permission.CALL_PRIVILEGED";
     field public static final String CAMERA = "android.permission.CAMERA";
     field public static final String CAPTURE_AUDIO_OUTPUT = "android.permission.CAPTURE_AUDIO_OUTPUT";
+    field @FlaggedApi("com.android.hardware.input.request_key_capture_api") public static final String CAPTURE_KEYBOARD = "android.permission.CAPTURE_KEYBOARD";
     field public static final String CHANGE_COMPONENT_ENABLED_STATE = "android.permission.CHANGE_COMPONENT_ENABLED_STATE";
     field public static final String CHANGE_CONFIGURATION = "android.permission.CHANGE_CONFIGURATION";
     field public static final String CHANGE_NETWORK_STATE = "android.permission.CHANGE_NETWORK_STATE";
@@ -280,6 +281,7 @@ package android {
     field public static final String REBOOT = "android.permission.REBOOT";
     field public static final String RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED";
     field public static final String RECEIVE_MMS = "android.permission.RECEIVE_MMS";
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String RECEIVE_SENSITIVE_NOTIFICATIONS = "android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS";
     field public static final String RECEIVE_SMS = "android.permission.RECEIVE_SMS";
     field public static final String RECEIVE_WAP_PUSH = "android.permission.RECEIVE_WAP_PUSH";
     field public static final String RECORD_AUDIO = "android.permission.RECORD_AUDIO";
@@ -11363,6 +11365,7 @@ package android.content {
     field public static final String SYSTEM_HEALTH_SERVICE = "systemhealth";
     field public static final String TELECOM_SERVICE = "telecom";
     field public static final String TELEPHONY_IMS_SERVICE = "telephony_ims";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public static final String TELEPHONY_PHONE_NUMBER_SERVICE = "telephony_phone_number";
     field public static final String TELEPHONY_SERVICE = "phone";
     field public static final String TELEPHONY_SUBSCRIPTION_SERVICE = "telephony_subscription_service";
     field public static final String TETHERING_SERVICE = "tethering";
@@ -13627,7 +13630,7 @@ package android.content.pm {
     method @NonNull public abstract android.graphics.drawable.Drawable getUserBadgedDrawableForDensity(@NonNull android.graphics.drawable.Drawable, @NonNull android.os.UserHandle, @Nullable android.graphics.Rect, int);
     method @NonNull public abstract android.graphics.drawable.Drawable getUserBadgedIcon(@NonNull android.graphics.drawable.Drawable, @NonNull android.os.UserHandle);
     method @NonNull public abstract CharSequence getUserBadgedLabel(@NonNull CharSequence, @NonNull android.os.UserHandle);
-    method @FlaggedApi("android.content.pm.cloud_compilation_pm") @NonNull public static android.content.pm.SigningInfo getVerifiedSigningInfo(@NonNull String, int) throws android.content.pm.SigningInfoException;
+    method @NonNull public static android.content.pm.SigningInfo getVerifiedSigningInfo(@NonNull String, int) throws android.content.pm.SigningInfoException;
     method @NonNull @RequiresPermission(value="android.permission.WHITELIST_RESTRICTED_PERMISSIONS", conditional=true) public java.util.Set<java.lang.String> getWhitelistedRestrictedPermissions(@NonNull String, int);
     method @Nullable public abstract android.content.res.XmlResourceParser getXml(@NonNull String, @XmlRes int, @Nullable android.content.pm.ApplicationInfo);
     method public boolean hasSigningCertificate(@NonNull String, @NonNull byte[], int);
@@ -14273,17 +14276,17 @@ package android.content.pm {
     method public android.content.pm.Signature[] getSigningCertificateHistory();
     method public boolean hasMultipleSigners();
     method public boolean hasPastSigningCertificates();
-    method @FlaggedApi("android.content.pm.cloud_compilation_pm") public boolean signersMatchExactly(@NonNull android.content.pm.SigningInfo);
+    method public boolean signersMatchExactly(@NonNull android.content.pm.SigningInfo);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.SigningInfo> CREATOR;
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_JAR = 1; // 0x1
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_SIGNING_BLOCK_V2 = 2; // 0x2
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_SIGNING_BLOCK_V3 = 3; // 0x3
-    field @FlaggedApi("android.content.pm.cloud_compilation_pm") public static final int VERSION_SIGNING_BLOCK_V4 = 4; // 0x4
+    field public static final int VERSION_JAR = 1; // 0x1
+    field public static final int VERSION_SIGNING_BLOCK_V2 = 2; // 0x2
+    field public static final int VERSION_SIGNING_BLOCK_V3 = 3; // 0x3
+    field public static final int VERSION_SIGNING_BLOCK_V4 = 4; // 0x4
   }
 
-  @FlaggedApi("android.content.pm.cloud_compilation_pm") public class SigningInfoException extends java.lang.Exception {
-    method @FlaggedApi("android.content.pm.cloud_compilation_pm") public int getCode();
+  public class SigningInfoException extends java.lang.Exception {
+    method public int getCode();
   }
 
   public final class VersionedPackage implements android.os.Parcelable {
@@ -25205,6 +25208,7 @@ package android.media {
   }
 
   public final class MediaRecorder.VideoEncoder {
+    field @FlaggedApi("android.media.mediarecorder.apv_recording_support") public static final int APV = 9; // 0x9
     field public static final int AV1 = 8; // 0x8
     field public static final int DEFAULT = 0; // 0x0
     field public static final int DOLBY_VISION = 7; // 0x7
@@ -38719,6 +38723,7 @@ package android.provider {
     field public static final String ACTION_SOUND_SETTINGS = "android.settings.SOUND_SETTINGS";
     field @Deprecated public static final String ACTION_STORAGE_VOLUME_ACCESS_SETTINGS = "android.settings.STORAGE_VOLUME_ACCESS_SETTINGS";
     field public static final String ACTION_SYNC_SETTINGS = "android.settings.SYNC_SETTINGS";
+    field @FlaggedApi("android.provider.expose_system_update_settings") public static final String ACTION_SYSTEM_UPDATE_SETTINGS = "android.settings.SYSTEM_UPDATE_SETTINGS";
     field @FlaggedApi("android.provider.system_regional_preferences_api_enabled") public static final String ACTION_TEMPERATURE_UNIT_SETTINGS = "android.settings.TEMPERATURE_UNIT_SETTINGS";
     field public static final String ACTION_USAGE_ACCESS_SETTINGS = "android.settings.USAGE_ACCESS_SETTINGS";
     field public static final String ACTION_USER_DICTIONARY_SETTINGS = "android.settings.USER_DICTIONARY_SETTINGS";

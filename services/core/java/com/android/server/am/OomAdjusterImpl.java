@@ -1160,7 +1160,6 @@ public class OomAdjusterImpl extends OomAdjuster {
         state.setAdjSource(null);
         state.setAdjTarget(null);
 
-        state.setNoKillOnBgRestrictedAndIdle(false);
         // If this UID is currently allowlisted, it should not be frozen.
         final UidRecord uidRec = app.getUidRecord();
         app.mOptRecord.setShouldNotFreeze(uidRec != null && uidRec.isCurAllowListed(),

@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "android_os_MessageQueue.h"
+#include "android_util_Binder.h"
 #include "android_view_InputChannel.h"
 #include "android_view_KeyEvent.h"
 #include "android_view_MotionEvent.h"
@@ -93,11 +94,12 @@ public:
     status_t initialize();
     void dispose();
     status_t finishInputEvent(uint32_t seq, bool handled);
-    bool probablyHasInput();
+    bool probablyHasInput() const;
     status_t reportTimeline(int32_t inputEventId, nsecs_t gpuCompletedTime, nsecs_t presentTime);
     status_t consumeEvents(JNIEnv* env, bool consumeBatches, nsecs_t frameTime,
             bool* outConsumedBatch);
-    std::string dump(const char* prefix);
+    sp<IBinder> getInputChannelToken() const;
+    std::string dump(const char* prefix) const;
 
 protected:
     ~NativeInputEventReceiver() override;
@@ -182,7 +184,7 @@ status_t NativeInputEventReceiver::finishInputEvent(uint32_t seq, bool handled) 
     return processOutboundEvents();
 }
 
-bool NativeInputEventReceiver::probablyHasInput() {
+bool NativeInputEventReceiver::probablyHasInput() const {
     if (mInputConsumer == nullptr) {
         return false;
     }
@@ -512,7 +514,11 @@ status_t NativeInputEventReceiver::consumeEvents(JNIEnv* env,
     }
 }
 
-std::string NativeInputEventReceiver::dump(const char* prefix) {
+sp<IBinder> NativeInputEventReceiver::getInputChannelToken() const {
+    return mInputConsumer->getChannel()->getConnectionToken();
+}
+
+std::string NativeInputEventReceiver::dump(const char* prefix) const {
     std::string out;
     std::string consumerDump =
             addPrefix(mInputConsumer != nullptr ? mInputConsumer->dump() : "<null>", "  ");
@@ -636,6 +642,12 @@ static jboolean nativeConsumeBatchedInputEvents(JNIEnv* env, jclass clazz, jlong
     return consumedBatch ? JNI_TRUE : JNI_FALSE;
 }
 
+static jobject nativeGetToken(JNIEnv* env, jclass clazz, jlong receiverPtr) {
+    sp<NativeInputEventReceiver> receiver =
+            reinterpret_cast<NativeInputEventReceiver*>(receiverPtr);
+    return javaObjectForIBinder(env, receiver->getInputChannelToken());
+}
+
 static jstring nativeDump(JNIEnv* env, jclass clazz, jlong receiverPtr, jstring prefix) {
     sp<NativeInputEventReceiver> receiver =
             reinterpret_cast<NativeInputEventReceiver*>(receiverPtr);
@@ -653,6 +665,7 @@ static const JNINativeMethod gMethods[] = {
         {"nativeProbablyHasInput", "(J)Z", (void*)nativeProbablyHasInput},
         {"nativeReportTimeline", "(JIJJ)V", (void*)nativeReportTimeline},
         {"nativeConsumeBatchedInputEvents", "(JJ)Z", (void*)nativeConsumeBatchedInputEvents},
+        {"nativeGetToken", "(J)Landroid/os/IBinder;", (void*)nativeGetToken},
         {"nativeDump", "(JLjava/lang/String;)Ljava/lang/String;", (void*)nativeDump},
 };
 

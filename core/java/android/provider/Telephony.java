@@ -17,6 +17,7 @@
 package android.provider;
 
 import android.Manifest;
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -49,6 +50,7 @@ import android.text.TextUtils;
 import android.util.Patterns;
 
 import com.android.internal.telephony.SmsApplication;
+import com.android.internal.telephony.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -283,6 +285,41 @@ public final class Telephony {
          * <p>Type: TEXT</p>
          */
         public static final String CREATOR = "creator";
+
+        /**
+         * The body of the message contains an otp code. This should only be applied by the SMS
+         * provider itself.
+         *
+         * <P>Type: INTEGER</P>
+         * @hide
+         */
+        @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
+        @TestApi
+        public static final String CONTAINS_OTP = "contains_otp";
+
+        /**
+         * The message does not contain an OTP
+         * @hide
+         */
+        @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
+        @TestApi
+        public static final int OTP_TYPE_NONE = 0;
+
+        /**
+         * The message does contain an OTP
+         * @hide
+         */
+        @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
+        @TestApi
+        public static final int OTP_TYPE_CONTAINS_OTP = 1;
+
+        /**
+         * The message is pending classification for an OTP
+         * @hide
+         */
+        @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
+        @TestApi
+        public static final int OTP_TYPE_PENDING = 2;
     }
 
     /**
@@ -386,6 +423,19 @@ public final class Telephony {
                 return component.getPackageName();
             }
             return null;
+        }
+
+        private static final Matcher CONTAINS_NUMBER = Pattern.compile(".*\\d.*").matcher("");
+
+        /**
+         * Determine whether a given method should be checked for an OTP
+         * @hide
+         */
+        public static boolean shouldCheckForOtp(String message) {
+            if (!Flags.redactOtpSms()) {
+                return false;
+            }
+            return CONTAINS_NUMBER.reset(message).find();
         }
 
         /**

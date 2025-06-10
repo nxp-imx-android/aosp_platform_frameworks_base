@@ -19,6 +19,7 @@ package android.window;
 import static android.app.Instrumentation.DEBUG_START_ACTIVITY;
 import static android.app.TaskInfo.SELF_MOVABLE_UNSET;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.app.WindowConfiguration.windowingModeToString;
 import static android.window.TaskFragmentOperation.OP_TYPE_CLEAR_ADJACENT_TASK_FRAGMENTS;
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_TASK_FRAGMENT;
 import static android.window.TaskFragmentOperation.OP_TYPE_DELETE_TASK_FRAGMENT;
@@ -1797,6 +1798,10 @@ public final class WindowContainerTransaction implements Parcelable {
             if (changesSs) {
                 sb.append("sw/h:").append(mConfiguration.screenWidthDp).append("x")
                         .append(mConfiguration.screenHeightDp).append(",");
+            }
+            if (mWindowingMode >= WINDOWING_MODE_UNDEFINED) {
+                sb.append("windowingMode:").append(windowingModeToString(mWindowingMode))
+                        .append(",");
             }
             if ((mChangeMask & CHANGE_FOCUSABLE) != 0) {
                 sb.append("focusable:").append(mFocusable).append(",");

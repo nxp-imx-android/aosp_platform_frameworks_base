@@ -18,8 +18,8 @@ package com.android.internal.ravenwood;
 import com.android.ravenwood.common.JvmWorkaround;
 import com.android.ravenwood.common.RavenwoodCommonUtils;
 
-public class RavenwoodEnvironment_host {
-    private RavenwoodEnvironment_host() {
+public class RavenwoodEnvironment_ravenwood {
+    private RavenwoodEnvironment_ravenwood() {
     }
 
     /**

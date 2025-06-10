@@ -19,7 +19,7 @@ import com.android.internal.os.RuntimeInit;
 
 import java.io.PrintStream;
 
-public class EventLog_host {
+public class EventLog_ravenwood {
     public static int writeEvent(int tag, int value) {
         return writeEvent(tag, (Object) value);
     }

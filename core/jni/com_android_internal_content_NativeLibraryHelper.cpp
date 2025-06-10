@@ -706,7 +706,7 @@ static jint checkAlignment(JNIEnv* env, jstring javaNativeLibPath, jboolean extr
                            ZipFileRO* zipFile, ZipEntryRO zipEntry, const char* fileName) {
     int mode = PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED;
     // Need two separate install status for APK and ELF alignment
-    static const size_t kPageSize = getpagesize();
+    static const size_t kPageSize16Kb = 16384;
     jint ret = INSTALL_SUCCEEDED;
 
     ScopedUtfChars nativeLibPath(env, javaNativeLibPath);
@@ -730,10 +730,10 @@ static jint checkAlignment(JNIEnv* env, jstring javaNativeLibPath, jboolean extr
         return PAGE_SIZE_APP_COMPAT_FLAG_ERROR;
     }
 
-    if (offset % kPageSize != 0) {
+    if (offset % kPageSize16Kb != 0) {
         ALOGW("Library '%s' is not PAGE(%zu)-aligned - will not be able to open it directly "
               "from apk.\n",
-              fileName, kPageSize);
+              fileName, kPageSize16Kb);
         mode |= PAGE_SIZE_APP_COMPAT_FLAG_UNCOMPRESSED_LIBS_NOT_ALIGNED;
         ALOGI("Setting page size compat mode "
               "PAGE_SIZE_APP_COMPAT_FLAG_UNCOMPRESSED_LIBS_NOT_ALIGNED for %s",

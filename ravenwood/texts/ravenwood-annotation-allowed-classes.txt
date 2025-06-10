@@ -1,4 +1,4 @@
-# Only classes listed here can use the Ravenwood annotations.
+# Only classes listed here can use the Ravenwood annotations. Keep the list alphabetically sorted.
 
 android.aconfig.*
 android.app.compat.*
@@ -67,6 +67,7 @@ android.content.res.FontResourcesParser
 android.content.res.FontScaleConverter
 android.content.res.FontScaleConverterFactory
 android.content.res.FontScaleConverterImpl
+android.content.res.GradientColor
 android.content.res.ResourceId
 android.content.res.Resources
 android.content.res.ResourcesImpl
@@ -191,8 +192,36 @@ android.graphics.Typeface
 android.graphics.Xfermode
 android.graphics.YuvImage
 
-android.graphics.drawable.BitmapDrawable$BitmapState
-android.graphics.drawable.Drawable$ConstantState
+android.graphics.drawable.AdaptiveIconDrawable
+android.graphics.drawable.BitmapDrawable
+android.graphics.drawable.ClipDrawable
+android.graphics.drawable.ColorDrawable
+android.graphics.drawable.ColorStateListDrawable
+android.graphics.drawable.Drawable
+android.graphics.drawable.DrawableContainer
+android.graphics.drawable.DrawableInflater
+android.graphics.drawable.DrawableWrapper
+android.graphics.drawable.GradientDrawable
+android.graphics.drawable.Icon
+android.graphics.drawable.InsetDrawable
+android.graphics.drawable.LayerDrawable
+android.graphics.drawable.LevelListDrawable
+android.graphics.drawable.NinePatchDrawable
+android.graphics.drawable.PaintDrawable
+android.graphics.drawable.PictureDrawable
+android.graphics.drawable.RotateDrawable
+android.graphics.drawable.ScaleDrawable
+android.graphics.drawable.ShapeDrawable
+android.graphics.drawable.StateListDrawable
+android.graphics.drawable.TransitionDrawable
+android.graphics.drawable.VectorDrawable
+
+android.graphics.drawable.shapes.ArcShape
+android.graphics.drawable.shapes.OvalShape
+android.graphics.drawable.shapes.PathShape
+android.graphics.drawable.shapes.RectShape
+android.graphics.drawable.shapes.RoundRectShape
+android.graphics.drawable.shapes.Shape
 
 android.graphics.fonts.Font
 android.graphics.fonts.FontCustomizationParser
@@ -393,8 +422,11 @@ android.text.style.BackgroundColorSpan
 android.text.style.BulletSpan
 android.text.style.CharacterStyle
 android.text.style.ClickableSpan
+android.text.style.DrawableMarginSpan
+android.text.style.DynamicDrawableSpan
 android.text.style.ForegroundColorSpan
 android.text.style.IconMarginSpan
+android.text.style.ImageSpan
 android.text.style.LeadingMarginSpan
 android.text.style.LineBackgroundSpan
 android.text.style.LineBreakConfigSpan
@@ -487,6 +519,7 @@ android.util.MutableLong
 android.util.MutableShort
 android.util.NoSuchPropertyException
 android.util.Pair
+android.util.PathParser
 android.util.Patterns
 android.util.Pools
 android.util.PrefixPrintWriter
@@ -529,9 +562,12 @@ android.util.proto.ProtoStream
 android.util.proto.ProtoUtils
 android.util.proto.WireTypeMismatchException
 
+android.view.ContextThemeWrapper
 android.view.Display
 android.view.DisplayAdjustments
 android.view.DisplayInfo
+android.view.Gravity
+android.view.InflateException
 
 android.view.inputmethod.InputBinding
 
@@ -617,6 +653,7 @@ com.android.internal.util.RingBuffer
 com.android.internal.util.SizedInputStream
 com.android.internal.util.StringPool
 com.android.internal.util.TokenBucket
+com.android.internal.util.VirtualRefBasePtr
 com.android.internal.util.XmlPullParserWrapper
 com.android.internal.util.XmlSerializerWrapper
 com.android.internal.util.XmlUtils

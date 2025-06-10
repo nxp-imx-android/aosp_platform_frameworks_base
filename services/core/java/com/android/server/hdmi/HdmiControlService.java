@@ -3861,6 +3861,10 @@ public class HdmiControlService extends SystemService {
         return mWakeUpMessageReceived;
     }
 
+    void setWakeUpMessageReceived(boolean wakeUpMessageReceived) {
+        mWakeUpMessageReceived = wakeUpMessageReceived;
+    }
+
     protected boolean isStandbyMessageReceived() {
         return mStandbyMessageReceived;
     }
@@ -4991,7 +4995,8 @@ public class HdmiControlService extends SystemService {
                 getAudioManager().getDevicesForAttributes(STREAM_MUSIC_ATTRIBUTES);
         for (AudioDeviceAttributes streamMusicDevice : streamMusicDevices) {
             if (getAvbCapableAudioOutputDevices().contains(streamMusicDevice)) {
-                int flags = AudioManager.FLAG_ABSOLUTE_VOLUME;
+                int flags = AudioManager.FLAG_ABSOLUTE_VOLUME
+                        | AudioManager.FLAG_HDMI_SYSTEM_AUDIO_VOLUME;
                 if (isTvDevice()) {
                     flags |= AudioManager.FLAG_SHOW_UI;
                 }
@@ -5012,7 +5017,8 @@ public class HdmiControlService extends SystemService {
         for (AudioDeviceAttributes streamMusicDevice : streamMusicDevices) {
             if (getAvbCapableAudioOutputDevices().contains(streamMusicDevice)) {
                 int direction = mute ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE;
-                int flags = AudioManager.FLAG_ABSOLUTE_VOLUME;
+                int flags = AudioManager.FLAG_ABSOLUTE_VOLUME
+                        | AudioManager.FLAG_HDMI_SYSTEM_AUDIO_VOLUME;
                 if (isTvDevice()) {
                     flags |= AudioManager.FLAG_SHOW_UI;
                 }

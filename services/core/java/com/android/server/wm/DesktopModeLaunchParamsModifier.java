@@ -151,8 +151,10 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
-        // Copy over any values
+        // TODO(b/419222219): Remove inheritance on currentParams.
+        // Copy over any values.
         outParams.set(currentParams);
+        outParams.mPreferredTaskDisplayArea = suggestedDisplayArea;
 
         boolean isFullscreenInDeskTask = inDesktopFirstContainer && requestFullscreen;
         if (source != null && source.getTask() != null) {

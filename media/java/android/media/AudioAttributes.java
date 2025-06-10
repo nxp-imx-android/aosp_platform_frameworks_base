@@ -25,7 +25,6 @@ import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
-// TODO switch from HIDL imports to AIDL
 import android.audio.policy.configuration.V7_0.AudioUsage;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.media.audiopolicy.AudioProductStrategy;
@@ -1194,24 +1193,22 @@ public final class AudioAttributes implements Parcelable {
         public Builder setInternalLegacyStreamType(int streamType) {
             mContentType = CONTENT_TYPE_UNKNOWN;
             mUsage = USAGE_UNKNOWN;
-            if (AudioProductStrategy.getAudioProductStrategies().size() > 0) {
-                AudioAttributes attributes =
-                        AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
-                                streamType);
-                if (attributes != null) {
-                    mUsage = attributes.mUsage;
-                    // on purpose ignoring the content type: stream types are deprecated for
-                    // playback, making assumptions about the content type is prone to
-                    // interpretation errors for ambiguous types such as STREAM_TTS and STREAM_MUSIC
-                    //mContentType = attributes.mContentType;
-                    mFlags = attributes.getAllFlags();
-                    mMuteHapticChannels = attributes.areHapticChannelsMuted();
-                    mIsContentSpatialized = attributes.isContentSpatialized();
-                    mSpatializationBehavior = attributes.getSpatializationBehavior();
-                    mTags = attributes.mTags;
-                    mBundle = attributes.mBundle;
-                    mSource = attributes.mSource;
-                }
+            AudioAttributes attributes =
+                    AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
+                            streamType);
+            if (attributes != null) {
+                mUsage = attributes.mUsage;
+                // on purpose ignoring the content type: stream types are deprecated for
+                // playback, making assumptions about the content type is prone to
+                // interpretation errors for ambiguous types such as STREAM_TTS and STREAM_MUSIC
+                //mContentType = attributes.mContentType;
+                mFlags = attributes.getAllFlags();
+                mMuteHapticChannels = attributes.areHapticChannelsMuted();
+                mIsContentSpatialized = attributes.isContentSpatialized();
+                mSpatializationBehavior = attributes.getSpatializationBehavior();
+                mTags = attributes.mTags;
+                mBundle = attributes.mBundle;
+                mSource = attributes.mSource;
             }
             switch (streamType) {
                 case AudioSystem.STREAM_VOICE_CALL:
@@ -1819,8 +1816,9 @@ public final class AudioAttributes implements Parcelable {
                     AudioSystem.STREAM_MUSIC : AudioSystem.STREAM_TTS;
         }
 
-        if (AudioProductStrategy.getAudioProductStrategies().size() > 0) {
-            return AudioProductStrategy.getLegacyStreamTypeForStrategyWithAudioAttributes(aa);
+        int stream = AudioProductStrategy.getLegacyStreamTypeForStrategyWithAudioAttributes(aa);
+        if (stream != AudioSystem.STREAM_DEFAULT) {
+            return stream;
         }
         // usage to stream type mapping
         switch (aa.getUsage()) {

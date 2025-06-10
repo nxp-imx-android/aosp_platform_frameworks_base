@@ -2831,6 +2831,28 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testUngroupingAggregateSummary_missingFromAutobundledSummaries() throws Exception {
+        final String aggregateGroupName = "Aggregate_Test";
+        NotificationRecord summary =
+                generateNotificationRecord(mTestNotificationChannel, 0, aggregateGroupName, false);
+        mService.addNotification(summary);
+        final String fullAggregateGroupKey = summary.getGroupKey();
+
+        // Check that only mSummaryByGroupKey contains the summary
+        assertThat(mService.mSummaryByGroupKey.containsKey(fullAggregateGroupKey)).isTrue();
+        assertThat(mService.mAutobundledSummaries.get(summary.getUser().getIdentifier())).isNull();
+
+        // Check that the autogroup summary is removed
+        mService.clearAutogroupSummaryLocked(summary.getUserId(), summary.getSbn().getPackageName(),
+                fullAggregateGroupKey);
+        waitForIdle();
+
+        // Make sure the summary was removed and not re-posted
+        assertThat(mService.getNotificationRecordCount()).isEqualTo(0);
+    }
+
+    @Test
     @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
             Flags.FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
     public void testCancelGroupChildrenForCanceledSummary_singletonGroup() throws Exception {
@@ -15066,6 +15088,37 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         assertThat(mService.checkDisqualifyingFeatures(r.getUserId(), r.getUid(),
                 r.getSbn().getId(), r.getSbn().getTag(), r, false, false)).isTrue();
+    }
+
+    @Test
+    public void checkAutogroupSummaryExemptFromLimit() throws Exception {
+        // Add maximum number of notifications per package
+        for (int i = 0; i < NotificationManagerService.MAX_PACKAGE_NOTIFICATIONS; i++) {
+            Notification n = new Notification.Builder(mContext, "").build();
+            StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, i, null, mUid, 0,
+                    n, UserHandle.getUserHandleForUid(mUid), null, 0);
+            NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+            mService.addNotification(r);
+        }
+
+        // Check that next regular summary notification is diqualified from enqueueing
+        StatusBarNotification sbn = generateSbn(mPkg, mUid, 0, UserHandle.getUserId(mUid));
+        sbn.getNotification().flags |= FLAG_GROUP_SUMMARY;
+        NotificationRecord summary = new NotificationRecord(mContext, sbn,
+                mTestNotificationChannel);
+
+        assertThat(mService.checkDisqualifyingFeatures(summary.getUserId(), summary.getUid(),
+                summary.getSbn().getId(), summary.getSbn().getTag(), summary, true,
+                false)).isFalse();
+
+        // Check that next autogroup summary notification is exempt from checkDisqualifyingFeatures
+        sbn = generateSbn(mPkg, mUid, 0, UserHandle.getUserId(mUid));
+        sbn.getNotification().flags |= Notification.FLAG_AUTOGROUP_SUMMARY;
+        summary = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+
+        assertThat(mService.checkDisqualifyingFeatures(summary.getUserId(), summary.getUid(),
+                summary.getSbn().getId(), summary.getSbn().getTag(), summary, true,
+                false)).isTrue();
     }
 
     private Notification createBigPictureNotification(boolean isBigPictureStyle, boolean hasImage,

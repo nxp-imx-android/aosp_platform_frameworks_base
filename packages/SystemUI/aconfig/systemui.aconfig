@@ -392,20 +392,6 @@ flag {
 }
 
 flag {
-   name: "status_bar_signal_policy_refactor"
-   namespace: "systemui"
-   description: "Use a settings observer for airplane mode and make StatusBarSignalPolicy startable"
-   bug: "264539100"
-}
-
-flag {
-   name: "status_bar_signal_policy_refactor_ethernet"
-   namespace: "systemui"
-   description: "Use recommended architecture for ethernet icon in status bar"
-   bug: "291321279"
-}
-
-flag {
   name: "status_bar_system_status_icons_in_compose"
   namespace: "systemui"
   description: "Use compose for displaying icons in the status bar system status area"

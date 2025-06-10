@@ -59,6 +59,7 @@ public abstract class InputEventReceiver {
             long gpuCompletedTime, long presentTime);
     private static native boolean nativeConsumeBatchedInputEvents(long receiverPtr,
             long frameTimeNanos);
+    private static native IBinder nativeGetToken(long receiverPtr);
     private static native String nativeDump(long receiverPtr, String prefix);
 
     /**
@@ -268,10 +269,10 @@ public abstract class InputEventReceiver {
      * @return Returns a token to identify the input channel.
      */
     public IBinder getToken() {
-        if (mInputChannel == null) {
+        if (mReceiverPtr == 0) {
             return null;
         }
-        return mInputChannel.getToken();
+        return nativeGetToken(mReceiverPtr);
     }
 
     private String getShortDescription(InputEvent event) {

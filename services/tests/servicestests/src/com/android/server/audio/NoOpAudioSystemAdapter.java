@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioSystem;
+import android.media.audiopolicy.AudioProductStrategy;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -182,5 +183,15 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     @Override
     public int setMasterMute(boolean muted) {
         return AudioSystem.AUDIO_STATUS_OK;
+    }
+
+    @Override
+    public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public int getVolumeGroupIdFromStreamType(int stream) {
+        return 0;
     }
 }

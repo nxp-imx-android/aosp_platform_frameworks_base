@@ -248,6 +248,11 @@ constructor(
 
     val isLongPressEnabled: Flow<Boolean> = isInteractive
 
+    val transitioningToDozing: Flow<Boolean> =
+        transitionInteractor.startedKeyguardTransitionStep.map { keyguardStep ->
+            keyguardStep.to == KeyguardState.DOZING
+        }
+
     val deviceDidNotEnterFromDeviceEntryIcon =
         deviceEntrySourceInteractor.attemptEnterDeviceFromDeviceEntryIcon
             .map { keyguardInteractor.isKeyguardDismissible.value }

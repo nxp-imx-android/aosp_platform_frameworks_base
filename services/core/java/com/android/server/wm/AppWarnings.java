@@ -41,8 +41,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemProperties;
 import android.os.UserHandle;
-import android.system.Os;
-import android.system.OsConstants;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
@@ -263,10 +261,8 @@ class AppWarnings {
         if (appCompatEnabled) {
             return;
         }
-        boolean is16KbDevice = Os.sysconf(OsConstants._SC_PAGESIZE) == 16384;
-        if (is16KbDevice) {
-            mUiHandler.showPageSizeMismatchDialog(r);
-        }
+
+        mUiHandler.showPageSizeMismatchDialog(r);
     }
 
     /**

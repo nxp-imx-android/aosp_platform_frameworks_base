@@ -2178,28 +2178,24 @@ public abstract class OomAdjuster {
                             + " target=" + state.getAdjTarget());
         }
 
-        if (state.isCached() && !state.shouldNotKillOnBgRestrictedAndIdle()) {
-            // It's eligible to get killed when in UID idle and bg restricted mode,
-            // check if these states are just flipped.
-            if (!state.isSetCached() || state.isSetNoKillOnBgRestrictedAndIdle()) {
-                // Take the timestamp, we'd hold the killing for the background settle time
-                // (for states debouncing to avoid from thrashing).
-                state.setLastCanKillOnBgRestrictedAndIdleTime(nowElapsed);
-                // Kick off the delayed checkup message if needed.
-                if (mService.mDeterministicUidIdle
-                        || !mService.mHandler.hasMessages(IDLE_UIDS_MSG)) {
-                    if (mLogger.shouldLog(app.uid)) {
-                        mLogger.logScheduleUidIdle2(
-                                uidRec.getUid(), app.getPid(),
-                                mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
-                    }
-                    mService.mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
+        if (state.isCached() && !state.isSetCached()) {
+            // Cached procs are eligible to get killed when in an UID idle and bg restricted.
+            // However, we want to debounce state changes to avoid thrashing. Mark down when this
+            // process became eligible and then schedule a check for eligible processes after
+            // a background settling time, if needed.
+            state.setLastCachedTime(nowElapsed);
+            if (mService.mDeterministicUidIdle
+                    || !mService.mHandler.hasMessages(IDLE_UIDS_MSG)) {
+                if (mLogger.shouldLog(app.uid)) {
+                    mLogger.logScheduleUidIdle2(
+                            uidRec.getUid(), app.getPid(),
                             mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
                 }
+                mService.mHandler.sendEmptyMessageDelayed(IDLE_UIDS_MSG,
+                        mConstants.mKillBgRestrictedAndCachedIdleSettleTimeMs);
             }
         }
         state.setSetCached(state.isCached());
-        state.setSetNoKillOnBgRestrictedAndIdle(state.shouldNotKillOnBgRestrictedAndIdle());
         if (((oldProcState != state.getSetProcState()) || (oldOomAdj != state.getSetAdj()))
                 && mLogger.shouldLog(app.uid)) {
             mLogger.logProcStateChanged(app.uid, app.getPid(),

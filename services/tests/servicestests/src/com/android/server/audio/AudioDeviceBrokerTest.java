@@ -61,6 +61,8 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
+import java.util.ArrayList;
+
 @MediumTest
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -91,7 +93,7 @@ public class AudioDeviceBrokerTest {
                 .thenReturn(AudioSystem.STREAM_MUSIC);
 
         mSpyAudioSystem = spy(new NoOpAudioSystemAdapter());
-        mSpyDevInventory = spy(new AudioDeviceInventory(mSpyAudioSystem));
+        mSpyDevInventory = spy(new AudioDeviceInventory(mSpyAudioSystem, new ArrayList<>()));
         mSpySystemServer = spy(new NoOpSystemServerAdapter());
         mAudioDeviceBroker = new AudioDeviceBroker(context, mMockAudioService, mSpyDevInventory,
                 mSpySystemServer, mSpyAudioSystem);

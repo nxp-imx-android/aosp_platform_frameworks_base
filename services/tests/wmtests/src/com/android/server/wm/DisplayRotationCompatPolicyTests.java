@@ -132,11 +132,12 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
                     ((Runnable) invocation.getArgument(0)).run();
                     return null;
                 });
-        CameraStateMonitor cameraStateMonitor =
-                new CameraStateMonitor(mDisplayContent, mMockHandler);
+        final AppCompatCameraStateSource cameraStateSource = new AppCompatCameraStateSource();
+        final CameraStateMonitor cameraStateMonitor =
+                new CameraStateMonitor(mDisplayContent, mMockHandler, cameraStateSource);
         mActivityRefresher = new ActivityRefresher(mDisplayContent.mWmService, mMockHandler);
         mDisplayRotationCompatPolicy = new DisplayRotationCompatPolicy(mDisplayContent,
-                cameraStateMonitor, mActivityRefresher);
+                cameraStateMonitor, cameraStateSource, mActivityRefresher);
 
         // Do not show the real toast.
         spyOn(mDisplayRotationCompatPolicy);

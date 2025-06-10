@@ -26,26 +26,26 @@ import java.util.List;
  */
 public interface AppFunctionAccessServiceInterface {
 
-    /** check access */
+    /** @see AppFunctionManager#checkAppFunctionAccess(String, String)  */
     boolean checkAppFunctionAccess(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId);
 
-    /** check access, but also informs if access is invalid */
+    /** @see AppFunctionManager#getAppFunctionAccessRequestState(String, String)  */
     @AppFunctionManager.AppFunctionAccessState
     int getAppFunctionAccessRequestState(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId);
 
-    /** get flags for a given target and agent */
+    /** @see AppFunctionManager#getAppFunctionAccessFlags(String, String)  */
     @AppFunctionManager.AppFunctionAccessFlags
     int getAppFunctionAccessFlags(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId);
 
-    /** update flags for a given target and agent */
+    /** @see AppFunctionManager#updateAppFunctionAccessFlags(String, String, int, int)  */
     boolean updateAppFunctionAccessFlags(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId,
             @AppFunctionManager.AppFunctionAccessFlags int flagMask,
             @AppFunctionManager.AppFunctionAccessFlags int flags) throws IllegalArgumentException;
 
-    /** update the agent allowlist */
+    /** Set the agent allowlist */
     void setAgentAllowlist(@NonNull List<SignedPackage> agentAllowlist);
 }

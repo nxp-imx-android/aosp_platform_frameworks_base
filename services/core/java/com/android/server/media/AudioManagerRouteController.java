@@ -249,13 +249,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     @Override
     public @RoutingSessionInfo.ReleaseType int getSessionReleaseType() {
-        // TODO(b/385672684): impl get session release type
-        return RoutingSessionInfo.RELEASE_UNSUPPORTED;
+        return currentOutputIsBLEBroadcast()
+                ? RoutingSessionInfo.RELEASE_TYPE_SHARING
+                : RoutingSessionInfo.RELEASE_UNSUPPORTED;
     }
 
     @Override
     public void releaseRoutingSession() {
-        // TODO(b/385672684): impl release system session
+        if (currentOutputIsBLEBroadcast()) {
+            mBluetoothRouteController.stopBroadcast();
+        }
     }
 
     @Override

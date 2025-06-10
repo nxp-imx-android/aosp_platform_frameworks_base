@@ -285,7 +285,8 @@ public class AutoclickScrollPanel {
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         layoutParams.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;
-        layoutParams.setFitInsetsTypes(WindowInsets.Type.statusBars());
+        layoutParams.setFitInsetsTypes(
+                WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
         layoutParams.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.setTitle(AutoclickScrollPanel.class.getSimpleName());

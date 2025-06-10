@@ -231,10 +231,10 @@ constructor(
             return
         }
 
-        if (selectedClockSize.value == ClockSizeSetting.DYNAMIC) {
-            clockEventController.handleFidgetTap(x, y)
-        } else {
+        if (wallpaperFocalAreaInteractor.hasFocalArea.value) {
             wallpaperFocalAreaInteractor.setTapPosition(x, y)
+        } else {
+            clockEventController.handleFidgetTap(x, y)
         }
     }
 

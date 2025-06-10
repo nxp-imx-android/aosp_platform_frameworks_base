@@ -12125,7 +12125,6 @@ public abstract class PackageManager {
      *
      * @throws SigningInfoException if the verification fails
      */
-    @FlaggedApi(android.content.pm.Flags.FLAG_CLOUD_COMPILATION_PM)
     public static @NonNull SigningInfo getVerifiedSigningInfo(@NonNull String path,
             @AppSigningSchemeVersion int minAppSigningSchemeVersion) throws SigningInfoException {
         ParseTypeImpl input = ParseTypeImpl.forDefaultParsing();

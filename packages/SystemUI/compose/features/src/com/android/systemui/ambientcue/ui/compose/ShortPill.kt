@@ -62,6 +62,7 @@ import androidx.compose.ui.util.fastForEach
 import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
+import com.android.systemui.ambientcue.ui.utils.FilterUtils
 import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.res.R
@@ -167,6 +168,8 @@ fun ShortPill(
                 .then(if (expanded) Modifier else Modifier.clickable { onClick() })
                 .padding(4.dp)
 
+        val filteredActions = FilterUtils.filterActions(actions)
+
         if (horizontal) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -181,7 +184,7 @@ fun ShortPill(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = pillModifier.defaultMinSize(minWidth = minSize),
                 ) {
-                    actions.take(3).fastForEach { action ->
+                    filteredActions.take(3).fastForEach { action ->
                         Icon(action, backgroundColor)
                         if (actions.size == 1) {
                             Text(
@@ -215,7 +218,7 @@ fun ShortPill(
                     verticalArrangement = Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
                     modifier = pillModifier.defaultMinSize(minHeight = minSize),
                 ) {
-                    actions.take(3).fastForEach { action -> Icon(action, backgroundColor) }
+                    filteredActions.take(3).fastForEach { action -> Icon(action, backgroundColor) }
                 }
 
                 CloseButton(
@@ -257,7 +260,7 @@ private fun CloseButton(
 @Composable
 private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modifier = Modifier) {
     Image(
-        painter = rememberDrawablePainter(action.icon),
+        painter = rememberDrawablePainter(action.icon.drawable),
         contentDescription = action.label,
         modifier =
             modifier

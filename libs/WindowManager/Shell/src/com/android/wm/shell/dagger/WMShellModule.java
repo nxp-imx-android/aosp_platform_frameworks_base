@@ -1516,10 +1516,11 @@ public abstract class WMShellModule {
             Transitions transitions,
             DesktopModeEventLogger desktopModeEventLogger,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            DesksOrganizer desksOrganizer) {
         return new DesktopModeLoggerTransitionObserver(
                 shellInit, transitions, desktopModeEventLogger,
-                desktopTasksLimiter, desktopState);
+                desktopTasksLimiter, desktopState, desksOrganizer);
     }
 
     @WMSingleton

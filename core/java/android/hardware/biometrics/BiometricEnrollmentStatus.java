@@ -30,13 +30,27 @@ import java.util.Objects;
 @SystemApi
 @FlaggedApi(Flags.FLAG_MOVE_FM_API_TO_BM)
 public final class BiometricEnrollmentStatus {
+
+    private final @BiometricManager.Authenticators.Types int mStrength;
     private final int mEnrollmentCount;
 
     /**
      * @hide
      */
-    public BiometricEnrollmentStatus(int enrollmentCount) {
+    public BiometricEnrollmentStatus(@BiometricManager.Authenticators.Types int strength,
+            int enrollmentCount) {
+        mStrength = strength;
         mEnrollmentCount = enrollmentCount;
+    }
+
+    /**
+     * Returns the strength of enrolled biometric for the associated modality.
+     *
+     * @return The strength of enrolled biometric.
+     */
+    @BiometricManager.Authenticators.Types
+    public int getStrength() {
+        return mStrength;
     }
 
     /**
@@ -51,7 +65,7 @@ public final class BiometricEnrollmentStatus {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mEnrollmentCount);
+        return Objects.hash(mStrength, mEnrollmentCount);
     }
 
     @Override
@@ -59,6 +73,6 @@ public final class BiometricEnrollmentStatus {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         BiometricEnrollmentStatus other = (BiometricEnrollmentStatus) obj;
-        return mEnrollmentCount == other.mEnrollmentCount;
+        return mStrength == other.mStrength && mEnrollmentCount == other.mEnrollmentCount;
     }
 }

@@ -348,7 +348,9 @@ class UninstallRepository(private val context: Context) {
 
         val pkgInfo = try {
             packageManager.getPackageInfo(
-                targetPackageName!!, PackageInfoFlags.of(PackageManager.MATCH_ARCHIVED_PACKAGES)
+                targetPackageName!!, PackageInfoFlags.of(
+                    PackageManager.MATCH_ANY_USER.toLong() or
+                        PackageManager.MATCH_ARCHIVED_PACKAGES)
             )
         } catch (e: PackageManager.NameNotFoundException) {
             Log.e(LOG_TAG, "Cannot get packageInfo for $targetPackageName", e)

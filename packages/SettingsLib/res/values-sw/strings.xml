@@ -121,7 +121,7 @@
     <string name="bluetooth_battery_level_untethered_lea_support" msgid="803110681688633362">"Imeunganishwa (inaweza kutumia kipengele cha kusikiliza pamoja). Kushoto: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, Kulia: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_battery_level_untethered_left_lea_support" msgid="7707464334346454950">"Imeunganishwa (inaweza kutumia kipengele cha kusikiliza pamoja). Kushoto: chaji <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_battery_level_untethered_right_lea_support" msgid="8941549024377771038">"Imeunganishwa (inaweza kutumia kipengele cha kusikiliza pamoja). Kulia: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
-    <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Imeunganishwa (inaweza kusikiliza pamoja)"</string>
+    <string name="bluetooth_no_battery_level_lea_support" msgid="5721725041048434075">"Imeunganishwa (inawezesha usikilizaji wa pamoja)"</string>
     <string name="bluetooth_guest_battery_level_lea_support" msgid="8098327939585013928">"Kifaa kingeni (kinatumia kipengele cha kusikiliza pamoja). Chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>."</string>
     <string name="bluetooth_guest_battery_level_untethered_lea_support" msgid="3701035025565668360">"Kifaa kingeni (kinatumia kipengele cha kusikiliza pamoja). Kushoto: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_0">%1$s</xliff:g>, Kulia: chaji ya betri imefika <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE_1">%2$s</xliff:g>."</string>
     <string name="bluetooth_guest_no_battery_level_lea_support" msgid="2977038548753103470">"Kifaa kingeni (kinatumia kipengele cha kusikiliza pamoja)"</string>
@@ -423,7 +423,7 @@
     <string name="track_frame_time" msgid="522674651937771106">"Kutekeleza HWUI ya wasifu"</string>
     <string name="enable_gpu_debug_layers" msgid="4986675516188740397">"Ruhusu safu za utatuzi wa GPU"</string>
     <string name="enable_gpu_debug_layers_summary" msgid="4921521407377170481">"Ruhusu upakiaji wa safu za utatuzi wa GPU za programu za utatuzi"</string>
-    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Washa uwekaji kumbukumbu za muuzaji kwa kutumia sauti"</string>
+    <string name="enable_verbose_vendor_logging" msgid="1196698788267682072">"Weka kumbukumbu za kina za muuzaji"</string>
     <string name="enable_verbose_vendor_logging_summary" msgid="5426292185780393708">"Jumuisha kumbukumbu zaidi za muuzaji ambazo ni mahususi kwa kifaa kwenye ripoti za hitilafu, ambazo huenda zikawa na maelezo ya faragha, zikatumia chaji nyingi ya betri na/au zikatumia nafasi kubwa ya hifadhi."</string>
     <string name="enable_verbose_vendor_logging_checkbox" msgid="3864578373293835530">"Zima baada ya siku moja"</string>
     <string name="verbose_vendor_logging_notification_title" msgid="6811217272559843592">"Mchakato wa kuweka kumbukumbu ya kina ya muuzaji umekamilika"</string>

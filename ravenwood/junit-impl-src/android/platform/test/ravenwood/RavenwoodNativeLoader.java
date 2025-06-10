@@ -49,6 +49,7 @@ public final class RavenwoodNativeLoader {
             android.content.res.StringBlock.class,
             android.content.res.XmlBlock.class,
             android.text.AndroidCharacter.class,
+            com.android.internal.util.VirtualRefBasePtr.class,
     };
 
     /**
@@ -93,6 +94,7 @@ public final class RavenwoodNativeLoader {
             android.graphics.text.MeasuredText.class,
             android.graphics.text.TextRunShaper.class,
             android.graphics.text.GraphemeBreak.class,
+            android.graphics.drawable.VectorDrawable.class,
             android.util.PathParser.class,
     };
 

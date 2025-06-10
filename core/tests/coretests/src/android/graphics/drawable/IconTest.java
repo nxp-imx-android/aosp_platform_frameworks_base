@@ -46,16 +46,16 @@ import com.android.frameworks.coretests.R;
 import com.google.testing.junit.testparameterinjector.TestParameter;
 import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(TestParameterInjector.class)
 public class IconTest {
@@ -111,7 +111,7 @@ public class IconTest {
         draw3.setBounds(0, 0, draw3.getIntrinsicWidth(), draw3.getIntrinsicHeight());
         draw3.draw(new Canvas(test3));
 
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         L("writing temp bitmaps to %s...", dir);
 
         bm1.compress(Bitmap.CompressFormat.PNG, 100,
@@ -176,7 +176,7 @@ public class IconTest {
             (int) (draw1.getIntrinsicHeight() * (1 + 2 * AdaptiveIconDrawable.getExtraInsetFraction())));
         draw1.draw(new Canvas(test1));
 
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         L("writing temp bitmaps to %s...", dir);
 
         bm1.compress(Bitmap.CompressFormat.PNG, 100,
@@ -201,7 +201,7 @@ public class IconTest {
         draw1.setBounds(0, 0, test1.getWidth(), test1.getHeight());
         draw1.draw(new Canvas(test1));
 
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         res1.compress(Bitmap.CompressFormat.PNG, 100,
                 new FileOutputStream(new File(dir, "res1-original.png")));
         test1.compress(Bitmap.CompressFormat.PNG, 100,
@@ -258,7 +258,7 @@ public class IconTest {
         draw1.setBounds(0, 0, test1.getWidth(), test1.getHeight());
         draw1.draw(new Canvas(test1));
 
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         test1.compress(Bitmap.CompressFormat.PNG, 100,
                 new FileOutputStream(new File(dir, "testWithVectorDrawableResource-test.png")));
         if (!equalBitmaps(referenceBitmap, test1)) {
@@ -271,7 +271,7 @@ public class IconTest {
     public void testWithFile() throws Exception {
         final Bitmap bit1 = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
                 .getBitmap();
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         final File file1 = new File(dir, "file1-original.png");
         bit1.compress(Bitmap.CompressFormat.PNG, 100,
                 new FileOutputStream(file1));
@@ -343,7 +343,7 @@ public class IconTest {
     public void testAsync() throws Exception {
         final Bitmap bit1 = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
                 .getBitmap();
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         final File file1 = new File(dir, "async-original.png");
         bit1.compress(Bitmap.CompressFormat.PNG, 100,
                 new FileOutputStream(file1));
@@ -396,7 +396,7 @@ public class IconTest {
                 originalbits.getByteCount(),
                 pngdata.length);
 
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         final File originalfile = new File(dir, "parcel-original.png");
         new FileOutputStream(originalfile).write(pngdata);
 
@@ -510,7 +510,7 @@ public class IconTest {
     public void testScaleDownMaxSizeWithFile() throws Exception {
         final Bitmap bit1 = ((BitmapDrawable) getContext().getDrawable(R.drawable.test_too_big))
                 .getBitmap();
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         final File file1 = new File(dir, "file1-too-big.png");
         bit1.compress(Bitmap.CompressFormat.PNG, 100,
                 new FileOutputStream(file1));
@@ -543,7 +543,7 @@ public class IconTest {
 
         final Bitmap bit1 = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
                 .getBitmap();
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         final File file1 = new File(dir, "file1-original.png");
         bit1.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(file1));
 
@@ -587,7 +587,7 @@ public class IconTest {
 
         final Bitmap bit1 = ((BitmapDrawable) getContext().getDrawable(R.drawable.landscape))
                 .getBitmap();
-        final File dir = getContext().getExternalFilesDir(null);
+        final File dir = getContext().getCacheDir();
         final File file1 = new File(dir, "file1-original.png");
         bit1.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(file1));
 

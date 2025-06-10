@@ -8760,6 +8760,18 @@
     <permission android:name="android.permission.MONITOR_STICKY_MODIFIER_STATE"
                 android:protectionLevel="signature" />
 
+    <!--
+        @FlaggedApi(com.android.hardware.input.Flags.FLAG_REQUEST_KEY_CAPTURE_API)
+        Allows an application to be able to capture keys before Android system get chance to
+        process system keys and shortcuts.
+        <p> Protection level: normal
+    -->
+    <permission android:name="android.permission.CAPTURE_KEYBOARD"
+        android:protectionLevel="normal"
+        android:label="@string/permlab_capture_keyboard"
+        android:description="@string/permdesc_capture_keyboard"
+        android:featureFlag="com.android.hardware.input.request_key_capture_api"/>
+
     <!-- Allows low-level access to manage key gestures.
          <p>Not for use by third-party applications.
          @hide -->
@@ -9014,16 +9026,18 @@
     <permission android:name="android.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW"
         android:protectionLevel="signature|privileged" />
 
-    <!-- @hide @SystemApi
-        @FlaggedApi("android.view.flags.sensitive_content_app_protection_api")
+    <!--
+        @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
         Allows apps with a NotificationListenerService to receive notifications with sensitive
         information
         <p>Apps with a NotificationListenerService without this permission will not be able
         to view certain types of sensitive information contained in notifications
-        <p>Protection level: signature|role
+        <p>This permission also allows apps with the SMS permissions to query and receive broadcasts
+        about SMS messages that contain One Time Passwords
+        <p>Protection level: signature|preinstalled|knownSigner|role
     -->
     <permission android:name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS"
-        android:protectionLevel="signature|role" />
+        android:protectionLevel="signature|preinstalled|knownSigner|role" />
 
     <!-- @SystemApi
          @FlaggedApi("android.app.bic_client")

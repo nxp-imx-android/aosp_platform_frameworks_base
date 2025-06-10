@@ -473,6 +473,15 @@ package android.os {
     method @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ENHANCED_CONFIRMATION_STATES) public java.util.Set<android.content.pm.SignedPackage> getEnhancedConfirmationTrustedPackages();
   }
 
+  @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public class TelephonyServiceManager {
+    method @NonNull public android.os.TelephonyServiceManager.ServiceRegisterer getPhoneNumberServiceRegisterer();
+  }
+
+  public static final class TelephonyServiceManager.ServiceRegisterer {
+    method @Nullable public android.os.IBinder get();
+    method public void publishBinderService(@NonNull android.os.IBinder);
+  }
+
   public final class Trace {
     method public static void asyncTraceBegin(long, @NonNull String, int);
     method public static void asyncTraceEnd(long, @NonNull String, int);
@@ -618,6 +627,12 @@ package android.telephony {
   public class SubscriptionManager {
     method public void addSubscriptionInfoRecord(@NonNull String, @Nullable String, int, int);
     method public void removeSubscriptionInfoRecord(@NonNull String, int);
+  }
+
+  @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public class TelephonyFrameworkInitializer {
+    method @Nullable public static android.os.TelephonyServiceManager getTelephonyServiceManager();
+    method public static void registerServiceWrappers();
+    method public static void setTelephonyServiceManager(@NonNull android.os.TelephonyServiceManager);
   }
 
   public class TelephonyManager {

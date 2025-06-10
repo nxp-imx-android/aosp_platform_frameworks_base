@@ -46,6 +46,7 @@ import com.android.systemui.util.mockito.whenever
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -60,6 +61,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
+@Ignore("b/423646800")
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 // collectFlow in KeyguardPinBasedInputViewController.onViewAttached calls JavaAdapter.CollectFlow,

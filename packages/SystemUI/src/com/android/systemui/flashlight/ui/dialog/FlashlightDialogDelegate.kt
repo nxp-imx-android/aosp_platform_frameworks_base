@@ -20,7 +20,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.android.compose.PlatformButton
@@ -110,7 +114,13 @@ constructor(
         val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
         PlatformTheme(isDarkTheme = cachedDarkTheme) {
             AlertDialogContent(
-                title = { Text(text = stringResource(R.string.flashlight_dialog_title)) },
+                modifier = Modifier.semantics { testTagsAsResourceId = true },
+                title = {
+                    Text(
+                        modifier = Modifier.testTag(FLASHLIGHT_TITLE_TAG),
+                        text = stringResource(R.string.flashlight_dialog_title),
+                    )
+                },
                 content = {
                     FlashlightSliderContainer(
                         viewModel =
@@ -120,7 +130,10 @@ constructor(
                     )
                 },
                 positiveButton = {
-                    PlatformButton(onClick = { dialog.dismiss() }) {
+                    PlatformButton(
+                        modifier = Modifier.testTag(FLASHLIGHT_DONE_TAG),
+                        onClick = { dialog.dismiss() },
+                    ) {
                         Text(stringResource(R.string.quick_settings_done))
                     }
                 },
@@ -155,5 +168,7 @@ constructor(
     companion object {
         private const val TAG = "FlashlightDialogDelegate"
         private const val INTERACTION_JANK_TAG = "flashlight"
+        private const val FLASHLIGHT_TITLE_TAG = "flashlight_title"
+        private const val FLASHLIGHT_DONE_TAG = "flashlight_done"
     }
 }

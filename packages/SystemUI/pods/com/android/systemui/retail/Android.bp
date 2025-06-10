@@ -27,11 +27,10 @@ java_library {
         "kotlinx_coroutines",
     ],
     defaults: [
-        "SystemUI_pod_defaults",
+        "SystemUI_pod_defaults_impl",
     ],
     static_libs: [
         "com.android.systemui.retail.data-impl",
         "com.android.systemui.retail.domain-impl",
     ],
-    visibility: ["//frameworks/base/packages/SystemUI:__subpackages__"],
 }

@@ -149,6 +149,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_INDEPENDENT_BACK_IN_PROJECTED),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, true,
             Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS),
+    ENABLE_MIRROR_DISPLAY_NO_ACTIVITY(Flags::enableMirrorDisplayNoActivity, false,
+            Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY),
     ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE(
             Flags::enableModalsFullscreenWithPlatformSignature, true,
             Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PLATFORM_SIGNATURE),

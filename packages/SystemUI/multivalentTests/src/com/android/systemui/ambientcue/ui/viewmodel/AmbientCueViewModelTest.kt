@@ -27,6 +27,7 @@ import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
 import com.android.systemui.ambientcue.shared.model.ActionModel
+import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.runCurrent
@@ -181,9 +182,12 @@ class AmbientCueViewModelTest : SysuiTestCase() {
         listOf(
             ActionModel(
                 icon =
-                    applicationContext.resources.getDrawable(
-                        R.drawable.ic_content_paste_spark,
-                        applicationContext.theme,
+                    IconModel(
+                        applicationContext.resources.getDrawable(
+                            R.drawable.ic_content_paste_spark,
+                            applicationContext.theme,
+                        ),
+                        "test.icon",
                     ),
                 label = "Sunday Morning",
                 attribution = null,
