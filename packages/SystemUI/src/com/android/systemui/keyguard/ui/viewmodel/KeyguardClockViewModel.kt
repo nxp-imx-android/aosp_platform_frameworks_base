@@ -30,7 +30,9 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
+import com.android.systemui.log.dagger.KeyguardLargeClockLog
 import com.android.systemui.log.dagger.KeyguardSmallClockLog
+import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
 import com.android.systemui.res.R as SysuiR
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -63,6 +65,7 @@ constructor(
     // TODO: b/374267505 - Use ShadeDisplayAware resources here.
     @Main private val resources: Resources,
     @KeyguardSmallClockLog private val smallClockLogBuffer: LogBuffer,
+    @KeyguardLargeClockLog private val largeClockLogBuffer: LogBuffer,
 ) {
     var burnInLayer: Layer? = null
 
@@ -203,6 +206,44 @@ constructor(
     val largeClockTextSize: Flow<Int> =
         configurationInteractor.dimensionPixelSize(clocksR.dimen.large_clock_text_size)
 
+    val shouldDateWeatherBeBelowLargeClock: StateFlow<Boolean> =
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                combine(
+                    shadeModeInteractor.isShadeLayoutWide,
+                    configurationInteractor.configurationValues,
+                    keyguardClockInteractor.currentClock,
+                ) { isShadeLayoutWide, configurationValues, currentClock ->
+                    val screenWidthDp = configurationValues.screenWidthDp
+                    val fontScale = configurationValues.fontScale
+
+                    var belowLargeClock =
+                        !isFontAndDisplaySizeBreaking(
+                            currentClock = currentClock,
+                            screenWidthDp = screenWidthDp,
+                            fontScale = fontScale,
+                            isShadeLayoutWide = isShadeLayoutWide,
+                        )
+                    largeClockLogBuffer.log(
+                        TAG,
+                        LogLevel.INFO,
+                        {
+                            int1 = screenWidthDp
+                            double1 = fontScale.toDouble()
+                            bool1 = belowLargeClock
+                        },
+                        { "belowLargeClock:$bool1, Width:$int1, FontScale:$double1" },
+                    )
+                    belowLargeClock
+                }
+            } else {
+                flowOf(false)
+            }
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.Eagerly,
+                initialValue = false,
+            )
+
     val shouldDateWeatherBeBelowSmallClock: StateFlow<Boolean> =
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 combine(
@@ -210,8 +251,11 @@ constructor(
                     shadeModeInteractor.isShadeLayoutWide,
                     configurationInteractor.configurationValues,
                     keyguardClockInteractor.currentClock,
-                ) { hasCustomWeatherDataDisplay, isShadeLayoutWide, configurationValues, _ ->
-                    var fallBelow = false
+                ) {
+                    hasCustomWeatherDataDisplay,
+                    isShadeLayoutWide,
+                    configurationValues,
+                    currentClock ->
                     if (hasCustomWeatherDataDisplay) {
                         return@combine true
                     }
@@ -229,18 +273,14 @@ constructor(
                     }
 
                     val screenWidthDp = configurationValues.screenWidthDp
-
-                    // if the shade is wide, we should account for the possibility of date/weather
-                    // going past the halfway point
-                    val adjustedScreenWidth =
-                        if (isShadeLayoutWide) screenWidthDp / 2 else screenWidthDp
                     val fontScale = configurationValues.fontScale
-                    for ((font, width) in BREAKING_PAIRS) {
-                        if (fontScale >= font && adjustedScreenWidth <= width) {
-                            fallBelow = true
-                            break
-                        }
-                    }
+                    var fallBelow =
+                        isFontAndDisplaySizeBreaking(
+                            currentClock = currentClock,
+                            screenWidthDp = screenWidthDp,
+                            fontScale = fontScale,
+                            isShadeLayoutWide = isShadeLayoutWide,
+                        )
                     smallClockLogBuffer.log(
                         TAG,
                         LogLevel.INFO,
@@ -262,6 +302,31 @@ constructor(
             }
             .stateIn(scope = backgroundScope, started = SharingStarted.Eagerly, initialValue = true)
 
+    private fun isFontAndDisplaySizeBreaking(
+        currentClock: ClockController?,
+        screenWidthDp: Int,
+        fontScale: Float,
+        isShadeLayoutWide: Boolean? = null,
+    ): Boolean {
+        val breakingPairs: List<Pair<Float, Int>> =
+            when (currentClock?.config?.id) {
+                NUMBER_OVERLAP_CLOCK_ID -> NUMBER_OVERLAP_BREAKING_PAIRS
+                METRO_CLOCK_ID -> METRO_CLOCK_BREAKING_PAIRS
+                else -> DEFAULT_BREAKING_PAIRS
+            }
+
+        // if the shade is wide, we should account for the possibility of date/weather
+        // going past the halfway point
+        val adjustedScreenWidth =
+            if (isShadeLayoutWide == true) screenWidthDp / 2 else screenWidthDp
+        for ((font, width) in breakingPairs) {
+            if (fontScale >= font && adjustedScreenWidth <= width) {
+                return true
+            }
+        }
+        return false
+    }
+
     enum class ClockLayout {
         LARGE_CLOCK,
         SMALL_CLOCK,
@@ -277,13 +342,33 @@ constructor(
         // font size to display size
         // These values come from changing the font size and display size on a non-foldable.
         // Visually looked at which configs cause the date/weather to push off of the screen
-        private val BREAKING_PAIRS =
+        private val DEFAULT_BREAKING_PAIRS =
             listOf(
                 0.85f to 320, // tiny font size but large display size
                 1f to 346,
                 1.15f to 346,
                 1.5f to 376,
                 1.8f to 411, // large font size but tiny display size
+            )
+
+        private const val NUMBER_OVERLAP_CLOCK_ID = "DIGITAL_CLOCK_NUMBEROVERLAP"
+        private const val METRO_CLOCK_ID = "DIGITAL_CLOCK_METRO"
+
+        private val NUMBER_OVERLAP_BREAKING_PAIRS =
+            listOf(
+                0.85f to 376, // tiny font size but large display size
+                1f to 376,
+                1.15f to 411,
+                1.3f to 411,
+                1.5f to 411, // large font size but tiny display size
+            )
+
+        private val METRO_CLOCK_BREAKING_PAIRS =
+            listOf(
+                0.85f to 376, // tiny font size but large display size
+                1f to 376,
+                1.15f to 376,
+                1.3f to 376, // large font size but tiny display size
             )
 
         // Font axes width max cutoff

@@ -70,6 +70,10 @@ class FakeKeyguardClockRepository() : KeyguardClockRepository {
     fun setShouldForceSmallClock(shouldForceSmallClock: Boolean) {
         _shouldForceSmallClock = shouldForceSmallClock
     }
+
+    fun setCurrentClockId(clockId: ClockId) {
+        _currentClockId.value = clockId
+    }
 }
 
 @Module

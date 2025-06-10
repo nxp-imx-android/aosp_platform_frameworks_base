@@ -318,7 +318,11 @@ class ClockSizeTransition(
                         addTarget(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE)
                     }
                 if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                    addTarget(sharedR.id.date_smartspace_view_large)
+                    if (viewModel.shouldDateWeatherBeBelowLargeClock.value) {
+                        addTarget(sharedR.id.date_smartspace_view_large)
+                    } else {
+                        addTarget(sharedR.id.date_smartspace_view)
+                    }
                 }
             } else {
                 logger.i("Adding small clock")
@@ -404,7 +408,7 @@ class ClockSizeTransition(
             duration =
                 if (isLargeClock) STATUS_AREA_MOVE_UP_MILLIS else STATUS_AREA_MOVE_DOWN_MILLIS
             interpolator = Interpolators.EMPHASIZED
-            if (viewModel.shouldDateWeatherBeBelowSmallClock.value) {
+            if (viewModel.shouldDateWeatherBeBelowSmallClock.value || !viewModel.shouldDateWeatherBeBelowLargeClock.value) {
                 addTarget(sharedR.id.date_smartspace_view)
             }
             addTarget(sharedR.id.bc_smartspace_view)

@@ -137,7 +137,11 @@ constructor(
             KeyguardSmartspaceViewModel.getSmartspaceHorizontalMargin(context)
         val dateWeatherBelowSmallClock =
             keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock.value
+        val dateWeatherBelowLargeClock =
+            keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
+
         val isLargeClockVisible = keyguardClockViewModel.isLargeClockVisible.value
+
         if (clockReactiveSmartspaceLayout()) {
             if (dateWeatherBelowSmallClock) {
                 dateView?.orientation = LinearLayout.HORIZONTAL
@@ -148,7 +152,7 @@ constructor(
         constraintSet.apply {
             constrainHeight(sharedR.id.date_smartspace_view, ConstraintSet.WRAP_CONTENT)
             constrainWidth(sharedR.id.date_smartspace_view, ConstraintSet.WRAP_CONTENT)
-            if (dateWeatherBelowSmallClock) {
+            if (dateWeatherBelowSmallClock || !dateWeatherBelowLargeClock) {
                 connect(
                     sharedR.id.date_smartspace_view,
                     ConstraintSet.START,
@@ -186,7 +190,7 @@ constructor(
             } else {
                 clear(sharedR.id.date_smartspace_view, ConstraintSet.BOTTOM)
                 if (clockReactiveSmartspaceLayout()) {
-                    if (dateWeatherBelowSmallClock) {
+                    if (dateWeatherBelowSmallClock || !dateWeatherBelowLargeClock) {
                         connect(
                             sharedR.id.date_smartspace_view,
                             ConstraintSet.TOP,
@@ -224,7 +228,10 @@ constructor(
             }
 
             if (clockReactiveSmartspaceLayout()) {
-                if (isLargeClockVisible) {
+                if (
+                    isLargeClockVisible &&
+                        keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
+                ) {
                     setVisibility(sharedR.id.date_smartspace_view, GONE)
                     constrainHeight(
                         sharedR.id.date_smartspace_view_large,
@@ -267,7 +274,7 @@ constructor(
                         ConstraintSet.CHAIN_PACKED,
                     )
                 } else {
-                    if (dateWeatherBelowSmallClock) {
+                    if (dateWeatherBelowSmallClock || !dateWeatherBelowLargeClock) {
                         connect(
                             sharedR.id.date_smartspace_view,
                             ConstraintSet.START,
@@ -305,7 +312,7 @@ constructor(
             }
 
             if (clockReactiveSmartspaceLayout()) {
-                if (dateWeatherBelowSmallClock) {
+                if (dateWeatherBelowSmallClock || !dateWeatherBelowLargeClock) {
                     createBarrier(
                         R.id.smart_space_barrier_bottom,
                         Barrier.BOTTOM,
@@ -378,7 +385,11 @@ constructor(
         smartspaceController.requestSmartspaceUpdate()
         val weatherId: Int
         val dateId: Int
-        if (clockReactiveSmartspaceLayout() && isLargeClockVisible) {
+        if (
+            clockReactiveSmartspaceLayout() &&
+                isLargeClockVisible &&
+                keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
+        ) {
             weatherId = sharedR.id.weather_smartspace_view_large
             dateId = sharedR.id.date_smartspace_view_large
         } else {
@@ -392,12 +403,17 @@ constructor(
             setAlpha(weatherId, if (showWeather) 1f else 0f)
 
             val showDateView =
-                !keyguardClockViewModel.hasCustomWeatherDataDisplay.value || !isLargeClockVisible
+                !keyguardClockViewModel.hasCustomWeatherDataDisplay.value ||
+                    !isLargeClockVisible ||
+                    !keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
             setVisibility(dateId, if (showDateView) VISIBLE else GONE)
             setAlpha(dateId, if (showDateView) 1f else 0f)
 
             if (clockReactiveSmartspaceLayout()) {
-                if (isLargeClockVisible) {
+                if (
+                    isLargeClockVisible &&
+                        keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
+                ) {
                     setVisibility(sharedR.id.date_smartspace_view, GONE)
                 } else {
                     setVisibility(sharedR.id.date_smartspace_view_large, GONE)

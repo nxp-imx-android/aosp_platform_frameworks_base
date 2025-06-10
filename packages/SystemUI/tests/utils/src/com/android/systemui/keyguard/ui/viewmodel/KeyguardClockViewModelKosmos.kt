@@ -40,6 +40,7 @@ val Kosmos.keyguardClockViewModel by
             systemBarUtils = systemBarUtilsProxy,
             configurationInteractor = configurationInteractor,
             resources = mainResources,
-            smallClockLogBuffer = logcatLogBuffer(name = "KeyguardClockViewModel"),
+            smallClockLogBuffer = logcatLogBuffer(name = "KeyguardSmallClockViewModel"),
+            largeClockLogBuffer = logcatLogBuffer(name = "KeyguardLargeClockViewModel"),
         )
     }
