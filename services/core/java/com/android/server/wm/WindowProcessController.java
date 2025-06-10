@@ -335,6 +335,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     public static final int ACTIVITY_STATE_FLAG_RESUMED_SPLIT_SCREEN = 1 << 23;
     public static final int ACTIVITY_STATE_FLAG_PERCEPTIBLE_FREEFORM = 1 << 24;
     public static final int ACTIVITY_STATE_FLAG_VISIBLE_MULTI_WINDOW_MODE = 1 << 25;
+    public static final int ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM = 1 << 26;
     public static final int ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER = 0x0000ffff;
 
     /**
@@ -1332,7 +1333,10 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         if (hasResumedFreeform
                 // Exclude task layer 1 because it is already the top most.
                 && minTaskLayer > 1) {
-            if (minTaskLayer <= 1 + MAX_NUM_PERCEPTIBLE_FREEFORM
+            if (com.android.window.flags.Flags.bgPriorityForOccludedFreeformTasks()
+                    && nonOccludedRatio == 0) {
+                stateFlags |= ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM;
+            } else if (minTaskLayer <= 1 + MAX_NUM_PERCEPTIBLE_FREEFORM
                     || nonOccludedRatio >= PERCEPTIBLE_FREEFORM_VISIBLE_RATIO) {
                 stateFlags |= ACTIVITY_STATE_FLAG_PERCEPTIBLE_FREEFORM;
             } else {
