@@ -16,6 +16,10 @@
 
 package com.android.server.appfunctions;
 
+import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER;
+import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_DENIED;
+import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRANTED;
+
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.appfunctions.AppFunctionException;
@@ -48,7 +52,8 @@ import java.util.concurrent.TimeUnit;
 /** Shell command implementation for the {@link AppFunctionManagerService}. */
 public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
-    @NonNull private final IAppFunctionManager mService;
+    @NonNull
+    private final IAppFunctionManager mService;
 
     AppFunctionManagerServiceShellCommand(@NonNull IAppFunctionManager service) {
         mService = Objects.requireNonNull(service);
@@ -85,6 +90,38 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "    --user <USER_ID> (optional): The user ID under which to set the function state"
                         + ". Defaults to the current user.");
+
+        pw.println();
+        pw.println(
+                "  grant-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
+                        + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
+                        + "[--target-user <USER_ID>]");
+        pw.println("    Grants an agent package access to an app's functions.");
+        pw.println("    --agent-package <AGENT_PACKAGE_NAME>: The agent package to grant access.");
+        pw.println("    --target-package <TARGET_PACKAGE_NAME>: The target package.");
+        pw.println(
+                "    --agent-user <USER_ID> (optional): The user ID for the agent package. "
+                        + "Defaults to the current user.");
+        pw.println(
+                "    --target-user <USER_ID> (optional): The user ID for the target package. "
+                        + "Defaults to the current user.");
+        pw.println();
+        pw.println(
+                "  revoke-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
+                        + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
+                        + "[--target-user <USER_ID>]");
+        pw.println("    Revokes an agent package's access to an app's functions.");
+        pw.println(
+                "    --agent-package <AGENT_PACKAGE_NAME>: The agent package to revoke access "
+                        + "from.");
+        pw.println("    --target-package <TARGET_PACKAGE_NAME>: The target package.");
+        pw.println(
+                "    --agent-user <USER_ID> (optional): The user ID for the agent package. "
+                        + "Defaults to the current user.");
+        pw.println(
+                "    --target-user <USER_ID> (optional): The user ID for the target package. "
+                        + "Defaults to the current user.");
+
         pw.println();
     }
 
@@ -100,6 +137,10 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     return runExecuteAppFunction();
                 case "set-enabled":
                     return runSetAppFunctionEnabled();
+                case "grant-app-function-access":
+                    return runGrantAppFunctionAccess();
+                case "revoke-app-function-access":
+                    return runRevokeAppFunctionAccess();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -369,6 +410,91 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             }
         }
         return builder.build();
+    }
+
+    private int runGrantAppFunctionAccess() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        String agentPackage = null;
+        String targetPackage = null;
+        int agentUserId = ActivityManager.getCurrentUser();
+        int targetUserId = ActivityManager.getCurrentUser();
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--agent-package":
+                    agentPackage = getNextArgRequired();
+                    break;
+                case "--target-package":
+                    targetPackage = getNextArgRequired();
+                    break;
+                case "--agent-user":
+                    agentUserId = UserHandle.parseUserArg(getNextArgRequired());
+                    break;
+                case "--target-user":
+                    targetUserId = UserHandle.parseUserArg(getNextArgRequired());
+                    break;
+                default:
+                    pw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+
+        if (agentPackage == null) {
+            pw.println("Error: --agent-package must be specified.");
+            return -1;
+        }
+        if (targetPackage == null) {
+            pw.println("Error: --target-package must be specified.");
+            return -1;
+        }
+
+        mService.updateAppFunctionAccessFlags(agentPackage, agentUserId, targetPackage,
+                targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_GRANTED);
+        pw.println("Access granted successfully.");
+        return 0;
+    }
+
+    private int runRevokeAppFunctionAccess() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        String agentPackage = null;
+        String targetPackage = null;
+        int agentUserId = ActivityManager.getCurrentUser();
+        int targetUserId = ActivityManager.getCurrentUser();
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--agent-package":
+                    agentPackage = getNextArgRequired();
+                    break;
+                case "--target-package":
+                    targetPackage = getNextArgRequired();
+                    break;
+                case "--agent-user":
+                    agentUserId = UserHandle.parseUserArg(getNextArgRequired());
+                    break;
+                case "--target-user":
+                    targetUserId = UserHandle.parseUserArg(getNextArgRequired());
+                    break;
+                default:
+                    pw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+
+        if (agentPackage == null) {
+            pw.println("Error: --agent-package must be specified.");
+            return -1;
+        }
+        if (targetPackage == null) {
+            pw.println("Error: --target-package must be specified.");
+            return -1;
+        }
+        mService.updateAppFunctionAccessFlags(agentPackage, agentUserId, targetPackage,
+                targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_DENIED);
+        pw.println("Access revoked successfully.");
+        return 0;
     }
 
     private static String getCallingPackage() {

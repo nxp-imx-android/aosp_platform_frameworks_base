@@ -16,6 +16,7 @@
 
 package com.android.server.appfunctions;
 
+import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
 
@@ -478,6 +479,62 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         reportException(callback, e);
                     }
                 });
+    }
+
+    @Override
+    public boolean checkAppFunctionAccess(String agentPackageName, int agentUserId,
+            String targetPackageName, int targetUserId) throws RemoteException {
+        if (!accessCheckFlagsEnabled()) {
+            return false;
+        }
+        return mAppFunctionAccessService.checkAppFunctionAccess(agentPackageName, agentUserId,
+                targetPackageName, targetUserId);
+    }
+
+    @Override
+    public int getAppFunctionAccessFlags(String agentPackageName, int agentUserId,
+            String targetPackageName, int targetUserId) throws RemoteException {
+        if (!accessCheckFlagsEnabled()) {
+            return 0;
+        }
+        return mAppFunctionAccessService.getAppFunctionAccessFlags(agentPackageName, agentUserId,
+                targetPackageName, targetUserId);
+    }
+
+    @Override
+    public void updateAppFunctionAccessFlags(String agentPackageName, int agentUserId,
+            String targetPackageName, int targetUserId, int flagMask, int flags)
+            throws RemoteException {
+        if (!accessCheckFlagsEnabled()) {
+            return;
+        }
+        mAppFunctionAccessService.updateAppFunctionAccessFlags(agentPackageName, agentUserId,
+                targetPackageName, targetUserId, flagMask, flags);
+    }
+
+    @Override
+    public void revokeSelfAppFunctionAccess(String targetPackageName) {
+        if (!accessCheckFlagsEnabled()) {
+            return;
+        }
+        // TODO: Call mAppFunctionAccessService.revokeSelfAppFunctionAccess(targetPackageName)
+        // when ag/33428645 is in.
+    }
+
+    @Override
+    public int getAppFunctionAccessRequestState(String agentPackageName, int agentUserId,
+            String targetPackageName, int targetUserId) throws RemoteException {
+        if (!accessCheckFlagsEnabled()) {
+            return ACCESS_REQUEST_STATE_UNREQUESTABLE;
+        }
+
+        return mAppFunctionAccessService.getAppFunctionAccessRequestState(agentPackageName,
+                agentUserId, targetPackageName, targetUserId);
+    }
+
+    private boolean accessCheckFlagsEnabled() {
+        return android.permission.flags.Flags.appFunctionAccessApiEnabled()
+                && android.permission.flags.Flags.appFunctionAccessServiceEnabled();
     }
 
     private static void reportException(
