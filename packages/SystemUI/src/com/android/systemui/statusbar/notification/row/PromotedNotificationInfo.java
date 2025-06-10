@@ -50,6 +50,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
     private static final String TAG = "PromotedNotifInfoGuts";
     private INotificationManager mNotificationManager;
     private PackageDemotionInteractor mPackageDemotionInteractor;
+    private UiEventLogger mUiEventLogger;
 
     public PromotedNotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -89,6 +90,8 @@ public class PromotedNotificationInfo extends NotificationInfo {
         mNotificationManager = iNotificationManager;
 
         mPackageDemotionInteractor = packageDemotionInteractor;
+
+        mUiEventLogger = uiEventLogger;
 
         bindDemote(sbn, pkg);
 
@@ -134,10 +137,12 @@ public class PromotedNotificationInfo extends NotificationInfo {
                 mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
                 mPackageDemotionInteractor.onPackageDemoted(packageName, sbn.getUid());
                 mGutsContainer.closeControls(v, true);
+                mUiEventLogger.logWithInstanceId(
+                        NotificationControlsEvent.NOTIFICATION_DEMOTION_COMMIT, sbn.getUid(),
+                        packageName, sbn.getInstanceId());
             } catch (RemoteException e) {
                 Log.e(TAG, "Couldn't revoke live update permission", e);
             }
         });
     }
 }
-
