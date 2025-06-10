@@ -268,12 +268,6 @@ final class ProcessStateRecord {
     private int mCompletedAdjSeq;
 
     /**
-     * Whether this app has encountered a cycle in the most recent update.
-     */
-    @GuardedBy("mService")
-    private boolean mContainsCycle;
-
-    /**
      * When (uptime) the process last became unimportant.
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -379,32 +373,17 @@ final class ProcessStateRecord {
     private long mLastInvisibleTime;
 
     /**
-     * Whether or not this process could be killed when it's in background restricted mode
-     * and cached &amp; idle state.
-     */
-    @GuardedBy("mService")
-    private boolean mNoKillOnBgRestrictedAndIdle;
-
-    /**
      * Last set value of {@link #isCached()}.
      */
     @GuardedBy("mService")
     private boolean mSetCached;
 
     /**
-     * Last set value of {@link #mNoKillOnBgRestrictedAndIdle}.
+     * When the proc became cached. Used to debounce killing bg restricted apps in
+     * an idle UID.
      */
     @GuardedBy("mService")
-    private boolean mSetNoKillOnBgRestrictedAndIdle;
-
-    /**
-     * The last time when the {@link #mNoKillOnBgRestrictedAndIdle} is false and the
-     * {@link #isCached()} is true, and either the former state is flipping from true to false
-     * when latter state is true, or the latter state is flipping from false to true when the
-     * former state is false.
-     */
-    @GuardedBy("mService")
-    private @ElapsedRealtimeLong long mLastCanKillOnBgRestrictedAndIdleTime;
+    private @ElapsedRealtimeLong long mLastCachedTime;
 
     // Below are the cached task info for OomAdjuster only
     private static final int VALUE_INVALID = -1;
@@ -871,16 +850,6 @@ final class ProcessStateRecord {
         return mCompletedAdjSeq;
     }
 
-    @GuardedBy("mService")
-    void setContainsCycle(boolean containsCycle) {
-        mContainsCycle = containsCycle;
-    }
-
-    @GuardedBy("mService")
-    boolean containsCycle() {
-        return mContainsCycle;
-    }
-
     @GuardedBy({"mService", "mProcLock"})
     void setWhenUnimportant(long whenUnimportant) {
         mWhenUnimportant = whenUnimportant;
@@ -1272,16 +1241,6 @@ final class ProcessStateRecord {
     }
 
     @GuardedBy("mService")
-    void setNoKillOnBgRestrictedAndIdle(boolean shouldNotKill) {
-        mNoKillOnBgRestrictedAndIdle = shouldNotKill;
-    }
-
-    @GuardedBy("mService")
-    boolean shouldNotKillOnBgRestrictedAndIdle() {
-        return mNoKillOnBgRestrictedAndIdle;
-    }
-
-    @GuardedBy("mService")
     void setSetCached(boolean cached) {
         mSetCached = cached;
     }
@@ -1292,24 +1251,14 @@ final class ProcessStateRecord {
     }
 
     @GuardedBy("mService")
-    void setSetNoKillOnBgRestrictedAndIdle(boolean shouldNotKill) {
-        mSetNoKillOnBgRestrictedAndIdle = shouldNotKill;
-    }
-
-    @GuardedBy("mService")
-    boolean isSetNoKillOnBgRestrictedAndIdle() {
-        return mSetNoKillOnBgRestrictedAndIdle;
-    }
-
-    @GuardedBy("mService")
-    void setLastCanKillOnBgRestrictedAndIdleTime(@ElapsedRealtimeLong long now) {
-        mLastCanKillOnBgRestrictedAndIdleTime = now;
+    void setLastCachedTime(@ElapsedRealtimeLong long now) {
+        mLastCachedTime = now;
     }
 
     @ElapsedRealtimeLong
     @GuardedBy("mService")
-    long getLastCanKillOnBgRestrictedAndIdleTime() {
-        return mLastCanKillOnBgRestrictedAndIdleTime;
+    long getLastCachedTime() {
+        return mLastCachedTime;
     }
 
     public void setCacheOomRankerRss(long rss, long rssTimeMs) {
