@@ -104,6 +104,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @RunWith(AndroidJUnit4.class)
 public class NotificationAssistantsTest extends UiServiceTestCase {
@@ -736,8 +738,8 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_TYPE)).isFalse();
 
         // Check this doesn't apply to other adjustments if they default to allowed
-        mAssistants.allowAdjustmentType(mZero.id, Adjustment.KEY_SUMMARIZATION);
-        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_SUMMARIZATION)).isTrue();
+        mAssistants.allowAdjustmentType(mZero.id, KEY_IMPORTANCE);
+        assertThat(mAssistants.isAdjustmentAllowed(11, Adjustment.KEY_IMPORTANCE)).isTrue();
 
         // now turn on classification for the profile user directly
         mAssistants.allowAdjustmentType(11, Adjustment.KEY_TYPE);
@@ -818,8 +820,14 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         writeXmlAndReload(USER_ALL);
 
+        ArrayList<String> expected = new ArrayList<>(List.of(DEFAULT_ALLOWED_ADJUSTMENTS));
+
+        if (android.app.Flags.nmSummarizationOnboardingUi()) {
+            expected.remove(KEY_SUMMARIZATION);
+        }
+
         assertThat(mAssistants.getAllowedAssistantAdjustments(mZero.id))
-                .containsExactlyElementsIn(DEFAULT_ALLOWED_ADJUSTMENTS);
+                .containsExactlyElementsIn(expected);
     }
 
     @Test
