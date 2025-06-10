@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,7 +36,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -225,7 +223,8 @@ private fun ContentScope.BundlePreviewIcons(
     check(previewDrawables.isNotEmpty())
     val iconSize = 32.dp
 
-    val borderWidth = 2.5.dp
+    // The design stroke width is 2.5dp but there is a ~4% padding inside app icons; ~1.25dp here.
+    val borderWidth = 1.25.dp
     HalfOverlappingReversedRow(
         modifier =
             modifier.graphicsLayer {
@@ -275,14 +274,10 @@ private fun PreviewIcon(drawable: Drawable, modifier: Modifier = Modifier, borde
                 drawContent()
             }
     ) {
-        val surfaceColor = notificationElementSurfaceColor()
         Image(
             painter = rememberDrawablePainter(drawable),
             contentDescription = null,
-            modifier =
-                Modifier.fillMaxSize()
-                    .clip(CircleShape)
-                    .background(color = surfaceColor, shape = CircleShape),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit,
         )
     }
