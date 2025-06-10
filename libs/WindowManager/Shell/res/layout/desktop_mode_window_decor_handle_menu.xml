@@ -78,6 +78,7 @@
             android:contentDescription="@string/fullscreen_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_fullscreen"
             android:tint="@androidprv:color/materialColorOnSurface"
+            android:tooltipText="@string/fullscreen_text"
             style="@style/DesktopModeHandleMenuWindowingButton"/>
 
         <Space
@@ -93,6 +94,7 @@
             android:contentDescription="@string/split_screen_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_splitscreen"
             android:tint="@androidprv:color/materialColorOnSurface"
+            android:tooltipText="@string/split_screen_text"
             style="@style/DesktopModeHandleMenuWindowingButton"/>
 
         <Space
@@ -108,6 +110,7 @@
             android:contentDescription="@string/float_button_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_floating"
             android:tint="@androidprv:color/materialColorOnSurface"
+            android:tooltipText="@string/float_button_text"
             style="@style/DesktopModeHandleMenuWindowingButton"/>
 
         <Space
@@ -123,6 +126,7 @@
             android:contentDescription="@string/desktop_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_desktop"
             android:tint="@androidprv:color/materialColorOnSurface"
+            android:tooltipText="@string/desktop_text"
             style="@style/DesktopModeHandleMenuWindowingButton"/>
 
     </LinearLayout>
