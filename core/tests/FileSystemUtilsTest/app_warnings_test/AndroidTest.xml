@@ -22,6 +22,7 @@
         <option name="force-skip-system-props" value="true" />
         <option name="set-global-setting" key="verifier_engprod" value="1" />
         <option name="set-global-setting" key="verifier_verify_adb_installs" value="0" />
+        <option name="set-global-setting" key="development_settings_enabled" value="1" />
         <option name="restore-settings" value="true" />
     </target_preparer>
 
