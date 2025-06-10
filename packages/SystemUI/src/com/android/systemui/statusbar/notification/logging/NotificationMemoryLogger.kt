@@ -28,11 +28,12 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
+import com.android.systemui.Flags.doNotUseRunBlocking
+import kotlinx.coroutines.CoroutineDispatcher
 import java.lang.Exception
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CoroutineDispatcher
 
 /** Periodically logs current state of notification memory consumption. */
 @SysUISingleton
@@ -91,7 +92,7 @@ constructor(
 
             try {
                 // Notifications can only be retrieved on the main thread, so switch to that thread.
-                val notifications = getAllNotificationsOnMainThread()
+                val notifications = getAllNotifications()
                 val notificationMemoryUse =
                     NotificationMemoryMeter.notificationMemoryUse(notifications)
                         .sortedWith(
@@ -144,9 +145,13 @@ constructor(
             return StatsManager.PULL_SUCCESS
         }
 
-    private fun getAllNotificationsOnMainThread() =
-        runBlocking(context = mainDispatcher) {
+    private fun getAllNotifications() =
+        if (doNotUseRunBlocking()) {
             traceSection("NML#getNotifications") { notificationPipeline.allNotifs.toList() }
+        } else {
+            runBlocking(context = mainDispatcher) {
+                traceSection("NML#getNotifications") { notificationPipeline.allNotifs.toList() }
+            }
         }
 }
 
